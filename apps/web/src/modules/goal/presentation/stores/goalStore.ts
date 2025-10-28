@@ -550,10 +550,10 @@ export const useGoalStore = defineStore('goal', {
         return JSON.stringify({
           ...state,
           goals: state.goals.map((goal: any) =>
-            goal && typeof goal.toDTO === 'function' ? goal.toDTO() : goal,
+            goal && typeof goal.toClientDTO === 'function' ? goal.toClientDTO() : goal,
           ),
           goalFolders: state.goalFolders.map((folder: any) =>
-            folder && typeof folder.toDTO === 'function' ? folder.toDTO() : folder,
+            folder && typeof folder.toClientDTO === 'function' ? folder.toClientDTO() : folder,
           ),
           lastSyncTime: state.lastSyncTime?.getTime
             ? state.lastSyncTime.getTime()

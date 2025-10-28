@@ -10,6 +10,7 @@ import {
 import {
   initializeGoalModule,
   getGoalManagementService,
+  getGoalFolderService,
 } from '../index';
 import { useGoalStore } from '../presentation/stores/goalStore';
 
@@ -43,7 +44,7 @@ export function registerGoalInitializationTasks(): void {
         const store = useGoalStore();
 
         // 清空所有数据
-        store.clearAll();
+        (store as any).clearAll();
         console.log('✅ [Goal] Goal 模块数据清理完成');
       } catch (error) {
         console.error('❌ [Goal] Goal 模块清理失败:', error);
@@ -63,14 +64,35 @@ export function registerGoalInitializationTasks(): void {
         // 初始化模块（如果需要）
         await initializeGoalModule();
 
-        // 获取 Goals
-        console.log('📥 [Goal] 获取 Goal 列表...');
-        try {
-          const goals = await getGoalManagementService.getGoals({ limit: 100 });
-          console.log(`✅ [Goal] 成功获取 ${goals.length} 个 Goal`);
-        } catch (error) {
-          console.warn('⚠️ [Goal] 获取 Goal 失败，继续初始化', error);
+        const store = useGoalStore();
+
+        // 检查是否需要从 API 同步数据
+        const needsSync =
+          !store.isInitialized ||
+          store.goals.length === 0 ||
+          store.goalFolders.length === 0 ||
+          (store as any).shouldRefreshCache();
+
+        if (needsSync) {
+          // 并行获取 Goals 和 Folders
+          console.log('📥 [Goal] 从 API 同步 Goal 和 Folder 数据...');
+          try {
+            const [goalsResp, foldersResp] = await Promise.all([
+              getGoalManagementService.getGoals({ limit: 100 }),
+              getGoalFolderService.getGoalFolders({ limit: 100 }),
+            ]);
+            console.log(`✅ [Goal] 成功获取 ${goalsResp.goals?.length || 0} 个 Goal`);
+            console.log(`✅ [Goal] 成功获取 ${foldersResp.folders?.length || 0} 个 Folder`);
+          } catch (error) {
+            console.warn('⚠️ [Goal] 获取 Goal/Folder 失败，继续初始化', error);
+          }
+        } else {
+          console.log(
+            `📦 [Goal] 使用缓存数据: ${store.goals.length} 个 Goal, ${store.goalFolders.length} 个 Folder`,
+          );
         }
+
+        (store as any).setInitialized(true);
 
         console.log('✅ [Goal] 用户 Goal 数据同步完成');
       } catch (error) {
@@ -85,7 +107,7 @@ export function registerGoalInitializationTasks(): void {
         const store = useGoalStore();
 
         // 清空用户相关的目标数据
-        store.clearAll();
+        (store as any).clearAll();
         console.log('✅ [Goal] 用户 Goal 数据清理完成');
       } catch (error) {
         console.error('❌ [Goal] 用户 Goal 数据清理失败:', error);

@@ -26,7 +26,7 @@ import type { BatchOperationResponseDTO } from '../../shared/dtos';
  * 创建目标请求
  */
 export interface CreateGoalRequest {
-  accountUuid: string;
+  // accountUuid 从认证 token 中自动获取，不需要前端传递
   title: string;
   description?: string;
   color?: string; // 主题色（hex 格式，如 #FF5733）
@@ -255,7 +255,7 @@ export interface GoalAggregateViewResponse {
  * 创建文件夹请求
  */
 export interface CreateGoalFolderRequest {
-  accountUuid: string;
+  // accountUuid 从认证 token 中自动获取，不需要前端传递
   name: string;
   description?: string;
   icon?: string;
