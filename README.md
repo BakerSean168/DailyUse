@@ -284,11 +284,54 @@ pnpm nx bundle-analyzer
 
 ## 🤝 贡献指南
 
+本项目使用 **Git Flow 工作流**进行开发。
+
+### 开发流程
+
 1. Fork 项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
+2. 从 `dev` 分支创建特性分支
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b feature/your-feature
+   ```
+3. 开发并提交更改（遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-hans/)）
+   ```bash
+   git commit -m "feat: add some amazing feature"
+   ```
+4. 推送到你的 Fork
+   ```bash
+   git push origin feature/your-feature
+   ```
+5. 创建 Pull Request 到 `dev` 分支（不是 `main`）
+6. 等待代码审查和合并
+
+### 📖 详细文档
+
+- **完整工作流**: [Git Flow 工作流文档](.github/GITFLOW.md)
+- **快速参考**: [Git Flow 快速参考](.github/GITFLOW_QUICK_REFERENCE.md)
+- **提交规范**: [Conventional Commits](https://www.conventionalcommits.org/zh-hans/)
+
+### 分支说明
+
+- `main`: 生产环境代码（稳定版本）
+- `dev`: 开发环境代码（最新功能）
+- `feature/*`: 功能开发分支
+- `bugfix/*`: Bug 修复分支
+- `hotfix/*`: 紧急修复分支
+
+### 提交信息规范
+
+```bash
+feat: 新功能
+fix: Bug 修复
+docs: 文档更新
+style: 代码格式
+refactor: 重构
+perf: 性能优化
+test: 测试相关
+chore: 构建/工具变动
+```
 
 ## 📄 许可证
 
