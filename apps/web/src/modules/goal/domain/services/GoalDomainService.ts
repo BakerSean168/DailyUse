@@ -293,7 +293,7 @@ export class GoalDomainService {
 
       const hasOverlap = start1 < end2 && start2 < end1;
 
-      if (hasOverlap && goal1.dirUuid === goal2.dirUuid) {
+      if (hasOverlap && goal1.folderUuid === goal2.folderUuid) {
         return {
           conflictType: 'timeline_conflict',
           message: `目标 "${goal1.name}" 和 "${goal2.name}" 在相同目录下时间范围重叠，可能影响执行效果`,
@@ -322,7 +322,7 @@ export class GoalDomainService {
     try {
       // 简化的资源冲突检测：如果两个目标在同一目录且都处于活跃状态
       if (
-        goal1.dirUuid === goal2.dirUuid &&
+        goal1.folderUuid === goal2.folderUuid &&
         goal1.status === 'active' &&
         goal2.status === 'active' &&
         goal1.keyResults.length > 3 &&

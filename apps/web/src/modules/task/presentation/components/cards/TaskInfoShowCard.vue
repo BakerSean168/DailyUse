@@ -8,8 +8,8 @@
 
       <div class="modal-content">
         <div class="task-info">
-          <h3>{{ task.title }}</h3>
-          <p v-if="task.description">{{ task.description }}</p>
+          <h3>{{ task.instanceDateFormatted }}</h3>
+          <p v-if="task.note">{{ task.note }}</p>
 
           <div class="task-meta">
             <div class="due-date">
@@ -20,24 +20,15 @@
             <div class="task-status">
               <v-icon
                 :icon="
-                  task.execution.status === 'completed' ? 'mdi-check-circle' : 'mdi-clock-outline'
+                  task.isCompleted ? 'mdi-check-circle' : 'mdi-clock-outline'
                 "
               />
-              <span>{{ getStatusText(task.execution.status) }}</span>
+              <span>{{ task.statusText }}</span>
             </div>
 
             <div class="task-time">
               <v-icon icon="mdi-clock" />
               <span>时间: </span>
-            </div>
-          </div>
-
-          <!-- Key Results Progress -->
-          <div class="key-results" v-if="task.goalLinks?.length">
-            <h4>关联的关键结果</h4>
-            <div v-for="link in task.goalLinks" :key="link.keyResultId" class="kr-item">
-              <span>{{ getKeyResultName(link) }}</span>
-              <span>完成后 +{{ link.incrementValue }}</span>
             </div>
           </div>
         </div>
@@ -48,7 +39,7 @@
 
 <script setup lang="ts">
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import { TaskInstance, KeyResultClient, GoalClient } from '@dailyuse/domain-client';
+import type { TaskInstance, KeyResultClient, GoalClient } from '@dailyuse/domain-client';
 const props = defineProps<{
   visible: boolean;
   task: TaskInstance;
@@ -57,26 +48,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void;
 }>();
-
-const goalStore = useGoalStore();
-
-// ✅ 状态文本映射
-const getStatusText = (status: string) => {
-  const statusMap = {
-    pending: '待处理',
-    inProgress: '进行中',
-    completed: '已完成',
-    cancelled: '已取消',
-    overdue: '已过期',
-  };
-  return statusMap[status as keyof typeof statusMap] || '未知状态';
-};
-
-const getKeyResultName = (link: any) => {
-  const goal: Goal = goalStore.getGoalByUuid(link.goalUuid);
-  const kr: KeyResult | undefined = goal?.keyResults.find((kr) => kr.uuid === link.keyResultId);
-  return `${goal?.name} - ${kr?.name}`;
-};
 
 const handleClose = () => {
   emit('close');

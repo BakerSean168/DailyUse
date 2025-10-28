@@ -21,8 +21,5 @@ export { useTaskSync, useTaskSyncStatus } from './useTaskSync';
 // 统计数据
 export { useTaskStatistics, useTaskStatisticsData } from './useTaskStatistics';
 
-// 工具函数
-export { useTaskUtils } from './useTaskUtils';
-
 // 表单相关
 export { useTaskTemplateForm } from './useTaskTemplateForm';

@@ -18,22 +18,22 @@
             {{ getTemplateStatusText(template) }}
           </v-chip>
           <v-chip
-            :color="getImportanceColor(template.properties.importance)"
+            :color="getImportanceColor(template.importance)"
             variant="outlined"
             size="small"
             class="importance-chip ml-2"
           >
             <v-icon start size="small">mdi-flag</v-icon>
-            {{ getImportanceText(template.properties.importance) }}
+            {{ template.importanceText }}
           </v-chip>
           <v-chip
-            :color="getUrgencyColor(template.properties.urgency)"
+            :color="getUrgencyColor(template.urgency)"
             variant="outlined"
             size="small"
             class="urgency-chip ml-2"
           >
             <v-icon start size="small">mdi-flag</v-icon>
-            {{ getUrgencyText(template.properties.urgency) }}
+            {{ template.urgencyText }}
           </v-chip>
         </div>
       </div>
@@ -71,7 +71,7 @@
         <div class="meta-item">
           <v-icon color="primary" size="small" class="meta-icon"> mdi-calendar-range </v-icon>
           <span class="meta-text">
-            开始于 {{ format(template.timeConfig.date.startDate, 'yyyy-MM-dd') }}
+            开始于 {{ format(template.timeConfig.startDate || Date.now(), 'yyyy-MM-dd') }}
           </span>
         </div>
 
@@ -79,7 +79,7 @@
         <div class="meta-item">
           <v-icon color="info" size="small" class="meta-icon"> mdi-clock </v-icon>
           <span class="meta-text">
-            {{ getTaskTemplateTimeText(template) }}
+            {{ template.timeDisplayText }}
           </span>
         </div>
 
@@ -87,7 +87,7 @@
         <div class="meta-item">
           <v-icon color="success" size="small" class="meta-icon"> mdi-repeat </v-icon>
           <span class="meta-text">
-            {{ getTaskTemplateRecurrenceText(template) }}
+            {{ template.recurrenceText }}
           </span>
         </div>
 
@@ -95,52 +95,47 @@
         <div class="meta-item">
           <v-icon color="purple" size="small" class="meta-icon"> mdi-tag </v-icon>
           <span class="meta-text">
-            <span v-if="template.properties.tags.length > 0" class="tags">
-              · {{ template.properties.tags.slice(0, 2).join(', ') }}
-              <span v-if="template.properties.tags.length > 2"
-                >等{{ template.properties.tags.length }}个标签</span
+            <span v-if="template.tags.length > 0" class="tags">
+              · {{ template.tags.slice(0, 2).join(', ') }}
+              <span v-if="template.tags.length > 2"
+                >等{{ template.tags.length }}个标签</span
               >
             </span>
           </span>
         </div>
 
         <!-- 关联目标 -->
-        <div v-if="template.goalLinks?.length" class="meta-item">
+        <div v-if="template.goalBinding" class="meta-item">
           <v-icon color="warning" size="small" class="meta-icon"> mdi-target </v-icon>
-          <span class="meta-text"> 关联 {{ template.goalLinks.length }} 个目标 </span>
+          <span class="meta-text"> 关联目标 </span>
         </div>
       </div>
 
       <!-- 关键结果标签 -->
-      <div v-if="template.goalLinks?.length" class="key-results mt-3">
+      <div v-if="template.goalBinding" class="key-results mt-3">
         <v-chip
-          v-for="link in template.goalLinks.slice(0, 2)"
-          :key="link.keyResultId"
           size="small"
           color="primary"
           variant="outlined"
           class="mr-1 mb-1"
         >
           <v-icon start size="small">mdi-target</v-icon>
-          {{ getKeyResultName(link) }}
-        </v-chip>
-        <v-chip v-if="template.goalLinks.length > 2" size="small" variant="text" class="mb-1">
-          +{{ template.goalLinks.length - 2 }}
+          {{ getGoalBindingName(template.goalBinding) }}
         </v-chip>
       </div>
 
       <!-- 统计信息 -->
-      <div v-if="template.stats.totalInstances > 0" class="analytics-info mt-3">
+      <div v-if="template.instanceCount > 0" class="analytics-info mt-3">
         <v-divider class="mb-2"></v-divider>
         <div class="analytics-row">
           <div class="analytics-item">
             <span class="analytics-label">总次数：</span>
-            <span class="analytics-value">{{ template.stats.totalInstances }}</span>
+            <span class="analytics-value">{{ template.instanceCount }}</span>
           </div>
           <div class="analytics-item">
             <span class="analytics-label">完成率：</span>
             <span class="analytics-value"
-              >{{ Math.round(template.stats.completionRate * 100) }}%</span
+              >{{ Math.round(template.completionRate * 100) }}%</span
             >
           </div>
         </div>
@@ -150,17 +145,17 @@
     <!-- 卡片底部操作 -->
     <v-card-actions class="template-footer">
       <v-btn
-        v-if="template.lifecycle.status === 'active'"
+        v-if="template.isActive"
         color="primary"
         variant="outlined"
         size="small"
         @click="pauseTaskTemplate(template.uuid)"
       >
-        <v-icon start size="small">mdi-plus</v-icon>
+        <v-icon start size="small">mdi-pause</v-icon>
         暂停
       </v-btn>
       <v-btn
-        v-else-if="template.lifecycle.status === 'paused'"
+        v-else-if="template.isPaused"
         color="warning"
         variant="outlined"
         size="small"
@@ -170,7 +165,7 @@
         恢复
       </v-btn>
       <v-btn
-        v-else-if="template.lifecycle.status === 'draft'"
+        v-else-if="template.status === 'ARCHIVED'"
         color="info"
         variant="outlined"
         size="small"
@@ -184,7 +179,7 @@
 
       <div class="template-dates">
         <span class="date-text">
-          创建于 {{ format(template.lifecycle.createdAt, 'yyyy-MM-dd HH:mm:ss') }}
+          创建于 {{ template.formattedCreatedAt }}
         </span>
       </div>
     </v-card-actions>
@@ -218,15 +213,12 @@ import { ImportanceLevel } from '@dailyuse/contracts';
 import { UrgencyLevel } from '@dailyuse/contracts';
 // types
 import type { TaskContracts } from '@dailyuse/contracts';
-import { TaskTemplate, KeyResultClient, GoalClient } from '@dailyuse/domain-client';
-
-type KeyResultLink = TaskContracts.KeyResultLink;
+import type { TaskTemplate } from '@dailyuse/domain-client';
+import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
 
 // composables
-import { useTaskUtils } from '../../composables/useTaskUtils';
 import { useTaskTemplate } from '../../composables/useTaskTemplate';
 import { de } from 'date-fns/locale';
-const { getTaskTemplateTimeText, getTaskTemplateRecurrenceText } = useTaskUtils();
 const { deleteTaskTemplate, pauseTaskTemplate, activateTaskTemplate } = useTaskTemplate();
 
 interface Props {
@@ -258,32 +250,48 @@ const emit = defineEmits<Emits>();
 const goalStore = useGoalStore();
 const showDeleteDialog = ref(false);
 
-console.log('lifecycle', props.template.lifecycle);
 // 状态相关方法
 const getTemplateStatusColor = (template: TaskTemplate) => {
-  const status = template.lifecycle.status;
-  switch (status) {
-    case 'active':
-      return 'success';
-    case 'draft':
-      return 'info';
-    case 'paused':
-      return 'warning';
-    case 'archived':
-      return 'default';
-    default:
-      return 'default';
-  }
+  if (template.isActive) return 'success';
+  if (template.isPaused) return 'warning';
+  if (template.isArchived) return 'default';
+  return 'default';
 };
 
 const getTemplateStatusIcon = (template: TaskTemplate) => {
-  const status = template.lifecycle.status;
-  return props.statusFilters.find((s) => s.value === status)?.icon || 'mdi-circle';
+  const statusMap: Record<string, string> = {
+    ACTIVE: 'mdi-play-circle',
+    PAUSED: 'mdi-pause-circle',
+    ARCHIVED: 'mdi-archive',
+    DELETED: 'mdi-delete',
+  };
+  return statusMap[template.status] || 'mdi-circle';
 };
 
 const getTemplateStatusText = (template: TaskTemplate) => {
-  const status = template.lifecycle.status;
-  return props.statusFilters.find((s) => s.value === status)?.label || '';
+  return template.statusText;
+};
+
+const getImportanceText = (importance: ImportanceLevel) => {
+  const map: Record<ImportanceLevel, string> = {
+    [ImportanceLevel.Trivial]: '无关紧要',
+    [ImportanceLevel.Minor]: '不太重要',
+    [ImportanceLevel.Moderate]: '中等重要',
+    [ImportanceLevel.Important]: '非常重要',
+    [ImportanceLevel.Vital]: '极其重要',
+  };
+  return map[importance];
+};
+
+const getUrgencyText = (urgency: UrgencyLevel) => {
+  const map: Record<UrgencyLevel, string> = {
+    [UrgencyLevel.None]: '无期限',
+    [UrgencyLevel.Low]: '低度紧急',
+    [UrgencyLevel.Medium]: '中等紧急',
+    [UrgencyLevel.High]: '高度紧急',
+    [UrgencyLevel.Critical]: '非常紧急',
+  };
+  return map[urgency];
 };
 
 const getImportanceColor = (importance: ImportanceLevel) => {
@@ -320,43 +328,12 @@ const getUrgencyColor = (urgency: UrgencyLevel) => {
   }
 };
 
-const getImportanceText = (importance: ImportanceLevel) => {
-  switch (importance) {
-    case ImportanceLevel.Vital:
-      return '极其重要';
-    case ImportanceLevel.Important:
-      return '非常重要';
-    case ImportanceLevel.Moderate:
-      return '中等重要';
-    case ImportanceLevel.Minor:
-      return '不太重要';
-    case ImportanceLevel.Trivial:
-      return '无关紧要';
-    default:
-      return '';
-  }
-};
-
-const getUrgencyText = (urgency: UrgencyLevel) => {
-  switch (urgency) {
-    case UrgencyLevel.Critical:
-      return '非常紧急 - 需要立即处理';
-    case UrgencyLevel.High:
-      return '高度紧急 - 今天必须处理';
-    case UrgencyLevel.Medium:
-      return '中等紧急 - 近期需要处理';
-    case UrgencyLevel.Low:
-      return '低度紧急 - 可以稍后处理';
-    case UrgencyLevel.None:
-      return '无期限 - 没有具体时间要求';
-    default:
-      return '';
-  }
-};
-const getKeyResultName = (link: KeyResultLink) => {
-  const goal: Goal | undefined = goalStore.getGoalByUuid(link.goalUuid);
-  const kr: KeyResult | undefined = goal?.keyResults.find((kr) => kr.uuid === link.keyResultId);
-  return kr?.name || '未知关键结果';
+// 关键结果相关
+const getGoalBindingName = (binding: any) => {
+  if (!binding) return '';
+  const goal = goalStore.getGoalByUuid(binding.goalUuid);
+  const kr = goal?.keyResults.find((k: any) => k.uuid === binding.keyResultUuid);
+  return kr ? `${goal.title} - ${kr.title}` : '关联目标';
 };
 
 const formatCompletionTime = (minutes: number): string => {

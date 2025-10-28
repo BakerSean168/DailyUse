@@ -232,7 +232,7 @@ const filteredTemplates = computed(() => {
   console.log('🎯 筛选状态:', currentStatus.value);
 
   const filtered = allTemplates.filter((template) => {
-    const status = template.lifecycle?.status;
+    const status = template.status;
     console.log(
       `📋 模板 ${template.title}: status=${status}, 匹配=${status === currentStatus.value}`,
     );
@@ -255,8 +255,7 @@ watchEffect(() => {
     templates.map((t) => ({
       uuid: t.uuid,
       title: t.title,
-      status: t.lifecycle?.status,
-      lifecycleObj: t.lifecycle,
+      status: t.status,
     })),
   );
 
@@ -265,7 +264,7 @@ watchEffect(() => {
   // 检查状态分布
   const statusDistribution: Record<string, number> = templates.reduce(
     (acc, t) => {
-      const status = t.lifecycle?.status || 'unknown';
+      const status = t.status || 'unknown';
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     },
@@ -279,14 +278,14 @@ watchEffect(() => {
     filteredTemplates.value.map((t) => ({
       uuid: t.uuid,
       title: t.title,
-      status: t.lifecycle?.status,
+      status: t.status,
     })),
   );
 });
 
 // 工具方法
 const getTemplateCountByStatus = (status: string) => {
-  return taskStore.getAllTaskTemplates.filter((template) => template.lifecycle.status === status)
+  return taskStore.getAllTaskTemplates.filter((template) => template.status === status)
     .length;
 };
 

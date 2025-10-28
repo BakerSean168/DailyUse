@@ -175,7 +175,7 @@ const sortedGoals = computed(() => {
   const today = new Date();
   return [...goalStore.getAllGoals]
     .filter((goal) => {
-      if (goal.dirUuid === 'delete' || goal.dirUuid === 'archive') return false;
+      if (goal.folderUuid === 'delete' || goal.folderUuid === 'archive') return false;
       const endDate = new Date(goal.endTime);
       return endDate >= today;
     })

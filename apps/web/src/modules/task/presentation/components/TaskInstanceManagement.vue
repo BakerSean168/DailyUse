@@ -198,16 +198,13 @@ import { useTaskStore } from '../stores/taskStore';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import { format, startOfDay, isToday, isSameDay } from 'date-fns';
 // types
-import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
+import type { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
+import { TaskInstanceClient, TaskTemplateClient } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
 
-type KeyResultLink = TaskContracts.KeyResultLink;
-
 // composables
 import { useTaskInstance } from '../composables/useTaskInstance';
-// 导入 task web service
-import { getTaskWebService } from '../../index';
 // 导入 TaskInstanceCard 组件
 import TaskInstanceCard from './cards/TaskInstanceCard.vue';
 
@@ -224,22 +221,26 @@ const taskInstances = computed(() => taskStore.getAllTaskInstances);
 // 计算属性
 const dayTasks = computed(() => {
   const selected = new Date(selectedDate.value);
+  const selectedTimestamp = selected.getTime();
+  
   return taskInstances.value.filter((task) => {
-    return isSameDay(task.timeConfig.scheduledDate, selected);
+    // 使用 instanceDate 来比较日期
+    const taskDate = new Date(task.instanceDate);
+    return isSameDay(taskDate, selected);
   });
 });
 
 const completedTasks = computed(() =>
   dayTasks.value.filter(
-    (task) => task.execution.status === 'completed' && task instanceof TaskInstance,
+    (task) => task.isCompleted && task instanceof TaskInstanceClient,
   ),
 );
 
 const incompleteTasks = computed(() =>
   dayTasks.value.filter(
     (task) =>
-      (task.execution.status === 'pending' || task.execution.status === 'inProgress') &&
-      task instanceof TaskInstance,
+      !task.isCompleted &&
+      task instanceof TaskInstanceClient,
   ),
 );
 
@@ -304,7 +305,8 @@ const getTaskCountForDate = (date: string) => {
   const selectedDate = new Date(date);
 
   return taskStore.getAllTaskInstances.filter((task) => {
-    isSameDay(task.timeConfig.scheduledDate, selectedDate);
+    const taskDate = new Date(task.instanceDate);
+    return isSameDay(taskDate, selectedDate);
   }).length;
 };
 
@@ -336,8 +338,8 @@ const refreshData = async () => {
   try {
     loading.value = true;
 
-    const taskService = getTaskWebService;
-    await taskService.forceSync(); // 强制同步
+    // 通过 store 刷新数据
+    await taskStore.initialize();
 
     // 显示更新后的数据统计
     const templates = taskStore.getAllTaskTemplates.length;
@@ -366,12 +368,10 @@ onMounted(async () => {
   try {
     loading.value = true;
 
-    // 使用智能同步，只在需要时才从服务器获取数据
-    const taskService = getTaskWebService;
-    const syncResult = await taskService.smartSync();
-
-    if (syncResult.synced) {
-      console.log('✅ [TaskInstanceManagement] 数据已从服务器更新');
+    // 确保 store 已初始化
+    if (!taskStore.isInitialized) {
+      await taskStore.initialize();
+      console.log('✅ [TaskInstanceManagement] 数据已初始化');
     } else {
       console.log('✅ [TaskInstanceManagement] 使用本地缓存数据');
     }
