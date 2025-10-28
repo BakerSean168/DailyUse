@@ -3,10 +3,30 @@
  * 任务Web应用层导出
  */
 
+// 导出应用服务类和单例实例
 export {
-  TaskWebApplicationService,
-  taskWebApplicationService,
-} from './services/TaskWebApplicationService';
+  TaskTemplateApplicationService,
+  taskTemplateApplicationService,
+} from './services/TaskTemplateApplicationService';
 
-// 导出类型
-export type { TaskWebApplicationService as TaskWebApplicationServiceType } from './services/TaskWebApplicationService';
+export {
+  TaskInstanceApplicationService,
+  taskInstanceApplicationService,
+} from './services/TaskInstanceApplicationService';
+
+export {
+  TaskStatisticsApplicationService,
+  taskStatisticsApplicationService,
+} from './services/TaskStatisticsApplicationService';
+
+export {
+  TaskSyncApplicationService,
+  taskSyncApplicationService,
+} from './services/TaskSyncApplicationService';
+
+// 导出其他服务（不是单例的工具服务）
+export { TaskAutoStatusService } from './services/TaskAutoStatusService';
+export { TaskCriticalPathService } from './services/TaskCriticalPathService';
+export { TaskDependencyDragDropService } from './services/TaskDependencyDragDropService';
+export { TaskDependencyGraphService } from './services/TaskDependencyGraphService';
+export { TaskDependencyValidationService } from './services/TaskDependencyValidationService';

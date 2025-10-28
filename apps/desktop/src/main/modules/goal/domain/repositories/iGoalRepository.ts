@@ -1,5 +1,5 @@
 import type { Goal } from '../aggregates/goal';
-import type { GoalDir } from '../aggregates/goalDir';
+import type { GoalFolder } from '../aggregates/GoalFolder';
 import { GoalReview } from '../entities/goalReview';
 import type { GoalRecord } from '../entities/record';
 
@@ -16,12 +16,12 @@ export interface IGoalRepository {
   updateGoal(accountUuid: string, goal: Goal): Promise<Goal>;
   deleteGoal(accountUuid: string, uuid: string): Promise<void>;
 
-  // GoalDir 操作
-  createGoalDirectory(accountUuid: string, goalDir: GoalDir): Promise<GoalDir>;
-  getGoalDirectoryByUuid(accountUuid: string, uuid: string): Promise<GoalDir | null>;
-  getAllGoalDirectories(accountUuid: string): Promise<GoalDir[]>;
-  updateGoalDirectory(accountUuid: string, goalDir: GoalDir): Promise<GoalDir>;
-  deleteGoalDirectory(accountUuid: string, uuid: string): Promise<void>;
+  // GoalFolder 操作
+  createGoalFolderectory(accountUuid: string, GoalFolder: GoalFolder): Promise<GoalFolder>;
+  getGoalFolderectoryByUuid(accountUuid: string, uuid: string): Promise<GoalFolder | null>;
+  getAllGoalFolderectories(accountUuid: string): Promise<GoalFolder[]>;
+  updateGoalFolderectory(accountUuid: string, GoalFolder: GoalFolder): Promise<GoalFolder>;
+  deleteGoalFolderectory(accountUuid: string, uuid: string): Promise<void>;
 
   // GoalRecord 操作
   createGoalRecord(accountUuid: string, record: GoalRecord): Promise<GoalRecord>;

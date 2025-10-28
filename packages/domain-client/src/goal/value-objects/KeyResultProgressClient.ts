@@ -169,4 +169,51 @@ export class KeyResultProgressClient extends ValueObject implements IKeyResultPr
       unit: '',
     });
   }
+
+  // ===== 修改方法 (Modification Methods) =====
+  // 虽然值对象通常不可变，但在客户端实体中需要修改能力
+
+  /**
+   * 更新当前值
+   */
+  public updateCurrentValue(currentValue: number): void {
+    this._currentValue = currentValue;
+  }
+
+  /**
+   * 更新目标值
+   */
+  public updateTargetValue(targetValue: number): void {
+    this._targetValue = targetValue;
+  }
+
+  /**
+   * 更新初始值（对于累计类型可能需要）
+   * 注：当前实现中没有 initialValue 字段，此方法保留用于未来扩展
+   */
+  public updateInitialValue(_initialValue: number): void {
+    // 当前实现中不存储 initialValue，此方法为兼容性保留
+    // 如需支持，需在构造函数中添加 _initialValue 字段
+  }
+
+  /**
+   * 更新单位
+   */
+  public updateUnit(unit: string): void {
+    this._unit = unit || null;
+  }
+
+  /**
+   * 更新值类型
+   */
+  public updateValueType(valueType: KeyResultValueType): void {
+    this._valueType = valueType;
+  }
+
+  /**
+   * 更新聚合方法
+   */
+  public updateAggregationMethod(method: AggregationMethod): void {
+    this._aggregationMethod = method;
+  }
 }

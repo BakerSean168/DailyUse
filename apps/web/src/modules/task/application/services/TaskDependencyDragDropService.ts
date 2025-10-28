@@ -31,7 +31,13 @@ export interface DependencyCreationResult {
  */
 export class TaskDependencyDragDropService {
   private validationService = new TaskDependencyValidationService();
-  private snackbar = useSnackbar();
+
+  /**
+   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
+   */
+  private get snackbar() {
+    return useSnackbar();
+  }
 
   /**
    * Create dependency from drag-and-drop operation

@@ -9,6 +9,9 @@ export {
   scheduleWebApplicationService,
 } from './services/ScheduleWebApplicationService';
 
+// 便捷别名（向后兼容）
+export { scheduleWebApplicationService as getScheduleWebService } from './services/ScheduleWebApplicationService';
+
 // 导出基础设施层 API 客户端
 export * from './infrastructure/api/index';
 

@@ -5,9 +5,9 @@
       <v-btn icon variant="tonal" size="40" color="primary" @click="router.back()">
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
-      <div class="text-h6 font-weight-bold">{{ keyResult.name }}</div>
-      <v-chip :color="goal.color" variant="flat" class="ml-2" size="small">
-        {{ goal.name }}
+      <div class="text-h6 font-weight-bold">{{ keyResult.title }}</div>
+      <v-chip :color="goal.color || undefined" variant="flat" class="ml-2" size="small">
+        {{ goal.title }}
       </v-chip>
     </div>
 
@@ -19,15 +19,15 @@
       <v-col cols="12" md="4">
         <v-sheet class="pa-2" color="surface-light" rounded>
           <v-icon start color="primary">mdi-calculator-variant</v-icon>
-          <span class="font-weight-medium">计算方式：</span>
-          <span>{{ keyResult.calculationMethod }}</span>
+          <span class="font-weight-medium">聚合方式：</span>
+          <span>{{ keyResult.aggregationMethodText }}</span>
         </v-sheet>
       </v-col>
       <v-col cols="12" md="4">
         <v-sheet class="pa-2" color="surface-light" rounded>
           <v-icon start color="primary">mdi-numeric</v-icon>
-          <span class="font-weight-medium">起始值：</span>
-          <span>{{ keyResult.startValue }}</span>
+          <span class="font-weight-medium">当前值：</span>
+          <span>{{ keyResult.progress.currentValue }} / {{ keyResult.progress.targetValue }}</span>
         </v-sheet>
       </v-col>
       <v-col cols="12" md="4">
@@ -73,7 +73,7 @@
             </div>
             <v-list v-else lines="two" density="comfortable">
               <v-list-item v-for="record in records" :key="record.uuid" class="mb-2">
-                <GoalRecordCard :record="record as GoalRecord" />
+                <GoalRecordCard :record="record" />
               </v-list-item>
             </v-list>
           </div>
@@ -95,7 +95,9 @@ import { useGoalStore } from '../stores/goalStore';
 import KeyResultCard from '../components/cards/KeyResultCard.vue';
 import GoalRecordCard from '../components/cards/GoalRecordCard.vue';
 // domain
-import { KeyResult, Goal, GoalRecord } from '@dailyuse/domain-client';
+import { KeyResultClient as KeyResult, GoalClient as Goal } from '@dailyuse/domain-client';
+import type { GoalContracts } from '@dailyuse/contracts';
+type GoalRecord = GoalContracts.GoalRecordClientDTO;
 
 const router = useRouter();
 const route = useRoute();
@@ -118,7 +120,11 @@ const goal = computed(() => {
 
 // 关键结果
 const keyResult = computed(() => {
-  const keyResult = goal.value.keyResults.find((kr) => kr.uuid === keyResultUuid);
+  const keyResults = goal.value.keyResults;
+  if (!keyResults) {
+    throw new Error('Goal has no key results');
+  }
+  const keyResult = keyResults.find((kr) => kr.uuid === keyResultUuid);
   if (!keyResult) {
     throw new Error('Key result not found');
   }
@@ -137,8 +143,8 @@ onMounted(async () => {
 
 // 计算所有记录
 const records = computed(() => {
-  const records = goal.value.records.filter((record) => record.keyResultUuid === keyResultUuid);
-  return records;
+  // KeyResult 的 records 属性包含相关的记录
+  return keyResult.value.records || [];
 });
 </script>
 

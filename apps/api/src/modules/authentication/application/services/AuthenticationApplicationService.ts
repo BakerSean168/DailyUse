@@ -35,7 +35,7 @@ const logger = createLogger('AuthenticationApplicationService');
  * 登录请求接口
  */
 export interface LoginRequest {
-  username: string;
+  identifier: string; // 用户名或邮箱
   password: string;
   deviceInfo: {
     deviceId: string;
@@ -148,13 +148,18 @@ export class AuthenticationApplicationService {
    */
   async login(request: LoginRequest): Promise<LoginResponse> {
     logger.info('[AuthenticationApplicationService] Starting login', {
-      username: request.username,
+      identifier: request.identifier,
       deviceType: request.deviceInfo.deviceType,
     });
 
     try {
-      // ===== 步骤 1: 查询账户 =====
-      const account = await this.accountRepository.findByUsername(request.username);
+      // ===== 步骤 1: 查询账户（支持用户名或邮箱） =====
+      // 判断 identifier 是邮箱还是用户名
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(request.identifier);
+      const account = isEmail
+        ? await this.accountRepository.findByEmail(request.identifier)
+        : await this.accountRepository.findByUsername(request.identifier);
+
       if (!account) {
         throw new Error('Invalid username or password');
       }
@@ -205,7 +210,7 @@ export class AuthenticationApplicationService {
 
       logger.info('[AuthenticationApplicationService] Login successful', {
         accountUuid: account.uuid,
-        username: request.username,
+        identifier: request.identifier,
       });
 
       return {
@@ -226,7 +231,7 @@ export class AuthenticationApplicationService {
       };
     } catch (error) {
       logger.error('[AuthenticationApplicationService] Login failed', {
-        username: request.username,
+        identifier: request.identifier,
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;

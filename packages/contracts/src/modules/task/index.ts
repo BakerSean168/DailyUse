@@ -14,3 +14,6 @@ export * from './entities';
 
 // 聚合根
 export * from './aggregates';
+
+// API 请求/响应类型
+export * from './api-requests';

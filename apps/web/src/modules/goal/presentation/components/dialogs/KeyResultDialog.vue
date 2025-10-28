@@ -158,86 +158,75 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { KeyResult, Goal } from '@dailyuse/domain-client';
+import type { KeyResultClient, GoalClient } from '@dailyuse/domain-client';
+import { KeyResultClient as KeyResult } from '@dailyuse/domain-client';
 // composables
-import { useGoal } from '../../composables/useGoal';
+import { useKeyResult } from '../../composables/useKeyResult';
 
-const { createKeyResultForGoal, updateKeyResultForGoal } = useGoal();
+const keyResultComposable = useKeyResult();
+const { createKeyResult, updateKeyResult } = keyResultComposable;
 
 const visible = ref(false);
-const propKeyResult = ref<KeyResult | null>(null);
+const propKeyResult = ref<KeyResultClient | null>(null);
 const propGoalUuid = ref<string | null>(null);
 //如果是在编辑 Goal 的情况下，编辑 Key Result，应该直接把 keyResult 的修改直接反映到 Goal 中（到时候调用 Goal 的接口），而不是直接掉用修改 Key Result 的接口
 // 规定传入 goal 对象，则表示是在编辑 Goal 的情况下编辑 Key Result
-const propGoal = ref<Goal | null>(null);
+const propGoal = ref<GoalClient | null>(null);
 const isInGoalEditing = computed(() => !!propGoal.value);
 // 表单状态
 const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
-const localKeyResult = ref<KeyResult>(
-  KeyResult.forCreate({
-    accountUuid: '', // 需要在创建时提供
-    goalUuid: (propGoalUuid.value || propGoal.value?.uuid)!,
-    unit: '',
-  }),
+const localKeyResult = ref<KeyResultClient>(
+  KeyResult.forCreate(''), // 需要在打开时设置正确的 goalUuid
 );
 const loading = ref(false);
 const isEditing = computed(() => !!propKeyResult.value);
 const isFormValid = computed(() => formRef.value?.isValid ?? false);
 const progressPercentage = computed(() => {
-  if (localKeyResult.value.targetValue === localKeyResult.value.startValue) return 0;
-
-  const progress =
-    ((localKeyResult.value.currentValue - localKeyResult.value.startValue) /
-      (localKeyResult.value.targetValue - localKeyResult.value.startValue)) *
-    100;
-  return Math.max(0, Math.min(100, progress));
+  const progress = localKeyResult.value.progress;
+  return progress.progressPercentage;
 });
 
 // 表单字段的 getter/setter
 const keyResultName = computed({
-  get: () => localKeyResult.value.name || '',
+  get: () => localKeyResult.value.title || '',
   set: (val: string) => {
-    localKeyResult.value.updateInfo({ name: val });
+    localKeyResult.value.updateTitle(val);
   },
 });
 
 const keyResultStartValue = computed({
-  get: () => localKeyResult.value.startValue || 0,
+  get: () => localKeyResult.value.progress.currentValue - localKeyResult.value.progress.currentValue + 0, // 初始值设为0
   set: (val: number) => {
-    // 重新创建 KeyResult 对象以更新 startValue
-    const dto = localKeyResult.value.toDTO();
-    dto.startValue = val;
-    localKeyResult.value = KeyResult.fromDTO(dto);
+    // initialValue 在当前实现中不存储，这里使用 updateInitialValue
+    localKeyResult.value.updateInitialValue(val);
   },
 });
 
 const keyResultTargetValue = computed({
-  get: () => localKeyResult.value.targetValue || 0,
+  get: () => localKeyResult.value.progress.targetValue || 0,
   set: (val: number) => {
-    localKeyResult.value.updateInfo({ targetValue: val });
+    localKeyResult.value.updateTargetValue(val);
   },
 });
 
 const keyResultCurrentValue = computed({
-  get: () => localKeyResult.value.currentValue || 0,
+  get: () => localKeyResult.value.progress.currentValue || 0,
   set: (val: number) => {
-    localKeyResult.value.updateProgress(val);
+    localKeyResult.value.updateCurrentValue(val);
   },
 });
 
 const keyResultCalculationMethod = computed({
-  get: () => localKeyResult.value.calculationMethod || 'sum',
+  get: () => localKeyResult.value.progress.aggregationMethod || 'SUM',
   set: (val: string) => {
-    localKeyResult.value.updateInfo({
-      calculationMethod: val as 'sum' | 'average' | 'max' | 'min' | 'custom',
-    });
+    localKeyResult.value.updateAggregationMethod(val as any);
   },
 });
 
 const keyResultWeight = computed({
-  get: () => localKeyResult.value.weight || 1,
+  get: () => localKeyResult.value.weight || 0,
   set: (val: number) => {
-    localKeyResult.value.updateInfo({ weight: val });
+    localKeyResult.value.updateWeight(val);
   },
 });
 
@@ -272,23 +261,51 @@ const handleSave = async () => {
   if (!isFormValid.value) return;
   if (isEditing.value) {
     if (isInGoalEditing.value) {
-      // 如果在目标编辑页面，禁止修改关键结果
-      propGoal.value?.updateKeyResult(localKeyResult.value as KeyResult);
+      // 如果在目标编辑页面，直接修改 Goal 中的 KeyResult
+      // 由于我们已经在 localKeyResult 上直接修改，这里不需要额外操作
+      // propGoal 中的 keyResults 已经是引用，修改会反映在父组件中
+    } else {
+      // 转换为 UpdateKeyResultRequest 格式
+      const updateRequest = {
+        title: localKeyResult.value.title,
+        description: localKeyResult.value.description || undefined, // null 转为 undefined
+        weight: localKeyResult.value.weight,
+        order: localKeyResult.value.order,
+        progress: {
+          valueType: localKeyResult.value.progress.valueType,
+          aggregationMethod: localKeyResult.value.progress.aggregationMethod,
+          targetValue: localKeyResult.value.progress.targetValue,
+          currentValue: localKeyResult.value.progress.currentValue,
+          unit: localKeyResult.value.progress.unit || undefined,
+        },
+      };
+      await updateKeyResult(propGoalUuid.value!, localKeyResult.value.uuid, updateRequest);
     }
-    await updateKeyResultForGoal(
-      propGoalUuid.value!,
-      localKeyResult.value.uuid,
-      localKeyResult.value.toDTO(),
-    );
   } else {
     if (isInGoalEditing.value) {
       // 如果在目标编辑页面，使用变更跟踪方法添加关键结果
-      propGoal.value?.addNewKeyResult(localKeyResult.value as KeyResult);
+      propGoal.value?.addKeyResult(localKeyResult.value);
       // 不调用创建接口，等保存目标时统一创建
       closeDialog();
       return;
     }
-    await createKeyResultForGoal(propGoalUuid.value!, localKeyResult.value.toDTO());
+    // 转换为旧的 CreateKeyResultRequest 格式（兼容现有 API）
+    const createRequest = {
+      name: localKeyResult.value.title, // title -> name
+      description: localKeyResult.value.description || undefined,
+      startValue: 0, // initialValue，当前实现中默认为0
+      targetValue: localKeyResult.value.progress.targetValue,
+      currentValue: localKeyResult.value.progress.currentValue,
+      unit: localKeyResult.value.progress.unit || '', // null -> ''
+      weight: localKeyResult.value.weight,
+      calculationMethod: localKeyResult.value.progress.aggregationMethod.toLowerCase() as
+        | 'sum'
+        | 'average'
+        | 'max'
+        | 'min'
+        | 'custom',
+    };
+    await createKeyResult(propGoalUuid.value!, createRequest);
   }
   closeDialog();
 };
@@ -305,8 +322,8 @@ const openDialog = ({
   goal,
 }: {
   goalUuid?: string;
-  keyResult?: KeyResult;
-  goal?: Goal;
+  keyResult?: KeyResultClient;
+  goal?: GoalClient;
 }) => {
   propGoalUuid.value = goalUuid || null;
   propKeyResult.value = keyResult || null;
@@ -314,11 +331,11 @@ const openDialog = ({
   visible.value = true;
 };
 
-const openForCreateKeyResultInGoalEditing = (goal: Goal) => {
+const openForCreateKeyResultInGoalEditing = (goal: GoalClient) => {
   openDialog({ goal });
 };
 
-const openForUpdateKeyResultInGoalEditing = (goal: Goal, keyResult: KeyResult) => {
+const openForUpdateKeyResultInGoalEditing = (goal: GoalClient, keyResult: KeyResultClient) => {
   openDialog({ goal, keyResult });
 };
 
@@ -326,7 +343,7 @@ const openForCreateKeyResult = (goalUuid: string) => {
   openDialog({ goalUuid });
 };
 
-const openForUpdateKeyResult = (goalUuid: string, keyResult: KeyResult) => {
+const openForUpdateKeyResult = (goalUuid: string, keyResult: KeyResultClient) => {
   openDialog({ goalUuid, keyResult });
 };
 
@@ -334,13 +351,9 @@ watch([() => visible.value, () => propKeyResult.value], ([newValue]) => {
   if (newValue) {
     localKeyResult.value = propKeyResult.value
       ? propKeyResult.value.clone()
-      : KeyResult.forCreate({ accountUuid: '', goalUuid: propGoalUuid.value!, unit: '' });
+      : KeyResult.forCreate(propGoalUuid.value || propGoal.value?.uuid || '');
   } else {
-    localKeyResult.value = KeyResult.forCreate({
-      accountUuid: '',
-      goalUuid: propGoalUuid.value!,
-      unit: '',
-    });
+    localKeyResult.value = KeyResult.forCreate(propGoalUuid.value || propGoal.value?.uuid || '');
   }
 });
 

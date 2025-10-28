@@ -124,6 +124,14 @@ export interface IApiClient {
 }
 
 /**
+ * 响应提取策略
+ * - 'auto': 自动提取 data 字段（默认，向后兼容）
+ * - 'full': 返回完整响应（包含 data, message, timestamp 等）
+ * - 'raw': 返回原始 axios response
+ */
+export type ResponseExtractStrategy = 'auto' | 'full' | 'raw';
+
+/**
  * HTTP客户端配置扩展
  */
 export interface HttpClientConfig extends AxiosRequestConfig, Partial<ApiClientConfig> {
@@ -133,6 +141,9 @@ export interface HttpClientConfig extends AxiosRequestConfig, Partial<ApiClientC
   // 重试配置
   enableRetry?: boolean;
   retryCondition?: (error: any) => boolean;
+
+  // 响应提取策略
+  responseExtractStrategy?: ResponseExtractStrategy;
 
   // 错误处理
   errorHandler?: (error: any) => void;

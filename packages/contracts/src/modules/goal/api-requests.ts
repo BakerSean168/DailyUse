@@ -11,7 +11,12 @@ import type {
   GoalStatisticsServerDTO,
   GoalStatisticsClientDTO,
 } from './aggregates';
-import type { KeyResultServerDTO, GoalReviewServerDTO } from './entities';
+import type {
+  KeyResultServerDTO,
+  GoalReviewServerDTO,
+  GoalRecordServerDTO,
+  GoalRecordClientDTO,
+} from './entities';
 import type { GoalStatus, ImportanceLevel, UrgencyLevel, FolderType } from './enums';
 import type { BatchOperationResponseDTO } from '../../shared/dtos';
 
@@ -145,6 +150,43 @@ export interface KeyResultResponse {
   keyResult: KeyResultServerDTO;
 }
 
+/**
+ * 关键结果列表响应
+ */
+export interface KeyResultsResponse {
+  keyResults: KeyResultServerDTO[];
+  total: number;
+}
+
+// ============ GoalRecord 请求/响应 ============
+
+/**
+ * 创建目标记录请求
+ */
+export interface CreateGoalRecordRequest {
+  keyResultUuid: string;
+  goalUuid: string;
+  previousValue: number;
+  newValue: number;
+  note?: string;
+  recordedAt?: number;
+}
+
+/**
+ * 目标记录响应
+ */
+export interface GoalRecordResponse {
+  record: GoalRecordServerDTO | GoalRecordClientDTO;
+}
+
+/**
+ * 目标记录列表响应
+ */
+export interface GoalRecordsResponse {
+  records: (GoalRecordServerDTO | GoalRecordClientDTO)[];
+  total: number;
+}
+
 // ============ GoalReview 请求/响应 ============
 
 /**
@@ -187,6 +229,24 @@ export interface GoalReviewResponse {
 export interface GoalReviewsResponse {
   reviews: GoalReviewServerDTO[];
   total: number;
+}
+
+/**
+ * 目标聚合视图响应
+ * 包含目标及其所有关联实体的完整视图
+ */
+export interface GoalAggregateViewResponse {
+  goal: GoalServerDTO | GoalClientDTO;
+  keyResults?: KeyResultServerDTO[];
+  records?: (GoalRecordServerDTO | GoalRecordClientDTO)[];
+  reviews?: GoalReviewServerDTO[];
+  statistics?: {
+    totalKeyResults: number;
+    completedKeyResults: number;
+    totalRecords: number;
+    totalReviews: number;
+    overallProgress: number;
+  };
 }
 
 // ============ GoalFolder 请求/响应 ============
@@ -241,16 +301,8 @@ export interface GoalFoldersResponse {
 }
 
 // ============ 类型别名（兼容性） ============
-// 为了与 Web 项目的历史命名保持兼容，提供 GoalDir 别名
-// TODO: 逐步迁移 Web 项目使用 GoalFolder 命名
-
-export type CreateGoalDirRequest = CreateGoalFolderRequest;
-export type UpdateGoalDirRequest = UpdateGoalFolderRequest;
-export type QueryGoalDirsRequest = QueryGoalFoldersRequest;
-export type GoalDirResponse = GoalFolderResponse;
-export type GoalDirListResponse = GoalFoldersResponse;
-export type GoalDirServerDTO = GoalFolderServerDTO;
-export type GoalDirClientDTO = GoalFolderClientDTO;
+// 为了与 Web 项目的历史命名保持兼容，提供响应别名
+export type GoalFolderListResponse = GoalFoldersResponse;
 
 // ============ GoalStatistics 请求/响应 ============
 

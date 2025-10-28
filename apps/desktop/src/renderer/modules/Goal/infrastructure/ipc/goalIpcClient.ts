@@ -1,10 +1,10 @@
 import type { ApiResponse } from '@dailyuse/contracts';
-import type { IGoal, IGoalRecord, IGoalDir, IGoalReview } from '@common/modules/goal/types/goal';
+import type { IGoal, IGoalRecord, IGoalFolder, IGoalReview } from '@common/modules/goal/types/goal';
 import { deepSerializeForIpc } from '@renderer/shared/utils/ipcSerialization';
 import { ipcInvokeWithAuth } from '@renderer/shared/utils/ipcInvokeWithAuth';
 import { GoalReview } from '../../domain/entities/goalReview';
 import { GoalRecord } from '../../domain/entities/record';
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { Goal } from '../../domain/aggregates/goal';
 /**
  * 目标模块 IPC 客户端
@@ -338,12 +338,12 @@ export class GoalIpcClient {
   /**
    * 创建目标目录
    */
-  async createGoalDir(goalDirData: IGoalDir): Promise<ApiResponse<IGoalDir>> {
+  async createGoalFolder(GoalFolderData: IGoalFolder): Promise<ApiResponse<IGoalFolder>> {
     try {
-      console.log('🔄 [渲染进程-IPC] 创建目标目录:', goalDirData.name);
+      console.log('🔄 [渲染进程-IPC] 创建目标目录:', GoalFolderData.name);
 
       // 使用深度序列化确保数据可以安全传输
-      const serializedData = deepSerializeForIpc(goalDirData);
+      const serializedData = deepSerializeForIpc(GoalFolderData);
       console.log('🔄 [渲染进程-IPC] 序列化目标目录数据:', serializedData);
       const response = await ipcInvokeWithAuth('goal:dir:create', serializedData);
 
@@ -366,7 +366,7 @@ export class GoalIpcClient {
   /**
    * 获取所有目标目录
    */
-  async getAllGoalDirs(): Promise<ApiResponse<IGoalDir[]>> {
+  async getAllGoalFolders(): Promise<ApiResponse<IGoalFolder[]>> {
     try {
       console.log('🔄 [渲染进程-IPC] 获取所有目标目录');
 
@@ -391,14 +391,14 @@ export class GoalIpcClient {
   /**
    * 删除目标目录
    */
-  async deleteGoalDir(goalDirId: string): Promise<ApiResponse<void>> {
+  async deleteGoalFolder(GoalFolderId: string): Promise<ApiResponse<void>> {
     try {
-      console.log('🔄 [渲染进程-IPC] 删除目标目录:', goalDirId);
+      console.log('🔄 [渲染进程-IPC] 删除目标目录:', GoalFolderId);
 
-      const response = await ipcInvokeWithAuth('goal:dir:delete', goalDirId);
+      const response = await ipcInvokeWithAuth('goal:dir:delete', GoalFolderId);
 
       if (response.success) {
-        console.log('✅ [渲染进程-IPC] 目标目录删除成功:', goalDirId);
+        console.log('✅ [渲染进程-IPC] 目标目录删除成功:', GoalFolderId);
       } else {
         console.error('❌ [渲染进程-IPC] 目标目录删除失败:', response.message);
       }
@@ -416,16 +416,16 @@ export class GoalIpcClient {
   /**
    * 更新目标目录
    */
-  async updateGoalDir(goalDir: GoalDir): Promise<ApiResponse<IGoalDir>> {
+  async updateGoalFolder(GoalFolder: GoalFolder): Promise<ApiResponse<IGoalFolder>> {
     try {
       // 使用深度序列化确保数据可以安全传输
-      const goalDirDTO = goalDir.toDTO();
-      const data = JSON.parse(JSON.stringify(goalDirDTO));
+      const GoalFolderDTO = GoalFolder.toDTO();
+      const data = JSON.parse(JSON.stringify(GoalFolderDTO));
 
       const response = await ipcInvokeWithAuth('goal:dir:update', data);
 
       if (response.success) {
-        console.log('✅ [渲染进程-IPC] 目标目录更新成功:', goalDir.name);
+        console.log('✅ [渲染进程-IPC] 目标目录更新成功:', GoalFolder.name);
       } else {
         console.error('❌ [渲染进程-IPC] 目标目录更新失败:', response.message);
       }

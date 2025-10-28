@@ -1,11 +1,15 @@
 import { defineStore } from 'pinia';
-import { Goal, GoalDir } from '@dailyuse/domain-client';
+import { GoalDomain } from '@dailyuse/domain-client';
 import { type GoalContracts } from '@dailyuse/contracts';
+
+// 导入类实现（用于序列化/反序列化）
+const GoalClient = GoalDomain.GoalClient;
+const GoalFolderClient = GoalDomain.GoalFolderClient;
 
 // 类型定义
 interface GoalStoreState {
   goals: any[];
-  goalDirs: any[];
+  goalFolders: any[];
   isLoading: boolean;
   isInitialized: boolean;
   error: string | null;
@@ -32,8 +36,8 @@ interface GoalStoreState {
 export const useGoalStore = defineStore('goal', {
   state: (): GoalStoreState => ({
     // ===== 缓存数据 =====
-    goals: [] as any[], // 暂时使用 any 避免类型冲突
-    goalDirs: [] as any[], // 暂时使用 any 避免类型冲突
+    goals: [],
+    goalFolders: [],
 
     // ===== 状态管理 =====
     isLoading: false,
@@ -94,25 +98,25 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 根据状态获取目标
      */
-    getGoalsByStatus(): (status: 'active' | 'completed' | 'paused' | 'archived') => any[] {
-      return (status) => this.goals.filter((g) => g.lifecycle?.status === status);
+    getGoalsByStatus(): (status: 'ACTIVE' | 'COMPLETED' | 'DRAFT' | 'ARCHIVED') => any[] {
+      return (status) => this.goals.filter((g) => g.status === status);
     },
 
     /**
      * 获取活跃目标
      */
     getActiveGoals(): any[] {
-      return this.goals.filter((g) => g.lifecycle?.status === 'active');
+      return this.goals.filter((g) => g.status === 'ACTIVE');
     },
 
     /**
      * 获取需要关注的目标
      */
     getGoalsNeedingAttention(): any[] {
-      const now = new Date();
+      const now = Date.now();
       return this.goals.filter((goal) => {
         // 逾期的目标
-        if (goal.endTime && goal.endTime < now && goal.lifecycle?.status === 'active') {
+        if (goal.targetDate && goal.targetDate < now && goal.status === 'ACTIVE') {
           return true;
         }
         return false;
@@ -123,15 +127,15 @@ export const useGoalStore = defineStore('goal', {
      * 获取即将截止的目标
      */
     getGoalsDueSoon(): any[] {
-      const now = new Date();
-      const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+      const now = Date.now();
+      const threeDaysLater = now + 3 * 24 * 60 * 60 * 1000;
 
       return this.goals.filter(
         (goal) =>
-          goal.endTime &&
-          goal.endTime >= now &&
-          goal.endTime <= threeDaysLater &&
-          goal.lifecycle?.status === 'active',
+          goal.targetDate &&
+          goal.targetDate >= now &&
+          goal.targetDate <= threeDaysLater &&
+          goal.status === 'ACTIVE',
       );
     },
 
@@ -139,9 +143,9 @@ export const useGoalStore = defineStore('goal', {
      * 获取已逾期的目标
      */
     getOverdueGoals(): any[] {
-      const now = new Date();
+      const now = Date.now();
       return this.goals.filter(
-        (goal) => goal.endTime && goal.endTime < now && goal.lifecycle?.status === 'active',
+        (goal) => goal.targetDate && goal.targetDate < now && goal.status === 'ACTIVE',
       );
     },
 
@@ -149,7 +153,7 @@ export const useGoalStore = defineStore('goal', {
      * 获取已暂停的目标
      */
     getPausedGoals(): any[] {
-      return this.goals.filter((g) => g.lifecycle?.status === 'paused');
+      return this.goals.filter((g) => g.status === 'DRAFT');
     },
 
     /**
@@ -166,44 +170,44 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 获取所有目录
      */
-    getAllGoalDirs(): any[] {
-      return this.goalDirs;
+    getAllGoalFolders(): any[] {
+      return this.goalFolders;
     },
 
     /**
      * 根据UUID获取目录
      */
-    getGoalDirByUuid:
+    getGoalFolderByUuid:
       (state) =>
       (uuid: string): any | undefined => {
-        return state.goalDirs.find((d) => d.uuid === uuid);
+        return state.goalFolders.find((d) => d.uuid === uuid);
       },
 
     /**
      * 根据父目录获取子目录
      */
-    getGoalDirsByParent(): (parentUuid?: string) => any[] {
+    getGoalFoldersByParent(): (parentUuid?: string) => any[] {
       return (parentUuid?: string) => {
         if (!parentUuid) {
-          return this.goalDirs.filter((d) => !d.parentUuid);
+          return this.goalFolders.filter((d: any) => !d.parentUuid);
         }
-        return this.goalDirs.filter((d) => d.parentUuid === parentUuid);
+        return this.goalFolders.filter((d: any) => d.parentUuid === parentUuid);
       };
     },
 
     /**
      * 获取根目录
      */
-    getRootGoalDirs(): any[] {
-      return this.goalDirs.filter((d) => !d.parentUuid);
+    getRootGoalFolders(): any[] {
+      return this.goalFolders.filter((d: any) => !d.parentUuid);
     },
 
     /**
      * 获取当前选中的目录
      */
-    getSelectedGoalDir(state): any | undefined {
+    getSelectedGoalFolder(state): any | undefined {
       return state.selectedDirUuid
-        ? state.goalDirs.find((d) => d.uuid === state.selectedDirUuid)
+        ? state.goalFolders.find((d) => d.uuid === state.selectedDirUuid)
         : undefined;
     },
 
@@ -225,9 +229,9 @@ export const useGoalStore = defineStore('goal', {
       return {
         total: this.goals.length,
         active: this.getActiveGoals.length,
-        completed: this.getGoalsByStatus('completed').length,
-        paused: this.getGoalsByStatus('paused').length,
-        archived: this.getGoalsByStatus('archived').length,
+        completed: this.getGoalsByStatus('COMPLETED').length,
+        paused: this.getGoalsByStatus('DRAFT').length,
+        archived: this.getGoalsByStatus('ARCHIVED').length,
         overdue: this.getOverdueGoals.length,
         dueSoon: this.getGoalsDueSoon.length,
         needingAttention: this.getGoalsNeedingAttention.length,
@@ -237,24 +241,24 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 获取目录统计信息
      */
-    getGoalDirStatistics(): {
+    getGoalFolderStatistics(): {
       total: number;
       active: number;
       archived: number;
       system: number;
       user: number;
     } {
-      const activeDirs = this.goalDirs.filter((d) => d.lifecycle?.status === 'active');
-      const archivedDirs = this.goalDirs.filter((d) => d.lifecycle?.status === 'archived');
-      const systemDirs = this.goalDirs.filter((d) => d.isSystemDir);
-      const userDirs = this.goalDirs.filter((d) => !d.isSystemDir);
+      const activeFolders = this.goalFolders.filter((d: any) => d.lifecycle?.status === 'active');
+      const archivedFolders = this.goalFolders.filter((d: any) => d.lifecycle?.status === 'archived');
+      const systemFolders = this.goalFolders.filter((d: any) => d.isSystemFolder);
+      const userFolders = this.goalFolders.filter((d: any) => !d.isSystemFolder);
 
       return {
-        total: this.goalDirs.length,
-        active: activeDirs.length,
-        archived: archivedDirs.length,
-        system: systemDirs.length,
-        user: userDirs.length,
+        total: this.goalFolders.length,
+        active: activeFolders.length,
+        archived: archivedFolders.length,
+        system: systemFolders.length,
+        user: userFolders.length,
       };
     },
 
@@ -294,15 +298,15 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 获取目录树结构
      */
-    getGoalDirTree(): any[] {
+    getGoalFolderTree(): any[] {
       // 构建目录树
       const buildTree = (parentUuid?: string): any[] => {
-        return this.goalDirs
-          .filter((dir) => dir.parentUuid === parentUuid)
-          .map((dir) => ({
+        return this.goalFolders
+          .filter((dir: any) => dir.parentUuid === parentUuid)
+          .map((dir: any) => ({
             ...dir,
             children: buildTree(dir.uuid),
-            goals: this.goals.filter((goal) => goal.dirUuid === dir.uuid),
+            goals: this.goals.filter((goal) => goal.folderUuid === dir.uuid),
           }));
       };
 
@@ -312,10 +316,10 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 检查是否为系统目录
      */
-    isSystemGoalDir(): (dirUuid: string) => boolean {
-      return (dirUuid: string) => {
-        const dir = this.goalDirs.find((d) => d.uuid === dirUuid);
-        return dir?.isSystemDir || false;
+    isSystemGoalFolder(): (folderUuid: string) => boolean {
+      return (folderUuid: string) => {
+        const folder = this.goalFolders.find((d: any) => d.uuid === folderUuid);
+        return folder?.isSystemFolder || false;
       };
     },
   },
@@ -377,20 +381,20 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 设置所有目录
      */
-    setGoalDirs(goalDirs: any[]): void {
-      this.goalDirs = goalDirs;
+    setGoalFolders(goalFolders: any[]): void {
+      this.goalFolders = goalFolders;
       this.lastSyncTime = new Date();
     },
 
     /**
      * 添加或更新单个目录
      */
-    addOrUpdateGoalDir(goalDir: any): void {
-      const index = this.goalDirs.findIndex((d) => d.uuid === goalDir.uuid);
+    addOrUpdateGoalFolder(goalFolder: any): void {
+      const index = this.goalFolders.findIndex((d) => d.uuid === goalFolder.uuid);
       if (index >= 0) {
-        this.goalDirs[index] = goalDir;
+        this.goalFolders[index] = goalFolder;
       } else {
-        this.goalDirs.push(goalDir);
+        this.goalFolders.push(goalFolder);
       }
       this.lastSyncTime = new Date();
     },
@@ -398,17 +402,17 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 批量添加或更新目录
      */
-    addOrUpdateGoalDirs(goalDirs: any[]): void {
-      goalDirs.forEach((dir) => (this as any).addOrUpdateGoalDir(dir));
+    addOrUpdateGoalFolders(goalFolders: any[]): void {
+      goalFolders.forEach((folder) => (this as any).addOrUpdateGoalFolder(folder));
     },
 
     /**
      * 移除目录
      */
-    removeGoalDir(uuid: string): void {
-      const index = this.goalDirs.findIndex((d) => d.uuid === uuid);
+    removeGoalFolder(uuid: string): void {
+      const index = this.goalFolders.findIndex((d) => d.uuid === uuid);
       if (index >= 0) {
-        this.goalDirs.splice(index, 1);
+        this.goalFolders.splice(index, 1);
       }
 
       // 清除选中状态
@@ -420,8 +424,8 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 清空所有目录
      */
-    clearGoalDirs(): void {
-      this.goalDirs = [];
+    clearGoalFolders(): void {
+      this.goalFolders = [];
       this.selectedDirUuid = null;
     },
 
@@ -472,7 +476,7 @@ export const useGoalStore = defineStore('goal', {
     /**
      * 设置选中的目录
      */
-    setSelectedGoalDir(uuid: string | null): void {
+    setSelectedGoalFolder(uuid: string | null): void {
       this.selectedDirUuid = uuid;
     },
 
@@ -492,7 +496,7 @@ export const useGoalStore = defineStore('goal', {
      */
     clearAll(): void {
       (this as any).clearGoals();
-      (this as any).clearGoalDirs();
+      (this as any).clearGoalFolders();
       this.selectedGoalUuid = null;
       this.selectedDirUuid = null;
       this.error = null;
@@ -509,7 +513,7 @@ export const useGoalStore = defineStore('goal', {
     initialize(): void {
       this.isInitialized = true;
       console.log(
-        `Goal Store 初始化完成：${this.goals.length} 个目标，${this.goalDirs.length} 个目录`,
+        `Goal Store 初始化完成：${this.goals.length} 个目标，${this.goalFolders.length} 个目录`,
       );
     },
 
@@ -534,7 +538,7 @@ export const useGoalStore = defineStore('goal', {
     // 选择性持久化关键数据，避免持久化 loading 状态
     pick: [
       'goals',
-      'goalDirs',
+      'goalFolders',
       'selectedGoalUuid',
       'selectedDirUuid',
       'lastSyncTime',
@@ -548,8 +552,8 @@ export const useGoalStore = defineStore('goal', {
           goals: state.goals.map((goal: any) =>
             goal && typeof goal.toDTO === 'function' ? goal.toDTO() : goal,
           ),
-          goalDirs: state.goalDirs.map((dir: any) =>
-            dir && typeof dir.toDTO === 'function' ? dir.toDTO() : dir,
+          goalFolders: state.goalFolders.map((folder: any) =>
+            folder && typeof folder.toDTO === 'function' ? folder.toDTO() : folder,
           ),
           lastSyncTime: state.lastSyncTime?.getTime
             ? state.lastSyncTime.getTime()
@@ -560,8 +564,10 @@ export const useGoalStore = defineStore('goal', {
         const state = JSON.parse(serialized);
         return {
           ...state,
-          goals: (state.goals || []).map((goalData: any) => Goal.fromDTO(goalData)),
-          goalDirs: (state.goalDirs || []).map((dirData: any) => GoalDir.fromDTO(dirData)),
+          goals: (state.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData)),
+          goalFolders: (state.goalFolders || []).map((folderData: any) =>
+            GoalFolderClient.fromClientDTO(folderData),
+          ),
           lastSyncTime: state.lastSyncTime ? new Date(state.lastSyncTime) : null,
         };
       },
@@ -582,11 +588,11 @@ export interface GoalStoreActions {
   addOrUpdateGoals: (goals: any[]) => void;
   removeGoal: (uuid: string) => void;
   clearGoals: () => void;
-  setGoalDirs: (goalDirs: any[]) => void;
-  addOrUpdateGoalDir: (goalDir: any) => void;
-  addOrUpdateGoalDirs: (goalDirs: any[]) => void;
-  removeGoalDir: (uuid: string) => void;
-  clearGoalDirs: () => void;
+  setGoalFolders: (goalFolders: any[]) => void;
+  addOrUpdateGoalFolder: (goalFolder: any) => void;
+  addOrUpdateGoalFolders: (goalFolders: any[]) => void;
+  removeGoalFolder: (uuid: string) => void;
+  clearGoalFolders: () => void;
   setPagination: (
     pagination: Partial<{
       page: number;
@@ -603,13 +609,13 @@ export interface GoalStoreActions {
     }>,
   ) => void;
   setSelectedGoal: (uuid: string | null) => void;
-  setSelectedGoalDir: (uuid: string | null) => void;
+  setSelectedGoalFolder: (uuid: string | null) => void;
   resetFilters: () => void;
   clearAll: () => void;
   initialize: () => void;
   shouldRefreshCache: () => boolean;
   // Getters
-  getGoalDirTree: any[];
+  getGoalFolderTree: any[];
 }
 
 // 创建一个类型安全的 store 获取器

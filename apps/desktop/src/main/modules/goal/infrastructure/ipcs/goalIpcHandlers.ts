@@ -14,12 +14,12 @@ export async function registerGoalIpcHandlers() {
 
   ipcMain.handle(
     'goal:dir:create',
-    withAuth(async (_event, [goalDirData], auth) => {
+    withAuth(async (_event, [GoalFolderData], auth) => {
       try {
         if (!auth.accountUuid) {
           return { success: false, message: '未登录或登录已过期，请重新登录' };
         }
-        const dir = await goalApplicationService.createGoalDir(auth.accountUuid, goalDirData);
+        const dir = await goalApplicationService.createGoalFolder(auth.accountUuid, GoalFolderData);
         const dirDTO = dir.toDTO();
         return { success: true, data: dirDTO, message: '创建成功' };
       } catch (error) {
@@ -35,7 +35,7 @@ export async function registerGoalIpcHandlers() {
       if (!auth.accountUuid) {
         return { success: false, message: '未登录或登录已过期，请重新登录' };
       }
-      const dirs = await goalApplicationService.getAllGoalDirs(auth.accountUuid);
+      const dirs = await goalApplicationService.getAllGoalFolders(auth.accountUuid);
       const dirDTOs = dirs.map((dir) => dir.toDTO());
       return { success: true, data: dirDTOs };
     }),
@@ -47,18 +47,18 @@ export async function registerGoalIpcHandlers() {
       if (!auth.accountUuid) {
         return { success: false, message: '未登录或登录已过期，请重新登录' };
       }
-      await goalApplicationService.deleteGoalDir(auth.accountUuid, uuid);
+      await goalApplicationService.deleteGoalFolder(auth.accountUuid, uuid);
       return { success: true, message: '删除成功' };
     }),
   );
 
   ipcMain.handle(
     'goal:dir:update',
-    withAuth(async (_event, [goalDirData], auth) => {
+    withAuth(async (_event, [GoalFolderData], auth) => {
       if (!auth.accountUuid) {
         return { success: false, message: '未登录或登录已过期，请重新登录' };
       }
-      const dir = await goalApplicationService.updateGoalDir(auth.accountUuid, goalDirData);
+      const dir = await goalApplicationService.updateGoalFolder(auth.accountUuid, GoalFolderData);
       const dirDTO = dir.toDTO();
       return { success: true, data: dirDTO, message: '更新成功' };
     }),

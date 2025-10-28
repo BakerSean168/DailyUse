@@ -1,7 +1,7 @@
 import type { Database } from 'better-sqlite3';
 import type { IGoalRepository } from '../../domain/repositories/iGoalRepository';
 import { Goal } from '../../domain/aggregates/goal';
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { GoalRecord } from '../../domain/entities/record';
 import { KeyResult } from '../../domain/entities/keyResult';
 import { GoalReview } from '../../domain/entities/goalReview';
@@ -18,13 +18,13 @@ export class GoalDatabaseRepository implements IGoalRepository {
   /**
    * 创建目标目录
    * @param accountUuid 用户账号uuid
-   * @param goalDir 目标目录实体
-   * @returns 创建后的 GoalDir 实体
+   * @param GoalFolder 目标目录实体
+   * @returns 创建后的 GoalFolder 实体
    * @example
-   * const dir = await repo.createGoalDirectory('acc-uuid', goalDir);
+   * const dir = await repo.createGoalFolderectory('acc-uuid', GoalFolder);
    */
-  async createGoalDirectory(accountUuid: string, goalDir: GoalDir): Promise<GoalDir> {
-    const row = await this.mapGoalDirToRow(accountUuid, goalDir);
+  async createGoalFolderectory(accountUuid: string, GoalFolder: GoalFolder): Promise<GoalFolder> {
+    const row = await this.mapGoalFolderToRow(accountUuid, GoalFolder);
     const stmt = this.db.prepare(`
       INSERT INTO goal_directories (
         uuid, account_uuid, name, description, icon, color, parent_uuid, category_uuid, sort_key, sort_order, status, created_at, updated_at
@@ -45,55 +45,55 @@ export class GoalDatabaseRepository implements IGoalRepository {
       row.createdAt?.getTime?.() || Date.now(),
       row.updatedAt?.getTime?.() || Date.now(),
     );
-    const createdGoalDir = await this.getGoalDirectoryByUuid(accountUuid, goalDir.uuid);
-    if (!createdGoalDir) throw new Error('Failed to create goal directory');
-    return createdGoalDir;
-    // 返回示例: GoalDir 实例
+    const createdGoalFolder = await this.getGoalFolderectoryByUuid(accountUuid, GoalFolder.uuid);
+    if (!createdGoalFolder) throw new Error('Failed to create goal directory');
+    return createdGoalFolder;
+    // 返回示例: GoalFolder 实例
   }
 
   /**
    * 根据uuid获取目标目录
    * @param accountUuid 用户账号uuid
    * @param uuid 目录uuid
-   * @returns GoalDir 实体或 null
+   * @returns GoalFolder 实体或 null
    */
-  async getGoalDirectoryByUuid(accountUuid: string, uuid: string): Promise<GoalDir | null> {
+  async getGoalFolderectoryByUuid(accountUuid: string, uuid: string): Promise<GoalFolder | null> {
     const stmt = this.db.prepare(
       `SELECT * FROM goal_directories WHERE account_uuid = ? AND uuid = ?`,
     );
     const row = stmt.get(accountUuid, uuid);
     if (!row) return null;
-    return await this.mapRowToGoalDir(row);
-    // 返回示例: GoalDir 实例或 null
+    return await this.mapRowToGoalFolder(row);
+    // 返回示例: GoalFolder 实例或 null
   }
 
   /**
    * 获取所有目标目录
    * @param accountUuid 用户账号uuid
-   * @returns 目录数组 GoalDir[]
+   * @returns 目录数组 GoalFolder[]
    */
-  async getAllGoalDirectories(accountUuid: string): Promise<GoalDir[]> {
+  async getAllGoalFolderectories(accountUuid: string): Promise<GoalFolder[]> {
     const stmt = this.db.prepare(
       `SELECT * FROM goal_directories WHERE account_uuid = ? ORDER BY created_at DESC`,
     );
     const rows = stmt.all(accountUuid);
-    const goalDirs: GoalDir[] = [];
+    const GoalFolders: GoalFolder[] = [];
     for (const row of rows) {
-      const goalDir = await this.mapRowToGoalDir(row);
-      goalDirs.push(goalDir);
+      const GoalFolder = await this.mapRowToGoalFolder(row);
+      GoalFolders.push(GoalFolder);
     }
-    return goalDirs;
-    // 返回示例: [GoalDir, GoalDir, ...]
+    return GoalFolders;
+    // 返回示例: [GoalFolder, GoalFolder, ...]
   }
 
   /**
    * 更新目标目录
    * @param accountUuid 用户账号uuid
-   * @param goalDir 目标目录实体
-   * @returns 更新后的 GoalDir 实体
+   * @param GoalFolder 目标目录实体
+   * @returns 更新后的 GoalFolder 实体
    */
-  async updateGoalDirectory(accountUuid: string, goalDir: GoalDir): Promise<GoalDir> {
-    const row = await this.mapGoalDirToRow(accountUuid, goalDir);
+  async updateGoalFolderectory(accountUuid: string, GoalFolder: GoalFolder): Promise<GoalFolder> {
+    const row = await this.mapGoalFolderToRow(accountUuid, GoalFolder);
     const stmt = this.db.prepare(`
       UPDATE goal_directories 
       SET name = ?, description = ?, icon = ?, color = ?, parent_uuid = ?, 
@@ -114,9 +114,9 @@ export class GoalDatabaseRepository implements IGoalRepository {
       accountUuid,
       row.uuid,
     );
-    const updatedGoalDir = await this.getGoalDirectoryByUuid(accountUuid, goalDir.uuid);
-    if (!updatedGoalDir) throw new Error('Failed to update goal directory');
-    return updatedGoalDir;
+    const updatedGoalFolder = await this.getGoalFolderectoryByUuid(accountUuid, GoalFolder.uuid);
+    if (!updatedGoalFolder) throw new Error('Failed to update goal directory');
+    return updatedGoalFolder;
   }
 
   /**
@@ -124,7 +124,7 @@ export class GoalDatabaseRepository implements IGoalRepository {
    * @param accountUuid 用户账号uuid
    * @param uuid 目录uuid
    */
-  async deleteGoalDirectory(accountUuid: string, uuid: string): Promise<void> {
+  async deleteGoalFolderectory(accountUuid: string, uuid: string): Promise<void> {
     const stmt = this.db.prepare(
       `DELETE FROM goal_directories WHERE account_uuid = ? AND uuid = ?`,
     );
@@ -779,13 +779,13 @@ export class GoalDatabaseRepository implements IGoalRepository {
   }
 
   /**
-   * GoalDir 实体转数据库行
+   * GoalFolder 实体转数据库行
    * @param accountUuid 用户账号uuid
-   * @param goalDir GoalDir 实体
+   * @param GoalFolder GoalFolder 实体
    * @returns 数据库行对象
    */
-  private async mapGoalDirToRow(accountUuid: string, goalDir: GoalDir): Promise<any> {
-    const dto = goalDir.toDTO();
+  private async mapGoalFolderToRow(accountUuid: string, GoalFolder: GoalFolder): Promise<any> {
+    const dto = GoalFolder.toDTO();
     const row = {
       uuid: dto.uuid,
       account_uuid: accountUuid,
@@ -940,12 +940,12 @@ export class GoalDatabaseRepository implements IGoalRepository {
   }
 
   /**
-   * 数据库行转 GoalDir 实体
+   * 数据库行转 GoalFolder 实体
    * @param row 数据库行
-   * @returns GoalDir 实体
+   * @returns GoalFolder 实体
    */
-  private async mapRowToGoalDir(row: any): Promise<GoalDir> {
-    const goalDirDTO = {
+  private async mapRowToGoalFolder(row: any): Promise<GoalFolder> {
+    const GoalFolderDTO = {
       uuid: row.uuid,
       name: row.name,
       description: row.description || undefined,
@@ -962,7 +962,7 @@ export class GoalDatabaseRepository implements IGoalRepository {
         status: row.status || 'active',
       },
     };
-    return GoalDir.fromDTO(goalDirDTO);
+    return GoalFolder.fromDTO(GoalFolderDTO);
   }
 
   /**

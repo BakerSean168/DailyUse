@@ -7,7 +7,12 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { initializeTaskModule, getTaskWebService } from '../index';
+import {
+  initializeTaskModule,
+  getTaskTemplateService,
+  getTaskSyncService,
+} from '../index';
+import { useTaskStore } from '../presentation/stores/taskStore';
 
 /**
  * 注册 Task 模块的初始化任务
@@ -27,9 +32,8 @@ export function registerTaskInitializationTasks(): void {
         // 延迟一小段时间，确保 Pinia 完全初始化
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // 只初始化 Task 模块，不同步数据（数据同步在用户登录时进行）
-        const taskService = getTaskWebService;
-        await taskService.initializeModule(); // 只初始化模块，不同步数据
+        // 只初始化 Task 模块
+        await initializeTaskModule();
         console.log('✅ [Task] Task 模块初始化完成');
       } catch (error) {
         console.error('❌ [Task] Task 模块初始化失败:', error);
@@ -41,8 +45,7 @@ export function registerTaskInitializationTasks(): void {
       console.log('🧹 [Task] 清理 Task 模块数据...');
 
       try {
-        const taskService = getTaskWebService;
-        const store = taskService.getStore();
+        const store = useTaskStore();
 
         // 清空所有数据
         store.clearAll();
@@ -62,27 +65,16 @@ export function registerTaskInitializationTasks(): void {
       console.log(`🔄 [Task] 同步用户 Task 数据: ${context?.accountUuid || 'unknown'}`);
 
       try {
-        const taskService = getTaskWebService;
-
         // 1. 初始化模块
-        await taskService.initialize();
+        await initializeTaskModule();
 
-        // 2. 获取 TaskMetaTemplates（元模板）
-        console.log('📥 [Task] 获取 TaskMetaTemplate 列表...');
-        try {
-          const metaTemplatesResponse = await taskService.getTaskMetaTemplates();
-          console.log(
-            `✅ [Task] 成功获取 ${metaTemplatesResponse.data.length} 个 TaskMetaTemplate`,
-          );
-        } catch (error) {
-          console.warn('⚠️ [Task] 获取 TaskMetaTemplate 失败，继续初始化', error);
-        }
-
-        // 3. 获取 TaskTemplates（包含 instances）
+        // 2. 获取 TaskTemplates（包含 instances）
         console.log('📥 [Task] 获取 TaskTemplate 列表（包含 instances）...');
         try {
-          const templatesResponse = await taskService.getTaskTemplates({ limit: 100 });
-          console.log(`✅ [Task] 成功获取 ${templatesResponse.data.length} 个 TaskTemplate`);
+          const templates = await getTaskTemplateService.getTaskTemplates({
+            limit: 100,
+          });
+          console.log(`✅ [Task] 成功获取 ${templates.length} 个 TaskTemplate`);
         } catch (error) {
           console.warn('⚠️ [Task] 获取 TaskTemplate 失败，继续初始化', error);
         }
@@ -97,8 +89,7 @@ export function registerTaskInitializationTasks(): void {
       console.log('🧹 [Task] 清理用户 Task 数据...');
 
       try {
-        const taskService = getTaskWebService;
-        const store = taskService.getStore();
+        const store = useTaskStore();
 
         // 清空用户相关的任务数据
         store.clearAll();

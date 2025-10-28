@@ -106,7 +106,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Goal } from '@dailyuse/domain-client';
+import { GoalClient } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 import { useGoal } from '../../composables/useGoal';
 import GoalReviewCard from '../cards/GoalReviewCard.vue';

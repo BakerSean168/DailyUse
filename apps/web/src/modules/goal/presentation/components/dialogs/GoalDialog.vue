@@ -105,7 +105,7 @@
               </v-row>
 
               <v-select
-                v-model="goalDirUuid"
+                v-model="GoalFolderUuid"
                 :items="directoryOptions"
                 item-title="text"
                 item-value="value"
@@ -156,7 +156,7 @@
           <!-- Key Results Tab -->
           <v-window-item :value="1">
             <div class="key-results-overview">
-              <div v-if="goalModel.keyResults.length > 0" class="mb-4">
+              <div v-if="goalModel && goalModel.keyResults && goalModel.keyResults.length > 0" class="mb-4">
                 <h4 class="text-h6 mb-3">已添加的关键结果 ({{ goalModel.keyResults.length }})</h4>
                 <v-list>
                   <v-list-item
@@ -167,9 +167,9 @@
                     <template v-slot:prepend>
                       <v-icon :color="goalColor">mdi-target</v-icon>
                     </template>
-                    <v-list-item-title>{{ kr.name || '未命名关键结果' }}</v-list-item-title>
+                    <v-list-item-title>{{ kr.title || '未命名关键结果' }}</v-list-item-title>
                     <v-list-item-subtitle>
-                      目标值: {{ kr.startValue || 0 }} → {{ kr.targetValue || 0 }}
+                      当前值: {{ kr.progress.currentValue || 0 }} / 目标值: {{ kr.progress.targetValue || 0 }}
                       <span v-if="kr.weight">(权重: {{ kr.weight }})</span>
                     </v-list-item-subtitle>
                     <template v-slot:append>
@@ -179,9 +179,9 @@
                         :color="goalColor"
                         size="small"
                         @click="
-                          keyResultDialogRef?.openForUpdateKeyResultInGoalEditing(
-                            goalModel as Goal,
-                            kr as KeyResult,
+                          goalModel && keyResultDialogRef?.openForUpdateKeyResultInGoalEditing(
+                            goalModel as GoalClient,
+                            kr as KeyResultClient,
                           )
                         "
                       />
@@ -190,7 +190,7 @@
                         variant="text"
                         color="error"
                         size="small"
-                        @click="startRemoveKeyResult(propGoal as Goal, kr.uuid)"
+                        @click="goalModel && startRemoveKeyResult(goalModel as GoalClient, kr.uuid)"
                       />
                     </template>
                   </v-list-item>
@@ -212,11 +212,11 @@
                     block
                     class="add-kr-btn"
                     @click="
-                      keyResultDialogRef?.openForCreateKeyResultInGoalEditing(goalModel as Goal)
+                      goalModel && keyResultDialogRef?.openForCreateKeyResultInGoalEditing(goalModel as GoalClient)
                     "
                   >
                     {{
-                      goalModel.keyResults.length === 0 ? '添加第一个关键结果' : '添加更多关键结果'
+                      (goalModel?.keyResults?.length || 0) === 0 ? '添加第一个关键结果' : '添加更多关键结果'
                     }}
                   </v-btn>
                 </v-col>
@@ -226,7 +226,7 @@
                     variant="tonal"
                     prepend-icon="mdi-robot"
                     block
-                    :disabled="goalModel.keyResults.length < 2"
+                    :disabled="(goalModel?.keyResults?.length || 0) < 2"
                     @click="weightSuggestionRef?.open()"
                   >
                     AI 权重推荐
@@ -303,7 +303,7 @@
   <!-- AI 权重推荐面板 -->
   <WeightSuggestionPanel
     ref="weightSuggestionRef"
-    :key-results="goalModel.keyResults"
+    :key-results="(goalModel?.keyResults || []) as KeyResultClient[]"
     @apply="handleApplyWeightStrategy"
   />
   <!-- 目标模板浏览器 -->
@@ -328,32 +328,57 @@ import KeyResultDialog from './KeyResultDialog.vue';
 import WeightSuggestionPanel from '../weight/WeightSuggestionPanel.vue';
 import TemplateBrowser from '../template/TemplateBrowser.vue';
 import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
-import { DuConfirmDialog } from '@dailyuse/ui';
+import DuConfirmDialog from '@dailyuse/ui/components/dialog/DuConfirmDialog.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
-import { GoalClient as Goal, KeyResultClient as KeyResult } from '@dailyuse/domain-client';
+import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
+import { GoalContracts } from '@dailyuse/contracts';
 import type { WeightStrategy } from '../../../application/services/WeightRecommendationService';
 import type { GoalTemplate } from '../../../domain/templates/GoalTemplates';
 // composables
-import { useGoal } from '../../composables/useGoal';
+import { useGoalManagement } from '../../composables/useGoalManagement';
+import { useKeyResult } from '../../composables/useKeyResult';
+import { useAccountStore } from '@/modules/account/presentation/stores/useAccountStore';
 
-const { createGoal, updateGoal, deleteKeyResultForGoal } = useGoal();
+const goalManagement = useGoalManagement();
+const keyResultComposable = useKeyResult();
+
+const { createGoal, updateGoal } = goalManagement;
+const { deleteKeyResult } = keyResultComposable;
 
 const goalStore = useGoalStore();
+const accountStore = useAccountStore();
 
 const visible = ref(false);
-const propGoal = ref<Goal | null>(null);
+const propGoal = ref<GoalClient | null>(null);
 
 // 组件对象
 const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
 const weightSuggestionRef = ref<InstanceType<typeof WeightSuggestionPanel> | null>(null);
 const templateBrowserRef = ref<InstanceType<typeof TemplateBrowser> | null>(null);
 
-// 本地表单对象
+// 使用GoalClient管理完整goal（包括keyResults）
 const loading = ref(false);
-const goalModel = ref<Goal>(Goal.forCreate());
+const goalModel = ref<GoalClient | null>(null);
 
 const isEditing = computed(() => !!propGoal.value);
+
+// 监听弹窗和传入对象，初始化本地对象
+watch(
+  [visible, () => propGoal.value],
+  ([isVisible, goal]) => {
+    if (isVisible) {
+      if (goal) {
+        // 编辑模式：克隆现有 goal
+        goalModel.value = goal.clone();
+      } else {
+        // 创建模式：创建新 goal（accountUuid 在保存时注入）
+        goalModel.value = GoalClient.forCreate();
+      }
+    }
+  },
+  { immediate: true },
+);
 
 const confirmDialog = ref<{
   show: boolean;
@@ -371,15 +396,21 @@ const confirmDialog = ref<{
 
 // Apply AI weight strategy
 const handleApplyWeightStrategy = (strategy: WeightStrategy) => {
-  if (!goalModel.value.keyResults || goalModel.value.keyResults.length === 0) {
+  if (!goalModel.value?.keyResults || goalModel.value.keyResults.length === 0) {
     return;
   }
 
   // 应用权重到每个 KeyResult
-  // 注意：keyResults 在运行时是普通对象，不是 KeyResultClient 实例
-  (goalModel.value.keyResults as any[]).forEach((kr: any, index: number) => {
-    if (strategy.weights[index] !== undefined) {
-      kr.weight = strategy.weights[index];
+  goalModel.value.keyResults.forEach((kr, index) => {
+    if (strategy.weights[index] !== undefined && kr.uuid) {
+      try {
+        goalModel.value?.updateKeyResult(kr.uuid, {
+          ...kr,
+          weight: strategy.weights[index],
+        } as any);
+      } catch (error) {
+        console.error('Failed to update key result weight:', error);
+      }
     }
   });
 
@@ -403,9 +434,11 @@ const handleApplyTemplate = (template: GoalTemplate) => {
   }
 
   // 清空现有关键结果（如果有）
-  if (goalModel.value.keyResults && goalModel.value.keyResults.length > 0) {
-    goalModel.value.keyResults = [];
-  }
+  // KeyResults 是只读的，需要通过 removeKeyResult 逐个删除
+  const keyResults = goalModel.value?.keyResults || [];
+  keyResults.forEach(kr => {
+    goalModel.value?.removeKeyResult(kr.uuid);
+  });
 
   // TODO: 从模板创建关键结果
   // 由于 KeyResult 的创建需要通过 KeyResultDialog，这里只记录日志
@@ -422,18 +455,14 @@ const handleApplyTemplate = (template: GoalTemplate) => {
   );
 };
 
-const startRemoveKeyResult = (goal: Goal, keyResultUuid: string) => {
+const startRemoveKeyResult = (goal: GoalClient, keyResultUuid: string) => {
   confirmDialog.value = {
     show: true,
     title: '确认删除',
     message: '您确定要删除这个关键结果吗？',
     onConfirm: () => {
-      // 如果是编辑模式，使用变更跟踪方法
-      if (isEditing.value) {
-        goalModel.value.removeKeyResultWithTracking(keyResultUuid);
-      } else {
-        deleteKeyResultForGoal(goal.uuid, keyResultUuid);
-      }
+      // 直接使用 removeKeyResult 方法
+      goalModel.value?.removeKeyResult(keyResultUuid);
       confirmDialog.value.show = false;
     },
     onCancel: () => {
@@ -444,13 +473,13 @@ const startRemoveKeyResult = (goal: Goal, keyResultUuid: string) => {
 
 // 监听弹窗和传入对象，初始化本地对象
 watch(
-  [() => visible, () => propGoal.value],
-  ([visible, goal]) => {
-    if (visible) {
+  [visible, () => propGoal.value],
+  ([isVisible, goal]) => {
+    if (isVisible) {
       if (goal) {
         console.log('[GoalDialog] Original Goal before clone:', {
           uuid: goal.uuid,
-          name: goal.name,
+          title: goal.title,
           keyResultsCount: goal.keyResults?.length || 0,
           keyResults: goal.keyResults,
         });
@@ -459,15 +488,13 @@ watch(
 
         console.log('[GoalDialog] Cloned Goal after clone:', {
           uuid: goalModel.value.uuid,
-          name: goalModel.value.name,
+          title: goalModel.value.title,
           keyResultsCount: goalModel.value.keyResults?.length || 0,
           keyResults: goalModel.value.keyResults,
         });
-
-        // 在编辑模式下启用变更跟踪
-        goalModel.value.startEditing();
       } else {
-        goalModel.value = Goal.forCreate();
+        // 创建模式：创建新 goal（accountUuid 在保存时注入）
+        goalModel.value = GoalClient.forCreate();
       }
     }
   },
@@ -515,61 +542,65 @@ const endTimeRules = [
 
 // 表单字段的 getter/setter
 const goalName = computed({
-  get: () => goalModel.value.name || '',
+  get: () => goalModel.value?.title || '',
   set: (val: string) => {
-    goalModel.value.updateInfo({ name: val });
+    goalModel.value?.updateTitle(val);
   },
 });
 
 const goalColor = computed({
-  get: () => goalModel.value.color || '#FF5733',
+  get: () => goalModel.value?.color || '#FF5733',
   set: (val: string) => {
-    goalModel.value.updateInfo({ color: val });
+    goalModel.value?.updateColor(val);
   },
 });
 
-const goalDirUuid = computed({
-  get: () => goalModel.value.dirUuid || '',
+const GoalFolderUuid = computed({
+  get: () => goalModel.value?.folderUuid || '',
   set: (val: string) => {
-    goalModel.value.updateInfo({ dirUuid: val });
+    goalModel.value?.updateFolder(val);
   },
 });
 
 const goalDescription = computed({
-  get: () => goalModel.value.description || '',
+  get: () => goalModel.value?.description || '',
   set: (val: string) => {
-    goalModel.value.updateInfo({ description: val });
+    goalModel.value?.updateDescription(val);
   },
 });
 
 const goalNote = computed({
-  get: () => goalModel.value.note || '',
+  get: () => goalModel.value?.motivation || '',
   set: (val: string) => {
-    goalModel.value.updateInfo({ note: val });
+    goalModel.value?.updateMotivation(val);
   },
 });
 
 const goalMotive = computed({
-  get: () => goalModel.value.analysis?.motive || '',
+  get: () => goalModel.value?.motivation || '',
   set: (val: string) => {
-    goalModel.value.updateInfo({
-      analysis: {
-        ...goalModel.value.analysis,
-        motive: val,
-      },
-    });
+    goalModel.value?.updateMotivation(val);
   },
 });
 
 const goalFeasibility = computed({
-  get: () => goalModel.value.analysis?.feasibility || '',
+  get: () => goalModel.value?.feasibilityAnalysis || '',
   set: (val: string) => {
-    goalModel.value.updateInfo({
-      analysis: {
-        ...goalModel.value.analysis,
-        feasibility: val,
-      },
-    });
+    goalModel.value?.updateFeasibilityAnalysis(val);
+  },
+});
+
+const importanceLevel = computed({
+  get: () => goalModel.value?.importance || GoalContracts.ImportanceLevel.Moderate,
+  set: (val: GoalContracts.ImportanceLevel) => {
+    goalModel.value?.updateImportance(val);
+  },
+});
+
+const urgencyLevel = computed({
+  get: () => goalModel.value?.urgency || GoalContracts.UrgencyLevel.Medium,
+  set: (val: GoalContracts.UrgencyLevel) => {
+    goalModel.value?.updateUrgency(val);
   },
 });
 
@@ -580,17 +611,28 @@ const minDate = computed(() => {
 });
 
 const startTimeFormatted = computed({
-  get: () =>
-    goalModel.value.startTime ? goalModel.value.startTime.toISOString().split('T')[0] : '',
+  get: () => {
+    const startDate = goalModel.value?.startDate;
+    return startDate ? new Date(startDate).toISOString().split('T')[0] : '';
+  },
   set: (val: string) => {
-    if (val) goalModel.value.updateInfo({ startTime: new Date(val) });
+    if (val) {
+      const timestamp = new Date(val).getTime();
+      goalModel.value?.updateStartDate(timestamp);
+    }
   },
 });
 
 const endTimeFormatted = computed({
-  get: () => (goalModel.value.endTime ? goalModel.value.endTime.toISOString().split('T')[0] : ''),
+  get: () => {
+    const targetDate = goalModel.value?.targetDate;
+    return targetDate ? new Date(targetDate).toISOString().split('T')[0] : '';
+  },
   set: (val: string) => {
-    if (val) goalModel.value.updateInfo({ endTime: new Date(val) });
+    if (val) {
+      const timestamp = new Date(val).getTime();
+      goalModel.value?.updateTargetDate(timestamp);
+    }
   },
 });
 
@@ -601,11 +643,11 @@ const updateEndTime = (val: string) => {
   endTimeFormatted.value = val;
 };
 
-const allGoalDirs = computed(() => goalStore.getAllGoalDirs);
+const allGoalFolders = computed(() => goalStore.getAllGoalFolders);
 
 const directoryOptions = computed(() =>
-  allGoalDirs.value
-    .filter((dir) => !goalStore.isSystemGoalDir(dir.uuid))
+  allGoalFolders.value
+    .filter((dir) => !goalStore.isSystemGoalFolder(dir.uuid))
     .map((dir) => ({
       text: dir.name,
       value: dir.uuid,
@@ -614,17 +656,109 @@ const directoryOptions = computed(() =>
 
 // 表单有效性
 const isFormValid = computed(() => {
-  return !!goalName.value?.trim() && goalModel.value.endTime > goalModel.value.startTime;
+  if (!goalModel.value || !goalName.value?.trim()) return false;
+  const startDate = goalModel.value.startDate;
+  const targetDate = goalModel.value.targetDate;
+  if (!startDate || !targetDate) return false;
+  return targetDate > startDate;
 });
+
 // 保存和取消
-const handleSave = () => {
-  if (!isFormValid.value) return;
-  if (isEditing.value) {
-    updateGoal(goalModel.value.uuid, goalModel.value.toUpdateRequest());
-  } else {
-    createGoal(goalModel.value.toDTO());
+const handleSave = async () => {
+  if (!isFormValid.value || !goalModel.value) return;
+  
+  loading.value = true;
+  try {
+    if (isEditing.value) {
+      // 编辑模式：只发送基本字段
+      const updateData: any = {
+        title: goalModel.value.title,
+        description: goalModel.value.description ?? undefined,
+        color: goalModel.value.color ?? undefined,
+        feasibilityAnalysis: goalModel.value.feasibilityAnalysis ?? undefined,
+        motivation: goalModel.value.motivation ?? undefined,
+        importance: goalModel.value.importance,
+        urgency: goalModel.value.urgency,
+        category: goalModel.value.category ?? undefined,
+        tags: goalModel.value.tags,
+        startDate: goalModel.value.startDate ?? undefined,
+        targetDate: goalModel.value.targetDate ?? undefined,
+        folderUuid: goalModel.value.folderUuid ?? undefined,
+        parentGoalUuid: goalModel.value.parentGoalUuid ?? undefined,
+      };
+      await updateGoal(goalModel.value.uuid, updateData);
+    } else {
+      // 创建模式：注入 accountUuid（乐观更新）
+      // 优先使用 accountStore.accountUuid（state），fallback 到 account.uuid（computed）
+      let accountUuid = accountStore.accountUuid || accountStore.getAccountUuid;
+      
+      // 如果还是失败，尝试从 localStorage 获取 token 并解析
+      if (!accountUuid) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            accountUuid = payload.accountUuid;
+            console.log('✅ 从 token 中获取 accountUuid:', accountUuid);
+          } catch (e) {
+            console.error('❌ 解析 token 失败:', e);
+          }
+        }
+      }
+      
+      if (!accountUuid) {
+        console.error('❌ 无法获取 accountUuid，AccountStore 状态:', {
+          account: accountStore.account,
+          accountUuid: accountStore.accountUuid,
+          isAuthenticated: accountStore.isAuthenticated,
+          currentAccount: accountStore.currentAccount,
+          getAccountUuid: accountStore.getAccountUuid,
+          token: !!localStorage.getItem('token'),
+        });
+        throw new Error('无法获取用户信息，请重新登录');
+      }
+      
+      console.log('✅ 成功获取 accountUuid:', accountUuid);
+      
+      // 设置 accountUuid（只在创建时设置一次）
+      goalModel.value.setAccountUuid(accountUuid);
+      
+      // 转换 KeyResults 为简化格式
+      const keyResults = (goalModel.value.keyResults || []).map(kr => ({
+        title: kr.title,
+        description: kr.description ?? undefined,
+        valueType: kr.progress.valueType,
+        targetValue: kr.progress.targetValue,
+        unit: kr.progress.unit ?? undefined,
+        weight: kr.weight,
+      }));
+      
+      const createData: any = {
+        accountUuid: goalModel.value.accountUuid,
+        title: goalModel.value.title,
+        description: goalModel.value.description ?? undefined,
+        color: goalModel.value.color ?? undefined,
+        feasibilityAnalysis: goalModel.value.feasibilityAnalysis ?? undefined,
+        motivation: goalModel.value.motivation ?? undefined,
+        importance: goalModel.value.importance,
+        urgency: goalModel.value.urgency,
+        category: goalModel.value.category ?? undefined,
+        tags: goalModel.value.tags,
+        startDate: goalModel.value.startDate ?? undefined,
+        targetDate: goalModel.value.targetDate ?? undefined,
+        folderUuid: goalModel.value.folderUuid ?? undefined,
+        parentGoalUuid: goalModel.value.parentGoalUuid ?? undefined,
+        keyResults: keyResults.length > 0 ? keyResults : undefined,
+      };
+      await createGoal(createData);
+    }
+    closeDialog();
+  } catch (error) {
+    console.error('Failed to save goal:', error);
+    // TODO: 显示错误提示
+  } finally {
+    loading.value = false;
   }
-  closeDialog();
 };
 
 const handleCancel = () => {
@@ -634,7 +768,8 @@ const handleCancel = () => {
 const closeDialog = () => {
   visible.value = false;
 };
-const openDialog = (goal?: Goal) => {
+
+const openDialog = (goal?: GoalClient) => {
   propGoal.value = goal || null;
   visible.value = true;
 };
@@ -643,7 +778,7 @@ watch(visible, (newVal) => {
   if (!newVal) {
     // 重置表单
     propGoal.value = null;
-    goalModel.value = Goal.forCreate();
+    goalModel.value = null;
     activeTab.value = 0;
     loading.value = false;
   }

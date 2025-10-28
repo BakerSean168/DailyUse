@@ -86,12 +86,15 @@ export class RegistrationController {
         username: validatedData.username,
       });
 
+      // ⚠️ 注意：前端期望注册接口返回完整的登录响应（包含 token）
+      // 但当前实现采用事件驱动架构，Credential 由 AccountCreatedHandler 异步创建
+      // 因此这里只返回 account 信息，前端需要在注册成功后调用登录接口
       return RegistrationController.responseBuilder.sendSuccess(
         res,
         {
           account: result.account,
         },
-        'Registration successful',
+        'Registration successful. Please log in to continue.',
         201,
       );
     } catch (error) {

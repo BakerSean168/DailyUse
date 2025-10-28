@@ -1,4 +1,5 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
+import type { AuthenticatedRequest } from '@/shared/middlewares/authMiddleware';
 import { GoalFolderApplicationService } from '../../application/services/GoalFolderApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
 import { createLogger } from '@dailyuse/utils';
@@ -33,7 +34,7 @@ export class GoalFolderController {
    * 创建文件夹
    * @route POST /api/goal-folders
    */
-  static async createFolder(req: Request, res: Response): Promise<Response> {
+  static async createFolder(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const service = await GoalFolderController.getFolderService();
       const { accountUuid, ...params } = req.body;
@@ -68,7 +69,7 @@ export class GoalFolderController {
    * 获取文件夹详情
    * @route GET /api/goal-folders/:uuid
    */
-  static async getFolder(req: Request, res: Response): Promise<Response> {
+  static async getFolder(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
 
@@ -107,16 +108,17 @@ export class GoalFolderController {
    * 查询文件夹列表
    * @route GET /api/goal-folders
    */
-  static async queryFolders(req: Request, res: Response): Promise<Response> {
+  static async queryFolders(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const service = await GoalFolderController.getFolderService();
 
-      const accountUuid = req.query.accountUuid as string;
+      // 从认证中间件注入的 user 对象中获取 accountUuid
+      const accountUuid = req.user?.accountUuid;
 
       if (!accountUuid) {
         return GoalFolderController.responseBuilder.sendError(res, {
-          code: ResponseCode.BAD_REQUEST,
-          message: 'accountUuid is required',
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
         });
       }
 
@@ -146,7 +148,7 @@ export class GoalFolderController {
    * 更新文件夹
    * @route PATCH /api/goal-folders/:uuid
    */
-  static async updateFolder(req: Request, res: Response): Promise<Response> {
+  static async updateFolder(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
       const service = await GoalFolderController.getFolderService();
@@ -180,7 +182,7 @@ export class GoalFolderController {
    * 删除文件夹
    * @route DELETE /api/goal-folders/:uuid
    */
-  static async deleteFolder(req: Request, res: Response): Promise<Response> {
+  static async deleteFolder(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
       const service = await GoalFolderController.getFolderService();

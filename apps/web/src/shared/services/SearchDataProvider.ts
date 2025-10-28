@@ -10,8 +10,8 @@
 import { ref } from 'vue';
 import type { GoalContracts, TaskContracts, ReminderContracts } from '@dailyuse/contracts';
 import { GoalWebApplicationService } from '@/modules/goal/application/services/GoalWebApplicationService';
-import { TaskWebApplicationService } from '@/modules/task/application/services/TaskWebApplicationService';
-import { ReminderWebApplicationService } from '@/modules/reminder/application/services/ReminderWebApplicationService';
+import { TaskTemplateApplicationService } from '@/modules/task/application/services/TaskTemplateApplicationService';
+import { reminderTemplateApplicationService } from '@/modules/reminder/application/services';
 
 /**
  * Searchable item with minimal fields
@@ -46,8 +46,8 @@ export class SearchDataProvider {
   private static instance: SearchDataProvider;
 
   private goalService = new GoalWebApplicationService();
-  private taskService = new TaskWebApplicationService();
-  private reminderService = new ReminderWebApplicationService();
+  private taskTemplateService = TaskTemplateApplicationService.getInstance();
+  private reminderTemplateService = reminderTemplateApplicationService;
 
   private cache = ref<SearchDataCache | null>(null);
   private isLoading = ref(false);
@@ -141,8 +141,8 @@ export class SearchDataProvider {
         limit: 1000, // Get all goals (reasonable limit)
       });
 
-      // Response has { data: GoalClientDTO[], total, page, limit, hasMore }
-      return response.data || [];
+      // Response is GoalsResponse: { goals: GoalClientDTO[], total, page, limit, hasMore }
+      return (response.goals || []) as GoalContracts.GoalClientDTO[];
     } catch (error) {
       console.error('Failed to load goals:', error);
       return [];
@@ -154,12 +154,12 @@ export class SearchDataProvider {
    */
   private async loadTasks(): Promise<TaskContracts.TaskTemplateClientDTO[]> {
     try {
-      const response = await this.taskService.getTaskTemplates({
+      const templates = await this.taskTemplateService.getTaskTemplates({
         limit: 1000, // Get all tasks
       });
 
-      // Response has { data: TaskTemplateClientDTO[], total, page, limit, hasMore }
-      return response.data || [];
+      // getTaskTemplates returns TaskTemplateClientDTO[] directly
+      return templates || [];
     } catch (error) {
       console.error('Failed to load tasks:', error);
       return [];
@@ -172,21 +172,22 @@ export class SearchDataProvider {
   private async loadReminders(): Promise<SearchableItem[]> {
     try {
       // getReminderTemplates updates the store and returns void
-      await this.reminderService.getReminderTemplates({
+      await this.reminderTemplateService.getReminderTemplates({
         limit: 1000, // Get all reminders
         forceRefresh: true,
       });
 
-      // Get reminders from store
-      const reminderStore = this.reminderService['reminderStore'];
-      const reminders = reminderStore?.reminderTemplates || [];
+      // Get reminders from store (需要导入 reminderStore)
+      const { useReminderStore } = await import('@/modules/reminder/presentation/stores/reminderStore');
+      const reminderStore = useReminderStore();
+      const reminders = reminderStore.reminderTemplates || [];
 
       // Convert to searchable items
-      return reminders.map((reminder: any) => ({
+      return reminders.map((reminder: ReminderContracts.ReminderTemplateClientDTO) => ({
         uuid: reminder.uuid,
         title: reminder.title,
         description: reminder.description,
-        status: reminder.enabled ? 'ACTIVE' : 'DISABLED',
+        status: reminder.selfEnabled && reminder.effectiveEnabled ? 'ACTIVE' : 'DISABLED',
         createdAt: reminder.createdAt,
         updatedAt: reminder.updatedAt,
       }));

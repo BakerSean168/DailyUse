@@ -11,13 +11,13 @@
       </v-btn>
 
       <v-toolbar-title class="text-h6 font-weight-medium">
-        {{ goal?.name || '未检测到' }}
+        {{ goal?.title || '未检测到' }}
       </v-toolbar-title>
 
       <v-spacer />
 
       <!-- 编辑按钮 -->
-      <v-btn icon @click="goalDialogRef?.openDialog(goal as Goal)">
+      <v-btn icon @click="goalDialogRef?.openDialog(goal as GoalClient)">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
@@ -75,7 +75,7 @@
         >
           <template v-slot:title> 目标已结束 </template>
           <div class="d-flex align-center justify-space-between">
-            <span>共历时 {{ totalDays }} 天，目标进度 {{ goal?.weightedProgress }}%</span>
+            <span>共历时 {{ totalDays }} 天，目标进度 {{ goal?.overallProgress }}%</span>
             <v-btn
               color="success"
               variant="elevated"
@@ -95,7 +95,7 @@
               <v-col cols="12" md="4" class="d-flex justify-center align-center">
                 <div class="progress-container">
                   <v-progress-circular
-                    :model-value="goal?.weightedProgress"
+                    :model-value="goal?.overallProgress"
                     :color="goalColor"
                     size="120"
                     width="12"
@@ -103,7 +103,7 @@
                   >
                     <div class="progress-text-container">
                       <div class="progress-value">
-                        <span class="text-h4 font-weight-bold">{{ goal?.weightedProgress }}</span>
+                        <span class="text-h4 font-weight-bold">{{ goal?.overallProgress }}</span>
                         <span class="text-h6 text-medium-emphasis">%</span>
                       </div>
                       <div class="text-caption text-medium-emphasis">目标进度</div>
@@ -136,8 +136,8 @@
                   <!-- 日期范围 -->
                   <div class="mb-4">
                     <v-chip variant="outlined" prepend-icon="mdi-calendar-range">
-                      {{ goal?.startTime ? format(goal.startTime, 'yyyy-MM-dd') : '未知' }} -
-                      {{ goal?.endTime ? format(goal.endTime, 'yyyy-MM-dd') : '未知' }}
+                      {{ goal?.startDate ? format(goal.startDate, 'yyyy-MM-dd') : '未知' }} -
+                      {{ goal?.targetDate ? format(goal.targetDate, 'yyyy-MM-dd') : '未知' }}
                     </v-chip>
                   </div>
 
@@ -205,7 +205,7 @@
                 <div class="scrollable-content">
                   <v-row v-if="keyResults">
                     <v-col v-for="keyResult in keyResults" :key="keyResult.uuid" cols="12" lg="6">
-                      <KeyResultCard :keyResult="keyResult" :goal="goal as Goal" />
+                      <KeyResultCard :keyResult="keyResult" :goal="goal as GoalClient" />
                     </v-col>
                   </v-row>
                   <v-empty-state
@@ -260,7 +260,7 @@
       @confirm="confirmDialog.onConfirm"
       @cancel="confirmDialog.onCancel"
     />
-    <GoalReviewListCard ref="goalReviewListCardRef" :goal="goal as Goal" />
+    <GoalReviewListCard ref="goalReviewListCardRef" :goal="goal as GoalClient" />
   </v-container>
 </template>
 
@@ -273,7 +273,7 @@ import { useGoalStore } from '../stores/goalStore';
 // composables
 import { useGoal } from '../composables/useGoal';
 // domain
-import { Goal } from '@dailyuse/domain-client';
+import { GoalClient } from '@dailyuse/domain-client';
 
 // 组件
 import GoalDialog from '@/modules/goal/presentation/components/dialogs/GoalDialog.vue';
@@ -294,7 +294,7 @@ const { deleteGoal, getGoalAggregateView } = useGoal();
 const goalDialogRef = ref<InstanceType<typeof GoalDialog> | null>(null);
 const goalReviewListCardRef = ref<InstanceType<typeof GoalReviewListCard> | null>(null);
 
-const goal: ComputedRef<Goal | null> = computed(() => {
+const goal: ComputedRef<GoalClient | null> = computed(() => {
   const goalUuid = route.params.id as string;
   if (!goalUuid) return null;
   return goalStore.getGoalByUuid(goalUuid);
@@ -303,9 +303,10 @@ const goal: ComputedRef<Goal | null> = computed(() => {
 console.log('[goalDetailView]Current Goal:', goal.value);
 
 const remainingDays = computed(() => {
-  return goal.value!.endTime.getTime() - Date.now() > 0
-    ? Math.ceil((goal.value!.endTime.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : 0;
+  if (!goal.value?.targetDate) return 0;
+  const endTime = goal.value.targetDate;
+  const remaining = endTime - Date.now();
+  return remaining > 0 ? Math.ceil(remaining / (1000 * 60 * 60 * 24)) : 0;
 });
 
 const keyResults = computed(() => {
@@ -329,7 +330,7 @@ const confirmDialog = ref<{
   onCancel: () => {},
 });
 
-const isArchived = computed(() => goal.value?.dirUuid === 'archive');
+const isArchived = computed(() => goal.value?.folderUuid === 'archive');
 const toggleArchiveGoal = (goalUuid: string) => {
   if (!isArchived.value) {
     console.log('archive goal', goalUuid);
@@ -353,24 +354,21 @@ const startDeleteGoal = (goalUuid: string) => {
 };
 
 const isGoalEnded = computed(() => {
-  if (!goal.value) return false;
-  return new Date(goal.value.endTime) < new Date();
+  if (!goal.value?.targetDate) return false;
+  return goal.value.targetDate < Date.now();
 });
 
 const totalDays = computed(() => {
-  if (!goal.value) return 0;
-  const start = new Date(goal.value.startTime);
-  const end = new Date(goal.value.endTime);
-  return Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+  if (!goal.value?.startDate || !goal.value?.targetDate) return 0;
+  const timeDiff = goal.value.targetDate - goal.value.startDate;
+  return Math.ceil(timeDiff / (1000 * 3600 * 24));
 });
 
 const timeProgress = computed(() => {
-  if (!goal.value) return '0';
-  const startDate = new Date(goal.value.startTime);
-  const endDate = new Date(goal.value.endTime);
-  const today = new Date();
-  const totalTime = endDate.getTime() - startDate.getTime();
-  const elapsedTime = today.getTime() - startDate.getTime();
+  if (!goal.value?.startDate || !goal.value?.targetDate) return '0';
+  const now = Date.now();
+  const totalTime = goal.value.targetDate - goal.value.startDate;
+  const elapsedTime = now - goal.value.startDate;
   const progress = (elapsedTime / totalTime) * 100;
   return Math.min(Math.max(progress, 0), 100).toFixed(1);
 });

@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { GoalApplicationService } from '../../application/services/GoalApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
 import { createLogger } from '@dailyuse/utils';
+import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 
 const logger = createLogger('GoalController');
 
@@ -86,6 +87,58 @@ export class GoalController {
     } catch (error) {
       if (error instanceof Error) {
         logger.error('Error retrieving goal', { error: error.message });
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return GoalController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取当前用户的所有目标（从 token 中提取 accountUuid）
+   * @route GET /api/goals
+   */
+  static async getUserGoalsByToken(req: Request, res: Response): Promise<Response> {
+    try {
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'User not authenticated',
+        });
+      }
+
+      const includeChildren = req.query.includeChildren === 'true';
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+
+      const service = await GoalController.getGoalService();
+      const goals = await service.getUserGoals(accountUuid, { includeChildren });
+
+      // 实现简单的分页
+      const total = goals.length;
+      const paginatedGoals = limit ? goals.slice((page - 1) * limit, page * limit) : goals;
+
+      return GoalController.responseBuilder.sendSuccess(
+        res,
+        {
+          data: paginatedGoals,
+          total,
+          page,
+          limit: limit || total,
+          hasMore: limit ? page * limit < total : false,
+        },
+        'Goals retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error retrieving user goals by token', { error: error.message });
         return GoalController.responseBuilder.sendError(res, {
           code: ResponseCode.INTERNAL_ERROR,
           message: error.message,

@@ -27,7 +27,7 @@ export class GoalApiClient {
     dirUuid?: string;
     startDate?: string;
     endDate?: string;
-  }): Promise<GoalContracts.GoalListResponse> {
+  }): Promise<GoalContracts.GoalsResponse> {
     const data = await apiClient.get(this.baseUrl, { params });
     console.log('🌐 获取目标列表响应:', data);
     return data;
@@ -104,7 +104,7 @@ export class GoalApiClient {
     limit?: number;
     status?: string;
     dirUuid?: string;
-  }): Promise<GoalContracts.GoalListResponse> {
+  }): Promise<GoalContracts.GoalsResponse> {
     const data = await apiClient.get(`${this.baseUrl}/search`, { params });
     return data;
   }
@@ -134,7 +134,7 @@ export class GoalApiClient {
   /**
    * 获取目标的所有关键结果
    */
-  async getKeyResultsByGoal(goalUuid: string): Promise<GoalContracts.KeyResultListResponse> {
+  async getKeyResultsByGoal(goalUuid: string): Promise<GoalContracts.KeyResultsResponse> {
     const data = await apiClient.get(`${this.baseUrl}/${goalUuid}/key-results`);
     return data;
   }
@@ -192,7 +192,7 @@ export class GoalApiClient {
       limit?: number;
       dateRange?: { start?: string; end?: string };
     },
-  ): Promise<GoalContracts.GoalRecordListResponse> {
+  ): Promise<GoalContracts.GoalRecordsResponse> {
     const data = await apiClient.get(`${this.baseUrl}/key-results/${keyResultUuid}/records`, {
       params,
     });
@@ -209,7 +209,7 @@ export class GoalApiClient {
       limit?: number;
       dateRange?: { start?: string; end?: string };
     },
-  ): Promise<GoalContracts.GoalRecordListResponse> {
+  ): Promise<GoalContracts.GoalRecordsResponse> {
     const data = await apiClient.get(`${this.baseUrl}/${goalUuid}/records`, { params });
     return data;
   }
@@ -230,7 +230,7 @@ export class GoalApiClient {
   /**
    * 获取目标的所有复盘
    */
-  async getGoalReviewsByGoal(goalUuid: string): Promise<GoalContracts.GoalReviewListResponse> {
+  async getGoalReviewsByGoal(goalUuid: string): Promise<GoalContracts.GoalReviewsResponse> {
     const data = await apiClient.get(`${this.baseUrl}/${goalUuid}/reviews`);
     return data;
   }
@@ -241,7 +241,7 @@ export class GoalApiClient {
   async updateGoalReview(
     goalUuid: string,
     reviewUuid: string,
-    request: Partial<GoalContracts.GoalReviewDTO>,
+    request: Partial<GoalContracts.GoalReviewClientDTO>,
   ): Promise<GoalContracts.GoalReviewClientDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${goalUuid}/reviews/${reviewUuid}`, request);
     return data;
@@ -276,7 +276,7 @@ export class GoalApiClient {
         weight: number;
       }>;
     },
-  ): Promise<GoalContracts.KeyResultListResponse> {
+  ): Promise<GoalContracts.KeyResultsResponse> {
     const data = await apiClient.put(
       `${this.baseUrl}/${goalUuid}/key-results/batch-weight`,
       request,
@@ -302,19 +302,19 @@ export class GoalApiClient {
 }
 
 /**
- * GoalDir API 客户端
+ * GoalFolder API 客户端
  */
-export class GoalDirApiClient {
-  private readonly baseUrl = '/goal-dirs';
+export class GoalFolderApiClient {
+  private readonly baseUrl = '/goal-folders';
 
-  // ===== GoalDir CRUD =====
+  // ===== GoalFolder CRUD =====
 
   /**
    * 创建目标目录
    */
-  async createGoalDir(
-    request: GoalContracts.CreateGoalDirRequest,
-  ): Promise<GoalContracts.GoalDirClientDTO> {
+  async createGoalFolder(
+    request: GoalContracts.CreateGoalFolderRequest,
+  ): Promise<GoalContracts.GoalFolderClientDTO> {
     const data = await apiClient.post(this.baseUrl, request);
     return data;
   }
@@ -322,12 +322,12 @@ export class GoalDirApiClient {
   /**
    * 获取目标目录列表
    */
-  async getGoalDirs(params?: {
+  async getGoalFolders(params?: {
     page?: number;
     limit?: number;
     status?: string;
     parentUuid?: string;
-  }): Promise<GoalContracts.GoalDirListResponse> {
+  }): Promise<GoalContracts.GoalFolderListResponse> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;
   }
@@ -335,7 +335,7 @@ export class GoalDirApiClient {
   /**
    * 获取目标目录详情
    */
-  async getGoalDirById(uuid: string): Promise<GoalContracts.GoalDirClientDTO> {
+  async getGoalFolderById(uuid: string): Promise<GoalContracts.GoalFolderClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${uuid}`);
     return data;
   }
@@ -343,10 +343,10 @@ export class GoalDirApiClient {
   /**
    * 更新目标目录
    */
-  async updateGoalDir(
+  async updateGoalFolder(
     uuid: string,
-    request: GoalContracts.UpdateGoalDirRequest,
-  ): Promise<GoalContracts.GoalDirClientDTO> {
+    request: GoalContracts.UpdateGoalFolderRequest,
+  ): Promise<GoalContracts.GoalFolderClientDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${uuid}`, request);
     return data;
   }
@@ -354,11 +354,11 @@ export class GoalDirApiClient {
   /**
    * 删除目标目录
    */
-  async deleteGoalDir(uuid: string): Promise<void> {
+  async deleteGoalFolder(uuid: string): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/${uuid}`);
   }
 }
 
 // 导出单例实例
 export const goalApiClient = new GoalApiClient();
-export const goalDirApiClient = new GoalDirApiClient();
+export const goalFolderApiClient = new GoalFolderApiClient();

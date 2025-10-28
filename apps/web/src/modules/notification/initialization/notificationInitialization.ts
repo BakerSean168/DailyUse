@@ -1,6 +1,11 @@
 /**
  * Notification 模块初始化任务注册
  * @description 为 notification 模块注册初始化任务到应用级别的初始化管理器中
+ * 
+ * 架构说明：
+ * - APP_STARTUP 阶段：初始化不依赖用户登录态的核心通知服务（NotificationService、事件总线等）
+ * - USER_LOGIN 阶段：初始化需要用户登录态的功能（提醒通知处理器等）
+ * - SSE 连接在 sseInitialization.ts 的 USER_LOGIN 阶段单独处理
  */
 
 import {
@@ -9,6 +14,7 @@ import {
   type InitializationTask,
 } from '@dailyuse/utils';
 import { NotificationInitializationManager } from '../application/initialization/NotificationInitializationManager';
+import { reminderNotificationHandler } from '../application/handlers/ReminderNotificationHandler';
 
 /**
  * 注册 Notification 模块的初始化任务
@@ -16,39 +22,70 @@ import { NotificationInitializationManager } from '../application/initialization
 export function registerNotificationInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
 
-  // Notification 模块核心初始化任务
+  // ========== APP_STARTUP 阶段：核心通知服务（不依赖登录态） ==========
   const notificationInitTask: InitializationTask = {
     name: 'notification-core',
     phase: InitializationPhase.APP_STARTUP,
     priority: 15, // 在基础设施初始化后，在用户模块之前
     initialize: async () => {
-      console.log('🔔 [Notification] 开始初始化通知模块...');
+      console.log('🔔 [Notification] 开始初始化通知核心服务（APP_STARTUP）...');
 
       try {
         const notificationManager = NotificationInitializationManager.getInstance();
         await notificationManager.initializeNotificationModule();
 
-        console.log('✅ [Notification] 通知模块初始化完成');
+        console.log('✅ [Notification] 通知核心服务初始化完成（不依赖用户登录态）');
       } catch (error) {
-        console.error('❌ [Notification] 通知模块初始化失败:', error);
+        console.error('❌ [Notification] 通知核心服务初始化失败:', error);
         throw error;
       }
     },
     cleanup: async () => {
-      console.log('🧹 [Notification] 清理通知模块...');
+      console.log('🧹 [Notification] 清理通知核心服务...');
 
       try {
         const notificationManager = NotificationInitializationManager.getInstance();
         notificationManager.destroy();
 
-        console.log('✅ [Notification] 通知模块清理完成');
+        console.log('✅ [Notification] 通知核心服务清理完成');
       } catch (error) {
-        console.error('❌ [Notification] 通知模块清理失败:', error);
+        console.error('❌ [Notification] 通知核心服务清理失败:', error);
       }
     },
   };
 
-  // 通知权限检查任务（用户登录后）
+  // ========== USER_LOGIN 阶段：提醒通知处理器（依赖登录态） ==========
+  const reminderNotificationTask: InitializationTask = {
+    name: 'reminder-notification-handler',
+    phase: InitializationPhase.USER_LOGIN,
+    priority: 20, // 在 SSE 连接建立后
+    initialize: async (context) => {
+      console.log(`📬 [Notification] 初始化提醒通知处理器（USER_LOGIN）: ${context?.accountUuid}`);
+
+      try {
+        // 初始化提醒通知处理器（会订阅 reminder-triggered 事件）
+        reminderNotificationHandler.initialize();
+
+        console.log('✅ [Notification] 提醒通知处理器初始化完成');
+      } catch (error) {
+        console.error('❌ [Notification] 提醒通知处理器初始化失败:', error);
+        // 不阻塞用户登录流程
+      }
+    },
+    cleanup: async (context) => {
+      console.log(`🔇 [Notification] 清理提醒通知处理器: ${context?.accountUuid}`);
+
+      try {
+        reminderNotificationHandler.destroy();
+
+        console.log('✅ [Notification] 提醒通知处理器清理完成');
+      } catch (error) {
+        console.error('❌ [Notification] 提醒通知处理器清理失败:', error);
+      }
+    },
+  };
+
+  // ========== USER_LOGIN 阶段：通知权限检查 ==========
   const notificationPermissionTask: InitializationTask = {
     name: 'notification-permissions',
     phase: InitializationPhase.USER_LOGIN,
@@ -149,9 +186,11 @@ export function registerNotificationInitializationTasks(): void {
   };
 
   // 注册所有任务
-  manager.registerTask(notificationInitTask);
-  manager.registerTask(notificationPermissionTask);
-  manager.registerTask(notificationTestTask);
+  manager.registerTask(notificationInitTask); // APP_STARTUP
+  manager.registerTask(reminderNotificationTask); // USER_LOGIN
+  manager.registerTask(notificationPermissionTask); // USER_LOGIN
+  manager.registerTask(notificationTestTask); // USER_LOGIN
 
   console.log('📝 [Notification] 通知模块初始化任务已注册');
 }
+

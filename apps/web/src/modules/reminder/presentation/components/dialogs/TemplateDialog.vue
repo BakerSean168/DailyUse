@@ -229,7 +229,7 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
 import { ReminderTemplate } from '@dailyuse/domain-client';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
 // composables
 import { useReminder } from '../../composables/useReminder';
 
@@ -393,10 +393,11 @@ const iconOptions = [
 ];
 
 const priorityOptions = [
-  { title: '低', value: ReminderContracts.ReminderPriority.LOW },
-  { title: '普通', value: ReminderContracts.ReminderPriority.NORMAL },
-  { title: '高', value: ReminderContracts.ReminderPriority.HIGH },
-  { title: '紧急', value: ReminderContracts.ReminderPriority.URGENT },
+  { title: '无关紧要', value: ImportanceLevel.Trivial },
+  { title: '不太重要', value: ImportanceLevel.Minor },
+  { title: '中等重要', value: ImportanceLevel.Moderate },
+  { title: '非常重要', value: ImportanceLevel.Important },
+  { title: '极其重要', value: ImportanceLevel.Vital },
 ];
 
 const timeConfigOptions = [

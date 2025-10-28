@@ -83,7 +83,7 @@
                       <v-icon :color="getReviewTypeColor(review.type)" size="16" class="mr-2">
                         {{ getReviewTypeIcon(review.type) }}
                       </v-icon>
-                      <span class="text-h6 font-weight-medium">{{ review.title }}</span>
+                      <span class="text-h6 font-weight-medium">{{ review.summary }}</span>
                       <v-chip
                         :color="getReviewTypeColor(review.type)"
                         size="small"
@@ -97,14 +97,14 @@
                     <div class="d-flex align-center mb-2">
                       <v-icon color="primary" size="16" class="mr-2">mdi-clock-outline</v-icon>
                       <span class="text-body-2 text-medium-emphasis">
-                        {{ format(review.reviewDate, 'yyyy/MM/dd HH:mm') }}
+                        {{ format(review.reviewedAt, 'yyyy/MM/dd HH:mm') }}
                       </span>
                     </div>
                     <!-- 复盘内容预览 -->
-                    <div v-if="review.content.achievements" class="d-flex align-center">
+                    <div v-if="review.achievements" class="d-flex align-center">
                       <v-icon color="info" size="16" class="mr-2">mdi-text-short</v-icon>
                       <span class="text-body-2 text-medium-emphasis text-truncate">
-                        成果: {{ review.content.achievements.substring(0, 50) }}...
+                        成果: {{ review.achievements.substring(0, 50) }}...
                       </span>
                     </div>
                   </div>
@@ -145,7 +145,7 @@
 
 <script setup lang="ts">
 import { ref, computed, defineExpose, watch } from 'vue';
-import { Goal, GoalReview } from '@dailyuse/domain-client';
+import { GoalClient, GoalReviewClient } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 import { useRouter } from 'vue-router';
 import { useGoal } from '../../composables/useGoal';
@@ -154,7 +154,7 @@ const router = useRouter();
 const goalComposable = useGoal();
 
 const props = defineProps<{
-  goal: Goal;
+  goal: GoalClient;
 }>();
 
 // 内部状态控制
@@ -274,8 +274,8 @@ const hasReviews = computed(() => {
 // ===== 工具方法 =====
 
 // 复盘类型相关方法
-const getReviewTypeColor = (type: GoalReview['type']): string => {
-  const colors = {
+const getReviewTypeColor = (type: string): string => {
+  const colors: Record<string, string> = {
     weekly: 'primary',
     monthly: 'secondary',
     midterm: 'warning',
@@ -285,8 +285,8 @@ const getReviewTypeColor = (type: GoalReview['type']): string => {
   return colors[type] || 'primary';
 };
 
-const getReviewTypeIcon = (type: GoalReview['type']): string => {
-  const icons = {
+const getReviewTypeIcon = (type: string): string => {
+  const icons: Record<string, string> = {
     weekly: 'mdi-calendar-week',
     monthly: 'mdi-calendar-month',
     midterm: 'mdi-calendar-check',
@@ -296,8 +296,8 @@ const getReviewTypeIcon = (type: GoalReview['type']): string => {
   return icons[type] || 'mdi-calendar';
 };
 
-const getReviewTypeText = (type: GoalReview['type']): string => {
-  const texts = {
+const getReviewTypeText = (type: string): string => {
+  const texts: Record<string, string> = {
     weekly: '周复盘',
     monthly: '月复盘',
     midterm: '中期复盘',

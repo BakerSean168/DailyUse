@@ -1,5 +1,5 @@
 import { ReminderTemplate } from '@dailyuse/domain-client';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
 import {
   addDays,
   addWeeks,
@@ -22,7 +22,7 @@ export interface UpcomingReminder {
   templateName: string;
   message: string;
   scheduledTime: Date;
-  priority: ReminderContracts.ReminderPriority;
+  importanceLevel: ImportanceLevel;
   color?: string;
   icon?: string;
   category: string;
@@ -283,18 +283,18 @@ export function formatUpcomingReminder(reminder: UpcomingReminder): string {
 /**
  * 按优先级分组即将到来的提醒
  */
-export function groupByPriority(
+export function groupByImportance(
   reminders: UpcomingReminder[],
-): Record<ReminderContracts.ReminderPriority, UpcomingReminder[]> {
+): Record<ImportanceLevel, UpcomingReminder[]> {
   return reminders.reduce(
     (acc, reminder) => {
-      if (!acc[reminder.priority]) {
-        acc[reminder.priority] = [];
+      if (!acc[reminder.importanceLevel]) {
+        acc[reminder.importanceLevel] = [];
       }
-      acc[reminder.priority].push(reminder);
+      acc[reminder.importanceLevel].push(reminder);
       return acc;
     },
-    {} as Record<ReminderContracts.ReminderPriority, UpcomingReminder[]>,
+    {} as Record<ImportanceLevel, UpcomingReminder[]>,
   );
 }
 

@@ -77,7 +77,170 @@ const { user, loading, error, logout } = useAuth();
 </script>
 ```
 
-## API客户端实例
+## API 客户端使用指南
+
+## 📚 概述
+
+本项目提供了一个强大且灵活的 API 客户端，支持多种响应提取策略，可以根据业务需求选择最合适的方式。
+
+---
+
+## 🎯 响应提取策略
+
+### 1️⃣ **自动提取模式（默认）** - `'auto'`
+
+**适用场景**：大多数简单的数据获取场景，只需要数据本身。
+
+```typescript
+// 直接得到数据，无需嵌套访问
+const users = await apiClient.get<User[]>('/users');
+console.log(users); // User[]
+
+const user = await apiClient.post<User>('/users', { name: 'John' });
+console.log(user.name); // 'John'
+```
+
+**优点**：
+- ✅ 代码简洁，减少嵌套
+- ✅ 类型推断准确
+- ✅ 向后兼容旧代码
+
+**缺点**：
+- ❌ 丢失 message、timestamp 等元数据
+- ❌ 无法显示后端返回的提示信息
+
+---
+
+### 2️⃣ **完整响应模式** - 使用 `WithMessage` 方法（推荐）
+
+**适用场景**：需要显示后端返回的提示信息、错误详情或其他元数据。
+
+```typescript
+// 注册接口 - 需要显示后端返回的提示消息
+const response = await apiClient.postWithMessage<{ account: Account }>('/auth/register', {
+  username: 'john',
+  email: 'john@example.com',
+  password: 'Password123!',
+});
+
+console.log(response.message);      // "注册成功！请登录以继续。"
+console.log(response.data.account); // Account 对象
+console.log(response.timestamp);    // 1234567890
+console.log(response.code);         // 200
+```
+
+**优点**：
+- ✅ 保留所有元数据（message、timestamp、code）
+- ✅ 可以显示友好的提示信息
+- ✅ 便于调试和日志记录
+
+---
+
+## 💡 实战示例
+
+### 示例1：用户注册（需要显示后端消息）
+
+```typescript
+// ✅ 正确方式：使用 postWithMessage
+const response = await apiClient.postWithMessage<{ account: Account }>('/auth/register', data);
+showSuccess(response.message); // 显示后端返回的友好提示
+console.log(response.data.account);
+```
+
+### 示例2：获取用户列表（只需要数据）
+
+```typescript
+// ✅ 使用默认客户端即可
+const users = await apiClient.get<User[]>('/users');
+users.forEach(user => console.log(user.name));
+```
+
+### 示例3：删除操作（需要确认消息）
+
+```typescript
+// ✅ 使用 deleteWithMessage
+const response = await apiClient.deleteWithMessage<void>('/users/123');
+showSuccess(response.message); // "用户删除成功"
+```
+
+---
+
+## 🔧 API 方法总览
+
+### 标准方法（自动提取 data）
+
+```typescript
+apiClient.get<T>(url, options?)           // GET 请求
+apiClient.post<T>(url, data?, options?)   // POST 请求
+apiClient.put<T>(url, data?, options?)    // PUT 请求
+apiClient.delete<T>(url, options?)        // DELETE 请求
+apiClient.patch<T>(url, data?, options?)  // PATCH 请求
+```
+
+### 完整响应方法（返回 SuccessResponse<T>）
+
+```typescript
+apiClient.getWithMessage<T>(url, options?)           // GET + 完整响应
+apiClient.postWithMessage<T>(url, data?, options?)   // POST + 完整响应
+apiClient.putWithMessage<T>(url, data?, options?)    // PUT + 完整响应
+apiClient.deleteWithMessage<T>(url, options?)        // DELETE + 完整响应
+```
+
+---
+
+## 📦 响应数据结构
+
+### SuccessResponse 结构
+
+```typescript
+interface SuccessResponse<T> {
+  code: number;           // 业务状态码（200）
+  success: true;          // 成功标识
+  data: T;                // 实际数据
+  message: string;        // 提示消息
+  timestamp: number;      // 时间戳
+  pagination?: {          // 分页信息（可选）
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+```
+
+---
+
+## 🎨 最佳实践
+
+### ✅ 推荐做法
+
+1. **默认使用标准方法**，代码简洁：
+   ```typescript
+   const users = await apiClient.get<User[]>('/users');
+   ```
+
+2. **需要 message 时使用 WithMessage 方法**：
+   ```typescript
+   const response = await apiClient.postWithMessage('/auth/register', data);
+   showSuccess(response.message);
+   ```
+
+---
+
+## 💬 常见问题
+
+**Q: 什么时候应该使用 `WithMessage` 方法？**
+
+A: 当你需要显示后端返回的提示信息时，例如：
+- 注册、登录、登出操作
+- 删除、更新等重要操作
+- 需要显示操作结果反馈的场景
+
+**Q: 默认策略会丢失 message，会影响错误处理吗？**
+
+A: 不会。错误响应由拦截器统一处理，会自动提取并抛出包含 message 的错误。`extractData` 只影响成功响应。
 
 ### 主要实例
 

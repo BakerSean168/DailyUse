@@ -1,99 +1,312 @@
 import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { AccountContracts } from '@dailyuse/contracts';
 
-// 临时类型定义，后续需要替换为实际的domain类型
-interface User {
-  id?: string;
-  firstName?: string;
-  lastName?: string;
-  sex?: string;
-  bio?: string;
-  avatar?: string;
-  socialAccounts?: Record<string, any>;
-}
+// 使用 DTO 类型（直接使用 contracts）
+type AccountDTO = AccountContracts.AccountDTO;
+type SubscriptionDTO = AccountContracts.SubscriptionDTO;
+type AccountHistoryDTO = AccountContracts.AccountHistoryServerDTO;
+type AccountStatsDTO = AccountContracts.AccountStatsResponseDTO;
 
-interface Account {
-  uuid?: string;
-  username?: string;
-  email?: string;
-  phoneNumber?: string;
-  user?: User;
-}
+// 导入枚举
+const { AccountStatus, SubscriptionPlan } = AccountContracts;
 
-export const useAccountStore = defineStore('account', {
-  state: () => ({
-    account: null as Account | null,
-    loading: false,
-    error: null as string | null,
-    savedAccounts: [] as Array<Account>,
-  }),
+/**
+ * Account Store - 状态管理
+ * 职责：纯数据存储和缓存管理，不执行业务逻辑
+ */
+export const useAccountStore = defineStore('account', () => {
+  // ===== 状态 =====
 
-  getters: {
-    isAuthenticated: (state) => !!state.account,
-    currentAccount: (state) => state.account,
-    getAccountUuid: (state) => (state.account ? state.account.uuid : null),
-    getAllSavedAccounts: (state) => {
-      return state.savedAccounts;
-    },
+  // 当前账户 (DTO 数据)
+  const currentAccount = ref<AccountDTO | null>(null);
 
-    // 获取已记住的账号列表
-    rememberedAccounts: (state) =>
-      state.savedAccounts.filter((account) => (account as any).remember),
-  },
+  // 订阅信息 (DTO 数据)
+  const subscription = ref<SubscriptionDTO | null>(null);
 
-  actions: {
-    setAccount(account: Account) {
-      this.account = account;
+  // 账户历史记录 (DTO 数据)
+  const accountHistory = ref<AccountHistoryDTO[]>([]);
 
-      // 持久化到localStorage
-      if (account) {
-        localStorage.setItem('currentAccount', JSON.stringify(account));
-      } else {
-        localStorage.removeItem('currentAccount');
-      }
-    },
+  // 账户统计 (DTO 数据)
+  const accountStats = ref<AccountStatsDTO | null>(null);
 
-    logout() {
-      localStorage.removeItem('token');
+  // UI 状态
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
+
+  // 已保存的账户列表（用于记住多个账户）
+  const savedAccounts = ref<AccountDTO[]>([]);
+
+  // ===== 计算属性 =====
+
+  /**
+   * 是否已认证
+   */
+  const isAuthenticated = computed(() => !!currentAccount.value);
+
+  /**
+   * 当前账户 UUID
+   */
+  const currentAccountUuid = computed(() => currentAccount.value?.uuid ?? null);
+
+  /**
+   * 当前账户状态
+   */
+  const accountStatus = computed(() => currentAccount.value?.status ?? null);
+
+  /**
+   * 是否为活跃账户
+   */
+  const isActiveAccount = computed(
+    () => currentAccount.value?.status === AccountContracts.AccountStatus.ACTIVE,
+  );
+
+  /**
+   * 是否已停用
+   */
+  const isDeactivatedAccount = computed(
+    () => currentAccount.value?.status === AccountContracts.AccountStatus.INACTIVE,
+  );
+
+  /**
+   * 是否已暂停
+   */
+  const isSuspendedAccount = computed(
+    () => currentAccount.value?.status === AccountContracts.AccountStatus.SUSPENDED,
+  );
+
+  /**
+   * 是否已删除
+   */
+  const isDeletedAccount = computed(
+    () => currentAccount.value?.status === AccountContracts.AccountStatus.DELETED,
+  );
+
+  /**
+   * 是否已验证邮箱
+   */
+  const isEmailVerified = computed(() => currentAccount.value?.emailVerified ?? false);
+
+  /**
+   * 是否已验证手机号
+   */
+  const isPhoneVerified = computed(() => currentAccount.value?.phoneVerified ?? false);
+
+  /**
+   * 是否启用两步验证
+   */
+  const isTwoFactorEnabled = computed(
+    () => currentAccount.value?.security?.twoFactorEnabled ?? false,
+  );
+
+  /**
+   * 当前订阅计划
+   */
+  const currentSubscriptionPlan = computed(
+    () => subscription.value?.plan ?? SubscriptionPlan.FREE,
+  );
+
+  /**
+   * 是否为付费用户
+   */
+  const isPremiumUser = computed(
+    () =>
+      subscription.value?.plan === SubscriptionPlan.PRO ||
+      subscription.value?.plan === SubscriptionPlan.ENTERPRISE,
+  );
+
+  /**
+   * 存储配额使用百分比
+   */
+  const storageUsagePercentage = computed(() => {
+    if (!currentAccount.value?.storage) return 0;
+    const { used, quota } = currentAccount.value.storage;
+    if (quota <= 0) return 0;
+    return Math.round((used / quota) * 100);
+  });
+
+  /**
+   * 已记住的账户列表
+   */
+  const rememberedAccounts = computed(() =>
+    savedAccounts.value.filter((account) => (account as any).remember),
+  );
+
+  // ===== 操作方法 =====
+
+  /**
+   * 设置当前账户
+   */
+  function setCurrentAccount(account: AccountDTO | null) {
+    currentAccount.value = account;
+
+    // 持久化到 localStorage
+    if (account) {
+      localStorage.setItem('currentAccount', JSON.stringify(account));
+    } else {
       localStorage.removeItem('currentAccount');
-      this.account = null;
-      this.loading = false;
-      this.error = null;
-    },
+    }
+  }
 
-    setSavedAccounts(accounts: Array<Account>) {
-      this.savedAccounts = accounts;
-      localStorage.setItem('savedAccounts', JSON.stringify(accounts));
-    },
+  /**
+   * 清除当前账户
+   */
+  function clearCurrentAccount() {
+    currentAccount.value = null;
+    subscription.value = null;
+    accountHistory.value = [];
+    localStorage.removeItem('currentAccount');
+  }
 
-    removeSavedAccount(username: string) {
-      this.savedAccounts = this.savedAccounts.filter((account) => account.username !== username);
-      localStorage.setItem('savedAccounts', JSON.stringify(this.savedAccounts));
-    },
+  /**
+   * 设置订阅信息
+   */
+  function setSubscription(sub: SubscriptionDTO | null) {
+    subscription.value = sub;
+  }
 
-    // 从localStorage恢复账户信息
-    restoreAccount() {
-      try {
-        const savedAccount = localStorage.getItem('currentAccount');
-        if (savedAccount) {
-          this.account = JSON.parse(savedAccount);
-        }
+  /**
+   * 设置账户历史
+   */
+  function setAccountHistory(history: AccountHistoryDTO[]) {
+    accountHistory.value = history;
+  }
 
-        const savedAccounts = localStorage.getItem('savedAccounts');
-        if (savedAccounts) {
-          this.savedAccounts = JSON.parse(savedAccounts);
-        }
-      } catch (error) {
-        console.error('恢复账户信息失败:', error);
+  /**
+   * 添加历史记录
+   */
+  function addHistoryRecord(record: AccountHistoryDTO) {
+    accountHistory.value.unshift(record);
+  }
+
+  /**
+   * 设置账户统计
+   */
+  function setAccountStats(stats: AccountStatsDTO) {
+    accountStats.value = stats;
+  }
+
+  /**
+   * 设置加载状态
+   */
+  function setLoading(loading: boolean) {
+    isLoading.value = loading;
+  }
+
+  /**
+   * 设置错误
+   */
+  function setError(err: string | null) {
+    error.value = err;
+  }
+
+  /**
+   * 保存账户列表
+   */
+  function setSavedAccounts(accounts: AccountDTO[]) {
+    savedAccounts.value = accounts;
+    localStorage.setItem('savedAccounts', JSON.stringify(accounts));
+  }
+
+  /**
+   * 添加保存的账户
+   */
+  function addSavedAccount(account: AccountDTO) {
+    const exists = savedAccounts.value.find((acc) => acc.uuid === account.uuid);
+    if (!exists) {
+      savedAccounts.value.push(account);
+      localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts.value));
+    }
+  }
+
+  /**
+   * 移除保存的账户
+   */
+  function removeSavedAccount(accountUuid: string) {
+    savedAccounts.value = savedAccounts.value.filter((acc) => acc.uuid !== accountUuid);
+    localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts.value));
+  }
+
+  /**
+   * 从 localStorage 恢复账户信息
+   */
+  function restoreFromStorage() {
+    try {
+      const savedAccount = localStorage.getItem('currentAccount');
+      if (savedAccount) {
+        currentAccount.value = JSON.parse(savedAccount);
       }
-    },
 
-    // 更新用户信息
-    updateUserProfile(userData: Partial<User>) {
-      if (this.account?.user) {
-        Object.assign(this.account.user, userData);
-        // 持久化更新
-        localStorage.setItem('currentAccount', JSON.stringify(this.account));
+      const savedAccountsList = localStorage.getItem('savedAccounts');
+      if (savedAccountsList) {
+        savedAccounts.value = JSON.parse(savedAccountsList);
       }
-    },
-  },
+    } catch (error) {
+      console.error('Failed to restore account from storage:', error);
+      setError('Failed to restore account data');
+    }
+  }
+
+  /**
+   * 清除所有数据
+   */
+  function clearAll() {
+    currentAccount.value = null;
+    subscription.value = null;
+    accountHistory.value = [];
+    accountStats.value = null;
+    savedAccounts.value = [];
+    isLoading.value = false;
+    error.value = null;
+
+    localStorage.removeItem('currentAccount');
+    localStorage.removeItem('savedAccounts');
+  }
+
+  // ===== 初始化 =====
+  // 自动从 localStorage 恢复
+  restoreFromStorage();
+
+  // ===== 返回 =====
+  return {
+    // 状态
+    currentAccount,
+    subscription,
+    accountHistory,
+    accountStats,
+    isLoading,
+    error,
+    savedAccounts,
+
+    // 计算属性
+    isAuthenticated,
+    currentAccountUuid,
+    accountStatus,
+    isActiveAccount,
+    isDeactivatedAccount,
+    isSuspendedAccount,
+    isDeletedAccount,
+    isEmailVerified,
+    isPhoneVerified,
+    isTwoFactorEnabled,
+    currentSubscriptionPlan,
+    isPremiumUser,
+    storageUsagePercentage,
+    rememberedAccounts,
+
+    // 操作方法
+    setCurrentAccount,
+    clearCurrentAccount,
+    setSubscription,
+    setAccountHistory,
+    addHistoryRecord,
+    setAccountStats,
+    setLoading,
+    setError,
+    setSavedAccounts,
+    addSavedAccount,
+    removeSavedAccount,
+    restoreFromStorage,
+    clearAll,
+  };
 });

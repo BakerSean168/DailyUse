@@ -418,11 +418,11 @@ const updateEndTime = (val: string) => {
   endTimeFormatted.value = val;
 };
 
-const allGoalDirs = computed(() => goalStore.getAllGoalDirs);
+const allGoalFolders = computed(() => goalStore.getAllGoalFolders);
 
 const directoryOptions = computed(() =>
-  allGoalDirs.value
-    .filter((dir) => !goalStore.isSystemGoalDir(dir.uuid))
+  allGoalFolders.value
+    .filter((dir) => !goalStore.isSystemGoalFolder(dir.uuid))
     .map((dir) => ({
       text: dir.name,
       value: dir.uuid,

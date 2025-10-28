@@ -6,7 +6,7 @@
       <v-card-text>
         <!-- 用户名下拉选择框 -->
         <v-combobox
-          v-model="passwordAuthenticationForm.username"
+          v-model="passwordAuthenticationForm.identifier"
           :items="rememberedUsernames"
           :loading="loading"
           label="用户名"
@@ -66,7 +66,7 @@
 
         <!-- 记住密码选项 -->
         <v-checkbox
-          v-model="passwordAuthenticationForm.remember"
+          v-model="passwordAuthenticationForm.rememberMe"
           label="记住密码"
           color="primary"
           density="comfortable"
@@ -89,22 +89,30 @@
     </v-card>
   </v-form>
 
-  <!-- 提示信息 -->
-  <!-- <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000" location="top" variant="tonal"
-        elevation="4">
-        {{ snackbar.message }}
-    </v-snackbar> -->
+  <!-- 错误提示 Snackbar -->
+  <v-snackbar
+    v-model="snackbar.show"
+    :color="snackbar.color"
+    :timeout="5000"
+    location="top"
+    variant="tonal"
+    elevation="4"
+  >
+    {{ snackbar.message }}
+    <template v-slot:actions>
+      <v-btn variant="text" @click="snackbar.show = false"> 关闭 </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 // types
-import type { AuthByPasswordForm } from '@dailyuse/contracts';
+import type { AuthenticationContracts } from '@dailyuse/contracts';
 // components
 import { useAuthentication } from '../composables/useAuthentication';
 // utils
 import { usernameRules, passwordRules } from '@/shared/utils/validations/rules';
-// services
 
 const { login: handleLogin, isLoading: authLoading } = useAuthentication();
 const loading = computed(() => authLoading.value);
@@ -113,10 +121,17 @@ const isCurrentFormValid = computed(() => {
   return formRef.value?.isValid ?? false;
 });
 
-const passwordAuthenticationForm = ref<AuthByPasswordForm>({
-  username: 'Test1',
+// Snackbar 状态
+const snackbar = ref({
+  show: false,
+  message: '',
+  color: 'error',
+});
+
+const passwordAuthenticationForm = ref<AuthenticationContracts.LoginRequestDTO>({
+  identifier: 'Test1',
   password: 'Llh123123!',
-  remember: false,
+  rememberMe: false,
 });
 
 // 处理表单提交
@@ -132,8 +147,15 @@ const onFormSubmit = async (event: Event) => {
 
   try {
     await handleLogin(passwordAuthenticationForm.value);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login failed:', error);
+
+    // 显示具体的错误消息（使用 Snackbar）
+    snackbar.value = {
+      show: true,
+      message: error?.message || '登录失败，请重试',
+      color: 'error',
+    };
   }
 };
 
@@ -143,7 +165,7 @@ const handleAccountSelect = (selectedUsername: string | null): void => {
   console.log('Selected username:', selectedUsername);
   console.log('Form valid:', formRef.value?.isValid);
   if (selectedUsername) {
-    passwordAuthenticationForm.value.username = selectedUsername;
+    passwordAuthenticationForm.value.identifier = selectedUsername;
     // const savedPassword = getSavedPasswordForUser(selectedUsername);
     // if (savedPassword) {
     //   passwordAuthenticationForm.password = savedPassword;

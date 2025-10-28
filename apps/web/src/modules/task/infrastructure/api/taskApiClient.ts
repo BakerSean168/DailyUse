@@ -1,21 +1,33 @@
 import { apiClient } from '@/shared/api/instances';
 import { type TaskContracts } from '@dailyuse/contracts';
 
-type CreateTaskTemplateRequest = TaskContracts.CreateTaskTemplateRequest;
-
 /**
  * Task Template API 客户端
  * 负责任务模板相关的API调用
+ *
+ * API路由基于 DDD 聚合根控制模式:
+ * - POST   /tasks/templates              - 创建任务模板
+ * - GET    /tasks/templates              - 获取任务模板列表
+ * - GET    /tasks/templates/:id          - 获取任务模板详情
+ * - DELETE /tasks/templates/:id          - 删除任务模板
+ * - POST   /tasks/templates/:id/activate - 激活任务模板
+ * - POST   /tasks/templates/:id/pause    - 暂停任务模板
+ * - POST   /tasks/templates/:id/archive  - 归档任务模板
+ * - POST   /tasks/templates/:id/generate-instances - 生成任务实例
+ * - POST   /tasks/templates/:id/bind-goal   - 绑定到目标
+ * - POST   /tasks/templates/:id/unbind-goal - 解除目标绑定
  */
 export class TaskTemplateApiClient {
   private readonly baseUrl = '/tasks/templates';
 
+  // ===== Task Template CRUD =====
+
   /**
    * 创建任务模板
    */
-  async createTemplate(
+  async createTaskTemplate(
     request: TaskContracts.CreateTaskTemplateRequest,
-  ): Promise<TaskContracts.TaskTemplateDTO> {
+  ): Promise<TaskContracts.TaskTemplateClientDTO> {
     const data = await apiClient.post(this.baseUrl, request);
     return data;
   }
@@ -23,15 +35,16 @@ export class TaskTemplateApiClient {
   /**
    * 获取任务模板列表
    */
-  async getTemplates(params?: {
+  async getTaskTemplates(params?: {
     page?: number;
     limit?: number;
     status?: string;
+    folderUuid?: string;
     goalUuid?: string;
     importance?: string;
     urgency?: string;
     tags?: string[];
-  }): Promise<TaskContracts.TaskTemplateListResponse> {
+  }): Promise<TaskContracts.TaskTemplateClientDTO[]> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;
   }
@@ -39,33 +52,29 @@ export class TaskTemplateApiClient {
   /**
    * 获取任务模板详情
    */
-  async getTemplateById(uuid: string): Promise<TaskContracts.TaskTemplateDTO> {
-    const data = await apiClient.get(`${this.baseUrl}/${uuid}`);
-    return data;
-  }
-
-  /**
-   * 更新任务模板
-   */
-  async updateTemplate(
+  async getTaskTemplateById(
     uuid: string,
-    request: TaskContracts.UpdateTaskTemplateRequest,
-  ): Promise<TaskContracts.TaskTemplateDTO> {
-    const data = await apiClient.put(`${this.baseUrl}/${uuid}`, request);
+    includeChildren = false,
+  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    const data = await apiClient.get(`${this.baseUrl}/${uuid}`, {
+      params: { includeChildren },
+    });
     return data;
   }
 
   /**
    * 删除任务模板
    */
-  async deleteTemplate(uuid: string): Promise<void> {
+  async deleteTaskTemplate(uuid: string): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/${uuid}`);
   }
+
+  // ===== Task Template 状态管理（聚合根操作）=====
 
   /**
    * 激活任务模板
    */
-  async activateTemplate(uuid: string): Promise<TaskContracts.TaskTemplateDTO> {
+  async activateTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/activate`);
     return data;
   }
@@ -73,45 +82,52 @@ export class TaskTemplateApiClient {
   /**
    * 暂停任务模板
    */
-  async pauseTemplate(uuid: string): Promise<TaskContracts.TaskTemplateDTO> {
+  async pauseTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/pause`);
     return data;
   }
 
   /**
-   * 复制任务模板
+   * 归档任务模板
    */
-  async duplicateTemplate(uuid: string, newTitle?: string): Promise<TaskContracts.TaskTemplateDTO> {
-    const data = await apiClient.post(`${this.baseUrl}/${uuid}/duplicate`, {
-      title: newTitle,
-    });
+  async archiveTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+    const data = await apiClient.post(`${this.baseUrl}/${uuid}/archive`);
+    return data;
+  }
+
+  // ===== 聚合根控制：任务实例管理 =====
+
+  /**
+   * 生成任务实例
+   * 根据模板和重复规则生成任务实例
+   */
+  async generateInstances(
+    templateUuid: string,
+    request: TaskContracts.GenerateInstancesRequest,
+  ): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+    const data = await apiClient.post(`${this.baseUrl}/${templateUuid}/generate-instances`, request);
+    return data;
+  }
+
+  // ===== 聚合根控制：目标关联管理 =====
+
+  /**
+   * 绑定到目标
+   * 将任务模板绑定到OKR目标
+   */
+  async bindToGoal(
+    templateUuid: string,
+    request: TaskContracts.BindToGoalRequest,
+  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    const data = await apiClient.post(`${this.baseUrl}/${templateUuid}/bind-goal`, request);
     return data;
   }
 
   /**
-   * 批量删除任务模板
+   * 解除目标绑定
    */
-  async deleteTemplatesBatch(uuids: string[]): Promise<any> {
-    const data = await apiClient.post(`${this.baseUrl}/batch/delete`, {
-      uuids,
-    });
-    return data;
-  }
-
-  /**
-   * 搜索任务模板
-   */
-  async searchTemplates(params: {
-    query: string;
-    page?: number;
-    limit?: number;
-    importance?: string;
-    urgency?: string;
-    tags?: string[];
-  }): Promise<TaskContracts.TaskTemplateListResponse['data']> {
-    const data = await apiClient.get(`${this.baseUrl}/search`, {
-      params,
-    });
+  async unbindFromGoal(templateUuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+    const data = await apiClient.post(`${this.baseUrl}/${templateUuid}/unbind-goal`);
     return data;
   }
 }
@@ -119,35 +135,32 @@ export class TaskTemplateApiClient {
 /**
  * Task Instance API 客户端
  * 负责任务实例相关的API调用
+ *
+ * API路由基于 DDD 聚合根控制模式:
+ * - GET    /tasks/templates/instances            - 获取任务实例列表
+ * - GET    /tasks/templates/instances/:id        - 获取任务实例详情
+ * - DELETE /tasks/templates/instances/:id        - 删除任务实例
+ * - POST   /tasks/templates/instances/:id/start  - 开始任务实例
+ * - POST   /tasks/templates/instances/:id/complete - 完成任务实例
+ * - POST   /tasks/templates/instances/:id/skip   - 跳过任务实例
+ * - POST   /tasks/templates/instances/check-expired - 检查过期任务
  */
 export class TaskInstanceApiClient {
-  private readonly baseUrl = '/tasks/instances';
+  private readonly baseUrl = '/tasks/templates/instances';
 
-  /**
-   * 创建任务实例
-   */
-  async createInstance(
-    request: TaskContracts.CreateTaskInstanceRequest,
-  ): Promise<TaskContracts.TaskInstanceDTO> {
-    const data = await apiClient.post(this.baseUrl, request);
-    return data;
-  }
+  // ===== Task Instance CRUD =====
 
   /**
    * 获取任务实例列表
    */
-  async getInstances(params?: {
+  async getTaskInstances(params?: {
     page?: number;
     limit?: number;
-    status?: string;
     templateUuid?: string;
-    goalUuid?: string;
-    startDate?: string;
-    endDate?: string;
-    importance?: string;
-    urgency?: string;
-    tags?: string[];
-  }): Promise<TaskContracts.TaskInstanceListResponse['data']> {
+    status?: string;
+    startDate?: number;
+    endDate?: number;
+  }): Promise<TaskContracts.TaskInstanceClientDTO[]> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;
   }
@@ -155,240 +168,74 @@ export class TaskInstanceApiClient {
   /**
    * 获取任务实例详情
    */
-  async getInstanceById(uuid: string): Promise<TaskContracts.TaskInstanceDTO> {
+  async getTaskInstanceById(uuid: string): Promise<TaskContracts.TaskInstanceClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${uuid}`);
-    return data;
-  }
-
-  /**
-   * 更新任务实例
-   */
-  async updateInstance(
-    uuid: string,
-    request: TaskContracts.UpdateTaskInstanceRequest,
-  ): Promise<TaskContracts.TaskInstanceDTO> {
-    const data = await apiClient.put(`${this.baseUrl}/${uuid}`, request);
     return data;
   }
 
   /**
    * 删除任务实例
    */
-  async deleteInstance(uuid: string): Promise<void> {
+  async deleteTaskInstance(uuid: string): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/${uuid}`);
+  }
+
+  // ===== Task Instance 状态管理（聚合根操作）=====
+
+  /**
+   * 开始任务实例
+   * 将任务实例状态从 PENDING 转换为 IN_PROGRESS
+   */
+  async startTaskInstance(uuid: string): Promise<TaskContracts.TaskInstanceClientDTO> {
+    const data = await apiClient.post(`${this.baseUrl}/${uuid}/start`);
+    return data;
   }
 
   /**
    * 完成任务实例
    */
-  async completeInstance(uuid: string, result?: string): Promise<TaskContracts.TaskInstanceDTO> {
-    const data = await apiClient.post(`${this.baseUrl}/${uuid}/complete`, {
-      result,
-    });
-    return data;
-  }
-
-  /**
-   * 撤销任务完成
-   */
-  async undoCompleteInstance(uuid: string): Promise<TaskContracts.TaskInstanceDTO> {
-    const data = await apiClient.post(`${this.baseUrl}/${uuid}/undo-complete`);
-    return data;
-  }
-
-  /**
-   * 重新安排任务实例
-   */
-  async rescheduleInstance(
+  async completeTaskInstance(
     uuid: string,
-    request: TaskContracts.RescheduleTaskRequest,
-  ): Promise<TaskContracts.TaskInstanceDTO> {
-    const data = await apiClient.post(`${this.baseUrl}/${uuid}/reschedule`, request);
+    request?: TaskContracts.CompleteTaskInstanceRequest,
+  ): Promise<TaskContracts.TaskInstanceClientDTO> {
+    const data = await apiClient.post(`${this.baseUrl}/${uuid}/complete`, request);
     return data;
   }
 
   /**
-   * 取消任务实例
+   * 跳过任务实例
    */
-  async cancelInstance(uuid: string, reason?: string): Promise<TaskContracts.TaskInstanceDTO> {
-    const data = await apiClient.post(`${this.baseUrl}/${uuid}/cancel`, {
-      reason,
-    });
-    return data;
-  }
-
-  /**
-   * 批量操作任务实例
-   */
-  async batchOperation(
-    operation: 'complete' | 'cancel' | 'delete',
-    uuids: string[],
-    params?: any,
-  ): Promise<any> {
-    const data = await apiClient.post(`${this.baseUrl}/batch/${operation}`, {
-      uuids,
-      ...params,
-    });
-    return data;
-  }
-
-  /**
-   * 搜索任务实例
-   */
-  async searchInstances(params: {
-    query: string;
-    page?: number;
-    limit?: number;
-    status?: string;
-    startDate?: string;
-    endDate?: string;
-    importance?: string;
-    urgency?: string;
-    tags?: string[];
-  }): Promise<TaskContracts.TaskInstanceListResponse['data']> {
-    const data = await apiClient.get(`${this.baseUrl}/search`, {
-      params,
-    });
-    return data;
-  }
-
-  /**
-   * 获取今日任务
-   */
-  async getTodayTasks(): Promise<TaskContracts.TaskInstanceDTO[]> {
-    const data = await apiClient.get(`${this.baseUrl}/today`);
-    return data;
-  }
-
-  /**
-   * 获取即将到期的任务
-   */
-  async getUpcomingTasks(days = 7): Promise<TaskContracts.TaskInstanceDTO[]> {
-    const data = await apiClient.get(`${this.baseUrl}/upcoming`, {
-      params: { days },
-    });
-    return data;
-  }
-
-  /**
-   * 获取逾期任务
-   */
-  async getOverdueTasks(): Promise<TaskContracts.TaskInstanceDTO[]> {
-    const data = await apiClient.get(`${this.baseUrl}/overdue`);
-    return data;
-  }
-}
-
-/**
- * Task Meta Template API 客户端
- * 负责任务元模板相关的API调用
- */
-export class TaskMetaTemplateApiClient {
-  private readonly baseUrl = '/tasks/meta-templates';
-
-  /**
-   * 创建任务元模板
-   */
-  async createMetaTemplate(
-    request: TaskContracts.CreateTaskMetaTemplateRequest,
-  ): Promise<TaskContracts.TaskMetaTemplateDTO> {
-    const data = await apiClient.post(this.baseUrl, request);
-    return data;
-  }
-
-  /**
-   * 获取任务元模板列表
-   */
-  async getMetaTemplates(params?: {
-    page?: number;
-    limit?: number;
-    category?: string;
-  }): Promise<TaskContracts.TaskMetaTemplateListResponse['data']> {
-    const data = await apiClient.get(this.baseUrl, { params });
-    return data;
-  }
-
-  /**
-   * 获取任务元模板详情
-   */
-  async getMetaTemplateById(uuid: string): Promise<TaskContracts.TaskMetaTemplateDTO> {
-    const data = await apiClient.get(`${this.baseUrl}/${uuid}`);
-    return data;
-  }
-
-  /**
-   * 更新任务元模板
-   */
-  async updateMetaTemplate(
+  async skipTaskInstance(
     uuid: string,
-    request: TaskContracts.UpdateTaskMetaTemplateRequest,
-  ): Promise<TaskContracts.TaskMetaTemplateDTO> {
-    const data = await apiClient.put(`${this.baseUrl}/${uuid}`, request);
+    request?: TaskContracts.SkipTaskInstanceRequest,
+  ): Promise<TaskContracts.TaskInstanceClientDTO> {
+    const data = await apiClient.post(`${this.baseUrl}/${uuid}/skip`, request);
     return data;
   }
 
-  /**
-   * 删除任务元模板
-   */
-  async deleteMetaTemplate(uuid: string): Promise<void> {
-    await apiClient.delete(`${this.baseUrl}/${uuid}`);
-  }
-}
-
-/**
- * Task Statistics API 客户端
- * 负责任务统计相关的API调用
- */
-export class TaskStatisticsApiClient {
-  private readonly baseUrl = '/tasks/statistics';
+  // ===== 批量操作 =====
 
   /**
-   * 获取任务统计概览
+   * 检查并标记过期的任务实例
    */
-  async getOverview(params?: {
-    startDate?: string;
-    endDate?: string;
-    goalUuid?: string;
-  }): Promise<any> {
-    const data = await apiClient.get(`${this.baseUrl}/overview`, {
-      params,
-    });
-    return data;
-  }
-
-  /**
-   * 获取完成率趋势
-   */
-  async getCompletionTrend(params?: {
-    startDate?: string;
-    endDate?: string;
-    interval?: 'day' | 'week' | 'month';
-  }): Promise<any[]> {
-    const data = await apiClient.get(`${this.baseUrl}/completion-trend`, {
-      params,
-    });
-    return data;
-  }
-
-  /**
-   * 获取任务分布统计
-   */
-  async getDistribution(params?: {
-    groupBy?: 'importance' | 'urgency' | 'status' | 'tag';
-    startDate?: string;
-    endDate?: string;
-  }): Promise<any[]> {
-    const data = await apiClient.get(`${this.baseUrl}/distribution`, {
-      params,
-    });
+  async checkExpiredInstances(): Promise<{ count: number; instances: TaskContracts.TaskInstanceClientDTO[] }> {
+    const data = await apiClient.post(`${this.baseUrl}/check-expired`);
     return data;
   }
 }
 
-// 创建单例实例
 /**
  * Task Dependency API 客户端
  * 负责任务依赖关系相关的API调用
+ *
+ * API路由基于 RESTful 设计:
+ * - POST   /tasks/:taskUuid/dependencies           - 创建任务依赖关系
+ * - GET    /tasks/:taskUuid/dependencies           - 获取任务的所有前置依赖
+ * - GET    /tasks/:taskUuid/dependents             - 获取依赖此任务的所有任务
+ * - GET    /tasks/:taskUuid/dependency-chain       - 获取任务的完整依赖链
+ * - POST   /tasks/dependencies/validate            - 验证依赖关系
+ * - DELETE /tasks/dependencies/:uuid               - 删除依赖关系
+ * - PUT    /tasks/dependencies/:uuid               - 更新依赖关系
  */
 export class TaskDependencyApiClient {
   private readonly baseUrl = '/tasks';
@@ -421,10 +268,11 @@ export class TaskDependencyApiClient {
   }
 
   /**
-   * 删除依赖关系
+   * 获取任务的完整依赖链信息
    */
-  async deleteDependency(uuid: string): Promise<void> {
-    await apiClient.delete(`/tasks/dependencies/${uuid}`);
+  async getDependencyChain(taskUuid: string): Promise<TaskContracts.DependencyChainClientDTO> {
+    const data = await apiClient.get(`${this.baseUrl}/${taskUuid}/dependency-chain`);
+    return data;
   }
 
   /**
@@ -433,16 +281,15 @@ export class TaskDependencyApiClient {
   async validateDependency(
     request: TaskContracts.ValidateDependencyRequest,
   ): Promise<TaskContracts.ValidateDependencyResponse> {
-    const data = await apiClient.post('/tasks/dependencies/validate', request);
+    const data = await apiClient.post(`${this.baseUrl}/dependencies/validate`, request);
     return data;
   }
 
   /**
-   * 获取任务的完整依赖链信息
+   * 删除依赖关系
    */
-  async getDependencyChain(taskUuid: string): Promise<TaskContracts.DependencyChainClientDTO> {
-    const data = await apiClient.get(`${this.baseUrl}/${taskUuid}/dependency-chain`);
-    return data;
+  async deleteDependency(uuid: string): Promise<void> {
+    await apiClient.delete(`${this.baseUrl}/dependencies/${uuid}`);
   }
 
   /**
@@ -452,31 +299,114 @@ export class TaskDependencyApiClient {
     uuid: string,
     request: TaskContracts.UpdateTaskDependencyRequest,
   ): Promise<TaskContracts.TaskDependencyClientDTO> {
-    const data = await apiClient.put(`/tasks/dependencies/${uuid}`, request);
-    return data;
-  }
-
-  /**
-   * 批量创建依赖关系
-   */
-  async createDependenciesBatch(
-    request: TaskContracts.BatchCreateDependenciesRequest,
-  ): Promise<TaskContracts.BatchCreateDependenciesResponse> {
-    const data = await apiClient.post('/tasks/dependencies/batch', request);
+    const data = await apiClient.put(`${this.baseUrl}/dependencies/${uuid}`, request);
     return data;
   }
 }
 
+/**
+ * Task Statistics API 客户端
+ * 负责任务统计相关的API调用
+ *
+ * API路由基于 DDD 聚合根控制模式:
+ * - GET    /tasks/statistics/:accountUuid                     - 获取任务统计
+ * - POST   /tasks/statistics/:accountUuid/recalculate         - 重新计算统计
+ * - DELETE /tasks/statistics/:accountUuid                     - 删除统计数据
+ * - POST   /tasks/statistics/:accountUuid/update-template-stats    - 更新模板统计
+ * - POST   /tasks/statistics/:accountUuid/update-instance-stats    - 更新实例统计
+ * - POST   /tasks/statistics/:accountUuid/update-completion-stats  - 更新完成统计
+ * - GET    /tasks/statistics/:accountUuid/today-completion-rate    - 今日完成率
+ * - GET    /tasks/statistics/:accountUuid/week-completion-rate     - 本周完成率
+ * - GET    /tasks/statistics/:accountUuid/efficiency-trend         - 效率趋势
+ */
+export class TaskStatisticsApiClient {
+  private readonly baseUrl = '/tasks/statistics';
+
+  // ===== Task Statistics 查询 =====
+
+  /**
+   * 获取任务统计数据
+   */
+  async getTaskStatistics(
+    accountUuid: string,
+    forceRecalculate = false,
+  ): Promise<TaskContracts.TaskStatisticsServerDTO> {
+    const data = await apiClient.get(`${this.baseUrl}/${accountUuid}`, {
+      params: { forceRecalculate },
+    });
+    return data;
+  }
+
+  /**
+   * 重新计算任务统计
+   */
+  async recalculateTaskStatistics(
+    accountUuid: string,
+    force = true,
+  ): Promise<TaskContracts.TaskStatisticsServerDTO> {
+    const data = await apiClient.post(`${this.baseUrl}/${accountUuid}/recalculate`, { force });
+    return data;
+  }
+
+  /**
+   * 删除统计数据
+   */
+  async deleteTaskStatistics(accountUuid: string): Promise<void> {
+    await apiClient.delete(`${this.baseUrl}/${accountUuid}`);
+  }
+
+  // ===== 部分更新操作 =====
+
+  /**
+   * 更新模板统计信息
+   */
+  async updateTemplateStats(accountUuid: string): Promise<void> {
+    await apiClient.post(`${this.baseUrl}/${accountUuid}/update-template-stats`);
+  }
+
+  /**
+   * 更新实例统计信息
+   */
+  async updateInstanceStats(accountUuid: string): Promise<void> {
+    await apiClient.post(`${this.baseUrl}/${accountUuid}/update-instance-stats`);
+  }
+
+  /**
+   * 更新完成统计信息
+   */
+  async updateCompletionStats(accountUuid: string): Promise<void> {
+    await apiClient.post(`${this.baseUrl}/${accountUuid}/update-completion-stats`);
+  }
+
+  // ===== 快速查询方法 =====
+
+  /**
+   * 获取今日完成率
+   */
+  async getTodayCompletionRate(accountUuid: string): Promise<number> {
+    const data = await apiClient.get(`${this.baseUrl}/${accountUuid}/today-completion-rate`);
+    return data.rate;
+  }
+
+  /**
+   * 获取本周完成率
+   */
+  async getWeekCompletionRate(accountUuid: string): Promise<number> {
+    const data = await apiClient.get(`${this.baseUrl}/${accountUuid}/week-completion-rate`);
+    return data.rate;
+  }
+
+  /**
+   * 获取效率趋势
+   */
+  async getEfficiencyTrend(accountUuid: string): Promise<'UP' | 'DOWN' | 'STABLE'> {
+    const data = await apiClient.get(`${this.baseUrl}/${accountUuid}/efficiency-trend`);
+    return data.trend;
+  }
+}
+
+// 导出单例实例
 export const taskTemplateApiClient = new TaskTemplateApiClient();
 export const taskInstanceApiClient = new TaskInstanceApiClient();
-export const taskMetaTemplateApiClient = new TaskMetaTemplateApiClient();
-export const taskStatisticsApiClient = new TaskStatisticsApiClient();
 export const taskDependencyApiClient = new TaskDependencyApiClient();
-
-// 导出所有API客户端
-export const taskApiClients = {
-  template: taskTemplateApiClient,
-  instance: taskInstanceApiClient,
-  metaTemplate: taskMetaTemplateApiClient,
-  statistics: taskStatisticsApiClient,
-};
+export const taskStatisticsApiClient = new TaskStatisticsApiClient();

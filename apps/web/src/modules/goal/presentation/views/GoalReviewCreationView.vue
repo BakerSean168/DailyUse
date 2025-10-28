@@ -21,9 +21,12 @@
       </div>
       <div class="goal-review-header-content d-flex flex-column align-center text-center">
         <span class="text-h4 font-weight-bold mb-2">创建目标复盘</span>
-        <span class="text-h6 font-weight-medium">{{ goal.name }}</span>
+        <span class="text-h6 font-weight-medium">{{ goal.title }}</span>
         <span class="text-caption font-weight-light">
-          {{ format(goal.startTime, 'yyyy-MM-dd') }} 到 {{ format(goal.endTime, 'yyyy-MM-dd') }}
+          <template v-if="goal.startDate && goal.targetDate">
+            {{ format(new Date(goal.startDate), 'yyyy-MM-dd') }} 到
+            {{ format(new Date(goal.targetDate), 'yyyy-MM-dd') }}
+          </template>
         </span>
       </div>
       <div>
@@ -54,7 +57,7 @@
                 <span class="text-h6 font-weight-light">%</span>
               </div>
               <div>
-                <span class="text-subtitle-1">{{ goal.name }}</span>
+                <span class="text-subtitle-1">{{ goal.title }}</span>
               </div>
             </div>
             <div class="card-content d-flex flex-column pa-2">
@@ -336,8 +339,8 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 import GoalProgressChart from '../components/echarts/GoalProgressChart.vue';
 import KrProgressChart from '../components/echarts/KrProgressChart.vue';
 import PeriodBarChart from '../components/echarts/PeriodBarChart.vue';
-import { GoalReview } from '@dailyuse/domain-client';
-import { Goal } from '@dailyuse/domain-client';
+import { GoalReviewClient } from '@dailyuse/domain-client';
+import { GoalClient } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 
 // 路由和状态
@@ -354,8 +357,8 @@ const { createGoalReview, getGoalAggregateView } = useGoal();
 
 // 获取目标信息
 const goalUuid = route.params.goalUuid as string;
-const goal = ref<Goal | null>(null);
-const localGoalReview = ref<GoalReview | null>(null);
+const goal = ref<GoalClient | null>(null);
+const localGoalReview = ref<GoalReviewClient | null>(null);
 
 // 计算属性
 const canSave = computed(() => {

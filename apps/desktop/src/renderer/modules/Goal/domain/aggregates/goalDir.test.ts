@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GoalDir } from './goalDir';
+import { GoalFolder } from './GoalFolder';
 
-describe('GoalDir 聚合根测试', () => {
-  let goalDir: GoalDir;
+describe('GoalFolder 聚合根测试', () => {
+  let GoalFolder: GoalFolder;
 
   beforeEach(() => {
-    goalDir = new GoalDir({
+    GoalFolder = new GoalFolder({
       name: '工作目标',
       icon: 'mdi-briefcase',
       color: '#2196F3',
@@ -15,23 +15,23 @@ describe('GoalDir 聚合根测试', () => {
 
   describe('构造函数和基本属性', () => {
     it('应该正确创建目标目录实例', () => {
-      expect(goalDir.name).toBe('工作目标');
-      expect(goalDir.icon).toBe('mdi-briefcase');
-      expect(goalDir.color).toBe('#2196F3');
-      expect(goalDir.description).toBe('与工作相关的目标');
-      expect(goalDir.lifecycle.status).toBe('active');
+      expect(GoalFolder.name).toBe('工作目标');
+      expect(GoalFolder.icon).toBe('mdi-briefcase');
+      expect(GoalFolder.color).toBe('#2196F3');
+      expect(GoalFolder.description).toBe('与工作相关的目标');
+      expect(GoalFolder.lifecycle.status).toBe('active');
     });
 
     it('应该生成唯一的 UUID', () => {
-      const dir1 = new GoalDir({ name: '目录1' });
-      const dir2 = new GoalDir({ name: '目录2' });
+      const dir1 = new GoalFolder({ name: '目录1' });
+      const dir2 = new GoalFolder({ name: '目录2' });
 
       expect(dir1.uuid).not.toBe(dir2.uuid);
       expect(dir1.uuid).toMatch(/^[0-9a-f-]{36}$/i);
     });
 
     it('应该正确设置默认值', () => {
-      const dirWithDefaults = new GoalDir({});
+      const dirWithDefaults = new GoalFolder({});
 
       expect(dirWithDefaults.name).toBe('');
       expect(dirWithDefaults.icon).toBe('mdi-folder');
@@ -45,56 +45,56 @@ describe('GoalDir 聚合根测试', () => {
 
   describe('属性验证和设置', () => {
     it('应该允许设置有效的目录名称', () => {
-      goalDir.name = '新的目录名称';
-      expect(goalDir.name).toBe('新的目录名称');
-      expect(goalDir.lifecycle.updatedAt).toBeInstanceOf(Date);
+      GoalFolder.name = '新的目录名称';
+      expect(GoalFolder.name).toBe('新的目录名称');
+      expect(GoalFolder.lifecycle.updatedAt).toBeInstanceOf(Date);
     });
 
     it('设置空名称时应该抛出错误', () => {
       expect(() => {
-        goalDir.name = '';
+        GoalFolder.name = '';
       }).toThrow('目录名称不能为空');
     });
 
     it('设置只有空格的名称时应该抛出错误', () => {
       expect(() => {
-        goalDir.name = '   ';
+        GoalFolder.name = '   ';
       }).toThrow('目录名称不能为空');
     });
 
     it('应该允许设置描述', () => {
-      goalDir.description = '新的描述';
-      expect(goalDir.description).toBe('新的描述');
-      expect(goalDir.lifecycle.updatedAt).toBeInstanceOf(Date);
+      GoalFolder.description = '新的描述';
+      expect(GoalFolder.description).toBe('新的描述');
+      expect(GoalFolder.lifecycle.updatedAt).toBeInstanceOf(Date);
     });
 
     it('应该允许设置为 undefined 描述', () => {
-      goalDir.description = undefined;
-      expect(goalDir.description).toBeUndefined();
+      GoalFolder.description = undefined;
+      expect(GoalFolder.description).toBeUndefined();
     });
 
     it('应该允许设置图标', () => {
-      goalDir.icon = 'mdi-star';
-      expect(goalDir.icon).toBe('mdi-star');
-      expect(goalDir.lifecycle.updatedAt).toBeInstanceOf(Date);
+      GoalFolder.icon = 'mdi-star';
+      expect(GoalFolder.icon).toBe('mdi-star');
+      expect(GoalFolder.lifecycle.updatedAt).toBeInstanceOf(Date);
     });
 
     it('应该允许设置颜色', () => {
-      goalDir.color = '#FF5722';
-      expect(goalDir.color).toBe('#FF5722');
-      expect(goalDir.lifecycle.updatedAt).toBeInstanceOf(Date);
+      GoalFolder.color = '#FF5722';
+      expect(GoalFolder.color).toBe('#FF5722');
+      expect(GoalFolder.lifecycle.updatedAt).toBeInstanceOf(Date);
     });
 
     it('应该允许设置父目录UUID', () => {
       const parentUuid = 'parent-uuid-123';
-      goalDir.parentUuid = parentUuid;
-      expect(goalDir.parentUuid).toBe(parentUuid);
-      expect(goalDir.lifecycle.updatedAt).toBeInstanceOf(Date);
+      GoalFolder.parentUuid = parentUuid;
+      expect(GoalFolder.parentUuid).toBe(parentUuid);
+      expect(GoalFolder.lifecycle.updatedAt).toBeInstanceOf(Date);
     });
 
     it('设置自己为父目录时应该抛出错误', () => {
       expect(() => {
-        goalDir.parentUuid = goalDir.uuid;
+        GoalFolder.parentUuid = GoalFolder.uuid;
       }).toThrow('目录不能设置自己为父目录');
     });
 
@@ -103,14 +103,14 @@ describe('GoalDir 聚合根测试', () => {
         sortKey: 'name',
         sortOrder: 1,
       };
-      goalDir.sortConfig = newSortConfig;
-      expect(goalDir.sortConfig).toEqual(newSortConfig);
-      expect(goalDir.lifecycle.updatedAt).toBeInstanceOf(Date);
+      GoalFolder.sortConfig = newSortConfig;
+      expect(GoalFolder.sortConfig).toEqual(newSortConfig);
+      expect(GoalFolder.lifecycle.updatedAt).toBeInstanceOf(Date);
     });
 
     it('设置空排序键时应该抛出错误', () => {
       expect(() => {
-        goalDir.sortConfig = {
+        GoalFolder.sortConfig = {
           sortKey: '',
           sortOrder: 0,
         };
@@ -119,40 +119,40 @@ describe('GoalDir 聚合根测试', () => {
   });
 
   describe('静态方法', () => {
-    it('isGoalDir 应该正确识别 GoalDir 实例', () => {
-      expect(GoalDir.isGoalDir(goalDir)).toBe(true);
+    it('isGoalFolder 应该正确识别 GoalFolder 实例', () => {
+      expect(GoalFolder.isGoalFolder(GoalFolder)).toBe(true);
 
       // 测试 DTO 对象
-      const dto = goalDir.toDTO();
-      expect(GoalDir.isGoalDir(dto)).toBe(true);
+      const dto = GoalFolder.toDTO();
+      expect(GoalFolder.isGoalFolder(dto)).toBe(true);
 
-      expect(GoalDir.isGoalDir({})).toBe(false);
-      expect(GoalDir.isGoalDir(null)).toBeFalsy();
-      expect(GoalDir.isGoalDir(undefined)).toBeFalsy();
+      expect(GoalFolder.isGoalFolder({})).toBe(false);
+      expect(GoalFolder.isGoalFolder(null)).toBeFalsy();
+      expect(GoalFolder.isGoalFolder(undefined)).toBeFalsy();
     });
 
-    it('ensureGoalDir 应该正确处理各种输入', () => {
-      expect(GoalDir.ensureGoalDir(goalDir)).toBe(goalDir);
-      expect(GoalDir.ensureGoalDir(null)).toBe(null);
+    it('ensureGoalFolder 应该正确处理各种输入', () => {
+      expect(GoalFolder.ensureGoalFolder(GoalFolder)).toBe(GoalFolder);
+      expect(GoalFolder.ensureGoalFolder(null)).toBe(null);
 
-      const dto = goalDir.toDTO();
-      const ensuredDir = GoalDir.ensureGoalDir(dto);
-      expect(ensuredDir).toBeInstanceOf(GoalDir);
-      expect(ensuredDir?.uuid).toBe(goalDir.uuid);
+      const dto = GoalFolder.toDTO();
+      const ensuredDir = GoalFolder.ensureGoalFolder(dto);
+      expect(ensuredDir).toBeInstanceOf(GoalFolder);
+      expect(ensuredDir?.uuid).toBe(GoalFolder.uuid);
     });
 
-    it('ensureGoalDirNeverNull 应该始终返回 GoalDir 实例', () => {
-      expect(GoalDir.ensureGoalDirNeverNull(goalDir)).toBe(goalDir);
+    it('ensureGoalFolderNeverNull 应该始终返回 GoalFolder 实例', () => {
+      expect(GoalFolder.ensureGoalFolderNeverNull(GoalFolder)).toBe(GoalFolder);
 
-      const defaultDir = GoalDir.ensureGoalDirNeverNull(null);
-      expect(defaultDir).toBeInstanceOf(GoalDir);
+      const defaultDir = GoalFolder.ensureGoalFolderNeverNull(null);
+      expect(defaultDir).toBeInstanceOf(GoalFolder);
       expect(defaultDir.name).toBe('');
       expect(defaultDir.icon).toBe('mdi-folder');
     });
 
     it('validate 应该正确验证目录数据', () => {
-      const validData = goalDir.toDTO();
-      const result = GoalDir.validate(validData);
+      const validData = GoalFolder.toDTO();
+      const result = GoalFolder.validate(validData);
 
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -160,11 +160,11 @@ describe('GoalDir 聚合根测试', () => {
 
     it('validate 应该识别无效数据', () => {
       const invalidData = {
-        ...goalDir.toDTO(),
+        ...GoalFolder.toDTO(),
         name: '',
         icon: '',
       };
-      const result = GoalDir.validate(invalidData);
+      const result = GoalFolder.validate(invalidData);
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('目录名称不能为空');
@@ -172,7 +172,7 @@ describe('GoalDir 聚合根测试', () => {
     });
 
     it('forCreate 应该创建用于新建的目录实例', () => {
-      const createDir = GoalDir.forCreate();
+      const createDir = GoalFolder.forCreate();
 
       expect(createDir.name).toBe('');
       expect(createDir.icon).toBe('mdi-folder');
@@ -183,7 +183,7 @@ describe('GoalDir 聚合根测试', () => {
 
   describe('数据转换', () => {
     it('应该能够转换为 DTO', () => {
-      const dto = goalDir.toDTO();
+      const dto = GoalFolder.toDTO();
 
       expect(dto).toHaveProperty('uuid');
       expect(dto).toHaveProperty('name');
@@ -194,22 +194,22 @@ describe('GoalDir 聚合根测试', () => {
       expect(dto).toHaveProperty('parentUuid');
       expect(dto).toHaveProperty('lifecycle');
 
-      expect(dto.name).toBe(goalDir.name);
-      expect(dto.uuid).toBe(goalDir.uuid);
-      expect(dto.icon).toBe(goalDir.icon);
-      expect(dto.color).toBe(goalDir.color);
+      expect(dto.name).toBe(GoalFolder.name);
+      expect(dto.uuid).toBe(GoalFolder.uuid);
+      expect(dto.icon).toBe(GoalFolder.icon);
+      expect(dto.color).toBe(GoalFolder.color);
     });
 
     it('应该能够从 DTO 创建实例', () => {
-      const dto = goalDir.toDTO();
-      const newDir = GoalDir.fromDTO(dto);
+      const dto = GoalFolder.toDTO();
+      const newDir = GoalFolder.fromDTO(dto);
 
-      expect(newDir.uuid).toBe(goalDir.uuid);
-      expect(newDir.name).toBe(goalDir.name);
-      expect(newDir.icon).toBe(goalDir.icon);
-      expect(newDir.color).toBe(goalDir.color);
-      expect(newDir.description).toBe(goalDir.description);
-      expect(newDir.lifecycle.status).toBe(goalDir.lifecycle.status);
+      expect(newDir.uuid).toBe(GoalFolder.uuid);
+      expect(newDir.name).toBe(GoalFolder.name);
+      expect(newDir.icon).toBe(GoalFolder.icon);
+      expect(newDir.color).toBe(GoalFolder.color);
+      expect(newDir.description).toBe(GoalFolder.description);
+      expect(newDir.lifecycle.status).toBe(GoalFolder.lifecycle.status);
     });
 
     it('应该能够处理缺失字段的 DTO', () => {
@@ -228,32 +228,32 @@ describe('GoalDir 聚合根测试', () => {
         },
       };
 
-      const dir = GoalDir.fromDTO(partialDto as any);
+      const dir = GoalFolder.fromDTO(partialDto as any);
 
       expect(dir.name).toBe('测试目录');
       expect(dir.color).toBe('default-color');
-      expect(dir.description).toBe(''); // GoalDir 可能将空描述设为空字符串而非 undefined
+      expect(dir.description).toBe(''); // GoalFolder 可能将空描述设为空字符串而非 undefined
     });
 
     it('应该能够克隆目录', () => {
-      const clonedDir = goalDir.clone();
+      const clonedDir = GoalFolder.clone();
 
-      expect(clonedDir).not.toBe(goalDir);
-      expect(clonedDir.uuid).toBe(goalDir.uuid);
-      expect(clonedDir.name).toBe(goalDir.name);
-      expect(clonedDir.icon).toBe(goalDir.icon);
+      expect(clonedDir).not.toBe(GoalFolder);
+      expect(clonedDir.uuid).toBe(GoalFolder.uuid);
+      expect(clonedDir.name).toBe(GoalFolder.name);
+      expect(clonedDir.icon).toBe(GoalFolder.icon);
       expect(clonedDir.color).toBe('default-color'); // clone 方法可能重置为默认颜色
     });
   });
 
   describe('生命周期管理', () => {
     it('修改属性时应该更新 updatedAt', () => {
-      const originalUpdatedAt = goalDir.lifecycle.updatedAt;
+      const originalUpdatedAt = GoalFolder.lifecycle.updatedAt;
 
       // 等待一小段时间确保时间戳不同
       setTimeout(() => {
-        goalDir.name = '更新的名称';
-        expect(goalDir.lifecycle.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+        GoalFolder.name = '更新的名称';
+        expect(GoalFolder.lifecycle.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
       }, 1);
     });
 
@@ -274,7 +274,7 @@ describe('GoalDir 聚合根测试', () => {
         },
       };
 
-      const dir = GoalDir.fromDTO(invalidDto);
+      const dir = GoalFolder.fromDTO(invalidDto);
 
       expect(dir.lifecycle.createdAt).toBeInstanceOf(Date);
       expect(dir.lifecycle.updatedAt).toBeInstanceOf(Date);
@@ -284,20 +284,20 @@ describe('GoalDir 聚合根测试', () => {
   describe('边界情况测试', () => {
     it('应该处理非常长的名称', () => {
       const longName = 'a'.repeat(1000);
-      goalDir.name = longName;
-      expect(goalDir.name).toBe(longName);
+      GoalFolder.name = longName;
+      expect(GoalFolder.name).toBe(longName);
     });
 
     it('应该处理特殊字符', () => {
       const specialName = '特殊字符!@#$%^&*()_+{}|:<>?[];\'",./~`';
-      goalDir.name = specialName;
-      expect(goalDir.name).toBe(specialName);
+      GoalFolder.name = specialName;
+      expect(GoalFolder.name).toBe(specialName);
     });
 
     it('应该处理 Unicode 字符', () => {
       const unicodeName = '🎯 目标目录 📁';
-      goalDir.name = unicodeName;
-      expect(goalDir.name).toBe(unicodeName);
+      GoalFolder.name = unicodeName;
+      expect(GoalFolder.name).toBe(unicodeName);
     });
   });
 });

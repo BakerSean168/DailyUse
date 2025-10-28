@@ -9,7 +9,7 @@
 ### 1. 分层架构设计
 
 - **领域层 (Domain)**
-  - ✅ 领域实体: `Goal`, `GoalDir`, `GoalRecord`
+  - ✅ 领域实体: `Goal`, `GoalFolder`, `GoalRecord`
   - ✅ 仓库接口: `IGoalRepository`
   - ✅ 类型定义: 统一使用前端的类型定义
 
@@ -75,7 +75,7 @@ MainGoalApplicationService
 MainGoalApplicationService
 ├── private goals: Map<string, Goal>
 ├── private records: Map<string, GoalRecord>
-├── private goalDirs: Map<string, GoalDir>
+├── private GoalFolders: Map<string, GoalFolder>
 └── 业务逻辑直接操作内存数据
 ```
 
@@ -131,7 +131,7 @@ electron/modules/goal/
 ├── domain/
 │   ├── entities/                         # 领域实体 (已存在)
 │   │   ├── goal.ts
-│   │   ├── goalDir.ts
+│   │   ├── GoalFolder.ts
 │   │   └── record.ts
 │   └── repositories/                     # 仓库接口 (新增)
 │       └── iGoalRepository.ts

@@ -203,12 +203,12 @@ export class PrismaGoalRepository implements IGoalRepository {
       folderUuid?: string;
     },
   ): Promise<Goal[]> {
-    const where: any = { account_uuid: accountUuid, deleted_at: null }; // database fields
+    const where: any = { accountUuid: accountUuid, deletedAt: null }; // Prisma 自动转换为 camelCase
     if (options?.status) {
       where.status = options.status;
     }
     if (options?.folderUuid) {
-      where.folder_uuid = options.folderUuid; // database field
+      where.folderUuid = options.folderUuid; // Prisma 自动转换为 camelCase
     }
     const data = await this.prisma.goal.findMany({ where });
     return data.map((d) => this.mapToEntity(d));
@@ -216,7 +216,7 @@ export class PrismaGoalRepository implements IGoalRepository {
 
   async findByFolderUuid(folderUuid: string): Promise<Goal[]> {
     const data = await this.prisma.goal.findMany({
-      where: { folderUuid: folderUuid, deletedAt: null }, // database fields
+      where: { folderUuid: folderUuid, deletedAt: null }, // Prisma 自动转换为 camelCase
     });
     return data.map((d) => this.mapToEntity(d));
   }
