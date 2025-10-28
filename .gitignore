@@ -18,6 +18,9 @@ dist-ssr
 *.local
 release
 
+# But don't ignore tools/build (it contains build configs, not build outputs)
+!tools/build/
+
 # Environment variables (should be in subprojects only)
 .env
 .env.local
