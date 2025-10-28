@@ -32,18 +32,6 @@
           />
         </v-col>
 
-        <!-- 地点 -->
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="location"
-            label="执行地点"
-            variant="outlined"
-            prepend-inner-icon="mdi-map-marker-outline"
-            hint="任务执行的具体地点（可选）"
-            persistent-hint
-          />
-        </v-col>
-
         <!-- 任务标签 -->
         <v-col cols="12" md="6">
           <v-combobox
@@ -143,52 +131,30 @@ const tagSuggestions = [
 
 // 重要性
 const importance = computed({
-  get: () => props.modelValue.properties.importance,
+  get: () => props.modelValue.importance,
   set: (value: ImportanceLevel) => {
     updateTemplate((template) => {
-      (template as any)._properties = {
-        ...template.properties,
-        importance: value,
-      };
+      (template as any)._importance = value;
     });
   },
 });
 
 // 紧急性
 const urgency = computed({
-  get: () => props.modelValue.properties.urgency,
+  get: () => props.modelValue.urgency,
   set: (value: UrgencyLevel) => {
     updateTemplate((template) => {
-      (template as any)._properties = {
-        ...template.properties,
-        urgency: value,
-      };
-    });
-  },
-});
-
-// 地点
-const location = computed({
-  get: () => props.modelValue.properties.location || '',
-  set: (value: string) => {
-    updateTemplate((template) => {
-      (template as any)._properties = {
-        ...template.properties,
-        location: value || undefined,
-      };
+      (template as any)._urgency = value;
     });
   },
 });
 
 // 标签
 const tags = computed({
-  get: () => props.modelValue.properties.tags || [],
+  get: () => props.modelValue.tags || [],
   set: (value: string[]) => {
     updateTemplate((template) => {
-      (template as any)._properties = {
-        ...template.properties,
-        tags: value,
-      };
+      (template as any)._tags = value;
     });
   },
 });

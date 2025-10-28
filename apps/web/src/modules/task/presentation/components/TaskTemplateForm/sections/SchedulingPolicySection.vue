@@ -10,39 +10,8 @@
         <v-col cols="12">
           <v-alert type="info" density="compact" variant="tonal">
             <v-icon start>mdi-information-outline</v-icon>
-            当前使用的是新版任务模板结构，调度策略已集成到时间配置中。调度模式可在"时间配置"部分设置。
+            任务模板的时间配置和重复规则请在"时间配置"部分设置。这里只配置标签信息。
           </v-alert>
-        </v-col>
-
-        <v-col cols="12" md="6">
-          <v-select
-            v-model="scheduleMode"
-            :items="scheduleModeOptions"
-            label="调度模式"
-            variant="outlined"
-            item-title="text"
-            item-value="value"
-          />
-        </v-col>
-
-        <v-col cols="12" md="6" v-if="scheduleMode === 'intervalDays'">
-          <v-text-field
-            v-model.number="intervalDays"
-            label="间隔天数"
-            type="number"
-            variant="outlined"
-            min="1"
-            max="365"
-          />
-        </v-col>
-
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="location"
-            label="任务地点"
-            variant="outlined"
-            prepend-inner-icon="mdi-map-marker"
-          />
         </v-col>
 
         <v-col cols="12">
@@ -88,70 +57,16 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const scheduleModeOptions = [
-  { text: '单次执行', value: 'once' },
-  { text: '每日重复', value: 'daily' },
-  { text: '每周重复', value: 'weekly' },
-  { text: '每月重复', value: 'monthly' },
-  { text: '自定义间隔', value: 'intervalDays' },
-];
-
 const updateTemplate = (updater: (template: TaskTemplate) => void) => {
-  const updatedTemplate = props.modelValue.clone();
-  updater(updatedTemplate);
-  emit('update:modelValue', updatedTemplate);
+  updater(props.modelValue);
+  emit('update:modelValue', props.modelValue);
 };
 
-const scheduleMode = computed({
-  get: () => props.modelValue.timeConfig.schedule.mode,
-  set: (value: string) => {
-    updateTemplate((template) => {
-      (template as any)._timeConfig = {
-        ...template.timeConfig,
-        schedule: {
-          ...template.timeConfig.schedule,
-          mode: value,
-        },
-      };
-    });
-  },
-});
-
-const intervalDays = computed({
-  get: () => props.modelValue.timeConfig.schedule.intervalDays || 1,
-  set: (value: number) => {
-    updateTemplate((template) => {
-      (template as any)._timeConfig = {
-        ...template.timeConfig,
-        schedule: {
-          ...template.timeConfig.schedule,
-          intervalDays: value,
-        },
-      };
-    });
-  },
-});
-
-const location = computed({
-  get: () => props.modelValue.properties.location || '',
-  set: (value: string) => {
-    updateTemplate((template) => {
-      (template as any)._properties = {
-        ...template.properties,
-        location: value,
-      };
-    });
-  },
-});
-
 const tags = computed({
-  get: () => props.modelValue.properties.tags || [],
+  get: () => props.modelValue.tags || [],
   set: (value: string[]) => {
     updateTemplate((template) => {
-      (template as any)._properties = {
-        ...template.properties,
-        tags: value,
-      };
+      (template as any)._tags = value;
     });
   },
 });

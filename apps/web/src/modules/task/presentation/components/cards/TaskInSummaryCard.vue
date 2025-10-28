@@ -34,13 +34,13 @@
         <v-list-item
           v-for="(task, index) in todayTasks"
           :key="task.uuid"
-          :class="{ 'task-completed': task.execution.status === 'completed' }"
+          :class="{ 'task-completed': task.isCompleted }"
           class="task-item pa-4"
           :style="{ '--task-index': index }"
         >
           <template v-slot:prepend>
             <v-checkbox
-              :model-value="task.execution.status === 'completed'"
+              :model-value="task.isCompleted"
               @update:model-value="toggleTaskComplete(task)"
               hide-details
               color="primary"
@@ -52,46 +52,18 @@
             <v-list-item-title
               :class="{
                 'text-decoration-line-through text-medium-emphasis':
-                  task.execution.status === 'completed',
+                  task.isCompleted,
               }"
               class="task-title font-weight-medium mb-1"
             >
-              {{ task.title }}
+              {{ task.instanceDateFormatted }}
             </v-list-item-title>
 
             <div class="d-flex align-center">
               <v-icon size="14" color="medium-emphasis" class="mr-1">mdi-clock-outline</v-icon>
-              <v-list-item-subtitle class="text-caption"> 任务实践信息 </v-list-item-subtitle>
+              <v-list-item-subtitle class="text-caption"> {{ task.timeConfig.displayText }} </v-list-item-subtitle>
             </div>
           </div>
-
-          <template v-slot:append>
-            <!-- 关键结果链接 -->
-            <div v-if="task.goalLinks && task.goalLinks.length > 0" class="key-results-container">
-              <v-chip
-                v-for="link in task.goalLinks"
-                :key="link.keyResultId"
-                size="small"
-                variant="tonal"
-                color="primary"
-                class="mr-1 mb-1 result-chip"
-              >
-                <v-icon start size="12">mdi-target</v-icon>
-                {{ getKeyResultName(link) }}
-                <v-chip size="x-small" color="success" variant="flat" class="ml-1 increment-chip">
-                  +{{ link.incrementValue }}
-                </v-chip>
-              </v-chip>
-            </div>
-
-            <!-- 无关联提示 -->
-            <div v-else class="no-links-container">
-              <v-chip size="small" variant="outlined" color="surface-variant" class="no-links-chip">
-                <v-icon start size="12">mdi-link-off</v-icon>
-                无关联
-              </v-chip>
-            </div>
-          </template>
         </v-list-item>
       </v-list>
 
@@ -129,9 +101,7 @@ import { useTaskStore } from '../../stores/taskStore';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { useRouter } from 'vue-router';
-import { TaskInstance, GoalClient } from '@dailyuse/domain-client';
-
-type KeyResultLink = TaskContracts.KeyResultLink;
+import type { TaskInstance, GoalClient } from '@dailyuse/domain-client';
 
 const router = useRouter();
 const taskStore = useTaskStore();
@@ -143,29 +113,34 @@ const navigateToTaskManagement = () => {
 
 // ✅ 获取今日任务列表 - 使用新的状态字段
 const todayTasks = computed(() => {
-  let tasks = taskStore.getTodayTaskInstances.filter(
-    (task) => task.execution.status === 'pending' || task.execution.status === 'inProgress',
+  const today = new Date().toISOString().split('T')[0];
+  const todayTimestamp = new Date(today).getTime();
+  
+  let tasks = taskStore.getAllTaskInstances.filter(
+    (task: TaskInstance) => {
+      const taskDate = new Date(task.instanceDate).toISOString().split('T')[0];
+      return taskDate === today && !task.isCompleted;
+    },
   );
   return tasks;
 });
 
 // ✅ 计算完成百分比 - 使用新的状态字段
 const completionPercentage = computed(() => {
-  const allTasks = taskStore.getTodayTaskInstances;
-  const completedTasks = allTasks.filter((task) => task.execution.status === 'completed');
+  const today = new Date().toISOString().split('T')[0];
+  const allTasks = taskStore.getAllTaskInstances.filter(
+    (task: TaskInstance) => {
+      const taskDate = new Date(task.instanceDate).toISOString().split('T')[0];
+      return taskDate === today;
+    },
+  );
+  const completedTasks = allTasks.filter((task: TaskInstance) => task.isCompleted);
   return allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0;
 });
 
 // ✅ 切换任务完成状态
 const toggleTaskComplete = async (task: TaskInstance) => {
   console.log('切换任务状态:', task.uuid);
-};
-
-// 获取关键结果名称的方法
-const getKeyResultName = (link: KeyResultLink) => {
-  const goal: Goal = goalStore.getGoalByUuid(link.goalUuid);
-  const kr = goal?.keyResults.find((kr) => kr.uuid === link.keyResultId);
-  return kr?.name || '未知关键结果';
 };
 </script>
 

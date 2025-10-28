@@ -22,31 +22,17 @@
 
     <div class="task-content-wrapper">
       <v-list-item-title :class="['task-title', { completed: isCompleted }]">
-        {{ task.title }}
+        <!-- TaskInstance 没有 title，显示日期 -->
+        任务实例 {{ task.instanceDateFormatted }}
       </v-list-item-title>
 
       <v-list-item-subtitle class="task-meta">
         <v-icon size="small" class="mr-1">{{
           isCompleted ? 'mdi-check' : 'mdi-clock-outline'
         }}</v-icon>
-        <span v-if="!isCompleted">{{ getTaskInstanceTimeText(task) }}</span>
+        <span v-if="!isCompleted">{{ task.timeConfig.displayText }}</span>
         <span v-else>完成于 {{ formatCompletionTime }}</span>
       </v-list-item-subtitle>
-
-      <!-- 关键结果链接 -->
-      <div v-if="task.goalLinks?.length" class="key-results mt-2">
-        <v-chip
-          v-for="link in task.goalLinks"
-          :key="link.keyResultId"
-          size="small"
-          color="primary"
-          variant="outlined"
-          class="mr-1 mb-1"
-        >
-          <v-icon start size="small">mdi-target</v-icon>
-          {{ getKeyResultName(link) }} (+{{ link.incrementValue }})
-        </v-chip>
-      </div>
     </div>
 
     <template v-slot:append>
@@ -68,15 +54,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { format } from 'date-fns';
-import { TaskInstance } from '@dailyuse/domain-client';
+import type { TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
-// composables
-import { useTaskUtils } from '../../composables/useTaskUtils';
 
-type KeyResultLink = TaskContracts.KeyResultLink;
-
-const { getTaskInstanceTimeText } = useTaskUtils();
 // Props
 interface Props {
   task: TaskInstance;
@@ -95,20 +76,20 @@ const emit = defineEmits<{
 }>();
 
 // Computed
-const isCompleted = computed(() => props.task.execution.status === 'completed');
+const isCompleted = computed(() => props.task.isCompleted);
 
 const formatCompletionTime = computed(() => {
-  return format(props.task.execution.actualEndTime || new Date(), 'yyyy-MM-dd HH:mm:ss');
+  return props.task.actualEndTime ? format(props.task.actualEndTime, 'yyyy-MM-dd HH:mm:ss') : '';
 });
 
 // 这里需要 goalStore 来获取关键结果名称
 // 如果没有传入 goalStore，可以通过 composable 或全局 store 获取
-const getKeyResultName = (link: KeyResultLink) => {
-  if (!props.goalStore) return '';
+const getKeyResultName = (binding: any) => {
+  if (!props.goalStore || !binding) return '';
 
-  const goal: Goal = props.goalStore.getGoalByUuid(link.goalUuid);
-  const kr: KeyResult | undefined = goal?.keyResults.find((kr) => kr.uuid === link.keyResultId);
-  return kr?.name || '';
+  const goal = props.goalStore.getGoalByUuid(binding.goalUuid);
+  const kr = goal?.keyResults.find((k: any) => k.uuid === binding.keyResultUuid);
+  return kr?.title || '';
 };
 </script>
 

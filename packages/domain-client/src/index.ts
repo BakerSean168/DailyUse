@@ -54,7 +54,13 @@ export type {
   KeyResultSnapshot,
 } from './goal/types';
 
-// Task 模块 - 类型别名（推荐使用 TaskDomain.TaskTemplate 等）
+// Task 模块 - 直接从实现导出
+export { TaskTemplateClient } from './task/aggregates/TaskTemplateClient';
+export { TaskInstanceClient } from './task/aggregates/TaskInstanceClient';
+export { TaskStatisticsClient } from './task/aggregates/TaskStatisticsClient';
+export { TaskTemplateHistoryClient } from './task/entities/TaskTemplateHistoryClient';
+
+// Task 模块 - 类型别名（为了向后兼容）
 export type {
   TaskTemplate,
   TaskInstance,
@@ -66,17 +72,28 @@ export type {
   TaskGoalBinding,
 } from './task/types';
 
-// Repository 模块 - 类型别名（推荐使用 RepositoryDomain.Repository 等）
+// Repository 模块 - 直接从实现导出
+export { Repository } from './repository/aggregates/Repository';
+export { Resource } from './repository/entities/Resource';
+export { LinkedContent } from './repository/entities/LinkedContent';
+export { ResourceReference } from './repository/entities/ResourceReference';
+export { RepositoryExplorer } from './repository/entities/RepositoryExplorer';
+export { RepositoryConfig } from './repository/value-objects/RepositoryConfig';
+export { GitInfo } from './repository/value-objects/GitInfo';
+export { SyncStatus } from './repository/value-objects/SyncStatus';
+export { RepositoryStats } from './repository/value-objects/RepositoryStats';
+
+// Repository 模块 - 类型别名（为了向后兼容）
 export type {
-  Repository,
-  Resource,
-  LinkedContent,
-  ResourceReference,
-  RepositoryExplorer,
-  RepositoryConfig,
-  GitInfo,
-  SyncStatus,
-  RepositoryStats,
+  Repository as RepositoryType,
+  Resource as ResourceType,
+  LinkedContent as LinkedContentType,
+  ResourceReference as ResourceReferenceType,
+  RepositoryExplorer as RepositoryExplorerType,
+  RepositoryConfig as RepositoryConfigType,
+  GitInfo as GitInfoType,
+  SyncStatus as SyncStatusType,
+  RepositoryStats as RepositoryStatsType,
 } from './repository';
 
 // Account 模块 - 直接从实现导出
@@ -107,7 +124,8 @@ export type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
 // 临时导出空类型以避免编译错误
 export type ReminderInstance = any;
 
-// Setting 模块
-export type { UserSetting } from './setting';
-// TODO: UserPreferences 可能需要作为 UserSetting 的别名
+// Setting 模块 - 直接从实现导出
+export { UserSetting } from './setting/aggregates/UserSetting';
+
+// Setting 模块 - 类型别名（为了向后兼容）
 export type { UserSetting as UserPreferences } from './setting';

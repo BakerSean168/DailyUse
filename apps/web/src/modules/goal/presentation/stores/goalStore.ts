@@ -89,9 +89,9 @@ export const useGoalStore = defineStore('goal', {
     getGoalsByDir(): (dirUuid?: string) => any[] {
       return (dirUuid?: string) => {
         if (!dirUuid) {
-          return this.goals.filter((g) => !g.dirUuid);
+          return this.goals.filter((g) => !g.folderUuid);
         }
-        return this.goals.filter((g) => g.dirUuid === dirUuid);
+        return this.goals.filter((g) => g.folderUuid === dirUuid);
       };
     },
 
@@ -277,7 +277,7 @@ export const useGoalStore = defineStore('goal', {
 
       // 按目录过滤
       if (state.filters.dirUuid) {
-        goals = goals.filter((goal) => goal.dirUuid === state.filters.dirUuid);
+        goals = goals.filter((goal) => goal.folderUuid === state.filters.dirUuid);
       }
 
       // 按搜索关键词过滤
