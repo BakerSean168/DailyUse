@@ -150,19 +150,67 @@ pnpm build:desktop    # 构建桌面应用
 
 ## 📖 开发文档
 
-### Nx Monorepo 指南 (新增)
+### � 产品需求与开发规划 (新增 🎯)
+
+- **[PRD - 产品需求文档](docs/PRD-PRODUCT-REQUIREMENTS.md)** - 🎯 完整的功能需求规格说明
+  - 10 个核心模块
+  - 48 个基础 CRUD 功能
+  - 41 个高级特性功能
+  - MVP/MMP/Future 分阶段规划
+
+- **[Epic 规划文档](docs/epic-planning.md)** - 📅 实施计划与 Sprint 规划
+  - 9 个核心 Epic (对应业务模块)
+  - 173 Story Points (MVP Phase)
+  - 7 个 Sprint (8-10 周)
+  - User Stories 拆分与依赖关系
+
+- **[Sprint Status 追踪 (NEW! ✨)](docs/sprint-status.yaml)** - 📊 开发状态实时追踪
+  - 9 个 Epic 状态追踪
+  - 27 个 Story 状态追踪
+  - 开发工作流定义 (backlog → contexted → drafted → ready-for-dev → in-progress → review → done)
+  - Sprint 进度可视化
+
+- **[Epic 技术上下文文档 (NEW! 🎯)](docs/)** - 📐 技术设计规格说明
+  - [Epic 1: Account & Authentication](docs/epic-1-context.md) - 账户与认证系统
+  - [Epic 2: Goal Module](docs/epic-2-context.md) - OKR 目标管理
+  - [Epic 3: Task Module](docs/epic-3-context.md) - GTD 任务管理
+  - [Epic 4: Schedule Module](docs/epic-4-context.md) - 日程调度系统
+  - [Epic 5: Reminder Module](docs/epic-5-context.md) - 智能提醒系统
+  - [Epic 6: Notification Module](docs/epic-6-context.md) - 通知中心
+  - [Epic 7: Repository Module](docs/epic-7-context.md) - 知识仓库
+  - [Epic 8: Editor Module](docs/epic-8-context.md) - Markdown 编辑器
+  - [Epic 9: Setting Module](docs/epic-9-context.md) - 用户设置
+
+### �📦 包文档 (新增 ✨)
+
+- **[包文档总索引](docs/packages-index.md)** - 📑 从这里开始，查看所有包文档
+- [@dailyuse/contracts](docs/packages-contracts.md) - TypeScript 类型契约层
+- [@dailyuse/domain-client](docs/packages-domain-client.md) - 客户端领域层 (Pinia)
+- [@dailyuse/domain-server](docs/packages-domain-server.md) - 服务端领域层 (DDD)
+- [@dailyuse/utils](docs/packages-utils.md) - 通用工具库 (Logger, 验证, 事件总线)
+- [@dailyuse/ui](docs/packages-ui.md) - Vue 3 UI 组件库 (Vuetify)
+- [@dailyuse/assets](docs/packages-assets.md) - 静态资源 (图片, 音频)
+
+### 🏗️ 架构文档
+
+- [项目概览](docs/project-overview.md) - 项目整体介绍
+- [Web 应用架构](docs/architecture-web.md) - 前端架构设计
+- [API 应用架构](docs/architecture-api.md) - 后端架构设计
+- [集成架构](docs/integration-architecture.md) - 跨应用集成方案
+
+### 🛠️ Nx Monorepo 指南
 
 - [Nx 配置完整指南](docs/NX_CONFIGURATION_GUIDE.md) - nx.json 和 project.json 详解
 - [Nx 使用指南](docs/NX_USAGE_GUIDE.md) - 常用命令、优势、工作流
 - [Project.json 配置说明](docs/PROJECT_JSON_GUIDE.md) - 各项目配置详解
 
-### AI 辅助开发
+### 🤖 AI 辅助开发
 
 - [MCP 配置指南](docs/MCP-Configuration-Guide.md) - AI 辅助开发设置
 - [pnpm 最佳实践](docs/pnpm-MCP-Best-Practices.md) - 包管理优化
 - [MCP 快速开始](docs/MCP-Quick-Start.md) - 5分钟设置指南
 
-### 测试文档
+### 🧪 测试文档
 
 - [Vitest Workspace 指南](VITEST_WORKSPACE_GUIDE.md) - 详细测试使用指南
 - [Vitest 配置总结](VITEST_WORKSPACE_CONFIGURATION_SUMMARY.md) - 配置说明

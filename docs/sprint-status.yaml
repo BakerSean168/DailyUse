@@ -1,0 +1,100 @@
+# generated: 2025-10-28
+# project: DailyUse
+# project_key: DailyUse
+# tracking_system: file-system
+# story_location: "{project-root}/docs/stories"
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Epic tech context created (required before drafting stories)
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved and story context created
+#   - in-progress: Developer actively working on implementation
+#   - review: Under SM review (via review-story workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically drafts next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', SM reviews, then Dev moves to 'done'
+
+generated: 2025-10-28
+project: DailyUse
+project_key: DailyUse
+tracking_system: file-system
+story_location: "{project-root}/docs/stories"
+
+development_status:
+  # Epic 1: Account & Authentication (账户与认证)
+  epic-1: contexted
+  1-1-user-registration-and-email-verification: in-progress
+  1-2-user-login-and-token-management: drafted
+  1-3-profile-management: drafted
+  1-4-password-management: drafted
+  1-5-session-management-and-account-deletion: drafted
+  epic-1-retrospective: optional
+
+  # Epic 2: Goal Module (目标管理)
+  epic-2: contexted
+  2-1-goal-crud-basics: backlog
+  2-2-key-result-management: backlog
+  2-3-kr-weight-snapshot: backlog
+  2-4-goal-progress-auto-calculation: backlog
+  2-5-focus-cycle-mode: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Task Module (任务管理)
+  epic-3: contexted
+  3-1-task-crud-basics: backlog
+  3-2-subtask-management: backlog
+  3-3-task-dependencies: backlog
+  3-4-task-dependency-graph-visualization: backlog
+  3-5-task-priority-matrix: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Schedule Module (日程管理)
+  epic-4: contexted
+  4-1-schedule-event-crud: backlog
+  4-2-recurring-event-management: backlog
+  4-3-schedule-conflict-detection: backlog
+  4-4-week-view-calendar: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Reminder Module (提醒管理)
+  epic-5: contexted
+  5-1-reminder-crud-and-trigger: backlog
+  5-2-smart-reminder-frequency: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Notification Module (通知中心)
+  epic-6: contexted
+  6-1-notification-crud-and-multi-channel: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Repository Module (知识仓库)
+  epic-7: contexted
+  7-1-document-crud-basics: backlog
+  7-2-git-style-version-management: backlog
+  epic-7-retrospective: optional
+
+  # Epic 8: Editor Module (Markdown 编辑器)
+  epic-8: contexted
+  8-1-markdown-editor-basics: backlog
+  8-2-bidirectional-links: backlog
+  epic-8-retrospective: optional
+
+  # Epic 9: Setting Module (用户设置)
+  epic-9: contexted
+  9-1-user-preference-settings: backlog
+  epic-9-retrospective: optional
