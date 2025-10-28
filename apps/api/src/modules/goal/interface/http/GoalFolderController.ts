@@ -37,11 +37,20 @@ export class GoalFolderController {
   static async createFolder(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const service = await GoalFolderController.getFolderService();
-      const { accountUuid, ...params } = req.body;
+      
+      // 从认证中间件获取 accountUuid（安全可靠）
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalFolderController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
 
       logger.info('Creating goal folder', { accountUuid });
 
-      const folder = await service.createFolder(accountUuid, params);
+      const folder = await service.createFolder(accountUuid, req.body);
 
       logger.info('Goal folder created successfully', { folderUuid: folder.uuid });
       return GoalFolderController.responseBuilder.sendSuccess(

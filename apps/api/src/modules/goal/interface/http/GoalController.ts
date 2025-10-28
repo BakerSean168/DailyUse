@@ -34,12 +34,27 @@ export class GoalController {
    * 创建目标
    * @route POST /api/goals
    */
-  static async createGoal(req: Request, res: Response): Promise<Response> {
+  static async createGoal(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const service = await GoalController.getGoalService();
-      logger.info('Creating goal', { accountUuid: req.body.accountUuid });
+      
+      // 从认证中间件获取 accountUuid（安全可靠）
+      const accountUuid = req.user?.accountUuid;
 
-      const goal = await service.createGoal(req.body);
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      logger.info('Creating goal', { accountUuid });
+
+      // 将 accountUuid 合并到请求体中
+      const goal = await service.createGoal({
+        ...req.body,
+        accountUuid,
+      });
 
       logger.info('Goal created successfully', { goalUuid: goal.uuid });
       return GoalController.responseBuilder.sendSuccess(

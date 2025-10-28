@@ -1,4 +1,4 @@
-import { apiClient } from '@/shared/api/instances';
+import { apiClient, publicApiClient } from '@/shared/api/instances';
 import type { AuthenticationContracts } from '@dailyuse/contracts';
 
 /**
@@ -6,25 +6,25 @@ import type { AuthenticationContracts } from '@dailyuse/contracts';
  * 负责认证相关的 API 调用
  *
  * API 路由设计:
- * - POST   /auth/login                  - 登录
- * - POST   /auth/register               - 注册
- * - POST   /auth/logout                 - 登出
+ * - POST   /auth/login                  - 登录 (公开)
+ * - POST   /auth/register               - 注册 (公开)
+ * - POST   /auth/logout                 - 登出 (需要认证)
  * - POST   /auth/refresh-token          - 刷新令牌
- * - POST   /auth/forgot-password        - 忘记密码
- * - POST   /auth/reset-password         - 重置密码
- * - POST   /auth/change-password        - 修改密码
- * - POST   /auth/2fa/enable             - 启用两步验证
- * - POST   /auth/2fa/disable            - 禁用两步验证
+ * - POST   /auth/forgot-password        - 忘记密码 (公开)
+ * - POST   /auth/reset-password         - 重置密码 (公开)
+ * - POST   /auth/change-password        - 修改密码 (需要认证)
+ * - POST   /auth/2fa/enable             - 启用两步验证 (需要认证)
+ * - POST   /auth/2fa/disable            - 禁用两步验证 (需要认证)
  * - POST   /auth/2fa/verify             - 验证两步验证码
- * - POST   /auth/api-keys               - 创建 API Key
- * - GET    /auth/api-keys               - 获取 API Key 列表
- * - DELETE /auth/api-keys/:id           - 撤销 API Key
- * - GET    /auth/sessions               - 获取活跃会话列表
- * - DELETE /auth/sessions/:id           - 撤销会话
- * - DELETE /auth/sessions               - 撤销所有会话
- * - POST   /auth/devices/trust          - 信任设备
- * - DELETE /auth/devices/:id            - 撤销设备信任
- * - GET    /auth/devices/trusted        - 获取受信任设备列表
+ * - POST   /auth/api-keys               - 创建 API Key (需要认证)
+ * - GET    /auth/api-keys               - 获取 API Key 列表 (需要认证)
+ * - DELETE /auth/api-keys/:id           - 撤销 API Key (需要认证)
+ * - GET    /auth/sessions               - 获取活跃会话列表 (需要认证)
+ * - DELETE /auth/sessions/:id           - 撤销会话 (需要认证)
+ * - DELETE /auth/sessions               - 撤销所有会话 (需要认证)
+ * - POST   /auth/devices/trust          - 信任设备 (需要认证)
+ * - DELETE /auth/devices/:id            - 撤销设备信任 (需要认证)
+ * - GET    /auth/devices/trusted        - 获取受信任设备列表 (需要认证)
  */
 export class AuthApiClient {
   private readonly baseUrl = '/auth';
@@ -32,17 +32,17 @@ export class AuthApiClient {
   // ============ 认证核心功能 ============
 
   /**
-   * 登录
+   * 登录 (公开接口，不需要认证)
    */
   async login(
     request: AuthenticationContracts.LoginRequestDTO,
   ): Promise<AuthenticationContracts.LoginResponseDTO> {
-    const data = await apiClient.post(`${this.baseUrl}/login`, request);
+    const data = await publicApiClient.post(`${this.baseUrl}/login`, request);
     return data;
   }
 
   /**
-   * 注册
+   * 注册 (公开接口，不需要认证)
    * 
    * ⚠️ 注意：使用 postWithMessage 保留后端返回的 message
    * 因为注册接口返回的 message 包含重要提示信息
@@ -50,7 +50,7 @@ export class AuthApiClient {
   async register(
     request: AuthenticationContracts.RegisterRequestDTO,
   ): Promise<{ account: any; message: string }> {
-    const response = await apiClient.postWithMessage(`${this.baseUrl}/register`, request);
+    const response = await publicApiClient.postWithMessage(`${this.baseUrl}/register`, request);
     return {
       account: response.data.account,
       message: response.message,
@@ -77,17 +77,17 @@ export class AuthApiClient {
   // ============ 密码管理 ============
 
   /**
-   * 忘记密码（发送重置邮件）
+   * 忘记密码（发送重置邮件）(公开接口，不需要认证)
    */
   async forgotPassword(request: AuthenticationContracts.ForgotPasswordRequestDTO): Promise<void> {
-    await apiClient.post(`${this.baseUrl}/forgot-password`, request);
+    await publicApiClient.post(`${this.baseUrl}/forgot-password`, request);
   }
 
   /**
-   * 重置密码
+   * 重置密码 (公开接口，不需要认证)
    */
   async resetPassword(request: AuthenticationContracts.ResetPasswordRequestDTO): Promise<void> {
-    await apiClient.post(`${this.baseUrl}/reset-password`, request);
+    await publicApiClient.post(`${this.baseUrl}/reset-password`, request);
   }
 
   /**
