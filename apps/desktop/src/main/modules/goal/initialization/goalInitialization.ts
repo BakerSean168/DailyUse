@@ -7,14 +7,14 @@ import { GoalEventHandlers } from '../application/events/goalEventHandlers';
 import { MainGoalApplicationService } from '../application/services/mainGoalApplicationService';
 import { registerGoalIpcHandlers } from '../infrastructure/ipcs/goalIpcHandlers';
 
-const goalSystemGoalDirsInitializationTask: InitializationTask = {
+const goalSystemGoalFoldersInitializationTask: InitializationTask = {
   name: 'goal-system-goal-dirs',
   phase: InitializationPhase.USER_LOGIN,
   priority: 10,
   dependencies: [],
   initialize: async (context: { accountUuid: string }) => {
     const service = await MainGoalApplicationService.getInstance();
-    await service.initializeSystemGoalDirs(context.accountUuid);
+    await service.initializeSystemGoalFolders(context.accountUuid);
   },
 };
 
@@ -62,7 +62,7 @@ export function registerGoalInitializationTasks(): void {
 
   manager.registerTask(goalEventHandlersInitializationTask);
   manager.registerTask(registerGoalIpcHandlersTask);
-  manager.registerTask(goalSystemGoalDirsInitializationTask);
+  manager.registerTask(goalSystemGoalFoldersInitializationTask);
 
   console.log('🚀【主进程::Goal 模块】初始化任务注册完成');
 }

@@ -1,4 +1,4 @@
-import { Goal } from '@dailyuse/domain-client';
+import { GoalClient } from '@dailyuse/domain-client';
 
 /**
  * Goal 领域服务

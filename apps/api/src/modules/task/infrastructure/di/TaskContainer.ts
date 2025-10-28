@@ -2,11 +2,13 @@ import type {
   ITaskInstanceRepository,
   ITaskTemplateRepository,
   ITaskDependencyRepository,
+  ITaskStatisticsRepository,
 } from '@dailyuse/domain-server';
 import { TaskDependencyService } from '@dailyuse/domain-server';
 import { PrismaTaskInstanceRepository } from '../repositories/PrismaTaskInstanceRepository';
 import { PrismaTaskTemplateRepository } from '../repositories/PrismaTaskTemplateRepository';
 import { PrismaTaskDependencyRepository } from '../repositories/PrismaTaskDependencyRepository';
+import { PrismaTaskStatisticsRepository } from '../repositories/PrismaTaskStatisticsRepository';
 import { prisma } from '@/config/prisma';
 
 /**
@@ -18,6 +20,7 @@ export class TaskContainer {
   private taskInstanceRepository: ITaskInstanceRepository | null = null;
   private taskTemplateRepository: ITaskTemplateRepository | null = null;
   private taskDependencyRepository: ITaskDependencyRepository | null = null;
+  private taskStatisticsRepository: ITaskStatisticsRepository | null = null;
   private taskDependencyService: TaskDependencyService | null = null;
 
   private constructor() {}
@@ -105,5 +108,23 @@ export class TaskContainer {
    */
   setTaskDependencyService(service: TaskDependencyService): void {
     this.taskDependencyService = service;
+  }
+
+  /**
+   * 获取 TaskStatistics 仓储
+   * 使用懒加载，第一次访问时创建实例
+   */
+  getTaskStatisticsRepository(): ITaskStatisticsRepository {
+    if (!this.taskStatisticsRepository) {
+      this.taskStatisticsRepository = new PrismaTaskStatisticsRepository(prisma);
+    }
+    return this.taskStatisticsRepository!;
+  }
+
+  /**
+   * 设置 TaskStatistics 仓储（用于测试）
+   */
+  setTaskStatisticsRepository(repository: ITaskStatisticsRepository): void {
+    this.taskStatisticsRepository = repository;
   }
 }

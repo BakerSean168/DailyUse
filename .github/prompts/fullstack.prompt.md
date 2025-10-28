@@ -240,6 +240,29 @@ export { FocusSession } from './aggregates/FocusSession';
 - 构造函数中 uuid 不一定要传入，可以通过基类的 `generateUUID()` 方法生成
 - 类型要严格对应 contracts 包中的定义
 
+**导出规范（重要）**：
+
+- ❌ **不要**给聚合根/实体添加 `Client`/`Aggregate`/`Entity` 后缀别名
+- ✅ **应该**直接导出类名，保持简洁清晰
+
+```typescript
+// ❌ 错误示例（旧代码风格，需要修改）
+export { GoalClient as Goal } from './aggregates/GoalClient';
+export { GoalRecordClient as GoalRecord } from './entities/GoalRecordClient';
+
+// ✅ 正确示例（推荐）
+export { GoalClient } from './aggregates/GoalClient';
+export { GoalRecordClient } from './entities/GoalRecordClient';
+export { TaskDependencyClient } from './aggregates/TaskDependencyClient';
+```
+
+**理由**：
+
+1. **DDD 最佳实践**：客户端聚合根类名包含 `Client` 后缀已经足够区分，不需要再添加别名
+2. **TypeScript 友好**：类名和导入名一致，避免重复重命名
+3. **文件路径已足够清晰**：`domain-client/goal/aggregates/GoalClient.ts` 已明确表明是客户端聚合根
+4. **参考其他模块**：Task、Reminder 等模块的客户端聚合根都直接导出类名
+
 ### api 项目
 
 **注意文件结构**：

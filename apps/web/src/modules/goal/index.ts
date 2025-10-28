@@ -1,24 +1,17 @@
-import { GoalWebApplicationService } from './application/services/GoalWebApplicationService';
-
 /**
  * Goal 模块导出
  */
 
-// 懒加载的全局服务实例
-let _goalWebService: GoalWebApplicationService | null = null;
+// ===== Application Layer =====
+export * from './application/services';
 
-/**
- * 获取 Goal 服务实例（懒加载）
- */
-export function getGoalWebService(): GoalWebApplicationService {
-  if (!_goalWebService) {
-    _goalWebService = new GoalWebApplicationService();
-  }
-  return _goalWebService;
-}
+// 便捷别名导出
+export {
+  goalManagementApplicationService as getGoalManagementService,
+  goalFolderApplicationService as getGoalFolderService,
+} from './application/services';
 
-// 导出类型和服务
-export { GoalWebApplicationService } from './application/services/GoalWebApplicationService';
+// ===== Presentation Layer =====
 export { useGoalStore, getGoalStore } from './presentation/stores/goalStore';
 export { useGoal } from './presentation/composables/useGoal';
 
@@ -35,7 +28,8 @@ export type { GoalStore } from './presentation/stores/goalStore';
 export async function initializeGoalModule(): Promise<void> {
   try {
     console.log('正在初始化 Goal 模块...');
-    await getGoalWebService().initialize();
+    // Goal 模块已拆分为多个服务，不再需要统一的初始化方法
+    // 各个服务独立初始化
     console.log('Goal 模块初始化完成');
   } catch (error) {
     console.error('Goal 模块初始化失败:', error);

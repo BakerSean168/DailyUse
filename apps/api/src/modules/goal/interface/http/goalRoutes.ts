@@ -19,6 +19,36 @@ const router: Router = Router();
 /**
  * @swagger
  * /api/goals:
+ *   get:
+ *     tags: [Goal]
+ *     summary: 获取当前用户的所有目标
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *         description: 返回的最大目标数量
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *         description: 页码
+ *       - in: query
+ *         name: includeChildren
+ *         schema:
+ *           type: boolean
+ *         description: 是否包含子目标
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *       401:
+ *         description: 未授权
+ */
+router.get('/', GoalController.getUserGoalsByToken);
+
+/**
+ * @swagger
+ * /api/goals:
  *   post:
  *     tags: [Goal]
  *     summary: 创建目标

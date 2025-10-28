@@ -10,7 +10,7 @@ import type { GoalContracts, TaskContracts } from '@dailyuse/contracts';
 
 // Mock the services
 vi.mock('@/modules/goal/application/services/GoalWebApplicationService');
-vi.mock('@/modules/task/application/services/TaskWebApplicationService');
+vi.mock('@/modules/task/application/services/TaskTemplateApplicationService');
 vi.mock('@/modules/reminder/application/services/ReminderWebApplicationService');
 
 describe('SearchDataProvider Integration', () => {

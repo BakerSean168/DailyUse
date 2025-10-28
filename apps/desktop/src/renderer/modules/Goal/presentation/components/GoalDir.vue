@@ -23,7 +23,7 @@
         </template>
 
         <v-list class="py-2" min-width="180">
-          <v-list-item @click="startCreateGoalDir" class="px-4">
+          <v-list-item @click="startCreateGoalFolder" class="px-4">
             <template v-slot:prepend>
               <v-icon color="primary">mdi-folder-plus</v-icon>
             </template>
@@ -39,15 +39,15 @@
     <v-card-text class="goal-dir-list pa-0 flex-grow-1 overflow-y-auto">
       <v-list class="py-0" density="compact">
         <v-list-item
-          v-for="item in goalDirs"
+          v-for="item in GoalFolders"
           :key="item.uuid"
-          :class="{ 'goal-dir-item--active': selectedGoalDir?.uuid === item.uuid }"
+          :class="{ 'goal-dir-item--active': selectedGoalFolder?.uuid === item.uuid }"
           class="goal-dir-item mx-2 my-1"
           @click="selectDir(item)"
           rounded="lg"
         >
           <template v-slot:prepend>
-            <v-icon :color="selectedGoalDir?.uuid === item.uuid ? 'primary' : 'medium-emphasis'">
+            <v-icon :color="selectedGoalFolder?.uuid === item.uuid ? 'primary' : 'medium-emphasis'">
               {{ item.icon }}
             </v-icon>
           </template>
@@ -58,9 +58,9 @@
 
           <template v-slot:append>
             <v-chip
-              :color="selectedGoalDir?.uuid === item.uuid ? 'primary' : 'surface-bright'"
+              :color="selectedGoalFolder?.uuid === item.uuid ? 'primary' : 'surface-bright'"
               :text-color="
-                selectedGoalDir?.uuid === item.uuid ? 'on-primary' : 'on-surface-variant'
+                selectedGoalFolder?.uuid === item.uuid ? 'on-primary' : 'on-surface-variant'
               "
               size="small"
               variant="flat"
@@ -78,36 +78,36 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { useGoalStore } from '../stores/goalStore';
 
 const goalStore = useGoalStore();
 
 const props = defineProps<{
-  goalDirs: GoalDir[];
+  GoalFolders: GoalFolder[];
 }>();
 
-const selectedGoalDir = ref<GoalDir | null>(null);
+const selectedGoalFolder = ref<GoalFolder | null>(null);
 
 const emit = defineEmits<{
-  (e: 'selected-goal-dir', goalDir: GoalDir): void;
+  (e: 'selected-goal-dir', GoalFolder: GoalFolder): void;
   (e: 'start-create-goal-dir'): void;
 }>();
 
-const startCreateGoalDir = () => {
+const startCreateGoalFolder = () => {
   emit('start-create-goal-dir');
 };
 
-const selectDir = (goalDir: GoalDir) => {
-  selectedGoalDir.value = goalDir;
-  emit('selected-goal-dir', goalDir);
+const selectDir = (GoalFolder: GoalFolder) => {
+  selectedGoalFolder.value = GoalFolder;
+  emit('selected-goal-dir', GoalFolder);
 };
 
 onMounted(() => {
   // 查找 uuid 为 "system_all" 的目录
-  const allDir = props.goalDirs.find((dir) => dir.uuid === 'system_all');
+  const allDir = props.GoalFolders.find((dir) => dir.uuid === 'system_all');
   if (allDir) {
-    selectedGoalDir.value = allDir;
+    selectedGoalFolder.value = allDir;
   }
 });
 </script>

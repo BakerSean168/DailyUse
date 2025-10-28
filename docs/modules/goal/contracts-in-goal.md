@@ -218,10 +218,10 @@ export type CreateGoalRequest = Pick<
 /** 实体（客户端）的DTO形态
  * 目标目录客户端 DTO - 前端渲染对象
  */
-export interface GoalDirClientDTO extends GoalDirDTO {
+export interface GoalFolderClientDTO extends GoalFolderDTO {
   // 计算属性
   goalsCount: number; // 目录下的目标数量
-  subDirs?: GoalDirClientDTO[]; // 子目录列表
+  subDirs?: GoalFolderClientDTO[]; // 子目录列表
 }
 ```
 

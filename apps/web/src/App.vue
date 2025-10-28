@@ -24,7 +24,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useSettingStore } from '@/modules/setting/presentation/stores/settingStore';
-import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
 import CommandPalette from '@/shared/components/command-palette/CommandPalette.vue';
 import { searchDataProvider } from '@/shared/services/SearchDataProvider';
@@ -33,7 +32,6 @@ import { logo128 as logo } from '@dailyuse/assets';
 const isLoading = ref(true);
 const showCommandPalette = ref(false);
 const settingStore = useSettingStore();
-const accountStore = useAccountStore();
 
 // Computed properties for search data (reactive to cache updates)
 const goals = computed(() => searchDataProvider.getGoals());
@@ -42,25 +40,15 @@ const reminders = computed(() => searchDataProvider.getReminders());
 
 onMounted(async () => {
   try {
-    // 并行初始化各个系统
-    await Promise.all([
-      // 初始化设置
-      settingStore.initializeSettings(),
-      // 加载搜索数据 (后台加载，不阻塞应用启动)
-      searchDataProvider.loadData().catch((error) => {
-        console.error('搜索数据加载失败:', error);
-      }),
-    ]);
+    // 只初始化不依赖用户登录态的设置
+    await settingStore.initializeSettings();
 
-    // 恢复账户信息
-    accountStore.restoreAccount();
-
-    // 初始化完成
+    // 初始化完成（用户数据会在登录后由 USER_LOGIN 阶段自动加载）
     isLoading.value = false;
 
-    console.log('应用初始化完成');
+    console.log('应用基础初始化完成');
   } catch (error) {
-    console.error('应用初始化失败:', error);
+    console.error('应用基础初始化失败:', error);
     isLoading.value = false;
   }
 });

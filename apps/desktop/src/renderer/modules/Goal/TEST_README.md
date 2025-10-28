@@ -9,7 +9,7 @@ src/modules/Goal/
 ├── domain/
 │   ├── aggregates/
 │   │   ├── goal.test.ts           # Goal 聚合根测试
-│   │   └── goalDir.test.ts        # GoalDir 聚合根测试
+│   │   └── GoalFolder.test.ts        # GoalFolder 聚合根测试
 │   └── entities/
 │       ├── keyResult.test.ts      # KeyResult 实体测试
 │       └── record.test.ts         # GoalRecord 实体测试
@@ -19,7 +19,7 @@ src/modules/Goal/
 │   ├── composables/
 │   │   └── useGoalService.test.ts # Composable 测试
 │   └── components/
-│       └── GoalDir.test.ts        # Vue 组件逻辑测试
+│       └── GoalFolder.test.ts        # Vue 组件逻辑测试
 ├── test-setup.ts                  # 测试环境设置
 ├── vitest.config.ts              # 测试配置
 ├── test-runner.mjs               # 测试运行器
@@ -43,7 +43,7 @@ src/modules/Goal/
 - ✅ 静态方法和工具函数
 - ✅ 边界情况和错误处理
 
-#### 2. GoalDir 聚合根 (`goalDir.test.ts`)
+#### 2. GoalFolder 聚合根 (`GoalFolder.test.ts`)
 
 - ✅ 目录创建和属性管理
 - ✅ 排序配置和层级关系
@@ -91,7 +91,7 @@ src/modules/Goal/
 - ✅ 错误处理和用户反馈
 - ✅ 日志记录和边界情况
 
-#### 7. GoalDir 组件 (`GoalDir.test.ts`)
+#### 7. GoalFolder 组件 (`GoalFolder.test.ts`)
 
 - ✅ 组件逻辑和状态管理
 - ✅ 事件处理和数据流

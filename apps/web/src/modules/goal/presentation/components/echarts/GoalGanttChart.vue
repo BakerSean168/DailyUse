@@ -81,7 +81,7 @@
                     <v-icon color="white" size="12">mdi-target</v-icon>
                   </v-avatar>
                   <div class="goal-text">
-                    <span class="goal-title">{{ goal.name }}</span>
+                    <span class="goal-title">{{ goal.title }}</span>
                     <div class="goal-progress">{{ goal.progress }}%</div>
                   </div>
                 </div>
@@ -122,7 +122,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import { Goal } from '@dailyuse/domain-client';
+import type { GoalClient } from '@dailyuse/domain-client';
 
 const goalStore = useGoalStore();
 const dayWidth = 32; // 每个日期的宽度
@@ -189,10 +189,10 @@ const isWeekend = (date: Date) => {
 };
 
 // 计算目标条样式
-const getGoalBarStyle = (goal: Goal, isFill: boolean) => {
-  const startDate = new Date(goal.startTime);
+const getGoalBarStyle = (goal: GoalClient, isFill: boolean) => {
+  const startDate = goal.startDate ? new Date(goal.startDate) : new Date();
   startDate.setHours(0, 0, 0, 0);
-  const endDate = new Date(goal.endTime);
+  const endDate = goal.targetDate ? new Date(goal.targetDate) : new Date();
   endDate.setHours(0, 0, 0, 0);
   const rangeStart = new Date(dateRange.value.start);
   rangeStart.setHours(0, 0, 0, 0);
@@ -203,20 +203,20 @@ const getGoalBarStyle = (goal: Goal, isFill: boolean) => {
   );
   const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)) + 1;
 
-  const width = isFill ? duration * dayWidth * (goal.weightedProgress / 100) : duration * dayWidth;
+  const width = isFill ? duration * dayWidth * (goal.overallProgress / 100) : duration * dayWidth;
 
   return {
     left: `${startOffset * dayWidth}px`,
     width: `${width}px`,
-    backgroundColor: isFill ? goal.color : `${goal.color}33`,
+    backgroundColor: isFill ? goal.color || 'primary' : `${goal.color || '#666'}33`,
     borderRadius: '6px',
-    boxShadow: isFill ? `0 2px 8px ${goal.color}44` : 'none',
+    boxShadow: isFill ? `0 2px 8px ${goal.color || '#666'}44` : 'none',
   };
 };
 
 // 计算目标标签位置
-const getGoalLabelPosition = (goal: Goal) => {
-  const startDate = new Date(goal.startTime);
+const getGoalLabelPosition = (goal: GoalClient) => {
+  const startDate = goal.startDate ? new Date(goal.startDate) : new Date();
   const rangeStart = new Date(dateRange.value.start);
   const startOffset = Math.max(
     0,

@@ -1,7 +1,7 @@
 import type { ApiResponse } from '@dailyuse/contracts';
-import type { IGoal, IGoalDir, IGoalReview } from '@common/modules/goal/types/goal';
+import type { IGoal, IGoalFolder, IGoalReview } from '@common/modules/goal/types/goal';
 import { goalIpcClient } from '../../infrastructure/ipc/goalIpcClient';
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { useGoalStore } from '../../presentation/stores/goalStore';
 import { Goal } from '../../domain/aggregates/goal';
 import { GoalRecord } from '../../domain/entities/record';
@@ -24,7 +24,7 @@ export class GoalDomainApplicationService {
   use() {
     // 防止未使用警告，后续会用到
     void this.syncGoalsToState;
-    void this.syncGoalDirsToState;
+    void this.syncGoalFoldersToState;
   }
 
   // ========== 目标管理 ==========
@@ -410,22 +410,22 @@ export class GoalDomainApplicationService {
 
   // ========== 目标目录管理 ==========
 
-  async createGoalDir(goalDir: GoalDir): Promise<ApiResponse<{ goalDir: GoalDir }>> {
+  async createGoalFolder(GoalFolder: GoalFolder): Promise<ApiResponse<{ GoalFolder: GoalFolder }>> {
     try {
-      console.log('🔍 [目标应用服务] 目录创建数据:', goalDir);
+      console.log('🔍 [目标应用服务] 目录创建数据:', GoalFolder);
       // 调用主进程创建目标目录
-      const response = await goalIpcClient.createGoalDir(goalDir);
+      const response = await goalIpcClient.createGoalFolder(GoalFolder);
 
       if (response.success && response.data) {
-        const goalDirDTO = response.data;
-        const goalDir = GoalDir.fromDTO(goalDirDTO);
+        const GoalFolderDTO = response.data;
+        const GoalFolder = GoalFolder.fromDTO(GoalFolderDTO);
         // 同步到前端状态
-        await this.syncGoalDirToState(goalDir);
+        await this.syncGoalFolderToState(GoalFolder);
 
         return {
           success: true,
           message: response.message,
-          data: { goalDir },
+          data: { GoalFolder },
         };
       }
       return {
@@ -441,17 +441,17 @@ export class GoalDomainApplicationService {
     }
   }
 
-  async getAllGoalDirs(): Promise<GoalDir[]> {
+  async getAllGoalFolders(): Promise<GoalFolder[]> {
     try {
       console.log('🔄 [目标应用服务] 获取所有目标目录');
 
-      const response = await goalIpcClient.getAllGoalDirs();
+      const response = await goalIpcClient.getAllGoalFolders();
 
       if (response.success && response.data) {
-        const goalDirDTOs = response.data;
-        const goalDirs: GoalDir[] = goalDirDTOs.map((dto) => GoalDir.fromDTO(dto));
+        const GoalFolderDTOs = response.data;
+        const GoalFolders: GoalFolder[] = GoalFolderDTOs.map((dto) => GoalFolder.fromDTO(dto));
         console.log(`✅ [目标应用服务] 获取目标目录成功，数量: ${response.data.length}`);
-        return goalDirs;
+        return GoalFolders;
       }
 
       console.error('❌ [目标应用服务] 获取目标目录失败:', response.message);
@@ -462,18 +462,18 @@ export class GoalDomainApplicationService {
     }
   }
 
-  async deleteGoalDir(goalDirId: string): Promise<ApiResponse<void>> {
+  async deleteGoalFolder(GoalFolderId: string): Promise<ApiResponse<void>> {
     try {
-      console.log('🔄 [目标应用服务] 删除目标目录:', goalDirId);
+      console.log('🔄 [目标应用服务] 删除目标目录:', GoalFolderId);
 
       // 调用主进程删除目标目录
-      const response = await goalIpcClient.deleteGoalDir(goalDirId);
+      const response = await goalIpcClient.deleteGoalFolder(GoalFolderId);
 
       if (response.success) {
         // 从前端状态移除
-        this.goalStore.removeGoalDir(goalDirId);
+        this.goalStore.removeGoalFolder(GoalFolderId);
 
-        console.log('✅ [目标应用服务] 目标目录删除并同步成功:', goalDirId);
+        console.log('✅ [目标应用服务] 目标目录删除并同步成功:', GoalFolderId);
         return {
           success: true,
           message: response.message,
@@ -494,24 +494,24 @@ export class GoalDomainApplicationService {
     }
   }
 
-  async updateGoalDir(goalDir: GoalDir): Promise<ApiResponse<{ goalDir: IGoalDir }>> {
+  async updateGoalFolder(GoalFolder: GoalFolder): Promise<ApiResponse<{ GoalFolder: IGoalFolder }>> {
     try {
-      console.log('🔄 [目标应用服务] 更新目标目录:', goalDir.name);
+      console.log('🔄 [目标应用服务] 更新目标目录:', GoalFolder.name);
 
       // 调用主进程更新目标目录
-      const response = await goalIpcClient.updateGoalDir(goalDir);
+      const response = await goalIpcClient.updateGoalFolder(GoalFolder);
 
       if (response.success && response.data) {
-        const goalDirDTO = response.data;
-        const updatedGoalDir = GoalDir.fromDTO(goalDirDTO);
+        const GoalFolderDTO = response.data;
+        const updatedGoalFolder = GoalFolder.fromDTO(GoalFolderDTO);
         // 同步到前端状态
-        await this.syncGoalDirToState(updatedGoalDir);
+        await this.syncGoalFolderToState(updatedGoalFolder);
 
-        console.log('✅ [目标应用服务] 目标目录更新并同步成功:', goalDir.name);
+        console.log('✅ [目标应用服务] 目标目录更新并同步成功:', GoalFolder.name);
         return {
           success: true,
           message: response.message,
-          data: { goalDir: response.data },
+          data: { GoalFolder: response.data },
         };
       }
 
@@ -536,10 +536,10 @@ export class GoalDomainApplicationService {
       console.log('🔄 [目标应用服务] 开始同步所有目标数据');
 
       // 获取所有数据
-      const [goals, goalDirs] = await Promise.all([this.getAllGoals(), this.getAllGoalDirs()]);
+      const [goals, GoalFolders] = await Promise.all([this.getAllGoals(), this.getAllGoalFolders()]);
 
       // 同步到状态仓库
-      await this.syncAllGoalData(goals, goalDirs);
+      await this.syncAllGoalData(goals, GoalFolders);
 
       console.log('✅ [目标应用服务] 所有目标数据同步完成');
     } catch (error) {
@@ -565,30 +565,30 @@ export class GoalDomainApplicationService {
     }
   }
 
-  private async syncGoalDirToState(goalDir: GoalDir): Promise<void> {
+  private async syncGoalFolderToState(GoalFolder: GoalFolder): Promise<void> {
     try {
-      console.log('[目标应用服务] 同步目标目录到状态:', goalDir);
-      await this.goalStore.syncGoalDirState(goalDir);
+      console.log('[目标应用服务] 同步目标目录到状态:', GoalFolder);
+      await this.goalStore.syncGoalFolderState(GoalFolder);
     } catch (error) {
       console.warn('⚠️ 同步目标目录到状态失败:', error);
     }
   }
 
-  private async syncGoalDirsToState(goalDirs: GoalDir[]): Promise<void> {
+  private async syncGoalFoldersToState(GoalFolders: GoalFolder[]): Promise<void> {
     try {
       console.log('[目标应用服务] 同步所有目标目录到状态');
-      await this.goalStore.syncGoalDirsState(goalDirs);
+      await this.goalStore.syncGoalFoldersState(GoalFolders);
     } catch (error) {
       console.warn('⚠️ 同步所有目标目录到状态失败:', error);
     }
   }
 
-  private async syncAllGoalData(goals: Goal[], goalDirs: GoalDir[]): Promise<void> {
+  private async syncAllGoalData(goals: Goal[], GoalFolders: GoalFolder[]): Promise<void> {
     try {
       console.log('[目标应用服务] 同步所有目标和目录到状态');
       await this.goalStore.$patch((state) => {
         state.goals = goals;
-        state.goalDirs = goalDirs;
+        state.GoalFolders = GoalFolders;
       });
     } catch (error) {
       console.warn('⚠️ 同步所有目标和目录到状态失败:', error);

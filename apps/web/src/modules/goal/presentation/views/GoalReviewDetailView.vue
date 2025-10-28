@@ -298,7 +298,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { GoalReview, Goal } from '@dailyuse/domain-client';
+import { GoalReviewClient, GoalClient } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 
 // 路由和状态
@@ -315,7 +315,7 @@ const { fetchGoalById } = useGoal();
 // 数据
 const goalUuid = route.params.goalUuid as string;
 const reviewUuid = route.params.reviewUuid as string;
-const goal = ref<Goal | null>(null);
+const goal = ref<GoalClient | null>(null);
 const review = ref<any | null>(null);
 
 // 工具方法

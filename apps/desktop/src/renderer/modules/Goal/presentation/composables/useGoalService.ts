@@ -4,7 +4,7 @@ import { getGoalDomainApplicationService } from '../../application/services/goal
 import { useSnackbar } from '@renderer/shared/composables/useSnackbar';
 // Domain entities
 import { Goal } from '../../domain/aggregates/goal';
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { GoalRecord } from '../../domain/entities/record';
 import { GoalReview } from '../../domain/entities/goalReview';
 
@@ -103,14 +103,14 @@ export function useGoalServices() {
 
   /**
    * Create a goal directory
-   * @param goalDir - The new goal directory instance to create
+   * @param GoalFolder - The new goal directory instance to create
    */
-  const handleCreateGoalDir = async (goalDir: GoalDir) => {
-    console.log('[useGoalServices] Creating goal directory:', goalDir);
+  const handleCreateGoalFolder = async (GoalFolder: GoalFolder) => {
+    console.log('[useGoalServices] Creating goal directory:', GoalFolder);
     try {
-      const result = await goalService.createGoalDir(goalDir);
+      const result = await goalService.createGoalFolder(GoalFolder);
       if (result.success && result.data) {
-        showSuccess(`目标目录创建成功：${result.data.goalDir.name}`);
+        showSuccess(`目标目录创建成功：${result.data.GoalFolder.name}`);
       } else {
         showError(`创建目标目录失败：${result.message}`);
       }
@@ -122,14 +122,14 @@ export function useGoalServices() {
 
   /**
    * Update a goal directory
-   * @param goalDir - The goal directory instance to update
+   * @param GoalFolder - The goal directory instance to update
    */
-  const handleUpdateGoalDir = async (goalDir: GoalDir) => {
-    console.log('[useGoalServices] Updating goal directory:', goalDir);
+  const handleUpdateGoalFolder = async (GoalFolder: GoalFolder) => {
+    console.log('[useGoalServices] Updating goal directory:', GoalFolder);
     try {
-      const result = await goalService.updateGoalDir(goalDir);
+      const result = await goalService.updateGoalFolder(GoalFolder);
       if (result.success && result.data) {
-        showSuccess(`目标目录更新成功：${result.data.goalDir.name}`);
+        showSuccess(`目标目录更新成功：${result.data.GoalFolder.name}`);
       } else {
         showError(`更新目标目录失败：${result.message}`);
       }
@@ -141,14 +141,14 @@ export function useGoalServices() {
 
   /**
    * Delete a goal directory
-   * @param goalDirId - The UUID of the goal directory to delete
+   * @param GoalFolderId - The UUID of the goal directory to delete
    */
-  const handleDeleteGoalDir = async (goalDirId: string) => {
-    console.log('[useGoalServices] Deleting goal directory:', goalDirId);
+  const handleDeleteGoalFolder = async (GoalFolderId: string) => {
+    console.log('[useGoalServices] Deleting goal directory:', GoalFolderId);
     try {
-      const result = await goalService.deleteGoalDir(goalDirId);
+      const result = await goalService.deleteGoalFolder(GoalFolderId);
       if (result.success) {
-        showSuccess(`目标目录已删除：${goalDirId}`);
+        showSuccess(`目标目录已删除：${GoalFolderId}`);
       } else {
         showError(`删除目标目录失败：${result.message}`);
       }
@@ -275,9 +275,9 @@ export function useGoalServices() {
     handleUpdateGoal,
     handleDeleteGoal,
     handleDeleteAllGoals,
-    handleCreateGoalDir,
-    handleUpdateGoalDir,
-    handleDeleteGoalDir,
+    handleCreateGoalFolder,
+    handleUpdateGoalFolder,
+    handleDeleteGoalFolder,
     handleAddGoalRecordToGoal,
     handleRemoveGoalRecordFromGoal,
     handleAddReviewToGoal,

@@ -18,6 +18,17 @@
         />
       </v-row>
       <v-row>
+        <v-text-field
+          v-model="form.email"
+          label="邮箱"
+          type="email"
+          :rules="emailRules"
+          prepend-inner-icon="mdi-email"
+          clearable
+          required
+        />
+      </v-row>
+      <v-row>
         <!-- 密码输入 -->
         <v-text-field
           v-model="form.password"
@@ -138,13 +149,74 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import { type RegistrationByUsernameAndPasswordForm, AccountType } from '@dailyuse/contracts';
+import type { AuthenticationContracts } from '@dailyuse/contracts';
 // composables
-import { useAccountService } from '../composables/useAccountService';
+import { useAuth } from '@/modules/authentication/presentation/composables/useAuth';
+import { useSnackbar } from '@/shared/composables/useSnackbar';
 // utils
-import { passwordRules, usernameRules } from '@/shared/utils/validations/rules';
+import { passwordRules, usernameRules, emailRules } from '@/shared/utils/validations/rules';
 
-const { snackbar, handleRegistration } = useAccountService();
+const { register, login } = useAuth();
+const { snackbar, showSuccess, showError } = useSnackbar();
+
+// 定义 emit（用于切换到登录模式）
+const emit = defineEmits<{
+  'change-mode': [mode: string];
+}>();
+
+// 注册表单类型
+interface RegistrationByUsernameAndPasswordForm {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  agree: boolean;
+}
+
+// 注册处理函数
+const handleRegistration = async (formData: RegistrationByUsernameAndPasswordForm) => {
+  if (!formData.agree) {
+    showError('请先同意服务条款');
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const request: AuthenticationContracts.RegisterRequestDTO = {
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+    };
+
+    // 注册成功（返回账户信息和提示消息）
+    const response = await register(request);
+    showSuccess(response.message || '注册成功！正在为您登录...');
+    
+    // 自动登录：使用刚注册的账号和密码登录
+    setTimeout(async () => {
+      try {
+        await login({
+          identifier: formData.username,
+          password: formData.password,
+          rememberMe: false,
+        });
+        showSuccess('登录成功！');
+        // 登录成功后会自动跳转到主页（由 useAuth composable 处理）
+      } catch (loginError: any) {
+        showError('注册成功，但自动登录失败，请手动登录');
+        // 跳转到登录表单
+        emit('change-mode', 'login');
+      }
+    }, 1000);
+    
+    resetForm();
+  } catch (error: any) {
+    showError(error.message || '注册失败，请重试');
+  } finally {
+    loading.value = false;
+  }
+};
 const valid = ref(false);
 const loading = ref(false);
 const agreeTerms = ref(false);
@@ -154,6 +226,7 @@ const showConfirmPassword = ref(false);
 
 const form = reactive<RegistrationByUsernameAndPasswordForm>({
   username: '',
+  email: '',
   password: '',
   confirmPassword: '',
   agree: false,

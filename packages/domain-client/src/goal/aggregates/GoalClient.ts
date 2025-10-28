@@ -357,6 +357,148 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
     return [...this._keyResults];
   }
 
+  // 属性修改方法
+  public updateTitle(title: string): void {
+    if (!title || title.trim().length === 0) {
+      throw new Error('Title cannot be empty');
+    }
+    this._title = title.trim();
+    this._updatedAt = Date.now();
+  }
+
+  public updateDescription(description: string | null): void {
+    this._description = description;
+    this._updatedAt = Date.now();
+  }
+
+  public updateColor(color: string | null): void {
+    this._color = color;
+    this._updatedAt = Date.now();
+  }
+
+  public updateMotivation(motivation: string | null): void {
+    this._motivation = motivation;
+    this._updatedAt = Date.now();
+  }
+
+  public updateFeasibilityAnalysis(feasibilityAnalysis: string | null): void {
+    this._feasibilityAnalysis = feasibilityAnalysis;
+    this._updatedAt = Date.now();
+  }
+
+  public updateImportance(importance: ImportanceLevel): void {
+    this._importance = importance;
+    this._updatedAt = Date.now();
+  }
+
+  public updateUrgency(urgency: UrgencyLevel): void {
+    this._urgency = urgency;
+    this._updatedAt = Date.now();
+  }
+
+  public updateCategory(category: string | null): void {
+    this._category = category;
+    this._updatedAt = Date.now();
+  }
+
+  public updateTags(tags: string[]): void {
+    this._tags = [...tags];
+    this._updatedAt = Date.now();
+  }
+
+  public updateTimeRange(startDate: number | null, targetDate: number | null): void {
+    if (startDate && targetDate && startDate > targetDate) {
+      throw new Error('Start date cannot be after target date');
+    }
+    this._startDate = startDate;
+    this._targetDate = targetDate;
+    this._updatedAt = Date.now();
+  }
+
+  public updateStartDate(startDate: number | null): void {
+    if (startDate && this._targetDate && startDate > this._targetDate) {
+      throw new Error('Start date cannot be after target date');
+    }
+    this._startDate = startDate;
+    this._updatedAt = Date.now();
+  }
+
+  public updateTargetDate(targetDate: number | null): void {
+    if (this._startDate && targetDate && this._startDate > targetDate) {
+      throw new Error('Target date cannot be before start date');
+    }
+    this._targetDate = targetDate;
+    this._updatedAt = Date.now();
+  }
+
+  public updateFolder(folderUuid: string | null): void {
+    this._folderUuid = folderUuid;
+    this._updatedAt = Date.now();
+  }
+
+  public updateParentGoal(parentGoalUuid: string | null): void {
+    this._parentGoalUuid = parentGoalUuid;
+    this._updatedAt = Date.now();
+  }
+
+  public updateSortOrder(sortOrder: number): void {
+    this._sortOrder = sortOrder;
+    this._updatedAt = Date.now();
+  }
+
+  public updateReminderConfig(reminderConfig: GoalReminderConfigClient | null): void {
+    this._reminderConfig = reminderConfig;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 设置 accountUuid（用于保存前注入）
+   * 仅在新建目标保存时调用
+   */
+  public setAccountUuid(accountUuid: string): void {
+    if (this._accountUuid && this._accountUuid !== '') {
+      throw new Error('AccountUuid is already set');
+    }
+    this._accountUuid = accountUuid;
+  }
+
+  // 状态变更方法
+  public activate(): void {
+    if (!this.canActivate()) {
+      throw new Error('Goal cannot be activated in current status');
+    }
+    this._status = GoalStatus.ACTIVE;
+    this._updatedAt = Date.now();
+  }
+
+  public complete(): void {
+    if (!this.canComplete()) {
+      throw new Error('Goal cannot be completed in current status');
+    }
+    this._status = GoalStatus.COMPLETED;
+    this._completedAt = Date.now();
+    this._updatedAt = Date.now();
+  }
+
+  public archive(): void {
+    if (!this.canArchive()) {
+      throw new Error('Goal cannot be archived in current status');
+    }
+    this._status = GoalStatus.ARCHIVED;
+    this._archivedAt = Date.now();
+    this._updatedAt = Date.now();
+  }
+
+  public reopen(): void {
+    if (this._status !== GoalStatus.COMPLETED && this._status !== GoalStatus.ARCHIVED) {
+      throw new Error('Only completed or archived goals can be reopened');
+    }
+    this._status = GoalStatus.ACTIVE;
+    this._completedAt = null;
+    this._archivedAt = null;
+    this._updatedAt = Date.now();
+  }
+
   public addReview(review: GoalContracts.GoalReviewClient): void {
     if (!(review instanceof GoalReviewClient)) {
       throw new Error('review must be an instance of GoalReviewClient');
@@ -570,11 +712,15 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
     });
   }
 
-  public static forCreate(accountUuid: string): GoalClient {
+  /**
+   * 创建新目标（用于前端表单）
+   * accountUuid 会在保存时注入
+   */
+  public static forCreate(): GoalClient {
     const now = Date.now();
     return new GoalClient({
-      uuid: crypto.randomUUID(),
-      accountUuid,
+      uuid: crypto.randomUUID(), // 前端生成 UUID（乐观更新）
+      accountUuid: '', // 占位符，保存时会被替换
       title: '',
       status: GoalStatus.DRAFT,
       importance: ImportanceLevel.Moderate,

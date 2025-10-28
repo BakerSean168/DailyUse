@@ -35,10 +35,10 @@
           <!-- 侧边栏 - 目标节点 -->
           <v-col cols="12" md="3" class="pr-md-6 mb-6 mb-md-0 h-100">
             <goal-dir
-              :goal-dirs="allGoalDirs"
-              @selected-goal-dir="getSelectedGoalDir"
-              @start-create-goal-dir="startCreateGoalDir"
-              @start-edit-goal-dir="startEditGoalDir"
+              :goal-dirs="allGoalFolders"
+              @selected-goal-dir="getSelectedGoalFolder"
+              @start-create-goal-dir="startCreateGoalFolder"
+              @start-edit-goal-dir="startEditGoalFolder"
               class="h-100"
             />
           </v-col>
@@ -137,12 +137,12 @@
     />
 
     <!-- 对话框 -->
-    <GoalDirDialog
-      :model-value="goalDirDialog.show"
-      :goal-dir="GoalDirEntity.ensureGoalDir(goalDirDialog.goalDir)"
-      @update:modelValue="goalDirDialog.show = $event"
-      @create-goal-dir="handleCreateGoalDir"
-      @edit-goal-dir="handleUpdateGoalDir"
+    <GoalFolderDialog
+      :model-value="GoalFolderDialog.show"
+      :goal-dir="GoalFolderEntity.ensureGoalFolder(GoalFolderDialog.GoalFolder)"
+      @update:modelValue="GoalFolderDialog.show = $event"
+      @create-goal-dir="handleCreateGoalFolder"
+      @edit-goal-dir="handleUpdateGoalFolder"
     />
     <!-- 确认对话框 -->
     <ConfirmDialog
@@ -170,13 +170,13 @@ import { useGoalServices } from '../composables/useGoalService';
 import { useGoalDialog } from '../composables/useGoalDialog';
 // components
 import GoalCard from '../components/cards/GoalCard.vue';
-import GoalDir from '../components/GoalDir.vue';
+import GoalFolder from '../components/GoalFolder.vue';
 import GoalDialog from '../components/dialogs/GoalDialog.vue';
-import GoalDirDialog from '../components/dialogs/GoalDirDialog.vue';
+import GoalFolderDialog from '../components/dialogs/GoalFolderDialog.vue';
 import ConfirmDialog from '@renderer/shared/components/ConfirmDialog.vue';
 import type { IGoal } from '@common/modules/goal/types/goal';
 // domain
-import { GoalDir as GoalDirEntity } from '../../domain/aggregates/goalDir';
+import { GoalFolder as GoalFolderEntity } from '../../domain/aggregates/GoalFolder';
 import { Goal } from '../../domain/aggregates/goal';
 // stores
 import { useGoalStore } from '../stores/goalStore';
@@ -188,8 +188,8 @@ const { t } = useI18n();
 const {
   snackbar,
 
-  handleCreateGoalDir,
-  handleUpdateGoalDir,
+  handleCreateGoalFolder,
+  handleUpdateGoalFolder,
 } = useGoalServices();
 
 const {
@@ -202,11 +202,11 @@ const {
 } = useGoalDialog();
 
 // 本地状态
-const currentDir = ref<GoalDirEntity | null>(null);
+const currentDir = ref<GoalFolderEntity | null>(null);
 
-const allGoalDirs = computed(() => {
-  const allGoalDirs = goalStore.getAllGoalDirs;
-  const ensuredDirs = allGoalDirs.map((dir) => GoalDirEntity.ensureGoalDirNeverNull(dir));
+const allGoalFolders = computed(() => {
+  const allGoalFolders = goalStore.getAllGoalFolders;
+  const ensuredDirs = allGoalFolders.map((dir) => GoalFolderEntity.ensureGoalFolderNeverNull(dir));
   return ensuredDirs;
 });
 
@@ -217,9 +217,9 @@ const goalsInCurDir = computed(() => {
   return ensuredGoals;
 });
 
-const getSelectedGoalDir = (goalDir: GoalDirEntity) => {
-  currentDir.value = goalDir;
-  console.log('🎯 选中的目标目录:', goalDir);
+const getSelectedGoalFolder = (GoalFolder: GoalFolderEntity) => {
+  currentDir.value = GoalFolder;
+  console.log('🎯 选中的目标目录:', GoalFolder);
 };
 
 const statusTabs = [
@@ -299,12 +299,12 @@ const confirmDialog = ref<{
   onCancel: () => {},
 });
 
-const goalDirDialog = ref<{
+const GoalFolderDialog = ref<{
   show: boolean;
-  goalDir: GoalDirEntity | null;
+  GoalFolder: GoalFolderEntity | null;
 }>({
   show: false,
-  goalDir: null,
+  GoalFolder: null,
 });
 
 const startDeleteGoal = (goalUuid: string) => {
@@ -320,23 +320,23 @@ const startDeleteGoal = (goalUuid: string) => {
     },
   };
 };
-const startCreateGoalDir = () => {
-  goalDirDialog.value = {
+const startCreateGoalFolder = () => {
+  GoalFolderDialog.value = {
     show: true,
-    goalDir: null,
+    GoalFolder: null,
   };
 };
 
-const startEditGoalDir = (goalDir: GoalDirEntity) => {
-  goalDirDialog.value = {
+const startEditGoalFolder = (GoalFolder: GoalFolderEntity) => {
+  GoalFolderDialog.value = {
     show: true,
-    goalDir: goalDir,
+    GoalFolder: GoalFolder,
   };
 };
 
 onMounted(() => {
   // 查找 uuid 为 "system_all" 的目录
-  const allDir = allGoalDirs.value.find((dir) => dir.uuid === 'system_all');
+  const allDir = allGoalFolders.value.find((dir) => dir.uuid === 'system_all');
   if (allDir) {
     currentDir.value = allDir;
   }

@@ -3,8 +3,8 @@
  * 账户实体 - 客户端接口
  */
 
-import type { SubscriptionClient } from '../entities/SubscriptionClient';
-import type { AccountHistoryClient } from '../entities/AccountHistoryClient';
+import type { SubscriptionClient, SubscriptionClientDTO } from '../entities/SubscriptionClient';
+import type { AccountHistoryClient, AccountHistoryClientDTO } from '../entities/AccountHistoryClient';
 
 // ============ DTO 定义 ============
 
@@ -44,7 +44,7 @@ export interface AccountClientDTO {
       allowSearchByEmail: boolean;
     };
   };
-  subscription?: SubscriptionClient | null;
+  subscription?: SubscriptionClientDTO | null;
   storage: {
     used: number;
     quota: number;
@@ -56,7 +56,7 @@ export interface AccountClientDTO {
     loginAttempts: number;
     lockedUntil?: number | null;
   };
-  history: AccountHistoryClient[];
+  history: AccountHistoryClientDTO[];
   stats: {
     totalGoals: number;
     totalTasks: number;

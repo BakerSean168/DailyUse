@@ -9,7 +9,7 @@
     <v-card-title class="goal-card-header pa-4 pb-2">
       <div class="d-flex align-center justify-space-between">
         <div class="goal-title-section">
-          <h3 class="goal-title text-h6 font-weight-bold mb-1">{{ goal.name }}</h3>
+          <h3 class="goal-title text-h6 font-weight-bold mb-1">{{ goal.title }}</h3>
           <v-chip
             :color="goal.color || 'primary'"
             variant="tonal"
@@ -22,7 +22,7 @@
         </div>
 
         <!-- 今日进度提示 -->
-        <div v-if="goal.getTodayProgress() > 0" class="today-progress-badge">
+        <div v-if="todayProgress > 0" class="today-progress-badge">
           <v-chip
             color="success"
             variant="elevated"
@@ -30,7 +30,7 @@
             prepend-icon="mdi-trending-up"
             class="today-progress-chip"
           >
-            +{{ Math.round(goal.getTodayProgress()) }}%
+            +{{ Math.round(todayProgress) }}%
           </v-chip>
         </div>
       </div>
@@ -42,13 +42,13 @@
       <div class="progress-section mb-3">
         <div class="d-flex align-center justify-space-between mb-1">
           <span class="text-caption text-medium-emphasis">完成度</span>
-          <span class="text-subtitle-2 font-weight-bold" :style="{ color: goal.color }">
-            {{ goal.weightedProgress }}%
+          <span class="text-subtitle-2 font-weight-bold" :style="{ color: goal.color || 'primary' }">
+            {{ goal.overallProgress }}%
           </span>
         </div>
 
         <v-progress-linear
-          :model-value="goal.weightedProgress"
+          :model-value="goal.overallProgress"
           :color="goal.color || 'primary'"
           height="8"
           rounded
@@ -63,11 +63,11 @@
       <!-- 关键结果水平滚动区域 -->
       <div class="key-results-section">
         <div class="d-flex align-center mb-2">
-          <v-icon :color="goal.color" size="16" class="mr-1">mdi-target</v-icon>
+          <v-icon :color="goal.color || 'primary'" size="16" class="mr-1">mdi-target</v-icon>
           <span class="text-subtitle-2 font-weight-medium">关键结果</span>
           <v-spacer />
           <v-chip color="surface-variant" variant="outlined" size="x-small" class="results-count">
-            {{ goal.keyResults?.length || 0 }}
+            {{ goal.keyResultCount }}
           </v-chip>
         </div>
 
@@ -89,15 +89,22 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { Goal } from '@dailyuse/domain-client';
+import type { GoalClient } from '@dailyuse/domain-client';
 import KeyResultCard from './KeyResultCard.vue';
 
 const props = defineProps<{
-  goal: Goal;
+  goal: GoalClient;
 }>();
 
 const router = useRouter();
+
+// 计算今日进度（暂时返回0，后续可以根据实际需求实现）
+const todayProgress = computed(() => {
+  // TODO: 实现今日进度计算逻辑
+  return 0;
+});
 
 const navigateToGoalInfo = () => {
   router.push({ name: 'goal-info', params: { goalUuid: props.goal.uuid } });

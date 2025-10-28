@@ -1,22 +1,17 @@
 /**
- * 账户模块导出
- * Account Module Exports
+ * Account Web Module
+ * 账户 Web 模块导出
  */
 
-// 初始化函数导出
+// 应用层服务
+export * from './application/services';
+
+// 基础设施层 API 客户端
+export * from './infrastructure/api';
+
+// 展示层
+export { useAccountStore } from './presentation/stores/accountStore';
+export { useAccount } from './presentation/composables/useAccount';
+
+// 初始化
 export { registerAccountInitializationTasks } from './initialization/accountInitialization';
-
-// 事件处理器导出
-export { AccountEventHandlers } from './application/events/accountEventHandlers';
-
-// 应用服务导出
-export { ApplicationService as AccountApplicationService } from './application/services/ApplicationService';
-
-// API 客户端导出
-export { AccountApiService } from './infrastructure/api/ApiClient';
-
-// Store 导出
-export { useAccountStore } from './presentation/stores/useAccountStore';
-
-// Composables 导出
-export { useAccountService } from './presentation/composables/useAccountService';

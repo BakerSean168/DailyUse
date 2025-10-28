@@ -265,4 +265,149 @@ export class KeyResultClient extends Entity implements IKeyResultClient {
   public clone(): KeyResultClient {
     return KeyResultClient.fromClientDTO(this.toClientDTO());
   }
+
+  // ===== 修改方法 (Modification Methods) =====
+  // 遵循 DDD 最佳实践：聚合根应该提供修改属性的方法
+
+  /**
+   * 更新标题
+   */
+  public updateTitle(title: string): void {
+    this._title = title;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新描述
+   */
+  public updateDescription(description: string | null): void {
+    this._description = description;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新权重
+   */
+  public updateWeight(weight: number): void {
+    if (weight < 0 || weight > 100) {
+      throw new Error('权重必须在 0-100 之间');
+    }
+    this._weight = weight;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新排序
+   */
+  public updateOrder(order: number): void {
+    this._order = order;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新进度 - 更新当前值
+   */
+  public updateCurrentValue(currentValue: number): void {
+    this._progress.updateCurrentValue(currentValue);
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新目标值
+   */
+  public updateTargetValue(targetValue: number): void {
+    this._progress.updateTargetValue(targetValue);
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新初始值
+   */
+  public updateInitialValue(initialValue: number): void {
+    this._progress.updateInitialValue(initialValue);
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新单位
+   */
+  public updateUnit(unit: string): void {
+    this._progress.updateUnit(unit);
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新值类型
+   */
+  public updateValueType(valueType: GoalContracts.KeyResultValueType): void {
+    this._progress.updateValueType(valueType);
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新聚合方法
+   */
+  public updateAggregationMethod(method: GoalContracts.AggregationMethod): void {
+    this._progress.updateAggregationMethod(method);
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 批量更新基本信息
+   */
+  public updateBasicInfo(params: {
+    title?: string;
+    description?: string | null;
+    weight?: number;
+    order?: number;
+  }): void {
+    if (params.title !== undefined) {
+      this._title = params.title;
+    }
+    if (params.description !== undefined) {
+      this._description = params.description;
+    }
+    if (params.weight !== undefined) {
+      if (params.weight < 0 || params.weight > 100) {
+        throw new Error('权重必须在 0-100 之间');
+      }
+      this._weight = params.weight;
+    }
+    if (params.order !== undefined) {
+      this._order = params.order;
+    }
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 批量更新进度配置
+   */
+  public updateProgressConfig(params: {
+    initialValue?: number;
+    currentValue?: number;
+    targetValue?: number;
+    unit?: string;
+    valueType?: GoalContracts.KeyResultValueType;
+    aggregationMethod?: GoalContracts.AggregationMethod;
+  }): void {
+    if (params.initialValue !== undefined) {
+      this._progress.updateInitialValue(params.initialValue);
+    }
+    if (params.currentValue !== undefined) {
+      this._progress.updateCurrentValue(params.currentValue);
+    }
+    if (params.targetValue !== undefined) {
+      this._progress.updateTargetValue(params.targetValue);
+    }
+    if (params.unit !== undefined) {
+      this._progress.updateUnit(params.unit);
+    }
+    if (params.valueType !== undefined) {
+      this._progress.updateValueType(params.valueType);
+    }
+    if (params.aggregationMethod !== undefined) {
+      this._progress.updateAggregationMethod(params.aggregationMethod);
+    }
+    this._updatedAt = Date.now();
+  }
 }

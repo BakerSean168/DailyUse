@@ -200,18 +200,18 @@ import { format, startOfDay, isToday, isSameDay } from 'date-fns';
 // types
 import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
-import { Goal, KeyResult } from '@dailyuse/domain-client';
+import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
 
 type KeyResultLink = TaskContracts.KeyResultLink;
 
 // composables
-import { useTask } from '../composables/useTask';
+import { useTaskInstance } from '../composables/useTaskInstance';
 // 导入 task web service
 import { getTaskWebService } from '../../index';
 // 导入 TaskInstanceCard 组件
 import TaskInstanceCard from './cards/TaskInstanceCard.vue';
 
-const { completeTaskInstance, undoCompleteTaskInstance } = useTask();
+const { completeTaskInstance, undoCompleteTaskInstance } = useTaskInstance();
 
 const taskStore = useTaskStore();
 const goalStore = useGoalStore();

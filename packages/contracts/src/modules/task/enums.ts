@@ -3,6 +3,10 @@
  * 任务模块枚举定义
  */
 
+// ============ 从 shared 导入并重新导出 ============
+import { ImportanceLevel, UrgencyLevel } from '../../shared/index';
+export { ImportanceLevel, UrgencyLevel };
+
 // ============ 任务类型枚举 ============
 
 /**

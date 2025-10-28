@@ -1,0 +1,355 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+# ⚠️ 重要：设置并发策略，避免重复运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Nx Cloud 相关环境变量（可选，如果使用 Nx Cloud）
+  NX_CLOUD_DISTRIBUTED_EXECUTION: true
+  # Node 和 pnpm 版本
+  NODE_VERSION: '22.20.0'
+  PNPM_VERSION: '10.18.3'
+
+jobs:
+  # ========== Job 1: 安装依赖 ==========
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # ✅ 重要：获取完整历史，Nx 需要用来计算 affected
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: 🗂️ Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: 🔄 Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 💾 Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+  # ========== Job 2: Lint 受影响的项目 ==========
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🔄 Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🔍 Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v4
+
+      - name: 🧹 Lint affected projects
+        run: |
+          # ✅ 只 lint 受影响的项目
+          pnpm nx affected -t lint --parallel=3 --configuration=ci
+
+  # ========== Job 3: Typecheck 受影响的项目 ==========
+  typecheck:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🔄 Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🔍 Derive appropriate SHAs
+        uses: nrwl/nx-set-shas@v4
+
+      - name: 🔍 Typecheck affected projects
+        run: |
+          # ✅ 只 typecheck 受影响的项目
+          pnpm nx affected -t typecheck --parallel=3
+
+  # ========== Job 4: Test 受影响的项目 ==========
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🔄 Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🔍 Derive appropriate SHAs
+        uses: nrwl/nx-set-shas@v4
+
+      - name: 🧪 Test affected projects
+        run: |
+          # ✅ 只测试受影响的项目
+          pnpm nx affected -t test --parallel=3 --configuration=ci --coverage
+
+      - name: 📊 Upload coverage reports
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/*/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+
+  # ========== Job 5: Build 受影响的项目 ==========
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🔄 Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🔍 Derive appropriate SHAs
+        uses: nrwl/nx-set-shas@v4
+
+      - name: 🏗️ Build affected projects
+        run: |
+          # ✅ 只构建受影响的项目（包含依赖）
+          pnpm nx affected -t build --parallel=3 --configuration=production
+
+      - name: 💾 Cache build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            dist
+            apps/*/dist
+            packages/*/dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+  # ========== Job 6: E2E 测试（仅当 web 或 api 受影响时） ==========
+  e2e:
+    needs: [setup, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # ✅ 只在 web 或 api 项目受影响时运行
+    if: contains(github.event.head_commit.modified, 'apps/web/') || contains(github.event.head_commit.modified, 'apps/api/')
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: dailyuse_test
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: dailyuse_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🔄 Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🔄 Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            dist
+            apps/*/dist
+            packages/*/dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+
+      - name: 🗄️ Setup test database
+        env:
+          DATABASE_URL: postgresql://dailyuse_test:test_password@localhost:5432/dailyuse_test
+        run: |
+          pnpm nx run api:prisma:generate
+          pnpm nx run api:prisma:migrate:deploy
+          cd apps/api && pnpm tsx prisma/seed-e2e.ts
+
+      - name: 🎭 Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: 🚀 Start servers
+        env:
+          DATABASE_URL: postgresql://dailyuse_test:test_password@localhost:5432/dailyuse_test
+          NODE_ENV: test
+          JWT_SECRET: test-secret-key-for-e2e
+        run: |
+          pnpm nx serve api &
+          pnpm nx serve web &
+          sleep 30
+
+      - name: 🧪 Run E2E tests
+        env:
+          DATABASE_URL: postgresql://dailyuse_test:test_password@localhost:5432/dailyuse_test
+          CI: true
+        run: pnpm nx e2e web
+
+      - name: 📊 Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 30
+
+  # ========== Job 7: 状态检查（所有必须的任务都通过） ==========
+  ci-success:
+    needs: [lint, typecheck, test, build]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: ✅ Check CI status
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.typecheck.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ]; then
+            echo "❌ CI failed"
+            exit 1
+          fi
+          echo "✅ CI passed"

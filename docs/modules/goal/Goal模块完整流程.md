@@ -11,7 +11,7 @@ Goal 模块负责管理用户的目标（Goals）功能，包括：
 
 - 创建、查询、更新、删除目标
 - 目标状态管理（激活、暂停、完成、归档）
-- 目标目录（GoalDirectory）管理
+- 目标目录（GoalFolderectory）管理
 - 前后端数据同步
 - 乐观更新（Optimistic Updates）
 
@@ -72,7 +72,7 @@ apps/web/src/modules/goal/
 3. **`goalApiClient.ts`** (364行)
    - 封装所有 Goal 相关的 HTTP 请求
    - 使用 Axios 发送请求
-   - 包含 `GoalApiClient` 和 `GoalDirApiClient`
+   - 包含 `GoalApiClient` 和 `GoalFolderApiClient`
 
 4. **`goalStore.ts`** (616行)
    - Pinia Store，管理目标状态

@@ -1,7 +1,7 @@
 <template>
   <v-card
     class="key-result-card"
-    :class="{ 'key-result-card--completed': keyResult.progress >= 100 }"
+    :class="{ 'key-result-card--completed': keyResult.progressPercentage >= 100 }"
     variant="outlined"
     elevation="0"
     hover
@@ -12,7 +12,7 @@
       class="progress-background"
       :style="{
         background: `linear-gradient(90deg, ${goal?.color || '#1976D2'} 0%, ${goal?.color || '#1976D2'}88 100%)`,
-        width: `${keyResult.progress}%`,
+        width: `${keyResult.progressPercentage}%`,
       }"
     ></div>
 
@@ -20,14 +20,14 @@
     <v-card-title class="pa-4 pb-2">
       <div class="d-flex align-center justify-space-between w-100">
         <div class="key-result-title">
-          <h3 class="text-h6 font-weight-bold mb-0">{{ keyResult.name }}</h3>
+          <h3 class="text-h6 font-weight-bold mb-0">{{ keyResult.title }}</h3>
           <div class="d-flex align-center mt-1">
             <v-icon
-              :color="keyResult.progress >= 100 ? 'success' : 'medium-emphasis'"
+              :color="keyResult.progressPercentage >= 100 ? 'success' : 'medium-emphasis'"
               size="16"
               class="mr-1"
             >
-              {{ keyResult.progress >= 100 ? 'mdi-check-circle' : 'mdi-target' }}
+              {{ keyResult.progressPercentage >= 100 ? 'mdi-check-circle' : 'mdi-target' }}
             </v-icon>
             <span class="text-caption text-medium-emphasis"> 权重: {{ keyResult.weight }} </span>
           </div>
@@ -35,13 +35,13 @@
 
         <!-- 进度圆环 -->
         <v-progress-circular
-          :model-value="keyResult.progress"
+          :model-value="keyResult.progressPercentage"
           :color="goal?.color || 'primary'"
           size="48"
           width="4"
           class="progress-ring"
         >
-          <span class="text-caption font-weight-bold">{{ Math.round(keyResult.progress) }}%</span>
+          <span class="text-caption font-weight-bold">{{ Math.round(keyResult.progressPercentage) }}%</span>
         </v-progress-circular>
       </div>
     </v-card-title>
@@ -52,11 +52,11 @@
         <!-- 数值显示 -->
         <div class="value-display">
           <v-chip :color="goal?.color || 'primary'" variant="tonal" size="small" class="mr-2">
-            <span class="font-weight-bold">{{ keyResult.currentValue }}</span>
+            <span class="font-weight-bold">{{ keyResult.progress.currentValue }}</span>
           </v-chip>
           <v-icon size="16" color="medium-emphasis">mdi-arrow-right</v-icon>
           <v-chip color="surface-variant" variant="outlined" size="small" class="ml-2">
-            <span class="font-weight-bold">{{ keyResult.targetValue }}</span>
+            <span class="font-weight-bold">{{ keyResult.progress.targetValue }}</span>
           </v-chip>
         </div>
 
@@ -94,15 +94,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { format } from 'date-fns';
-import { KeyResult, Goal } from '@dailyuse/domain-client';
+import { KeyResultClient, GoalClient } from '@dailyuse/domain-client';
 // composables
 import { useGoal } from '../../composables/useGoal';
 // components
 import GoalRecordDialog from '../dialogs/GoalRecordDialog.vue';
 
+const { archiveGoal } = useGoal();
 const props = defineProps<{
-  keyResult: KeyResult;
-  goal?: Goal;
+  keyResult: KeyResultClient;
+  goal?: GoalClient;
 }>();
 
 // components

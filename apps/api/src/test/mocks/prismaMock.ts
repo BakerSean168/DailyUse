@@ -20,7 +20,7 @@ const mockDataStore = {
   taskMetaTemplate: new Map(),
   // Goal相关表
   goal: new Map(),
-  goalDir: new Map(),
+  GoalFolder: new Map(),
   keyResult: new Map(),
   progressRecord: new Map(),
   // Reminder相关表
@@ -86,7 +86,7 @@ function includeRelations(tableName: keyof typeof mockDataStore, record: any, in
     }
 
     if (include.reviews) {
-      const reviews = Array.from(mockDataStore.goalDir.values()).filter(
+      const reviews = Array.from(mockDataStore.GoalFolder.values()).filter(
         (review: any) => review.goalUuid === record.uuid,
       );
       result.reviews = reviews;
@@ -424,7 +424,7 @@ export const mockPrismaClient = {
 
   // Goal相关表
   goal: createMockModel('goal'),
-  goalDir: createMockModel('goalDir'),
+  GoalFolder: createMockModel('GoalFolder'),
   keyResult: createMockModel('keyResult'),
   progressRecord: createMockModel('progressRecord'),
   goalRecord: createMockModel('progressRecord'), // 别名：goalRecord 指向 progressRecord
