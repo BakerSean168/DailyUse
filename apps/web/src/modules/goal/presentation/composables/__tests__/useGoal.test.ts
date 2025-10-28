@@ -8,10 +8,10 @@ vi.mock('../../../application/services/GoalWebApplicationService', () => ({
     createGoal: vi.fn(),
     updateGoal: vi.fn(),
     deleteGoal: vi.fn(),
-    getGoalDirs: vi.fn(),
-    createGoalDir: vi.fn(),
-    updateGoalDir: vi.fn(),
-    deleteGoalDir: vi.fn(),
+    getGoalFolders: vi.fn(),
+    createGoalFolder: vi.fn(),
+    updateGoalFolder: vi.fn(),
+    deleteGoalFolder: vi.fn(),
   })),
 }));
 
@@ -20,16 +20,16 @@ vi.mock('../stores/goalStore', () => ({
     isLoading: false,
     error: null,
     getAllGoals: [],
-    getAllGoalDirs: [],
+    getAllGoalFolders: [],
     getSelectedGoal: null,
     setGoals: vi.fn(),
     addGoal: vi.fn(),
     updateGoal: vi.fn(),
     deleteGoal: vi.fn(),
-    setGoalDirs: vi.fn(),
-    addGoalDir: vi.fn(),
-    updateGoalDir: vi.fn(),
-    deleteGoalDir: vi.fn(),
+    setGoalFolders: vi.fn(),
+    addGoalFolder: vi.fn(),
+    updateGoalFolder: vi.fn(),
+    deleteGoalFolder: vi.fn(),
   })),
 }));
 
@@ -59,7 +59,7 @@ describe('useGoal', () => {
       expect(goal.isLoading).toBeDefined();
       expect(goal.error).toBeDefined();
       expect(goal.goals).toBeDefined();
-      expect(goal.goalDirs).toBeDefined();
+      expect(goal.GoalFolders).toBeDefined();
       expect(goal.currentGoal).toBeDefined();
     });
 
@@ -70,8 +70,8 @@ describe('useGoal', () => {
       expect(typeof goal.createGoal).toBe('function');
       expect(typeof goal.updateGoal).toBe('function');
       expect(typeof goal.deleteGoal).toBe('function');
-      expect(typeof goal.fetchGoalDirs).toBe('function');
-      expect(typeof goal.createGoalDir).toBe('function');
+      expect(typeof goal.fetchGoalFolders).toBe('function');
+      expect(typeof goal.createGoalFolder).toBe('function');
     });
 
     it('应该正确初始化本地状态', () => {
@@ -140,7 +140,7 @@ describe('useGoal', () => {
       const goal = useGoal();
 
       // 测试方法存在性
-      expect(typeof goal.fetchGoalDirs).toBe('function');
+      expect(typeof goal.fetchGoalFolders).toBe('function');
     });
 
     it('应该能够创建目标目录', async () => {
@@ -152,7 +152,7 @@ describe('useGoal', () => {
       };
 
       // 测试方法存在性
-      expect(typeof goal.createGoalDir).toBe('function');
+      expect(typeof goal.createGoalFolder).toBe('function');
     });
 
     it('应该能够更新目标目录', async () => {
@@ -163,14 +163,14 @@ describe('useGoal', () => {
       };
 
       // 测试方法存在性
-      expect(typeof goal.updateGoalDir).toBe('function');
+      expect(typeof goal.updateGoalFolder).toBe('function');
     });
 
     it('应该能够删除目标目录', async () => {
       const goal = useGoal();
 
       // 测试方法存在性
-      expect(typeof goal.deleteGoalDir).toBe('function');
+      expect(typeof goal.deleteGoalFolder).toBe('function');
     });
   });
 
@@ -198,8 +198,8 @@ describe('useGoal', () => {
     it('应该正确提供目标目录列表', () => {
       const goal = useGoal();
 
-      expect(goal.goalDirs.value).toBeDefined();
-      expect(Array.isArray(goal.goalDirs.value)).toBe(true);
+      expect(goal.GoalFolders.value).toBeDefined();
+      expect(Array.isArray(goal.GoalFolders.value)).toBe(true);
     });
 
     it('应该正确提供当前选中目标', () => {
@@ -307,7 +307,7 @@ describe('useGoal', () => {
       expect(Array.isArray(goal.goals.value)).toBe(true);
 
       // 目标目录应该是数组
-      expect(Array.isArray(goal.goalDirs.value)).toBe(true);
+      expect(Array.isArray(goal.GoalFolders.value)).toBe(true);
     });
 
     it('应该正确处理错误状态', () => {

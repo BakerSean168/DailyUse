@@ -3,7 +3,7 @@
  * 为任务模块提供调度功能的前端集成接口
  */
 
-import { getScheduleWebService } from '@/modules/schedule/application/services/ScheduleWebApplicationService';
+import { getScheduleWebService } from '@/modules/schedule';
 import type { ScheduleContracts } from '@dailyuse/contracts';
 import { ScheduleTaskType, SchedulePriority } from '@dailyuse/contracts';
 

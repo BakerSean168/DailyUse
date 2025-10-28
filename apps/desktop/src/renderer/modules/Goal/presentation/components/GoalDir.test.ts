@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 // import { mount } from '@vue/test-utils';
 // import { createVuetify } from 'vuetify';
 import { createPinia, setActivePinia } from 'pinia';
-// import GoalDir from './GoalDir.vue';
-import { GoalDir as GoalDirEntity } from '../../domain/aggregates/goalDir';
+// import GoalFolder from './GoalFolder.vue';
+import { GoalFolder as GoalFolderEntity } from '../../domain/aggregates/GoalFolder';
 import { useGoalStore } from '../stores/goalStore';
 
 // Mock the goal store
@@ -11,28 +11,28 @@ vi.mock('../stores/goalStore', () => ({
   useGoalStore: vi.fn(),
 }));
 
-describe('GoalDir 组件逻辑测试', () => {
+describe('GoalFolder 组件逻辑测试', () => {
   let mockGoalStore: any;
-  let mockGoalDirs: GoalDirEntity[];
+  let mockGoalFolders: GoalFolderEntity[];
 
   beforeEach(() => {
     setActivePinia(createPinia());
 
     // 创建测试数据
-    mockGoalDirs = [
-      new GoalDirEntity({
+    mockGoalFolders = [
+      new GoalFolderEntity({
         uuid: 'system_all',
         name: '全部',
         icon: 'mdi-folder-multiple',
         color: '#9E9E9E',
       }),
-      new GoalDirEntity({
+      new GoalFolderEntity({
         uuid: 'dir-1',
         name: '工作目标',
         icon: 'mdi-briefcase',
         color: '#2196F3',
       }),
-      new GoalDirEntity({
+      new GoalFolderEntity({
         uuid: 'dir-2',
         name: '学习目标',
         icon: 'mdi-school',
@@ -55,14 +55,14 @@ describe('GoalDir 组件逻辑测试', () => {
 
   describe('数据准备', () => {
     it('应该正确创建测试数据', () => {
-      expect(mockGoalDirs).toHaveLength(3);
-      expect(mockGoalDirs[0].name).toBe('全部');
-      expect(mockGoalDirs[1].name).toBe('工作目标');
-      expect(mockGoalDirs[2].name).toBe('学习目标');
+      expect(mockGoalFolders).toHaveLength(3);
+      expect(mockGoalFolders[0].name).toBe('全部');
+      expect(mockGoalFolders[1].name).toBe('工作目标');
+      expect(mockGoalFolders[2].name).toBe('学习目标');
     });
 
     it('目录实体应该有正确的属性', () => {
-      const firstDir = mockGoalDirs[0];
+      const firstDir = mockGoalFolders[0];
 
       expect(firstDir.uuid).toBe('system_all');
       expect(firstDir.name).toBe('全部');
@@ -98,31 +98,31 @@ describe('GoalDir 组件逻辑测试', () => {
 
   describe('组件逻辑模拟', () => {
     // 模拟组件内部逻辑
-    class MockGoalDirComponent {
-      selectedGoalDir: GoalDirEntity | null = null;
-      goalDirs: GoalDirEntity[] = [];
+    class MockGoalFolderComponent {
+      selectedGoalFolder: GoalFolderEntity | null = null;
+      GoalFolders: GoalFolderEntity[] = [];
       goalStore = useGoalStore();
 
-      constructor(goalDirs: GoalDirEntity[]) {
-        this.goalDirs = goalDirs;
+      constructor(GoalFolders: GoalFolderEntity[]) {
+        this.GoalFolders = GoalFolders;
         this.onMounted();
       }
 
       onMounted() {
         // 模拟 onMounted 生命周期
-        const allDir = this.goalDirs.find((dir) => dir.uuid === 'system_all');
+        const allDir = this.GoalFolders.find((dir) => dir.uuid === 'system_all');
         if (allDir) {
-          this.selectedGoalDir = allDir;
+          this.selectedGoalFolder = allDir;
         }
       }
 
-      selectDir(goalDir: GoalDirEntity) {
-        this.selectedGoalDir = goalDir;
+      selectDir(GoalFolder: GoalFolderEntity) {
+        this.selectedGoalFolder = GoalFolder;
         // 模拟发射事件
-        return { event: 'selected-goal-dir', data: goalDir };
+        return { event: 'selected-goal-dir', data: GoalFolder };
       }
 
-      startCreateGoalDir() {
+      startCreateGoalFolder() {
         // 模拟发射事件
         return { event: 'start-create-goal-dir', data: [] };
       }
@@ -133,40 +133,40 @@ describe('GoalDir 组件逻辑测试', () => {
     }
 
     it('应该在挂载时自动选择 system_all 目录', () => {
-      const component = new MockGoalDirComponent(mockGoalDirs);
+      const component = new MockGoalFolderComponent(mockGoalFolders);
 
-      expect(component.selectedGoalDir?.uuid).toBe('system_all');
+      expect(component.selectedGoalFolder?.uuid).toBe('system_all');
     });
 
     it('如果没有 system_all 目录，应该不自动选择任何目录', () => {
-      const dirsWithoutSystemAll = mockGoalDirs.filter((dir) => dir.uuid !== 'system_all');
-      const component = new MockGoalDirComponent(dirsWithoutSystemAll);
+      const dirsWithoutSystemAll = mockGoalFolders.filter((dir) => dir.uuid !== 'system_all');
+      const component = new MockGoalFolderComponent(dirsWithoutSystemAll);
 
-      expect(component.selectedGoalDir).toBeNull();
+      expect(component.selectedGoalFolder).toBeNull();
     });
 
     it('选择目录应该更新内部状态并返回事件数据', () => {
-      const component = new MockGoalDirComponent(mockGoalDirs);
-      const targetDir = mockGoalDirs[1]; // 工作目标
+      const component = new MockGoalFolderComponent(mockGoalFolders);
+      const targetDir = mockGoalFolders[1]; // 工作目标
 
       const result = component.selectDir(targetDir);
 
-      expect(component.selectedGoalDir).toBe(targetDir);
+      expect(component.selectedGoalFolder).toBe(targetDir);
       expect(result.event).toBe('selected-goal-dir');
       expect(result.data).toBe(targetDir);
     });
 
     it('开始创建目录应该返回正确的事件数据', () => {
-      const component = new MockGoalDirComponent(mockGoalDirs);
+      const component = new MockGoalFolderComponent(mockGoalFolders);
 
-      const result = component.startCreateGoalDir();
+      const result = component.startCreateGoalFolder();
 
       expect(result.event).toBe('start-create-goal-dir');
       expect(result.data).toEqual([]);
     });
 
     it('应该能够获取目录下的目标数量', () => {
-      const component = new MockGoalDirComponent(mockGoalDirs);
+      const component = new MockGoalFolderComponent(mockGoalFolders);
 
       expect(component.getGoalsCount('system_all')).toBe(5);
       expect(component.getGoalsCount('dir-1')).toBe(3);
@@ -177,26 +177,26 @@ describe('GoalDir 组件逻辑测试', () => {
   describe('状态管理', () => {
     it('选择状态应该正确更新', () => {
       class StateTestComponent {
-        selectedGoalDir: GoalDirEntity | null = null;
+        selectedGoalFolder: GoalFolderEntity | null = null;
 
-        selectDir(dir: GoalDirEntity) {
-          this.selectedGoalDir = dir;
+        selectDir(dir: GoalFolderEntity) {
+          this.selectedGoalFolder = dir;
         }
 
-        isSelected(dir: GoalDirEntity): boolean {
-          return this.selectedGoalDir?.uuid === dir.uuid;
+        isSelected(dir: GoalFolderEntity): boolean {
+          return this.selectedGoalFolder?.uuid === dir.uuid;
         }
       }
 
       const component = new StateTestComponent();
-      const targetDir = mockGoalDirs[1];
+      const targetDir = mockGoalFolders[1];
 
       expect(component.isSelected(targetDir)).toBe(false);
 
       component.selectDir(targetDir);
 
       expect(component.isSelected(targetDir)).toBe(true);
-      expect(component.isSelected(mockGoalDirs[0])).toBe(false);
+      expect(component.isSelected(mockGoalFolders[0])).toBe(false);
     });
   });
 
@@ -212,7 +212,7 @@ describe('GoalDir 组件逻辑测试', () => {
       }
 
       const generateRenderData = (
-        dirs: GoalDirEntity[],
+        dirs: GoalFolderEntity[],
         selectedUuid: string | null,
         store: any,
       ): RenderItem[] => {
@@ -226,7 +226,7 @@ describe('GoalDir 组件逻辑测试', () => {
         }));
       };
 
-      const renderData = generateRenderData(mockGoalDirs, 'dir-1', mockGoalStore);
+      const renderData = generateRenderData(mockGoalFolders, 'dir-1', mockGoalStore);
 
       expect(renderData).toHaveLength(3);
       expect(renderData[0].name).toBe('全部');
@@ -242,7 +242,7 @@ describe('GoalDir 组件逻辑测试', () => {
   describe('错误处理逻辑', () => {
     it('应该处理空的目录列表', () => {
       const component = class {
-        static handleEmptyDirs(dirs: GoalDirEntity[]) {
+        static handleEmptyDirs(dirs: GoalFolderEntity[]) {
           return dirs.length === 0 ? [] : dirs;
         }
       };
@@ -300,7 +300,7 @@ describe('GoalDir 组件逻辑测试', () => {
       }
 
       const emitter = new MockEventEmitter();
-      const targetDir = mockGoalDirs[1];
+      const targetDir = mockGoalFolders[1];
 
       emitter.emit('selected-goal-dir', targetDir);
 

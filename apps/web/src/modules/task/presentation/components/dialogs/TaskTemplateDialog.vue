@@ -113,9 +113,9 @@
 
 import { ref, computed, watch, reactive, nextTick, defineEmits } from 'vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
-import { TaskTemplate, TaskMetaTemplate } from '@dailyuse/domain-client';
+import { TaskTemplate } from '@dailyuse/domain-client';
 import { TaskTimeType, TaskScheduleMode, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
-import { useTask } from '../../composables/useTask';
+import { useTaskTemplate } from '../../composables/useTaskTemplate';
 import { useTaskStore } from '../../stores/taskStore';
 
 // ===== 类型定义 =====
@@ -141,7 +141,7 @@ interface FormData {
 }
 
 // ===== 组合式函数 =====
-const { createTaskTemplateByTaskMetaTemplate, createTaskTemplate, updateTaskTemplate } = useTask();
+const { createTaskTemplateByMetaTemplate, createTaskTemplate, updateTaskTemplate } = useTaskTemplate();
 const taskStore = useTaskStore();
 
 // ===== Emits 定义 =====
@@ -457,7 +457,7 @@ const openForCreationWithMetaTemplateUuid = async (metaTemplateUuid: string): Pr
     operationState.loadingText = '正在加载元模板...';
 
     // 通过应用服务获取基于元模板的任务模板
-    const template = await createTaskTemplateByTaskMetaTemplate(metaTemplateUuid);
+    const template = await createTaskTemplateByMetaTemplate(metaTemplateUuid);
 
     formData.taskTemplate = template;
     formData.metaTemplateUuid = metaTemplateUuid;

@@ -199,7 +199,6 @@ import TaskTemplateDialog from './dialogs/TaskTemplateDialog.vue';
 import TemplateSelectionDialog from './dialogs/TemplateSelectionDialog.vue';
 import type { TaskContracts } from '@dailyuse/contracts';
 // composables
-import { useTask } from '../composables/useTask';
 import { taskDependencyApiClient } from '../../infrastructure/api/taskApiClient';
 
 type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;

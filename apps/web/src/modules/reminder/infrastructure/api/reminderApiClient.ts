@@ -1,5 +1,4 @@
-import type { ReminderContracts } from '@dailyuse/contracts';
-import { ReminderPriority, ReminderStatus } from '@dailyuse/contracts';
+import type { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
 import { apiClient } from '@/shared/api/instances';
 
 /**
@@ -15,8 +14,8 @@ class ReminderApiClient {
    * 创建提醒模板聚合根
    */
   async createReminderTemplate(
-    request: ReminderContracts.CreateReminderTemplateRequest,
-  ): Promise<ReminderContracts.ReminderTemplateResponse> {
+    request: ReminderContracts.CreateReminderTemplateRequestDTO,
+  ): Promise<ReminderContracts.ReminderTemplateClientDTO> {
     const data = await apiClient.post(this.baseUrl, request);
     return data;
   }
@@ -26,8 +25,8 @@ class ReminderApiClient {
    */
   async updateReminderTemplate(
     templateUuid: string,
-    request: Partial<ReminderContracts.CreateReminderTemplateRequest>,
-  ): Promise<ReminderContracts.ReminderTemplateResponse> {
+    request: ReminderContracts.UpdateReminderTemplateRequestDTO,
+  ): Promise<ReminderContracts.ReminderTemplateClientDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${templateUuid}`, request);
     return data;
   }
@@ -37,7 +36,7 @@ class ReminderApiClient {
    */
   async getReminderTemplate(
     templateUuid: string,
-  ): Promise<ReminderContracts.ReminderTemplateResponse> {
+  ): Promise<ReminderContracts.ReminderTemplateClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${templateUuid}`);
     return data;
   }
@@ -76,15 +75,15 @@ class ReminderApiClient {
     page?: number;
     limit?: number;
     groupUuid?: string;
-    enabled?: boolean;
-    priority?: ReminderContracts.ReminderPriority;
-  }): Promise<ReminderContracts.IReminderTemplate[]> {
+    status?: ReminderContracts.ReminderStatus;
+    importanceLevel?: ImportanceLevel;
+  }): Promise<ReminderContracts.ReminderTemplateClientDTO[]> {
     const response = await apiClient.get(this.baseUrl, { params });
     console.log('📋 getReminderTemplates 响应:', response);
 
-    // 处理新的响应格式：{ reminders: [...], total, page, limit, hasMore }
-    if (response && typeof response === 'object' && 'reminders' in response) {
-      return Array.isArray(response.reminders) ? response.reminders : [];
+    // 处理新的响应格式：{ templates: [...], total }
+    if (response && typeof response === 'object' && 'templates' in response) {
+      return Array.isArray(response.templates) ? response.templates : [];
     }
     // 兼容旧格式直接返回数组的情况
     return Array.isArray(response) ? response : [];
@@ -96,13 +95,13 @@ class ReminderApiClient {
   async getActiveTemplates(params?: {
     page?: number;
     limit?: number;
-  }): Promise<ReminderContracts.IReminderTemplate[]> {
+  }): Promise<ReminderContracts.ReminderTemplateClientDTO[]> {
     const response = await apiClient.get(`${this.baseUrl}/active`, { params });
     console.log('📋 getActiveTemplates 响应:', response);
 
-    // 处理新的响应格式：{ reminders: [...], total, page, limit, hasMore }
-    if (response && typeof response === 'object' && 'reminders' in response) {
-      return Array.isArray(response.reminders) ? response.reminders : [];
+    // 处理新的响应格式：{ templates: [...], total }
+    if (response && typeof response === 'object' && 'templates' in response) {
+      return Array.isArray(response.templates) ? response.templates : [];
     }
     // 兼容旧格式直接返回数组的情况
     return Array.isArray(response) ? response : [];
@@ -132,7 +131,7 @@ class ReminderApiClient {
   /**
    * 聚合根统计信息
    */
-  async getAggregateStats(templateUuid: string): Promise<ReminderContracts.ReminderStatsResponse> {
+  async getAggregateStats(templateUuid: string): Promise<ReminderContracts.ReminderStatisticsClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${templateUuid}/stats`);
     return data;
   }
@@ -156,8 +155,8 @@ class ReminderApiClient {
   async getActiveReminders(params?: {
     limit?: number;
     timeWindow?: number; // 时间窗口（小时）
-    priority?: ReminderContracts.ReminderPriority;
-  }): Promise<ReminderContracts.ReminderInstanceListResponse> {
+    importanceLevel?: ImportanceLevel;
+  }): Promise<{ reminders: any[]; total: number; page: number; limit: number; hasMore: boolean }> {
     // ✅ 使用 Reminder 模块的新 API
     const data = await apiClient.get(`${this.baseUrl}/upcoming`, {
       params: {
@@ -168,20 +167,18 @@ class ReminderApiClient {
     console.log('📋 getActiveReminders (Reminder API) 响应:', data);
 
     // 后端返回的格式已经是 UpcomingReminderItem[]
-    // 转换为 ReminderInstanceListResponse 格式
     if (!data || !Array.isArray(data)) {
       return { reminders: [], total: 0, page: 1, limit: params?.limit || 10, hasMore: false };
     }
 
-    // 转换为 ReminderInstance 格式
+    // 转换为统一格式
     const reminders = data.map((item: any) => ({
-      uuid: item.templateUuid, // 使用 templateUuid 作为实例 uuid
+      uuid: item.templateUuid,
       templateUuid: item.templateUuid,
       title: item.templateName,
       message: item.message,
       scheduledTime: item.nextTriggerTime,
-      priority: item.priority || ReminderPriority.NORMAL,
-      status: ReminderStatus.PENDING,
+      importanceLevel: item.importanceLevel,
       enabled: true,
       metadata: {
         category: item.category,
@@ -193,7 +190,6 @@ class ReminderApiClient {
       version: 1,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      // 客户端 DTO 需要的额外字段
       isOverdue: new Date(item.nextTriggerTime) < new Date(),
       timeUntil: Math.max(0, new Date(item.nextTriggerTime).getTime() - Date.now()),
       formattedTime: new Date(item.nextTriggerTime).toLocaleString(),
@@ -212,8 +208,31 @@ class ReminderApiClient {
   /**
    * 获取全局提醒统计
    */
-  async getGlobalStats(): Promise<ReminderContracts.ReminderStatsResponse> {
+  async getGlobalStats(): Promise<ReminderContracts.ReminderStatisticsClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/stats`);
+    return data;
+  }
+
+  /**
+   * 搜索提醒模板
+   */
+  async searchReminderTemplates(
+    accountUuid: string,
+    query: string,
+  ): Promise<ReminderContracts.ReminderTemplateClientDTO[]> {
+    const response = await apiClient.get(`${this.baseUrl}/search`, {
+      params: { accountUuid, query },
+    });
+    return Array.isArray(response) ? response : [];
+  }
+
+  /**
+   * 获取用户提醒统计
+   */
+  async getReminderStatistics(
+    accountUuid: string,
+  ): Promise<ReminderContracts.ReminderStatsClientDTO> {
+    const data = await apiClient.get(`/reminders/statistics/${accountUuid}`);
     return data;
   }
 
@@ -223,8 +242,8 @@ class ReminderApiClient {
    * 创建提醒模板分组
    */
   async createReminderTemplateGroup(
-    request: ReminderContracts.CreateReminderTemplateGroupRequest,
-  ): Promise<ReminderContracts.ReminderTemplateGroupResponse> {
+    request: ReminderContracts.CreateReminderGroupRequestDTO,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
     const data = await apiClient.post('/reminders/groups', request);
     return data;
   }
@@ -234,8 +253,8 @@ class ReminderApiClient {
    */
   async updateReminderTemplateGroup(
     groupUuid: string,
-    request: ReminderContracts.UpdateReminderTemplateGroupRequest,
-  ): Promise<ReminderContracts.ReminderTemplateGroupResponse> {
+    request: ReminderContracts.UpdateReminderGroupRequestDTO,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
     const data = await apiClient.put(`/reminders/groups/${groupUuid}`, request);
     return data;
   }
@@ -245,7 +264,7 @@ class ReminderApiClient {
    */
   async getReminderTemplateGroup(
     groupUuid: string,
-  ): Promise<ReminderContracts.ReminderTemplateGroupResponse> {
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
     const data = await apiClient.get(`/reminders/groups/${groupUuid}`);
     return data;
   }
@@ -260,13 +279,13 @@ class ReminderApiClient {
   /**
    * 获取提醒模板分组列表
    */
-  async getReminderTemplateGroups(): Promise<ReminderContracts.ReminderTemplateGroupListResponse> {
+  async getReminderTemplateGroups(): Promise<ReminderContracts.ReminderGroupListDTO> {
     const data = await apiClient.get('/reminders/groups');
     console.log('📋 getReminderTemplateGroups 响应:', data);
 
     // 确保返回的数据结构完整
     if (!data || typeof data !== 'object') {
-      return { groups: [], total: 0, page: 1, limit: 50, hasMore: false };
+      return { groups: [], total: 0 };
     }
 
     // 如果 groups 字段不存在或不是数组，返回空数据
@@ -274,9 +293,6 @@ class ReminderApiClient {
       return {
         groups: [],
         total: data.total || 0,
-        page: data.page || 1,
-        limit: data.limit || 50,
-        hasMore: data.hasMore || false,
       };
     }
 
@@ -297,8 +313,8 @@ class ReminderApiClient {
    */
   async toggleGroupEnableMode(
     groupUuid: string,
-    request: ReminderContracts.ToggleGroupEnableModeRequest,
-  ): Promise<ReminderContracts.EnableStatusChangeResponse> {
+    request: { mode: ReminderContracts.ControlMode },
+  ): Promise<ReminderContracts.ReminderOperationResponseDTO> {
     const data = await apiClient.put(`/reminders/groups/${groupUuid}/enable-mode`, request);
     return data;
   }
@@ -308,8 +324,8 @@ class ReminderApiClient {
    */
   async toggleGroupEnabled(
     groupUuid: string,
-    request: ReminderContracts.ToggleGroupEnabledRequest,
-  ): Promise<ReminderContracts.EnableStatusChangeResponse> {
+    request: { enabled: boolean },
+  ): Promise<ReminderContracts.ReminderOperationResponseDTO> {
     const data = await apiClient.put(`/reminders/groups/${groupUuid}/enabled`, request);
     return data;
   }
@@ -319,8 +335,8 @@ class ReminderApiClient {
    */
   async toggleTemplateSelfEnabled(
     templateUuid: string,
-    request: ReminderContracts.ToggleTemplateSelfEnabledRequest,
-  ): Promise<ReminderContracts.EnableStatusChangeResponse> {
+    request: { enabled: boolean },
+  ): Promise<ReminderContracts.ReminderOperationResponseDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${templateUuid}/self-enabled`, request);
     return data;
   }
@@ -329,8 +345,8 @@ class ReminderApiClient {
    * 批量更新模板启用状态
    */
   async batchUpdateTemplatesEnabled(
-    request: ReminderContracts.BatchUpdateTemplatesEnabledRequest,
-  ): Promise<ReminderContracts.EnableStatusChangeResponse> {
+    request: { templateUuids: string[]; enabled: boolean },
+  ): Promise<ReminderContracts.BatchOperationResponseDTO> {
     const data = await apiClient.put(`${this.baseUrl}/batch-enabled`, request);
     return data;
   }
@@ -339,8 +355,8 @@ class ReminderApiClient {
    * 获取即将到来的提醒实例
    */
   async getUpcomingReminders(
-    request: ReminderContracts.GetUpcomingRemindersRequest,
-  ): Promise<ReminderContracts.UpcomingRemindersResponse> {
+    request: { limit?: number; timeWindow?: number },
+  ): Promise<any> {
     const data = await apiClient.get('/reminders/upcoming', { params: request });
     return data;
   }

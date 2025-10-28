@@ -527,11 +527,22 @@ export class InterceptorManager {
       return this.config.retryCondition(error);
     }
 
-    // 默认重试条件：网络错误、超时、5xx错误
+    // ❌ 不重试：连接被拒绝（后端服务未启动）
+    if (error.code === 'ERR_CONNECTION_REFUSED') {
+      LogManager.warn(`⚠️ [API Retry] 后端服务未启动，跳过重试: ${error.config?.url}`);
+      return false;
+    }
+
+    // ❌ 不重试：客户端错误（4xx）- 通常是业务逻辑错误
+    if (error.response && error.response.status >= 400 && error.response.status < 500) {
+      return false;
+    }
+
+    // ✅ 重试：网络错误、超时、5xx错误
     return (
       !error.response ||
       error.code === 'ECONNABORTED' ||
-      error.code === 'NETWORK_ERROR' ||
+      error.code === 'ETIMEDOUT' ||
       (error.response.status >= 500 && error.response.status < 600)
     );
   }
@@ -625,6 +636,7 @@ export class InterceptorManager {
    * 获取错误消息
    */
   private getErrorMessage(error: AxiosError): string {
+    // 1. 优先使用 API 返回的业务错误消息
     if (
       error.response?.data &&
       typeof error.response.data === 'object' &&
@@ -633,30 +645,44 @@ export class InterceptorManager {
       return (error.response.data as any).message;
     }
 
+    // 2. 处理网络错误（更友好的提示）
+    if (error.code === 'ERR_CONNECTION_REFUSED') {
+      return '无法连接到服务器，请检查后端服务是否启动';
+    }
+    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+      return '请求超时，请检查网络连接';
+    }
+    if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
+      return '网络连接失败，请检查网络设置';
+    }
+
+    // 3. 根据 HTTP 状态码返回友好提示
     const status = error.response?.status;
 
     switch (status) {
       case 400:
-        return '请求参数错误';
+        return '请求参数错误，请检查输入';
       case 401:
-        return '未授权访问';
+        return '用户名或密码错误，请重新输入';
       case 403:
-        return '访问被禁止';
+        return '没有访问权限';
       case 404:
         return '请求的资源不存在';
+      case 409:
+        return '数据冲突，该资源已存在';
+      case 422:
+        return '输入数据验证失败';
       case 429:
         return '请求过于频繁，请稍后再试';
       case 500:
-        return '服务器内部错误';
+        return '服务器内部错误，请稍后重试';
       case 502:
         return '网关错误';
       case 503:
-        return '服务暂时不可用';
+        return '服务暂时不可用，请稍后重试';
       case 504:
         return '网关超时';
       default:
-        if (error.code === 'ECONNABORTED') return '请求超时';
-        if (error.code === 'NETWORK_ERROR') return '网络连接错误';
         return error.message || '未知错误';
     }
   }

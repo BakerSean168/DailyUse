@@ -136,7 +136,7 @@ pnpm nx affected --target=typecheck
 **主要问题类型：**
 
 1. **找不到 @dailyuse/domain-core 的类型声明文件**
-   - 影响文件：`GoalDir.ts`, `GoalRecord.ts`, `KeyResult.ts`, `Reminder.ts`, 等多个文件
+   - 影响文件：`GoalFolder.ts`, `GoalRecord.ts`, `KeyResult.ts`, `Reminder.ts`, 等多个文件
    - 错误信息：`Could not find a declaration file for module '@dailyuse/domain-core'`
    - **原因：** `domain-core/dist/index.d.ts` 可能未正确生成或导出
 

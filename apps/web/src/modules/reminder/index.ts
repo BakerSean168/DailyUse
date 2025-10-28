@@ -1,26 +1,24 @@
-import { ReminderWebApplicationService } from './application/services/ReminderWebApplicationService';
-
 /**
- * Reminder 模块导出
+ * Reminder 模块统一导出
+ * 按照 DDD 分层架构组织导出
  */
 
-// 懒加载的全局服务实例
-let _reminderWebService: ReminderWebApplicationService | null = null;
+// ===== Application Layer =====
+export * from './application/services';
 
-/**
- * 获取 Reminder 服务实例（懒加载）
- */
-export function getReminderWebService(): ReminderWebApplicationService {
-  if (!_reminderWebService) {
-    _reminderWebService = new ReminderWebApplicationService();
-  }
-  return _reminderWebService;
-}
+// 便捷别名导出（保持向后兼容）
+export {
+  reminderTemplateApplicationService as getReminderTemplateService,
+  reminderStatisticsApplicationService as getReminderStatisticsService,
+} from './application/services';
 
-// 导出类型和服务
-export { ReminderWebApplicationService } from './application/services/ReminderWebApplicationService';
-export { useReminderStore, getReminderStore } from './presentation/stores/reminderStore';
-export { default as useReminder } from './presentation/composables/useReminder';
+// ===== Presentation Layer =====
+export * from './presentation/stores/reminderStore';
+export * from './presentation/composables/useReminder';
+
+// ===== Infrastructure Layer =====
+export { reminderApiClient } from './infrastructure/api/reminderApiClient';
+
 
 // 导出初始化相关
 export { registerReminderInitializationTasks } from './initialization';
@@ -35,7 +33,8 @@ export type { ReminderStore } from './presentation/stores/reminderStore';
 export async function initializeReminderModule(): Promise<void> {
   try {
     console.log('正在初始化 Reminder 模块...');
-    await getReminderWebService().initialize();
+    // Reminder 模块已拆分，不再需要统一的初始化方法
+    // 各个服务独立初始化
     console.log('Reminder 模块初始化完成');
   } catch (error) {
     console.error('Reminder 模块初始化失败:', error);

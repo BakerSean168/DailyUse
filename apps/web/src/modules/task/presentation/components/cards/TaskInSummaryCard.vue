@@ -129,7 +129,7 @@ import { useTaskStore } from '../../stores/taskStore';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { useRouter } from 'vue-router';
-import { TaskInstance, Goal } from '@dailyuse/domain-client';
+import { TaskInstance, GoalClient } from '@dailyuse/domain-client';
 
 type KeyResultLink = TaskContracts.KeyResultLink;
 

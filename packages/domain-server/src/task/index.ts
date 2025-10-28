@@ -23,13 +23,14 @@ export {
 export { TaskTemplateHistory } from './entities';
 
 // 聚合根
-export { TaskInstance, TaskTemplate } from './aggregates';
+export { TaskInstance, TaskTemplate, TaskStatistics, TaskDependency } from './aggregates';
 
 // 仓储接口
 export type {
   ITaskInstanceRepository,
   ITaskTemplateRepository,
   ITaskDependencyRepository,
+  ITaskStatisticsRepository,
 } from './repositories';
 
 // 领域服务

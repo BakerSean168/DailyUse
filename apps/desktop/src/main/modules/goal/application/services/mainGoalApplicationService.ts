@@ -1,12 +1,12 @@
 import type {
   IGoal,
   IGoalRecord,
-  IGoalDir,
+  IGoalFolder,
   IGoalReview,
 } from '../../../../../common/modules/goal/types/goal';
 import { Goal } from '../../domain/aggregates/goal';
 import { GoalReview } from '../../domain/entities/goalReview';
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { GoalRecord } from '../../domain/entities/record';
 import { GoalContainer } from '../../infrastructure/di/goalContainer';
 import type { IGoalRepository } from '../../domain/repositories/iGoalRepository';
@@ -51,12 +51,12 @@ export class MainGoalApplicationService {
    * 初始化系统内置目标目录（文件夹）
    * @param accountUuid 用户账号ID
    */
-  async initializeSystemGoalDirs(accountUuid: string): Promise<void> {
+  async initializeSystemGoalFolders(accountUuid: string): Promise<void> {
     for (const config of Object.values(SYSTEM_GOAL_DIRS)) {
       // 检查是否已存在
-      const exists = await this.goalRepository.getGoalDirectoryByUuid(accountUuid, config.uuid);
+      const exists = await this.goalRepository.getGoalFolderectoryByUuid(accountUuid, config.uuid);
       if (!exists) {
-        const dir: IGoalDir = {
+        const dir: IGoalFolder = {
           uuid: config.uuid,
           name: config.name,
           icon: config.icon,
@@ -69,7 +69,7 @@ export class MainGoalApplicationService {
             status: 'active',
           },
         };
-        await this.goalRepository.createGoalDirectory(accountUuid, GoalDir.fromDTO(dir));
+        await this.goalRepository.createGoalFolderectory(accountUuid, GoalFolder.fromDTO(dir));
       }
     }
   }
@@ -259,59 +259,59 @@ export class MainGoalApplicationService {
   /**
    * 创建目标目录
    */
-  async createGoalDir(accountUuid: string, goalDirDTO: IGoalDir): Promise<GoalDir> {
-    const validation = GoalDir.validate(goalDirDTO);
+  async createGoalFolder(accountUuid: string, GoalFolderDTO: IGoalFolder): Promise<GoalFolder> {
+    const validation = GoalFolder.validate(GoalFolderDTO);
     if (!validation.isValid) {
       throw new Error(`目录数据验证失败: ${validation.errors.join(', ')}`);
     }
 
     // Convert DTO to domain object
-    const goalDir = GoalDir.fromDTO(goalDirDTO);
-    const createdGoalDir = await this.goalRepository.createGoalDirectory(accountUuid, goalDir);
-    console.log('✅ [MainGoalApplicationService.createGoalDir]:创建目标目录成功', createdGoalDir);
-    return createdGoalDir;
+    const GoalFolder = GoalFolder.fromDTO(GoalFolderDTO);
+    const createdGoalFolder = await this.goalRepository.createGoalFolderectory(accountUuid, GoalFolder);
+    console.log('✅ [MainGoalApplicationService.createGoalFolder]:创建目标目录成功', createdGoalFolder);
+    return createdGoalFolder;
   }
 
   /**
    * 获取所有目标目录
    */
-  async getAllGoalDirs(accountUuid: string): Promise<GoalDir[]> {
-    const goalDirs = await this.goalRepository.getAllGoalDirectories(accountUuid);
-    return goalDirs;
+  async getAllGoalFolders(accountUuid: string): Promise<GoalFolder[]> {
+    const GoalFolders = await this.goalRepository.getAllGoalFolderectories(accountUuid);
+    return GoalFolders;
   }
 
   /**
    * 删除目标目录
    */
-  async deleteGoalDir(accountUuid: string, goalDirId: string): Promise<void> {
-    const goalDir = await this.goalRepository.getGoalDirectoryByUuid(accountUuid, goalDirId);
-    if (!goalDir) {
-      throw new Error(`目标目录不存在: ${goalDirId}`);
+  async deleteGoalFolder(accountUuid: string, GoalFolderId: string): Promise<void> {
+    const GoalFolder = await this.goalRepository.getGoalFolderectoryByUuid(accountUuid, GoalFolderId);
+    if (!GoalFolder) {
+      throw new Error(`目标目录不存在: ${GoalFolderId}`);
     }
 
-    const goalsInDir = await this.goalRepository.getGoalsByDirectory(accountUuid, goalDirId);
+    const goalsInDir = await this.goalRepository.getGoalsByDirectory(accountUuid, GoalFolderId);
     if (goalsInDir.length > 0) {
       throw new Error(`无法删除目录，还有 ${goalsInDir.length} 个目标在使用此目录`);
     }
 
-    await this.goalRepository.deleteGoalDirectory(accountUuid, goalDirId);
+    await this.goalRepository.deleteGoalFolderectory(accountUuid, GoalFolderId);
   }
 
   /**
    * 更新目标目录
    */
-  async updateGoalDir(accountUuid: string, goalDirData: IGoalDir): Promise<GoalDir> {
-    const existingGoalDir = await this.goalRepository.getGoalDirectoryByUuid(
+  async updateGoalFolder(accountUuid: string, GoalFolderData: IGoalFolder): Promise<GoalFolder> {
+    const existingGoalFolder = await this.goalRepository.getGoalFolderectoryByUuid(
       accountUuid,
-      goalDirData.uuid,
+      GoalFolderData.uuid,
     );
-    if (!existingGoalDir) {
-      throw new Error(`目标目录不存在: ${goalDirData.uuid}`);
+    if (!existingGoalFolder) {
+      throw new Error(`目标目录不存在: ${GoalFolderData.uuid}`);
     }
 
     // Convert DTO to domain object
-    const updatedGoalDir = GoalDir.fromDTO(goalDirData);
-    const result = await this.goalRepository.updateGoalDirectory(accountUuid, updatedGoalDir);
+    const updatedGoalFolder = GoalFolder.fromDTO(GoalFolderData);
+    const result = await this.goalRepository.updateGoalFolderectory(accountUuid, updatedGoalFolder);
     return result;
   }
 

@@ -103,7 +103,7 @@ api/
   "success": true,
   "data": {
     // 实际业务数据
-    "goalDirs": [...],
+    "GoalFolders": [...],
     "total": 2
   },
   "message": "Goal directories retrieved successfully"
@@ -150,7 +150,7 @@ async getGoals(): Promise<GoalListResponse> {
 
 ```
 后端API响应 → HTTP拦截器 → extractData() → 自动提取data字段 → 返回业务数据
-{success, data, message} → 拦截处理 → 自动解包 → {goalDirs, total} → 直接使用
+{success, data, message} → 拦截处理 → 自动解包 → {GoalFolders, total} → 直接使用
 ```
 
 **认证系统** (`src/modules/authentication/presentation/stores/`)

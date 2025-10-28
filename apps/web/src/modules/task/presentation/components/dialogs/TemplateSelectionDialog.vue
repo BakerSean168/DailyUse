@@ -65,36 +65,19 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { TaskMetaTemplate } from '@dailyuse/domain-client';
 import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
 // components
 import TaskTemplateDialog from './TaskTemplateDialog.vue';
 
 const taskStore = useTaskStore();
 const visible = ref(false);
-const metaTemplates = ref<TaskMetaTemplate[]>([]);
 const selectedmetaTemplateUuid = ref<string>('');
 const loading = ref(false);
 
 // component refs
 const taskTemplateDialogRef = ref<InstanceType<typeof TaskTemplateDialog> | null>(null);
 
-onMounted(async () => {
-  await loadMetaTemplates();
-});
-
-const loadMetaTemplates = async () => {
-  try {
-    loading.value = true;
-    const metaTemplate = taskStore.getAllTaskMetaTemplates;
-    metaTemplates.value = metaTemplate;
-  } catch (error) {
-    console.error('获取元模板失败:', error);
-    metaTemplates.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
+// TaskMetaTemplate 功能已移除，此组件可能需要重构或移除
 
 const selectMetaTemplate = (metaTemplateUuid: string) => {
   selectedmetaTemplateUuid.value = metaTemplateUuid;

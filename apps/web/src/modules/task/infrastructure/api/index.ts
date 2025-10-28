@@ -6,7 +6,6 @@
 export {
   taskTemplateApiClient,
   taskInstanceApiClient,
-  taskMetaTemplateApiClient,
   taskStatisticsApiClient,
 } from './taskApiClient';
 
@@ -14,6 +13,5 @@ export {
 export type {
   TaskTemplateApiClient,
   TaskInstanceApiClient,
-  TaskMetaTemplateApiClient,
   TaskStatisticsApiClient,
 } from './taskApiClient';

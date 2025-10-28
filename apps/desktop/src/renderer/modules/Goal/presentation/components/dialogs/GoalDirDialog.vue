@@ -9,7 +9,7 @@
       <v-form ref="formRef">
         <v-card-text class="pa-4">
           <v-text-field
-            v-model="localGoalDir.name"
+            v-model="localGoalFolder.name"
             label="节点名称"
             variant="outlined"
             density="compact"
@@ -19,7 +19,7 @@
           </v-text-field>
 
           <v-select
-            v-model="localGoalDir.icon"
+            v-model="localGoalFolder.icon"
             :items="iconOptions"
             label="选择图标"
             variant="outlined"
@@ -56,30 +56,30 @@
 
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
-import { GoalDir } from '@renderer/modules/Goal/domain/aggregates/goalDir';
+import { GoalFolder } from '@renderer/modules/Goal/domain/aggregates/GoalFolder';
 
 const props = defineProps<{
   modelValue: boolean;
-  goalDir: GoalDir | null; // 目标目录数据
+  GoalFolder: GoalFolder | null; // 目标目录数据
 }>();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'create-goal-dir', goalDir: GoalDir): void;
-  (e: 'edit-goal-dir', goalDir: GoalDir): void;
+  (e: 'create-goal-dir', GoalFolder: GoalFolder): void;
+  (e: 'edit-goal-dir', GoalFolder: GoalFolder): void;
 }>();
 
-const localGoalDir = ref<GoalDir>(GoalDir.forCreate());
-const isEditing = computed(() => !!props.goalDir);
+const localGoalFolder = ref<GoalFolder>(GoalFolder.forCreate());
+const isEditing = computed(() => !!props.GoalFolder);
 const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
 const isFormValid = computed(() => {
   return formRef.value?.isValid ?? false;
 });
 
 watch(
-  () => localGoalDir.value.name,
+  () => localGoalFolder.value.name,
   (newName) => {
-    console.log('localGoalDir name changed:', newName);
+    console.log('localGoalFolder name changed:', newName);
     console.log('isFormValid', isFormValid.value);
     console.log('formRef:', formRef.value);
     console.log('formRef.value?.isValid:', formRef.value?.isValid);
@@ -103,12 +103,12 @@ const nameRules = [
 
 const handleSave = () => {
   if (!isFormValid.value) return;
-  if (props.goalDir) {
+  if (props.GoalFolder) {
     // 编辑模式
-    emit('edit-goal-dir', GoalDir.ensureGoalDirNeverNull(localGoalDir.value));
+    emit('edit-goal-dir', GoalFolder.ensureGoalFolderNeverNull(localGoalFolder.value));
   } else {
     // 创建模式
-    emit('create-goal-dir', GoalDir.ensureGoalDirNeverNull(localGoalDir.value));
+    emit('create-goal-dir', GoalFolder.ensureGoalFolderNeverNull(localGoalFolder.value));
   }
   closeDialog();
 };
@@ -122,12 +122,12 @@ const closeDialog = () => {
 };
 
 watch(
-  [() => props.modelValue, () => props.goalDir],
+  [() => props.modelValue, () => props.GoalFolder],
   ([show]) => {
     if (show) {
-      localGoalDir.value = props.goalDir ? props.goalDir.clone() : GoalDir.forCreate();
+      localGoalFolder.value = props.GoalFolder ? props.GoalFolder.clone() : GoalFolder.forCreate();
     } else {
-      localGoalDir.value = GoalDir.forCreate();
+      localGoalFolder.value = GoalFolder.forCreate();
     }
   },
   { immediate: true },

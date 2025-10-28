@@ -15,8 +15,14 @@ import { CrossPlatformEventBus } from '@dailyuse/utils';
  * - 统一错误处理和用户提示
  */
 export class WeightSnapshotWebApplicationService {
-  private snackbar = useSnackbar();
   private eventBus = new CrossPlatformEventBus();
+
+  /**
+   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
+   */
+  private get snackbar() {
+    return useSnackbar();
+  }
 
   /**
    * 懒加载获取 Goal Store

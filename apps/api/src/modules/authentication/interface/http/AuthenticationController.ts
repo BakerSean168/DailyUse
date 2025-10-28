@@ -12,7 +12,7 @@ const logger = createLogger('AuthenticationController');
  * 登录请求验证
  */
 const loginSchema = z.object({
-  username: z.string().min(3).max(50),
+  identifier: z.string().min(3).max(100), // 支持用户名或邮箱
   password: z.string().min(8).max(100),
   deviceInfo: z.object({
     deviceId: z.string(),
@@ -124,7 +124,7 @@ export class AuthenticationController {
   static async login(req: Request, res: Response): Promise<Response> {
     try {
       logger.info('[AuthenticationController] Login request received', {
-        username: req.body.username,
+        identifier: req.body.identifier,
         ipAddress: req.ip,
       });
 
@@ -134,7 +134,7 @@ export class AuthenticationController {
       // ===== 步骤 2: 调用 ApplicationService =====
       const service = await AuthenticationController.getAuthService();
       const result = await service.login({
-        username: validatedData.username,
+        identifier: validatedData.identifier,
         password: validatedData.password,
         deviceInfo: validatedData.deviceInfo,
         ipAddress: req.ip || validatedData.ipAddress,

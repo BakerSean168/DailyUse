@@ -1,7 +1,23 @@
 import { defineStore } from 'pinia';
-import { TaskTemplate, TaskInstance, TaskMetaTemplate } from '@dailyuse/domain-client';
+import { TaskDomain } from '@dailyuse/domain-client';
 import { toDayStart } from '@dailyuse/utils';
-import type { TaskContracts } from '@dailyuse/contracts';
+import { TaskContracts } from '@dailyuse/contracts';
+
+const TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
+type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
+
+const TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
+type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
+
+// 导入客户端类实现
+const TaskTemplateClient = TaskDomain.TaskTemplateClient;
+const TaskInstanceClient = TaskDomain.TaskInstanceClient;
+const TaskStatisticsClient = TaskDomain.TaskStatisticsClient;
+
+// 类型别名
+type TaskTemplate = TaskDomain.TaskTemplate;
+type TaskInstance = TaskDomain.TaskInstance;
+type TaskStatistics = TaskDomain.TaskStatistics;
 
 /**
  * Task Store - 新架构
@@ -13,7 +29,8 @@ export const useTaskStore = defineStore('task', {
     // ===== 核心数据 =====
     taskTemplates: [] as TaskTemplate[],
     taskInstances: [] as TaskInstance[],
-    metaTemplates: [] as TaskMetaTemplate[],
+    // TaskTemplate 可能不存在，先移除或检查是否需要
+    // taskTemplates: [] as TaskTemplate[],
 
     // ===== 状态管理 =====
     isLoading: false,
@@ -23,7 +40,7 @@ export const useTaskStore = defineStore('task', {
     // ===== UI 状态 =====
     selectedTaskTemplate: null as string | null,
     selectedTaskInstance: null as string | null,
-    taskTemplateBeingEdited: null as TaskMetaTemplate | null,
+    taskTemplateBeingEdited: null as TaskTemplate | null,
 
     // ===== 分页信息 =====
     pagination: {
@@ -54,12 +71,6 @@ export const useTaskStore = defineStore('task', {
       return state.taskInstances as TaskInstance[];
     },
 
-    /**
-     * 获取所有元模板
-     */
-    getAllTaskMetaTemplates(state): TaskMetaTemplate[] {
-      return state.metaTemplates as TaskMetaTemplate[];
-    },
 
     /**
      * 根据UUID获取任务模板
@@ -72,11 +83,11 @@ export const useTaskStore = defineStore('task', {
 
         // 如果反序列化正常工作，这里应该已经是 TaskTemplate 实例
         // 但为了安全起见，如果不是实例则转换
-        if (found instanceof TaskTemplate) {
+        if (found instanceof TaskTemplateClient) {
           return found;
         } else {
           console.warn('[TaskStore] 发现非实体对象，正在转换为 TaskTemplate 实例');
-          return TaskTemplate.fromDTO(found as any);
+          return TaskTemplateClient.fromClientDTO(found as any);
         }
       },
 
@@ -90,11 +101,11 @@ export const useTaskStore = defineStore('task', {
         if (!found) return null;
 
         // 如果反序列化正常工作，这里应该已经是 TaskInstance 实例
-        if (found instanceof TaskInstance) {
+        if (found instanceof TaskInstanceClient) {
           return found;
         } else {
           console.warn('[TaskStore] 发现非实体对象，正在转换为 TaskInstance 实例');
-          return TaskInstance.fromDTO(found as any);
+          return TaskInstanceClient.fromClientDTO(found as any);
         }
       },
 
@@ -103,16 +114,16 @@ export const useTaskStore = defineStore('task', {
      */
     getMetaTemplateByUuid:
       (state) =>
-      (uuid: string): TaskMetaTemplate | null => {
-        const found = state.metaTemplates.find((t) => t.uuid === uuid);
+      (uuid: string): TaskTemplate | null => {
+        const found = state.taskTemplates.find((t) => t.uuid === uuid);
         if (!found) return null;
 
-        // 确保返回的是 TaskMetaTemplate 实例
-        if (found instanceof TaskMetaTemplate) {
+        // 确保返回的是 TaskTemplate 实例
+        if (found instanceof TaskTemplateClient) {
           return found;
         } else {
-          // 如果是普通对象，转换为 TaskMetaTemplate 实例
-          return TaskMetaTemplate.fromDTO(found as any);
+          // 如果是普通对象，转换为 TaskTemplate 实例
+          return TaskTemplateClient.fromClientDTO(found as any);
         }
       },
 
@@ -127,10 +138,10 @@ export const useTaskStore = defineStore('task', {
       if (!found) return null;
 
       // 确保返回的是 TaskTemplate 实例
-      if (found instanceof TaskTemplate) {
+      if (found instanceof TaskTemplateClient) {
         return found;
       } else {
-        return TaskTemplate.fromDTO(found as any);
+        return TaskTemplateClient.fromClientDTO(found as any);
       }
     },
 
@@ -143,55 +154,26 @@ export const useTaskStore = defineStore('task', {
       if (!found) return null;
 
       // 确保返回的是 TaskInstance 实例
-      if (found instanceof TaskInstance) {
+      if (found instanceof TaskInstanceClient) {
         return found;
       } else {
-        return TaskInstance.fromDTO(found as any);
+        return TaskInstanceClient.fromClientDTO(found as any);
       }
     },
 
     /**
      * 获取正在编辑的任务模板
      */
-    getTaskTemplateBeingEdited(state): TaskMetaTemplate | null {
+    getTaskTemplateBeingEdited(state): TaskTemplate | null {
       if (!state.taskTemplateBeingEdited) return null;
 
       const template = state.taskTemplateBeingEdited;
-      if (template instanceof TaskMetaTemplate) {
+      if (template instanceof TaskTemplateClient) {
         return template;
       } else {
-        console.warn('[TaskStore] 发现非实体对象，正在转换为 TaskMetaTemplate 实例');
-        return TaskMetaTemplate.fromDTO(template as any);
+        console.warn('[TaskStore] 发现非实体对象，正在转换为 TaskTemplate 实例');
+        return TaskTemplateClient.fromClientDTO(template as any);
       }
-    },
-
-    // ===== 业务逻辑获取器 =====
-
-    /**
-     * 获取今日任务实例
-     */
-    getTodayTaskInstances(state): TaskInstance[] {
-      const today = new Date();
-      const todayStart = toDayStart(today);
-      const todayEnd = new Date(todayStart);
-      todayEnd.setDate(todayStart.getDate() + 1);
-
-      return state.taskInstances
-        .filter((task) => {
-          if (!task.timeConfig?.scheduledDate) return false;
-          const scheduledDate = new Date(task.timeConfig?.scheduledDate);
-          return (
-            scheduledDate.getTime() >= todayStart.getTime() &&
-            scheduledDate.getTime() < todayEnd.getTime()
-          );
-        })
-        .map((task) => {
-          if (task instanceof TaskInstance) {
-            return task;
-          } else {
-            return TaskInstance.fromDTO(task as any);
-          }
-        });
     },
 
     /**
@@ -202,33 +184,14 @@ export const useTaskStore = defineStore('task', {
       (keyResultUuid: string): TaskTemplate[] => {
         return state.taskTemplates
           .filter((t) => {
-            if (!t.goalLinks || t.goalLinks.length === 0) return false;
-            return t.goalLinks.some(
-              (link: TaskContracts.KeyResultLink) => link.keyResultId === keyResultUuid,
-            );
+            if (!t.goalBinding || t.goalBinding.keyResultUuid !== keyResultUuid) return false;
+            return t.goalBinding.keyResultUuid === keyResultUuid;
           })
           .map((template) => {
-            if (template instanceof TaskTemplate) {
+            if (template instanceof TaskTemplateClient) {
               return template;
             } else {
-              return TaskTemplate.fromDTO(template as any);
-            }
-          });
-      },
-
-    /**
-     * 根据分类获取元模板
-     */
-    getMetaTemplatesByCategory:
-      (state) =>
-      (category: string): TaskMetaTemplate[] => {
-        return state.metaTemplates
-          .filter((t) => t.appearance?.category === category)
-          .map((template) => {
-            if (template instanceof TaskMetaTemplate) {
-              return template;
-            } else {
-              return TaskMetaTemplate.fromDTO(template as any);
+              return TaskTemplateClient.fromClientDTO(template as any);
             }
           });
       },
@@ -242,10 +205,10 @@ export const useTaskStore = defineStore('task', {
         return state.taskInstances
           .filter((instance) => instance.templateUuid === templateUuid)
           .map((instance) => {
-            if (instance instanceof TaskInstance) {
+            if (instance instanceof TaskInstanceClient) {
               return instance;
             } else {
-              return TaskInstance.fromDTO(instance as any);
+              return TaskInstanceClient.fromClientDTO(instance as any);
             }
           });
       },
@@ -257,12 +220,12 @@ export const useTaskStore = defineStore('task', {
       (state) =>
       (status: string): TaskInstance[] => {
         return state.taskInstances
-          .filter((instance) => instance.execution?.status === status)
+          .filter((instance) => instance.status === status)
           .map((instance) => {
-            if (instance instanceof TaskInstance) {
+            if (instance instanceof TaskInstanceClient) {
               return instance;
             } else {
-              return TaskInstance.fromDTO(instance as any);
+              return TaskInstanceClient.fromClientDTO(instance as any);
             }
           });
       },
@@ -278,8 +241,8 @@ export const useTaskStore = defineStore('task', {
       archived: number;
     } {
       const total = state.taskTemplates.length;
-      const active = state.taskTemplates.filter((t) => t.lifecycle?.status === 'active').length;
-      const archived = state.taskTemplates.filter((t) => t.lifecycle?.status === 'archived').length;
+      const active = state.taskTemplates.filter((t) => t.status === TaskTemplateStatus.ACTIVE).length;
+      const archived = state.taskTemplates.filter((t) => t.status === TaskTemplateStatus.ARCHIVED).length;
 
       return { total, active, archived };
     },
@@ -292,41 +255,23 @@ export const useTaskStore = defineStore('task', {
       pending: number;
       inProgress: number;
       completed: number;
-      cancelled: number;
-      overdue: number;
+      skipped: number;
+      expired: number;
     } {
       const total = state.taskInstances.length;
-      const pending = state.taskInstances.filter((i) => i.execution?.status === 'pending').length;
+      const pending = state.taskInstances.filter((i) => i.status === TaskInstanceStatus.PENDING).length;
       const inProgress = state.taskInstances.filter(
-        (i) => i.execution?.status === 'inProgress',
+        (i) => i.status === TaskInstanceStatus.IN_PROGRESS,
       ).length;
       const completed = state.taskInstances.filter(
-        (i) => i.execution?.status === 'completed',
+        (i) => i.status === TaskInstanceStatus.COMPLETED,
       ).length;
-      const cancelled = state.taskInstances.filter(
-        (i) => i.execution?.status === 'cancelled',
+      const skipped = state.taskInstances.filter(
+        (i) => i.status === TaskInstanceStatus.SKIPPED,
       ).length;
-      const overdue = state.taskInstances.filter((i) => i.execution?.status === 'overdue').length;
+      const expired = state.taskInstances.filter((i) => i.status === TaskInstanceStatus.EXPIRED).length;
 
-      return { total, pending, inProgress, completed, cancelled, overdue };
-    },
-
-    /**
-     * 元模板统计
-     */
-    getMetaTemplateStatistics(state): {
-      total: number;
-      byCategory: Record<string, number>;
-    } {
-      const total = state.metaTemplates.length;
-      const byCategory: Record<string, number> = {};
-
-      state.metaTemplates.forEach((template) => {
-        const category = template.appearance?.category || 'uncategorized';
-        byCategory[category] = (byCategory[category] || 0) + 1;
-      });
-
-      return { total, byCategory };
+      return { total, pending, inProgress, completed, skipped, expired };
     },
 
     // ===== 缓存管理 =====
@@ -390,7 +335,7 @@ export const useTaskStore = defineStore('task', {
     /**
      * 设置正在编辑的任务模板
      */
-    setTaskTemplateBeingEdited(template: TaskMetaTemplate | null) {
+    setTaskTemplateBeingEdited(template: TaskTemplate | null) {
       this.taskTemplateBeingEdited = template;
     },
 
@@ -415,9 +360,9 @@ export const useTaskStore = defineStore('task', {
     /**
      * 批量设置元模板
      */
-    setMetaTemplates(metaTemplates: TaskMetaTemplate[]) {
-      this.metaTemplates = [...metaTemplates];
-      console.log(`✅ [TaskStore] 已设置 ${metaTemplates.length} 个元模板`);
+    settaskTemplates(taskTemplates: TaskTemplate[]) {
+      this.taskTemplates = [...taskTemplates];
+      console.log(`✅ [TaskStore] 已设置 ${taskTemplates.length} 个元模板`);
     },
 
     /**
@@ -456,12 +401,12 @@ export const useTaskStore = defineStore('task', {
     /**
      * 添加单个元模板到缓存
      */
-    addMetaTemplate(metaTemplate: TaskMetaTemplate) {
-      const existingIndex = this.metaTemplates.findIndex((t) => t.uuid === metaTemplate.uuid);
+    addMetaTemplate(metaTemplate: TaskTemplate) {
+      const existingIndex = this.taskTemplates.findIndex((t) => t.uuid === metaTemplate.uuid);
       if (existingIndex >= 0) {
-        this.metaTemplates[existingIndex] = metaTemplate;
+        this.taskTemplates[existingIndex] = metaTemplate;
       } else {
-        this.metaTemplates.push(metaTemplate);
+        this.taskTemplates.push(metaTemplate);
       }
     },
 
@@ -497,10 +442,10 @@ export const useTaskStore = defineStore('task', {
     /**
      * 更新元模板
      */
-    updateMetaTemplate(uuid: string, updatedTemplate: TaskMetaTemplate) {
-      const index = this.metaTemplates.findIndex((t) => t.uuid === uuid);
+    updateMetaTemplate(uuid: string, updatedTemplate: TaskTemplate) {
+      const index = this.taskTemplates.findIndex((t) => t.uuid === uuid);
       if (index >= 0) {
-        this.metaTemplates[index] = updatedTemplate;
+        this.taskTemplates[index] = updatedTemplate;
       }
     },
 
@@ -564,9 +509,9 @@ export const useTaskStore = defineStore('task', {
      * 移除元模板
      */
     removeMetaTemplate(uuid: string) {
-      const index = this.metaTemplates.findIndex((t) => t.uuid === uuid);
+      const index = this.taskTemplates.findIndex((t) => t.uuid === uuid);
       if (index >= 0) {
-        this.metaTemplates.splice(index, 1);
+        this.taskTemplates.splice(index, 1);
       }
     },
 
@@ -578,7 +523,7 @@ export const useTaskStore = defineStore('task', {
     initialize(): void {
       this.isInitialized = true;
       console.log(
-        `✅ [TaskStore] 初始化完成: ${this.taskTemplates.length} 个模板，${this.taskInstances.length} 个实例，${this.metaTemplates.length} 个元模板`,
+        `✅ [TaskStore] 初始化完成: ${this.taskTemplates.length} 个模板，${this.taskInstances.length} 个实例，${this.taskTemplates.length} 个元模板`,
       );
     },
 
@@ -602,7 +547,7 @@ export const useTaskStore = defineStore('task', {
     clearAll() {
       this.taskTemplates = [];
       this.taskInstances = [];
-      this.metaTemplates = [];
+      this.taskTemplates = [];
       this.selectedTaskTemplate = null;
       this.selectedTaskInstance = null;
       this.taskTemplateBeingEdited = null;
@@ -627,11 +572,11 @@ export const useTaskStore = defineStore('task', {
     syncAllData(
       templates: TaskTemplate[],
       instances: TaskInstance[],
-      metaTemplates: TaskMetaTemplate[],
+      taskTemplates: TaskTemplate[],
     ) {
       this.setTaskTemplates(templates);
       this.setTaskInstances(instances);
-      this.setMetaTemplates(metaTemplates);
+      this.settaskTemplates(taskTemplates);
       this.updateLastSyncTime();
 
       console.log('🔄 [TaskStore] 批量同步完成');
@@ -670,7 +615,7 @@ export const useTaskStore = defineStore('task', {
       return {
         templates: [...this.taskTemplates],
         instances: [...this.taskInstances],
-        metaTemplates: [...this.metaTemplates],
+        taskTemplates: [...this.taskTemplates],
         timestamp: Date.now(),
       };
     },
@@ -681,13 +626,13 @@ export const useTaskStore = defineStore('task', {
     restoreFromSnapshot(snapshot: {
       templates: TaskTemplate[];
       instances: TaskInstance[];
-      metaTemplates?: TaskMetaTemplate[];
+      taskTemplates?: TaskTemplate[];
       timestamp?: number;
     }) {
       this.setTaskTemplates(snapshot.templates);
       this.setTaskInstances(snapshot.instances);
-      if (snapshot.metaTemplates) {
-        this.setMetaTemplates(snapshot.metaTemplates);
+      if (snapshot.taskTemplates) {
+        this.settaskTemplates(snapshot.taskTemplates);
       }
       this.updateLastSyncTime();
 
@@ -702,7 +647,7 @@ export const useTaskStore = defineStore('task', {
     pick: [
       'taskTemplates',
       'taskInstances',
-      'metaTemplates',
+      'taskTemplates',
       'selectedTaskTemplate',
       'selectedTaskInstance',
       'lastSyncTime',
@@ -730,12 +675,6 @@ export const useTaskStore = defineStore('task', {
                 instance && typeof instance.toDTO === 'function' ? instance.toDTO() : instance,
               ) || [],
 
-            metaTemplates:
-              value.metaTemplates?.map((metaTemplate: any) =>
-                metaTemplate && typeof metaTemplate.toDTO === 'function'
-                  ? metaTemplate.toDTO()
-                  : metaTemplate,
-              ) || [],
           };
 
           return JSON.stringify(serializedValue);
@@ -757,31 +696,20 @@ export const useTaskStore = defineStore('task', {
             // 将DTO转换回Domain实体（当实体类可用时）
             taskTemplates:
               parsed.taskTemplates?.map((templateDTO: any) => {
-                if (templateDTO && TaskTemplate && typeof TaskTemplate.fromDTO === 'function') {
-                  return TaskTemplate.fromDTO(templateDTO);
+                if (templateDTO && TaskTemplateClient && typeof TaskTemplateClient.fromClientDTO === 'function') {
+                  return TaskTemplateClient.fromClientDTO(templateDTO);
                 }
                 return templateDTO;
               }) || [],
 
             taskInstances:
               parsed.taskInstances?.map((instanceDTO: any) => {
-                if (instanceDTO && TaskInstance && typeof TaskInstance.fromDTO === 'function') {
-                  return TaskInstance.fromDTO(instanceDTO);
+                if (instanceDTO && TaskInstanceClient && typeof TaskInstanceClient.fromClientDTO === 'function') {
+                  return TaskInstanceClient.fromClientDTO(instanceDTO);
                 }
                 return instanceDTO;
               }) || [],
 
-            metaTemplates:
-              parsed.metaTemplates?.map((metaTemplateDTO: any) => {
-                if (
-                  metaTemplateDTO &&
-                  TaskMetaTemplate &&
-                  typeof TaskMetaTemplate.fromDTO === 'function'
-                ) {
-                  return TaskMetaTemplate.fromDTO(metaTemplateDTO);
-                }
-                return metaTemplateDTO;
-              }) || [],
           };
         } catch (error) {
           console.error('TaskStore 反序列化失败:', error);

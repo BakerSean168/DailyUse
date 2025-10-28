@@ -34,6 +34,7 @@ const defaultConfig: HttpClientConfig = {
   retryDelay: 1000,
   enableCache: false,
   cacheTimeout: 300000, // 5分钟
+  responseExtractStrategy: 'auto', // 默认自动提取 data（向后兼容）
 };
 
 /**
@@ -183,6 +184,72 @@ export class ApiClient implements IApiClient {
   }
 
   /**
+   * GET请求 - 返回完整响应（包含 message）
+   * 
+   * 使用场景：需要显示后端返回的 message 或其他元数据
+   * 
+   * @example
+   * ```typescript
+   * const response = await apiClient.getWithMessage<User[]>('/users');
+   * console.log(response.message); // "查询成功"
+   * console.log(response.data);    // User[]
+   * console.log(response.timestamp); // 1234567890
+   * ```
+   */
+  async getWithMessage<T = any>(url: string, options: RequestOptions = {}): Promise<SuccessResponse<T>> {
+    const originalStrategy = this.config.responseExtractStrategy;
+    this.config.responseExtractStrategy = 'full';
+    try {
+      const response = await this.get<SuccessResponse<T>>(url, options);
+      return response;
+    } finally {
+      this.config.responseExtractStrategy = originalStrategy;
+    }
+  }
+
+  /**
+   * POST请求 - 返回完整响应（包含 message）
+   */
+  async postWithMessage<T = any>(url: string, data?: any, options: RequestOptions = {}): Promise<SuccessResponse<T>> {
+    const originalStrategy = this.config.responseExtractStrategy;
+    this.config.responseExtractStrategy = 'full';
+    try {
+      const response = await this.post<SuccessResponse<T>>(url, data, options);
+      return response;
+    } finally {
+      this.config.responseExtractStrategy = originalStrategy;
+    }
+  }
+
+  /**
+   * PUT请求 - 返回完整响应（包含 message）
+   */
+  async putWithMessage<T = any>(url: string, data?: any, options: RequestOptions = {}): Promise<SuccessResponse<T>> {
+    const originalStrategy = this.config.responseExtractStrategy;
+    this.config.responseExtractStrategy = 'full';
+    try {
+      const response = await this.put<SuccessResponse<T>>(url, data, options);
+      return response;
+    } finally {
+      this.config.responseExtractStrategy = originalStrategy;
+    }
+  }
+
+  /**
+   * DELETE请求 - 返回完整响应（包含 message）
+   */
+  async deleteWithMessage<T = any>(url: string, options: RequestOptions = {}): Promise<SuccessResponse<T>> {
+    const originalStrategy = this.config.responseExtractStrategy;
+    this.config.responseExtractStrategy = 'full';
+    try {
+      const response = await this.delete<SuccessResponse<T>>(url, options);
+      return response;
+    } finally {
+      this.config.responseExtractStrategy = originalStrategy;
+    }
+  }
+
+  /**
    * 取消请求
    */
   cancelRequest(requestId: string): void {
@@ -241,25 +308,56 @@ export class ApiClient implements IApiClient {
 
   /**
    * 从响应中提取数据
-   * 自动处理统一的 API 响应格式
+   * 
+   * 支持三种提取策略：
+   * 1. 'auto'（默认）：自动提取 data 字段，简化调用但丢失 message
+   * 2. 'full'：返回完整 SuccessResponse，包含 data、message、timestamp
+   * 3. 'raw'：返回原始响应数据，不做任何处理
+   * 
+   * 使用示例：
+   * ```typescript
+   * // 策略1: 自动提取（默认）
+   * const users = await api.get<User[]>('/users'); // 直接得到 User[]
+   * 
+   * // 策略2: 完整响应（推荐用于需要 message 的场景）
+   * const response = await api.get<User[]>('/users'); // 得到 SuccessResponse<User[]>
+   * console.log(response.message); // 可以访问 message
+   * console.log(response.data);    // 可以访问数据
+   * 
+   * // 策略3: 原始数据
+   * const raw = await api.get('/users'); // 得到原始后端返回
+   * ```
    */
   private extractData<T>(responseData: any): T {
-    // 如果是标准的API响应格式 { code, success, data, message, ... }
+    const strategy = this.config.responseExtractStrategy || 'auto';
+
+    // 策略3: 原始数据，不做任何处理
+    if (strategy === 'raw') {
+      return responseData as T;
+    }
+
+    // 检查是否为标准的API响应格式 { code, success, data, message, ... }
     if (responseData && typeof responseData === 'object' && 'success' in responseData) {
-      const apiResponse = responseData as ApiResponse<T>;
+      const apiResponse = responseData as ApiResponse<any>;
 
       if (apiResponse.success === true) {
-        // 成功响应，返回 data 字段
-        return (apiResponse as SuccessResponse<T>).data;
+        const successResponse = apiResponse as SuccessResponse<any>;
+
+        // 策略2: 返回完整响应（包含 data、message、timestamp）
+        if (strategy === 'full') {
+          return successResponse as T;
+        }
+
+        // 策略1: 自动提取 data 字段（默认，向后兼容）
+        return successResponse.data as T;
       } else {
-        // 错误响应（这种情况不应该发生，因为拦截器已经抛出了错误）
-        // 但为了安全起见还是处理一下
+        // 错误响应（不应该到这里，因为拦截器已处理）
         const errorResponse = apiResponse as ErrorResponse;
         throw new Error(errorResponse.message || '请求失败');
       }
     }
 
-    // 非标准格式，直接返回数据（向后兼容）
+    // 非标准格式，直接返回（向后兼容旧接口）
     return responseData as T;
   }
 

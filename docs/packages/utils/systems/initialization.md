@@ -426,7 +426,7 @@ export async function initializeGoalModule(): Promise<void> {
   logger.info('Goal event handlers registered');
 
   // 2. 预加载必要数据
-  // await preloadGoalDirectories();
+  // await preloadGoalFolderectories();
 
   logger.info('✅ Goal module initialized');
 }

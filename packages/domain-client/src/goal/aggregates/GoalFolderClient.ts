@@ -369,4 +369,103 @@ export class GoalFolderClient extends AggregateRoot implements GoalContracts.Goa
       dto.deletedAt,
     );
   }
+
+  // ===== 修改方法 (Modification Methods) =====
+  // 遵循 DDD 最佳实践：聚合根应该提供修改属性的方法
+
+  /**
+   * 更新名称
+   */
+  public updateName(name: string): void {
+    this._name = name;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新描述
+   */
+  public updateDescription(description: string | null): void {
+    this._description = description;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新图标
+   */
+  public updateIcon(icon: string | null): void {
+    this._icon = icon;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新颜色
+   */
+  public updateColor(color: string | null): void {
+    this._color = color;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新父文件夹
+   */
+  public updateParentFolder(parentFolderUuid: string | null): void {
+    this._parentFolderUuid = parentFolderUuid;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新排序
+   */
+  public updateSortOrder(sortOrder: number): void {
+    this._sortOrder = sortOrder;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 批量更新基本信息
+   */
+  public updateBasicInfo(params: {
+    name?: string;
+    description?: string | null;
+    icon?: string | null;
+    color?: string | null;
+    parentFolderUuid?: string | null;
+    sortOrder?: number;
+  }): void {
+    if (params.name !== undefined) {
+      this._name = params.name;
+    }
+    if (params.description !== undefined) {
+      this._description = params.description;
+    }
+    if (params.icon !== undefined) {
+      this._icon = params.icon;
+    }
+    if (params.color !== undefined) {
+      this._color = params.color;
+    }
+    if (params.parentFolderUuid !== undefined) {
+      this._parentFolderUuid = params.parentFolderUuid;
+    }
+    if (params.sortOrder !== undefined) {
+      this._sortOrder = params.sortOrder;
+    }
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 软删除
+   */
+  public softDelete(): void {
+    this._deletedAt = Date.now();
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 恢复软删除
+   */
+  public restore(): void {
+    this._deletedAt = null;
+    this._updatedAt = Date.now();
+  }
 }

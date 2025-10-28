@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useGoalStore } from './goalStore';
 import { Goal } from '../../domain/aggregates/goal';
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { KeyResult } from '../../domain/entities/keyResult';
 import { GoalRecord } from '../../domain/entities/record';
 import { SYSTEM_GOAL_DIRS } from '@common/modules/goal/types/goal';
@@ -26,7 +26,7 @@ describe('useGoalStore 测试', () => {
       const store = useGoalStore();
 
       expect(store.goals).toEqual([]);
-      expect(store.goalDirs).toEqual([]);
+      expect(store.GoalFolders).toEqual([]);
     });
   });
 
@@ -230,36 +230,36 @@ describe('useGoalStore 测试', () => {
 
   describe('目标目录管理', () => {
     let store: ReturnType<typeof useGoalStore>;
-    let dir1: GoalDir;
-    let dir2: GoalDir;
-    let systemAllDir: GoalDir;
-    let systemArchivedDir: GoalDir;
+    let dir1: GoalFolder;
+    let dir2: GoalFolder;
+    let systemAllDir: GoalFolder;
+    let systemArchivedDir: GoalFolder;
 
     beforeEach(() => {
       store = useGoalStore();
 
-      dir1 = new GoalDir({
+      dir1 = new GoalFolder({
         uuid: 'dir-1',
         name: '工作目标',
         icon: 'mdi-briefcase',
         color: '#2196F3',
       });
 
-      dir2 = new GoalDir({
+      dir2 = new GoalFolder({
         uuid: 'dir-2',
         name: '学习目标',
         icon: 'mdi-school',
         color: '#4CAF50',
       });
 
-      systemAllDir = new GoalDir({
+      systemAllDir = new GoalFolder({
         uuid: SYSTEM_GOAL_DIRS.ALL.uuid,
         name: '全部',
         icon: 'mdi-folder-multiple',
         color: '#9E9E9E',
       });
 
-      systemArchivedDir = new GoalDir({
+      systemArchivedDir = new GoalFolder({
         uuid: SYSTEM_GOAL_DIRS.ARCHIVED.uuid,
         name: '已归档',
         icon: 'mdi-archive',
@@ -269,50 +269,50 @@ describe('useGoalStore 测试', () => {
 
     describe('目录同步', () => {
       it('应该能够同步单个目录状态', async () => {
-        await store.syncGoalDirState(dir1);
+        await store.syncGoalFolderState(dir1);
 
-        expect(store.goalDirs).toHaveLength(1);
-        expect(store.goalDirs[0].uuid).toBe(dir1.uuid);
-        expect(store.goalDirs[0].name).toBe(dir1.name);
+        expect(store.GoalFolders).toHaveLength(1);
+        expect(store.GoalFolders[0].uuid).toBe(dir1.uuid);
+        expect(store.GoalFolders[0].name).toBe(dir1.name);
       });
 
       it('应该能够更新已存在的目录', async () => {
-        await store.syncGoalDirState(dir1);
+        await store.syncGoalFolderState(dir1);
 
         dir1.name = '修改后的目录名称';
-        await store.syncGoalDirState(dir1);
+        await store.syncGoalFolderState(dir1);
 
-        expect(store.goalDirs).toHaveLength(1);
-        expect(store.goalDirs[0].name).toBe('修改后的目录名称');
+        expect(store.GoalFolders).toHaveLength(1);
+        expect(store.GoalFolders[0].name).toBe('修改后的目录名称');
       });
 
       it('应该能够同步多个目录状态', async () => {
         const dirs = [dir1, dir2, systemAllDir];
-        await store.syncGoalDirsState(dirs);
+        await store.syncGoalFoldersState(dirs);
 
-        expect(store.goalDirs).toHaveLength(3);
-        expect(store.goalDirs.map((d) => d.uuid)).toContain(dir1.uuid);
-        expect(store.goalDirs.map((d) => d.uuid)).toContain(dir2.uuid);
-        expect(store.goalDirs.map((d) => d.uuid)).toContain(systemAllDir.uuid);
+        expect(store.GoalFolders).toHaveLength(3);
+        expect(store.GoalFolders.map((d) => d.uuid)).toContain(dir1.uuid);
+        expect(store.GoalFolders.map((d) => d.uuid)).toContain(dir2.uuid);
+        expect(store.GoalFolders.map((d) => d.uuid)).toContain(systemAllDir.uuid);
       });
 
       it('应该能够移除目录', () => {
-        store.goalDirs.push(dir1, dir2);
+        store.GoalFolders.push(dir1, dir2);
 
-        store.removeGoalDir(dir1.uuid);
+        store.removeGoalFolder(dir1.uuid);
 
-        expect(store.goalDirs).toHaveLength(1);
-        expect(store.goalDirs[0].uuid).toBe(dir2.uuid);
+        expect(store.GoalFolders).toHaveLength(1);
+        expect(store.GoalFolders[0].uuid).toBe(dir2.uuid);
       });
     });
 
     describe('目录查询 - Getters', () => {
       beforeEach(async () => {
-        await store.syncGoalDirsState([systemAllDir, dir1, dir2]);
+        await store.syncGoalFoldersState([systemAllDir, dir1, dir2]);
       });
 
-      it('getAllGoalDirs 应该正确排序目录', () => {
-        const allDirs = store.getAllGoalDirs;
+      it('getAllGoalFolders 应该正确排序目录', () => {
+        const allDirs = store.getAllGoalFolders;
 
         expect(allDirs).toHaveLength(3);
         // "全部" 目录应该在最前面
@@ -322,7 +322,7 @@ describe('useGoalStore 测试', () => {
         expect(allDirs[2].name).toBe('学习目标');
       });
 
-      it('getAllGoalDirs 在有归档目标时应该显示已归档目录', async () => {
+      it('getAllGoalFolders 在有归档目标时应该显示已归档目录', async () => {
         // 添加归档目标
         const archivedGoal = new Goal({
           name: '归档目标',
@@ -333,34 +333,34 @@ describe('useGoalStore 测试', () => {
         await store.syncGoalState(archivedGoal);
 
         // 添加已归档目录
-        await store.syncGoalDirState(systemArchivedDir);
+        await store.syncGoalFolderState(systemArchivedDir);
 
-        const allDirs = store.getAllGoalDirs;
+        const allDirs = store.getAllGoalFolders;
 
         expect(allDirs.map((d) => d.uuid)).toContain(SYSTEM_GOAL_DIRS.ARCHIVED.uuid);
         // 已归档目录应该在最后
         expect(allDirs[allDirs.length - 1].uuid).toBe(SYSTEM_GOAL_DIRS.ARCHIVED.uuid);
       });
 
-      it('getGoalDirById 应该根据UUID查找目录', () => {
-        const foundDir = store.getGoalDirById(dir1.uuid);
+      it('getGoalFolderById 应该根据UUID查找目录', () => {
+        const foundDir = store.getGoalFolderById(dir1.uuid);
 
         expect(foundDir).toBeTruthy();
         expect(foundDir?.uuid).toBe(dir1.uuid);
         expect(foundDir?.name).toBe(dir1.name);
       });
 
-      it('getGoalDirById 对不存在的UUID应该返回undefined', () => {
-        const foundDir = store.getGoalDirById('non-existent-uuid');
+      it('getGoalFolderById 对不存在的UUID应该返回undefined', () => {
+        const foundDir = store.getGoalFolderById('non-existent-uuid');
 
         expect(foundDir).toBeUndefined();
       });
 
-      it('isSystemGoalDir 应该正确识别系统目录', () => {
-        expect(store.isSystemGoalDir(SYSTEM_GOAL_DIRS.ALL.uuid)).toBe(true);
-        expect(store.isSystemGoalDir(SYSTEM_GOAL_DIRS.ARCHIVED.uuid)).toBe(true);
-        expect(store.isSystemGoalDir(SYSTEM_GOAL_DIRS.DELETED.uuid)).toBe(true);
-        expect(store.isSystemGoalDir('user-dir-uuid')).toBe(false);
+      it('isSystemGoalFolder 应该正确识别系统目录', () => {
+        expect(store.isSystemGoalFolder(SYSTEM_GOAL_DIRS.ALL.uuid)).toBe(true);
+        expect(store.isSystemGoalFolder(SYSTEM_GOAL_DIRS.ARCHIVED.uuid)).toBe(true);
+        expect(store.isSystemGoalFolder(SYSTEM_GOAL_DIRS.DELETED.uuid)).toBe(true);
+        expect(store.isSystemGoalFolder('user-dir-uuid')).toBe(false);
       });
     });
   });
@@ -448,8 +448,8 @@ describe('useGoalStore 测试', () => {
       }
     });
 
-    it('syncGoalDirState 应该处理错误并继续执行', async () => {
-      const dir = new GoalDir({
+    it('syncGoalFolderState 应该处理错误并继续执行', async () => {
+      const dir = new GoalFolder({
         name: '测试目录',
         icon: 'mdi-test',
       });
@@ -457,8 +457,8 @@ describe('useGoalStore 测试', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       try {
-        await store.syncGoalDirState(dir);
-        expect(store.goalDirs).toHaveLength(1);
+        await store.syncGoalFolderState(dir);
+        expect(store.GoalFolders).toHaveLength(1);
       } finally {
         consoleSpy.mockRestore();
       }

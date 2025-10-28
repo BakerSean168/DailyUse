@@ -48,16 +48,17 @@ export class NotificationInitializationManager {
     console.log('[NotificationInit] 开始初始化Notification模块...');
 
     // 使用更宽松的初始化策略，部分功能失败不应该阻塞整个应用
+    // 注意：只初始化不依赖用户登录态的核心功能
     const initializationSteps = [
       { name: '通知服务', fn: () => this.initializeNotificationService() },
       { name: '事件处理器', fn: () => this.initializeEventHandlers() },
-      { name: '提醒通知处理器', fn: () => this.initializeReminderHandler() },
       { name: '全局错误处理', fn: () => this.setupGlobalErrorHandling() },
     ];
 
     const nonCriticalSteps = [
       { name: '通知权限', fn: () => this.requestNotificationPermissions() },
-      { name: 'SSE 连接', fn: () => this.initializeSSEConnection() },
+      // ❌ 不再在这里初始化 SSE 和 Reminder Handler
+      // SSE 连接和 Reminder Handler 需要用户登录后再初始化（在 notificationInitialization.ts 的 USER_LOGIN 阶段）
     ];
 
     try {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { Goal } from '../../domain/aggregates/goal';
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { GoalRecord } from '../../domain/entities/record';
 import { SYSTEM_GOAL_DIRS } from '@common/modules/goal/types/goal';
 
@@ -10,7 +10,7 @@ import { SYSTEM_GOAL_DIRS } from '@common/modules/goal/types/goal';
 export const useGoalStore = defineStore('goal', {
   state: () => ({
     goals: [] as Goal[],
-    goalDirs: [] as GoalDir[],
+    GoalFolders: [] as GoalFolder[],
   }),
 
   getters: {
@@ -120,24 +120,24 @@ export const useGoalStore = defineStore('goal', {
      * - 用户自定义文件夹显示在中间
      * - "已删除" 和 "已归档" 文件夹在有数据时显示在最下方
      */
-    getAllGoalDirs(): GoalDir[] {
-      const systemDirs = this.goalDirs.filter(
+    getAllGoalFolders(): GoalFolder[] {
+      const systemDirs = this.GoalFolders.filter(
         (dir) =>
           dir.uuid === SYSTEM_GOAL_DIRS.ALL.uuid ||
           dir.uuid === SYSTEM_GOAL_DIRS.DELETED.uuid ||
           dir.uuid === SYSTEM_GOAL_DIRS.ARCHIVED.uuid,
       );
 
-      const userDirs = this.goalDirs.filter((dir) => !systemDirs.includes(dir));
+      const userDirs = this.GoalFolders.filter((dir) => !systemDirs.includes(dir));
 
       const hasArchivedGoals = this.goals.some((goal) => goal.lifecycle.status === 'archived');
 
-      const result: GoalDir[] = [];
+      const result: GoalFolder[] = [];
 
       // 1. 添加 "全部" 文件夹（始终显示在最上方）
       const allDir = systemDirs.find((dir) => dir.uuid === SYSTEM_GOAL_DIRS.ALL.uuid);
       if (allDir) {
-        result.push(GoalDir.ensureGoalDirNeverNull(allDir));
+        result.push(GoalFolder.ensureGoalFolderNeverNull(allDir));
       }
 
       // 2. 添加用户自定义文件夹（按名称排序）
@@ -148,14 +148,14 @@ export const useGoalStore = defineStore('goal', {
             const nameB = b.name || '';
             return nameA.localeCompare(nameB);
           })
-          .map((dir) => GoalDir.ensureGoalDirNeverNull(dir)),
+          .map((dir) => GoalFolder.ensureGoalFolderNeverNull(dir)),
       );
 
       // 3. 添加系统文件夹（仅在有数据时显示，显示在最下方）
       if (hasArchivedGoals) {
         const archivedDir = systemDirs.find((dir) => dir.uuid === SYSTEM_GOAL_DIRS.ARCHIVED.uuid);
         if (archivedDir) {
-          result.push(GoalDir.ensureGoalDirNeverNull(archivedDir));
+          result.push(GoalFolder.ensureGoalFolderNeverNull(archivedDir));
         }
       }
 
@@ -170,13 +170,13 @@ export const useGoalStore = defineStore('goal', {
       return result;
     },
 
-    getGoalDirById: (state) => (uuid: string) => {
-      return state.goalDirs.find((d) => d.uuid === uuid);
+    getGoalFolderById: (state) => (uuid: string) => {
+      return state.GoalFolders.find((d) => d.uuid === uuid);
     },
 
     // ========== 系统文件夹相关 ==========
 
-    isSystemGoalDir: () => (dirUuid: string) => {
+    isSystemGoalFolder: () => (dirUuid: string) => {
       return (
         dirUuid === SYSTEM_GOAL_DIRS.ALL.uuid ||
         dirUuid === SYSTEM_GOAL_DIRS.DELETED.uuid ||
@@ -212,26 +212,26 @@ export const useGoalStore = defineStore('goal', {
       }
     },
 
-    async syncGoalDirState(goalDir: GoalDir): Promise<void> {
+    async syncGoalFolderState(GoalFolder: GoalFolder): Promise<void> {
       try {
-        console.log('[目标 Store] 同步目标目录状态:', goalDir);
+        console.log('[目标 Store] 同步目标目录状态:', GoalFolder);
         await this.$patch((state) => {
-          const index = state.goalDirs.findIndex((d) => d.uuid === goalDir.uuid);
+          const index = state.GoalFolders.findIndex((d) => d.uuid === GoalFolder.uuid);
           if (index !== -1) {
-            state.goalDirs[index] = goalDir;
+            state.GoalFolders[index] = GoalFolder;
           } else {
-            state.goalDirs.push(goalDir);
+            state.GoalFolders.push(GoalFolder);
           }
         });
       } catch (error) {
         console.warn('⚠️ 同步目标目录状态失败:', error);
       }
     },
-    async syncGoalDirsState(goalDirs: GoalDir[]): Promise<void> {
+    async syncGoalFoldersState(GoalFolders: GoalFolder[]): Promise<void> {
       try {
-        console.log('[目标 Store] 同步目标目录状态:', goalDirs);
+        console.log('[目标 Store] 同步目标目录状态:', GoalFolders);
         await this.$patch((state) => {
-          state.goalDirs = goalDirs;
+          state.GoalFolders = GoalFolders;
         });
       } catch (error) {
         console.warn('⚠️ 同步目标目录状态失败:', error);
@@ -241,8 +241,8 @@ export const useGoalStore = defineStore('goal', {
     removeGoal(goalUuid: string): void {
       this.goals = this.goals.filter((goal) => goal.uuid !== goalUuid);
     },
-    removeGoalDir(dirUuid: string): void {
-      this.goalDirs = this.goalDirs.filter((dir) => dir.uuid !== dirUuid);
+    removeGoalFolder(dirUuid: string): void {
+      this.GoalFolders = this.GoalFolders.filter((dir) => dir.uuid !== dirUuid);
     },
 
     getGoalsCountByDirUuid(dirUuid: string): number {

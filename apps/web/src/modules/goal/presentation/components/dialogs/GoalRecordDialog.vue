@@ -35,7 +35,7 @@
           <!-- 增加值输入 -->
           <div class="mb-6">
             <v-text-field
-              v-model.number="localGoalRecord.value"
+              v-model.number="localRecord.changeAmount"
               label="增加值"
               type="number"
               variant="outlined"
@@ -54,26 +54,10 @@
               </template>
             </v-text-field>
           </div>
-          <!-- 记录时间 -->
-          <div class="mb-6">
-            <v-card variant="outlined" class="time-card">
-              <v-card-text class="pa-4">
-                <div class="d-flex align-center">
-                  <v-icon color="primary" class="mr-3">mdi-clock-outline</v-icon>
-                  <div>
-                    <div class="text-body-1 font-weight-medium">记录时间</div>
-                    <div class="text-h6 text-primary">
-                      {{ format(localGoalRecord.createdAt, 'yyyy-MM-dd HH:mm:ss') }}
-                    </div>
-                  </div>
-                </div>
-              </v-card-text>
-            </v-card>
-          </div>
           <!-- 备注输入 -->
           <div class="mb-4">
             <v-textarea
-              v-model="localGoalRecord.note"
+              v-model="localRecord.note"
               label="备注说明"
               placeholder="添加关于此次记录的详细说明..."
               variant="outlined"
@@ -94,11 +78,11 @@
               <v-chip
                 v-for="quickValue in quickValues"
                 :key="quickValue"
-                :color="localGoalRecord.value === quickValue ? 'primary' : 'surface-variant'"
-                :variant="localGoalRecord.value === quickValue ? 'flat' : 'outlined'"
+                :color="localRecord.changeAmount === quickValue ? 'primary' : 'surface-variant'"
+                :variant="localRecord.changeAmount === quickValue ? 'flat' : 'outlined'"
                 size="small"
                 clickable
-                @click="localGoalRecord.updateValue(quickValue)"
+                @click="localRecord.changeAmount = quickValue"
                 class="quick-value-chip"
               >
                 {{ quickValue }}
@@ -116,29 +100,27 @@ import { computed, watch, ref } from 'vue';
 // utils
 import { format } from 'date-fns';
 // domains
-import { GoalRecord } from '@dailyuse/domain-client';
+import { GoalRecordClient } from '@dailyuse/domain-client';
 // composables
 import { useGoal } from '../../composables/useGoal';
 
-const { createGoalRecord } = useGoal();
+const { createGoalRecord, goals } = useGoal();
 
 const visible = ref(false);
 const propKeyResultUuid = ref<string>('');
 const propGoalUuid = ref<string>('');
-const propRecord = ref<GoalRecord | null>(null);
+const propRecord = ref<GoalRecordClient | null>(null);
 
 const quickValues = [1, 2, 5, 10];
 
 const formRef = ref();
 const formValid = ref(false);
 
-const localGoalRecord = ref<GoalRecord>(
-  GoalRecord.forCreate({
-    keyResultUuid: propKeyResultUuid.value,
-    goalUuid: propGoalUuid.value,
-    accountUuid: '', // 需要在创建时提供
-  }),
-);
+// 本地表单数据：只需要 changeAmount 和 note
+const localRecord = ref({
+  changeAmount: 0,
+  note: '',
+});
 
 const isEditing = computed(() => !!propRecord.value);
 
@@ -148,12 +130,33 @@ const valueRules = [
   (v: number) => v <= 10000 || '增加值不能超过10000',
 ];
 
-const isValid = computed(() => formValid.value && localGoalRecord.value.value > 0);
+const isValid = computed(() => formValid.value && localRecord.value.changeAmount > 0);
 
 const handleCreateKeyResult = async () => {
-  await createGoalRecord(propGoalUuid.value, localGoalRecord.value.keyResultUuid, {
-    value: localGoalRecord.value.value,
-    note: localGoalRecord.value.note,
+  // 获取当前 KeyResult
+  const currentGoal = goals.value.find((g: any) => g.uuid === propGoalUuid.value);
+  if (!currentGoal) {
+    console.error('未找到目标');
+    return;
+  }
+  
+  const currentKeyResult = currentGoal.keyResults.find((kr: any) => kr.uuid === propKeyResultUuid.value);
+  if (!currentKeyResult) {
+    console.error('未找到关键结果');
+    return;
+  }
+
+  const previousValue = currentKeyResult.currentValue;
+  const changeAmount = localRecord.value.changeAmount;
+  const newValue = previousValue + changeAmount;
+
+  await createGoalRecord(propGoalUuid.value, propKeyResultUuid.value, {
+    keyResultUuid: propKeyResultUuid.value,
+    goalUuid: propGoalUuid.value,
+    previousValue,
+    newValue,
+    note: localRecord.value.note,
+    recordedAt: Date.now(),
   });
 };
 
@@ -172,7 +175,7 @@ const handleCancel = () => {
   closeDialog();
 };
 
-const openDialog = (goalUuid: string, keyResultUuid: string, record?: GoalRecord) => {
+const openDialog = (goalUuid: string, keyResultUuid: string, record?: GoalRecordClient) => {
   propGoalUuid.value = goalUuid;
   propKeyResultUuid.value = keyResultUuid;
   propRecord.value = record || null;
@@ -182,18 +185,25 @@ const openDialog = (goalUuid: string, keyResultUuid: string, record?: GoalRecord
 const closeDialog = () => {
   visible.value = false;
 };
+
 // 监听弹窗显示，重置表单
 watch(
   () => visible.value,
   (show) => {
     if (show) {
-      localGoalRecord.value = propRecord.value
-        ? propRecord.value.clone()
-        : GoalRecord.forCreate({
-            goalUuid: propGoalUuid.value,
-            keyResultUuid: propKeyResultUuid.value,
-            accountUuid: '',
-          });
+      if (propRecord.value) {
+        // 编辑模式：显示已有记录
+        localRecord.value = {
+          changeAmount: propRecord.value.changeAmount,
+          note: propRecord.value.note || '',
+        };
+      } else {
+        // 创建模式：重置表单
+        localRecord.value = {
+          changeAmount: 0,
+          note: '',
+        };
+      }
     }
   },
 );

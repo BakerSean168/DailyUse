@@ -216,7 +216,7 @@ export const useGoalStore = defineStore('goal', {
   state: () => ({
     // 缓存数据
     goals: [] as Goal[],
-    goalDirs: [] as GoalDir[],
+    GoalFolders: [] as GoalFolder[],
 
     // UI状态
     isLoading: false,
@@ -356,7 +356,7 @@ export class GoalWebApplicationService {
   async initializeModuleData(): Promise<void> {
     await Promise.all([
       this.fetchAndCacheGoals({ limit: 1000 }),
-      this.fetchAndCacheGoalDirs({ limit: 1000 }),
+      this.fetchAndCacheGoalFolders({ limit: 1000 }),
     ]);
   }
 }
@@ -1265,34 +1265,34 @@ src/modules/{module}/presentation/components/dialogs/xxxDialog.vue
 
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
-import { GoalDir } from '@dailyuse/domain-client';
+import { GoalFolder } from '@dailyuse/domain-client';
 // composables
 import { useGoal } from '../../composables/useGoal';
 import { vi } from 'date-fns/locale';
 
-const { createGoalDir, updateGoalDir } = useGoal();
+const { createGoalFolder, updateGoalFolder } = useGoal();
 
 const visible = ref(false);
-const propGoalDir = ref<GoalDir | null>(null);
-const localGoalDir = ref<GoalDir>(GoalDir.forCreate({ accountUuid: '' }));
+const propGoalFolder = ref<GoalFolder | null>(null);
+const localGoalFolder = ref<GoalFolder>(GoalFolder.forCreate({ accountUuid: '' }));
 
-const isEditing = computed(() => !!propGoalDir.value);
+const isEditing = computed(() => !!propGoalFolder.value);
 const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
 const isFormValid = computed(() => {
   return formRef.value?.isValid ?? false;
 });
 
 const name = computed({
-  get: () => localGoalDir.value.name,
+  get: () => localGoalFolder.value.name,
   set: (val: string) => {
-    localGoalDir.value.updateInfo({ name: val });
+    localGoalFolder.value.updateInfo({ name: val });
   },
 });
 
 const icon = computed({
-  get: () => localGoalDir.value.icon,
+  get: () => localGoalFolder.value.icon,
   set: (val: string) => {
-    localGoalDir.value.updateInfo({ icon: val });
+    localGoalFolder.value.updateInfo({ icon: val });
   },
 });
 
@@ -1313,12 +1313,12 @@ const nameRules = [
 
 const handleSave = () => {
   if (!isFormValid.value) return;
-  if (propGoalDir.value) {
+  if (propGoalFolder.value) {
     // 编辑模式
-    updateGoalDir(localGoalDir.value.uuid, localGoalDir.value.toDTO());
+    updateGoalFolder(localGoalFolder.value.uuid, localGoalFolder.value.toDTO());
   } else {
     // 创建模式
-    createGoalDir(localGoalDir.value.toDTO());
+    createGoalFolder(localGoalFolder.value.toDTO());
   }
   closeDialog();
 };
@@ -1327,17 +1327,17 @@ const handleCancel = () => {
   closeDialog();
 };
 
-const openDialog = (goalDir?: GoalDir) => {
+const openDialog = (GoalFolder?: GoalFolder) => {
   visible.value = true;
-  propGoalDir.value = goalDir || null;
+  propGoalFolder.value = GoalFolder || null;
 };
 
 const openForCreate = () => {
   openDialog();
 };
 
-const openForEdit = (goalDir: GoalDir) => {
-  openDialog(goalDir);
+const openForEdit = (GoalFolder: GoalFolder) => {
+  openDialog(GoalFolder);
 };
 
 const closeDialog = () => {
@@ -1345,14 +1345,14 @@ const closeDialog = () => {
 };
 
 watch(
-  [() => visible.value, () => propGoalDir.value],
+  [() => visible.value, () => propGoalFolder.value],
   ([show]) => {
     if (show) {
-      localGoalDir.value = propGoalDir.value
-        ? propGoalDir.value.clone()
-        : GoalDir.forCreate({ accountUuid: '' });
+      localGoalFolder.value = propGoalFolder.value
+        ? propGoalFolder.value.clone()
+        : GoalFolder.forCreate({ accountUuid: '' });
     } else {
-      localGoalDir.value = GoalDir.forCreate({ accountUuid: '' });
+      localGoalFolder.value = GoalFolder.forCreate({ accountUuid: '' });
     }
   },
   { immediate: true },

@@ -117,7 +117,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { ReminderTemplateGroup, ReminderTemplate } from '@dailyuse/domain-client';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
 import { reminderService } from '../../../application/services/ReminderWebApplicationService';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import TemplateCard from './TemplateDesktopCard.vue';
@@ -273,7 +273,7 @@ const createTemplate = async () => {
         type: ReminderContracts.ReminderTimeConfigType.DAILY,
         times: ['09:00'],
       },
-      priority: ReminderContracts.ReminderPriority.NORMAL,
+      importanceLevel: ImportanceLevel.Moderate,
       category: '默认',
       tags: [],
     });

@@ -155,7 +155,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { ReminderTemplate } from '@dailyuse/domain-client';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { useReminder } from '../../composables/useReminder';
 import { format } from 'date-fns';
@@ -181,14 +181,15 @@ const {
 
 // 计算属性
 const priorityColor = computed(() => {
-  switch (template.value?.priority) {
-    case ReminderContracts.ReminderPriority.LOW:
+  switch (template.value?.importanceLevel) {
+    case ImportanceLevel.Trivial:
+    case ImportanceLevel.Minor:
       return 'success';
-    case ReminderContracts.ReminderPriority.NORMAL:
+    case ImportanceLevel.Moderate:
       return 'primary';
-    case ReminderContracts.ReminderPriority.HIGH:
+    case ImportanceLevel.Important:
       return 'warning';
-    case ReminderContracts.ReminderPriority.URGENT:
+    case ImportanceLevel.Vital:
       return 'error';
     default:
       return 'grey';
@@ -196,15 +197,17 @@ const priorityColor = computed(() => {
 });
 
 const priorityText = computed(() => {
-  switch (template.value?.priority) {
-    case ReminderContracts.ReminderPriority.LOW:
-      return '低';
-    case ReminderContracts.ReminderPriority.NORMAL:
-      return '普通';
-    case ReminderContracts.ReminderPriority.HIGH:
-      return '高';
-    case ReminderContracts.ReminderPriority.URGENT:
-      return '紧急';
+  switch (template.value?.importanceLevel) {
+    case ImportanceLevel.Trivial:
+      return '无关紧要';
+    case ImportanceLevel.Minor:
+      return '不太重要';
+    case ImportanceLevel.Moderate:
+      return '中等重要';
+    case ImportanceLevel.Important:
+      return '非常重要';
+    case ImportanceLevel.Vital:
+      return '极其重要';
     default:
       return '未知';
   }

@@ -1,18 +1,32 @@
 import { defineStore } from 'pinia';
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { AuthenticationContracts, AccountContracts } from '@dailyuse/contracts';
 import { AuthManager } from '@/shared/api';
+import { AuthCredential, AuthSession } from '@dailyuse/domain-client';
 
 // 类型别名
-type UserInfoDTO = AuthenticationContracts.UserInfoDTO;
-type UserSessionClientDTO = AuthenticationContracts.UserSessionClientDTO;
-type MFADeviceClientDTO = AuthenticationContracts.MFADeviceClientDTO;
+type AuthCredentialClientDTO = AuthenticationContracts.AuthCredentialClientDTO;
+type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
+type AccountClientDTO = AccountContracts.AccountClientDTO;
+
+// MFA 设备临时类型（需要在 contracts 中定义）
+interface MFADeviceClientDTO {
+  uuid: string;
+  name: string;
+  type: string;
+  isEnabled: boolean;
+  createdAt: number;
+  lastUsedAt?: number;
+}
 
 export interface AuthenticationState {
-  // 用户信息
-  user: UserInfoDTO | null;
+  // 用户账户信息
+  account: AccountClientDTO | null;
 
-  // 会话信息
-  currentSession: UserSessionClientDTO | null;
+  // 当前会话（使用聚合根）
+  currentSession: AuthSession | null;
+
+  // 认证凭证（使用聚合根）
+  credential: AuthCredential | null;
 
   // MFA 设备
   mfaDevices: MFADeviceClientDTO[];
@@ -24,8 +38,9 @@ export interface AuthenticationState {
 
 export const useAuthenticationStore = defineStore('authentication', {
   state: (): AuthenticationState => ({
-    user: null,
+    account: null,
     currentSession: null,
+    credential: null,
     mfaDevices: [],
     isLoading: false,
     error: null,
@@ -48,19 +63,19 @@ export const useAuthenticationStore = defineStore('authentication', {
     getRefreshToken: () => AuthManager.getRefreshToken(),
 
     /**
-     * 获取当前用户
+     * 获取当前账户
      */
-    getCurrentUser: (state) => state.user,
+    getCurrentUser: (state) => state.account,
 
     /**
      * 获取用户 UUID
      */
-    getUserUuid: (state) => state.user?.uuid,
+    getUserUuid: (state) => state.account?.uuid,
 
     /**
      * 获取用户名
      */
-    getUsername: (state) => state.user?.username,
+    getUsername: (state) => state.account?.username,
 
     /**
      * 获取当前会话
@@ -68,14 +83,14 @@ export const useAuthenticationStore = defineStore('authentication', {
     getCurrentSession: (state) => state.currentSession,
 
     /**
-     * 会话是否活跃（使用 ClientDTO 计算属性）
+     * 会话是否活跃
      */
-    isSessionActive: (state) => state.currentSession?.isActive ?? false,
+    isSessionActive: (state) => state.currentSession?.isActive() ?? false,
 
     /**
-     * 会话剩余时间（分钟）
+     * 会话剩余时间（秒）
      */
-    sessionMinutesRemaining: (state) => state.currentSession?.minutesRemaining ?? 0,
+    sessionSecondsRemaining: (state) => state.currentSession?.getRemainingTime() ?? 0,
 
     /**
      * Token 是否即将过期（10分钟内）
@@ -103,26 +118,30 @@ export const useAuthenticationStore = defineStore('authentication', {
 
     /**
      * 获取用户角色
+     * TODO: 需要从授权服务获取
      */
-    getUserRoles: (state) => state.user?.roles ?? [],
+    getUserRoles: (state) => [] as string[], // state.account?.roles ?? [],
 
     /**
      * 获取用户权限
+     * TODO: 需要从授权服务获取
      */
-    getUserPermissions: (state) => state.user?.permissions ?? [],
+    getUserPermissions: (state) => [] as string[], // state.account?.permissions ?? [],
 
     /**
      * 检查是否有指定角色
+     * TODO: 需要从授权服务获取
      */
     hasRole: (state) => (role: string) => {
-      return state.user?.roles?.includes(role) ?? false;
+      return false; // state.account?.roles?.includes(role) ?? false;
     },
 
     /**
      * 检查是否有指定权限
+     * TODO: 需要从授权服务获取
      */
     hasPermission: (state) => (permission: string) => {
-      return state.user?.permissions?.includes(permission) ?? false;
+      return false; // state.account?.permissions?.includes(permission) ?? false;
     },
 
     /**
@@ -166,14 +185,14 @@ export const useAuthenticationStore = defineStore('authentication', {
      * 设置认证数据（从 LoginResponse 设置）
      */
     setAuthData(loginResponse: {
-      user: UserInfoDTO;
+      user: AccountClientDTO;
       accessToken: string;
       refreshToken: string;
       expiresIn: number; // 秒
       tokenType?: string;
       sessionId?: string;
     }) {
-      this.user = loginResponse.user;
+      this.account = loginResponse.user;
 
       // 将 token 存储到 AuthManager
       AuthManager.setTokens(
@@ -187,8 +206,8 @@ export const useAuthenticationStore = defineStore('authentication', {
     /**
      * 设置用户信息
      */
-    setUser(user: UserInfoDTO) {
-      this.user = user;
+    setUser(account: AccountClientDTO) {
+      this.account = account;
     },
 
     /**
@@ -208,10 +227,31 @@ export const useAuthenticationStore = defineStore('authentication', {
     },
 
     /**
-     * 设置当前会话
+     * 设置当前会话（从 DTO 创建聚合根）
      */
-    setCurrentSession(session: UserSessionClientDTO) {
+    setCurrentSession(sessionDTO: AuthSessionClientDTO) {
+      this.currentSession = AuthSession.fromClientDTO(sessionDTO);
+    },
+
+    /**
+     * 设置当前会话聚合根（直接设置）
+     */
+    setCurrentSessionAggregate(session: AuthSession | null) {
       this.currentSession = session;
+    },
+
+    /**
+     * 设置认证凭证（从 DTO 创建聚合根）
+     */
+    setCredential(credentialDTO: AuthCredentialClientDTO) {
+      this.credential = AuthCredential.fromClientDTO(credentialDTO);
+    },
+
+    /**
+     * 设置认证凭证聚合根（直接设置）
+     */
+    setCredentialAggregate(credential: AuthCredential | null) {
+      this.credential = credential;
     },
 
     /**
@@ -284,8 +324,9 @@ export const useAuthenticationStore = defineStore('authentication', {
      * 清除认证数据（登出）
      */
     logout() {
-      this.user = null;
+      this.account = null;
       this.currentSession = null;
+      this.credential = null;
       this.mfaDevices = [];
       this.isLoading = false;
       this.error = null;

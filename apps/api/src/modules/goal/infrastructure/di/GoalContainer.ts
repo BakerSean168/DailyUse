@@ -7,8 +7,7 @@ import type {
 import { PrismaGoalRepository } from '../repositories/PrismaGoalRepository';
 import { PrismaFocusSessionRepository } from '../repositories/PrismaFocusSessionRepository';
 import { PrismaGoalStatisticsRepository } from '../repositories/PrismaGoalStatisticsRepository';
-// TODO: GoalFolder 表尚未迁移到数据库，需要先创建 Prisma migration
-// import { PrismaGoalFolderRepository } from '../repositories/PrismaGoalFolderRepository';
+import { PrismaGoalFolderRepository } from '../repositories/PrismaGoalFolderRepository';
 import { prisma } from '@/config/prisma';
 
 /**
@@ -57,13 +56,10 @@ export class GoalContainer {
 
   /**
    * 获取文件夹仓储实例（懒加载）
-   * TODO: 需要先创建 GoalFolder 数据库表和迁移
    */
   getGoalFolderRepository(): IGoalFolderRepository {
     if (!this.goalFolderRepository) {
-      // TODO: 取消注释以下代码，当数据库迁移完成后
-      // this.goalFolderRepository = new PrismaGoalFolderRepository(prisma);
-      throw new Error('GoalFolder repository not yet implemented. Database migration required.');
+      this.goalFolderRepository = new PrismaGoalFolderRepository(prisma);
     }
     return this.goalFolderRepository;
   }

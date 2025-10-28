@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { useGoalServices } from './useGoalService';
 import { Goal } from '../../domain/aggregates/goal';
-import { GoalDir } from '../../domain/aggregates/goalDir';
+import { GoalFolder } from '../../domain/aggregates/GoalFolder';
 import { GoalRecord } from '../../domain/entities/record';
 import { GoalReview } from '../../domain/entities/goalReview';
 
@@ -12,9 +12,9 @@ vi.mock('../../application/services/goalDomainApplicationService', () => ({
     updateGoal: vi.fn(),
     deleteGoal: vi.fn(),
     deleteAllGoals: vi.fn(),
-    createGoalDir: vi.fn(),
-    updateGoalDir: vi.fn(),
-    deleteGoalDir: vi.fn(),
+    createGoalFolder: vi.fn(),
+    updateGoalFolder: vi.fn(),
+    deleteGoalFolder: vi.fn(),
     addGoalRecordToGoal: vi.fn(),
     removeGoalRecordFromGoal: vi.fn(),
     addReviewToGoal: vi.fn(),
@@ -37,7 +37,7 @@ describe('useGoalServices Composable 测试', () => {
   let mockGoalService: any;
   let mockSnackbar: any;
   let goal: Goal;
-  let goalDir: GoalDir;
+  let GoalFolder: GoalFolder;
   let goalRecord: GoalRecord;
   let goalReview: GoalReview;
 
@@ -63,7 +63,7 @@ describe('useGoalServices Composable 测试', () => {
       analysis: { motive: '测试', feasibility: '高' },
     });
 
-    goalDir = new GoalDir({
+    GoalFolder = new GoalFolder({
       uuid: 'test-dir-uuid',
       name: '测试目录',
       icon: 'mdi-test',
@@ -231,14 +231,14 @@ describe('useGoalServices Composable 测试', () => {
       it('成功创建目标目录时应该显示成功消息', async () => {
         const successResult = {
           success: true,
-          data: { goalDir },
+          data: { GoalFolder },
         };
-        (mockGoalService.createGoalDir as Mock).mockResolvedValue(successResult);
+        (mockGoalService.createGoalFolder as Mock).mockResolvedValue(successResult);
 
-        await goalServices.handleCreateGoalDir(goalDir);
+        await goalServices.handleCreateGoalFolder(GoalFolder);
 
-        expect(mockGoalService.createGoalDir).toHaveBeenCalledWith(goalDir);
-        // expect(mockSnackbar.showSuccess).toHaveBeenCalledWith(`目标目录创建成功：${goalDir.name}`);
+        expect(mockGoalService.createGoalFolder).toHaveBeenCalledWith(GoalFolder);
+        // expect(mockSnackbar.showSuccess).toHaveBeenCalledWith(`目标目录创建成功：${GoalFolder.name}`);
       });
 
       it('创建目标目录失败时应该显示错误消息', async () => {
@@ -246,9 +246,9 @@ describe('useGoalServices Composable 测试', () => {
           success: false,
           message: '创建失败',
         };
-        (mockGoalService.createGoalDir as Mock).mockResolvedValue(errorResult);
+        (mockGoalService.createGoalFolder as Mock).mockResolvedValue(errorResult);
 
-        await goalServices.handleCreateGoalDir(goalDir);
+        await goalServices.handleCreateGoalFolder(GoalFolder);
 
         // expect(mockSnackbar.showError).toHaveBeenCalledWith('创建目标目录失败：创建失败');
       });
@@ -258,26 +258,26 @@ describe('useGoalServices Composable 测试', () => {
       it('成功更新目标目录时应该显示成功消息', async () => {
         const successResult = {
           success: true,
-          data: { goalDir },
+          data: { GoalFolder },
         };
-        (mockGoalService.updateGoalDir as Mock).mockResolvedValue(successResult);
+        (mockGoalService.updateGoalFolder as Mock).mockResolvedValue(successResult);
 
-        await goalServices.handleUpdateGoalDir(goalDir);
+        await goalServices.handleUpdateGoalFolder(GoalFolder);
 
-        expect(mockGoalService.updateGoalDir).toHaveBeenCalledWith(goalDir);
-        // expect(mockSnackbar.showSuccess).toHaveBeenCalledWith(`目标目录更新成功：${goalDir.name}`);
+        expect(mockGoalService.updateGoalFolder).toHaveBeenCalledWith(GoalFolder);
+        // expect(mockSnackbar.showSuccess).toHaveBeenCalledWith(`目标目录更新成功：${GoalFolder.name}`);
       });
     });
 
     describe('删除目标目录', () => {
       it('成功删除目标目录时应该显示成功消息', async () => {
         const successResult = { success: true };
-        (mockGoalService.deleteGoalDir as Mock).mockResolvedValue(successResult);
+        (mockGoalService.deleteGoalFolder as Mock).mockResolvedValue(successResult);
 
-        await goalServices.handleDeleteGoalDir(goalDir.uuid);
+        await goalServices.handleDeleteGoalFolder(GoalFolder.uuid);
 
-        expect(mockGoalService.deleteGoalDir).toHaveBeenCalledWith(goalDir.uuid);
-        // expect(mockSnackbar.showSuccess).toHaveBeenCalledWith(`目标目录已删除：${goalDir.uuid}`);
+        expect(mockGoalService.deleteGoalFolder).toHaveBeenCalledWith(GoalFolder.uuid);
+        // expect(mockSnackbar.showSuccess).toHaveBeenCalledWith(`目标目录已删除：${GoalFolder.uuid}`);
       });
     });
   });
@@ -419,9 +419,9 @@ describe('useGoalServices Composable 测试', () => {
       expect(goalServices).toHaveProperty('handleUpdateGoal');
       expect(goalServices).toHaveProperty('handleDeleteGoal');
       expect(goalServices).toHaveProperty('handleDeleteAllGoals');
-      expect(goalServices).toHaveProperty('handleCreateGoalDir');
-      expect(goalServices).toHaveProperty('handleUpdateGoalDir');
-      expect(goalServices).toHaveProperty('handleDeleteGoalDir');
+      expect(goalServices).toHaveProperty('handleCreateGoalFolder');
+      expect(goalServices).toHaveProperty('handleUpdateGoalFolder');
+      expect(goalServices).toHaveProperty('handleDeleteGoalFolder');
       expect(goalServices).toHaveProperty('handleAddGoalRecordToGoal');
       expect(goalServices).toHaveProperty('handleRemoveGoalRecordFromGoal');
       expect(goalServices).toHaveProperty('handleAddReviewToGoal');
@@ -435,9 +435,9 @@ describe('useGoalServices Composable 测试', () => {
       expect(typeof goalServices.handleUpdateGoal).toBe('function');
       expect(typeof goalServices.handleDeleteGoal).toBe('function');
       expect(typeof goalServices.handleDeleteAllGoals).toBe('function');
-      expect(typeof goalServices.handleCreateGoalDir).toBe('function');
-      expect(typeof goalServices.handleUpdateGoalDir).toBe('function');
-      expect(typeof goalServices.handleDeleteGoalDir).toBe('function');
+      expect(typeof goalServices.handleCreateGoalFolder).toBe('function');
+      expect(typeof goalServices.handleUpdateGoalFolder).toBe('function');
+      expect(typeof goalServices.handleDeleteGoalFolder).toBe('function');
       expect(typeof goalServices.handleAddGoalRecordToGoal).toBe('function');
       expect(typeof goalServices.handleRemoveGoalRecordFromGoal).toBe('function');
       expect(typeof goalServices.handleAddReviewToGoal).toBe('function');

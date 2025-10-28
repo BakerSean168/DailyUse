@@ -20,6 +20,7 @@ import weightSnapshotRouter from './modules/goal/interface/http/weightSnapshotRo
 import reminderRouter from './modules/reminder/interface/http/reminderRoutes';
 import scheduleRouter from './modules/schedule/interface/http/routes/scheduleRoutes';
 import notificationRouter from './modules/notification/interface/http/notificationRoutes';
+import notificationSSERouter from './modules/notification/interface/http/sseRoutes';
 import userPreferencesRoutes from './modules/setting/interface/http/routes/settingRoutes';
 import userSettingRoutes from './modules/setting/interface/http/routes/userSettingRoutes';
 // import themeRoutes from './modules/theme/interface/http/themeRoutes';
@@ -74,7 +75,7 @@ api.get('/health', (_req: Request, res: Response) => {
 // api.use('', accountRouter);
 
 // 挂载认证路由到 api 路由器 (登录/登出/刷新等) - 不需要认证
-api.use('', authenticationRouter);
+api.use('/auth', authenticationRouter);
 
 // 应用认证中间件到需要认证的路由
 // 注意：认证相关的路由（如登录、注册）应该放在认证中间件之前
@@ -148,7 +149,7 @@ api.use('/metrics', authMiddleware, metricsRouter);
  */
 // 挂载通知 SSE 路由 - 必须在 /notifications 之前！（避免被 authMiddleware 拦截）
 // token 通过 URL 参数传递，路由内部自行验证
-// api.use('/notifications/sse', notificationSSERouter);
+api.use('/notifications/sse', notificationSSERouter);
 
 // 挂载通知管理路由 - 需要认证
 api.use('/notifications', authMiddleware, notificationRouter);

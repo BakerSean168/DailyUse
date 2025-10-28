@@ -218,16 +218,16 @@ import { ImportanceLevel } from '@dailyuse/contracts';
 import { UrgencyLevel } from '@dailyuse/contracts';
 // types
 import type { TaskContracts } from '@dailyuse/contracts';
-import { TaskTemplate, KeyResult, Goal } from '@dailyuse/domain-client';
+import { TaskTemplate, KeyResultClient, GoalClient } from '@dailyuse/domain-client';
 
 type KeyResultLink = TaskContracts.KeyResultLink;
 
 // composables
 import { useTaskUtils } from '../../composables/useTaskUtils';
-import { useTask } from '../../composables/useTask';
+import { useTaskTemplate } from '../../composables/useTaskTemplate';
 import { de } from 'date-fns/locale';
 const { getTaskTemplateTimeText, getTaskTemplateRecurrenceText } = useTaskUtils();
-const { deleteTaskTemplate, pauseTaskTemplate, activateTaskTemplate } = useTask();
+const { deleteTaskTemplate, pauseTaskTemplate, activateTaskTemplate } = useTaskTemplate();
 
 interface Props {
   template: TaskTemplate;

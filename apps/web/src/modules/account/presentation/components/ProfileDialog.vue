@@ -29,27 +29,34 @@
 
           <v-list-item>
             <v-row>
-              <!-- <v-col cols="12" sm="6">
-                            <v-menu v-model="dateMenu" :close-on-content-click="false" transition="scale-transition"
-                                offset-y min-width="290px">
-                                <template #activator="{ props }">
-                                    <v-text-field v-model="formattedBirthday" label="生日"
-                                        prepend-inner-icon="mdi-cake-variant" readonly v-bind="props"
-                                        density="comfortable" clearable required />
-                                </template>
-                                <v-date-picker v-model="localAccount?.user.birthday" @update:modelValue="onDateSelected"
-                                    @input="dateMenu = false" locale="zh-CN" />
-                            </v-menu>
-                        </v-col> -->
+              <v-col cols="12">
+                <v-text-field
+                  v-model="formData.displayName"
+                  label="显示名称"
+                  clearable
+                  prepend-inner-icon="mdi-account"
+                  density="comfortable"
+                  required
+                />
+              </v-col>
               <v-col cols="12" sm="6">
                 <v-select
-                  v-model="formData.sex"
+                  v-model="formData.gender"
                   :items="sexOptions"
                   item-title="text"
                   item-value="value"
                   label="性别"
                   clearable
                   prepend-inner-icon="mdi-gender-male-female"
+                  density="comfortable"
+                />
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-text-field
+                  v-model="formData.location"
+                  label="位置"
+                  clearable
+                  prepend-inner-icon="mdi-map-marker"
                   density="comfortable"
                 />
               </v-col>
@@ -69,19 +76,26 @@
 <script setup lang="ts">
 import { ref, computed, watch, reactive } from 'vue';
 
-import { User } from '@dailyuse/domain-client';
-import { AccountContracts } from '@dailyuse/contracts';
+import type { AccountContracts } from '@dailyuse/contracts';
+import { Gender } from '@dailyuse/contracts';
 
-type UserDTO = AccountContracts.UserDTO;
+type ProfileData = {
+  displayName: string;
+  avatar?: string;
+  bio?: string;
+  location?: string;
+  dateOfBirth?: number;
+  gender?: Gender;
+};
 
 const props = defineProps<{
   modelValue: boolean;
-  user: User;
+  account: AccountContracts.AccountDTO | null;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'handle-update-profile', formData: Omit<UserDTO, 'uuid'>): void;
+  (e: 'handle-update-profile', formData: AccountContracts.UpdateAccountProfileRequestDTO): void;
 }>();
 
 const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
@@ -91,25 +105,26 @@ const isFormValid = computed(() => {
   return formRef.value.checkValidity();
 });
 
-const formData = reactive<Omit<UserDTO, 'uuid' | 'createdAt' | 'updatedAt'>>({
-  firstName: '',
-  lastName: '',
-  sex: 2,
-  bio: '',
-  avatar: '',
-  socialAccounts: {},
+const formData = reactive<ProfileData>({
+  displayName: '',
+  avatar: undefined,
+  bio: undefined,
+  location: undefined,
+  dateOfBirth: undefined,
+  gender: undefined,
 });
 
 const sexOptions = [
-  { text: '男', value: '1' },
-  { text: '女', value: '0' },
-  { text: '其他', value: '2' },
+  { text: '男', value: Gender.MALE },
+  { text: '女', value: Gender.FEMALE },
+  { text: '其他', value: Gender.OTHER },
+  { text: '不透露', value: Gender.PREFER_NOT_TO_SAY },
 ];
 
 const handleSaveProfile = () => {
   if (isFormValid.value) {
     if (formData) {
-      emit('handle-update-profile', formData as Omit<UserDTO, 'uuid'>);
+      emit('handle-update-profile', formData);
     }
     closeDialog();
   }
@@ -141,27 +156,16 @@ const closeDialog = () => {
 //     }
 // });
 
-watch([() => props.user, () => props.modelValue], ([user, modelValue]) => {
-  if (modelValue) {
-    if (user) {
-      Object.assign(formData, {
-        firstName: user.firstName ?? '',
-        lastName: user.lastName ?? '',
-        sex: user.sex ?? 2,
-        bio: user.bio ?? '',
-        avatar: user.avatar ?? '',
-        socialAccounts: user.socialAccounts ?? {},
-      });
-    } else {
-      Object.assign(formData, {
-        firstName: '',
-        lastName: '',
-        sex: 2,
-        bio: '',
-        avatar: '',
-        socialAccounts: {},
-      });
-    }
+watch([() => props.account, () => props.modelValue], ([account, modelValue]) => {
+  if (modelValue && account) {
+    Object.assign(formData, {
+      displayName: account.profile?.displayName ?? '',
+      avatar: account.profile?.avatar ?? undefined,
+      bio: account.profile?.bio ?? undefined,
+      location: account.profile?.location ?? undefined,
+      dateOfBirth: account.profile?.dateOfBirth ?? undefined,
+      gender: account.profile?.gender ?? undefined,
+    });
   }
 });
 </script>

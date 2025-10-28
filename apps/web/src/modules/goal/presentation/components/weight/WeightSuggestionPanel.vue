@@ -135,14 +135,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { KeyResult } from '@dailyuse/domain-client';
+import type { KeyResultClient } from '@dailyuse/domain-client';
 import {
   weightRecommendationService,
   type WeightStrategy,
 } from '../../../application/services/WeightRecommendationService';
 
 const props = defineProps<{
-  keyResults: KeyResult[];
+  keyResults: KeyResultClient[];
 }>();
 
 const emit = defineEmits<{

@@ -48,11 +48,11 @@
         <v-row no-gutters class="h-100">
           <!-- 侧边栏 - 目标分类 -->
           <v-col cols="12" md="3" class="pr-md-6 mb-6 mb-md-0 h-100">
-            <goal-dir-component
-              :goal-dirs="goalDirs"
-              @selected-goal-dir="onSelectedGoalDir"
-              @create-goal-dir="goalDirDialogRef?.openForCreate"
-              @edit-goal-dir="goalDirDialogRef?.openForEdit"
+            <GoalFolderComponent
+              :goal-folders="GoalFolders"
+              @selected-goal-folder="onSelectedGoalFolder"
+              @create-goal-folder="GoalFolderDialogRef?.openForCreate"
+              @edit-goal-folder="GoalFolderDialogRef?.openForEdit"
               class="h-100"
             />
           </v-col>
@@ -168,37 +168,43 @@
             {{ snackbar.message }}
         </v-snackbar> -->
     <GoalDialog ref="goalDialogRef" />
-    <GoalDirDialog ref="goalDirDialogRef" />
+    <GoalFolderDialog ref="GoalFolderDialogRef" />
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import { useGoal } from '../composables/useGoal';
+import { useGoalManagement } from '../composables/useGoalManagement';
+import { useGoalFolder } from '../composables/useGoalFolder';
 import { useGoalStore } from '../stores/goalStore';
-import type { Goal, GoalDir } from '@dailyuse/domain-client';
+import type { GoalClient, GoalFolderClient } from '@dailyuse/domain-client';
 
 // 组件导入
 import GoalCard from '../components/cards/GoalCard.vue';
-import GoalDirComponent from '../components/GoalDir.vue';
+import GoalFolderComponent from '../components/GoalFolder.vue';
 import GoalDialog from '../components/dialogs/GoalDialog.vue';
-import GoalDirDialog from '../components/dialogs/GoalDirDialog.vue';
+import GoalFolderDialog from '../components/dialogs/GoalFolderDialog.vue';
 // composables
 
 const router = useRouter();
 
+// 使用拆分后的 composables
+const goalManagement = useGoalManagement();
+const goalFolderComposable = useGoalFolder();
+
+// 解构需要的方法和状态
 const {
   isLoading,
   error,
   goals,
-  goalDirs,
   fetchGoals,
-  fetchGoalDirs,
   deleteGoal,
   refresh,
-  initialize,
-} = useGoal();
+  initializeData,
+} = goalManagement;
+
+const { folders: GoalFolders, fetchFolders: fetchGoalFolders } = goalFolderComposable;
 
 const goalStore = useGoalStore();
 
@@ -209,7 +215,7 @@ const selectedStatusIndex = ref(0);
 
 // dialogs
 const goalDialogRef = ref<InstanceType<typeof GoalDialog> | null>(null);
-const goalDirDialogRef = ref<InstanceType<typeof GoalDirDialog> | null>(null);
+const GoalFolderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
 
 const deleteDialog = reactive({
   show: false,
@@ -243,7 +249,7 @@ const filteredGoals = computed(() => {
   // 按目录过滤
   if (selectedDirUuid.value && selectedDirUuid.value !== 'all') {
     if (selectedDirUuid.value === 'archived') {
-      result = goalStore.getGoalsByStatus('archived');
+      result = goalStore.getGoalsByStatus('ARCHIVED');
     } else {
       result = goalStore.getGoalsByDir(selectedDirUuid.value);
     }
@@ -252,7 +258,7 @@ const filteredGoals = computed(() => {
   // 按状态过滤
   const currentStatus = statusTabs[selectedStatusIndex.value]?.value;
   if (currentStatus && currentStatus !== 'all') {
-    result = result.filter((goal: Goal) => goal.lifecycle?.status === currentStatus);
+    result = result.filter((goal: GoalClient) => goal.status === currentStatus.toUpperCase());
   }
 
   return result;
@@ -266,10 +272,10 @@ const filteredGoals = computed(() => {
 const goalCountByStatus = computed(() => {
   return {
     all: goals.value.length,
-    active: goals.value.filter((goal: Goal) => goal.lifecycle?.status === 'active').length,
-    paused: goals.value.filter((goal: Goal) => goal.lifecycle?.status === 'paused').length,
-    completed: goals.value.filter((goal: Goal) => goal.lifecycle?.status === 'completed').length,
-    archived: goals.value.filter((goal: Goal) => goal.lifecycle?.status === 'archived').length,
+    active: goals.value.filter((goal: GoalClient) => goal.status === 'ACTIVE').length,
+    paused: goals.value.filter((goal: GoalClient) => goal.status === 'DRAFT').length,
+    completed: goals.value.filter((goal: GoalClient) => goal.status === 'COMPLETED').length,
+    archived: goals.value.filter((goal: GoalClient) => goal.status === 'ARCHIVED').length,
   };
 });
 
@@ -283,7 +289,7 @@ const getGoalCountByStatus = (status: string) => {
 /**
  * 选择目录
  */
-const onSelectedGoalDir = (dirUuid: string) => {
+const onSelectedGoalFolder = (dirUuid: string) => {
   selectedDirUuid.value = dirUuid;
 };
 
@@ -338,7 +344,7 @@ const openCreateDirDialog = () => {
 /**
  * 打开编辑目录对话框
  */
-const openEditDirDialog = (goalDir: GoalDir) => {
+const openEditDirDialog = (folder: GoalFolderClient) => {
   // TODO: 实现编辑目录对话框
 };
 
@@ -346,9 +352,9 @@ const openEditDirDialog = (goalDir: GoalDir) => {
 
 onMounted(async () => {
   try {
-    await initialize();
+    await initializeData();
     await fetchGoals();
-    await fetchGoalDirs();
+    await fetchGoalFolders();
   } catch (error) {
     console.error('初始化失败:', error);
   }

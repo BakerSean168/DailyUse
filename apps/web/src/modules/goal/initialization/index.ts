@@ -7,7 +7,11 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import { initializeGoalModule, getGoalWebService } from '../index';
+import {
+  initializeGoalModule,
+  getGoalManagementService,
+} from '../index';
+import { useGoalStore } from '../presentation/stores/goalStore';
 
 /**
  * 注册 Goal 模块的初始化任务
@@ -24,9 +28,8 @@ export function registerGoalInitializationTasks(): void {
       console.log('🎯 [Goal] 开始初始化 Goal 模块...');
 
       try {
-        // 只初始化 Goal 模块，不同步数据（数据同步在用户登录时进行）
-        const goalService = getGoalWebService();
-        await goalService.initializeModule(); // 只初始化模块，不同步数据
+        // 只初始化 Goal 模块
+        await initializeGoalModule();
         console.log('✅ [Goal] Goal 模块初始化完成');
       } catch (error) {
         console.error('❌ [Goal] Goal 模块初始化失败:', error);
@@ -37,8 +40,7 @@ export function registerGoalInitializationTasks(): void {
       console.log('🧹 [Goal] 清理 Goal 模块数据...');
 
       try {
-        const goalService = getGoalWebService();
-        const store = goalService.getStore();
+        const store = useGoalStore();
 
         // 清空所有数据
         store.clearAll();
@@ -58,10 +60,18 @@ export function registerGoalInitializationTasks(): void {
       console.log(`🔄 [Goal] 同步用户 Goal 数据: ${context?.accountUuid || 'unknown'}`);
 
       try {
-        const goalService = getGoalWebService();
+        // 初始化模块（如果需要）
+        await initializeGoalModule();
 
-        // 完整初始化，包括数据同步
-        await goalService.initialize();
+        // 获取 Goals
+        console.log('📥 [Goal] 获取 Goal 列表...');
+        try {
+          const goals = await getGoalManagementService.getGoals({ limit: 100 });
+          console.log(`✅ [Goal] 成功获取 ${goals.length} 个 Goal`);
+        } catch (error) {
+          console.warn('⚠️ [Goal] 获取 Goal 失败，继续初始化', error);
+        }
+
         console.log('✅ [Goal] 用户 Goal 数据同步完成');
       } catch (error) {
         console.error('❌ [Goal] 用户 Goal 数据同步失败:', error);
@@ -72,8 +82,7 @@ export function registerGoalInitializationTasks(): void {
       console.log('🧹 [Goal] 清理用户 Goal 数据...');
 
       try {
-        const goalService = getGoalWebService();
-        const store = goalService.getStore();
+        const store = useGoalStore();
 
         // 清空用户相关的目标数据
         store.clearAll();

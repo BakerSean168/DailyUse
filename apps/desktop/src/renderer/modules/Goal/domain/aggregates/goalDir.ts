@@ -1,12 +1,12 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import type { IGoalDir } from '@common/modules/goal';
+import type { IGoalFolder } from '@common/modules/goal';
 import { isValid } from 'date-fns';
 
 /**
  * 目标目录领域实体
  * 负责目标目录的业务逻辑和数据管理
  */
-export class GoalDir extends AggregateRoot implements IGoalDir {
+export class GoalFolder extends AggregateRoot implements IGoalFolder {
   private _name: string;
   private _description?: string;
   private _icon: string;
@@ -19,7 +19,7 @@ export class GoalDir extends AggregateRoot implements IGoalDir {
     sortOrder: 0,
   };
   private _parentUuid?: string;
-  private _lifecycle: IGoalDir['lifecycle'];
+  private _lifecycle: IGoalFolder['lifecycle'];
 
   constructor(params: {
     uuid?: string;
@@ -29,7 +29,7 @@ export class GoalDir extends AggregateRoot implements IGoalDir {
     description?: string;
     parentUuid?: string;
   }) {
-    super(params.uuid || GoalDir.generateUUID());
+    super(params.uuid || GoalFolder.generateUUID());
     const now = new Date();
 
     this._name = params.name || '';
@@ -103,40 +103,40 @@ export class GoalDir extends AggregateRoot implements IGoalDir {
     this._lifecycle.updatedAt = new Date();
   }
 
-  get lifecycle(): IGoalDir['lifecycle'] {
+  get lifecycle(): IGoalFolder['lifecycle'] {
     return this._lifecycle;
   }
 
   /**
-   * 保证返回 GoalDir 实例或 null
+   * 保证返回 GoalFolder 实例或 null
    * @param dir 可能为 DTO、实体或 null
    */
-  static ensureGoalDir(dir: IGoalDir | GoalDir | null): GoalDir | null {
-    if (GoalDir.isGoalDir(dir)) {
-      return dir instanceof GoalDir ? dir : GoalDir.fromDTO(dir);
+  static ensureGoalFolder(dir: IGoalFolder | GoalFolder | null): GoalFolder | null {
+    if (GoalFolder.isGoalFolder(dir)) {
+      return dir instanceof GoalFolder ? dir : GoalFolder.fromDTO(dir);
     } else {
       return null;
     }
   }
 
   /**
-   * 保证返回 GoalDir 实例，永不为 null
+   * 保证返回 GoalFolder 实例，永不为 null
    * @param dir 可能为 DTO、实体或 null
    */
-  static ensureGoalDirNeverNull(dir: IGoalDir | GoalDir | null): GoalDir {
-    if (GoalDir.isGoalDir(dir)) {
-      return dir instanceof GoalDir ? dir : GoalDir.fromDTO(dir);
+  static ensureGoalFolderNeverNull(dir: IGoalFolder | GoalFolder | null): GoalFolder {
+    if (GoalFolder.isGoalFolder(dir)) {
+      return dir instanceof GoalFolder ? dir : GoalFolder.fromDTO(dir);
     } else {
-      return GoalDir.forCreate();
+      return GoalFolder.forCreate();
     }
   }
 
   /**
-   * 判断对象是否为 GoalDir 或 IGoalDir
+   * 判断对象是否为 GoalFolder 或 IGoalFolder
    */
-  static isGoalDir(obj: any): obj is GoalDir | IGoalDir {
+  static isGoalFolder(obj: any): obj is GoalFolder | IGoalFolder {
     return (
-      obj instanceof GoalDir ||
+      obj instanceof GoalFolder ||
       (obj && typeof obj === 'object' && 'uuid' in obj && 'name' in obj && 'icon' in obj)
     );
   }
@@ -144,7 +144,7 @@ export class GoalDir extends AggregateRoot implements IGoalDir {
   /**
    * 转换为数据传输对象
    */
-  toDTO(): IGoalDir {
+  toDTO(): IGoalFolder {
     return {
       uuid: this.uuid,
       name: this._name,
@@ -160,8 +160,8 @@ export class GoalDir extends AggregateRoot implements IGoalDir {
   /**
    * 从数据传输对象创建目录实例
    */
-  static fromDTO(data: IGoalDir): GoalDir {
-    const goalDir = new GoalDir({
+  static fromDTO(data: IGoalFolder): GoalFolder {
+    const GoalFolder = new GoalFolder({
       uuid: data.uuid,
       name: data.name,
       description: data.description,
@@ -169,44 +169,44 @@ export class GoalDir extends AggregateRoot implements IGoalDir {
       color: data.color || 'default-color',
       parentUuid: data.parentUuid,
     });
-    goalDir._sortConfig = {
+    GoalFolder._sortConfig = {
       sortKey: data.sortConfig.sortKey || 'default',
       sortOrder: data.sortConfig.sortOrder || 0,
     };
-    goalDir._lifecycle = {
+    GoalFolder._lifecycle = {
       createdAt: isValid(data.lifecycle.createdAt) ? data.lifecycle.createdAt : new Date(),
       updatedAt: isValid(data.lifecycle.updatedAt) ? data.lifecycle.updatedAt : new Date(),
       status: data.lifecycle.status || 'active',
     };
-    return goalDir;
+    return GoalFolder;
   }
 
   /**
    * 从创建数据传输对象创建目录
    */
-  static forCreate(): GoalDir {
-    return new GoalDir({
+  static forCreate(): GoalFolder {
+    return new GoalFolder({
       name: '',
       icon: 'mdi-folder',
       parentUuid: undefined,
     });
   }
 
-  clone(): GoalDir {
-    const goalDir = new GoalDir({
+  clone(): GoalFolder {
+    const GoalFolder = new GoalFolder({
       uuid: this.uuid,
       name: this._name,
       icon: this._icon,
       parentUuid: this._parentUuid,
     });
-    goalDir._lifecycle = { ...this._lifecycle };
-    return goalDir;
+    GoalFolder._lifecycle = { ...this._lifecycle };
+    return GoalFolder;
   }
 
   /**
    * 验证目录数据
    */
-  static validate(data: IGoalDir): {
+  static validate(data: IGoalFolder): {
     isValid: boolean;
     errors: string[];
   } {

@@ -108,7 +108,7 @@ export function useTheme() {
     // Add transition class to body
     document.body.classList.add('theme-transition');
 
-    // Change Vuetify theme
+    // Change Vuetify theme - use the recommended API
     vuetifyTheme.global.name.value = themeName;
 
     // Remove transition class after animation
