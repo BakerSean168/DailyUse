@@ -187,6 +187,10 @@
       "nx",
       "prisma",
       "vue-demi"
+    ],
+    "onlyBuiltDependencies": [
+      "core-js",
+      "electron"
     ]
   }
 }
