@@ -122,13 +122,15 @@ export function createTsupConfig(options: CreateTsupConfigOptions): Options {
     // 静默输出 (减少构建日志)
     silent: false,
 
-    // 构建成功回调
-    onSuccess: async () => {
-      console.log(`✅ ${packageName} 构建成功`);
-    },
-
-    // 合并额外配置
+    // 合并额外配置（extraOptions 放在 onSuccess 之前，允许覆盖）
     ...extraOptions,
+
+    // 构建成功回调（如果 extraOptions 中有 onSuccess，这里会被覆盖）
+    ...(extraOptions.onSuccess === undefined && {
+      onSuccess: async () => {
+        console.log(`✅ ${packageName} 构建成功`);
+      },
+    }),
   };
 }
 

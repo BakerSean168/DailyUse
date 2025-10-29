@@ -16,8 +16,8 @@
     // 源码根目录：限制编译范围
     "rootDir": "./src",
 
-    // 生成输出文件
-    "noEmit": false,
+    // 只生成声明文件，不生成 JS（JS 由 tsup 生成）
+    "emitDeclarationOnly": true,
 
     // ============================================================
     // Composite 项目配置（Monorepo 库的核心）
@@ -73,6 +73,8 @@
   // 项目引用配置
   // ============================================================
 
-  // Utils 包是基础包，不依赖其他包
-  "references": []
+  // Utils 包依赖 contracts 包
+  "references": [
+    { "path": "../contracts" }
+  ]
 }

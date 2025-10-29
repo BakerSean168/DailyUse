@@ -16,8 +16,8 @@
     // 源码根目录：限制编译范围
     "rootDir": "./src",
 
-    // 生成输出文件（库必须生成声明文件）
-    "noEmit": false,
+    // 只生成声明文件，不生成 JS（JS 由 tsup 生成）
+    "emitDeclarationOnly": true,
 
     // ============================================================
     // Composite 项目配置（Monorepo 库的核心）
