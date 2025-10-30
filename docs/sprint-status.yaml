@@ -64,11 +64,11 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Schedule Module (日程管理)
-  epic-4: contexted
-  4-1-schedule-event-crud: backlog
-  4-2-recurring-event-management: backlog
-  4-3-schedule-conflict-detection: backlog
-  4-4-week-view-calendar: backlog
+  epic-4: done  # Epic ✅ COMPLETED (2025-10-30)
+  4-1-schedule-event-crud: done  # Backend ✅ Frontend ✅ (8 files, ~1,750 lines)
+  4-2-recurring-event-management: skipped  # 跳过 - Schedule 作为视图聚合层，循环由 Task 管理
+  4-3-schedule-conflict-detection: done  # Backend ✅ Frontend ✅ (6 files, ~415 lines)
+  4-4-week-view-calendar: done  # Frontend ✅ Week View ✅ Route ✅ (3 files, ~510 lines)
   epic-4-retrospective: optional
 
   # Epic 5: Reminder Module (提醒管理)

@@ -26,6 +26,15 @@ export const scheduleRoutes: RouteRecordRaw[] = [
           requiresAuth: true,
         },
       },
+      {
+        path: 'week',
+        name: 'ScheduleWeekView',
+        component: () => import('../presentation/views/ScheduleWeekView.vue'),
+        meta: {
+          title: '周视图',
+          requiresAuth: true,
+        },
+      },
     ],
   },
 ];

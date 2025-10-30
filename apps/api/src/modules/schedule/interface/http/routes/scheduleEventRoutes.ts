@@ -1,6 +1,6 @@
 import express from 'express';
 import { ScheduleEventController } from '../controllers/ScheduleEventController';
-import { authMiddleware } from '../../../../../middleware/auth';
+import { authMiddleware } from '@/shared/middlewares/authMiddleware';
 
 /**
  * Schedule Event Routes
