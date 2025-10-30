@@ -2,9 +2,9 @@
  * Goal Repositories Export
  */
 
-export { IFocusModeRepository } from './IFocusModeRepository';
-export { IFocusSessionRepository } from './IFocusSessionRepository';
-export { IGoalFolderRepository } from './IGoalFolderRepository';
-export { IGoalRepository } from './IGoalRepository';
-export { IGoalStatisticsRepository } from './IGoalStatisticsRepository';
-export { IWeightSnapshotRepository } from './IWeightSnapshotRepository';
+export type { IFocusModeRepository } from './IFocusModeRepository';
+export type { IFocusSessionRepository } from './IFocusSessionRepository';
+export type { IGoalFolderRepository } from './IGoalFolderRepository';
+export type { IGoalRepository } from './IGoalRepository';
+export type { IGoalStatisticsRepository } from './IGoalStatisticsRepository';
+export type { IWeightSnapshotRepository } from './IWeightSnapshotRepository';

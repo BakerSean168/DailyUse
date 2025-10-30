@@ -217,6 +217,17 @@ export function useScheduleEvent() {
   }
 
   /**
+   * 加载指定时间范围的日程（简化版，用于周视图）
+   * Story 4-4: Week View Calendar
+   */
+  async function loadSchedulesByTimeRange(
+    startTime: number,
+    endTime: number
+  ): Promise<ScheduleContracts.ScheduleClientDTO[]> {
+    return getSchedulesByTimeRange({ startTime, endTime });
+  }
+
+  /**
    * 清空缓存
    */
   function clearCache() {
@@ -238,6 +249,7 @@ export function useScheduleEvent() {
     getSchedule,
     getSchedulesByAccount,
     getSchedulesByTimeRange,
+    loadSchedulesByTimeRange,
     updateSchedule,
     deleteSchedule,
     setActiveSchedule,

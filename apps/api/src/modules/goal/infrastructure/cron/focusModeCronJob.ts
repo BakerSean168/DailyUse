@@ -1,5 +1,5 @@
-import cron from 'node-cron';
-import { FocusModeApplicationService } from '../../application/FocusModeApplicationService';
+import * as cron from 'node-cron';
+import { FocusModeApplicationService } from '../../application/services/FocusModeApplicationService';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FocusModeCronJob');
@@ -39,9 +39,9 @@ let focusModeService: FocusModeApplicationService | null = null;
  * 获取 FocusModeApplicationService 单例
  * 延迟加载，避免循环依赖
  */
-function getFocusModeService(): FocusModeApplicationService {
+async function getFocusModeService(): Promise<FocusModeApplicationService> {
   if (!focusModeService) {
-    focusModeService = FocusModeApplicationService.getInstance();
+    focusModeService = await FocusModeApplicationService.getInstance();
   }
   return focusModeService;
 }
@@ -55,7 +55,7 @@ async function checkAndDeactivateExpiredFocusModes(): Promise<void> {
   logger.info('Starting focus mode expiration check');
 
   try {
-    const service = getFocusModeService();
+    const service = await getFocusModeService();
     const expiredCount = await service.checkAndDeactivateExpired();
 
     const duration = Date.now() - startTime;
@@ -107,10 +107,12 @@ export function startFocusModeCronJob(): cron.ScheduledTask {
       });
     },
     {
-      scheduled: true, // 立即启动
       timezone: 'Asia/Shanghai', // 使用中国时区
     },
   );
+  
+  // 启动任务
+  cronTask.start();
 
   logger.info('Focus mode cron job started successfully');
 
@@ -157,7 +159,7 @@ export async function manualCheckExpiredFocusModes(): Promise<number> {
   logger.info('Manual focus mode expiration check triggered');
   
   try {
-    const service = getFocusModeService();
+    const service = await getFocusModeService();
     const expiredCount = await service.checkAndDeactivateExpired();
     
     logger.info('Manual focus mode expiration check completed', {
