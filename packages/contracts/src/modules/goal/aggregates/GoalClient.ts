@@ -87,7 +87,7 @@ export interface GoalClient {
   folderUuid?: string | null;
   parentGoalUuid?: string | null;
   sortOrder: number;
-  reminderConfig?: GoalReminderConfigClientDTO | null;
+  reminderConfig?: GoalReminderConfigClient | null;
 
   // 时间戳
   createdAt: number;

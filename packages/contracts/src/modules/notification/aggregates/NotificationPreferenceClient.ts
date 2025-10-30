@@ -10,8 +10,10 @@ import type {
   ChannelPreferences,
 } from './NotificationPreferenceServer';
 import type {
+  CategoryPreferenceClient,
   CategoryPreferenceClientDTO,
   DoNotDisturbConfigClientDTO,
+  RateLimitClient,
   RateLimitClientDTO,
 } from '../value-objects';
 
@@ -64,19 +66,19 @@ export interface NotificationPreferenceClient {
 
   // ===== 分类偏好 =====
   categories: {
-    task: CategoryPreferenceClientDTO;
-    goal: CategoryPreferenceClientDTO;
-    schedule: CategoryPreferenceClientDTO;
-    reminder: CategoryPreferenceClientDTO;
-    account: CategoryPreferenceClientDTO;
-    system: CategoryPreferenceClientDTO;
+    task: CategoryPreferenceClient;
+    goal: CategoryPreferenceClient;
+    schedule: CategoryPreferenceClient;
+    reminder: CategoryPreferenceClient;
+    account: CategoryPreferenceClient;
+    system: CategoryPreferenceClient;
   };
 
   // ===== 免打扰设置（值对象） =====
   doNotDisturb?: DoNotDisturbConfigClientDTO | null;
 
   // ===== 频率限制（值对象） =====
-  rateLimit?: RateLimitClientDTO | null;
+  rateLimit?: RateLimitClient | null;
 
   // ===== 时间戳 =====
   createdAt: number;

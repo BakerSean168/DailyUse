@@ -12,9 +12,13 @@ import type {
 
 // 从值对象导入类型
 import type {
+  ScheduleConfigServer,
   ScheduleConfigServerDTO,
+  ExecutionInfoServer,
   ExecutionInfoServerDTO,
+  RetryPolicyServer,
   RetryPolicyServerDTO,
+  TaskMetadataServer,
   TaskMetadataServerDTO,
 } from '../value-objects';
 
@@ -253,10 +257,10 @@ export interface ScheduleTaskServer {
   enabled: boolean;
 
   // 值对象
-  schedule: ScheduleConfigServerDTO;
-  execution: ExecutionInfoServerDTO;
-  retryPolicy: RetryPolicyServerDTO;
-  metadata: TaskMetadataServerDTO;
+  schedule: ScheduleConfigServer;
+  execution: ExecutionInfoServer;
+  retryPolicy: RetryPolicyServer;
+  metadata: TaskMetadataServer;
 
   // 时间戳 (统一使用 number epoch ms)
   createdAt: number;

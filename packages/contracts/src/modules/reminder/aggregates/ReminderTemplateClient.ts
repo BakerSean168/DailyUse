@@ -7,22 +7,28 @@ import { ImportanceLevel } from '../../../shared/importance';
 import type { ReminderType, ReminderStatus } from '../enums';
 import type { ReminderTemplateServerDTO } from './ReminderTemplateServer';
 
-// 从值对象导入类型
+// 从值对象导入类型（接口 + DTO）
 import type {
   RecurrenceConfigServerDTO,
   RecurrenceConfigClientDTO,
+  RecurrenceConfigClient,
   NotificationConfigServerDTO,
   NotificationConfigClientDTO,
+  NotificationConfigClient,
   TriggerConfigServerDTO,
   TriggerConfigClientDTO,
+  TriggerConfigClient,
   ActiveTimeConfigServerDTO,
   ActiveTimeConfigClientDTO,
+  ActiveTimeConfigClient,
   ActiveHoursConfigServerDTO,
   ActiveHoursConfigClientDTO,
+  ActiveHoursConfigClient,
   ReminderStatsServerDTO,
   ReminderStatsClientDTO,
+  ReminderStatsClient,
 } from '../value-objects';
-import type { ReminderHistoryClientDTO } from '../entities/ReminderHistoryClient';
+import type { ReminderHistoryClientDTO, ReminderHistoryClient } from '../entities/ReminderHistoryClient';
 
 // ============ DTO 定义 ============
 
@@ -83,11 +89,11 @@ export interface ReminderTemplateClient {
   title: string;
   description?: string | null;
   type: ReminderType;
-  trigger: TriggerConfigClientDTO;
-  recurrence?: RecurrenceConfigClientDTO | null;
-  activeTime: ActiveTimeConfigClientDTO;
-  activeHours?: ActiveHoursConfigClientDTO | null;
-  notificationConfig: NotificationConfigClientDTO;
+  trigger: TriggerConfigClient;
+  recurrence?: RecurrenceConfigClient | null;
+  activeTime: ActiveTimeConfigClient;
+  activeHours?: ActiveHoursConfigClient | null;
+  notificationConfig: NotificationConfigClient;
   selfEnabled: boolean;
   status: ReminderStatus;
   effectiveEnabled: boolean;
@@ -97,7 +103,7 @@ export interface ReminderTemplateClient {
   color?: string | null;
   icon?: string | null;
   nextTriggerAt?: number | null;
-  stats: ReminderStatsClientDTO;
+  stats: ReminderStatsClient;
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
