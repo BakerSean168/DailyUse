@@ -55,12 +55,12 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Task Module (任务管理)
-  epic-3: contexted
-  3-1-task-crud-basics: backlog
-  3-2-subtask-management: backlog
-  3-3-task-dependencies: backlog
-  3-4-task-dependency-graph-visualization: backlog
-  3-5-task-priority-matrix: backlog
+  epic-3: done  # Epic ✅ COMPLETED (2025-10-30) - 26,082 lines across 135 files
+  3-1-task-crud-basics: done  # Backend ✅ Frontend ✅ (8 components, 2 views, 3 composables, 25+ APIs)
+  3-2-subtask-management: done  # Backend ✅ Frontend ✅ (SubtaskList component, useSubtask composable)
+  3-3-task-dependencies: done  # Backend ✅ (TaskDependency aggregate, validation service, cycle detection)
+  3-4-task-dependency-graph-visualization: done  # Backend ✅ Frontend ✅ (ECharts graph, critical path, topological sort, 278 lines)
+  3-5-task-priority-matrix: done  # Backend ✅ Frontend ✅ (Auto calculation, batch update, dashboard integration)
   epic-3-retrospective: optional
 
   # Epic 4: Schedule Module (日程管理)
