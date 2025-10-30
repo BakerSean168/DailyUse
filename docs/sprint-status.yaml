@@ -73,7 +73,7 @@ development_status:
 
   # Epic 5: Reminder Module (提醒管理)
   epic-5: contexted
-  5-1-reminder-crud-and-trigger: backlog
+  5-1-reminder-crud-and-trigger: done  # ✅ COMPLETED (2025-10-30) Backend ✅ Cron ✅ Frontend ✅ (~835 lines)
   5-2-smart-reminder-frequency: backlog
   epic-5-retrospective: optional
 

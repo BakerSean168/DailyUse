@@ -1,149 +1,37 @@
 <template>
-  <v-dialog v-model="show" max-width="400" persistent>
+  <v-dialog v-model="visible" max-width="600px">
     <v-card>
-      <v-card-title class="d-flex align-center">
-        <v-icon class="mr-2" color="primary">mdi-folder-move</v-icon>
-        <span>移动模板</span>
+      <v-card-title>
+        <span class="text-h5">移动模板</span>
       </v-card-title>
-
       <v-card-text>
-        <div class="mb-3">
-          <p class="text-body-2 text-grey-700 mb-2">将模板 "{{ templateName }}" 移动到：</p>
-        </div>
-
-        <v-select
-          v-model="selectedGroupUuid"
-          :items="groupOptions"
-          item-title="name"
-          item-value="uuid"
-          label="选择目标分组"
-          variant="outlined"
-          :loading="loading"
-          :disabled="loading"
-        >
-          <template #prepend-inner>
-            <v-icon>mdi-folder</v-icon>
-          </template>
-        </v-select>
-
-        <v-alert v-if="errorMessage" type="error" class="mt-3" :text="errorMessage" />
+        <v-alert type="info">
+          移动模板功能开发中...
+        </v-alert>
       </v-card-text>
-
       <v-card-actions>
-        <v-spacer />
-        <v-btn variant="text" @click="handleCancel" :disabled="loading"> 取消 </v-btn>
-        <v-btn
-          color="primary"
-          variant="flat"
-          @click="handleConfirm"
-          :loading="loading"
-          :disabled="!selectedGroupUuid || loading"
-        >
-          移动
-        </v-btn>
+        <v-spacer></v-spacer>
+        <v-btn color="grey-darken-1" variant="text" @click="close">取消</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import type { ReminderTemplate } from '@dailyuse/domain-client';
-import { useReminderStore } from '../../stores/reminderStore';
-import { getReminderService } from '../../../application/services/ReminderWebApplicationService';
+import { ref } from 'vue';
 
-const reminderStore = useReminderStore();
-const reminderService = getReminderService();
+const visible = ref(false);
 
-// 响应式数据
-const show = ref(false);
-const selectedGroupUuid = ref<string>('');
-const loading = ref(false);
-const errorMessage = ref('');
-const currentTemplate = ref<ReminderTemplate | null>(null);
-
-// 计算属性
-const templateName = computed(() => currentTemplate.value?.name || '未知模板');
-
-const groupOptions = computed(() => {
-  const groups = reminderStore.reminderGroups;
-  const options = [
-    { uuid: '', name: '桌面（根分组）' }, // 空字符串表示根分组
-    ...groups.map((group) => ({
-      uuid: group.uuid,
-      name: group.name,
-    })),
-  ];
-
-  // 过滤掉当前模板所在的分组
-  if (currentTemplate.value) {
-    return options.filter((option) => option.uuid !== currentTemplate.value?.groupUuid);
-  }
-
-  return options;
-});
-
-// 事件
-const emit = defineEmits<{
-  (e: 'moved', templateUuid: string, targetGroupUuid: string): void;
-  (e: 'closed'): void;
-}>();
-
-// 监听显示状态变化，重置表单
-watch(show, (newValue) => {
-  if (!newValue) {
-    resetForm();
-  }
-});
-
-// 方法
-const resetForm = () => {
-  selectedGroupUuid.value = '';
-  errorMessage.value = '';
-  currentTemplate.value = null;
+const open = () => {
+  visible.value = true;
 };
 
-const open = (template: ReminderTemplate) => {
-  currentTemplate.value = template;
-  selectedGroupUuid.value = '';
-  errorMessage.value = '';
-  show.value = true;
+const close = () => {
+  visible.value = false;
 };
 
-const handleCancel = () => {
-  show.value = false;
-  emit('closed');
-};
-
-const handleConfirm = async () => {
-  if (!currentTemplate.value || !selectedGroupUuid.value === undefined) {
-    return;
-  }
-
-  loading.value = true;
-  errorMessage.value = '';
-
-  try {
-    await reminderService.moveTemplateToGroup(currentTemplate.value.uuid, selectedGroupUuid.value);
-
-    emit('moved', currentTemplate.value.uuid, selectedGroupUuid.value);
-    show.value = false;
-  } catch (error) {
-    console.error('移动模板失败:', error);
-    errorMessage.value = error instanceof Error ? error.message : '移动模板失败';
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 暴露方法
 defineExpose({
   open,
+  close,
 });
 </script>
-
-<style scoped>
-.v-card {
-  border-radius: 12px;
-}
-</style>

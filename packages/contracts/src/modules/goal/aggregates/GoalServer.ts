@@ -6,7 +6,10 @@ import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
 import type { GoalStatus } from '../enums';
 import type { KeyResultServer, KeyResultServerDTO } from '../entities/KeyResultServer';
 import type { GoalReviewServer, GoalReviewServerDTO } from '../entities/GoalReviewServer';
-import type { GoalReminderConfigServerDTO } from '../value-objects';
+import type {
+  GoalReminderConfigServer,
+  GoalReminderConfigServerDTO,
+} from '../value-objects';
 import type { KeyResultWeightSnapshotServerDTO } from '../value-objects/KeyResultWeightSnapshot';
 
 // ============ DTO 定义 ============
@@ -228,7 +231,7 @@ export interface GoalServer {
   folderUuid?: string | null;
   parentGoalUuid?: string | null;
   sortOrder: number;
-  reminderConfig?: GoalReminderConfigServerDTO | null;
+  reminderConfig?: GoalReminderConfigServer | null;
 
   // 时间戳 (统一使用 number epoch ms)
   createdAt: number;

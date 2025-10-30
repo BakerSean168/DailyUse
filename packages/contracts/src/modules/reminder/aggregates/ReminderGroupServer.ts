@@ -4,7 +4,7 @@
  */
 
 import type { ControlMode, ReminderStatus } from '../enums';
-import type { GroupStatsServerDTO } from '../value-objects';
+import type { GroupStatsServer, GroupStatsServerDTO } from '../value-objects';
 import type { ReminderGroupClientDTO } from './ReminderGroupClient';
 
 // ============ DTO 定义 ============
@@ -156,7 +156,7 @@ export interface ReminderGroupServer {
   enabled: boolean;
   status: ReminderStatus;
   order: number;
-  stats: GroupStatsServerDTO;
+  stats: GroupStatsServer;
 
   // 时间戳 (统一使用 number epoch ms)
   createdAt: number;

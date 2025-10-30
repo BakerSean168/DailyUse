@@ -7,7 +7,7 @@ import type { GoalStatus } from '../enums';
 import type { GoalServerDTO } from './GoalServer';
 import type { KeyResultClient, KeyResultClientDTO } from '../entities/KeyResultClient';
 import type { GoalReviewClient, GoalReviewClientDTO } from '../entities/GoalReviewClient';
-import type { GoalReminderConfigClientDTO } from '../value-objects';
+import type { GoalReminderConfigClient, GoalReminderConfigClientDTO } from '../value-objects';
 
 // ============ DTO 定义 ============
 
@@ -87,7 +87,7 @@ export interface GoalClient {
   folderUuid?: string | null;
   parentGoalUuid?: string | null;
   sortOrder: number;
-  reminderConfig?: GoalReminderConfigClientDTO | null;
+  reminderConfig?: GoalReminderConfigClient | null;
 
   // 时间戳
   createdAt: number;
