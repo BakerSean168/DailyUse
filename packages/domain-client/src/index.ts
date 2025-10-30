@@ -112,17 +112,15 @@ export { CredentialHistory } from './authentication/entities/CredentialHistory';
 export { SessionHistory } from './authentication/entities/SessionHistory';
 export { DeviceInfo } from './authentication/value-objects/DeviceInfo';
 
-// Reminder 模块 - 从 contracts 导出（domain-client 中暂无实现）
-// 注意：这些是 DTO 类型，不是类实现
-// 使用命名空间导入以避免冲突
-import type { ReminderContracts } from '@dailyuse/contracts';
+// Reminder 模块 - 直接从实现导出
+export { ReminderTemplateClient } from './reminder/aggregates/ReminderTemplateClient';
+export { ReminderGroupClient } from './reminder/aggregates/ReminderGroupClient';
 
+// Reminder 模块 - 类型别名（为了向后兼容）
+import type { ReminderContracts } from '@dailyuse/contracts';
 export type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
 export type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
-
-// TODO: ReminderInstance 类型不存在于 contracts，需要定义或移除相关引用
-// 临时导出空类型以避免编译错误
-export type ReminderInstance = any;
+export type ReminderInstance = any; // TODO: 定义或移除
 
 // Setting 模块 - 直接从实现导出
 export { UserSetting } from './setting/aggregates/UserSetting';

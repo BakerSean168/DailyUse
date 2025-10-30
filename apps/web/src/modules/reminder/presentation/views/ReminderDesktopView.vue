@@ -12,14 +12,14 @@
               v-for="template in reminderTemplates"
               :key="template.uuid"
               class="app-icon"
-              :class="{ disabled: !template.enabled }"
+              :class="{ disabled: !template.effectiveEnabled }"
               @click="handleTemplateClick(template)"
               @contextmenu.prevent="handleTemplateContextMenu(template, $event)"
             >
               <div class="icon-circle">
-                <v-icon :color="template.enabled ? '#2196F3' : '#999'" size="32"> mdi-bell </v-icon>
+                <v-icon :color="template.effectiveEnabled ? '#2196F3' : '#999'" size="32"> mdi-bell </v-icon>
               </div>
-              <div class="app-name">{{ template.name }}</div>
+              <div class="app-name">{{ template.title }}</div>
             </div>
 
             <!-- 分组项（文件夹风格） -->
@@ -46,7 +46,7 @@
             <v-btn icon size="large" @click="templateDialogRef?.openForCreate()" class="dock-btn">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
-            <v-btn icon size="large" @click="groupDialogRef?.openForCreate()" class="dock-btn">
+            <v-btn icon size="large" @click="groupDialogRef?.open()" class="dock-btn">
               <v-icon>mdi-folder-plus</v-icon>
             </v-btn>
             <v-btn icon size="large" @click="refresh" :loading="isLoading" class="dock-btn">
@@ -152,21 +152,22 @@ import ReminderInstanceSidebar from '../components/ReminderInstanceSidebar.vue';
 import { useReminder } from '../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 
-// 应用服务
-import { getReminderService } from '../../application/services/ReminderWebApplicationService';
+// 类型导入 - 使用 Contracts DTO
+import type { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderTemplateClient } from '@dailyuse/domain-client';
 
-// 类型导入 - 使用 domain-client 实体
-import type { ReminderTemplate, ReminderTemplateGroup } from '@dailyuse/domain-client';
+// 类型别名
+type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
+type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
 
 // 使用 composables
-const { isLoading, error, reminderTemplates, initialize, refreshAll, deleteTemplate } =
+const { isLoading, error, reminderTemplates, initialize, refreshAll, deleteTemplate, updateTemplate, toggleTemplateStatus } =
   useReminder();
 
 const snackbar = useSnackbar();
 
-// 直接使用应用服务获取分组数据 - 懒加载
-const reminderService = getReminderService();
-const reminderTemplateGroups = ref<any[]>([]);
+// 分组数据（暂时为空，等待实现）
+const reminderTemplateGroups = ref<ReminderTemplateGroup[]>([]);
 
 // 别名以保持兼容性
 const templates = computed(() => reminderTemplates.value);
@@ -174,11 +175,11 @@ const groups = computed(() => reminderTemplateGroups.value);
 const templateGroups = computed(() => reminderTemplateGroups.value);
 const refresh = refreshAll;
 
-// 加载分组数据
+// 加载分组数据（暂时为空实现）
 const loadGroups = async () => {
   try {
-    const groupsData = await reminderService.getReminderTemplateGroups();
-    reminderTemplateGroups.value = groupsData;
+    // TODO: 实现分组加载逻辑
+    console.log('加载分组数据...');
   } catch (error: any) {
     console.error('加载分组失败:', error);
   }
@@ -186,9 +187,8 @@ const loadGroups = async () => {
 
 const deleteGroup = async (uuid: string) => {
   try {
-    await reminderService.deleteReminderTemplateGroup(uuid);
-    await loadGroups(); // 重新加载分组数据
-    console.log('删除分组成功:', uuid);
+    // TODO: 实现分组删除逻辑
+    console.log('删除分组:', uuid);
   } catch (error: any) {
     console.error('删除分组失败:', error);
   }
@@ -259,7 +259,8 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
       title: '编辑模板',
       icon: 'mdi-pencil',
       action: () => {
-        templateDialogRef.value?.openForEdit(template);
+        const entity = ReminderTemplateClient.fromClientDTO(template);
+        templateDialogRef.value?.openForEdit(entity);
         contextMenu.show = false;
       },
     },
@@ -280,8 +281,8 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
       },
     },
     {
-      title: template.enabled ? '禁用' : '启用',
-      icon: template.enabled ? 'mdi-pause' : 'mdi-play',
+      title: template.effectiveEnabled ? '禁用' : '启用',
+      icon: template.effectiveEnabled ? 'mdi-pause' : 'mdi-play',
       action: () => {
         toggleTemplateEnabled(template);
         contextMenu.show = false;
@@ -299,7 +300,7 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
       title: '删除模板',
       icon: 'mdi-delete',
       action: () => {
-        openDeleteDialog('template', template.uuid, template.name);
+        openDeleteDialog('template', template.uuid, template.title);
         contextMenu.show = false;
       },
     },
@@ -326,7 +327,7 @@ const handleGroupContextMenu = (group: ReminderTemplateGroup, event: MouseEvent)
       title: '编辑分组',
       icon: 'mdi-pencil',
       action: () => {
-        groupDialogRef.value?.openForEdit(group);
+        groupDialogRef.value?.open();
         contextMenu.show = false;
       },
     },
@@ -377,8 +378,8 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
       title: '新建分组',
       icon: 'mdi-folder-plus',
       action: () => {
-        // GroupDialog 目前没有创建功能，使用现有对话框
-        groupDialogRef.value?.openForCreate();
+        // GroupDialog 目前是占位组件
+        groupDialogRef.value?.open();
         contextMenu.show = false;
       },
     },
@@ -410,12 +411,14 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
  */
 const toggleTemplateEnabled = async (template: ReminderTemplate) => {
   try {
-    // 调用 domain entity 的业务方法
-    template.toggleEnabled(!template.enabled);
-    // 这里应该调用应用服务来持久化更改
-    // await updateTemplate(template)
+    // 调用 API 切换启用状态
+    await toggleTemplateStatus(template.uuid, !template.effectiveEnabled);
+    // 刷新列表
+    await refreshAll();
+    snackbar.showSuccess(template.effectiveEnabled ? '已禁用提醒' : '已启用提醒');
   } catch (error) {
     console.error('切换模板状态失败:', error);
+    snackbar.showError('切换状态失败');
   }
 };
 
@@ -424,33 +427,13 @@ const toggleTemplateEnabled = async (template: ReminderTemplate) => {
  */
 const duplicateTemplate = async (template: ReminderTemplate) => {
   try {
-    // 使用模板数据创建新模板请求
-    const createRequest = {
-      name: `${template.name} - 副本`,
-      message: template.message,
-      category: template.category,
-      priority: template.priority,
-      timeConfig: {
-        type:
-          template.timeConfig.type === 'absolute' || template.timeConfig.type === 'relative'
-            ? 'custom'
-            : template.timeConfig.type,
-        times: template.timeConfig.times || [],
-        weekdays: template.timeConfig.weekdays,
-        monthDays: template.timeConfig.monthDays,
-        customPattern: template.timeConfig.customPattern,
-      },
-      groupUuid: template.groupUuid,
-      tags: template.tags,
-    };
-
-    // 调用应用服务创建新模板
-    await reminderService.createReminderTemplate(createRequest);
-    // 刷新数据
-    await initialize();
-    console.log('模板复制成功');
+    // TODO: 实现模板复制功能
+    // 需要根据新的 DTO 结构创建请求
+    console.log('复制模板:', template.title);
+    snackbar.showInfo('复制功能待实现');
   } catch (error) {
     console.error('复制模板失败:', error);
+    snackbar.showError('复制失败');
   }
 };
 
@@ -459,10 +442,9 @@ const duplicateTemplate = async (template: ReminderTemplate) => {
  */
 const testTemplate = async (template: ReminderTemplate) => {
   try {
-    // 这里可以创建一个临时实例来测试
-    console.log('测试模板:', template.name);
-    // 可以显示一个通知或者创建一个测试提醒
-    alert(`测试模板: ${template.name}\n消息: ${template.message}`);
+    // 显示模板信息
+    console.log('测试模板:', template.title);
+    alert(`测试模板: ${template.title}\n描述: ${template.description || '无'}\n触发器: ${template.triggerText}`);
   } catch (error) {
     console.error('模板测试失败:', error);
   }
@@ -485,18 +467,12 @@ const showGroupTemplates = (group: ReminderTemplateGroup) => {
 const duplicateGroup = async (group: ReminderTemplateGroup) => {
   try {
     // 创建分组副本
-    const createRequest = {
-      name: `${group.name} - 副本`,
-      description: group.description,
-      color: group.color,
-      icon: group.icon,
-    };
-
-    await reminderService.createReminderTemplateGroup(createRequest);
-    await initialize();
-    console.log('分组复制成功');
+    // TODO: 实现分组复制功能
+    console.log('复制分组:', group.name);
+    snackbar.showInfo('分组复制功能待实现');
   } catch (error) {
     console.error('复制分组失败:', error);
+    snackbar.showError('复制失败');
   }
 };
 
@@ -556,7 +532,8 @@ const handleTemplateCreated = async (template: ReminderTemplate) => {
  */
 const handleEditTemplate = (template: ReminderTemplate) => {
   console.log('打开编辑模板对话框:', template);
-  templateDialogRef.value?.openForEdit(template);
+  const entity = ReminderTemplateClient.fromClientDTO(template);
+  templateDialogRef.value?.openForEdit(entity);
 };
 
 /**

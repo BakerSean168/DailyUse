@@ -5,8 +5,8 @@ import type {
   IReminderStatisticsRepository,
 } from '@dailyuse/domain-server';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
-// import { ReminderDomainService } from '@dailyuse/domain-server'; // TODO: Check if exported
 import type { ReminderContracts } from '@dailyuse/contracts';
+import { ImportanceLevel } from '@dailyuse/contracts';
 
 // 类型别名导出（统一在顶部）
 type ReminderTemplateClientDTO = ReminderContracts.ReminderTemplateClientDTO;
@@ -86,47 +86,41 @@ export class ReminderApplicationService {
    */
   async createReminderTemplate(params: {
     accountUuid: string;
-    name: string;
+    title: string;
+    type: ReminderType;
+    trigger: ReminderContracts.TriggerConfigServerDTO;
+    activeTime: ReminderContracts.ActiveTimeConfigServerDTO;
+    notificationConfig: ReminderContracts.NotificationConfigServerDTO;
     description?: string;
-    targetType: ReminderType;
-    triggerType: TriggerType;
-    advanceMinutes?: number;
-    reminderContent?: string;
-    isEnabled?: boolean;
+    recurrence?: ReminderContracts.RecurrenceConfigServerDTO;
+    activeHours?: ReminderContracts.ActiveHoursConfigServerDTO;
+    importanceLevel?: ImportanceLevel;
+    tags?: string[];
+    color?: string;
+    icon?: string;
+    groupUuid?: string;
   }): Promise<ReminderTemplateClientDTO> {
-    // TODO: 委托给领域服务处理业务逻辑
-    // const template = await this.domainService.createReminderTemplate(params);
-    // return template.toClientDTO();
-
-    throw new Error(
-      'ReminderApplicationService.createReminderTemplate() not implemented - Domain service required',
-    );
+    const template = await this.domainService.createReminderTemplate(params);
+    return template.toClientDTO();
   }
 
   /**
    * 获取提醒模板详情
    */
   async getReminderTemplate(uuid: string): Promise<ReminderTemplateClientDTO | null> {
-    // TODO: 委托给领域服务处理
-    // const template = await this.domainService.getReminderTemplate(uuid);
-    // return template ? template.toClientDTO() : null;
-
-    throw new Error(
-      'ReminderApplicationService.getReminderTemplate() not implemented - Domain service required',
-    );
+    const template = await this.domainService.getTemplate(uuid, { includeHistory: false });
+    return template ? template.toClientDTO() : null;
   }
 
   /**
    * 获取用户的所有提醒模板
    */
   async getUserReminderTemplates(accountUuid: string): Promise<ReminderTemplateClientDTO[]> {
-    // TODO: 委托给领域服务处理
-    // const templates = await this.domainService.getUserReminderTemplates(accountUuid);
-    // return templates.map((t) => t.toClientDTO());
-
-    throw new Error(
-      'ReminderApplicationService.getUserReminderTemplates() not implemented - Domain service required',
-    );
+    const templates = await this.reminderTemplateRepository.findByAccountUuid(accountUuid, {
+      includeHistory: false,
+      includeDeleted: false,
+    });
+    return templates.map((t) => t.toClientDTO());
   }
 
   /**
@@ -135,73 +129,83 @@ export class ReminderApplicationService {
   async updateReminderTemplate(
     uuid: string,
     updates: Partial<{
-      name: string;
+      title: string;
       description: string;
-      advanceMinutes: number;
-      reminderContent: string;
-      isEnabled: boolean;
+      trigger: ReminderContracts.TriggerConfigServerDTO;
+      activeTime: ReminderContracts.ActiveTimeConfigServerDTO;
+      notificationConfig: ReminderContracts.NotificationConfigServerDTO;
+      recurrence?: ReminderContracts.RecurrenceConfigServerDTO;
+      activeHours?: ReminderContracts.ActiveHoursConfigServerDTO;
+      importanceLevel?: ImportanceLevel;
+      tags?: string[];
+      color?: string;
+      icon?: string;
     }>,
   ): Promise<ReminderTemplateClientDTO> {
-    // TODO: 委托给领域服务处理
-    // const template = await this.domainService.updateReminderTemplate(uuid, updates);
-    // return template.toClientDTO();
+    const template = await this.domainService.getTemplate(uuid);
+    if (!template) {
+      throw new Error(`ReminderTemplate not found: ${uuid}`);
+    }
 
-    throw new Error(
-      'ReminderApplicationService.updateReminderTemplate() not implemented - Domain service required',
-    );
+    // 更新属性（简化版本，实际应该有单独的update方法）
+    Object.assign(template, updates);
+    await this.reminderTemplateRepository.save(template);
+    
+    return template.toClientDTO();
   }
 
   /**
    * 删除提醒模板
    */
   async deleteReminderTemplate(uuid: string): Promise<void> {
-    // TODO: 委托给领域服务处理
-    // await this.domainService.deleteReminderTemplate(uuid);
-
-    throw new Error(
-      'ReminderApplicationService.deleteReminderTemplate() not implemented - Domain service required',
-    );
+    await this.domainService.deleteTemplate(uuid, true); // 软删除
   }
 
   /**
    * 切换提醒模板启用状态
    */
   async toggleReminderTemplateStatus(uuid: string): Promise<ReminderTemplateClientDTO> {
-    // TODO: 委托给领域服务处理
-    // const template = await this.domainService.toggleReminderTemplateStatus(uuid);
-    // return template.toClientDTO();
+    const template = await this.domainService.getTemplate(uuid);
+    if (!template) {
+      throw new Error(`ReminderTemplate not found: ${uuid}`);
+    }
 
-    throw new Error(
-      'ReminderApplicationService.toggleReminderTemplateStatus() not implemented - Domain service required',
-    );
+    // Toggle enabled status
+    if (template.selfEnabled) {
+      template.pause();
+    } else {
+      template.enable();
+    }
+    
+    await this.reminderTemplateRepository.save(template);
+    return template.toClientDTO();
   }
 
   /**
-   * 搜索提醒模板
+   * 搜索提醒模板（简化版：按标题模糊搜索）
    */
   async searchReminderTemplates(
     accountUuid: string,
     query: string,
   ): Promise<ReminderTemplateClientDTO[]> {
-    // TODO: 委托给领域服务处理
-    // const templates = await this.domainService.searchReminderTemplates(accountUuid, query);
-    // return templates.map((t) => t.toClientDTO());
-
-    throw new Error(
-      'ReminderApplicationService.searchReminderTemplates() not implemented - Domain service required',
+    const allTemplates = await this.reminderTemplateRepository.findByAccountUuid(accountUuid, {
+      includeHistory: false,
+      includeDeleted: false,
+    });
+    
+    // 简单的客户端过滤（实际应在仓储层实现）
+    const filtered = allTemplates.filter((t) =>
+      t.title.toLowerCase().includes(query.toLowerCase()),
     );
+    
+    return filtered.map((t) => t.toClientDTO());
   }
 
   /**
    * 获取提醒统计
    */
   async getReminderStatistics(accountUuid: string): Promise<ReminderStatisticsClientDTO> {
-    // TODO: 委托给领域服务处理
-    // const stats = await this.domainService.getReminderStatistics(accountUuid);
-    // return stats.toClientDTO();
-
-    throw new Error(
-      'ReminderApplicationService.getReminderStatistics() not implemented - Domain service required',
-    );
+    const stats = await this.reminderStatisticsRepository.findOrCreate(accountUuid);
+    return stats.toClientDTO();
   }
 }
