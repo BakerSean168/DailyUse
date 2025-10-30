@@ -80,24 +80,50 @@ export interface TaskTemplateServerDTO {
   accountUuid: string;
   title: string;
   description?: string | null;
-  taskType: TaskType;
-  timeConfig: TaskTimeConfigServerDTO;
+  taskType: TaskType; // 'ONE_TIME' | 'RECURRING'
+  
+  // === 循环任务专用 ===
+  timeConfig?: TaskTimeConfigServerDTO | null;
   recurrenceRule?: RecurrenceRuleServerDTO | null;
   reminderConfig?: TaskReminderConfigServerDTO | null;
+  lastGeneratedDate?: number | null;
+  generateAheadDays?: number | null;
+  
+  // === 通用属性 ===
   importance: ImportanceLevel;
   urgency: UrgencyLevel;
-  goalBinding?: TaskGoalBindingServerDTO | null;
-  folderUuid?: string | null;
   tags: string[];
   color?: string | null;
   status: TaskTemplateStatus;
-  lastGeneratedDate?: number | null;
-  generateAheadDays: number;
+  
+  // === Goal/KR 关联（通用） ===
+  goalUuid?: string | null;
+  keyResultUuid?: string | null;
+  goalBinding?: TaskGoalBindingServerDTO | null; // 仅循环任务使用的高级绑定
+  
+  // === 子任务支持（通用） ===
+  parentTaskUuid?: string | null;
+  
+  // === 一次性任务专用 ===
+  startDate?: number | null; // Unix timestamp (ms)
+  dueDate?: number | null; // Unix timestamp (ms)
+  completedAt?: number | null; // Unix timestamp (ms)
+  estimatedMinutes?: number | null;
+  actualMinutes?: number | null;
+  note?: string | null;
+  
+  // === 依赖关系（通用） ===
+  dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
+  isBlocked?: boolean;
+  blockingReason?: string | null;
+  
+  // === 其他 ===
+  folderUuid?: string | null;
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
   history?: TaskTemplateHistoryServerDTO[];
-  instances?: TaskInstanceServerDTO[];
+  instances?: TaskInstanceServerDTO[]; // 仅 RECURRING 有实例
 }
 
 /**
@@ -108,16 +134,17 @@ export interface TaskTemplatePersistenceDTO {
   accountUuid: string;
   title: string;
   description?: string | null;
-  taskType: string;
+  taskType: string; // 'ONE_TIME' | 'RECURRING'
 
+  // === 循环任务专用 ===
   // Flattened timeConfig
-  timeConfigType: 'POINT' | 'RANGE' | 'ALL_DAY';
+  timeConfigType?: string | null;
   timeConfigStartTime?: number | null;
   timeConfigEndTime?: number | null;
   timeConfigDurationMinutes?: number | null;
 
   // Flattened recurrence_rule
-  recurrenceRuleType?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | null;
+  recurrenceRuleType?: string | null;
   recurrenceRuleInterval?: number | null;
   recurrenceRuleDaysOfWeek?: string | null; // JSON array
   recurrenceRuleDayOfMonth?: number | null;
@@ -128,23 +155,46 @@ export interface TaskTemplatePersistenceDTO {
   // Flattened reminderConfig
   reminderConfigEnabled?: boolean | null;
   reminderConfigTimeOffsetMinutes?: number | null;
-  reminderConfigUnit?: 'MINUTES' | 'HOURS' | 'DAYS' | null;
-  reminderConfigChannel?: 'PUSH' | 'EMAIL' | 'SMS' | null;
+  reminderConfigUnit?: string | null;
+  reminderConfigChannel?: string | null;
 
-  importance: string;
-  urgency: string;
+  lastGeneratedDate?: number | null;
+  generateAheadDays?: number | null;
 
-  // Flattened goal_binding
+  // === 通用属性 ===
+  importance: number; // 0-4
+  urgency: number; // 0-4
+  tags: string; // JSON array
+  color?: string | null;
+  status: string;
+
+  // === Goal/KR 关联（通用） ===
+  goalUuid?: string | null;
+  keyResultUuid?: string | null;
+
+  // Flattened goal_binding (仅循环任务高级绑定)
   goalBindingGoalUuid?: string | null;
   goalBindingKeyResultUuid?: string | null;
   goalBindingIncrementValue?: number | null;
 
+  // === 子任务支持（通用） ===
+  parentTaskUuid?: string | null;
+
+  // === 一次性任务专用 ===
+  startDate?: number | null; // BigInt in Prisma
+  dueDate?: number | null; // BigInt in Prisma
+  completedAt?: number | null; // BigInt in Prisma
+  estimatedMinutes?: number | null;
+  actualMinutes?: number | null;
+  note?: string | null;
+
+  // === 依赖关系（通用） ===
+  dependencyStatus?: string; // 'NONE' | 'WAITING' | 'READY' | 'BLOCKED'
+  isBlocked?: boolean;
+  blockingReason?: string | null;
+
+  // === 其他 ===
   folderUuid?: string | null;
-  tags: string; // JSON array
-  color?: string | null;
-  status: string;
-  lastGeneratedDate?: number | null;
-  generateAheadDays: number;
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;

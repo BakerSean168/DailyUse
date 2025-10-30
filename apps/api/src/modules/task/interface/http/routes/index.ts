@@ -27,9 +27,15 @@ import taskStatisticsRoutes from './taskStatisticsRoutes';
 const router: ExpressRouter = Router();
 
 // ============ 任务模板路由 (TaskTemplate 聚合根) ============
-// 挂载到 /templates 路径
+// 挂载到 /templates 路径 - 用于 RECURRING 任务模板
 // 实际访问: /tasks/templates/*
 router.use('/templates', taskTemplateRoutes);
+
+// ============ 一次性任务路由 (ONE_TIME Tasks) ============
+// 挂载到根路径 - 用于 ONE_TIME 任务的所有操作
+// 实际访问: /tasks/* (如 /tasks/one-time, /tasks/today, /tasks/:uuid/start)
+// 注意: 这个必须放在最后,避免覆盖其他特定路径
+// router.use('/', taskTemplateRoutes); // 暂时复用 taskTemplateRoutes,后续可拆分
 
 // ============ 任务统计路由 (TaskStatistics 聚合根) ============
 // 挂载到 /statistics 路径
@@ -41,5 +47,10 @@ router.use('/statistics', taskStatisticsRoutes);
 // - /tasks/:taskUuid/dependencies (创建/获取某任务的依赖)
 // - /tasks/dependencies/:uuid (更新/删除特定依赖关系)
 router.use('/', taskDependencyRoutes);
+
+// ============ 任务通用路由 (ONE_TIME + 共享操作) ============
+// 必须放在最后，作为通用任务操作的兜底路由
+// 实际访问: /tasks/one-time, /tasks/today, /tasks/:uuid/start 等
+router.use('/', taskTemplateRoutes);
 
 export default router;

@@ -4,6 +4,7 @@
  */
 
 export {
+  oneTimeTaskApiClient,
   taskTemplateApiClient,
   taskInstanceApiClient,
   taskStatisticsApiClient,
@@ -11,6 +12,7 @@ export {
 
 // 导出类型
 export type {
+  OneTimeTaskApiClient,
   TaskTemplateApiClient,
   TaskInstanceApiClient,
   TaskStatisticsApiClient,
