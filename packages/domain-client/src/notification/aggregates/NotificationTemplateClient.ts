@@ -5,14 +5,13 @@
 import type { NotificationContracts } from '@dailyuse/contracts';
 import { NotificationContracts as NC } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
+import { NotificationTemplateConfigClient } from '../value-objects';
 
 type INotificationTemplateClient = NotificationContracts.NotificationTemplateClient;
 type NotificationTemplateAggregateClientDTO =
   NotificationContracts.NotificationTemplateAggregateClientDTO;
 type NotificationTemplateAggregateServerDTO =
   NotificationContracts.NotificationTemplateAggregateServerDTO;
-type NotificationTemplateConfigClientDTO =
-  NotificationContracts.NotificationTemplateConfigClientDTO;
 type NotificationType = NotificationContracts.NotificationType;
 type NotificationCategory = NotificationContracts.NotificationCategory;
 
@@ -31,7 +30,7 @@ export class NotificationTemplateClient
   private _description?: string | null;
   private _type: NotificationType;
   private _category: NotificationCategory;
-  private _template: NotificationTemplateConfigClientDTO;
+  private _template: NotificationTemplateConfigClient;
   private _isActive: boolean;
   private _isSystemTemplate: boolean;
   private _createdAt: number;
@@ -44,7 +43,7 @@ export class NotificationTemplateClient
     description?: string | null;
     type: NotificationType;
     category: NotificationCategory;
-    template: NotificationTemplateConfigClientDTO;
+    template: NotificationTemplateConfigClient;
     isActive: boolean;
     isSystemTemplate: boolean;
     createdAt: number;
@@ -78,7 +77,7 @@ export class NotificationTemplateClient
   public get category(): NotificationCategory {
     return this._category;
   }
-  public get template(): NotificationTemplateConfigClientDTO {
+  public get template(): NotificationTemplateConfigClient {
     return this._template;
   }
   public get isActive(): boolean {
@@ -195,7 +194,7 @@ export class NotificationTemplateClient
       description: this.description,
       type: this.type,
       category: this.category,
-      template: this.template,
+      template: this._template.toClientDTO(),
       isActive: this.isActive,
       isSystemTemplate: this.isSystemTemplate,
       createdAt: this.createdAt,
@@ -215,7 +214,7 @@ export class NotificationTemplateClient
       description: this.description,
       type: this.type,
       category: this.category,
-      template: this.template as any, // Server DTO 使用 Server 版本的 template
+      template: this._template.toServerDTO() as any,
       isActive: this.isActive,
       isSystemTemplate: this.isSystemTemplate,
       createdAt: this.createdAt,
@@ -229,7 +228,7 @@ export class NotificationTemplateClient
     name: string;
     type: NotificationType;
     category: NotificationCategory;
-    template: NotificationTemplateConfigClientDTO;
+    template: NotificationTemplateConfigClient;
     description?: string;
     isSystemTemplate?: boolean;
   }): NotificationTemplateClient {
@@ -252,7 +251,7 @@ export class NotificationTemplateClient
       description: '',
       type: NotificationType.INFO,
       category: NotificationCategory.SYSTEM,
-      template: {
+      template: NotificationTemplateConfigClient.fromClientDTO({
         template: { title: '', content: '', variables: [] },
         channels: { inApp: true, email: false, push: false, sms: false },
         emailTemplate: null,
@@ -261,7 +260,7 @@ export class NotificationTemplateClient
         enabledChannelsList: ['应用内'],
         hasEmailTemplate: false,
         hasPushTemplate: false,
-      },
+      }),
       isActive: true,
       isSystemTemplate: false,
       createdAt: Date.now(),
@@ -278,7 +277,7 @@ export class NotificationTemplateClient
       description: dto.description,
       type: dto.type,
       category: dto.category,
-      template: dto.template,
+      template: NotificationTemplateConfigClient.fromClientDTO(dto.template),
       isActive: dto.isActive,
       isSystemTemplate: dto.isSystemTemplate,
       createdAt: dto.createdAt,
@@ -295,7 +294,7 @@ export class NotificationTemplateClient
       description: dto.description,
       type: dto.type,
       category: dto.category,
-      template: dto.template as NotificationTemplateConfigClientDTO, // 转换为 Client 版本
+      template: NotificationTemplateConfigClient.fromServerDTO(dto.template),
       isActive: dto.isActive,
       isSystemTemplate: dto.isSystemTemplate,
       createdAt: dto.createdAt,

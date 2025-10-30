@@ -5,13 +5,12 @@
 import type { NotificationContracts } from '@dailyuse/contracts';
 import { NotificationContracts as NC } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
+import { CategoryPreferenceClient, RateLimitClient } from '../value-objects';
 
 type INotificationPreferenceClient = NotificationContracts.NotificationPreferenceClient;
 type NotificationPreferenceClientDTO = NotificationContracts.NotificationPreferenceClientDTO;
 type NotificationPreferenceServerDTO = NotificationContracts.NotificationPreferenceServerDTO;
-type CategoryPreferenceClientDTO = NotificationContracts.CategoryPreferenceClientDTO;
 type DoNotDisturbConfigClientDTO = NotificationContracts.DoNotDisturbConfigClientDTO;
-type RateLimitClientDTO = NotificationContracts.RateLimitClientDTO;
 type ChannelPreferences = NotificationContracts.ChannelPreferences;
 type CategoryPreferences = NotificationContracts.CategoryPreferences;
 
@@ -27,15 +26,15 @@ export class NotificationPreferenceClient
   private _enabled: boolean;
   private _channels: ChannelPreferences;
   private _categories: {
-    task: CategoryPreferenceClientDTO;
-    goal: CategoryPreferenceClientDTO;
-    schedule: CategoryPreferenceClientDTO;
-    reminder: CategoryPreferenceClientDTO;
-    account: CategoryPreferenceClientDTO;
-    system: CategoryPreferenceClientDTO;
+    task: CategoryPreferenceClient;
+    goal: CategoryPreferenceClient;
+    schedule: CategoryPreferenceClient;
+    reminder: CategoryPreferenceClient;
+    account: CategoryPreferenceClient;
+    system: CategoryPreferenceClient;
   };
   private _doNotDisturb?: DoNotDisturbConfigClientDTO | null;
-  private _rateLimit?: RateLimitClientDTO | null;
+  private _rateLimit?: RateLimitClient | null;
   private _createdAt: number;
   private _updatedAt: number;
 
@@ -46,15 +45,15 @@ export class NotificationPreferenceClient
     enabled: boolean;
     channels: ChannelPreferences;
     categories: {
-      task: CategoryPreferenceClientDTO;
-      goal: CategoryPreferenceClientDTO;
-      schedule: CategoryPreferenceClientDTO;
-      reminder: CategoryPreferenceClientDTO;
-      account: CategoryPreferenceClientDTO;
-      system: CategoryPreferenceClientDTO;
+      task: CategoryPreferenceClient;
+      goal: CategoryPreferenceClient;
+      schedule: CategoryPreferenceClient;
+      reminder: CategoryPreferenceClient;
+      account: CategoryPreferenceClient;
+      system: CategoryPreferenceClient;
     };
     doNotDisturb?: DoNotDisturbConfigClientDTO | null;
-    rateLimit?: RateLimitClientDTO | null;
+    rateLimit?: RateLimitClient | null;
     createdAt: number;
     updatedAt: number;
   }) {
@@ -83,19 +82,19 @@ export class NotificationPreferenceClient
     return { ...this._channels };
   }
   public get categories(): {
-    task: CategoryPreferenceClientDTO;
-    goal: CategoryPreferenceClientDTO;
-    schedule: CategoryPreferenceClientDTO;
-    reminder: CategoryPreferenceClientDTO;
-    account: CategoryPreferenceClientDTO;
-    system: CategoryPreferenceClientDTO;
+    task: CategoryPreferenceClient;
+    goal: CategoryPreferenceClient;
+    schedule: CategoryPreferenceClient;
+    reminder: CategoryPreferenceClient;
+    account: CategoryPreferenceClient;
+    system: CategoryPreferenceClient;
   } {
     return { ...this._categories };
   }
   public get doNotDisturb(): DoNotDisturbConfigClientDTO | null | undefined {
     return this._doNotDisturb;
   }
-  public get rateLimit(): RateLimitClientDTO | null | undefined {
+  public get rateLimit(): RateLimitClient | null | undefined {
     return this._rateLimit;
   }
   public get createdAt(): number {
@@ -243,9 +242,16 @@ export class NotificationPreferenceClient
       accountUuid: this.accountUuid,
       enabled: this.enabled,
       channels: this.channels,
-      categories: this.categories,
+      categories: {
+        task: this._categories.task.toClientDTO(),
+        goal: this._categories.goal.toClientDTO(),
+        schedule: this._categories.schedule.toClientDTO(),
+        reminder: this._categories.reminder.toClientDTO(),
+        account: this._categories.account.toClientDTO(),
+        system: this._categories.system.toClientDTO(),
+      },
       doNotDisturb: this.doNotDisturb,
-      rateLimit: this.rateLimit,
+      rateLimit: this._rateLimit?.toClientDTO() ?? null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       isAllEnabled: this.isAllEnabled,
@@ -264,9 +270,16 @@ export class NotificationPreferenceClient
       accountUuid: this.accountUuid,
       enabled: this.enabled,
       channels: this.channels,
-      categories: this.categories as any, // Server DTO 使用不同的结构
+      categories: {
+        task: this._categories.task.toServerDTO() as any,
+        goal: this._categories.goal.toServerDTO() as any,
+        schedule: this._categories.schedule.toServerDTO() as any,
+        reminder: this._categories.reminder.toServerDTO() as any,
+        account: this._categories.account.toServerDTO() as any,
+        system: this._categories.system.toServerDTO() as any,
+      },
       doNotDisturb: this.doNotDisturb as any,
-      rateLimit: this.rateLimit as any,
+      rateLimit: (this._rateLimit?.toServerDTO() as any) ?? null,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
@@ -280,14 +293,14 @@ export class NotificationPreferenceClient
     channels?: Partial<ChannelPreferences>;
     categories?: Partial<CategoryPreferences>;
   }): NotificationPreferenceClient {
-    const defaultCategoryPref: CategoryPreferenceClientDTO = {
+    const defaultCategoryPref = CategoryPreferenceClient.fromClientDTO({
       enabled: true,
       channels: { inApp: true, email: true, push: true, sms: false },
       importance: [],
       enabledChannelsCount: 3,
       enabledChannelsList: ['应用内', '邮件', '推送'],
       importanceText: '所有',
-    };
+    });
 
     return new NotificationPreferenceClient({
       accountUuid: params.accountUuid,
@@ -299,12 +312,12 @@ export class NotificationPreferenceClient
         sms: params.channels?.sms ?? false,
       },
       categories: {
-        task: { ...defaultCategoryPref },
-        goal: { ...defaultCategoryPref },
-        schedule: { ...defaultCategoryPref },
-        reminder: { ...defaultCategoryPref },
-        account: { ...defaultCategoryPref },
-        system: { ...defaultCategoryPref },
+        task: defaultCategoryPref,
+        goal: defaultCategoryPref,
+        schedule: defaultCategoryPref,
+        reminder: defaultCategoryPref,
+        account: defaultCategoryPref,
+        system: defaultCategoryPref,
       },
       doNotDisturb: null,
       rateLimit: null,
@@ -323,9 +336,16 @@ export class NotificationPreferenceClient
       accountUuid: dto.accountUuid,
       enabled: dto.enabled,
       channels: dto.channels,
-      categories: dto.categories,
+      categories: {
+        task: CategoryPreferenceClient.fromClientDTO(dto.categories.task),
+        goal: CategoryPreferenceClient.fromClientDTO(dto.categories.goal),
+        schedule: CategoryPreferenceClient.fromClientDTO(dto.categories.schedule),
+        reminder: CategoryPreferenceClient.fromClientDTO(dto.categories.reminder),
+        account: CategoryPreferenceClient.fromClientDTO(dto.categories.account),
+        system: CategoryPreferenceClient.fromClientDTO(dto.categories.system),
+      },
       doNotDisturb: dto.doNotDisturb,
-      rateLimit: dto.rateLimit,
+      rateLimit: dto.rateLimit ? RateLimitClient.fromClientDTO(dto.rateLimit) : null,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
     });
@@ -337,9 +357,16 @@ export class NotificationPreferenceClient
       accountUuid: dto.accountUuid,
       enabled: dto.enabled,
       channels: dto.channels,
-      categories: dto.categories as any, // 转换为 Client 版本
+      categories: {
+        task: CategoryPreferenceClient.fromServerDTO(dto.categories.task),
+        goal: CategoryPreferenceClient.fromServerDTO(dto.categories.goal),
+        schedule: CategoryPreferenceClient.fromServerDTO(dto.categories.schedule),
+        reminder: CategoryPreferenceClient.fromServerDTO(dto.categories.reminder),
+        account: CategoryPreferenceClient.fromServerDTO(dto.categories.account),
+        system: CategoryPreferenceClient.fromServerDTO(dto.categories.system),
+      },
       doNotDisturb: dto.doNotDisturb as any,
-      rateLimit: dto.rateLimit as any,
+      rateLimit: dto.rateLimit ? RateLimitClient.fromServerDTO(dto.rateLimit) : null,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
     });

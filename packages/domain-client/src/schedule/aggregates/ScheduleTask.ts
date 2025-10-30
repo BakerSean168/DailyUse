@@ -105,18 +105,17 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
   public get enabled(): boolean {
     return this._enabled;
   }
-  public get schedule(): ScheduleContracts.ScheduleConfigClientDTO {
-    return this._schedule.toClientDTO();
+  public get schedule(): ScheduleConfig {
+    return this._schedule;
   }
-  public get execution(): ScheduleContracts.ExecutionInfoClientDTO {
-    // ⭐ 改名为 execution
-    return this._execution.toClientDTO();
+  public get execution(): ExecutionInfo {
+    return this._execution;
   }
-  public get retryPolicy(): ScheduleContracts.RetryPolicyClientDTO {
-    return this._retryPolicy.toClientDTO();
+  public get retryPolicy(): RetryPolicy {
+    return this._retryPolicy;
   }
-  public get metadata(): ScheduleContracts.TaskMetadataClientDTO {
-    return this._metadata.toClientDTO();
+  public get metadata(): TaskMetadata {
+    return this._metadata;
   }
   public get createdAt(): number {
     return this._createdAt;

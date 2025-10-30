@@ -107,8 +107,8 @@ export class Repository extends AggregateRoot implements IRepositoryClient {
   public get description(): string | null {
     return this._description;
   }
-  public get config(): RepositoryContracts.RepositoryConfigClientDTO {
-    return this._config.toClientDTO();
+  public get config(): RepositoryConfigClient {
+    return this._config;
   }
   public get relatedGoals(): string[] | null {
     return this._relatedGoals ? [...this._relatedGoals] : null;
@@ -116,14 +116,14 @@ export class Repository extends AggregateRoot implements IRepositoryClient {
   public get status(): RepositoryStatus {
     return this._status;
   }
-  public get git(): RepositoryContracts.GitInfoClientDTO | null {
-    return this._git ? this._git.toClientDTO() : null;
+  public get git(): GitInfoClient | null {
+    return this._git;
   }
-  public get syncStatus(): RepositoryContracts.SyncStatusClientDTO | null {
-    return this._syncStatus ? this._syncStatus.toClientDTO() : null;
+  public get syncStatus(): SyncStatusClient | null {
+    return this._syncStatus;
   }
-  public get stats(): RepositoryContracts.RepositoryStatsClientDTO {
-    return this._stats.toClientDTO();
+  public get stats(): RepositoryStatsClient {
+    return this._stats;
   }
   public get lastAccessedAt(): number | null {
     return this._lastAccessedAt;

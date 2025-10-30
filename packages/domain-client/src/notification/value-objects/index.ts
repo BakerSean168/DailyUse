@@ -7,6 +7,6 @@
 
 export { NotificationActionClient } from './NotificationActionClient';
 export { NotificationMetadataClient } from './NotificationMetadataClient';
-
-// 其他值对象（CategoryPreference, DoNotDisturbConfig 等）
-// 主要用于服务端，客户端通常直接使用 DTO
+export { CategoryPreferenceClient } from './CategoryPreferenceClient';
+export { RateLimitClient } from './RateLimitClient';
+export { NotificationTemplateConfigClient } from './NotificationTemplateConfigClient';

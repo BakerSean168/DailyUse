@@ -164,8 +164,8 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
   public get sortOrder(): number {
     return this._sortOrder;
   }
-  public get reminderConfig(): GoalContracts.GoalReminderConfigClientDTO | null | undefined {
-    return this._reminderConfig?.toClientDTO() ?? null;
+  public get reminderConfig(): GoalReminderConfigClient | null | undefined {
+    return this._reminderConfig;
   }
   public get createdAt(): number {
     return this._createdAt;

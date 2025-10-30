@@ -92,11 +92,11 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceCl
   public get projectType(): ProjectType {
     return this._projectType;
   }
-  public get layout(): EditorContracts.WorkspaceLayoutClientDTO {
-    return this._layout.toClientDTO();
+  public get layout(): WorkspaceLayoutClient {
+    return this._layout;
   }
-  public get settings(): EditorContracts.WorkspaceSettingsClientDTO {
-    return this._settings.toClientDTO();
+  public get settings(): WorkspaceSettingsClient {
+    return this._settings;
   }
   public get isActive(): boolean {
     return this._isActive;

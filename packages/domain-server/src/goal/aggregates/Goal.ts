@@ -187,8 +187,8 @@ export class Goal extends AggregateRoot implements IGoalServer {
   public get sortOrder(): number {
     return this._sortOrder;
   }
-  public get reminderConfig(): GoalReminderConfigServerDTO | null {
-    return this._reminderConfig;
+  public get reminderConfig(): GoalContracts.GoalReminderConfigServer | null {
+    return this._reminderConfig as GoalContracts.GoalReminderConfigServer | null;
   }
   public get createdAt(): number {
     return this._createdAt;
