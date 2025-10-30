@@ -2,6 +2,7 @@ import { Router, type Router as ExpressRouter } from 'express';
 import { ScheduleTaskController } from '../controllers/ScheduleTaskController';
 import { ScheduleConflictController } from '../controllers/ScheduleConflictController';
 import scheduleStatisticsRoutes from './scheduleStatisticsRoutes';
+import { createScheduleEventRoutes } from './scheduleEventRoutes';
 
 /**
  * @swagger
@@ -12,6 +13,8 @@ import scheduleStatisticsRoutes from './scheduleStatisticsRoutes';
  *     description: 调度任务统计信息
  *   - name: Schedule Conflict Detection
  *     description: 日程冲突检测和解决 (Story 9.4)
+ *   - name: ScheduleEvents
+ *     description: 日程事件管理（用户日历事件）(Story 4-1)
  */
 
 /**
@@ -33,6 +36,10 @@ const router: ExpressRouter = Router();
 // ===== 聚合根控制：统计信息 =====
 // 统计信息路由已独立到 scheduleStatisticsRoutes.ts
 router.use('/statistics', scheduleStatisticsRoutes);
+
+// ===== 日程事件管理路由 (Story 4-1) =====
+// 用户视角的日历事件 CRUD
+router.use('/', createScheduleEventRoutes());
 
 // ============ 日程冲突检测路由 (Story 9.4) ============
 // 注意：这些路由必须在通用 CRUD 路由之前注册，避免与 /:id 冲突
