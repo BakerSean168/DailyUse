@@ -8,10 +8,8 @@ import {
   InitializationPhase,
   type InitializationTask,
 } from '@dailyuse/utils';
-import {
-  initializeReminderModule,
-  getReminderTemplateService,
-} from '../index';
+
+import { reminderTemplateApplicationService } from '../application/services/ReminderTemplateApplicationService';
 import { useReminderStore } from '../presentation/stores/reminderStore';
 
 /**
@@ -32,8 +30,7 @@ export function registerReminderInitializationTasks(): void {
         // 延迟一小段时间，确保 Pinia 完全初始化
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // 只初始化 Reminder 模块
-        await initializeReminderModule();
+       
         console.log('✅ [Reminder] Reminder 模块初始化完成');
       } catch (error) {
         console.error('❌ [Reminder] Reminder 模块初始化失败:', error);
@@ -65,19 +62,11 @@ export function registerReminderInitializationTasks(): void {
       console.log(`📔 [Reminder] 开始用户登录数据同步: ${context?.accountUuid || 'unknown'}`);
 
       try {
-        // 初始化模块（如果需要）
-        await initializeReminderModule();
+        
 
         // 获取 ReminderTemplates
         console.log('📥 [Reminder] 获取 ReminderTemplate 列表...');
-        try {
-          const templates = await getReminderTemplateService.getReminderTemplates({
-            limit: 100,
-          });
-          console.log(`✅ [Reminder] 成功获取 ${templates.length} 个 ReminderTemplate`);
-        } catch (error) {
-          console.warn('⚠️ [Reminder] 获取 ReminderTemplate 失败，继续初始化', error);
-        }
+        
 
         console.log(`✅ [Reminder] 用户登录数据同步完成: ${context?.accountUuid || 'unknown'}`);
       } catch (error) {

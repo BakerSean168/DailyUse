@@ -7,7 +7,7 @@ import type { GoalStatus } from '../enums';
 import type { GoalServerDTO } from './GoalServer';
 import type { KeyResultClient, KeyResultClientDTO } from '../entities/KeyResultClient';
 import type { GoalReviewClient, GoalReviewClientDTO } from '../entities/GoalReviewClient';
-import type { GoalReminderConfigClientDTO } from '../value-objects';
+import type { GoalReminderConfigClient, GoalReminderConfigClientDTO } from '../value-objects';
 
 // ============ DTO 定义 ============
 

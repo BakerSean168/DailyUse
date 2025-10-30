@@ -11,6 +11,10 @@ import {
   startFocusModeCronJob,
   stopFocusModeCronJob,
 } from './modules/goal/infrastructure/cron/focusModeCronJob';
+import {
+  startReminderTriggerCronJob,
+  stopReminderTriggerCronJob,
+} from './modules/reminder/infrastructure/cron/reminderTriggerCronJob';
 
 // 初始化日志系统
 initializeLogger();
@@ -75,6 +79,13 @@ const PORT = process.env.PORT || 3888;
       description: 'Auto-deactivate expired focus cycles',
     });
 
+    // 启动 Reminder 触发调度器
+    await startReminderTriggerCronJob();
+    logger.info('✅ Reminder trigger cron job started', {
+      schedule: 'Every minute (* * * * *)',
+      description: 'Trigger due reminder templates',
+    });
+
     app.listen(PORT, () => {
       logger.info(`API server listening on http://localhost:${PORT}`);
     });
@@ -87,6 +98,7 @@ const PORT = process.env.PORT || 3888;
 process.on('SIGINT', async () => {
   logger.info('Received SIGINT signal, shutting down gracefully...');
   stopFocusModeCronJob();
+  await stopReminderTriggerCronJob();
   await disconnectPrisma();
   logger.info('Database disconnected');
   process.exit(0);
