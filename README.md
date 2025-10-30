@@ -396,3 +396,50 @@ chore: 构建/工具变动
 - [Nx](https://nx.dev/) - 智能构建系统
 - [pnpm](https://pnpm.io/) - 快速、节省磁盘空间的包管理器
 - [Vuetify](https://vuetifyjs.com/) - Vue Material 组件框架
+
+---
+
+## 🚀 Quick Start with GitHub Codespaces
+
+想要一个**开箱即用**的开发环境？使用 Codespaces！
+
+### 方式 1: GitHub Codespaces (推荐) ⭐
+
+1. 点击仓库页面的 **Code** 按钮
+2. 选择 **Codespaces** 标签
+3. 点击 **New codespace**
+4. 等待 3-5 分钟自动配置完成
+
+**包含内容**:
+- ✅ Node.js 22.20.0 + pnpm 10.18.3
+- ✅ Docker + Git + GitHub CLI
+- ✅ 所有 VS Code 扩展（Copilot, Nx Console, Vue Volar...）
+- ✅ MCP 工具集成（nx-mcp-server, playwright-mcp, chrome-devtools）
+- ✅ 自动安装依赖
+- ✅ 端口自动转发
+
+详细文档: [.devcontainer/README.md](.devcontainer/README.md)
+
+### 方式 2: 本地 Dev Container
+
+1. 安装 [Docker Desktop](https://www.docker.com/products/docker-desktop)
+2. 安装 VS Code [Dev Containers 扩展](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+3. 克隆仓库
+4. 在 VS Code 中打开，按 `F1`
+5. 运行 **Dev Containers: Reopen in Container**
+
+### 快速命令
+
+```bash
+# 启动 API 服务器
+pnpm exec nx run api:dev
+
+# 启动 Web 前端
+pnpm exec nx run web:dev
+
+# 查看项目依赖图
+pnpm exec nx graph
+```
+
+更多信息: [Codespaces 快速入门](.devcontainer/QUICKSTART.md)
+

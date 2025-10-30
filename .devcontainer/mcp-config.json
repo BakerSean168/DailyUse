@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "nx-mcp-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@automatalabs/nx-mcp-server"
+      ],
+      "env": {
+        "NX_WORKSPACE_ROOT": "${workspaceFolder}"
+      }
+    },
+    "playwright-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@automatalabs/playwright-mcp@latest"
+      ]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@automatalabs/chrome-devtools-mcp@latest"
+      ]
+    }
+  }
+}
