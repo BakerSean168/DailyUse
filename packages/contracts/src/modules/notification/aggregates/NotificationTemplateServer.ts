@@ -4,7 +4,10 @@
  */
 
 import type { NotificationType, NotificationCategory } from '../enums';
-import type { NotificationTemplateConfigServerDTO } from '../value-objects';
+import type {
+  NotificationTemplateConfigServer,
+  NotificationTemplateConfigServerDTO,
+} from '../value-objects';
 
 // ============ DTO 定义 ============
 
@@ -120,7 +123,7 @@ export interface NotificationTemplateServer {
   category: NotificationCategory;
 
   // ===== 模板内容（值对象） =====
-  template: NotificationTemplateConfigServerDTO;
+  template: NotificationTemplateConfigServer;
 
   // ===== 状态 =====
   isActive: boolean;

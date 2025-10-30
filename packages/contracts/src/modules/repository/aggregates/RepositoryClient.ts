@@ -13,12 +13,16 @@ import type {
 
 // 从值对象导入类型
 import type {
+  RepositoryConfigClient,
   RepositoryConfigServerDTO,
   RepositoryConfigClientDTO,
+  RepositoryStatsClient,
   RepositoryStatsServerDTO,
   RepositoryStatsClientDTO,
+  SyncStatusClient,
   SyncStatusServerDTO,
   SyncStatusClientDTO,
+  GitInfoClient,
   GitInfoServerDTO,
   GitInfoClientDTO,
 } from '../value-objects';
@@ -73,14 +77,14 @@ export interface RepositoryClient {
   description?: string | null;
 
   // 配置
-  config: RepositoryConfigClientDTO;
+  config: RepositoryConfigClient;
   relatedGoals?: string[] | null;
 
   // 状态
   status: RepositoryStatus;
-  git?: GitInfoClientDTO | null;
-  syncStatus?: SyncStatusClientDTO | null;
-  stats: RepositoryStatsClientDTO;
+  git?: GitInfoClient | null;
+  syncStatus?: SyncStatusClient | null;
+  stats: RepositoryStatsClient;
 
   // 时间戳
   lastAccessedAt?: number | null;

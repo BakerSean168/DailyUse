@@ -6,7 +6,12 @@
 import type { ProjectType } from '../enums';
 
 // 从值对象导入类型
-import type { WorkspaceLayoutClientDTO, WorkspaceSettingsClientDTO } from '../valueObjects';
+import type {
+  WorkspaceLayoutClient,
+  WorkspaceLayoutClientDTO,
+  WorkspaceSettingsClient,
+  WorkspaceSettingsClientDTO,
+} from '../valueObjects';
 import type { EditorWorkspaceServerDTO } from './EditorWorkspaceServer';
 
 // 从实体导入类型
@@ -59,8 +64,8 @@ export interface EditorWorkspaceClient {
   description?: string | null;
   projectPath: string;
   projectType: ProjectType;
-  layout: WorkspaceLayoutClientDTO;
-  settings: WorkspaceSettingsClientDTO;
+  layout: WorkspaceLayoutClient;
+  settings: WorkspaceSettingsClient;
   isActive: boolean;
   lastActiveSessionUuid?: string | null;
   lastAccessedAt?: number | null;

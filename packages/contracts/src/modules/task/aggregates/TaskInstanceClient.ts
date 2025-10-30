@@ -4,16 +4,24 @@
 
 import type { TaskInstanceServerDTO } from './TaskInstanceServer';
 import type { TaskInstanceStatus } from '../enums';
+import type {
+  TaskTimeConfigClient,
+  TaskTimeConfigClientDTO,
+  CompletionRecordClient,
+  CompletionRecordClientDTO,
+  SkipRecordClient,
+  SkipRecordClientDTO,
+} from '../value-objects';
 
 export interface TaskInstanceClientDTO {
   uuid: string;
   templateUuid: string;
   accountUuid: string;
   instanceDate: number;
-  timeConfig: any;
+  timeConfig: TaskTimeConfigClientDTO;
   status: TaskInstanceStatus;
-  completionRecord?: any | null;
-  skipRecord?: any | null;
+  completionRecord?: CompletionRecordClientDTO | null;
+  skipRecord?: SkipRecordClientDTO | null;
   actualStartTime?: number | null;
   actualEndTime?: number | null;
   note?: string | null;
@@ -38,10 +46,10 @@ export interface TaskInstanceClient {
   templateUuid: string;
   accountUuid: string;
   instanceDate: number;
-  timeConfig: any;
+  timeConfig: TaskTimeConfigClient;
   status: TaskInstanceStatus;
-  completionRecord?: any | null;
-  skipRecord?: any | null;
+  completionRecord?: CompletionRecordClient | null;
+  skipRecord?: SkipRecordClient | null;
   actualStartTime?: number | null;
   actualEndTime?: number | null;
   note?: string | null;

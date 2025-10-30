@@ -20,7 +20,12 @@ import type {
   NotificationHistoryClient,
   NotificationHistoryClientDTO,
 } from '../entities/NotificationHistoryClient';
-import type { NotificationActionClientDTO, NotificationMetadataClientDTO } from '../value-objects';
+import type {
+  NotificationActionClient,
+  NotificationActionClientDTO,
+  NotificationMetadataClient,
+  NotificationMetadataClientDTO,
+} from '../value-objects';
 
 // ============ DTO 定义 ============
 
@@ -95,10 +100,10 @@ export interface NotificationClient {
   relatedEntityUuid?: string | null;
 
   // ===== 操作配置 =====
-  actions?: NotificationActionClientDTO[] | null;
+  actions?: NotificationActionClient[] | null;
 
   // ===== 元数据 =====
-  metadata?: NotificationMetadataClientDTO | null;
+  metadata?: NotificationMetadataClient | null;
 
   // ===== 过期设置 =====
   expiresAt?: number | null;

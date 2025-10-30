@@ -5,8 +5,10 @@
 
 import type { NotificationCategory } from '../enums';
 import type {
+  CategoryPreferenceServer,
   CategoryPreferenceServerDTO,
   DoNotDisturbConfigServerDTO,
+  RateLimitServer,
   RateLimitServerDTO,
 } from '../value-objects';
 
@@ -26,12 +28,12 @@ export interface ChannelPreferences {
  * 分类偏好配置
  */
 export interface CategoryPreferences {
-  task: CategoryPreferenceServerDTO;
-  goal: CategoryPreferenceServerDTO;
-  schedule: CategoryPreferenceServerDTO;
-  reminder: CategoryPreferenceServerDTO;
-  account: CategoryPreferenceServerDTO;
-  system: CategoryPreferenceServerDTO;
+  task: CategoryPreferenceServer;
+  goal: CategoryPreferenceServer;
+  schedule: CategoryPreferenceServer;
+  reminder: CategoryPreferenceServer;
+  account: CategoryPreferenceServer;
+  system: CategoryPreferenceServer;
 }
 
 // ============ DTO 定义 ============
@@ -121,7 +123,7 @@ export interface NotificationPreferenceServer {
   doNotDisturb?: DoNotDisturbConfigServerDTO | null;
 
   // ===== 频率限制（值对象） =====
-  rateLimit?: RateLimitServerDTO | null;
+  rateLimit?: RateLimitServer | null;
 
   // ===== 时间戳 (统一使用 number epoch ms) =====
   createdAt: number;

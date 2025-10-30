@@ -6,6 +6,17 @@ import type { TaskTemplateServerDTO } from './TaskTemplateServer';
 import type { TaskType, TaskTemplateStatus } from '../enums';
 import { ImportanceLevel } from '../../../shared/importance';
 import { UrgencyLevel } from '../../../shared/urgency';
+import type {
+  TaskTimeConfigClient,
+  TaskTimeConfigClientDTO,
+  RecurrenceRuleClient,
+  RecurrenceRuleClientDTO,
+  TaskReminderConfigClient,
+  TaskReminderConfigClientDTO,
+  TaskGoalBindingClient,
+  TaskGoalBindingClientDTO,
+} from '../value-objects';
+import type { TaskInstanceClient } from './TaskInstanceClient';
 
 export interface TaskTemplateClientDTO {
   uuid: string;
@@ -55,12 +66,12 @@ export interface TaskTemplateClient {
   title: string;
   description?: string | null;
   taskType: TaskType;
-  timeConfig: any;
-  recurrenceRule?: any | null;
-  reminderConfig?: any | null;
+  timeConfig: TaskTimeConfigClient;
+  recurrenceRule?: RecurrenceRuleClient | null;
+  reminderConfig?: TaskReminderConfigClient | null;
   importance: ImportanceLevel;
   urgency: UrgencyLevel;
-  goalBinding?: any | null;
+  goalBinding?: TaskGoalBindingClient | null;
   folderUuid?: string | null;
   tags: string[];
   color?: string | null;
@@ -70,7 +81,7 @@ export interface TaskTemplateClient {
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
-  instances?: any[];
+  instances?: TaskInstanceClient[];
   displayTitle: string;
   taskTypeText: string;
   timeDisplayText: string;

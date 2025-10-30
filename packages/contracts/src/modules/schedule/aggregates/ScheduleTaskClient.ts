@@ -12,12 +12,16 @@ import type {
 
 // 从值对象导入类型
 import type {
+  ScheduleConfigClient,
   ScheduleConfigServerDTO,
   ScheduleConfigClientDTO,
+  ExecutionInfoClient,
   ExecutionInfoServerDTO,
   ExecutionInfoClientDTO,
+  RetryPolicyClient,
   RetryPolicyServerDTO,
   RetryPolicyClientDTO,
+  TaskMetadataClient,
   TaskMetadataServerDTO,
   TaskMetadataClientDTO,
 } from '../value-objects';
@@ -79,10 +83,10 @@ export interface ScheduleTaskClient {
   enabled: boolean;
 
   // 值对象（Client 版本）
-  schedule: ScheduleConfigClientDTO;
-  execution: ExecutionInfoClientDTO;
-  retryPolicy: RetryPolicyClientDTO;
-  metadata: TaskMetadataClientDTO;
+  schedule: ScheduleConfigClient;
+  execution: ExecutionInfoClient;
+  retryPolicy: RetryPolicyClient;
+  metadata: TaskMetadataClient;
 
   // 时间戳
   createdAt: number;
