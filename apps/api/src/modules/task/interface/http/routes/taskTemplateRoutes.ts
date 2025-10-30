@@ -317,4 +317,720 @@ router.get('/', TaskTemplateController.getTaskTemplates);
 router.get('/:id', TaskTemplateController.getTaskTemplate);
 router.delete('/:id', TaskTemplateController.deleteTaskTemplate);
 
+// ============ ONE_TIME Task Routes ============
+
+/**
+ * @swagger
+ * /tasks/one-time:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 创建一次性任务
+ *     description: 创建一个新的一次性任务
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - startDate
+ *               - dueDate
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               dueDate:
+ *                 type: string
+ *                 format: date-time
+ *               importance:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 4
+ *               urgency:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 4
+ *               goalUuid:
+ *                 type: string
+ *               keyResultUuid:
+ *                 type: string
+ *               parentTaskUuid:
+ *                 type: string
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               color:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: 一次性任务创建成功
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 获取一次性任务列表
+ *     description: 获取用户的所有一次性任务，支持多种过滤条件
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, IN_PROGRESS, COMPLETED, BLOCKED, CANCELLED]
+ *       - in: query
+ *         name: goalUuid
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: keyResultUuid
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: parentTaskUuid
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: tags
+ *         schema:
+ *           type: string
+ *         description: 标签列表（逗号分隔）
+ *       - in: query
+ *         name: startDateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: startDateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: dueDateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: dueDateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: minImportance
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: minUrgency
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: priorityLevels
+ *         schema:
+ *           type: string
+ *         description: 优先级（逗号分隔，如 HIGH,MEDIUM）
+ *     responses:
+ *       200:
+ *         description: 成功返回任务列表
+ */
+router.post('/one-time', TaskTemplateController.createOneTimeTask);
+router.get('/one-time', TaskTemplateController.getOneTimeTasks);
+
+/**
+ * @swagger
+ * /tasks/{uuid}:
+ *   patch:
+ *     tags: [One-Time Tasks]
+ *     summary: 更新一次性任务
+ *     description: 更新任务的基本信息（标题、描述、日期、优先级等）
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 任务UUID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               startDate:
+ *                 type: number
+ *               dueDate:
+ *                 type: number
+ *               importance:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 4
+ *               urgency:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 4
+ *               estimatedMinutes:
+ *                 type: number
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               color:
+ *                 type: string
+ *               note:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 任务更新成功
+ *       404:
+ *         description: 任务不存在
+ */
+router.patch('/:uuid', TaskTemplateController.updateOneTimeTask);
+
+/**
+ * @swagger
+ * /tasks/{uuid}/history:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 获取任务历史记录
+ *     description: 获取任务的所有变更历史
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 任务UUID
+ *     responses:
+ *       200:
+ *         description: 成功返回任务历史
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 history:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       action:
+ *                         type: string
+ *                       changes:
+ *                         type: object
+ *                       timestamp:
+ *                         type: string
+ *                         format: date-time
+ *       404:
+ *         description: 任务不存在
+ */
+router.get('/:uuid/history', TaskTemplateController.getTaskHistory);
+
+/**
+ * @swagger
+ * /tasks/today:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 获取今日任务
+ *     description: 获取今天需要完成的所有任务
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 成功返回今日任务列表
+ */
+router.get('/today', TaskTemplateController.getTodayTasks);
+
+/**
+ * @swagger
+ * /tasks/overdue:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 获取逾期任务
+ *     description: 获取所有已逾期的任务
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 成功返回逾期任务列表
+ */
+router.get('/overdue', TaskTemplateController.getOverdueTasks);
+
+/**
+ * @swagger
+ * /tasks/upcoming:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 获取即将到期的任务
+ *     description: 获取未来N天内到期的任务
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: number
+ *           default: 7
+ *         description: 未来天数
+ *     responses:
+ *       200:
+ *         description: 成功返回即将到期的任务列表
+ */
+router.get('/upcoming', TaskTemplateController.getUpcomingTasks);
+
+/**
+ * @swagger
+ * /tasks/by-priority:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 按优先级排序获取任务
+ *     description: 获取按优先级降序排列的任务列表
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *         description: 返回数量限制
+ *     responses:
+ *       200:
+ *         description: 成功返回按优先级排序的任务列表
+ */
+router.get('/by-priority', TaskTemplateController.getTasksByPriority);
+
+/**
+ * @swagger
+ * /tasks/dashboard:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 获取任务仪表板
+ *     description: 获取任务仪表板数据（包括今日、逾期、即将到期、高优先级等）
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 成功返回仪表板数据
+ */
+router.get('/dashboard', TaskTemplateController.getTaskDashboard);
+
+/**
+ * @swagger
+ * /tasks/blocked:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 获取阻塞的任务
+ *     description: 获取所有处于阻塞状态的任务
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 成功返回阻塞任务列表
+ */
+router.get('/blocked', TaskTemplateController.getBlockedTasks);
+
+/**
+ * @swagger
+ * /tasks/by-date-range:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 按日期范围获取任务
+ *     description: 获取指定日期范围内的任务
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: 成功返回任务列表
+ */
+router.get('/by-date-range', TaskTemplateController.getTasksByDateRange);
+
+/**
+ * @swagger
+ * /tasks/by-tags:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 按标签获取任务
+ *     description: 根据标签获取任务列表
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: tags
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 标签列表（逗号分隔）
+ *     responses:
+ *       200:
+ *         description: 成功返回任务列表
+ */
+router.get('/by-tags', TaskTemplateController.getTasksByTags);
+
+/**
+ * @swagger
+ * /tasks/by-goal/{goalUuid}:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 根据目标获取任务
+ *     description: 获取关联到指定目标的所有任务
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: goalUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 成功返回任务列表
+ */
+router.get('/by-goal/:goalUuid', TaskTemplateController.getTasksByGoal);
+
+/**
+ * @swagger
+ * /tasks/by-key-result/{keyResultUuid}:
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 根据关键结果获取任务
+ *     description: 获取关联到指定关键结果的所有任务
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: keyResultUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 成功返回任务列表
+ */
+router.get('/by-key-result/:keyResultUuid', TaskTemplateController.getTasksByKeyResult);
+
+/**
+ * @swagger
+ * /tasks/{uuid}/start:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 开始任务
+ *     description: 将任务状态更改为进行中
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 任务已开始
+ */
+router.post('/:uuid/start', TaskTemplateController.startTask);
+
+/**
+ * @swagger
+ * /tasks/{uuid}/complete:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 完成任务
+ *     description: 将任务标记为已完成
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 任务已完成
+ */
+router.post('/:uuid/complete', TaskTemplateController.completeTask);
+
+/**
+ * @swagger
+ * /tasks/{uuid}/block:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 阻塞任务
+ *     description: 将任务标记为阻塞状态
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 任务已阻塞
+ */
+router.post('/:uuid/block', TaskTemplateController.blockTask);
+
+/**
+ * @swagger
+ * /tasks/{uuid}/unblock:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 解除任务阻塞
+ *     description: 解除任务的阻塞状态
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 任务阻塞已解除
+ */
+router.post('/:uuid/unblock', TaskTemplateController.unblockTask);
+
+/**
+ * @swagger
+ * /tasks/{uuid}/cancel:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 取消任务
+ *     description: 将任务标记为已取消
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 任务已取消
+ */
+router.post('/:uuid/cancel', TaskTemplateController.cancelTask);
+
+/**
+ * @swagger
+ * /tasks/{uuid}/link-goal:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 关联任务到目标
+ *     description: 将任务关联到指定的目标和关键结果
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - goalUuid
+ *             properties:
+ *               goalUuid:
+ *                 type: string
+ *               keyResultUuid:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 任务已关联到目标
+ *   delete:
+ *     tags: [One-Time Tasks]
+ *     summary: 解除任务与目标的关联
+ *     description: 解除任务与目标和关键结果的关联
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 任务已解除关联
+ */
+router.post('/:uuid/link-goal', TaskTemplateController.linkToGoal);
+router.delete('/:uuid/link-goal', TaskTemplateController.unlinkFromGoal);
+
+/**
+ * @swagger
+ * /tasks/{parentUuid}/subtasks:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 创建子任务
+ *     description: 为指定任务创建子任务
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: parentUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - startDate
+ *               - dueDate
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               dueDate:
+ *                 type: string
+ *                 format: date-time
+ *               importance:
+ *                 type: number
+ *               urgency:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: 子任务创建成功
+ *   get:
+ *     tags: [One-Time Tasks]
+ *     summary: 获取子任务列表
+ *     description: 获取指定任务的所有子任务
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: parentUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 成功返回子任务列表
+ */
+router.post('/:parentUuid/subtasks', TaskTemplateController.createSubtask);
+router.get('/:parentUuid/subtasks', TaskTemplateController.getSubtasks);
+
+/**
+ * @swagger
+ * /tasks/batch/update-priority:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 批量更新任务优先级
+ *     description: 批量更新多个任务的重要性和紧急程度
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - taskUuids
+ *             properties:
+ *               taskUuids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               importance:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 4
+ *               urgency:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 4
+ *     responses:
+ *       200:
+ *         description: 批量更新成功
+ */
+router.post('/batch/update-priority', TaskTemplateController.batchUpdatePriority);
+
+/**
+ * @swagger
+ * /tasks/batch/cancel:
+ *   post:
+ *     tags: [One-Time Tasks]
+ *     summary: 批量取消任务
+ *     description: 批量取消多个任务
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - taskUuids
+ *             properties:
+ *               taskUuids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 批量取消成功
+ */
+router.post('/batch/cancel', TaskTemplateController.batchCancelTasks);
+
 export default router;

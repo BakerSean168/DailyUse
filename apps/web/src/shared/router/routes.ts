@@ -102,11 +102,11 @@ export const appRoutes: RouteRecordRaw[] = [
             },
           },
           {
-            path: 'create',
-            name: 'task-create',
-            component: () => import('@/modules/task/presentation/views/TaskCreateView.vue'),
+            path: 'one-time',
+            name: 'task-one-time-list',
+            component: () => import('@/modules/task/presentation/views/OneTimeTaskListView.vue'),
             meta: {
-              title: '创建任务',
+              title: '一次性任务',
               requiresAuth: true,
             },
           },
@@ -127,16 +127,6 @@ export const appRoutes: RouteRecordRaw[] = [
             component: () => import('@/modules/task/presentation/views/TaskDetailView.vue'),
             meta: {
               title: '任务详情',
-              requiresAuth: true,
-            },
-            props: true,
-          },
-          {
-            path: ':id/edit',
-            name: 'task-edit',
-            component: () => import('@/modules/task/presentation/views/TaskEditView.vue'),
-            meta: {
-              title: '编辑任务',
               requiresAuth: true,
             },
             props: true,

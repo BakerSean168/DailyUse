@@ -29,7 +29,19 @@ export enum TimeType {
 // ============ 状态枚举 ============
 
 /**
- * 任务模板状态
+ * 基础任务状态（一次性任务）
+ * Task Status for One-time Tasks
+ */
+export enum TaskStatus {
+  PENDING = 'PENDING', // 待办
+  IN_PROGRESS = 'IN_PROGRESS', // 进行中
+  BLOCKED = 'BLOCKED', // 被阻塞
+  COMPLETED = 'COMPLETED', // 已完成
+  CANCELLED = 'CANCELLED', // 已取消
+}
+
+/**
+ * 任务模板状态（循环任务）
  */
 export enum TaskTemplateStatus {
   ACTIVE = 'ACTIVE', // 激活
@@ -39,7 +51,7 @@ export enum TaskTemplateStatus {
 }
 
 /**
- * 任务实例状态
+ * 任务实例状态（循环任务的实例）
  */
 export enum TaskInstanceStatus {
   PENDING = 'PENDING', // 待处理
