@@ -522,6 +522,24 @@ export function useGoal() {
     }
   };
 
+  /**
+   * 获取目标进度分解详情
+   * 
+   * 返回目标进度的详细计算信息，包括每个关键结果的贡献度
+   * 
+   * @param goalUuid - 目标 UUID
+   * @returns 进度分解详情
+   */
+  const fetchProgressBreakdown = async (goalUuid: string): Promise<GoalContracts.ProgressBreakdown> => {
+    try {
+      const breakdown = await goalWebApplicationService.getProgressBreakdown(goalUuid);
+      return breakdown;
+    } catch (error) {
+      snackbar.showError('获取进度详情失败');
+      throw error;
+    }
+  };
+
   // ===== DDD聚合根控制：GoalRecord管理 =====
 
   /**
@@ -906,6 +924,7 @@ export function useGoal() {
     updateKeyResultForGoal,
     deleteKeyResultForGoal,
     batchUpdateKeyResultWeights,
+    fetchProgressBreakdown,
 
     // ===== DDD聚合根控制：GoalRecord管理 =====
     createGoalRecord,

@@ -388,4 +388,28 @@ export class GoalApplicationService {
     const statistics = await statisticsService.getOrCreateStatistics(accountUuid);
     return statistics;
   }
+
+  // ===== 进度分解 =====
+
+  /**
+   * 获取目标进度分解详情
+   * 
+   * 返回目标进度的详细计算信息，包括每个关键结果的贡献度
+   * 
+   * @param goalUuid - 目标 UUID
+   * @returns 进度分解详情
+   * @throws 如果目标不存在
+   */
+  async getGoalProgressBreakdown(
+    goalUuid: string
+  ): Promise<GoalContracts.ProgressBreakdown> {
+    // 查询目标
+    const goal = await this.goalRepository.findById(goalUuid);
+    if (!goal) {
+      throw new Error(`Goal not found: ${goalUuid}`);
+    }
+
+    // 调用领域模型方法获取进度分解
+    return goal.getProgressBreakdown();
+  }
 }

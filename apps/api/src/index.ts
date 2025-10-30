@@ -7,6 +7,10 @@ import { initializeApp } from './shared/initialization/initializer';
 import { eventBus } from '@dailyuse/utils';
 import { initializeLogger, getStartupInfo } from './config/logger.config';
 import { createLogger } from '@dailyuse/utils';
+import {
+  startFocusModeCronJob,
+  stopFocusModeCronJob,
+} from './modules/goal/infrastructure/cron/focusModeCronJob';
 
 // 初始化日志系统
 initializeLogger();
@@ -63,6 +67,14 @@ const PORT = process.env.PORT || 3888;
       '⚠️ Schedule module is temporarily disabled - needs refactoring for new cron-based schema',
     );
 
+    // 启动 FocusMode 自动过期调度器
+    startFocusModeCronJob();
+    logger.info('✅ FocusMode cron job started', {
+      schedule: 'Hourly (0 * * * *)',
+      timezone: 'Asia/Shanghai',
+      description: 'Auto-deactivate expired focus cycles',
+    });
+
     app.listen(PORT, () => {
       logger.info(`API server listening on http://localhost:${PORT}`);
     });
@@ -74,12 +86,14 @@ const PORT = process.env.PORT || 3888;
 
 process.on('SIGINT', async () => {
   logger.info('Received SIGINT signal, shutting down gracefully...');
+  stopFocusModeCronJob();
   await disconnectPrisma();
   logger.info('Database disconnected');
   process.exit(0);
 });
 process.on('SIGTERM', async () => {
   logger.info('Received SIGTERM signal, shutting down gracefully...');
+  stopFocusModeCronJob();
   await disconnectPrisma();
   logger.info('Database disconnected');
   process.exit(0);

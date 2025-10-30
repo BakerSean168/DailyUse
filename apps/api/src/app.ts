@@ -10,7 +10,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 // TEMPORARY: Comment out AccountController until we properly refactor it
-// import accountRouter from './modules/account/interface/http/accountRoutes';
+import accountRouter from './modules/account/interface/http/accountRoutes';
 import authenticationRouter from './modules/authentication/interface/http/authenticationRoutes';
 import taskRouter from './modules/task/interface/http/routes/index';
 import goalRouter from './modules/goal/interface/http/goalRoutes';
@@ -71,8 +71,7 @@ api.get('/health', (_req: Request, res: Response) => {
 });
 
 // 挂载账户路由到api路由器
-// TEMPORARY: Comment out account router until we properly refactor AccountController
-// api.use('', accountRouter);
+api.use('/accounts', accountRouter);
 
 // 挂载认证路由到 api 路由器 (登录/登出/刷新等) - 不需要认证
 api.use('/auth', authenticationRouter);

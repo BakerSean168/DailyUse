@@ -709,6 +709,9 @@ export class Goal extends AggregateRoot implements IGoalServer {
     this._keyResults.push(keyResult);
     this._updatedAt = Date.now();
 
+    // 自动重新计算进度
+    const newProgress = this.calculateProgress();
+
     this.addDomainEvent({
       eventType: 'goal.key_result_added',
       aggregateId: this.uuid,
@@ -717,6 +720,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
       payload: {
         goalUuid: this.uuid,
         keyResult: keyResult.toServerDTO(),
+        newGoalProgress: newProgress,
       },
     });
   }
@@ -737,6 +741,9 @@ export class Goal extends AggregateRoot implements IGoalServer {
 
     this._updatedAt = Date.now();
 
+    // 自动重新计算进度
+    const newProgress = this.calculateProgress();
+
     this.addDomainEvent({
       eventType: 'goal.key_result_updated',
       aggregateId: this.uuid,
@@ -746,6 +753,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
         goalUuid: this.uuid,
         keyResult: keyResult.toServerDTO(),
         changes: Object.keys(updates),
+        newGoalProgress: newProgress,
       },
     });
   }
@@ -799,8 +807,29 @@ export class Goal extends AggregateRoot implements IGoalServer {
       throw new Error(`KeyResult ${keyResultUuid} not found`);
     }
 
+    const oldProgress = this.calculateProgress();
     keyResult.updateProgress(newValue, note);
     this._updatedAt = Date.now();
+
+    // 自动重新计算进度
+    const newProgress = this.calculateProgress();
+
+    // 如果进度发生变化，触发进度更新事件
+    if (oldProgress !== newProgress) {
+      this.addDomainEvent({
+        eventType: 'goal.progress_updated',
+        aggregateId: this.uuid,
+        occurredOn: new Date(this._updatedAt),
+        accountUuid: this._accountUuid,
+        payload: {
+          goalUuid: this.uuid,
+          oldProgress,
+          newProgress,
+          trigger: 'kr_progress_update',
+          keyResultUuid,
+        },
+      });
+    }
 
     return keyResult.toServerDTO();
   }
@@ -813,19 +842,89 @@ export class Goal extends AggregateRoot implements IGoalServer {
     if (index !== -1) {
       const removed = this._keyResults.splice(index, 1)[0];
       this._updatedAt = Date.now();
+      
+      // 自动重新计算进度
+      const newProgress = this.calculateProgress();
+      
+      this.addDomainEvent({
+        eventType: 'goal.key_result_removed',
+        aggregateId: this.uuid,
+        occurredOn: new Date(this._updatedAt),
+        accountUuid: this._accountUuid,
+        payload: {
+          goalUuid: this.uuid,
+          keyResultUuid,
+          newGoalProgress: newProgress,
+        },
+      });
+      
       return removed;
     }
     return null;
   }
 
   /**
-   * 计算总进度（基于所有关键结果）
+   * 计算总进度（基于所有关键结果的加权平均）
+   * 
+   * 公式：Progress = Σ(KR.progress × KR.weight) / Σ(KR.weight)
+   * 
+   * @returns 目标进度百分比（0-100）
    */
   public calculateProgress(): number {
     if (this._keyResults.length === 0) return 0;
 
-    const totalPercentage = this._keyResults.reduce((sum, kr) => sum + kr.calculatePercentage(), 0);
-    return totalPercentage / this._keyResults.length;
+    // 计算总权重
+    const totalWeight = this._keyResults.reduce((sum, kr) => sum + kr.weight, 0);
+    
+    // 如果总权重为 0，使用简单平均
+    if (totalWeight === 0) {
+      const totalPercentage = this._keyResults.reduce((sum, kr) => sum + kr.calculatePercentage(), 0);
+      return Math.round((totalPercentage / this._keyResults.length) * 100) / 100;
+    }
+
+    // 加权平均计算
+    const weightedSum = this._keyResults.reduce(
+      (sum, kr) => sum + (kr.calculatePercentage() * kr.weight),
+      0
+    );
+
+    const progress = (weightedSum / totalWeight);
+    
+    // 四舍五入到小数点后 2 位
+    return Math.round(progress * 100) / 100;
+  }
+
+  /**
+   * 获取进度分解详情
+   * 
+   * 返回目标进度的详细计算信息，包括每个关键结果的贡献度
+   * 
+   * @returns 进度分解详情对象
+   */
+  public getProgressBreakdown(): GoalContracts.ProgressBreakdown {
+    const totalWeight = this._keyResults.reduce((sum, kr) => sum + kr.weight, 0);
+    const totalProgress = this.calculateProgress();
+    
+    return {
+      totalProgress,
+      calculationMode: 'weighted_average' as const,
+      krContributions: this._keyResults.map(kr => {
+        const krProgress = kr.calculatePercentage();
+        const contribution = totalWeight > 0 
+          ? Math.round((krProgress * kr.weight / totalWeight) * 100) / 100
+          : Math.round((krProgress / this._keyResults.length) * 100) / 100;
+        
+        return {
+          keyResultUuid: kr.uuid,
+          keyResultName: kr.title,
+          progress: krProgress,
+          weight: kr.weight,
+          contribution,
+        };
+      }),
+      lastUpdateTime: this._updatedAt,
+      updateTrigger: '自动计算',
+    };
   }
 
   /**

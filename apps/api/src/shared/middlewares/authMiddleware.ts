@@ -7,10 +7,12 @@ import jwt from 'jsonwebtoken';
 export interface AuthenticatedRequest extends Request {
   user?: {
     accountUuid: string;
+    sessionUuid?: string;
     tokenType?: string;
     exp?: number;
   };
   accountUuid?: string; // 向后兼容，直接提供accountUuid
+  sessionUuid?: string; // 当前会话UUID
 }
 
 /**
@@ -64,12 +66,14 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
       // 将用户信息添加到请求对象
       req.user = {
         accountUuid: decoded.accountUuid,
+        sessionUuid: decoded.sessionUuid,
         tokenType: decoded.type,
         exp: decoded.exp,
       };
 
-      // 向后兼容：直接提供 accountUuid
+      // 向后兼容：直接提供 accountUuid 和 sessionUuid
       req.accountUuid = decoded.accountUuid;
+      req.sessionUuid = decoded.sessionUuid;
 
       return next();
     } catch (jwtError) {

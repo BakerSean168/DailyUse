@@ -40,14 +40,8 @@ export interface CreateGoalRequest {
   targetDate?: number;
   folderUuid?: string;
   parentGoalUuid?: string;
-  keyResults?: Array<{
-    title: string;
-    description?: string;
-    valueType: string;
-    targetValue: number;
-    unit?: string;
-    weight: number;
-  }>;
+  // keyResults 已移除 - 现在通过独立的 API 端点创建 KeyResult
+  // 使用 POST /api/goals/{goalUuid}/key-results 来添加 KeyResult
 }
 
 /**

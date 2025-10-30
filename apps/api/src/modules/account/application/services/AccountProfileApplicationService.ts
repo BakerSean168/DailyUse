@@ -84,6 +84,39 @@ export class AccountProfileApplicationService {
   }
 
   /**
+   * 获取账户资料
+   * 
+   * @param accountUuid 账户UUID
+   * @returns 账户客户端DTO
+   */
+  async getProfile(accountUuid: string): Promise<AccountContracts.AccountClientDTO> {
+    logger.info('[AccountProfileApplicationService] Getting profile', {
+      accountUuid,
+    });
+
+    try {
+      // ===== 步骤 1: 查询账户 =====
+      const account = await this.accountRepository.findById(accountUuid);
+      if (!account) {
+        throw new Error(`Account not found: ${accountUuid}`);
+      }
+
+      logger.info('[AccountProfileApplicationService] Profile retrieved successfully', {
+        accountUuid: account.uuid,
+      });
+
+      // ===== 步骤 2: 返回 AccountClientDTO =====
+      return account.toClientDTO();
+    } catch (error) {
+      logger.error('[AccountProfileApplicationService] Get profile failed', {
+        accountUuid,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  }
+
+  /**
    * 更新账户资料主流程
    *
    * 步骤：

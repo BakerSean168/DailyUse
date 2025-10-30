@@ -65,6 +65,37 @@ export class AccountApiClient {
     await apiClient.delete(`${this.baseUrl}/${accountId}`);
   }
 
+  // ============ 当前用户资料（/me 端点）============
+
+  /**
+   * 获取当前用户资料
+   */
+  async getMyProfile(): Promise<AccountContracts.AccountDTO> {
+    const data = await apiClient.get(`${this.baseUrl}/me`);
+    return data;
+  }
+
+  /**
+   * 更新当前用户资料
+   */
+  async updateMyProfile(
+    request: AccountContracts.UpdateAccountProfileRequestDTO,
+  ): Promise<AccountContracts.AccountDTO> {
+    const data = await apiClient.put(`${this.baseUrl}/me`, request);
+    return data;
+  }
+
+  /**
+   * 修改当前用户密码
+   */
+  async changeMyPassword(request: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<{ success: boolean; message: string }> {
+    const data = await apiClient.put(`${this.baseUrl}/me/password`, request);
+    return data;
+  }
+
   // ============ 账户资料管理 ============
 
   /**

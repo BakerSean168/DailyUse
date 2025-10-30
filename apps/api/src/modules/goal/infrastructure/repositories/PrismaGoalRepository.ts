@@ -184,13 +184,13 @@ export class PrismaGoalRepository implements IGoalRepository {
   async findById(uuid: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
     const includeOptions = options?.includeChildren
       ? {
-          keyResults: true,
+          keyResult: true,  // 修复: 使用 keyResult (单数) 匹配 Prisma schema
         }
       : undefined;
 
     const data = await this.prisma.goal.findUnique({
       where: { uuid },
-      include: includeOptions as any, // 使用 any 绕过类型检查（因为 keyResults 关系还未在 Prisma Client 中生成）
+      include: includeOptions as any, // 使用 any 绕过类型检查（因为 keyResult 关系还未在 Prisma Client 中生成）
     });
     return data ? this.mapToEntity(data) : null;
   }

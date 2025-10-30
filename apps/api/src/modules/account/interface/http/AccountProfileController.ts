@@ -161,18 +161,21 @@ export class AccountProfileController {
 
       // ===== 步骤 2: 调用 ApplicationService 获取账户 =====
       const service = await AccountProfileController.getProfileService();
-      // 注意：这里需要通过 repository 获取账户
-      // 暂时返回错误提示需要实现 getProfile 方法
+      const account = await service.getProfile(validatedData.accountUuid);
 
-      // TODO: 在 ApplicationService 中添加 getProfile 方法
-      // 或者创建专门的 AccountQueryService
-
-      logger.info('[AccountProfileController] Get profile not yet implemented');
-
-      return AccountProfileController.responseBuilder.sendError(res, {
-        code: ResponseCode.INTERNAL_ERROR,
-        message: 'Get profile method not yet implemented',
+      // ===== 步骤 3: 返回成功响应 =====
+      logger.info('[AccountProfileController] Profile retrieved successfully', {
+        accountUuid: validatedData.accountUuid,
       });
+
+      return AccountProfileController.responseBuilder.sendSuccess(
+        res,
+        {
+          account,
+        },
+        'Profile retrieved successfully',
+        200,
+      );
     } catch (error) {
       logger.error('[AccountProfileController] Get profile failed', {
         error: error instanceof Error ? error.message : String(error),
@@ -189,6 +192,16 @@ export class AccountProfileController {
             message: err.message,
           })),
         });
+      }
+
+      if (error instanceof Error) {
+        // 账户未找到
+        if (error.message.includes('not found')) {
+          return AccountProfileController.responseBuilder.sendError(res, {
+            code: ResponseCode.NOT_FOUND,
+            message: 'Account not found',
+          });
+        }
       }
 
       return AccountProfileController.responseBuilder.sendError(res, {

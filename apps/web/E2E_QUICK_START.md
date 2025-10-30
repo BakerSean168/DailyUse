@@ -1,169 +1,304 @@
-# E2E 测试快速开始
+# Goal 模块 E2E 测试 - 快速开始
 
-## 🚀 5 分钟快速启动
+## 📋 前置条件
 
-### 1. 确保服务运行
+### 1. 确保开发环境运行
 
 ```bash
-# 终端 1: API 服务器 (端口 3888)
-cd apps/api
-pnpm dev
+# 终端 1: 启动 API 服务
+cd /workspaces/DailyUse
+nx run api:dev
 
-# 终端 2: Web 前端 (端口 5173)
-cd apps/web
-pnpm dev
+# 终端 2: 启动 Web 服务
+nx run web:dev
 ```
 
-验证服务：
-
-- API: http://localhost:3888/api-docs
-- Web: http://localhost:5173
-
-### 2. 创建测试用户 (首次运行)
+### 2. 确保测试用户存在
 
 ```bash
-cd apps/api
+# 创建测试用户
+cd /workspaces/DailyUse/apps/api
 npx tsx src/__tests__/manual/setup-e2e-test-user.ts
 ```
 
-输出示例：
+测试用户凭据:
+- **用户名**: `testuser`
+- **密码**: `Test123456!`
 
-```
-✅ 测试用户已存在: testuser
-   Account UUID: 5e41f716-c0f1-46f0-b1b2-a0dc61703c54
-   UserProfile UUID: efee3d2e-dd4f-4936-8a56-63e02cae5458
-```
-
-### 3. 运行测试
+### 3. 安装 Playwright 浏览器
 
 ```bash
-cd apps/web
-
-# 快速运行 (无头模式)
-pnpm e2e
-
-# 可视化模式 (推荐首次运行)
-pnpm e2e:headed
-
-# 调试模式
-pnpm e2e:debug
-```
-
-## 📊 预期结果
-
-### 成功输出示例
-
-```
-Running 2 tests using 1 worker
-
-  ✓ [chromium] › reminder.spec.ts:45:3 › 创建每分钟提醒并验证接收通知 (185.2s)
-  ✓ [chromium] › reminder.spec.ts:139:3 › 创建提醒后立即验证 SSE 连接 (12.3s)
-
-  2 passed (197.5s)
-```
-
-### 测试日志示例
-
-```
-========================================
-🚀 开始 E2E 测试
-========================================
-
-📝 Step 1: 用户登录
-[Auth] 开始登录: testuser
-✅ 登录成功
-
-📝 Step 2: 导航到 Reminder 页面
-[Navigation] 导航到 Reminder 页面
-✅ 成功进入 Reminder 页面
-
-📝 Step 3: 创建每分钟提醒
-✅ Reminder 创建成功并显示在列表中
-
-📝 Step 4: 等待提醒触发 (最多 3 分钟)
-⏰ 开始等待...
-   - 预期第一次触发: ~1 分钟后
-   - 预期第二次触发: ~2 分钟后
-   - 最大等待时间: 3 分钟
-
-[Notification] 已等待 60 秒...
-[Notification] 已等待 65 秒...
-[Notification] ✅ 收到提醒通知!
-
-📝 Step 5: 验证通知接收
-📡 捕获到 3 个 SSE 事件:
-   1. [schedule:reminder-triggered] at 2025-10-07T04:35:00.000Z
-   2. [schedule:popup-reminder] at 2025-10-07T04:35:00.100Z
-   3. [schedule:sound-reminder] at 2025-10-07T04:35:00.150Z
-
-╔════════════════════════════════════════════════════════════╗
-║              ✅ E2E 测试完成                               ║
-╠════════════════════════════════════════════════════════════╣
-║  Reminder 名称: E2E Test - 1759812345678                   ║
-║  创建时间: 12:34:56                                        ║
-║  首次触发: 72s 后                                          ║
-║  SSE 事件数: 3                                             ║
-║  Reminder 事件: 3                                          ║
-╚════════════════════════════════════════════════════════════╝
-```
-
-## 🐛 常见问题
-
-### 问题 1: 测试用户不存在
-
-**错误**: `登录失败 - 用户名或密码错误`
-
-**解决**:
-
-```bash
-cd apps/api
-npx tsx src/__tests__/manual/setup-e2e-test-user.ts
-```
-
-### 问题 2: 服务未启动
-
-**错误**: `page.goto: net::ERR_CONNECTION_REFUSED`
-
-**解决**: 确保 API 和 Web 服务都在运行
-
-```bash
-# 检查端口
-netstat -ano | findstr :3888  # API
-netstat -ano | findstr :5173  # Web
-```
-
-### 问题 3: 超时未收到通知
-
-**可能原因**:
-
-- Reminder 创建失败
-- 调度器未运行
-- SSE 连接断开
-
-**调试步骤**:
-
-1. 检查 API 日志中的调度器启动信息
-2. 手动在 Web UI 中创建 Reminder 验证
-3. 使用 `pnpm e2e:debug` 逐步执行
-
-### 问题 4: 浏览器未安装
-
-**错误**: `Executable doesn't exist at C:\Users\...\chromium-1194\chrome.exe`
-
-**解决**:
-
-```bash
-cd apps/web
+cd /workspaces/DailyUse/apps/web
 npx playwright install chromium
 ```
 
-## 📝 下一步
+---
 
-- 查看完整文档: [`E2E_TESTING_GUIDE.md`](./E2E_TESTING_GUIDE.md)
-- 查看实施总结: [`../docs/testing/E2E_TESTING_IMPLEMENTATION_SUMMARY.md`](../../docs/testing/E2E_TESTING_IMPLEMENTATION_SUMMARY.md)
-- 添加更多测试用例
-- 集成到 CI/CD
+## 🚀 运行测试
+
+### 运行所有 Goal 测试
+
+```bash
+cd /workspaces/DailyUse/apps/web
+npx playwright test goal/
+```
+
+### 运行单个测试
+
+```bash
+# 运行 CRUD 测试
+npx playwright test goal/goal-crud.spec.ts
+```
+
+### UI 模式运行（推荐）
+
+```bash
+npx playwright test goal/ --ui
+```
+
+在 UI 模式中，你可以：
+- 👀 查看测试执行过程
+- 🐛 调试失败的测试
+- 📸 查看截图和追踪记录
+
+### 调试模式
+
+```bash
+npx playwright test goal/ --debug
+```
 
 ---
 
-**提示**: 首次运行建议使用 `pnpm e2e:headed` 以观察完整的测试流程！
+## 📊 测试覆盖
+
+### 已实现的测试场景
+
+#### CRUD 基础功能 (`goal-crud.spec.ts`)
+
+| 优先级 | 测试场景 | 状态 |
+|--------|---------|------|
+| P0 | 创建新目标 | ✅ |
+| P0 | 更新目标信息 | ✅ |
+| P0 | 删除目标 | ✅ |
+| P1 | 查看目标详情 | ✅ |
+| P1 | 激活目标 | ✅ |
+| P1 | 完成目标 | ✅ |
+| P2 | 筛选目标 | ✅ |
+
+---
+
+## 🧪 测试架构
+
+### Page Object Model
+
+使用 POM 模式提高测试可维护性：
+
+```typescript
+import { GoalPage } from '../page-objects/GoalPage';
+
+test('example', async ({ page }) => {
+  const goalPage = new GoalPage(page);
+  
+  await goalPage.navigate();
+  await goalPage.createGoal({
+    title: 'My Goal',
+    description: 'Description',
+  });
+  
+  await goalPage.expectGoalToExist('My Goal');
+});
+```
+
+### 测试辅助函数
+
+位于 `e2e/helpers/testHelpers.ts`：
+
+```typescript
+import { login, TEST_USER } from '../helpers/testHelpers';
+
+test.beforeEach(async ({ page }) => {
+  await login(page, TEST_USER.username, TEST_USER.password);
+});
+```
+
+---
+
+## 📁 文件结构
+
+```
+apps/web/e2e/
+├── goal/
+│   └── goal-crud.spec.ts          # Goal CRUD 测试
+├── page-objects/
+│   └── GoalPage.ts                # Goal 页面对象
+├── helpers/
+│   └── testHelpers.ts             # 通用辅助函数
+└── playwright.config.ts           # Playwright 配置
+```
+
+---
+
+## 🔧 测试配置
+
+### Playwright 配置亮点
+
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  testDir: './e2e',
+  timeout: 5 * 60 * 1000,           // 5分钟超时
+  workers: 1,                       // 单个 worker（避免并发冲突）
+  retries: process.env.CI ? 2 : 0,  // CI 环境重试2次
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
+});
+```
+
+---
+
+## 📝 编写新测试
+
+### 1. 使用 Page Object（推荐）
+
+```typescript
+import { test, expect } from '@playwright/test';
+import { login, TEST_USER } from '../helpers/testHelpers';
+import { GoalPage } from '../page-objects/GoalPage';
+
+test.describe('My Feature', () => {
+  let goalPage: GoalPage;
+
+  test.beforeEach(async ({ page }) => {
+    await login(page, TEST_USER.username, TEST_USER.password);
+    
+    goalPage = new GoalPage(page);
+    await goalPage.navigate();
+  });
+
+  test('should do something', async () => {
+    await goalPage.createGoal({
+      title: 'Test Goal',
+      description: 'Test Description',
+    });
+
+    await goalPage.expectGoalToExist('Test Goal');
+  });
+});
+```
+
+### 2. 直接使用 Page API
+
+```typescript
+test('manual test', async ({ page }) => {
+  await login(page, TEST_USER.username, TEST_USER.password);
+  
+  await page.goto('/goals');
+  
+  await page.click('button:has-text("创建目标")');
+  await page.fill('input[name="title"]', 'My Goal');
+  await page.click('button:has-text("保存")');
+  
+  await expect(page.locator('text=My Goal')).toBeVisible();
+});
+```
+
+---
+
+## 🐛 调试技巧
+
+### 1. 使用 `page.pause()`
+
+```typescript
+test('debug test', async ({ page }) => {
+  await login(page);
+  await page.pause(); // 暂停测试，打开调试器
+  
+  // 继续测试...
+});
+```
+
+### 2. 查看测试追踪
+
+```bash
+# 运行测试生成追踪
+npx playwright test goal/ --trace on
+
+# 查看追踪记录
+npx playwright show-trace test-results/.../trace.zip
+```
+
+### 3. 查看测试报告
+
+```bash
+# 生成 HTML 报告
+npx playwright test goal/
+
+# 打开报告
+npx playwright show-report
+```
+
+---
+
+## ❌ 常见问题
+
+### 测试超时
+
+**原因**: API/Web 服务未启动或响应慢
+
+**解决**:
+```bash
+# 确保服务运行
+nx run api:dev
+nx run web:dev
+
+# 增加超时时间
+test('my test', async ({ page }) => {
+  test.setTimeout(120000); // 2分钟
+});
+```
+
+### 元素未找到
+
+**原因**: 选择器不匹配或元素未渲染
+
+**解决**:
+```typescript
+// 使用更宽松的选择器
+await page.locator('button:has-text("创建")').or(page.locator('[data-testid="create-btn"]')).click();
+
+// 等待元素出现
+await page.waitForSelector('button:has-text("创建")', { timeout: 10000 });
+```
+
+### 登录失败
+
+**原因**: 测试用户不存在或密码错误
+
+**解决**:
+```bash
+# 重新创建测试用户
+cd /workspaces/DailyUse/apps/api
+npx tsx src/__tests__/manual/setup-e2e-test-user.ts
+```
+
+---
+
+## 📚 参考资源
+
+- [Playwright 官方文档](https://playwright.dev/)
+- [Page Object Model 指南](https://playwright.dev/docs/pom)
+- [Playwright 最佳实践](https://playwright.dev/docs/best-practices)
+- [项目完整 E2E 指南](./E2E_TESTING_GUIDE.md)
+
+---
+
+## ✅ 下一步
+
+- [ ] 为 Key Result 功能编写 E2E 测试
+- [ ] 添加 Goal Folder 管理测试
+- [ ] 集成 CI/CD 管道
+- [ ] 添加性能测试

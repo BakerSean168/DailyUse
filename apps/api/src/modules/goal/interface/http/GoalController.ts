@@ -31,6 +31,45 @@ export class GoalController {
   }
 
   /**
+   * 验证目标归属权限
+   * @param goalUuid 目标UUID
+   * @param accountUuid 用户UUID
+   * @returns {goal, error} goal存在且有权限时返回goal，否则返回error响应
+   */
+  private static async verifyGoalOwnership(
+    goalUuid: string,
+    accountUuid: string,
+  ): Promise<
+    | { goal: any; error: null }
+    | { goal: null; error: { code: ResponseCode; message: string } }
+  > {
+    const service = await GoalController.getGoalService();
+    const goal = await service.getGoal(goalUuid);
+
+    if (!goal) {
+      return {
+        goal: null,
+        error: {
+          code: ResponseCode.NOT_FOUND,
+          message: 'Goal not found',
+        },
+      };
+    }
+
+    if (goal.accountUuid !== accountUuid) {
+      return {
+        goal: null,
+        error: {
+          code: ResponseCode.FORBIDDEN,
+          message: 'You do not have permission to access this goal',
+        },
+      };
+    }
+
+    return { goal, error: null };
+  }
+
+  /**
    * 创建目标
    * @route POST /api/goals
    */
@@ -201,9 +240,24 @@ export class GoalController {
   static async updateGoal(req: Request, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
-      const service = await GoalController.getGoalService();
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
 
-      logger.info('Updating goal', { uuid });
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const verification = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (verification.error) {
+        logger.warn('Unauthorized goal update attempt', { uuid, accountUuid });
+        return GoalController.responseBuilder.sendError(res, verification.error);
+      }
+
+      const service = await GoalController.getGoalService();
+      logger.info('Updating goal', { uuid, accountUuid });
       const goal = await service.updateGoal(uuid, req.body);
 
       logger.info('Goal updated successfully', { uuid });
@@ -286,11 +340,26 @@ export class GoalController {
   static async deleteGoal(req: Request, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const verification = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (verification.error) {
+        logger.warn('Unauthorized goal deletion attempt', { uuid, accountUuid });
+        return GoalController.responseBuilder.sendError(res, verification.error);
+      }
 
       const service = await GoalController.getGoalService();
       await service.deleteGoal(uuid);
 
-      logger.info('Goal deleted successfully', { uuid });
+      logger.info('Goal deleted successfully', { uuid, accountUuid });
       return GoalController.responseBuilder.sendSuccess(res, null, 'Goal deleted successfully');
     } catch (error) {
       if (error instanceof Error) {
@@ -339,14 +408,28 @@ export class GoalController {
    * 添加关键结果
    * @route POST /api/goals/:uuid/key-results
    */
-  static async addKeyResult(req: Request, res: Response): Promise<Response> {
+  static async addKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { goal: existingGoal, error } = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
 
       const service = await GoalController.getGoalService();
       const goal = await service.addKeyResult(uuid, req.body);
 
-      logger.info('Key result added successfully', { goalUuid: uuid });
+      logger.info('Key result added successfully', { goalUuid: uuid, accountUuid });
       return GoalController.responseBuilder.sendSuccess(res, goal, 'Key result added', 201);
     } catch (error) {
       if (error instanceof Error) {
@@ -367,15 +450,29 @@ export class GoalController {
    * 更新关键结果进度
    * @route PATCH /api/goals/:uuid/key-results/:keyResultUuid/progress
    */
-  static async updateKeyResultProgress(req: Request, res: Response): Promise<Response> {
+  static async updateKeyResultProgress(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid, keyResultUuid } = req.params;
       const { currentValue, note } = req.body;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { goal: existingGoal, error } = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
 
       const service = await GoalController.getGoalService();
       const goal = await service.updateKeyResultProgress(uuid, keyResultUuid, currentValue, note);
 
-      logger.info('Key result progress updated', { goalUuid: uuid, keyResultUuid });
+      logger.info('Key result progress updated', { goalUuid: uuid, keyResultUuid, accountUuid });
       return GoalController.responseBuilder.sendSuccess(res, goal, 'Progress updated');
     } catch (error) {
       if (error instanceof Error) {
@@ -392,23 +489,33 @@ export class GoalController {
     }
   }
 
-  /**
+    /**
    * 删除关键结果
    * @route DELETE /api/goals/:uuid/key-results/:keyResultUuid
    */
-  static async deleteKeyResult(req: Request, res: Response): Promise<Response> {
+  static async deleteKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid, keyResultUuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { goal: existingGoal, error } = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
 
       const service = await GoalController.getGoalService();
       const goal = await service.deleteKeyResult(uuid, keyResultUuid);
 
-      logger.info('Key result deleted successfully', { goalUuid: uuid, keyResultUuid });
-      return GoalController.responseBuilder.sendSuccess(
-        res,
-        goal,
-        'Key result deleted successfully',
-      );
+      logger.info('Key result deleted', { goalUuid: uuid, keyResultUuid, accountUuid });
+      return GoalController.responseBuilder.sendSuccess(res, goal, 'Key result deleted');
     } catch (error) {
       if (error instanceof Error) {
         logger.error('Error deleting key result', { error: error.message });
@@ -513,6 +620,54 @@ export class GoalController {
         return GoalController.responseBuilder.sendError(res, {
           code: ResponseCode.INTERNAL_ERROR,
           message: error.message,
+        });
+      }
+      return GoalController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取目标进度分解详情
+   * @route GET /api/goals/:uuid/progress-breakdown
+   */
+  static async getProgressBreakdown(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证所有权
+      const { error } = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
+
+      const service = await GoalController.getGoalService();
+      const breakdown = await service.getGoalProgressBreakdown(uuid);
+
+      return GoalController.responseBuilder.sendSuccess(
+        res,
+        breakdown,
+        'Progress breakdown retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error getting progress breakdown', { 
+          error: error.message, 
+          goalUuid: req.params.uuid 
+        });
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: 'Failed to get progress breakdown',
         });
       }
       return GoalController.responseBuilder.sendError(res, {

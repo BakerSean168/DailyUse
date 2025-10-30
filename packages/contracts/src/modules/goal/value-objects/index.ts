@@ -9,3 +9,5 @@ export * from './KeyResultProgress';
 export * from './KeyResultSnapshot';
 export * from './GoalReminderConfig';
 export * from './KeyResultWeightSnapshot';
+export * from './ProgressBreakdown';
+export * from './FocusMode';
