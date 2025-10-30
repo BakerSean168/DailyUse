@@ -7,12 +7,16 @@ import type { TaskType, TaskTemplateStatus } from '../enums';
 import type { TaskInstanceServerDTO } from './TaskInstanceServer';
 import type { TaskTemplateHistoryServerDTO } from '../entities';
 import type {
+  TaskTimeConfigServer,
   TaskTimeConfigServerDTO,
   TaskTimeConfigClientDTO,
+  RecurrenceRuleServer,
   RecurrenceRuleServerDTO,
   RecurrenceRuleClientDTO,
+  TaskReminderConfigServer,
   TaskReminderConfigServerDTO,
   TaskReminderConfigClientDTO,
+  TaskGoalBindingServer,
   TaskGoalBindingServerDTO,
   TaskGoalBindingClientDTO,
 } from '../value-objects';
@@ -204,12 +208,12 @@ export interface TaskTemplateServer {
   title: string;
   description?: string | null;
   taskType: TaskType;
-  timeConfig: any;
-  recurrenceRule?: any | null;
-  reminderConfig?: any | null;
+  timeConfig: TaskTimeConfigServer;
+  recurrenceRule?: RecurrenceRuleServer | null;
+  reminderConfig?: TaskReminderConfigServer | null;
   importance: ImportanceLevel;
   urgency: UrgencyLevel;
-  goalBinding?: any | null;
+  goalBinding?: TaskGoalBindingServer | null;
   folderUuid?: string | null;
   tags: string[];
   color?: string | null;
@@ -219,8 +223,8 @@ export interface TaskTemplateServer {
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
-  history: any[];
-  instances: any[];
+  history: TaskTemplateHistoryServerDTO[];
+  instances: TaskInstanceServerDTO[];
 
   // 实例生成
   generateInstances(fromDate: number, toDate: number): any[];

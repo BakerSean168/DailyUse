@@ -19,7 +19,12 @@ import type {
   NotificationHistoryServer,
   NotificationHistoryServerDTO,
 } from '../entities/NotificationHistoryServer';
-import type { NotificationActionServerDTO, NotificationMetadataServerDTO } from '../value-objects';
+import type {
+  NotificationActionServer,
+  NotificationActionServerDTO,
+  NotificationMetadataServer,
+  NotificationMetadataServerDTO,
+} from '../value-objects';
 
 // ============ DTO 定义 ============
 
@@ -182,10 +187,10 @@ export interface NotificationServer {
   relatedEntityUuid?: string | null;
 
   // ===== 操作配置 =====
-  actions?: NotificationActionServerDTO[] | null;
+  actions?: NotificationActionServer[] | null;
 
   // ===== 元数据 =====
-  metadata?: NotificationMetadataServerDTO | null;
+  metadata?: NotificationMetadataServer | null;
 
   // ===== 过期设置 =====
   expiresAt?: number | null;

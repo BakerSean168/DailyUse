@@ -12,11 +12,17 @@ import type {
 
 // 从值对象导入类型
 import type {
+  RecurrenceConfigServer,
   RecurrenceConfigServerDTO,
+  NotificationConfigServer,
   NotificationConfigServerDTO,
+  TriggerConfigServer,
   TriggerConfigServerDTO,
+  ActiveTimeConfigServer,
   ActiveTimeConfigServerDTO,
+  ActiveHoursConfigServer,
   ActiveHoursConfigServerDTO,
+  ReminderStatsServer,
   ReminderStatsServerDTO,
 } from '../value-objects';
 import type { ReminderTemplateClientDTO } from './ReminderTemplateClient';
@@ -184,11 +190,11 @@ export interface ReminderTemplateServer {
   title: string;
   description?: string | null;
   type: ReminderType;
-  trigger: TriggerConfigServerDTO;
-  recurrence?: RecurrenceConfigServerDTO | null;
-  activeTime: ActiveTimeConfigServerDTO;
-  activeHours?: ActiveHoursConfigServerDTO | null;
-  notificationConfig: NotificationConfigServerDTO;
+  trigger: TriggerConfigServer;
+  recurrence?: RecurrenceConfigServer | null;
+  activeTime: ActiveTimeConfigServer;
+  activeHours?: ActiveHoursConfigServer | null;
+  notificationConfig: NotificationConfigServer;
   selfEnabled: boolean;
   status: ReminderStatus;
   groupUuid?: string | null;
@@ -197,7 +203,7 @@ export interface ReminderTemplateServer {
   color?: string | null;
   icon?: string | null;
   nextTriggerAt?: number | null;
-  stats: ReminderStatsServerDTO;
+  stats: ReminderStatsServer;
 
   // 时间戳 (统一使用 number epoch ms)
   createdAt: number;

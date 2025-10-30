@@ -13,9 +13,13 @@ import type {
 // 从值对象导入类型
 import type { RepositoryClientDTO } from './RepositoryClient';
 import type {
+  RepositoryConfigServer,
   RepositoryConfigServerDTO,
+  RepositoryStatsServer,
   RepositoryStatsServerDTO,
+  SyncStatusServer,
   SyncStatusServerDTO,
+  GitInfoServer,
   GitInfoServerDTO,
 } from '../value-objects';
 
@@ -242,14 +246,14 @@ export interface RepositoryServer {
   description?: string | null;
 
   // 配置
-  config: RepositoryConfigServerDTO;
+  config: RepositoryConfigServer;
   relatedGoals?: string[] | null;
 
   // 状态
   status: RepositoryStatus;
-  git?: GitInfoServerDTO | null;
-  syncStatus?: SyncStatusServerDTO | null;
-  stats: RepositoryStatsServerDTO;
+  git?: GitInfoServer | null;
+  syncStatus?: SyncStatusServer | null;
+  stats: RepositoryStatsServer;
 
   // 时间戳 (统一使用 number epoch ms)
   lastAccessedAt?: number | null;

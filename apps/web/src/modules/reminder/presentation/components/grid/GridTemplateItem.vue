@@ -13,7 +13,7 @@
       </v-icon>
     </div>
     <div class="template-name">
-      {{ item.name }}
+      {{ item.title }}
     </div>
     <div></div>
 
@@ -50,8 +50,10 @@
 
 <script setup lang="ts">
 import { inject, computed, ref } from 'vue';
-import type { ReminderTemplate } from '@dailyuse/domain-client';
+import { ReminderContracts } from '@dailyuse/contracts';
 import { useReminderStore } from '../../stores/reminderStore';
+
+type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
 
 const reminderStore = useReminderStore();
 
@@ -64,7 +66,7 @@ const showContextMenu = ref(false);
 const contextMenuX = ref(0);
 const contextMenuY = ref(0);
 
-const isTemplateEnabled = computed(() => props.item.enabled);
+const isTemplateEnabled = computed(() => props.item.effectiveEnabled);
 
 const onDragStart = (event: DragEvent) => {
   // 传递 template 信息
