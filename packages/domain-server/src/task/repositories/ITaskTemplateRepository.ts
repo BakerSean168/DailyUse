@@ -7,6 +7,26 @@ import { TaskTemplate } from '../aggregates';
 import type { TaskContracts } from '@dailyuse/contracts';
 
 type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
+type TaskType = TaskContracts.TaskType;
+type TaskStatus = TaskContracts.TaskStatus;
+
+/**
+ * 任务查询过滤器
+ */
+export interface TaskFilters {
+  taskType?: TaskType;
+  status?: TaskStatus | TaskTemplateStatus;
+  goalUuid?: string;
+  parentTaskUuid?: string;
+  isBlocked?: boolean;
+  tags?: string[];
+  folderUuid?: string;
+  dueDateFrom?: number;
+  dueDateTo?: number;
+  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  limit?: number;
+  offset?: number;
+}
 
 /**
  * TaskTemplate 仓储接口
@@ -81,4 +101,71 @@ export interface ITaskTemplateRepository {
    * 恢复任务模板
    */
   restore(uuid: string): Promise<void>;
+
+  // ===== ONE_TIME 任务查询方法 =====
+
+  /**
+   * 查找一次性任务（带过滤器）
+   */
+  findOneTimeTasks(accountUuid: string, filters?: TaskFilters): Promise<TaskTemplate[]>;
+
+  /**
+   * 查找循环任务（带过滤器）
+   */
+  findRecurringTasks(accountUuid: string, filters?: TaskFilters): Promise<TaskTemplate[]>;
+
+  /**
+   * 查找逾期的任务
+   */
+  findOverdueTasks(accountUuid: string): Promise<TaskTemplate[]>;
+
+  /**
+   * 根据目标查找任务（新版本 - 支持 goalUuid 字段）
+   */
+  findTasksByGoal(goalUuid: string): Promise<TaskTemplate[]>;
+
+  /**
+   * 根据关键结果查找任务
+   */
+  findTasksByKeyResult(keyResultUuid: string): Promise<TaskTemplate[]>;
+
+  /**
+   * 查找子任务
+   */
+  findSubtasks(parentTaskUuid: string): Promise<TaskTemplate[]>;
+
+  /**
+   * 查找被阻塞的任务
+   */
+  findBlockedTasks(accountUuid: string): Promise<TaskTemplate[]>;
+
+  /**
+   * 按优先级排序查找任务
+   */
+  findTasksSortedByPriority(accountUuid: string, limit?: number): Promise<TaskTemplate[]>;
+
+  /**
+   * 查找即将到期的任务（未来N天内）
+   */
+  findUpcomingTasks(accountUuid: string, daysAhead: number): Promise<TaskTemplate[]>;
+
+  /**
+   * 查找今日任务
+   */
+  findTodayTasks(accountUuid: string): Promise<TaskTemplate[]>;
+
+  /**
+   * 统计任务数量（按条件）
+   */
+  countTasks(accountUuid: string, filters?: TaskFilters): Promise<number>;
+
+  /**
+   * 批量保存任务
+   */
+  saveBatch(templates: TaskTemplate[]): Promise<void>;
+
+  /**
+   * 批量删除任务
+   */
+  deleteBatch(uuids: string[]): Promise<void>;
 }

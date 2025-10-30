@@ -1,31 +1,78 @@
 <!--
   Task Edit View
-  编辑任务页面
+  编辑任务页面 - 使用 Dialog 形式
 -->
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h4 mb-4">
-          <v-icon class="mr-2">mdi-pencil</v-icon>
-          编辑任务 - {{ $route.params.id }}
-        </h1>
+  <v-dialog v-model="dialog" max-width="900px" persistent scrollable>
+    <TaskForm
+      v-if="task"
+      :is-edit="true"
+      :initial-data="task"
+      :loading="loading"
+      @submit="handleUpdate"
+      @cancel="handleCancel"
+    />
 
-        <v-card>
-          <v-card-text>
-            <p class="text-center text-medium-emphasis py-8">任务编辑功能开发中...</p>
-          </v-card-text>
-
-          <v-card-actions>
-            <v-btn @click="$router.back()">取消</v-btn>
-            <v-btn color="primary">保存</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+    <!-- 加载状态 -->
+    <v-card v-else>
+      <v-card-text class="text-center py-8">
+        <v-progress-circular indeterminate color="primary" />
+        <p class="text-medium-emphasis mt-4">加载任务信息...</p>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
-// Task edit implementation here
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { TaskForm } from '@/modules/task/presentation/components/one-time';
+import { useOneTimeTask } from '@/modules/task/presentation/composables/useOneTimeTask';
+
+const router = useRouter();
+const route = useRoute();
+const { getTaskByUuid, updateTask } = useOneTimeTask();
+
+const dialog = ref(false);
+const loading = ref(false);
+const task = ref<any>(null);
+
+// 加载任务数据
+const loadTask = async () => {
+  const taskUuid = route.params.id as string;
+  try {
+    task.value = await getTaskByUuid(taskUuid);
+  } catch (error) {
+    console.error('Failed to load task:', error);
+    // 加载失败，返回上一页
+    router.back();
+  }
+};
+
+// 组件挂载时加载数据并打开对话框
+onMounted(async () => {
+  await loadTask();
+  dialog.value = true;
+});
+
+const handleUpdate = async (taskData: any) => {
+  loading.value = true;
+  try {
+    const taskUuid = route.params.id as string;
+    await updateTask(taskUuid, taskData);
+    // 更新成功后跳转到详情页
+    router.push(`/tasks/${taskUuid}`);
+  } catch (error) {
+    console.error('Failed to update task:', error);
+    loading.value = false;
+  }
+};
+
+const handleCancel = () => {
+  dialog.value = false;
+  // 延迟返回，等待对话框关闭动画
+  setTimeout(() => {
+    router.back();
+  }, 300);
+};
 </script>

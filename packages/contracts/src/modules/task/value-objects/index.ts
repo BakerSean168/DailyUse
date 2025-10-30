@@ -25,3 +25,6 @@ export * from './CompletionRecordClient';
 // SkipRecord
 export * from './SkipRecordServer';
 export * from './SkipRecordClient';
+
+// TaskPriority
+export * from './TaskPriority';

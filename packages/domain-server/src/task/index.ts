@@ -29,6 +29,7 @@ export { TaskInstance, TaskTemplate, TaskStatistics, TaskDependency } from './ag
 export type {
   ITaskInstanceRepository,
   ITaskTemplateRepository,
+  TaskFilters,
   ITaskDependencyRepository,
   ITaskStatisticsRepository,
 } from './repositories';
