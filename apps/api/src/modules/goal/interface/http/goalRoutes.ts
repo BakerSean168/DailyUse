@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { GoalController } from './GoalController';
 import goalStatisticsRoutes from './goalStatisticsRoutes';
+import focusModeRoutes from './focusModeRoutes';
 
 /**
  * Goal 模块路由
@@ -383,6 +384,64 @@ router.delete('/:uuid/key-results/:keyResultUuid', GoalController.deleteKeyResul
  */
 router.post('/:uuid/reviews', GoalController.addReview);
 
+/**
+ * @swagger
+ * /api/goals/{uuid}/progress-breakdown:
+ *   get:
+ *     tags: [Goal]
+ *     summary: 获取目标进度分解详情
+ *     description: 返回目标进度的详细计算信息，包括每个关键结果的贡献度
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 目标UUID
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalProgress:
+ *                   type: number
+ *                   description: 目标总进度百分比
+ *                 calculationMode:
+ *                   type: string
+ *                   enum: [weighted_average]
+ *                   description: 计算模式
+ *                 krContributions:
+ *                   type: array
+ *                   description: 各关键结果的贡献度
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       keyResultUuid:
+ *                         type: string
+ *                       keyResultName:
+ *                         type: string
+ *                       progress:
+ *                         type: number
+ *                       weight:
+ *                         type: number
+ *                       contribution:
+ *                         type: number
+ *                 lastUpdateTime:
+ *                   type: number
+ *                 updateTrigger:
+ *                   type: string
+ *       401:
+ *         description: 未授权
+ *       403:
+ *         description: 无权限访问
+ *       404:
+ *         description: 目标不存在
+ */
+router.get('/:uuid/progress-breakdown', GoalController.getProgressBreakdown);
+
 // ===== 查询和统计 =====
 
 /**
@@ -429,6 +488,10 @@ router.get('/user/:accountUuid', GoalController.getUserGoals);
  *         description: 搜索成功
  */
 router.get('/search', GoalController.searchGoals);
+
+// ===== 专注模式路由 =====
+// 挂载专注周期模式路由（使用独立的 Controller 和路由文件）
+router.use('/focus-mode', focusModeRoutes);
 
 // ===== 统计路由（新架构 - 事件驱动） =====
 // 挂载 Goal 统计路由（使用独立的 Controller 和路由文件）

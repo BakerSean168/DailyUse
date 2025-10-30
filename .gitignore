@@ -81,4 +81,4 @@ vitest.config.*.timestamp*
 docs/.obsidian
 
 # Windows
-D:/
+D:/.e2e-test-credentials.json

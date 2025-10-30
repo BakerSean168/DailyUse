@@ -8,13 +8,13 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-model accounts {
+model account {
   uuid                                String                                @id
   username                            String                                @unique
   email                               String                                @unique
-  email_verified                      Boolean                               @default(false)
-  phone_number                        String?
-  phone_verified                      Boolean                               @default(false)
+  emailVerified Boolean                               @default(false) @map("email_verified")
+  phoneNumber String? @map("phone_number")
+  phoneVerified Boolean                               @default(false) @map("phone_verified")
   status                              String                                @default("ACTIVE")
   profile                             String
   preferences                         String
@@ -23,304 +23,328 @@ model accounts {
   security                            String
   history                             String                                @default("[]")
   stats                               String
-  created_at                          DateTime                              @default(now())
-  updated_at                          DateTime
-  last_active_at                      DateTime?
-  deleted_at                          DateTime?
-  auth_credentials                    auth_credentials[]
-  auth_sessions                       auth_sessions[]
-  editor_workspace_session_group_tabs editor_workspace_session_group_tabs[]
-  editor_workspace_session_groups     editor_workspace_session_groups[]
-  editor_workspace_sessions           editor_workspace_sessions[]
-  editor_workspaces                   editor_workspaces[]
-  focus_sessions                      focus_sessions[]
-  goal_folders                        goal_folders[]
-  goal_statistics                     goal_statistics?
-  goals                               goals[]
-  reminder_groups                     reminder_groups[]
-  reminder_instances                  reminder_instances[]
-  reminder_statistics                 reminder_statistics?
-  reminder_templates                  reminder_templates[]
-  repositories                        repositories[]
-  repository_explorers                repository_explorers[]
-  repository_statistics               repository_statistics?
-  schedule_statistics                 schedule_statistics?
-  schedule_tasks                      schedule_tasks[]
-  schedules                           schedules[]
-  settings                            settings[]
-  task_instances                      task_instances[]
-  task_statistics                     task_statistics?
-  task_templates                      task_templates[]
-  user_settings                       user_settings?
+  createdAt DateTime                              @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  lastActiveAt DateTime? @map("last_active_at")
+  deletedAt DateTime? @map("deleted_at")
+  authCredential                      authCredential[]
+  authSession                         authSession[]
+  editorWorkspaceSessionGroupTab editorWorkspaceSessionGroupTab[]
+  editorWorkspaceSessionGroup     editorWorkspaceSessionGroup[]
+  editorWorkspaceSession           editorWorkspaceSession[]
+  editorWorkspace                   editorWorkspace[]
+  focusMode                         FocusMode[]
+  focusSession                      focusSession[]
+  goalFolder                        goalFolder[]
+  goalStatistic                     goalStatistic?
+  goal                               goal[]
+  reminderGroup                     reminderGroup[]
+  reminderInstance                  reminderInstance[]
+  reminderStatistic                 reminderStatistic?
+  reminderTemplate                  reminderTemplate[]
+  repository                        repository[]
+  repositoryExplorer                repositoryExplorer[]
+  repositoryStatistic               repositoryStatistic?
+  scheduleStatistic                 scheduleStatistic?
+  scheduleTask                      scheduleTask[]
+  schedule                           schedule[]
+  setting                            setting[]
+  taskInstance                      taskInstance[]
+  taskStatistic                     taskStatistic?
+  taskTemplate                      taskTemplate[]
+  userSetting                       userSetting?
 
-  @@index([created_at])
+  @@map("accounts")
+  @@index([createdAt])
   @@index([email])
-  @@index([last_active_at])
+  @@index([lastActiveAt])
   @@index([status])
   @@index([username])
 }
 
-model app_configs {
+model appConfig {
   uuid        String   @id
   version     String   @unique
   config      String
   description String?
-  is_current  Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime
+  isCurrent Boolean  @default(false) @map("is_current")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
 
-  @@index([is_current])
   @@index([version])
+
+  @@map("app_configs")
 }
 
-model auth_credentials {
+model authCredential {
   uuid         String    @id
-  account_uuid String
+  accountUuid String @map("account_uuid")
   type         String
   data         String
   metadata     String
   history      String    @default("[]")
-  created_at   DateTime  @default(now())
-  updated_at   DateTime
-  expires_at   DateTime?
-  last_used_at DateTime?
-  revoked_at   DateTime?
-  accounts     accounts  @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  expiresAt DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+  revokedAt DateTime? @map("revoked_at")
+  account      account   @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
-  @@index([expires_at])
+  @@map("auth_credentials")
+  @@index([accountUuid])
+  @@index([expiresAt])
   @@index([type])
 }
 
-model auth_sessions {
+model authSession {
   uuid                     String    @id
-  account_uuid             String
+  accountUuid String @map("account_uuid")
   status                   String    @default("ACTIVE")
-  access_token             String    @unique
-  access_token_expires_at  DateTime
-  refresh_token            String    @unique
-  refresh_token_expires_at DateTime
+  accessToken String    @unique @map("access_token")
+  accessTokenExpiresAt DateTime @map("access_token_expires_at")
+  refreshToken String    @unique @map("refresh_token")
+  refreshTokenExpiresAt DateTime @map("refresh_token_expires_at")
   device                   String
-  ip_address               String?
-  user_agent               String?
+  ipAddress String? @map("ip_address")
+  userAgent String? @map("user_agent")
   history                  String    @default("[]")
-  created_at               DateTime  @default(now())
-  updated_at               DateTime
-  last_accessed_at         DateTime
-  revoked_at               DateTime?
-  accounts                 accounts  @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  lastAccessedAt DateTime @map("last_accessed_at")
+  revokedAt DateTime? @map("revoked_at")
+  account                  account   @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([access_token_expires_at])
-  @@index([access_token])
-  @@index([account_uuid])
-  @@index([last_accessed_at])
-  @@index([refresh_token])
+  @@map("auth_sessions")
+  @@index([accessTokenExpiresAt])
+  @@index([accessToken])
+  @@index([accountUuid])
+  @@index([lastAccessedAt])
+  @@index([refreshToken])
   @@index([status])
 }
 
-model editor_workspace_session_group_tabs {
+model editorWorkspaceSessionGroupTab {
   uuid                            String                          @id
-  group_uuid                      String
-  session_uuid                    String
-  workspace_uuid                  String
-  account_uuid                    String
-  document_uuid                   String?
-  tab_index                       Int
-  tab_type                        String
+  groupUuid String @map("group_uuid")
+  sessionUuid String @map("session_uuid")
+  workspaceUuid String @map("workspace_uuid")
+  accountUuid String @map("account_uuid")
+  documentUuid String? @map("document_uuid")
+  tabIndex Int @map("tab_index")
+  tabType String @map("tab_type")
   title                           String
-  view_state                      Json
-  is_pinned                       Boolean                         @default(false)
-  is_active                       Boolean                         @default(false)
-  created_at                      DateTime                        @default(now())
-  updated_at                      DateTime
-  accounts                        accounts                        @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  editor_workspace_session_groups editor_workspace_session_groups @relation(fields: [group_uuid], references: [uuid], onDelete: Cascade)
+  viewState Json @map("view_state")
+  isPinned Boolean                         @default(false) @map("is_pinned")
+  isActive Boolean                         @default(false) @map("is_active")
+  createdAt DateTime                        @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  editorWorkspaceSessionGroup editorWorkspaceSessionGroup @relation(fields: [groupUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
-  @@index([document_uuid])
-  @@index([group_uuid])
-  @@index([session_uuid])
-  @@index([workspace_uuid])
+  @@index([workspaceUuid])
+
+  @@map("editor_workspace_session_group_tabs")
 }
 
-model editor_workspace_session_groups {
+model editorWorkspaceSessionGroup {
   uuid                                String                                @id
-  session_uuid                        String
-  workspace_uuid                      String
-  account_uuid                        String
-  group_index                         Int
+  sessionUuid String @map("session_uuid")
+  workspaceUuid String @map("workspace_uuid")
+  accountUuid String @map("account_uuid")
+  groupIndex Int @map("group_index")
   name                                String?
-  split_direction                     String
-  created_at                          DateTime                              @default(now())
-  updated_at                          DateTime
-  editor_workspace_session_group_tabs editor_workspace_session_group_tabs[]
-  accounts                            accounts                              @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  editor_workspace_sessions           editor_workspace_sessions             @relation(fields: [session_uuid], references: [uuid], onDelete: Cascade)
+  splitDirection String @map("split_direction")
+  createdAt DateTime                              @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  editorWorkspaceSessionGroupTab editorWorkspaceSessionGroupTab[]
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  editorWorkspaceSession           editorWorkspaceSession             @relation(fields: [sessionUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
-  @@index([session_uuid])
-  @@index([workspace_uuid])
+  @@index([workspaceUuid])
+
+  @@map("editor_workspace_session_groups")
 }
 
-model editor_workspace_sessions {
+model editorWorkspaceSession {
   uuid                            String                            @id
-  workspace_uuid                  String
-  account_uuid                    String
+  workspaceUuid String @map("workspace_uuid")
+  accountUuid String @map("account_uuid")
   name                            String
   layout                          Json
-  is_active                       Boolean                           @default(true)
-  created_at                      DateTime                          @default(now())
-  updated_at                      DateTime
-  editor_workspace_session_groups editor_workspace_session_groups[]
-  accounts                        accounts                          @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  editor_workspaces               editor_workspaces                 @relation(fields: [workspace_uuid], references: [uuid], onDelete: Cascade)
+  isActive Boolean                           @default(true) @map("is_active")
+  createdAt DateTime                          @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  editorWorkspaceSessionGroup editorWorkspaceSessionGroup[]
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  editorWorkspace               editorWorkspace                 @relation(fields: [workspaceUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
-  @@index([is_active])
-  @@index([workspace_uuid])
+  @@index([workspaceUuid])
+
+  @@map("editor_workspace_sessions")
 }
 
-model editor_workspaces {
+model editorWorkspace {
   uuid                      String                      @id
-  account_uuid              String
+  accountUuid String @map("account_uuid")
   name                      String
   description               String?
-  project_path              String                      @unique
-  project_type              String
+  projectPath String                      @unique @map("project_path")
+  projectType String @map("project_type")
   layout                    Json
-  settings                  Json
-  is_active                 Boolean                     @default(true)
-  created_at                DateTime                    @default(now())
-  updated_at                DateTime
-  accessed_at               DateTime                    @default(now())
-  editor_workspace_sessions editor_workspace_sessions[]
-  accounts                  accounts                    @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  setting                  Json
+  isActive Boolean                     @default(true) @map("is_active")
+  createdAt DateTime                    @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  accessedAt DateTime                    @default(now()) @map("accessed_at")
+  editorWorkspaceSession editorWorkspaceSession[]
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([accessed_at])
-  @@index([account_uuid])
-  @@index([is_active])
+  @@index([isActive])
+
+  @@map("editor_workspaces")
 }
 
-model focus_sessions {
+model focusSession {
   uuid                    String    @id
-  account_uuid            String
-  goal_uuid               String?
+  accountUuid String @map("account_uuid")
+  goalUuid String? @map("goal_uuid")
   status                  String    @default("DRAFT")
-  duration_minutes        Int
-  actual_duration_minutes Int       @default(0)
+  durationMinutes Int @map("duration_minutes")
+  actualDurationMinutes Int       @default(0) @map("actual_duration_minutes")
   description             String?
-  started_at              DateTime?
-  paused_at               DateTime?
-  resumed_at              DateTime?
-  completed_at            DateTime?
-  cancelled_at            DateTime?
-  pause_count             Int       @default(0)
-  paused_duration_minutes Int       @default(0)
-  created_at              DateTime  @default(now())
-  updated_at              DateTime
-  accounts                accounts  @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  goals                   goals?    @relation(fields: [goal_uuid], references: [uuid])
+  startedAt DateTime? @map("started_at")
+  pausedAt DateTime? @map("paused_at")
+  resumedAt DateTime? @map("resumed_at")
+  completedAt DateTime? @map("completed_at")
+  cancelledAt DateTime? @map("cancelled_at")
+  pauseCount Int       @default(0) @map("pause_count")
+  pausedDurationMinutes Int       @default(0) @map("paused_duration_minutes")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  goal                   goal?    @relation(fields: [goalUuid], references: [uuid])
 
-  @@index([account_uuid])
-  @@index([account_uuid, status])
-  @@index([created_at])
-  @@index([goal_uuid])
   @@index([status])
+
+  @@map("focus_sessions")
 }
 
-model goal_folders {
+model FocusMode {
+  uuid              String   @id
+  accountUuid       String   @map("account_uuid")
+  focusedGoalUuids  String[] @map("focused_goal_uuids")
+  startTime         BigInt   @map("start_time")
+  endTime           BigInt   @map("end_time")
+  hiddenGoalsMode   String   @map("hidden_goals_mode")
+  isActive          Boolean  @default(true) @map("is_active")
+  actualEndTime     BigInt?  @map("actual_end_time")
+  createdAt         BigInt   @map("created_at")
+  updatedAt         BigInt   @map("updated_at")
+  account           account  @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+
+  @@index([accountUuid])
+  @@index([isActive])
+  @@index([endTime])
+
+  @@map("focus_modes")
+}
+
+model goalFolder {
   uuid                 String         @id
-  account_uuid         String
+  accountUuid String @map("account_uuid")
   name                 String
   description          String?
   color                String?
   icon                 String?
-  created_at           DateTime       @default(now())
-  updated_at           DateTime
-  deleted_at           DateTime?
-  completed_goal_count Int            @default(0)
-  folder_type          String?
-  goal_count           Int            @default(0)
-  is_system_folder     Boolean        @default(false)
-  parent_folder_uuid   String?
-  sort_order           Int            @default(0)
-  accounts             accounts       @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  goal_folders         goal_folders?  @relation("goal_foldersTogoal_folders", fields: [parent_folder_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
-  other_goal_folders   goal_folders[] @relation("goal_foldersTogoal_folders")
-  goals                goals[]
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  completedGoalCount Int            @default(0) @map("completed_goal_count")
+  folderType String? @map("folder_type")
+  goalCount Int            @default(0) @map("goal_count")
+  isSystemFolder Boolean        @default(false) @map("is_system_folder")
+  parentFolderUuid String? @map("parent_folder_uuid")
+  sortOrder Int            @default(0) @map("sort_order")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  goalFolder         goalFolder?  @relation("goal_foldersTogoal_folders", fields: [parentFolderUuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
+  other_goal_folders   goalFolder[] @relation("goal_foldersTogoal_folders")
+  goal                goal[]
 
-  @@index([account_uuid, deleted_at])
-  @@index([account_uuid])
-  @@index([account_uuid, sort_order])
-  @@index([parent_folder_uuid])
+  @@index([parentFolderUuid])
+
+  @@map("goal_folders")
 }
 
-model goal_records {
+model goalRecord {
   uuid            String      @id
-  key_result_uuid String
+  keyResultUuid String @map("key_result_uuid")
   value           Float
   note            String?
-  recorded_at     DateTime
-  created_at      DateTime    @default(now())
-  key_results     key_results @relation(fields: [key_result_uuid], references: [uuid], onDelete: Cascade)
+  recordedAt DateTime @map("recorded_at")
+  createdAt DateTime    @default(now()) @map("created_at")
+  keyResult     keyResult @relation(fields: [keyResultUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([key_result_uuid])
-  @@index([recorded_at])
+  @@index([recordedAt])
+
+  @@map("goal_records")
 }
 
-model goal_reviews {
+model goalReview {
   uuid            String   @id
-  goal_uuid       String
-  review_type     String
+  goalUuid String @map("goal_uuid")
+  reviewType String @map("review_type")
   content         String
   achievements    String?
   challenges      String?
-  lessons_learned String?
-  next_steps      String?
+  lessonsLearned String? @map("lessons_learned")
+  nextSteps String? @map("next_steps")
   rating          Int?
-  created_at      DateTime @default(now())
-  updated_at      DateTime
-  goals           goals    @relation(fields: [goal_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  goal           goal    @relation(fields: [goalUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([created_at])
-  @@index([goal_uuid])
+  @@index([goalUuid])
+
+  @@map("goal_reviews")
 }
 
-model goal_statistics {
+model goalStatistic {
   id                         Int      @id @default(autoincrement())
-  account_uuid               String   @unique
-  total_goals                Int      @default(0)
-  active_goals               Int      @default(0)
-  completed_goals            Int      @default(0)
-  archived_goals             Int      @default(0)
-  overdue_goals              Int      @default(0)
-  total_key_results          Int      @default(0)
-  completed_key_results      Int      @default(0)
-  average_progress           Float    @default(0)
-  goals_by_importance        String   @default("{}")
-  goals_by_urgency           String   @default("{}")
-  goals_by_category          String   @default("{}")
-  goals_by_status            String   @default("{}")
-  goals_created_this_week    Int      @default(0)
-  goals_completed_this_week  Int      @default(0)
-  goals_created_this_month   Int      @default(0)
-  goals_completed_this_month Int      @default(0)
-  total_reviews              Int      @default(0)
-  average_rating             Float?
-  total_focus_sessions       Int      @default(0)
-  completed_focus_sessions   Int      @default(0)
-  total_focus_minutes        Int      @default(0)
-  last_calculated_at         DateTime @default(now())
-  created_at                 DateTime @default(now())
-  updated_at                 DateTime
-  accounts                   accounts @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  accountUuid String   @unique @map("account_uuid")
+  totalGoals Int      @default(0) @map("total_goals")
+  activeGoals Int      @default(0) @map("active_goals")
+  completedGoals Int      @default(0) @map("completed_goals")
+  archivedGoals Int      @default(0) @map("archived_goals")
+  overdueGoals Int      @default(0) @map("overdue_goals")
+  totalKeyResults Int      @default(0) @map("total_key_results")
+  completedKeyResults Int      @default(0) @map("completed_key_results")
+  averageProgress Float    @default(0) @map("average_progress")
+  goalsByImportance String   @default("{}") @map("goals_by_importance")
+  goalsByUrgency String   @default("{}") @map("goals_by_urgency")
+  goalsByCategory String   @default("{}") @map("goals_by_category")
+  goalsByStatus String   @default("{}") @map("goals_by_status")
+  goalsCreatedThisWeek Int      @default(0) @map("goals_created_this_week")
+  goalsCompletedThisWeek Int      @default(0) @map("goals_completed_this_week")
+  goalsCreatedThisMonth Int      @default(0) @map("goals_created_this_month")
+  goalsCompletedThisMonth Int      @default(0) @map("goals_completed_this_month")
+  totalReviews Int      @default(0) @map("total_reviews")
+  averageRating Float? @map("average_rating")
+  totalFocusSessions Int      @default(0) @map("total_focus_sessions")
+  completedFocusSessions Int      @default(0) @map("completed_focus_sessions")
+  totalFocusMinutes Int      @default(0) @map("total_focus_minutes")
+  lastCalculatedAt DateTime @default(now()) @map("last_calculated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
+  @@index([accountUuid])
+
+  @@map("goal_statistics")
 }
 
-model goals {
+model goal {
   uuid                        String                        @id
-  account_uuid                String
+  accountUuid String @map("account_uuid")
   title                       String
   description                 String?
   status                      String                        @default("pending")
@@ -328,167 +352,170 @@ model goals {
   urgency                     Int                           @default(2)
   category                    String?
   tags                        String?
-  start_date                  DateTime?
-  target_date                 DateTime?
-  completed_at                DateTime?
-  archived_at                 DateTime?
-  folder_uuid                 String?
-  parent_goal_uuid            String?
-  sort_order                  Int                           @default(0)
-  reminder_config             String?
-  created_at                  DateTime                      @default(now())
-  updated_at                  DateTime
-  deleted_at                  DateTime?
+  startDate DateTime? @map("start_date")
+  targetDate DateTime? @map("target_date")
+  completedAt DateTime? @map("completed_at")
+  archivedAt DateTime? @map("archived_at")
+  folderUuid String? @map("folder_uuid")
+  parentGoalUuid String? @map("parent_goal_uuid")
+  sortOrder Int                           @default(0) @map("sort_order")
+  reminderConfig String? @map("reminder_config")
+  createdAt DateTime                      @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
   color                       String?
-  feasibility_analysis        String?
+  feasibilityAnalysis String? @map("feasibility_analysis")
   motivation                  String?
-  focus_sessions              focus_sessions[]
-  goal_reviews                goal_reviews[]
-  accounts                    accounts                      @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  goal_folders                goal_folders?                 @relation(fields: [folder_uuid], references: [uuid])
-  goals                       goals?                        @relation("goalsTogoals", fields: [parent_goal_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
-  other_goals                 goals[]                       @relation("goalsTogoals")
-  key_result_weight_snapshots key_result_weight_snapshots[]
-  key_results                 key_results[]
+  focusSession              focusSession[]
+  goalReview                goalReview[]
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  goalFolder                goalFolder?                 @relation(fields: [folderUuid], references: [uuid])
+  goal                       goal?                        @relation("goalsTogoals", fields: [parentGoalUuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
+  other_goals                 goal[]                       @relation("goalsTogoals")
+  keyResultWeightSnapshot keyResultWeightSnapshot[]
+  keyResult                 keyResult[]
 
-  @@index([account_uuid, folder_uuid])
-  @@index([account_uuid])
-  @@index([account_uuid, status])
-  @@index([created_at])
-  @@index([folder_uuid])
-  @@index([parent_goal_uuid])
-  @@index([status])
-  @@index([target_date])
+  @@index([targetDate])
+
+  @@map("goals")
 }
 
-model key_result_weight_snapshots {
+model keyResultWeightSnapshot {
   uuid            String      @id
-  goal_uuid       String
-  key_result_uuid String
-  old_weight      Float
-  new_weight      Float
-  weight_delta    Float
-  snapshot_time   BigInt
+  goalUuid String @map("goal_uuid")
+  keyResultUuid String @map("key_result_uuid")
+  oldWeight Float @map("old_weight")
+  newWeight Float @map("new_weight")
+  weightDelta Float @map("weight_delta")
+  snapshotTime BigInt @map("snapshot_time")
   trigger         String
   reason          String?
-  operator_uuid   String
-  created_at      DateTime    @default(now())
-  goals           goals       @relation(fields: [goal_uuid], references: [uuid], onDelete: Cascade)
-  key_results     key_results @relation(fields: [key_result_uuid], references: [uuid], onDelete: Cascade)
+  operatorUuid String @map("operator_uuid")
+  createdAt DateTime    @default(now()) @map("created_at")
+  goal           goal       @relation(fields: [goalUuid], references: [uuid], onDelete: Cascade)
+  keyResult     keyResult @relation(fields: [keyResultUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([goal_uuid])
-  @@index([goal_uuid, snapshot_time])
-  @@index([key_result_uuid])
-  @@index([snapshot_time])
+  @@index([snapshotTime])
+
+  @@map("key_result_weight_snapshots")
 }
 
-model key_results {
+model keyResult {
   uuid                        String                        @id
-  goal_uuid                   String
+  goalUuid String @map("goal_uuid")
   title                       String
   description                 String?
-  value_type                  String
-  aggregation_method          String
-  target_value                Float
-  current_value               Float                         @default(0)
+  valueType String @map("value_type")
+  aggregationMethod String @map("aggregation_method")
+  targetValue Float @map("target_value")
+  currentValue Float                         @default(0) @map("current_value")
   unit                        String?
   weight                      Float                         @default(1)
   order                       Int                           @default(0)
-  created_at                  DateTime                      @default(now())
-  updated_at                  DateTime
-  goal_records                goal_records[]
-  key_result_weight_snapshots key_result_weight_snapshots[]
-  goals                       goals                         @relation(fields: [goal_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime                      @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  goalRecord                goalRecord[]
+  keyResultWeightSnapshot keyResultWeightSnapshot[]
+  goal                       goal                         @relation(fields: [goalUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([goal_uuid, created_at])
-  @@index([goal_uuid])
+  @@index([goalUuid])
+
+  @@map("key_results")
 }
 
-model linked_contents {
+model linkedContent {
   uuid                 String               @id
-  resource_uuid        String
+  resourceUuid String @map("resource_uuid")
   title                String
   url                  String
-  content_type         String
+  contentType String @map("content_type")
   description          String?
   thumbnail            String?
   author               String?
-  published_at         DateTime?
-  is_accessible        Boolean              @default(true)
-  last_checked_at      DateTime?
-  cached_at            DateTime?
-  created_at           DateTime             @default(now())
-  updated_at           DateTime
-  repository_resources repository_resources @relation(fields: [resource_uuid], references: [uuid], onDelete: Cascade)
+  publishedAt DateTime? @map("published_at")
+  isAccessible Boolean              @default(true) @map("is_accessible")
+  lastCheckedAt DateTime? @map("last_checked_at")
+  cachedAt DateTime? @map("cached_at")
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  repositoryResource repositoryResource @relation(fields: [resourceUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([content_type])
-  @@index([resource_uuid])
   @@index([url])
+
+  @@map("linked_contents")
 }
 
-model notification_channels {
+model notificationChannel {
   uuid              String        @id
-  notification_uuid String
-  channel_type      String
+  notificationUuid String @map("notification_uuid")
+  channelType String @map("channel_type")
   status            String
   recipient         String?
-  max_retries       Int           @default(3)
+  maxRetries Int           @default(3) @map("max_retries")
   error             String?
   response          String?
-  retry_count       Int           @default(0)
-  notifications     notifications @relation(fields: [notification_uuid], references: [uuid], onDelete: Cascade)
+  retryCount Int           @default(0) @map("retry_count")
+  notification     notification @relation(fields: [notificationUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([notification_uuid])
+  @@index([notificationUuid])
+
+  @@map("notification_channels")
 }
 
-model notification_history {
+model notificationHistory {
   uuid              String        @id
-  notification_uuid String
+  notificationUuid String @map("notification_uuid")
   action            String
   details           String?
-  actor_uuid        String?
-  created_at        DateTime      @default(now())
-  notifications     notifications @relation(fields: [notification_uuid], references: [uuid], onDelete: Cascade)
+  actorUuid String? @map("actor_uuid")
+  createdAt DateTime      @default(now()) @map("created_at")
+  notification     notification @relation(fields: [notificationUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([notification_uuid])
+  @@index([notificationUuid])
+
+  @@map("notification_history")
 }
 
-model notification_preferences {
+model notificationPreference {
   uuid           String   @id
-  account_uuid   String   @unique
+  accountUuid String   @unique @map("account_uuid")
   enabled        Boolean  @default(true)
   channels       String
   categories     String
-  do_not_disturb String?
-  rate_limit     String?
-  created_at     DateTime @default(now())
-  updated_at     DateTime
+  doNotDisturb String? @map("do_not_disturb")
+  rateLimit String? @map("rate_limit")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
 
-  @@index([account_uuid])
+  @@index([accountUuid])
+
+  @@map("notification_preferences")
 }
 
-model notification_templates {
+model notificationTemplate {
   uuid             String   @id
   name             String   @unique
-  display_name     String
+  displayName String @map("display_name")
   description      String?
   type             String
   category         String
-  title_template   String
-  content_template String
+  titleTemplate String @map("title_template")
+  contentTemplate String @map("content_template")
   variables        String?
-  default_actions  String?
-  is_system        Boolean  @default(false)
-  is_active        Boolean  @default(true)
-  created_at       DateTime @default(now())
-  updated_at       DateTime
+  defaultActions String? @map("default_actions")
+  isSystem Boolean  @default(false) @map("is_system")
+  isActive Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
 
   @@index([name])
+
+  @@map("notification_templates")
 }
 
-model notifications {
+model notification {
   uuid                  String                  @id
-  account_uuid          String
+  accountUuid String @map("account_uuid")
   type                  String
   category              String
   status                String
@@ -496,181 +523,183 @@ model notifications {
   content               String
   importance            String
   urgency               String
-  related_entity_type   String?
-  related_entity_uuid   String?
+  relatedEntityType String? @map("related_entity_type")
+  relatedEntityUuid String? @map("related_entity_uuid")
   metadata              String?
   actions               String?
-  read_at               DateTime?
-  sent_at               DateTime?
-  expires_at            DateTime?
-  created_at            DateTime                @default(now())
-  updated_at            DateTime
-  deleted_at            DateTime?
-  is_read               Boolean                 @default(false)
-  notification_channels notification_channels[]
-  notification_history  notification_history[]
+  readAt DateTime? @map("read_at")
+  sentAt DateTime? @map("sent_at")
+  expiresAt DateTime? @map("expires_at")
+  createdAt DateTime                @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  isRead Boolean                 @default(false) @map("is_read")
+  notificationChannel notificationChannel[]
+  notificationHistory  notificationHistory[]
 
-  @@index([account_uuid])
-  @@index([category])
   @@index([status])
+
+  @@map("notifications")
 }
 
-model reminder_groups {
+model reminderGroup {
   uuid               String               @id
-  account_uuid       String
+  accountUuid String @map("account_uuid")
   name               String
   description        String?
   color              String?
   icon               String?
-  control_mode       String
+  controlMode String @map("control_mode")
   enabled            Boolean
   status             String
   order              Int
   stats              String
-  created_at         DateTime             @default(now())
-  updated_at         DateTime
-  deleted_at         DateTime?
-  accounts           accounts             @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  reminder_templates reminder_templates[]
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  reminderTemplate reminderTemplate[]
 
-  @@index([account_uuid])
+  @@index([accountUuid])
+
+  @@map("reminder_groups")
 }
 
-model reminder_history {
+model reminderHistory {
   uuid                  String             @id
-  template_uuid         String
-  triggered_at          DateTime
+  templateUuid String @map("template_uuid")
+  triggeredAt DateTime @map("triggered_at")
   result                String
   error                 String?
-  notification_sent     Boolean
-  notification_channels String?
-  created_at            DateTime           @default(now())
-  reminder_templates    reminder_templates @relation(fields: [template_uuid], references: [uuid], onDelete: Cascade)
+  notificationSent Boolean @map("notification_sent")
+  notificationChannel String?
+  createdAt DateTime           @default(now()) @map("created_at")
+  reminderTemplate    reminderTemplate @relation(fields: [templateUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([template_uuid])
+  @@index([templateUuid])
+
+  @@map("reminder_history")
 }
 
-model reminder_instances {
+model reminderInstance {
   uuid               String             @id
-  template_uuid      String
-  account_uuid       String
-  trigger_at         DateTime
+  templateUuid String @map("template_uuid")
+  accountUuid String @map("account_uuid")
+  triggerAt DateTime @map("trigger_at")
   status             String
   result             String?
-  processed_at       DateTime?
+  processedAt DateTime? @map("processed_at")
   note               String?
   payload            String?
-  created_at         DateTime           @default(now())
-  updated_at         DateTime
-  accounts           accounts           @relation(fields: [account_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
-  reminder_templates reminder_templates @relation(fields: [template_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
+  reminderTemplate reminderTemplate @relation(fields: [templateUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
-  @@index([status])
-  @@index([template_uuid])
-  @@index([trigger_at])
+  @@index([triggerAt])
+
+  @@map("reminder_instances")
 }
 
-model reminder_statistics {
+model reminderStatistic {
   uuid           String   @id
-  account_uuid   String   @unique
-  template_stats String
-  group_stats    String
-  trigger_stats  String
-  calculated_at  DateTime
-  accounts       accounts @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  accountUuid String   @unique @map("account_uuid")
+  templateStats String @map("template_stats")
+  groupStats String @map("group_stats")
+  triggerStats String @map("trigger_stats")
+  calculatedAt DateTime @map("calculated_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
+  @@index([accountUuid])
+
+  @@map("reminder_statistics")
 }
 
-model reminder_templates {
+model reminderTemplate {
   uuid                String               @id
-  account_uuid        String
+  accountUuid String @map("account_uuid")
   title               String
   description         String?
   type                String
-  self_enabled        Boolean
+  selfEnabled Boolean @map("self_enabled")
   status              String
-  group_uuid          String?
-  importance_level    String
+  groupUuid String? @map("group_uuid")
+  importanceLevel String @map("importance_level")
   tags                String
   color               String?
   icon                String?
-  next_trigger_at     DateTime?
-  created_at          DateTime             @default(now())
-  updated_at          DateTime
-  deleted_at          DateTime?
+  nextTriggerAt DateTime? @map("next_trigger_at")
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
   trigger             String
   recurrence          String?
-  active_time         String
-  active_hours        String?
-  notification_config String
+  activeTime String @map("active_time")
+  activeHours String? @map("active_hours")
+  notificationConfig String @map("notification_config")
   stats               String
-  reminder_history    reminder_history[]
-  reminder_instances  reminder_instances[]
-  accounts            accounts             @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  reminder_groups     reminder_groups?     @relation(fields: [group_uuid], references: [uuid])
+  reminderHistory    reminderHistory[]
+  reminderInstance  reminderInstance[]
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  reminderGroup     reminderGroup?     @relation(fields: [groupUuid], references: [uuid])
 
-  @@index([account_uuid])
-  @@index([group_uuid])
-  @@index([next_trigger_at])
   @@index([status])
+
+  @@map("reminder_templates")
 }
 
-model repositories {
+model repository {
   uuid                 String                 @id
-  account_uuid         String
+  accountUuid String @map("account_uuid")
   name                 String
   type                 String
   path                 String
   description          String?
   config               String
-  related_goals        String?
+  relatedGoals String? @map("related_goals")
   status               String                 @default("active")
   git                  String?
-  sync_status          String?
+  syncStatus String? @map("sync_status")
   stats                String
-  last_accessed_at     DateTime?
-  created_at           DateTime               @default(now())
-  updated_at           DateTime
-  accounts             accounts               @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  repository_explorers repository_explorers[]
-  repository_resources repository_resources[]
+  lastAccessedAt DateTime? @map("last_accessed_at")
+  createdAt DateTime               @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  repositoryExplorer repositoryExplorer[]
+  repositoryResource repositoryResource[]
 
-  @@unique([account_uuid, path])
-  @@index([account_uuid])
-  @@index([created_at])
-  @@index([last_accessed_at])
-  @@index([path])
-  @@index([status])
+  @@unique([accountUuid, path])
   @@index([type])
+
+  @@map("repositories")
 }
 
-model repository_explorers {
+model repositoryExplorer {
   uuid            String       @id
-  repository_uuid String
-  account_uuid    String
+  repositoryUuid String @map("repository_uuid")
+  accountUuid String @map("account_uuid")
   name            String
   description     String?
-  current_path    String
+  currentPath String @map("current_path")
   filters         String?
-  view_config     String?
-  pinned_paths    String?
-  recent_paths    String?
-  last_scan_at    DateTime?
-  created_at      DateTime     @default(now())
-  updated_at      DateTime
-  accounts        accounts     @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  repositories    repositories @relation(fields: [repository_uuid], references: [uuid], onDelete: Cascade)
+  viewConfig String? @map("view_config")
+  pinnedPaths String? @map("pinned_paths")
+  recentPaths String? @map("recent_paths")
+  lastScanAt DateTime? @map("last_scan_at")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  repository    repository @relation(fields: [repositoryUuid], references: [uuid], onDelete: Cascade)
 
-  @@unique([repository_uuid, account_uuid])
-  @@index([account_uuid])
-  @@index([repository_uuid])
+  @@unique([repositoryUuid, accountUuid])
+  @@index([repositoryUuid])
+
+  @@map("repository_explorers")
 }
 
-model repository_resources {
+model repositoryResource {
   uuid                                                                               String                @id
-  repository_uuid                                                                    String
+  repositoryUuid String @map("repository_uuid")
   name                                                                               String
   type                                                                               String
   path                                                                               String
@@ -682,415 +711,411 @@ model repository_resources {
   category                                                                           String?
   status                                                                             String                @default("active")
   metadata                                                                           String?
-  created_at                                                                         DateTime              @default(now())
-  updated_at                                                                         DateTime
-  modified_at                                                                        DateTime?
-  linked_contents                                                                    linked_contents[]
-  repositories                                                                       repositories          @relation(fields: [repository_uuid], references: [uuid], onDelete: Cascade)
-  resource_references_resource_references_source_resource_uuidTorepository_resources resource_references[] @relation("resource_references_source_resource_uuidTorepository_resources")
-  resource_references_resource_references_target_resource_uuidTorepository_resources resource_references[] @relation("resource_references_target_resource_uuidTorepository_resources")
+  createdAt DateTime              @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  modifiedAt DateTime? @map("modified_at")
+  linkedContent                                                                    linkedContent[]
+  repository                                                                       repository          @relation(fields: [repositoryUuid], references: [uuid], onDelete: Cascade)
+  resource_references_resource_references_source_resource_uuidTorepository_resources resourceReference[] @relation("resource_references_source_resource_uuidTorepository_resources")
+  resource_references_resource_references_target_resource_uuidTorepository_resources resourceReference[] @relation("resource_references_target_resource_uuidTorepository_resources")
 
-  @@unique([repository_uuid, path])
-  @@index([created_at])
-  @@index([path])
-  @@index([repository_uuid])
-  @@index([status])
+  @@unique([repositoryUuid, path])
   @@index([type])
+
+  @@map("repository_resources")
 }
 
-model repository_statistics {
+model repositoryStatistic {
   id                    Int      @id @default(autoincrement())
-  account_uuid          String   @unique
-  total_repositories    Int      @default(0)
-  active_repositories   Int      @default(0)
-  archived_repositories Int      @default(0)
-  total_resources       Int      @default(0)
-  total_files           Int      @default(0)
-  total_folders         Int      @default(0)
-  git_enabled_repos     Int      @default(0)
-  total_commits         Int      @default(0)
-  total_references      Int      @default(0)
-  total_linked_contents Int      @default(0)
-  total_size_bytes      BigInt   @default(0)
-  last_updated_at       DateTime @default(now())
-  created_at            DateTime @default(now())
-  accounts              accounts @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  accountUuid String   @unique @map("account_uuid")
+  totalRepositories Int      @default(0) @map("total_repositories")
+  activeRepositories Int      @default(0) @map("active_repositories")
+  archivedRepositories Int      @default(0) @map("archived_repositories")
+  totalResources Int      @default(0) @map("total_resources")
+  totalFiles Int      @default(0) @map("total_files")
+  totalFolders Int      @default(0) @map("total_folders")
+  gitEnabledRepos Int      @default(0) @map("git_enabled_repos")
+  totalCommits Int      @default(0) @map("total_commits")
+  totalReferences Int      @default(0) @map("total_references")
+  totalLinkedContents Int      @default(0) @map("total_linked_contents")
+  totalSizeBytes BigInt   @default(0) @map("total_size_bytes")
+  lastUpdatedAt DateTime @default(now()) @map("last_updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
+  @@index([accountUuid])
+
+  @@map("repository_statistics")
 }
 
-model resource_references {
+model resourceReference {
   uuid                                                                                String               @id
-  source_resource_uuid                                                                String
-  target_resource_uuid                                                                String
-  reference_type                                                                      String
+  sourceResourceUuid String @map("source_resource_uuid")
+  targetResourceUuid String @map("target_resource_uuid")
+  referenceType String @map("reference_type")
   description                                                                         String?
-  created_at                                                                          DateTime             @default(now())
-  updated_at                                                                          DateTime
-  last_verified_at                                                                    DateTime?
-  repository_resources_resource_references_source_resource_uuidTorepository_resources repository_resources @relation("resource_references_source_resource_uuidTorepository_resources", fields: [source_resource_uuid], references: [uuid], onDelete: Cascade)
-  repository_resources_resource_references_target_resource_uuidTorepository_resources repository_resources @relation("resource_references_target_resource_uuidTorepository_resources", fields: [target_resource_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  lastVerifiedAt DateTime? @map("last_verified_at")
+  repository_resources_resource_references_source_resource_uuidTorepository_resources repositoryResource @relation("resource_references_source_resource_uuidTorepository_resources", fields: [sourceResourceUuid], references: [uuid], onDelete: Cascade)
+  repository_resources_resource_references_target_resource_uuidTorepository_resources repositoryResource @relation("resource_references_target_resource_uuidTorepository_resources", fields: [targetResourceUuid], references: [uuid], onDelete: Cascade)
 
-  @@unique([source_resource_uuid, target_resource_uuid, reference_type])
-  @@index([reference_type])
-  @@index([source_resource_uuid])
-  @@index([target_resource_uuid])
+  @@unique([sourceResourceUuid, targetResourceUuid, referenceType])
+  @@index([targetResourceUuid])
+
+  @@map("resource_references")
 }
 
-model schedule_executions {
+model scheduleExecution {
   uuid           String         @id
-  task_uuid      String
-  execution_time DateTime
+  taskUuid String @map("task_uuid")
+  executionTime DateTime @map("execution_time")
   status         String
   duration       Int?
   result         String?
   error          String?
-  retry_count    Int            @default(0)
-  created_at     DateTime       @default(now())
-  schedule_tasks schedule_tasks @relation(fields: [task_uuid], references: [uuid], onDelete: Cascade)
+  retryCount Int            @default(0) @map("retry_count")
+  createdAt DateTime       @default(now()) @map("created_at")
+  scheduleTask scheduleTask @relation(fields: [taskUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([execution_time])
-  @@index([status])
-  @@index([task_uuid])
+  @@index([taskUuid])
+
+  @@map("schedule_executions")
 }
 
-model schedule_statistics {
+model scheduleStatistic {
   id                     Int      @id @default(autoincrement())
-  account_uuid           String   @unique
-  total_tasks            Int
-  active_tasks           Int
-  paused_tasks           Int
-  completed_tasks        Int
-  cancelled_tasks        Int
-  failed_tasks           Int
-  total_executions       Int
-  successful_executions  Int
-  failed_executions      Int
-  skipped_executions     Int
-  timeout_executions     Int
-  avg_execution_duration Float
-  min_execution_duration Float
-  max_execution_duration Float
-  module_statistics      String   @default("{}")
-  last_updated_at        DateTime
-  created_at             DateTime @default(now())
-  accounts               accounts @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  accountUuid String   @unique @map("account_uuid")
+  totalTasks Int @map("total_tasks")
+  activeTasks Int @map("active_tasks")
+  pausedTasks Int @map("paused_tasks")
+  completedTasks Int @map("completed_tasks")
+  cancelledTasks Int @map("cancelled_tasks")
+  failedTasks Int @map("failed_tasks")
+  totalExecutions Int @map("total_executions")
+  successfulExecutions Int @map("successful_executions")
+  failedExecutions Int @map("failed_executions")
+  skippedExecutions Int @map("skipped_executions")
+  timeoutExecutions Int @map("timeout_executions")
+  avgExecutionDuration Float @map("avg_execution_duration")
+  minExecutionDuration Float @map("min_execution_duration")
+  maxExecutionDuration Float @map("max_execution_duration")
+  moduleStatistics String   @default("{}") @map("module_statistics")
+  lastUpdatedAt DateTime @map("last_updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
+  @@index([accountUuid])
+
+  @@map("schedule_statistics")
 }
 
-model schedule_tasks {
+model scheduleTask {
   uuid                    String                @id
-  account_uuid            String
+  accountUuid String @map("account_uuid")
   name                    String
   description             String?
-  source_module           String
-  source_entity_id        String
+  sourceModule String @map("source_module")
+  sourceEntityId String @map("source_entity_id")
   status                  String
   enabled                 Boolean
-  cron_expression         String?
+  cronExpression String? @map("cron_expression")
   timezone                String
-  start_date              DateTime?
-  end_date                DateTime?
-  max_executions          Int?
-  next_run_at             DateTime?
-  last_run_at             DateTime?
-  execution_count         Int                   @default(0)
-  last_execution_status   String?
-  last_execution_duration Int?
-  consecutive_failures    Int                   @default(0)
-  max_retries             Int
-  initial_delay_ms        Int
-  max_delay_ms            Int
-  backoff_multiplier      Float
-  retryable_statuses      String                @default("[]")
+  startDate DateTime? @map("start_date")
+  endDate DateTime? @map("end_date")
+  maxExecutions Int? @map("max_executions")
+  nextRunAt DateTime? @map("next_run_at")
+  lastRunAt DateTime? @map("last_run_at")
+  executionCount Int                   @default(0) @map("execution_count")
+  lastExecutionStatus String? @map("last_execution_status")
+  lastExecutionDuration Int? @map("last_execution_duration")
+  consecutiveFailures Int                   @default(0) @map("consecutive_failures")
+  maxRetries Int @map("max_retries")
+  initialDelayMs Int @map("initial_delay_ms")
+  maxDelayMs Int @map("max_delay_ms")
+  backoffMultiplier Float @map("backoff_multiplier")
+  retryableStatuses String                @default("[]") @map("retryable_statuses")
   payload                 String?
   tags                    String                @default("[]")
   priority                String
   timeout                 Int
-  created_at              DateTime              @default(now())
-  updated_at              DateTime
-  schedule_executions     schedule_executions[]
-  accounts                accounts              @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime              @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  scheduleExecution     scheduleExecution[]
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
-  @@index([enabled])
-  @@index([next_run_at])
-  @@index([source_entity_id])
-  @@index([source_module])
   @@index([status])
+
+  @@map("schedule_tasks")
 }
 
-model schedules {
+model schedule {
   uuid                  String   @id
-  account_uuid          String
+  accountUuid String @map("account_uuid")
   title                 String
   description           String?
-  start_time            BigInt
-  end_time              BigInt
+  startTime BigInt @map("start_time")
+  endTime BigInt @map("end_time")
   duration              Int
-  has_conflict          Boolean  @default(false)
-  conflicting_schedules String?
+  hasConflict Boolean  @default(false) @map("has_conflict")
+  conflictingSchedules String? @map("conflicting_schedules")
   priority              Int?
   location              String?
   attendees             String?
-  created_at            DateTime @default(now())
-  updated_at            DateTime
-  accounts              accounts @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
-  @@index([account_uuid, start_time, end_time])
-  @@index([start_time, end_time])
+  @@index([startTime, endTime])
+
+  @@map("schedules")
 }
 
-model setting_groups {
+model settingGroup {
   uuid                 String           @id
   key                  String           @unique
   name                 String
   description          String?
-  parent_uuid          String?
+  parentUuid String? @map("parent_uuid")
   order                Int              @default(0)
   icon                 String?
-  is_collapsed         Boolean          @default(false)
-  created_at           DateTime         @default(now())
-  updated_at           DateTime
-  setting_groups       setting_groups?  @relation("setting_groupsTosetting_groups", fields: [parent_uuid], references: [uuid], onDelete: Cascade)
-  other_setting_groups setting_groups[] @relation("setting_groupsTosetting_groups")
-  setting_items        setting_items[]
-  settings             settings[]
+  isCollapsed Boolean          @default(false) @map("is_collapsed")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  settingGroup       settingGroup?  @relation("setting_groupsTosetting_groups", fields: [parentUuid], references: [uuid], onDelete: Cascade)
+  other_setting_groups settingGroup[] @relation("setting_groupsTosetting_groups")
+  settingItem        settingItem[]
+  setting             setting[]
 
-  @@index([order])
-  @@index([parent_uuid])
+  @@index([parentUuid])
+
+  @@map("setting_groups")
 }
 
-model setting_items {
+model settingItem {
   uuid           String         @id
-  group_uuid     String
-  setting_key    String
+  groupUuid String @map("group_uuid")
+  settingKey String @map("setting_key")
   order          Int            @default(0)
-  is_visible     Boolean        @default(true)
-  custom_label   String?
-  created_at     DateTime       @default(now())
-  updated_at     DateTime
-  setting_groups setting_groups @relation(fields: [group_uuid], references: [uuid], onDelete: Cascade)
+  isVisible Boolean        @default(true) @map("is_visible")
+  customLabel String? @map("custom_label")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  settingGroup settingGroup @relation(fields: [groupUuid], references: [uuid], onDelete: Cascade)
 
-  @@unique([group_uuid, setting_key])
-  @@index([group_uuid])
-  @@index([order])
-  @@index([setting_key])
+  @@unique([groupUuid, settingKey])
+  @@index([settingKey])
+
+  @@map("setting_items")
 }
 
-model settings {
+model setting {
   uuid              String          @id
   key               String
   name              String
   description       String?
-  value_type        String
+  valueType String @map("value_type")
   value             String
-  default_value     String
+  defaultValue String @map("default_value")
   scope             String
-  account_uuid      String?
-  device_id         String?
-  group_uuid        String?
+  accountUuid String? @map("account_uuid")
+  deviceId String? @map("device_id")
+  groupUuid String? @map("group_uuid")
   validation        String?
   ui                String?
-  is_encrypted      Boolean         @default(false)
-  is_read_only      Boolean         @default(false)
-  is_system_setting Boolean         @default(false)
-  sync_config       String?
-  history_data      String          @default("[]")
-  created_at        DateTime        @default(now())
-  updated_at        DateTime
-  deleted_at        DateTime?
-  accounts          accounts?       @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
-  setting_groups    setting_groups? @relation(fields: [group_uuid], references: [uuid])
+  isEncrypted Boolean         @default(false) @map("is_encrypted")
+  isReadOnly Boolean         @default(false) @map("is_read_only")
+  isSystemSetting Boolean         @default(false) @map("is_system_setting")
+  syncConfig String? @map("sync_config")
+  historyData String          @default("[]") @map("history_data")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  account           account?        @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  settingGroup    settingGroup? @relation(fields: [groupUuid], references: [uuid])
 
-  @@unique([key, scope, account_uuid, device_id])
-  @@index([account_uuid])
-  @@index([created_at])
-  @@index([device_id])
-  @@index([group_uuid])
-  @@index([is_system_setting])
-  @@index([key])
+  @@unique([key, scope, accountUuid, deviceId])
   @@index([scope])
+
+  @@map("settings")
 }
 
-model task_dependencies {
+model taskDependency {
   uuid                                                                   String         @id
-  predecessor_task_uuid                                                  String
-  successor_task_uuid                                                    String
-  dependency_type                                                        String         @default("FINISH_TO_START")
-  lag_days                                                               Int?
-  created_at                                                             DateTime       @default(now())
-  updated_at                                                             DateTime
-  task_templates_task_dependencies_predecessor_task_uuidTotask_templates task_templates @relation("task_dependencies_predecessor_task_uuidTotask_templates", fields: [predecessor_task_uuid], references: [uuid], onDelete: Cascade)
-  task_templates_task_dependencies_successor_task_uuidTotask_templates   task_templates @relation("task_dependencies_successor_task_uuidTotask_templates", fields: [successor_task_uuid], references: [uuid], onDelete: Cascade)
+  predecessorTaskUuid String @map("predecessor_task_uuid")
+  successorTaskUuid String @map("successor_task_uuid")
+  dependencyType String         @default("FINISH_TO_START") @map("dependency_type")
+  lagDays Int? @map("lag_days")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  task_templates_task_dependencies_predecessor_task_uuidTotask_templates taskTemplate @relation("task_dependencies_predecessor_task_uuidTotask_templates", fields: [predecessorTaskUuid], references: [uuid], onDelete: Cascade)
+  task_templates_task_dependencies_successor_task_uuidTotask_templates   taskTemplate @relation("task_dependencies_successor_task_uuidTotask_templates", fields: [successorTaskUuid], references: [uuid], onDelete: Cascade)
 
-  @@unique([predecessor_task_uuid, successor_task_uuid])
-  @@index([predecessor_task_uuid])
-  @@index([successor_task_uuid])
+  @@unique([predecessorTaskUuid, successorTaskUuid])
+  @@index([successorTaskUuid])
+
+  @@map("task_dependencies")
 }
 
-model task_instances {
+model taskInstance {
   uuid              String         @id
-  template_uuid     String
-  account_uuid      String
-  instance_date     DateTime
+  templateUuid String @map("template_uuid")
+  accountUuid String @map("account_uuid")
+  instanceDate DateTime @map("instance_date")
   status            String
   note              String?
-  actual_start_time DateTime?
-  actual_end_time   DateTime?
-  created_at        DateTime       @default(now())
-  updated_at        DateTime
-  time_config       String
-  completion_record String?
-  skip_record       String?
-  accounts          accounts       @relation(fields: [account_uuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
-  task_templates    task_templates @relation(fields: [template_uuid], references: [uuid], onDelete: Cascade)
+  actualStartTime DateTime? @map("actual_start_time")
+  actualEndTime DateTime? @map("actual_end_time")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  timeConfig String @map("time_config")
+  completionRecord String? @map("completion_record")
+  skipRecord String? @map("skip_record")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: NoAction, onUpdate: NoAction)
+  taskTemplate    taskTemplate @relation(fields: [templateUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
-  @@index([account_uuid, instance_date])
-  @@index([account_uuid, status])
-  @@index([instance_date])
-  @@index([status])
-  @@index([template_uuid])
-  @@index([template_uuid, instance_date])
+  @@index([templateUuid, instanceDate])
+
+  @@map("task_instances")
 }
 
-model task_statistics {
+model taskStatistic {
   uuid                       String   @id
-  account_uuid               String   @unique
-  calculated_at              DateTime
-  template_total             Int
-  template_active            Int
-  template_paused            Int
-  template_archived          Int
-  template_one_time          Int
-  template_recurring         Int
-  instance_total             Int
-  instance_today             Int
-  instance_week              Int
-  instance_month             Int
-  instance_pending           Int
-  instance_in_progress       Int
-  instance_completed         Int
-  instance_skipped           Int
-  instance_expired           Int
-  completion_today           Int
-  completion_week            Int
-  completion_month           Int
-  completion_total           Int
-  completion_avg_time        Float?
-  completion_rate            Float
-  time_all_day               Int
-  time_point                 Int
-  time_range                 Int
-  time_overdue               Int
-  time_upcoming              Int
-  distribution_by_importance String
-  distribution_by_urgency    String
-  distribution_by_folder     String
-  distribution_by_tag        String
-  accounts                   accounts @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  accountUuid String   @unique @map("account_uuid")
+  calculatedAt DateTime @map("calculated_at")
+  templateTotal Int @map("template_total")
+  templateActive Int @map("template_active")
+  templatePaused Int @map("template_paused")
+  templateArchived Int @map("template_archived")
+  templateOneTime Int @map("template_one_time")
+  templateRecurring Int @map("template_recurring")
+  instanceTotal Int @map("instance_total")
+  instanceToday Int @map("instance_today")
+  instanceWeek Int @map("instance_week")
+  instanceMonth Int @map("instance_month")
+  instancePending Int @map("instance_pending")
+  instanceInProgress Int @map("instance_in_progress")
+  instanceCompleted Int @map("instance_completed")
+  instanceSkipped Int @map("instance_skipped")
+  instanceExpired Int @map("instance_expired")
+  completionToday Int @map("completion_today")
+  completionWeek Int @map("completion_week")
+  completionMonth Int @map("completion_month")
+  completionTotal Int @map("completion_total")
+  completionAvgTime Float? @map("completion_avg_time")
+  completionRate Float @map("completion_rate")
+  timeAllDay Int @map("time_all_day")
+  timePoint Int @map("time_point")
+  timeRange Int @map("time_range")
+  timeOverdue Int @map("time_overdue")
+  timeUpcoming Int @map("time_upcoming")
+  distributionByImportance String @map("distribution_by_importance")
+  distributionByUrgency String @map("distribution_by_urgency")
+  distributionByFolder String @map("distribution_by_folder")
+  distributionByTag String @map("distribution_by_tag")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
+  @@index([accountUuid])
+
+  @@map("task_statistics")
 }
 
-model task_template_history {
+model taskTemplateHistory {
   uuid           String         @id
-  template_uuid  String
+  templateUuid String @map("template_uuid")
   action         String
   changes        String?
-  created_at     DateTime       @default(now())
-  task_templates task_templates @relation(fields: [template_uuid], references: [uuid], onDelete: Cascade)
+  createdAt DateTime       @default(now()) @map("created_at")
+  taskTemplate taskTemplate @relation(fields: [templateUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([template_uuid])
+  @@index([templateUuid])
+
+  @@map("task_template_history")
 }
 
-model task_templates {
+model taskTemplate {
   uuid                                                                      String                  @id
-  account_uuid                                                              String
+  accountUuid String @map("account_uuid")
   title                                                                     String
   description                                                               String?
-  task_type                                                                 String
+  taskType String @map("task_type")
   status                                                                    String
   importance                                                                String
   urgency                                                                   String
   color                                                                     String?
   tags                                                                      String
-  folder_uuid                                                               String?
-  last_generated_date                                                       DateTime?
-  generate_ahead_days                                                       Int
-  created_at                                                                DateTime                @default(now())
-  updated_at                                                                DateTime
-  deleted_at                                                                DateTime?
-  time_config_type                                                          String
-  time_config_start_time                                                    DateTime?
-  time_config_end_time                                                      DateTime?
-  time_config_duration_minutes                                              Int?
-  recurrence_rule_type                                                      String?
-  recurrence_rule_interval                                                  Int?
-  recurrence_rule_days_of_week                                              String?
-  recurrence_rule_day_of_month                                              Int?
-  recurrence_rule_month_of_year                                             Int?
-  recurrence_rule_end_date                                                  DateTime?
-  recurrence_rule_count                                                     Int?
-  reminder_config_enabled                                                   Boolean?
-  reminder_config_time_offset_minutes                                       Int?
-  reminder_config_unit                                                      String?
-  reminder_config_channel                                                   String?
-  goal_binding_goal_uuid                                                    String?
-  goal_binding_key_result_uuid                                              String?
-  goal_binding_increment_value                                              Float?
-  blocking_reason                                                           String?
-  dependency_status                                                         String                  @default("NONE")
-  is_blocked                                                                Boolean                 @default(false)
-  task_dependencies_task_dependencies_predecessor_task_uuidTotask_templates task_dependencies[]     @relation("task_dependencies_predecessor_task_uuidTotask_templates")
-  task_dependencies_task_dependencies_successor_task_uuidTotask_templates   task_dependencies[]     @relation("task_dependencies_successor_task_uuidTotask_templates")
-  task_instances                                                            task_instances[]
-  task_template_history                                                     task_template_history[]
-  accounts                                                                  accounts                @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  folderUuid String? @map("folder_uuid")
+  lastGeneratedDate DateTime? @map("last_generated_date")
+  generateAheadDays Int @map("generate_ahead_days")
+  createdAt DateTime                @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  timeConfigType String @map("time_config_type")
+  timeConfigStartTime DateTime? @map("time_config_start_time")
+  timeConfigEndTime DateTime? @map("time_config_end_time")
+  timeConfigDurationMinutes Int? @map("time_config_duration_minutes")
+  recurrenceRuleType String? @map("recurrence_rule_type")
+  recurrenceRuleInterval Int? @map("recurrence_rule_interval")
+  recurrenceRuleDaysOfWeek String? @map("recurrence_rule_days_of_week")
+  recurrenceRuleDayOfMonth Int? @map("recurrence_rule_day_of_month")
+  recurrenceRuleMonthOfYear Int? @map("recurrence_rule_month_of_year")
+  recurrenceRuleEndDate DateTime? @map("recurrence_rule_end_date")
+  recurrenceRuleCount Int? @map("recurrence_rule_count")
+  reminderConfigEnabled Boolean? @map("reminder_config_enabled")
+  reminderConfigTimeOffsetMinutes Int? @map("reminder_config_time_offset_minutes")
+  reminderConfigUnit String? @map("reminder_config_unit")
+  reminderConfigChannel String? @map("reminder_config_channel")
+  goalBindingGoalUuid String? @map("goal_binding_goal_uuid")
+  goalBindingKeyResultUuid String? @map("goal_binding_key_result_uuid")
+  goalBindingIncrementValue Float? @map("goal_binding_increment_value")
+  blockingReason String? @map("blocking_reason")
+  dependencyStatus String                  @default("NONE") @map("dependency_status")
+  isBlocked Boolean                 @default(false) @map("is_blocked")
+  task_dependencies_task_dependencies_predecessor_task_uuidTotask_templates taskDependency[]     @relation("task_dependencies_predecessor_task_uuidTotask_templates")
+  task_dependencies_task_dependencies_successor_task_uuidTotask_templates   taskDependency[]     @relation("task_dependencies_successor_task_uuidTotask_templates")
+  taskInstance                                                            taskInstance[]
+  taskTemplateHistory                                                     taskTemplateHistory[]
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid, deleted_at])
-  @@index([account_uuid])
-  @@index([account_uuid, status])
-  @@index([account_uuid, task_type])
-  @@index([status])
-  @@index([task_type])
+  @@index([taskType])
+
+  @@map("task_templates")
 }
 
-model user_settings {
+model userSetting {
   uuid                           String   @id
-  account_uuid                   String   @unique
-  created_at                     DateTime @default(now())
-  updated_at                     DateTime
-  appearance_accent_color        String   @default("#3B82F6")
-  appearance_compact_mode        Boolean  @default(false)
-  appearance_font_family         String?
-  appearance_font_size           String   @default("MEDIUM")
-  appearance_theme               String   @default("AUTO")
-  experimental_enabled           Boolean  @default(false)
-  experimental_features          String   @default("[]")
-  locale_currency                String   @default("CNY")
-  locale_date_format             String   @default("YYYY-MM-DD")
-  locale_language                String   @default("zh-CN")
-  locale_time_format             String   @default("24H")
-  locale_timezone                String   @default("Asia/Shanghai")
-  locale_week_starts_on          Int      @default(1)
-  privacy_allow_search_by_email  Boolean  @default(true)
-  privacy_allow_search_by_phone  Boolean  @default(false)
-  privacy_profile_visibility     String   @default("PRIVATE")
-  privacy_share_usage_data       Boolean  @default(false)
-  privacy_show_online_status     Boolean  @default(true)
-  shortcuts_custom               String   @default("{}")
-  shortcuts_enabled              Boolean  @default(true)
-  workflow_auto_save             Boolean  @default(true)
-  workflow_auto_save_interval    Int      @default(30000)
-  workflow_confirm_before_delete Boolean  @default(true)
-  workflow_default_goal_view     String   @default("LIST")
-  workflow_default_schedule_view String   @default("WEEK")
-  workflow_default_task_view     String   @default("LIST")
-  accounts                       accounts @relation(fields: [account_uuid], references: [uuid], onDelete: Cascade)
+  accountUuid String   @unique @map("account_uuid")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  appearanceAccentColor String   @default("#3B82F6") @map("appearance_accent_color")
+  appearanceCompactMode Boolean  @default(false) @map("appearance_compact_mode")
+  appearanceFontFamily String? @map("appearance_font_family")
+  appearanceFontSize String   @default("MEDIUM") @map("appearance_font_size")
+  appearanceTheme String   @default("AUTO") @map("appearance_theme")
+  experimentalEnabled Boolean  @default(false) @map("experimental_enabled")
+  experimentalFeatures String   @default("[]") @map("experimental_features")
+  localeCurrency String   @default("CNY") @map("locale_currency")
+  localeDateFormat String   @default("YYYY-MM-DD") @map("locale_date_format")
+  localeLanguage String   @default("zh-CN") @map("locale_language")
+  localeTimeFormat String   @default("24H") @map("locale_time_format")
+  localeTimezone String   @default("Asia/Shanghai") @map("locale_timezone")
+  localeWeekStartsOn Int      @default(1) @map("locale_week_starts_on")
+  privacyAllowSearchByEmail Boolean  @default(true) @map("privacy_allow_search_by_email")
+  privacyAllowSearchByPhone Boolean  @default(false) @map("privacy_allow_search_by_phone")
+  privacyProfileVisibility String   @default("PRIVATE") @map("privacy_profile_visibility")
+  privacyShareUsageData Boolean  @default(false) @map("privacy_share_usage_data")
+  privacyShowOnlineStatus Boolean  @default(true) @map("privacy_show_online_status")
+  shortcutsCustom String   @default("{}") @map("shortcuts_custom")
+  shortcutsEnabled Boolean  @default(true) @map("shortcuts_enabled")
+  workflowAutoSave Boolean  @default(true) @map("workflow_auto_save")
+  workflowAutoSaveInterval Int      @default(30000) @map("workflow_auto_save_interval")
+  workflowConfirmBeforeDelete Boolean  @default(true) @map("workflow_confirm_before_delete")
+  workflowDefaultGoalView String   @default("LIST") @map("workflow_default_goal_view")
+  workflowDefaultScheduleView String   @default("WEEK") @map("workflow_default_schedule_view")
+  workflowDefaultTaskView String   @default("LIST") @map("workflow_default_task_view")
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
-  @@index([account_uuid])
+  @@index([accountUuid])
+
+  @@map("user_settings")
 }

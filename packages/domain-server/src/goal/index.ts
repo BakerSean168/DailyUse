@@ -16,6 +16,7 @@ export { GoalReview } from './entities/GoalReview';
 export { KeyResult } from './entities/KeyResult';
 
 // ===== 值对象 =====
+export { FocusMode } from './value-objects/FocusMode';
 export { GoalMetadata } from './value-objects/GoalMetadata';
 export { GoalTimeRange } from './value-objects/GoalTimeRange';
 export { KeyResultProgress } from './value-objects/KeyResultProgress';
@@ -27,6 +28,7 @@ export { KeyResultWeightSnapshot } from './value-objects/KeyResultWeightSnapshot
 export * from './services';
 
 // ===== 仓储接口 =====
+export type { IFocusModeRepository } from './repositories/IFocusModeRepository';
 export type { IGoalRepository } from './repositories/IGoalRepository';
 export type { IGoalFolderRepository } from './repositories/IGoalFolderRepository';
 export type { IGoalStatisticsRepository } from './repositories/IGoalStatisticsRepository';

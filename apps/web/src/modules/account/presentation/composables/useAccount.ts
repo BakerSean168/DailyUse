@@ -49,6 +49,32 @@ export function useAccount() {
   // ===== 账户资料管理 =====
 
   /**
+   * 获取当前用户资料
+   */
+  async function getMyProfile(): Promise<AccountContracts.AccountDTO> {
+    return await accountProfileApplicationService.getMyProfile();
+  }
+
+  /**
+   * 更新当前用户资料
+   */
+  async function updateMyProfile(
+    request: AccountContracts.UpdateAccountProfileRequestDTO,
+  ): Promise<AccountContracts.AccountDTO> {
+    return await accountProfileApplicationService.updateMyProfile(request);
+  }
+
+  /**
+   * 修改当前用户密码
+   */
+  async function changeMyPassword(request: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<{ success: boolean; message: string }> {
+    return await accountProfileApplicationService.changeMyPassword(request);
+  }
+
+  /**
    * 获取账户详情
    */
   async function getAccountById(accountId: string): Promise<AccountContracts.AccountDTO> {
@@ -245,6 +271,11 @@ export function useAccount() {
     isPremiumUser,
     storageUsagePercentage,
     rememberedAccounts,
+
+    // 当前用户资料方法 (/me)
+    getMyProfile,
+    updateMyProfile,
+    changeMyPassword,
 
     // 账户资料方法
     getAccountById,

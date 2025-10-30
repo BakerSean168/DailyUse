@@ -568,6 +568,31 @@ export class GoalWebApplicationService {
     }
   }
 
+  /**
+   * 获取目标进度分解详情
+   * 
+   * 返回目标进度的详细计算信息，包括每个关键结果的贡献度
+   * 
+   * @param goalUuid - 目标 UUID
+   * @returns 进度分解详情
+   */
+  async getProgressBreakdown(goalUuid: string): Promise<GoalContracts.ProgressBreakdown> {
+    try {
+      this.goalStore.setLoading(true);
+      this.goalStore.setError(null);
+
+      const data = await goalApiClient.getProgressBreakdown(goalUuid);
+
+      return data;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '获取进度详情失败';
+      this.goalStore.setError(errorMessage);
+      throw error;
+    } finally {
+      this.goalStore.setLoading(false);
+    }
+  }
+
   // ===== DDD聚合根控制：GoalRecord管理 =====
 
   /**

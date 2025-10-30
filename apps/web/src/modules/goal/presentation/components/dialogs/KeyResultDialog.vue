@@ -101,6 +101,7 @@
                   variant="outlined"
                   hint="该关键结果在目标中的重要程度 (1-10)"
                   persistent-hint
+                  :rules="weightRules"
                   required
                 />
               </v-col>
@@ -203,7 +204,7 @@ const keyResultStartValue = computed({
 });
 
 const keyResultTargetValue = computed({
-  get: () => localKeyResult.value.progress.targetValue || 0,
+  get: () => localKeyResult.value.progress.targetValue || 100, // 默认目标值为 100
   set: (val: number) => {
     localKeyResult.value.updateTargetValue(val);
   },
@@ -224,11 +225,21 @@ const keyResultCalculationMethod = computed({
 });
 
 const keyResultWeight = computed({
-  get: () => localKeyResult.value.weight || 0,
+  get: () => localKeyResult.value.weight || 5, // 默认值为 5（中等权重）
   set: (val: number) => {
     localKeyResult.value.updateWeight(val);
   },
 });
+
+// 权重验证规则
+const weightRules = [
+  (value: number) => {
+    if (!value) return '权重不能为空';
+    if (value < 1 || value > 10) return '权重必须在 1-10 之间';
+    if (!Number.isInteger(value)) return '权重必须是整数';
+    return true;
+  },
+];
 
 // 计算方法选项
 const calculationMethods = [
@@ -349,9 +360,17 @@ const openForUpdateKeyResult = (goalUuid: string, keyResult: KeyResultClient) =>
 
 watch([() => visible.value, () => propKeyResult.value], ([newValue]) => {
   if (newValue) {
-    localKeyResult.value = propKeyResult.value
-      ? propKeyResult.value.clone()
-      : KeyResult.forCreate(propGoalUuid.value || propGoal.value?.uuid || '');
+    if (propKeyResult.value) {
+      // 编辑模式：克隆现有 KR
+      localKeyResult.value = propKeyResult.value.clone();
+    } else {
+      // 创建模式：新建 KR 并设置默认值
+      localKeyResult.value = KeyResult.forCreate(propGoalUuid.value || propGoal.value?.uuid || '');
+      localKeyResult.value.updateWeight(5); // 默认权重为 5
+      localKeyResult.value.updateTargetValue(100); // 默认目标值为 100
+      localKeyResult.value.updateInitialValue(0); // 默认起始值为 0
+      localKeyResult.value.updateCurrentValue(0); // 默认当前值为 0
+    }
   } else {
     localKeyResult.value = KeyResult.forCreate(propGoalUuid.value || propGoal.value?.uuid || '');
   }

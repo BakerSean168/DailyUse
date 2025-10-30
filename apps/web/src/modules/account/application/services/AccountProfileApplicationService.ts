@@ -37,6 +37,63 @@ export class AccountProfileApplicationService {
     return useAccountStore();
   }
 
+  // ============ 当前用户资料管理用例 (/me) ============
+
+  /**
+   * 获取当前用户资料
+   */
+  async getMyProfile(): Promise<AccountContracts.AccountDTO> {
+    try {
+      this.accountStore.setLoading(true);
+      const account = await accountApiClient.getMyProfile();
+      this.accountStore.setCurrentAccount(account);
+      return account;
+    } catch (error) {
+      console.error('Failed to get my profile:', error);
+      throw error;
+    } finally {
+      this.accountStore.setLoading(false);
+    }
+  }
+
+  /**
+   * 更新当前用户资料
+   */
+  async updateMyProfile(
+    request: AccountContracts.UpdateAccountProfileRequestDTO,
+  ): Promise<AccountContracts.AccountDTO> {
+    try {
+      this.accountStore.setLoading(true);
+      const updatedAccount = await accountApiClient.updateMyProfile(request);
+      this.accountStore.setCurrentAccount(updatedAccount);
+      return updatedAccount;
+    } catch (error) {
+      console.error('Failed to update my profile:', error);
+      throw error;
+    } finally {
+      this.accountStore.setLoading(false);
+    }
+  }
+
+  /**
+   * 修改当前用户密码
+   */
+  async changeMyPassword(request: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<{ success: boolean; message: string }> {
+    try {
+      this.accountStore.setLoading(true);
+      const result = await accountApiClient.changeMyPassword(request);
+      return result;
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      throw error;
+    } finally {
+      this.accountStore.setLoading(false);
+    }
+  }
+
   // ============ 账户资料管理用例 ============
 
   /**
