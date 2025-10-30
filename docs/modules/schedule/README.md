@@ -254,3 +254,16 @@
 **最后更新**: 2025-10-12
 
 **状态**: ✅ 100% 完成
+
+## 和其他模块的架构关系（ScheduleTask和 Schedule 的区别）
+
+用户操作 → 业务实体 → 可选调度
+══════════════════════════════════════
+Goal         ─┐
+Task         ─┤→ ScheduleTask (提醒/通知)
+Reminder     ─┘
+
+Schedule     ─→ 日历事件（可关联 Goal/Task）
+
+FocusCycle   ─→ Schedule (type="FOCUS_CYCLE")
+             └─→ ScheduleTask (到期自动结束)
