@@ -18,6 +18,17 @@
             </v-btn>
           </v-btn-toggle>
         </div>
+
+        <!-- 一次性任务入口 -->
+        <v-btn
+          color="primary"
+          variant="outlined"
+          class="ml-4"
+          @click="$router.push('/tasks/one-time')"
+        >
+          <v-icon start>mdi-lightning-bolt</v-icon>
+          一次性任务
+        </v-btn>
       </div>
     </header>
 

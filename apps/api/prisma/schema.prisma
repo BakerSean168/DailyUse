@@ -374,6 +374,7 @@ model goal {
   other_goals                 goal[]                       @relation("goalsTogoals")
   keyResultWeightSnapshot keyResultWeightSnapshot[]
   keyResult                 keyResult[]
+  taskTemplate              taskTemplate[]
 
   @@index([targetDate])
 
@@ -417,6 +418,7 @@ model keyResult {
   goalRecord                goalRecord[]
   keyResultWeightSnapshot keyResultWeightSnapshot[]
   goal                       goal                         @relation(fields: [goalUuid], references: [uuid], onDelete: Cascade)
+  taskTemplate              taskTemplate[]
 
   @@index([goalUuid])
 
@@ -1038,22 +1040,40 @@ model taskTemplate {
   accountUuid String @map("account_uuid")
   title                                                                     String
   description                                                               String?
-  taskType String @map("task_type")
+  taskType String @map("task_type") // 'ONE_TIME' | 'RECURRING'
   status                                                                    String
-  importance                                                                String
-  urgency                                                                   String
+  importance                                                                Int // ImportanceLevel (0-4)
+  urgency                                                                   Int // UrgencyLevel (0-4)
   color                                                                     String?
-  tags                                                                      String
+  tags                                                                      String // JSON: string[]
   folderUuid String? @map("folder_uuid")
+  
+  // === Goal/KR 关联（适用于所有任务） ===
+  goalUuid String? @map("goal_uuid")
+  keyResultUuid String? @map("key_result_uuid")
+  
+  // === 子任务支持（适用于所有任务） ===
+  parentTaskUuid String? @map("parent_task_uuid")
+  
+  // === 一次性任务专用字段 ===
+  startDate BigInt? @map("start_date") // Unix timestamp (ms)
+  dueDate BigInt? @map("due_date") // Unix timestamp (ms)
+  completedAt BigInt? @map("completed_at") // Unix timestamp (ms)
+  estimatedMinutes Int? @map("estimated_minutes")
+  actualMinutes Int? @map("actual_minutes")
+  note String? @db.Text
+  
+  // === 循环任务专用字段 ===
   lastGeneratedDate DateTime? @map("last_generated_date")
-  generateAheadDays Int @map("generate_ahead_days")
-  createdAt DateTime                @default(now()) @map("created_at")
-  updatedAt DateTime @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  timeConfigType String @map("time_config_type")
+  generateAheadDays Int? @map("generate_ahead_days")
+  
+  // === 时间配置（循环任务用） ===
+  timeConfigType String? @map("time_config_type")
   timeConfigStartTime DateTime? @map("time_config_start_time")
   timeConfigEndTime DateTime? @map("time_config_end_time")
   timeConfigDurationMinutes Int? @map("time_config_duration_minutes")
+  
+  // === 重复规则（循环任务用） ===
   recurrenceRuleType String? @map("recurrence_rule_type")
   recurrenceRuleInterval Int? @map("recurrence_rule_interval")
   recurrenceRuleDaysOfWeek String? @map("recurrence_rule_days_of_week")
@@ -1061,23 +1081,56 @@ model taskTemplate {
   recurrenceRuleMonthOfYear Int? @map("recurrence_rule_month_of_year")
   recurrenceRuleEndDate DateTime? @map("recurrence_rule_end_date")
   recurrenceRuleCount Int? @map("recurrence_rule_count")
+  
+  // === 提醒配置（循环任务用） ===
   reminderConfigEnabled Boolean? @map("reminder_config_enabled")
   reminderConfigTimeOffsetMinutes Int? @map("reminder_config_time_offset_minutes")
   reminderConfigUnit String? @map("reminder_config_unit")
   reminderConfigChannel String? @map("reminder_config_channel")
+  
+  // === Goal 绑定（循环任务用） ===
   goalBindingGoalUuid String? @map("goal_binding_goal_uuid")
   goalBindingKeyResultUuid String? @map("goal_binding_key_result_uuid")
   goalBindingIncrementValue Float? @map("goal_binding_increment_value")
+  
+  // === 依赖关系（适用于所有任务） ===
   blockingReason String? @map("blocking_reason")
-  dependencyStatus String                  @default("NONE") @map("dependency_status")
-  isBlocked Boolean                 @default(false) @map("is_blocked")
-  task_dependencies_task_dependencies_predecessor_task_uuidTotask_templates taskDependency[]     @relation("task_dependencies_predecessor_task_uuidTotask_templates")
-  task_dependencies_task_dependencies_successor_task_uuidTotask_templates   taskDependency[]     @relation("task_dependencies_successor_task_uuidTotask_templates")
+  dependencyStatus String @default("NONE") @map("dependency_status")
+  isBlocked Boolean @default(false) @map("is_blocked")
+  
+  // === 审计字段 ===
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  
+  // === 关系 ===
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  goal goal? @relation(fields: [goalUuid], references: [uuid], onDelete: SetNull)
+  keyResult keyResult? @relation(fields: [keyResultUuid], references: [uuid], onDelete: SetNull)
+  
+  // 子任务关系
+  parentTask taskTemplate? @relation("TaskSubtasks", fields: [parentTaskUuid], references: [uuid], onDelete: SetNull)
+  subtasks taskTemplate[] @relation("TaskSubtasks")
+  
+  // 依赖关系
+  task_dependencies_task_dependencies_predecessor_task_uuidTotask_templates taskDependency[] @relation("task_dependencies_predecessor_task_uuidTotask_templates")
+  task_dependencies_task_dependencies_successor_task_uuidTotask_templates   taskDependency[] @relation("task_dependencies_successor_task_uuidTotask_templates")
+  
+  // 实例（仅 RECURRING 生成）
   taskInstance                                                            taskInstance[]
   taskTemplateHistory                                                     taskTemplateHistory[]
-  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
+  // === 索引 ===
+  @@index([accountUuid])
   @@index([taskType])
+  @@index([status])
+  @@index([importance])
+  @@index([urgency])
+  @@index([goalUuid])
+  @@index([keyResultUuid])
+  @@index([parentTaskUuid])
+  @@index([dueDate])
+  @@index([deletedAt])
 
   @@map("task_templates")
 }
