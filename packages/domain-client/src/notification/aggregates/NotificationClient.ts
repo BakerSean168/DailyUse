@@ -138,29 +138,11 @@ export class NotificationClient extends AggregateRoot implements INotificationCl
   public get relatedEntityUuid(): string | null | undefined {
     return this._relatedEntityUuid;
   }
-  public get actions(): NotificationActionClientDTO[] | null | undefined {
-    return this._actions?.map((a) => ({
-      id: a.id,
-      label: a.label,
-      type: a.type,
-      payload: a.payload,
-      typeText: a.typeText,
-      icon: a.icon,
-    }));
+  public get actions(): NotificationActionClient[] | null | undefined {
+    return this._actions;
   }
-  public get metadata(): NotificationMetadataClientDTO | null | undefined {
-    if (!this._metadata) return null;
-    return {
-      icon: this._metadata.icon,
-      image: this._metadata.image,
-      color: this._metadata.color,
-      sound: this._metadata.sound,
-      badge: this._metadata.badge,
-      data: this._metadata.data,
-      hasIcon: this._metadata.hasIcon,
-      hasImage: this._metadata.hasImage,
-      hasBadge: this._metadata.hasBadge,
-    };
+  public get metadata(): NotificationMetadataClient | null | undefined {
+    return this._metadata;
   }
   public get expiresAt(): number | null | undefined {
     return this._expiresAt;

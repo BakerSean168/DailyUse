@@ -5,17 +5,24 @@
 
 import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
+import * as ValueObjects from '../value-objects';
 
 // 类型别名
 type ReminderTemplateClientDTO = ReminderContracts.ReminderTemplateClientDTO;
 type ReminderTemplateServerDTO = ReminderContracts.ReminderTemplateServerDTO;
 type ReminderType = ReminderContracts.ReminderType;
 type ReminderStatus = ReminderContracts.ReminderStatus;
+type TriggerConfigClient = ReminderContracts.TriggerConfigClient;
 type TriggerConfigClientDTO = ReminderContracts.TriggerConfigClientDTO;
+type RecurrenceConfigClient = ReminderContracts.RecurrenceConfigClient;
 type RecurrenceConfigClientDTO = ReminderContracts.RecurrenceConfigClientDTO;
+type ActiveTimeConfigClient = ReminderContracts.ActiveTimeConfigClient;
 type ActiveTimeConfigClientDTO = ReminderContracts.ActiveTimeConfigClientDTO;
+type ActiveHoursConfigClient = ReminderContracts.ActiveHoursConfigClient;
 type ActiveHoursConfigClientDTO = ReminderContracts.ActiveHoursConfigClientDTO;
+type NotificationConfigClient = ReminderContracts.NotificationConfigClient;
 type NotificationConfigClientDTO = ReminderContracts.NotificationConfigClientDTO;
+type ReminderStatsClient = ReminderContracts.ReminderStatsClient;
 type ReminderStatsClientDTO = ReminderContracts.ReminderStatsClientDTO;
 
 // 枚举别名
@@ -30,11 +37,11 @@ export class ReminderTemplateClient extends AggregateRoot
   private _title: string;
   private _description?: string | null;
   private _type: ReminderType;
-  private _trigger: TriggerConfigClientDTO;
-  private _recurrence?: RecurrenceConfigClientDTO | null;
-  private _activeTime: ActiveTimeConfigClientDTO;
-  private _activeHours?: ActiveHoursConfigClientDTO | null;
-  private _notificationConfig: NotificationConfigClientDTO;
+  private _trigger: TriggerConfigClient;
+  private _recurrence?: RecurrenceConfigClient | null;
+  private _activeTime: ActiveTimeConfigClient;
+  private _activeHours?: ActiveHoursConfigClient | null;
+  private _notificationConfig: NotificationConfigClient;
   private _selfEnabled: boolean;
   private _status: ReminderStatus;
   private _groupUuid?: string | null;
@@ -43,7 +50,7 @@ export class ReminderTemplateClient extends AggregateRoot
   private _color?: string | null;
   private _icon?: string | null;
   private _nextTriggerAt?: number | null;
-  private _stats: ReminderStatsClientDTO;
+  private _stats: ReminderStatsClient;
   private _createdAt: number;
   private _updatedAt: number;
   private _deletedAt?: number | null;
@@ -55,11 +62,11 @@ export class ReminderTemplateClient extends AggregateRoot
     title: string;
     description?: string | null;
     type: ReminderType;
-    trigger: TriggerConfigClientDTO;
-    recurrence?: RecurrenceConfigClientDTO | null;
-    activeTime: ActiveTimeConfigClientDTO;
-    activeHours?: ActiveHoursConfigClientDTO | null;
-    notificationConfig: NotificationConfigClientDTO;
+    trigger: TriggerConfigClient;
+    recurrence?: RecurrenceConfigClient | null;
+    activeTime: ActiveTimeConfigClient;
+    activeHours?: ActiveHoursConfigClient | null;
+    notificationConfig: NotificationConfigClient;
     selfEnabled: boolean;
     status: ReminderStatus;
     groupUuid?: string | null;
@@ -68,7 +75,7 @@ export class ReminderTemplateClient extends AggregateRoot
     color?: string | null;
     icon?: string | null;
     nextTriggerAt?: number | null;
-    stats: ReminderStatsClientDTO;
+    stats: ReminderStatsClient;
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
@@ -79,9 +86,9 @@ export class ReminderTemplateClient extends AggregateRoot
     this._description = params.description;
     this._type = params.type;
     this._trigger = params.trigger;
-    this._recurrence = params.recurrence;
+    this._recurrence = params.recurrence ?? null;
     this._activeTime = params.activeTime;
-    this._activeHours = params.activeHours;
+    this._activeHours = params.activeHours ?? null;
     this._notificationConfig = params.notificationConfig;
     this._selfEnabled = params.selfEnabled;
     this._status = params.status;
@@ -104,11 +111,11 @@ export class ReminderTemplateClient extends AggregateRoot
   public get title(): string { return this._title; }
   public get description(): string | null | undefined { return this._description; }
   public get type(): ReminderType { return this._type; }
-  public get trigger(): TriggerConfigClientDTO { return this._trigger; }
-  public get recurrence(): RecurrenceConfigClientDTO | null | undefined { return this._recurrence; }
-  public get activeTime(): ActiveTimeConfigClientDTO { return this._activeTime; }
-  public get activeHours(): ActiveHoursConfigClientDTO | null | undefined { return this._activeHours; }
-  public get notificationConfig(): NotificationConfigClientDTO { return this._notificationConfig; }
+  public get trigger(): TriggerConfigClient { return this._trigger; }
+  public get recurrence(): RecurrenceConfigClient | null | undefined { return this._recurrence; }
+  public get activeTime(): ActiveTimeConfigClient { return this._activeTime; }
+  public get activeHours(): ActiveHoursConfigClient | null | undefined { return this._activeHours; }
+  public get notificationConfig(): NotificationConfigClient { return this._notificationConfig; }
   public get selfEnabled(): boolean { return this._selfEnabled; }
   public get status(): ReminderStatus { return this._status; }
   public get effectiveEnabled(): boolean { return this._selfEnabled && this._status === ReminderStatus.ACTIVE; }
@@ -118,7 +125,7 @@ export class ReminderTemplateClient extends AggregateRoot
   public get color(): string | null | undefined { return this._color; }
   public get icon(): string | null | undefined { return this._icon; }
   public get nextTriggerAt(): number | null | undefined { return this._nextTriggerAt; }
-  public get stats(): ReminderStatsClientDTO { return this._stats; }
+  public get stats(): ReminderStatsClient { return this._stats; }
   public get createdAt(): number { return this._createdAt; }
   public get updatedAt(): number { return this._updatedAt; }
   public get deletedAt(): number | null | undefined { return this._deletedAt; }
@@ -252,12 +259,12 @@ export class ReminderTemplateClient extends AggregateRoot
     this._updatedAt = Date.now();
   }
   
-  public updateTrigger(trigger: TriggerConfigClientDTO): void {
+  public updateTrigger(trigger: TriggerConfigClient): void {
     this._trigger = trigger;
     this._updatedAt = Date.now();
   }
   
-  public updateRecurrence(recurrence: RecurrenceConfigClientDTO | null): void {
+  public updateRecurrence(recurrence: RecurrenceConfigClient | null): void {
     this._recurrence = recurrence;
     this._updatedAt = Date.now();
   }
@@ -362,21 +369,21 @@ export class ReminderTemplateClient extends AggregateRoot
       title: '',
       description: null,
       type: ReminderType.ONE_TIME,
-      trigger: {
+      trigger: ValueObjects.TriggerConfigClient.fromClientDTO({
         type: ReminderContracts.TriggerType.FIXED_TIME,
         fixedTime: { time: '09:00' },
         interval: null,
         displayText: '每天 09:00',
-      },
+      }),
       recurrence: null,
-      activeTime: {
+      activeTime: ValueObjects.ActiveTimeConfigClient.fromClientDTO({
         startDate: now,
         endDate: null,
         displayText: '立即生效',
         isActive: true,
-      },
+      }),
       activeHours: null,
-      notificationConfig: {
+      notificationConfig: ValueObjects.NotificationConfigClient.fromClientDTO({
         channels: [ReminderContracts.NotificationChannel.IN_APP],
         title: '',
         body: '',
@@ -386,7 +393,7 @@ export class ReminderTemplateClient extends AggregateRoot
         channelsText: '应用内通知',
         hasSoundEnabled: false,
         hasVibrationEnabled: false,
-      },
+      }),
       selfEnabled: true,
       status: ReminderStatus.ACTIVE,
       groupUuid: null,
@@ -395,12 +402,12 @@ export class ReminderTemplateClient extends AggregateRoot
       color: null,
       icon: null,
       nextTriggerAt: null,
-      stats: {
+      stats: ValueObjects.ReminderStatsClient.fromClientDTO({
         totalTriggers: 0,
         lastTriggeredAt: null,
         totalTriggersText: '未触发',
         lastTriggeredText: null,
-      },
+      }),
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -417,11 +424,11 @@ export class ReminderTemplateClient extends AggregateRoot
       title: dto.title,
       description: dto.description,
       type: dto.type,
-      trigger: dto.trigger as any,
-      recurrence: dto.recurrence as any,
-      activeTime: dto.activeTime as any,
-      activeHours: dto.activeHours as any,
-      notificationConfig: dto.notificationConfig as any,
+      trigger: ValueObjects.TriggerConfigClient.fromServerDTO(dto.trigger as any),
+      recurrence: dto.recurrence ? ValueObjects.RecurrenceConfigClient.fromServerDTO(dto.recurrence as any) : null,
+      activeTime: ValueObjects.ActiveTimeConfigClient.fromServerDTO(dto.activeTime as any),
+      activeHours: dto.activeHours ? ValueObjects.ActiveHoursConfigClient.fromServerDTO(dto.activeHours as any) : null,
+      notificationConfig: ValueObjects.NotificationConfigClient.fromServerDTO(dto.notificationConfig as any),
       selfEnabled: dto.selfEnabled,
       status: dto.status,
       groupUuid: dto.groupUuid,
@@ -430,7 +437,7 @@ export class ReminderTemplateClient extends AggregateRoot
       color: dto.color,
       icon: dto.icon,
       nextTriggerAt: dto.nextTriggerAt,
-      stats: dto.stats as any,
+      stats: ValueObjects.ReminderStatsClient.fromServerDTO(dto.stats as any),
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
@@ -447,11 +454,11 @@ export class ReminderTemplateClient extends AggregateRoot
       title: dto.title,
       description: dto.description,
       type: dto.type,
-      trigger: dto.trigger,
-      recurrence: dto.recurrence,
-      activeTime: dto.activeTime,
-      activeHours: dto.activeHours,
-      notificationConfig: dto.notificationConfig,
+      trigger: ValueObjects.TriggerConfigClient.fromClientDTO(dto.trigger),
+      recurrence: dto.recurrence ? ValueObjects.RecurrenceConfigClient.fromClientDTO(dto.recurrence) : null,
+      activeTime: ValueObjects.ActiveTimeConfigClient.fromClientDTO(dto.activeTime),
+      activeHours: dto.activeHours ? ValueObjects.ActiveHoursConfigClient.fromClientDTO(dto.activeHours) : null,
+      notificationConfig: ValueObjects.NotificationConfigClient.fromClientDTO(dto.notificationConfig),
       selfEnabled: dto.selfEnabled,
       status: dto.status,
       groupUuid: dto.groupUuid,
@@ -460,7 +467,7 @@ export class ReminderTemplateClient extends AggregateRoot
       color: dto.color,
       icon: dto.icon,
       nextTriggerAt: dto.nextTriggerAt,
-      stats: dto.stats,
+      stats: ValueObjects.ReminderStatsClient.fromClientDTO(dto.stats),
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
