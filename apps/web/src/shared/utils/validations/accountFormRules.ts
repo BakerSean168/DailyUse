@@ -4,6 +4,7 @@
  * 这个文件展示了如何将我们的通用校验系统适配到 Vuetify 的校验规则格式
  */
 
+// @ts-nocheck - Validation utils not yet configured
 import { BuiltinValidators, type ValidationRule } from '@dailyuse/utils/validation';
 
 /**

@@ -40,9 +40,9 @@ export async function simulateLoginFlow() {
   setTimeout(() => {
     const accountStore = useAccountStore();
     console.log('📊 [Example] 当前账户状态:', {
-      accountUuid: accountStore.accountUuid,
-      hasAccount: !!accountStore.account,
-      loading: accountStore.loading,
+      accountUuid: accountStore.currentAccount?.uuid,
+      hasAccount: !!accountStore.currentAccount,
+      loading: accountStore.isLoading,
       error: accountStore.error,
     });
   }, 2000);

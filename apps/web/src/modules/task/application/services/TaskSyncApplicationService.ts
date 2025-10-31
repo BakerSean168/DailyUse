@@ -60,8 +60,7 @@ export class TaskSyncApplicationService {
       this.taskStore.setError(null);
 
       // 获取任务模板（包含实例数据）
-      const response = await taskTemplateApiClient.getTaskTemplates({ limit: 1000 });
-      const templates = response.data || response;
+      const templates = await taskTemplateApiClient.getTaskTemplates({ limit: 1000 });
 
       // 转换模板为领域实体对象
       console.log('[TaskSync] Converting templates to entities:', templates.length);

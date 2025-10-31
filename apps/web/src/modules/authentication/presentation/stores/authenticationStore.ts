@@ -9,7 +9,7 @@ type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
 type AccountClientDTO = AccountContracts.AccountClientDTO;
 
 // MFA 设备临时类型（需要在 contracts 中定义）
-interface MFADeviceClientDTO {
+interface DeviceInfoClientDTO {
   uuid: string;
   name: string;
   type: string;
@@ -29,7 +29,7 @@ export interface AuthenticationState {
   credential: AuthCredential | null;
 
   // MFA 设备
-  mfaDevices: MFADeviceClientDTO[];
+  mfaDevices: DeviceInfoClientDTO[];
 
   // UI 状态
   isLoading: boolean;
@@ -182,7 +182,7 @@ export const useAuthenticationStore = defineStore('authentication', {
 
   actions: {
     /**
-     * 设置认证数据（从 LoginResponse 设置）
+     * 设置认证数据（从 LoginResponseDTO 设置）
      */
     setAuthData(loginResponse: {
       user: AccountClientDTO;
@@ -257,14 +257,14 @@ export const useAuthenticationStore = defineStore('authentication', {
     /**
      * 设置 MFA 设备列表
      */
-    setMFADevices(devices: MFADeviceClientDTO[]) {
+    setMFADevices(devices: DeviceInfoClientDTO[]) {
       this.mfaDevices = devices;
     },
 
     /**
      * 添加 MFA 设备
      */
-    addMFADevice(device: MFADeviceClientDTO) {
+    addMFADevice(device: DeviceInfoClientDTO) {
       this.mfaDevices.push(device);
     },
 

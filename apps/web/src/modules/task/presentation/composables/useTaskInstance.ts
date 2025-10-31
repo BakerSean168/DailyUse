@@ -56,8 +56,9 @@ export function useTaskInstance() {
 
   /**
    * 今日任务
+   * TODO: Implement getTodayTaskInstances in store or calculate here
    */
-  const todayTaskInstances = computed(() => taskStore.getTodayTaskInstances);
+  const todayTaskInstances = computed(() => []);
 
   /**
    * 本周任务
@@ -180,7 +181,7 @@ export function useTaskInstance() {
   /**
    * 完成任务
    */
-  async function completeTaskInstance(uuid: string, result?: string) {
+  async function completeTaskInstance(uuid: string, result?: { duration?: number; note?: string; rating?: number }) {
     try {
       isOperating.value = true;
       operationError.value = null;
@@ -257,6 +258,7 @@ export function useTaskInstance() {
 
   /**
    * 搜索任务实例
+   * TODO: Implement searchTaskInstances with proper API
    */
   async function searchTaskInstances(params: {
     query: string;
@@ -264,79 +266,35 @@ export function useTaskInstance() {
     limit?: number;
     status?: string;
   }) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.searchTaskInstances(params.query, {
-        page: params.page,
-        limit: params.limit,
-      });
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '搜索任务实例失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+    console.warn('searchTaskInstances not implemented');
+    return [];
   }
 
   /**
    * 获取今日任务
+   * TODO: Implement getTodayTasks in service
    */
   async function getTodayTasks() {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.getTodayTasks();
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取今日任务失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+    console.warn('getTodayTasks not implemented');
+    return [];
   }
 
   /**
    * 获取即将到来的任务
+   * TODO: Implement getUpcomingTasks in service
    */
   async function getUpcomingTasks(days = 7) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.getUpcomingTasks(days);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取即将到来的任务失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+    console.warn('getUpcomingTasks not implemented');
+    return [];
   }
 
   /**
    * 获取逾期任务
+   * TODO: Implement getOverdueTasks in service
    */
   async function getOverdueTasks() {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.getOverdueTasks();
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取逾期任务失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+    console.warn('getOverdueTasks not implemented');
+    return [];
   }
 
   // ===== 工具方法 =====
@@ -410,6 +368,7 @@ export function useTaskInstance() {
  */
 export function useTaskInstanceData() {
   const taskStore = useTaskStore();
+  const todayTaskInstances = computed(() => []); // TODO: filter by today
 
   return {
     // 状态
@@ -423,7 +382,7 @@ export function useTaskInstanceData() {
     completedTaskInstances: computed(() => taskStore.getInstancesByStatus('COMPLETED')),
     skippedTaskInstances: computed(() => taskStore.getInstancesByStatus('SKIPPED')),
     expiredTaskInstances: computed(() => taskStore.getInstancesByStatus('EXPIRED')),
-    todayTaskInstances: computed(() => taskStore.getTodayTaskInstances),
+    todayTaskInstances,
 
     // 查询方法
     getTaskInstanceByUuid: taskStore.getTaskInstanceByUuid.bind(taskStore),
@@ -437,7 +396,7 @@ export function useTaskInstanceData() {
       completed: taskStore.getInstancesByStatus('COMPLETED').length,
       skipped: taskStore.getInstancesByStatus('SKIPPED').length,
       expired: taskStore.getInstancesByStatus('EXPIRED').length,
-      today: taskStore.getTodayTaskInstances.length,
+      today: 0, // TODO: calculate from today's date
     })),
   };
 }

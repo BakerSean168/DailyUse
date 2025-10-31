@@ -53,7 +53,7 @@ export class ReminderStatisticsApplicationService {
   async getReminderStatistics(
     accountUuid: string,
     options?: { forceRefresh?: boolean },
-  ): Promise<ReminderContracts.ReminderStatsClientDTO> {
+  ): Promise<ReminderContracts.ReminderStatisticsClientDTO> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);

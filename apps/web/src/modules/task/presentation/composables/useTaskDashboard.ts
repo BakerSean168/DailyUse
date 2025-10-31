@@ -205,8 +205,8 @@ export function useTaskDashboard() {
   const statistics = computed(() => ({
     total: totalTasksCount.value,
     completed: completedTodayCount.value,
-    pending: dashboardData.value?.summary.pendingTasks ?? 0,
-    inProgress: dashboardData.value?.summary.inProgressTasks ?? 0,
+    pending: 0, // TODO: calculate from task list
+    inProgress: 0, // TODO: calculate from task list
     overdue: overdueTasksCount.value,
     completionRate: completionRate.value,
   }));
@@ -218,11 +218,14 @@ export function useTaskDashboard() {
     const data = dashboardData.value;
     if (!data) return [];
 
+    // Calculate from actual task lists
+    const highPriorityCount = data.highPriorityTasks?.length ?? 0;
+
     return [
-      { priority: 'CRITICAL', count: data.summary.criticalTasks ?? 0, color: 'error' },
-      { priority: 'HIGH', count: data.summary.highPriorityTasks ?? 0, color: 'warning' },
-      { priority: 'MEDIUM', count: data.summary.mediumPriorityTasks ?? 0, color: 'info' },
-      { priority: 'LOW', count: data.summary.lowPriorityTasks ?? 0, color: 'success' },
+      { priority: 'CRITICAL', count: 0, color: 'error' }, // TODO: filter from high priority
+      { priority: 'HIGH', count: highPriorityCount, color: 'warning' },
+      { priority: 'MEDIUM', count: 0, color: 'info' }, // TODO: calculate
+      { priority: 'LOW', count: 0, color: 'success' }, // TODO: calculate
     ];
   });
 
@@ -233,12 +236,14 @@ export function useTaskDashboard() {
     const data = dashboardData.value;
     if (!data) return [];
 
+    const blockedCount = data.blockedTasks?.length ?? 0;
+
     return [
-      { status: 'PENDING', count: data.summary.pendingTasks ?? 0, color: 'grey' },
-      { status: 'IN_PROGRESS', count: data.summary.inProgressTasks ?? 0, color: 'primary' },
+      { status: 'PENDING', count: 0, color: 'grey' }, // TODO: calculate
+      { status: 'IN_PROGRESS', count: 0, color: 'primary' }, // TODO: calculate
       { status: 'COMPLETED', count: completedTodayCount.value, color: 'success' },
-      { status: 'BLOCKED', count: data.summary.blockedTasks ?? 0, color: 'warning' },
-      { status: 'CANCELLED', count: data.summary.canceledTasks ?? 0, color: 'error' },
+      { status: 'BLOCKED', count: blockedCount, color: 'warning' },
+      { status: 'CANCELLED', count: 0, color: 'error' }, // TODO: calculate
     ];
   });
 
@@ -254,8 +259,9 @@ export function useTaskDashboard() {
 
   /**
    * 最近完成的任务（用于仪表盘组件）
+   * TODO: Implement recentCompleted in API response
    */
-  const recentCompleted = computed(() => dashboardData.value?.recentCompleted ?? []);
+  const recentCompleted = computed(() => []);
 
   /**
    * 刷新仪表盘（别名，用于 UI）

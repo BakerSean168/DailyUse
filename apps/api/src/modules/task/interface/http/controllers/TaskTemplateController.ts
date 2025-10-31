@@ -377,44 +377,32 @@ export class TaskTemplateController {
 
   /**
    * 开始任务
+   * @deprecated This should be handled by TaskInstanceController
    * @route POST /api/tasks/:uuid/start
    */
   static async startTask(req: Request, res: Response): Promise<Response> {
-    try {
-      const service = await TaskTemplateController.getTaskTemplateService();
-      const { uuid } = req.params;
-
-      const task = await service.startTask(uuid);
-
-      return TaskTemplateController.responseBuilder.sendSuccess(
-        res,
-        task,
-        'Task started successfully',
-      );
-    } catch (error) {
-      return TaskTemplateController.handleError(res, error);
-    }
+    return res.status(501).json({
+      success: false,
+      error: {
+        code: 'METHOD_NOT_AVAILABLE',
+        message: 'Task state transitions should be performed on TaskInstance, not TaskTemplate',
+      },
+    });
   }
 
   /**
    * 完成任务
+   * @deprecated This should be handled by TaskInstanceController
    * @route POST /api/tasks/:uuid/complete
    */
   static async completeTask(req: Request, res: Response): Promise<Response> {
-    try {
-      const service = await TaskTemplateController.getTaskTemplateService();
-      const { uuid } = req.params;
-
-      const task = await service.completeTask(uuid);
-
-      return TaskTemplateController.responseBuilder.sendSuccess(
-        res,
-        task,
-        'Task completed successfully',
-      );
-    } catch (error) {
-      return TaskTemplateController.handleError(res, error);
-    }
+    return res.status(501).json({
+      success: false,
+      error: {
+        code: 'METHOD_NOT_AVAILABLE',
+        message: 'Task state transitions should be performed on TaskInstance, not TaskTemplate',
+      },
+    });
   }
 
   /**
@@ -462,24 +450,17 @@ export class TaskTemplateController {
 
   /**
    * 取消任务
+   * @deprecated This should be handled by TaskInstanceController
    * @route POST /api/tasks/:uuid/cancel
    */
   static async cancelTask(req: Request, res: Response): Promise<Response> {
-    try {
-      const service = await TaskTemplateController.getTaskTemplateService();
-      const { uuid } = req.params;
-      const { reason } = req.body;
-
-      const task = await service.cancelTask(uuid, reason);
-
-      return TaskTemplateController.responseBuilder.sendSuccess(
-        res,
-        task,
-        'Task cancelled successfully',
-      );
-    } catch (error) {
-      return TaskTemplateController.handleError(res, error);
-    }
+    return res.status(501).json({
+      success: false,
+      error: {
+        code: 'METHOD_NOT_AVAILABLE',
+        message: 'Task state transitions should be performed on TaskInstance, not TaskTemplate',
+      },
+    });
   }
 
   /**
@@ -547,24 +528,18 @@ export class TaskTemplateController {
       const service = await TaskTemplateController.getTaskTemplateService();
 
       const filters = {
-        accountUuid,
         status: req.query.status as any,
         goalUuid: req.query.goalUuid as string,
-        keyResultUuid: req.query.keyResultUuid as string,
         parentTaskUuid: req.query.parentTaskUuid as string,
         tags: req.query.tags ? (req.query.tags as string).split(',') : undefined,
-        startDateFrom: req.query.startDateFrom as string,
-        startDateTo: req.query.startDateTo as string,
-        dueDateFrom: req.query.dueDateFrom as string,
-        dueDateTo: req.query.dueDateTo as string,
-        minImportance: req.query.minImportance ? Number(req.query.minImportance) : undefined,
-        minUrgency: req.query.minUrgency ? Number(req.query.minUrgency) : undefined,
-        priorityLevels: req.query.priorityLevels
-          ? (req.query.priorityLevels as string).split(',')
-          : undefined,
+        dueDateFrom: req.query.dueDateFrom ? Number(req.query.dueDateFrom) : undefined,
+        dueDateTo: req.query.dueDateTo ? Number(req.query.dueDateTo) : undefined,
+        priority: req.query.priority as any,
+        limit: req.query.limit ? Number(req.query.limit) : undefined,
+        offset: req.query.offset ? Number(req.query.offset) : undefined,
       };
 
-      const tasks = await service.findOneTimeTasks(filters);
+      const tasks = await service.findOneTimeTasks(accountUuid, filters);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -585,7 +560,7 @@ export class TaskTemplateController {
       const accountUuid = TaskTemplateController.extractAccountUuid(req);
       const service = await TaskTemplateController.getTaskTemplateService();
 
-      const tasks = await service.findTodayTasks(accountUuid);
+      const tasks = await service.getTodayTasks(accountUuid);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -606,7 +581,7 @@ export class TaskTemplateController {
       const accountUuid = TaskTemplateController.extractAccountUuid(req);
       const service = await TaskTemplateController.getTaskTemplateService();
 
-      const tasks = await service.findOverdueTasks(accountUuid);
+      const tasks = await service.getOverdueTasks(accountUuid);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -628,7 +603,7 @@ export class TaskTemplateController {
       const service = await TaskTemplateController.getTaskTemplateService();
 
       const days = req.query.days ? Number(req.query.days) : 7;
-      const tasks = await service.findUpcomingTasks(accountUuid, days);
+      const tasks = await service.getUpcomingTasks(accountUuid, days);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -650,7 +625,7 @@ export class TaskTemplateController {
       const service = await TaskTemplateController.getTaskTemplateService();
 
       const limit = req.query.limit ? Number(req.query.limit) : undefined;
-      const tasks = await service.findTasksSortedByPriority(accountUuid, limit);
+      const tasks = await service.getTasksSortedByPriority(accountUuid, limit);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -684,45 +659,33 @@ export class TaskTemplateController {
   }
 
   /**
-   * 批量更新任务优先级
-   * @route POST /api/tasks/batch/update-priority
+   * 批量更新优先级
+   * @route POST /api/tasks/batch/priority
+   * @todo Implement batch priority update in service
    */
   static async batchUpdatePriority(req: Request, res: Response): Promise<Response> {
-    try {
-      const service = await TaskTemplateController.getTaskTemplateService();
-      const { taskUuids, importance, urgency } = req.body;
-
-      const tasks = await service.batchUpdatePriority(taskUuids, importance, urgency);
-
-      return TaskTemplateController.responseBuilder.sendSuccess(
-        res,
-        tasks,
-        `${tasks.length} tasks priority updated successfully`,
-      );
-    } catch (error) {
-      return TaskTemplateController.handleError(res, error);
-    }
+    return res.status(501).json({
+      success: false,
+      error: {
+        code: 'NOT_IMPLEMENTED',
+        message: 'Batch priority update not yet implemented',
+      },
+    });
   }
 
   /**
    * 批量取消任务
+   * @deprecated Task state transitions should be on TaskInstance
    * @route POST /api/tasks/batch/cancel
    */
   static async batchCancelTasks(req: Request, res: Response): Promise<Response> {
-    try {
-      const service = await TaskTemplateController.getTaskTemplateService();
-      const { taskUuids, reason } = req.body;
-
-      const tasks = await service.batchCancelTasks(taskUuids, reason);
-
-      return TaskTemplateController.responseBuilder.sendSuccess(
-        res,
-        tasks,
-        `${tasks.length} tasks cancelled successfully`,
-      );
-    } catch (error) {
-      return TaskTemplateController.handleError(res, error);
-    }
+    return res.status(501).json({
+      success: false,
+      error: {
+        code: 'METHOD_NOT_AVAILABLE',
+        message: 'Task state transitions should be performed on TaskInstance, not TaskTemplate',
+      },
+    });
   }
 
   /**
@@ -763,7 +726,7 @@ export class TaskTemplateController {
       const service = await TaskTemplateController.getTaskTemplateService();
       const { parentUuid } = req.params;
 
-      const subtasks = await service.findSubtasks(parentUuid);
+      const subtasks = await service.getSubtasks(parentUuid);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -827,7 +790,7 @@ export class TaskTemplateController {
       const service = await TaskTemplateController.getTaskTemplateService();
       const { goalUuid } = req.params;
 
-      const tasks = await service.findTasksByGoal(goalUuid);
+      const tasks = await service.getTasksByGoal(goalUuid);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -848,7 +811,7 @@ export class TaskTemplateController {
       const service = await TaskTemplateController.getTaskTemplateService();
       const { keyResultUuid } = req.params;
 
-      const tasks = await service.findTasksByKeyResult(keyResultUuid);
+      const tasks = await service.getTasksByKeyResult(keyResultUuid);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -870,7 +833,7 @@ export class TaskTemplateController {
       const service = await TaskTemplateController.getTaskTemplateService();
 
       const tags = req.query.tags ? (req.query.tags as string).split(',') : [];
-      const tasks = await service.findTasksByTags(accountUuid, tags);
+      const tasks = await service.getTaskTemplatesByTags(accountUuid, tags);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -891,7 +854,7 @@ export class TaskTemplateController {
       const accountUuid = TaskTemplateController.extractAccountUuid(req);
       const service = await TaskTemplateController.getTaskTemplateService();
 
-      const tasks = await service.findBlockedTasks(accountUuid);
+      const tasks = await service.getBlockedTasks(accountUuid);
 
       return TaskTemplateController.responseBuilder.sendSuccess(
         res,
@@ -906,34 +869,15 @@ export class TaskTemplateController {
   /**
    * 按日期范围获取任务
    * @route GET /api/tasks/by-date-range
+   * @todo Implement date range query in service
    */
   static async getTasksByDateRange(req: Request, res: Response): Promise<Response> {
-    try {
-      const accountUuid = TaskTemplateController.extractAccountUuid(req);
-      const service = await TaskTemplateController.getTaskTemplateService();
-
-      const { startDate, endDate } = req.query;
-
-      if (!startDate || !endDate) {
-        return TaskTemplateController.responseBuilder.sendError(res, {
-          code: ResponseCode.BAD_REQUEST,
-          message: 'startDate and endDate are required',
-        });
-      }
-
-      const tasks = await service.findTasksByDateRange(
-        accountUuid,
-        startDate as string,
-        endDate as string,
-      );
-
-      return TaskTemplateController.responseBuilder.sendSuccess(
-        res,
-        tasks,
-        'Tasks retrieved successfully',
-      );
-    } catch (error) {
-      return TaskTemplateController.handleError(res, error);
-    }
+    return res.status(501).json({
+      success: false,
+      error: {
+        code: 'NOT_IMPLEMENTED',
+        message: 'Date range query not yet implemented',
+      },
+    });
   }
 }

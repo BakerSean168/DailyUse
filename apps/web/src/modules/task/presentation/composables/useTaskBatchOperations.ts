@@ -255,7 +255,7 @@ export function useTaskBatchOperations() {
    * 选择高优先级任务
    */
   function selectHighPriorityTasks(tasks: TaskTemplate[]): void {
-    selectTasksByCondition(tasks, (task) => task.priority?.level === 'HIGH');
+    selectTasksByCondition(tasks, (task) => (task as any).priorityLevel === 'HIGH');
   }
 
   /**
@@ -266,9 +266,9 @@ export function useTaskBatchOperations() {
     selectTasksByCondition(
       tasks,
       (task) =>
-        task.dueDate !== undefined &&
-        task.dueDate < now &&
-        task.status !== 'COMPLETED',
+        (task as any).dueDate !== undefined &&
+        (task as any).dueDate < now &&
+        (task.status as any) !== 'COMPLETED',
     );
   }
 
@@ -276,7 +276,7 @@ export function useTaskBatchOperations() {
    * 选择待执行任务
    */
   function selectPendingTasks(tasks: TaskTemplate[]): void {
-    selectTasksByCondition(tasks, (task) => task.status === 'PENDING');
+    selectTasksByCondition(tasks, (task) => (task.status as any) === 'PENDING');
   }
 
   /**

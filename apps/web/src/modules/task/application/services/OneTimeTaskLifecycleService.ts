@@ -88,7 +88,7 @@ export class OneTimeTaskLifecycleService {
       const task = TaskTemplateClient.fromServerDTO(dto);
       
       const taskStore = useTaskStore();
-      taskStore.updateTaskTemplate(task);
+      taskStore.updateTaskTemplate(task.uuid, task);
       
       logger.info('Task started successfully', { uuid });
       return task;
@@ -108,7 +108,7 @@ export class OneTimeTaskLifecycleService {
       const task = TaskTemplateClient.fromServerDTO(dto);
       
       const taskStore = useTaskStore();
-      taskStore.updateTaskTemplate(task);
+      taskStore.updateTaskTemplate(task.uuid, task);
       
       logger.info('Task completed successfully', { uuid });
       return task;
@@ -128,7 +128,7 @@ export class OneTimeTaskLifecycleService {
       const task = TaskTemplateClient.fromServerDTO(dto);
       
       const taskStore = useTaskStore();
-      taskStore.updateTaskTemplate(task);
+      taskStore.updateTaskTemplate(task.uuid, task);
       
       logger.info('Task blocked successfully', { uuid });
       return task;
@@ -148,7 +148,7 @@ export class OneTimeTaskLifecycleService {
       const task = TaskTemplateClient.fromServerDTO(dto);
       
       const taskStore = useTaskStore();
-      taskStore.updateTaskTemplate(task);
+      taskStore.updateTaskTemplate(task.uuid, task);
       
       logger.info('Task unblocked successfully', { uuid });
       return task;
@@ -168,7 +168,7 @@ export class OneTimeTaskLifecycleService {
       const task = TaskTemplateClient.fromServerDTO(dto);
       
       const taskStore = useTaskStore();
-      taskStore.updateTaskTemplate(task);
+      taskStore.updateTaskTemplate(task.uuid, task);
       
       logger.info('Task canceled successfully', { uuid });
       return task;

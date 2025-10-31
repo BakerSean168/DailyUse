@@ -15,7 +15,11 @@ import type { GoalContracts } from '@dailyuse/contracts';
 import { useGoalManagement } from './useGoalManagement';
 import { useGoalFolder } from './useGoalFolder';
 import { useKeyResult } from './useKeyResult';
-import { goalWebApplicationService } from '../../application/services';
+import { 
+  goalWebApplicationService,
+  goalManagementApplicationService,
+  goalFolderApplicationService 
+} from '../../application/services';
 import { getGoalStore } from '../stores/goalStore';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 
