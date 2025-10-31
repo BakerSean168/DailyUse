@@ -18,11 +18,11 @@ export { KeyResult } from './entities/KeyResult';
 // ===== 值对象 =====
 export { FocusMode } from './value-objects/FocusMode';
 export { GoalMetadata } from './value-objects/GoalMetadata';
+export { GoalReminderConfig } from './value-objects/GoalReminderConfig';
 export { GoalTimeRange } from './value-objects/GoalTimeRange';
 export { KeyResultProgress } from './value-objects/KeyResultProgress';
 export { KeyResultSnapshot } from './value-objects/KeyResultSnapshot';
 export { KeyResultWeightSnapshot } from './value-objects/KeyResultWeightSnapshot';
-// export { GoalReminderConfig } from './value-objects/GoalReminderConfig';
 
 // ===== 领域服务 =====
 export * from './services';

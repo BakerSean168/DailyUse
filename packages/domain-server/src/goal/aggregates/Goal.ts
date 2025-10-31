@@ -13,7 +13,7 @@ import { AggregateRoot } from '@dailyuse/utils';
 import { GoalContracts } from '@dailyuse/contracts';
 import { KeyResult } from '../entities/KeyResult';
 import { GoalReview } from '../entities/GoalReview';
-import { KeyResultWeightSnapshot, KeyResultNotFoundInGoalError } from '../value-objects';
+import { GoalReminderConfig, KeyResultWeightSnapshot, KeyResultNotFoundInGoalError } from '../value-objects';
 
 // 类型别名（从命名空间导入）
 type IGoalServer = GoalContracts.GoalServer;
@@ -24,6 +24,7 @@ type ReviewType = GoalContracts.ReviewType;
 type KeyResultServerDTO = GoalContracts.KeyResultServerDTO;
 type GoalReviewServerDTO = GoalContracts.GoalReviewServerDTO;
 type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
+type GoalReminderConfigPersistenceDTO = GoalContracts.GoalReminderConfigPersistenceDTO;
 type KeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
 type KeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
 type GoalCreatedEvent = GoalContracts.GoalCreatedEvent;
@@ -65,7 +66,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
   private _folderUuid: string | null;
   private _parentGoalUuid: string | null;
   private _sortOrder: number;
-  private _reminderConfig: GoalReminderConfigServerDTO | null;
+  private _reminderConfig: GoalReminderConfig | null;
   private _createdAt: number;
   private _updatedAt: number;
   private _deletedAt: number | null;
@@ -96,7 +97,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
     folderUuid?: string | null;
     parentGoalUuid?: string | null;
     sortOrder: number;
-    reminderConfig?: GoalReminderConfigServerDTO | null;
+    reminderConfig?: GoalReminderConfig | null;
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
@@ -187,8 +188,8 @@ export class Goal extends AggregateRoot implements IGoalServer {
   public get sortOrder(): number {
     return this._sortOrder;
   }
-  public get reminderConfig(): GoalContracts.GoalReminderConfigServer | null {
-    return this._reminderConfig as GoalContracts.GoalReminderConfigServer | null;
+  public get reminderConfig(): GoalReminderConfig | null {
+    return this._reminderConfig;
   }
   public get createdAt(): number {
     return this._createdAt;
@@ -229,7 +230,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
     targetDate?: number;
     folderUuid?: string;
     parentGoalUuid?: string;
-    reminderConfig?: GoalReminderConfigServerDTO;
+    reminderConfig?: GoalReminderConfig;
   }): Goal {
     // 验证
     if (!params.accountUuid) {
@@ -299,7 +300,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
       folderUuid: dto.folderUuid ?? null,
       parentGoalUuid: dto.parentGoalUuid ?? null,
       sortOrder: dto.sortOrder,
-      reminderConfig: dto.reminderConfig ?? null,
+      reminderConfig: dto.reminderConfig ? GoalReminderConfig.fromServerDTO(dto.reminderConfig) : null,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt ?? null,
@@ -324,7 +325,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
   public static fromPersistenceDTO(dto: GoalPersistenceDTO): Goal {
     const tags = JSON.parse(dto.tags) as string[];
     const reminderConfig = dto.reminderConfig
-      ? (JSON.parse(dto.reminderConfig) as GoalReminderConfigServerDTO)
+      ? GoalReminderConfig.fromPersistenceDTO(JSON.parse(dto.reminderConfig) as GoalReminderConfigPersistenceDTO)
       : null;
 
     return new Goal({
@@ -625,7 +626,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
   /**
    * 更新提醒配置
    */
-  public updateReminderConfig(config: GoalReminderConfigServerDTO): void {
+  public updateReminderConfig(config: GoalReminderConfig): void {
     this._reminderConfig = config;
     this._updatedAt = Date.now();
   }
@@ -635,7 +636,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
    */
   public enableReminder(): void {
     if (this._reminderConfig) {
-      this._reminderConfig = { ...this._reminderConfig, enabled: true };
+      this._reminderConfig = this._reminderConfig.enable();
       this._updatedAt = Date.now();
     }
   }
@@ -645,7 +646,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
    */
   public disableReminder(): void {
     if (this._reminderConfig) {
-      this._reminderConfig = { ...this._reminderConfig, enabled: false };
+      this._reminderConfig = this._reminderConfig.disable();
       this._updatedAt = Date.now();
     }
   }
@@ -653,22 +654,22 @@ export class Goal extends AggregateRoot implements IGoalServer {
   /**
    * 添加提醒触发器
    */
-  public addReminderTrigger(trigger: { type: string; value: number }): void {
+  public addReminderTrigger(trigger: GoalContracts.ReminderTrigger): void {
     if (!this._reminderConfig) {
       throw new Error('Reminder config not initialized');
     }
-    // 实现添加触发器逻辑
+    this._reminderConfig = this._reminderConfig.addTrigger(trigger);
     this._updatedAt = Date.now();
   }
 
   /**
    * 移除提醒触发器
    */
-  public removeReminderTrigger(type: string, value: number): void {
+  public removeReminderTrigger(type: GoalContracts.ReminderTriggerType, value: number): void {
     if (!this._reminderConfig) {
       throw new Error('Reminder config not initialized');
     }
-    // 实现移除触发器逻辑
+    this._reminderConfig = this._reminderConfig.removeTrigger(type, value);
     this._updatedAt = Date.now();
   }
 
@@ -1190,7 +1191,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
       folderUuid: this._folderUuid,
       parentGoalUuid: this._parentGoalUuid,
       sortOrder: this._sortOrder,
-      reminderConfig: this._reminderConfig as any, // TODO: Fix this mapping
+      reminderConfig: this._reminderConfig?.toClientDTO() ?? null,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
@@ -1246,7 +1247,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
       folderUuid: this._folderUuid,
       parentGoalUuid: this._parentGoalUuid,
       sortOrder: this._sortOrder,
-      reminderConfig: this._reminderConfig,
+      reminderConfig: this._reminderConfig?.toServerDTO() ?? null,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
@@ -1285,7 +1286,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
       folderUuid: this._folderUuid,
       parentGoalUuid: this._parentGoalUuid,
       sortOrder: this._sortOrder,
-      reminderConfig: this._reminderConfig ? JSON.stringify(this._reminderConfig) : null,
+      reminderConfig: this._reminderConfig ? JSON.stringify(this._reminderConfig.toPersistenceDTO()) : null,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
