@@ -4,6 +4,7 @@
 
 export { FocusMode } from './FocusMode';
 export { GoalMetadata } from './GoalMetadata';
+export { GoalReminderConfig } from './GoalReminderConfig';
 export { GoalTimeRange } from './GoalTimeRange';
 export { KeyResultProgress } from './KeyResultProgress';
 export { KeyResultSnapshot } from './KeyResultSnapshot';
