@@ -7,6 +7,8 @@ import type { NotificationContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type IChannelResponse = NotificationContracts.ChannelResponseServerDTO;
+type ChannelResponsePersistenceDTO = NotificationContracts.ChannelResponsePersistenceDTO;
+type ChannelResponseClientDTO = NotificationContracts.ChannelResponseClientDTO;
 
 /**
  * ChannelResponse 值对象
@@ -60,9 +62,9 @@ export class ChannelResponse extends ValueObject implements IChannelResponse {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IChannelResponse {
+  public toServerDTO(): IChannelResponse {
     return {
       messageId: this.messageId,
       statusCode: this.statusCode,
@@ -70,10 +72,34 @@ export class ChannelResponse extends ValueObject implements IChannelResponse {
     };
   }
 
-  /**
-   * 从 Contract 接口创建值对象
-   */
+  public toClientDTO(): ChannelResponseClientDTO {
+    const isSuccess = (this.statusCode ?? 0) >= 200 && (this.statusCode ?? 0) < 300;
+    return {
+      messageId: this.messageId,
+      statusCode: this.statusCode,
+      data: this.data,
+      isSuccess,
+      statusText: isSuccess ? '发送成功' : '发送失败',
+    };
+  }
+
+  public toPersistenceDTO(): ChannelResponsePersistenceDTO {
+    return {
+      messageId: this.messageId,
+      statusCode: this.statusCode,
+      data: this.data ? JSON.stringify(this.data) : null,
+    };
+  }
+
+  public toContract(): IChannelResponse {
+    return this.toServerDTO();
+  }
+
+  public static fromServerDTO(dto: IChannelResponse): ChannelResponse {
+    return new ChannelResponse(dto);
+  }
+
   public static fromContract(response: IChannelResponse): ChannelResponse {
-    return new ChannelResponse(response);
+    return ChannelResponse.fromServerDTO(response);
   }
 }

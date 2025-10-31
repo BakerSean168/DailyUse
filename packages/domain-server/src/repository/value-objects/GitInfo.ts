@@ -7,6 +7,8 @@ import type { RepositoryContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type IGitInfo = RepositoryContracts.GitInfoServerDTO;
+type GitInfoClientDTO = RepositoryContracts.GitInfoClientDTO;
+type GitInfoPersistenceDTO = RepositoryContracts.GitInfoPersistenceDTO;
 
 /**
  * GitInfo 值对象
@@ -76,9 +78,9 @@ export class GitInfo extends ValueObject implements IGitInfo {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IGitInfo {
+  public toServerDTO(): IGitInfo {
     return {
       isGitRepo: this.isGitRepo,
       currentBranch: this.currentBranch,
@@ -88,10 +90,68 @@ export class GitInfo extends ValueObject implements IGitInfo {
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): GitInfoClientDTO {
+    let statusText = 'Not a Git repository';
+    let statusColor = 'gray';
+    let branchIcon = '📁';
+
+    if (this.isGitRepo) {
+      branchIcon = '🌿';
+      if (this.hasChanges === true) {
+        statusText = 'Has uncommitted changes';
+        statusColor = 'orange';
+      } else if (this.hasChanges === false) {
+        statusText = 'Clean working directory';
+        statusColor = 'green';
+      } else {
+        statusText = 'Unknown status';
+        statusColor = 'yellow';
+      }
+    }
+
+    return {
+      isGitRepo: this.isGitRepo,
+      currentBranch: this.currentBranch,
+      hasChanges: this.hasChanges,
+      branchIcon,
+      statusText,
+      statusColor,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): GitInfoPersistenceDTO {
+    return {
+      is_git_repo: this.isGitRepo,
+      current_branch: this.currentBranch,
+      has_changes: this.hasChanges,
+      remote_url: this.remoteUrl,
+    };
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(data: IGitInfo): GitInfo {
+    return new GitInfo(data);
+  }
+
+  /**
+   * 转换为 Contract 接口 (兼容旧代码)
+   */
+  public toContract(): IGitInfo {
+    return this.toServerDTO();
+  }
+
+  /**
+   * 从 Contract 接口创建值对象 (兼容旧代码)
    */
   public static fromContract(data: IGitInfo): GitInfo {
-    return new GitInfo(data);
+    return GitInfo.fromServerDTO(data);
   }
 
   /**

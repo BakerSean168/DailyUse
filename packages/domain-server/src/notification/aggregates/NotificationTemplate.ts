@@ -71,8 +71,8 @@ export class NotificationTemplate extends AggregateRoot implements INotification
   public get category(): NotificationCategory {
     return this._category;
   }
-  public get template(): NotificationTemplateConfigDTO {
-    return this._template.toContract();
+  public get template(): NotificationContracts.NotificationTemplateConfigServer {
+    return this._template;
   }
   public get isActive(): boolean {
     return this._isActive;

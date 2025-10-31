@@ -7,6 +7,8 @@ import type { RepositoryContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type IRepositoryConfig = RepositoryContracts.RepositoryConfigServerDTO;
+type RepositoryConfigPersistenceDTO = RepositoryContracts.RepositoryConfigPersistenceDTO;
+type RepositoryConfigClientDTO = RepositoryContracts.RepositoryConfigClientDTO;
 type ResourceType = RepositoryContracts.ResourceType;
 
 /**
@@ -97,9 +99,9 @@ export class RepositoryConfig extends ValueObject implements IRepositoryConfig {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IRepositoryConfig {
+  public toServerDTO(): IRepositoryConfig {
     return {
       enableGit: this.enableGit,
       autoSync: this.autoSync,
@@ -112,10 +114,52 @@ export class RepositoryConfig extends ValueObject implements IRepositoryConfig {
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): RepositoryConfigClientDTO {
+    return {
+      enableGit: this.enableGit,
+      autoSync: this.autoSync,
+      supportedFileTypes: [...this.supportedFileTypes],
+      syncIntervalFormatted: this.syncInterval ? `${this.syncInterval}分钟` : null,
+      maxFileSizeFormatted: `${Math.round(this.maxFileSize / 1024 / 1024)}MB`,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): RepositoryConfigPersistenceDTO {
+    return {
+      enable_git: this.enableGit,
+      auto_sync: this.autoSync,
+      sync_interval: this.syncInterval,
+      default_linked_doc_name: this.defaultLinkedDocName,
+      supported_file_types: JSON.stringify(this.supportedFileTypes),
+      max_file_size: this.maxFileSize,
+      enable_version_control: this.enableVersionControl,
+    };
+  }
+
+  /**
+   * 转换为 Contract 接口 (兼容旧代码)
+   */
+  public toContract(): IRepositoryConfig {
+    return this.toServerDTO();
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: IRepositoryConfig): RepositoryConfig {
+    return new RepositoryConfig(dto);
+  }
+
+  /**
+   * 从 Contract 接口创建值对象 (兼容旧代码)
    */
   public static fromContract(config: IRepositoryConfig): RepositoryConfig {
-    return new RepositoryConfig(config);
+    return RepositoryConfig.fromServerDTO(config);
   }
 
   /**

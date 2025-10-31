@@ -81,11 +81,11 @@ export class NotificationPreference extends AggregateRoot implements INotificati
       system: { ...this._categories.system },
     };
   }
-  public get doNotDisturb(): DoNotDisturbConfigDTO | null {
-    return this._doNotDisturb?.toContract() ?? null;
+  public get doNotDisturb(): NotificationContracts.DoNotDisturbConfigServer | null {
+    return this._doNotDisturb ?? null;
   }
-  public get rateLimit(): RateLimitDTO | null {
-    return this._rateLimit?.toContract() ?? null;
+  public get rateLimit(): NotificationContracts.RateLimitServer | null {
+    return this._rateLimit ?? null;
   }
   public get createdAt(): number {
     return this._createdAt;
@@ -256,20 +256,16 @@ export class NotificationPreference extends AggregateRoot implements INotificati
 
   // ===== 静态工厂方法 =====
 
-  private static createDefaultCategories(): CategoryPreferences {
-    const defaultPref: CategoryPreferenceDTO = {
-      enabled: true,
-      channels: { inApp: true, email: false, push: false, sms: false },
-      importance: 'MODERATE' as any,
-    };
+  private static getDefaultCategoryPreferences(): CategoryPreferences {
+    const defaultPref = CategoryPreference.createDefault();
 
     return {
-      task: { ...defaultPref },
-      goal: { ...defaultPref },
-      schedule: { ...defaultPref },
-      reminder: { ...defaultPref },
-      account: { ...defaultPref },
-      system: { ...defaultPref },
+      task: defaultPref,
+      goal: defaultPref,
+      schedule: defaultPref,
+      reminder: defaultPref,
+      account: defaultPref,
+      system: defaultPref,
     };
   }
 
@@ -294,7 +290,7 @@ export class NotificationPreference extends AggregateRoot implements INotificati
     };
 
     const categories = {
-      ...NotificationPreference.createDefaultCategories(),
+      ...NotificationPreference.getDefaultCategoryPreferences(),
       ...(params.categories ?? {}),
     };
 

@@ -41,8 +41,9 @@ export class TaskInstanceGenerationService {
       ? template.lastGeneratedDate + 86400000 // 从上次生成日期的下一天开始
       : Date.now(); // 或者从现在开始
 
-    // 确保不超前生成太多
-    const maxToDate = Date.now() + template.generateAheadDays * 86400000;
+    // 确保不超前生成太多（如果设置了提前生成天数）
+    const generateAheadDays = template.generateAheadDays ?? 30; // 默认30天
+    const maxToDate = Date.now() + generateAheadDays * 86400000;
     const actualToDate = Math.min(toDate, maxToDate);
 
     // 生成实例

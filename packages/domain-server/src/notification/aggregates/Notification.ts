@@ -143,11 +143,11 @@ export class Notification extends AggregateRoot implements INotificationServer {
   public get relatedEntityUuid(): string | null {
     return this._relatedEntityUuid;
   }
-  public get actions(): NotificationActionDTO[] | null {
-    return this._actions?.map((a) => a.toContract()) ?? null;
+  public get actions(): NotificationContracts.NotificationActionServer[] | null {
+    return this._actions ?? null;
   }
-  public get metadata(): NotificationMetadataDTO | null {
-    return this._metadata?.toContract() ?? null;
+  public get metadata(): NotificationContracts.NotificationMetadataServer | null {
+    return this._metadata ?? null;
   }
   public get expiresAt(): number | null {
     return this._expiresAt;

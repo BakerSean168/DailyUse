@@ -10,3 +10,5 @@ export { ActiveTimeConfig } from './ActiveTimeConfig';
 export { ActiveHoursConfig } from './ActiveHoursConfig';
 export { ReminderStats } from './ReminderStats';
 export { GroupStats } from './GroupStats';
+export { ResponseMetrics } from './ResponseMetrics';
+export { FrequencyAdjustment } from './FrequencyAdjustment';

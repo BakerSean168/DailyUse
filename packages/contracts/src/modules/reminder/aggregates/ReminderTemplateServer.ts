@@ -24,6 +24,10 @@ import type {
   ActiveHoursConfigServerDTO,
   ReminderStatsServer,
   ReminderStatsServerDTO,
+  ResponseMetricsServer,
+  ResponseMetricsServerDTO,
+  FrequencyAdjustmentServer,
+  FrequencyAdjustmentServerDTO,
 } from '../value-objects';
 import type { ReminderTemplateClientDTO } from './ReminderTemplateClient';
 
@@ -55,6 +59,11 @@ export interface ReminderTemplateServerDTO {
   createdAt: number; // epoch ms
   updatedAt: number; // epoch ms
   deletedAt?: number | null; // epoch ms
+
+  // ===== 智能频率相关字段 (Story 5-2) =====
+  responseMetrics?: ResponseMetricsServerDTO | null; // 响应指标
+  frequencyAdjustment?: FrequencyAdjustmentServerDTO | null; // 频率调整
+  smartFrequencyEnabled: boolean; // 是否启用智能频率
 
   // ===== 子实体 DTO =====
   history?: ReminderHistoryServerDTO[] | null; // 提醒历史列表（可选加载）
@@ -210,6 +219,11 @@ export interface ReminderTemplateServer {
   updatedAt: number;
   deletedAt?: number | null;
 
+  // ===== 智能频率相关属性 (Story 5-2) =====
+  responseMetrics?: ResponseMetricsServer | null;
+  frequencyAdjustment?: FrequencyAdjustmentServer | null;
+  smartFrequencyEnabled: boolean;
+
   // ===== 子实体集合（聚合根统一管理） =====
 
   /**
@@ -279,6 +293,43 @@ export interface ReminderTemplateServer {
   // 标签管理
   addTag(tag: string): void;
   removeTag(tag: string): void;
+
+  // ===== 智能频率相关方法 (Story 5-2) =====
+
+  /**
+   * 更新响应指标
+   */
+  updateResponseMetrics(metrics: ResponseMetricsServerDTO): void;
+
+  /**
+   * 应用频率调整（自动调整或用户手动调整）
+   */
+  applyFrequencyAdjustment(adjustment: FrequencyAdjustmentServerDTO): void;
+
+  /**
+   * 用户确认频率调整
+   */
+  confirmFrequencyAdjustment(): void;
+
+  /**
+   * 用户拒绝频率调整
+   */
+  rejectFrequencyAdjustment(reason?: string): void;
+
+  /**
+   * 启用/禁用智能频率
+   */
+  toggleSmartFrequency(enabled: boolean): void;
+
+  /**
+   * 判断是否需要频率调整（基于响应指标）
+   */
+  needsFrequencyAdjustment(): boolean;
+
+  /**
+   * 计算建议的频率调整
+   */
+  calculateSuggestedAdjustment(): FrequencyAdjustmentServerDTO | null;
 
   // ===== 转换方法 (To) =====
 
