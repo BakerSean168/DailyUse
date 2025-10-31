@@ -9,6 +9,8 @@ import { AppInitializationManager } from './shared/initialization/AppInitializat
 import { eventBus } from '@dailyuse/utils';
 import { initializeLogger, getStartupInfo } from './config/logger.config';
 import { createLogger } from '@dailyuse/utils';
+import { useUserSettingStore } from './modules/setting/presentation/stores/userSettingStore';
+import { initializeThemeService } from './modules/setting/services/themeService';
 
 // 初始化日志系统
 initializeLogger();
@@ -49,6 +51,11 @@ async function startApp() {
     vueAppInstance = app.mount('#app');
     isAppMounted = true;
     logger.info('Application mounted to DOM successfully');
+
+    // 初始化主题服务（应用用户主题设置）
+    const settingStore = useUserSettingStore();
+    initializeThemeService(settingStore);
+    logger.info('Theme service initialized');
 
     // 等待下一个 tick 并确认挂载成功
     await nextTick(() => {

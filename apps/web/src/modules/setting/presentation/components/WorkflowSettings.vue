@@ -146,15 +146,18 @@ import { useUserSettingStore } from '../stores/userSettingStore';
 
 const settingStore = useUserSettingStore();
 
+// Use computed getter for workflow settings
+const workflow = computed(() => settingStore.workflow);
+
 // Local state
-const autoSave = ref(settingStore.settings?.workflowAutoSave ?? true);
-const autoSaveInterval = ref(
-  Math.floor((settingStore.settings?.workflowAutoSaveInterval ?? 30000) / 1000),
-);
-const confirmBeforeDelete = ref(settingStore.settings?.workflowConfirmBeforeDelete ?? true);
-const defaultGoalView = ref(settingStore.settings?.workflowDefaultGoalView ?? 'LIST');
-const defaultScheduleView = ref(settingStore.settings?.workflowDefaultScheduleView ?? 'WEEK');
-const defaultTaskView = ref(settingStore.settings?.workflowDefaultTaskView ?? 'LIST');
+const autoSave = ref(workflow.value.autoSave);
+const autoSaveInterval = ref(Math.floor(workflow.value.autoSaveInterval / 1000));
+const confirmBeforeDelete = ref(workflow.value.confirmBeforeDelete);
+const defaultGoalView = ref(workflow.value.defaultGoalView);
+const defaultScheduleView = ref(workflow.value.defaultScheduleView);
+const defaultTaskView = ref(workflow.value.defaultTaskView);
+
+// TODO: startPage and sidebarCollapsed are not in workflow group yet
 const startPage = ref(settingStore.settings?.startPage ?? 'dashboard');
 const sidebarCollapsed = ref(settingStore.settings?.sidebarCollapsed ?? false);
 
@@ -188,17 +191,25 @@ const startPageOptions = [
   { label: '文档', value: 'documents' },
 ];
 
-// Watch store changes
+// Watch workflow changes
+watch(
+  workflow,
+  (newWorkflow) => {
+    autoSave.value = newWorkflow.autoSave;
+    autoSaveInterval.value = Math.floor(newWorkflow.autoSaveInterval / 1000);
+    confirmBeforeDelete.value = newWorkflow.confirmBeforeDelete;
+    defaultGoalView.value = newWorkflow.defaultGoalView;
+    defaultScheduleView.value = newWorkflow.defaultScheduleView;
+    defaultTaskView.value = newWorkflow.defaultTaskView;
+  },
+  { deep: true },
+);
+
+// Watch other settings
 watch(
   () => settingStore.settings,
   (newSettings) => {
     if (newSettings) {
-      autoSave.value = newSettings.workflowAutoSave;
-      autoSaveInterval.value = Math.floor(newSettings.workflowAutoSaveInterval / 1000);
-      confirmBeforeDelete.value = newSettings.workflowConfirmBeforeDelete;
-      defaultGoalView.value = newSettings.workflowDefaultGoalView;
-      defaultScheduleView.value = newSettings.workflowDefaultScheduleView;
-      defaultTaskView.value = newSettings.workflowDefaultTaskView;
       startPage.value = newSettings.startPage;
       sidebarCollapsed.value = newSettings.sidebarCollapsed;
     }
@@ -206,32 +217,29 @@ watch(
   { deep: true },
 );
 
-// Handlers
+// Handlers - using convenience method
 async function handleAutoSaveChange(value: boolean) {
-  await settingStore.updateSettings({ workflowAutoSave: value });
+  await settingStore.updateWorkflow({ autoSave: value });
 }
 
 async function handleAutoSaveIntervalChange(value: number) {
-  await settingStore.updateSettingsDebounced(
-    { workflowAutoSaveInterval: value * 1000 },
-    300,
-  );
+  await settingStore.updateWorkflowDebounced({ autoSaveInterval: value * 1000 }, 300);
 }
 
 async function handleConfirmDeleteChange(value: boolean) {
-  await settingStore.updateSettings({ workflowConfirmBeforeDelete: value });
+  await settingStore.updateWorkflow({ confirmBeforeDelete: value });
 }
 
 async function handleGoalViewChange(value: string) {
-  await settingStore.updateSettings({ workflowDefaultGoalView: value });
+  await settingStore.updateWorkflow({ defaultGoalView: value as any });
 }
 
 async function handleScheduleViewChange(value: string) {
-  await settingStore.updateSettings({ workflowDefaultScheduleView: value });
+  await settingStore.updateWorkflow({ defaultScheduleView: value as any });
 }
 
 async function handleTaskViewChange(value: string) {
-  await settingStore.updateSettings({ workflowDefaultTaskView: value });
+  await settingStore.updateWorkflow({ defaultTaskView: value as any });
 }
 
 async function handleStartPageChange(value: string) {

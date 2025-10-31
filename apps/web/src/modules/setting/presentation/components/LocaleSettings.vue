@@ -92,18 +92,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useUserSettingStore } from '../stores/userSettingStore';
 
 const settingStore = useUserSettingStore();
 
-// Local state
-const language = ref(settingStore.settings?.localeLanguage ?? 'zh-CN');
-const timezone = ref(settingStore.settings?.localeTimezone ?? 'Asia/Shanghai');
-const dateFormat = ref(settingStore.settings?.localeDateFormat ?? 'YYYY-MM-DD');
-const timeFormat = ref(settingStore.settings?.localeTimeFormat ?? '24H');
-const weekStartsOn = ref(settingStore.settings?.localeWeekStartsOn ?? 1);
-const currency = ref(settingStore.settings?.localeCurrency ?? 'CNY');
+// 直接使用 Store 的 computed
+const locale = computed(() => settingStore.locale);
+
+// Local state（用于 v-model）
+const language = ref(locale.value.language);
+const timezone = ref(locale.value.timezone);
+const dateFormat = ref(locale.value.dateFormat);
+const timeFormat = ref(locale.value.timeFormat);
+const weekStartsOn = ref(locale.value.weekStartsOn);
+const currency = ref(locale.value.currency);
 
 // Options
 const languageOptions = [
@@ -150,42 +153,40 @@ const currencyOptions = [
 
 // Watch store changes
 watch(
-  () => settingStore.settings,
-  (newSettings) => {
-    if (newSettings) {
-      language.value = newSettings.localeLanguage;
-      timezone.value = newSettings.localeTimezone;
-      dateFormat.value = newSettings.localeDateFormat;
-      timeFormat.value = newSettings.localeTimeFormat;
-      weekStartsOn.value = newSettings.localeWeekStartsOn;
-      currency.value = newSettings.localeCurrency;
-    }
+  locale,
+  (newLocale) => {
+    language.value = newLocale.language;
+    timezone.value = newLocale.timezone;
+    dateFormat.value = newLocale.dateFormat;
+    timeFormat.value = newLocale.timeFormat;
+    weekStartsOn.value = newLocale.weekStartsOn;
+    currency.value = newLocale.currency;
   },
   { deep: true },
 );
 
-// Handlers
+// Handlers - 使用新的便捷方法
 async function handleLanguageChange(value: string) {
-  await settingStore.updateSettings({ localeLanguage: value });
+  await settingStore.updateLocale({ language: value });
 }
 
 async function handleTimezoneChange(value: string) {
-  await settingStore.updateSettings({ localeTimezone: value });
+  await settingStore.updateLocale({ timezone: value });
 }
 
 async function handleDateFormatChange(value: string) {
-  await settingStore.updateSettings({ localeDateFormat: value });
+  await settingStore.updateLocale({ dateFormat: value as any });
 }
 
 async function handleTimeFormatChange(value: string) {
-  await settingStore.updateSettings({ localeTimeFormat: value });
+  await settingStore.updateLocale({ timeFormat: value as any });
 }
 
 async function handleWeekStartChange(value: number) {
-  await settingStore.updateSettings({ localeWeekStartsOn: value });
+  await settingStore.updateLocale({ weekStartsOn: value as any });
 }
 
 async function handleCurrencyChange(value: string) {
-  await settingStore.updateSettings({ localeCurrency: value });
+  await settingStore.updateLocale({ currency: value });
 }
 </script>
