@@ -409,7 +409,7 @@ export class OneTimeTaskApiClient {
   /**
    * 获取任务历史记录
    */
-  async getTaskHistory(uuid: string): Promise<{ history: TaskContracts.TaskTemplateHistoryDTO[] }> {
+  async getTaskHistory(uuid: string): Promise<{ history: TaskContracts.TaskTemplateHistoryClientDTO[] }> {
     const data = await apiClient.get(`${this.baseUrl}/${uuid}/history`);
     return data;
   }

@@ -1,17 +1,12 @@
 import { ref, computed, watch, readonly, type Ref } from 'vue';
-import type { TaskContracts } from '@dailyuse/contracts';
 import { format } from 'date-fns';
-
-// 使用类型别名
-type TaskTimeConfig = TaskContracts.TaskTimeConfig;
-type TaskScheduleMode = TaskContracts.TaskScheduleMode;
 
 /**
  * 任务调度验证组合式函数
  * 提供任务调度配置的UI层面验证功能
  * 重构后专注于用户体验验证，核心业务验证移到聚合根中
  */
-export function useRecurrenceValidation(scheduleConfig: Ref<TaskTimeConfig['schedule']>) {
+export function useRecurrenceValidation(scheduleConfig: Ref<any>) {
   // 验证状态
   const validationErrors = ref<string[]>([]);
   const warnings = ref<string[]>([]);
@@ -88,14 +83,14 @@ export function useRecurrenceValidation(scheduleConfig: Ref<TaskTimeConfig['sche
       case 'weekly':
         if (weekdays?.length) {
           const weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
-          const selectedDays = weekdays.map((d) => weekdayNames[d]).join('、');
+          const selectedDays = weekdays.map((d: number) => weekdayNames[d]).join('、');
           return `每周${selectedDays}`;
         }
         return '每周';
 
       case 'monthly':
         if (monthDays?.length) {
-          const selectedDays = monthDays.map((day) => `${day}日`).join('、');
+          const selectedDays = monthDays.map((day: number) => `${day}日`).join('、');
           return `每月${selectedDays}`;
         }
         return '每月';

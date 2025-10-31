@@ -7,7 +7,7 @@ import {
   TaskReminderConfig,
 } from '@dailyuse/domain-server';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
-import type { TaskContracts } from '@dailyuse/contracts';
+import { TaskContracts } from '@dailyuse/contracts';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 
 /**
@@ -403,41 +403,7 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 开始任务
-   */
-  async startTask(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
-    if (!task) {
-      throw new Error(`Task ${uuid} not found`);
-    }
-
-    task.startTask();
-    await this.templateRepository.save(task);
-
-    return task.toClientDTO();
-  }
-
-  /**
-   * 完成任务
-   */
-  async completeTask(
-    uuid: string,
-    actualMinutes?: number,
-    note?: string,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
-    if (!task) {
-      throw new Error(`Task ${uuid} not found`);
-    }
-
-    task.completeTask(actualMinutes, note);
-    await this.templateRepository.save(task);
-
-    return task.toClientDTO();
-  }
-
-  /**
-   * 阻塞任务
+   * 阻塞任务模板
    */
   async blockTask(uuid: string, reason: string): Promise<TaskContracts.TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
@@ -445,14 +411,14 @@ export class TaskTemplateApplicationService {
       throw new Error(`Task ${uuid} not found`);
     }
 
-    task.blockTask(reason);
+    task.markAsBlocked(reason);
     await this.templateRepository.save(task);
 
     return task.toClientDTO();
   }
 
   /**
-   * 解除阻塞
+   * 解除阻塞任务模板
    */
   async unblockTask(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
@@ -460,22 +426,7 @@ export class TaskTemplateApplicationService {
       throw new Error(`Task ${uuid} not found`);
     }
 
-    task.unblockTask();
-    await this.templateRepository.save(task);
-
-    return task.toClientDTO();
-  }
-
-  /**
-   * 取消任务
-   */
-  async cancelTask(uuid: string, reason?: string): Promise<TaskContracts.TaskTemplateClientDTO> {
-    const task = await this.templateRepository.findByUuid(uuid);
-    if (!task) {
-      throw new Error(`Task ${uuid} not found`);
-    }
-
-    task.cancelTask(reason);
+    task.markAsReady();
     await this.templateRepository.save(task);
 
     return task.toClientDTO();
@@ -575,13 +526,13 @@ export class TaskTemplateApplicationService {
   /**
    * 获取任务历史记录
    */
-  async getTaskHistory(uuid: string): Promise<TaskContracts.TaskTemplateHistoryDTO[]> {
-    const task = await this.templateRepository.findByUuid(uuid, true); // includeChildren = true
+  async getTaskHistory(uuid: string): Promise<TaskContracts.TaskTemplateHistoryServerDTO[]> {
+    const task = await this.templateRepository.findByUuidWithChildren(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
     }
 
-    return task.history.map((h) => h.toDTO());
+    return task.history.map((h) => h.toServerDTO());
   }
 
   // ===== ONE_TIME 任务查询 =====
@@ -888,16 +839,16 @@ export class TaskTemplateApplicationService {
     // 获取最近7天完成的任务
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const tasks = await this.templateRepository.findOneTimeTasks(accountUuid, {
-      taskType: 'ONE_TIME',
+      taskType: TaskContracts.TaskType.ONE_TIME,
       status: 'COMPLETED' as any,
     });
 
     // 筛选并排序：最近完成的任务（按更新时间倒序）
     return tasks
-      .filter((t) => t.updatedAt && t.updatedAt.getTime() >= sevenDaysAgo)
+      .filter((t) => t.updatedAt && t.updatedAt >= sevenDaysAgo)
       .sort((a, b) => {
-        const timeA = a.updatedAt?.getTime() || 0;
-        const timeB = b.updatedAt?.getTime() || 0;
+        const timeA = a.updatedAt || 0;
+        const timeB = b.updatedAt || 0;
         return timeB - timeA;
       })
       .slice(0, limit)
@@ -940,11 +891,11 @@ export class TaskTemplateApplicationService {
       this.getTasksSortedByPriority(accountUuid, 5), // 前5个高优先级任务
       this.getRecentCompletedTasks(accountUuid, 10), // 最近10个完成的任务
       this.countTasks(accountUuid, {
-        taskType: 'ONE_TIME',
+        taskType: TaskContracts.TaskType.ONE_TIME,
         status: 'TODO' as any,
       }),
       this.countTasks(accountUuid, {
-        taskType: 'ONE_TIME',
+        taskType: TaskContracts.TaskType.ONE_TIME,
         status: 'COMPLETED' as any,
       }),
     ]);

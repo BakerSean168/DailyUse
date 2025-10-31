@@ -7,7 +7,7 @@
  */
 
 import { bench, describe } from 'vitest';
-import { Goal, GoalFolder } from '@dailyuse/domain-client';
+import type { Goal, GoalFolder } from '@dailyuse/domain-client';
 import { statusRuleEngine } from '../modules/goal/application/services/StatusRuleEngine';
 import type { GoalData } from '../modules/goal/application/services/StatusRuleEngine';
 

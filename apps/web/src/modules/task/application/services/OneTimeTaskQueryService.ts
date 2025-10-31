@@ -161,7 +161,7 @@ export class OneTimeTaskQueryService {
   ): Promise<TaskTemplate[]> {
     try {
       logger.info('Fetching tasks by date range', { startDate, endDate });
-      const dtos = await oneTimeTaskApiClient.getTasksByDateRange(startDate, endDate);
+      const dtos = await oneTimeTaskApiClient.getTasksByDateRange(String(startDate), String(endDate));
       const tasks = dtos.map(dto => TaskTemplateClient.fromServerDTO(dto));
       logger.info('Tasks by date range fetched successfully', { count: tasks.length });
       return tasks;

@@ -1,9 +1,8 @@
 import { ref, computed } from 'vue';
 import type { TaskContracts } from '@dailyuse/contracts';
 
-// 使用类型别名
-type TaskTimeConfig = TaskContracts.TaskTimeConfig;
-type TaskTimeType = TaskContracts.TaskTimeType;
+// Note: any and TaskTimeType are not exported, using any for now
+// TODO: Fix type imports when contracts are updated
 
 /**
  * 时间配置验证组合式函数
@@ -16,7 +15,7 @@ export function useTimeConfigValidation() {
   /**
    * UI层面的用户体验验证 - 主要是实时反馈和建议
    */
-  const validateUserExperience = (timeConfig: TaskTimeConfig): void => {
+  const validateUserExperience = (timeConfig: any): void => {
     warnings.value = [];
 
     // 时间设置的用户体验检查
@@ -73,7 +72,7 @@ export function useTimeConfigValidation() {
   /**
    * 调用聚合根的业务验证 - 这会抛出错误如果验证失败
    */
-  const validateBusinessRules = (timeConfig: TaskTimeConfig): boolean => {
+  const validateBusinessRules = (timeConfig: any): boolean => {
     try {
       // 这里应该调用 TaskTemplate 聚合根的验证方法
       // 在实际使用时，这些验证会在提交数据到聚合根时进行
@@ -157,7 +156,7 @@ export function useTimeConfigValidation() {
   /**
    * 综合验证方法
    */
-  const validateTimeConfig = (timeConfig: TaskTimeConfig): boolean => {
+  const validateTimeConfig = (timeConfig: any): boolean => {
     validateUserExperience(timeConfig);
     return validateBusinessRules(timeConfig);
   };
@@ -166,8 +165,8 @@ export function useTimeConfigValidation() {
    * 快速检查时间冲突 (简单的UI层检查)
    */
   const checkBasicTimeConflict = (
-    timeConfig: TaskTimeConfig,
-    otherTimes: TaskTimeConfig[] = [],
+    timeConfig: any,
+    otherTimes: any[] = [],
   ): boolean => {
     if (timeConfig.time.timeType === 'allDay') return true;
 

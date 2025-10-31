@@ -56,7 +56,7 @@ export class OneTimeTaskBatchOperationService {
       
       // 批量更新 store
       const taskStore = useTaskStore();
-      tasks.forEach(task => taskStore.updateTaskTemplate(task));
+      tasks.forEach(task => taskStore.updateTaskTemplate(task.uuid, task));
       
       logger.info('Batch priority update completed', { 
         updatedCount: tasks.length 
@@ -96,7 +96,7 @@ export class OneTimeTaskBatchOperationService {
       
       // 批量更新 store
       const taskStore = useTaskStore();
-      tasks.forEach(task => taskStore.updateTaskTemplate(task));
+      tasks.forEach(task => taskStore.updateTaskTemplate(task.uuid, task));
       
       logger.info('Batch cancel completed', { 
         canceledCount: tasks.length 

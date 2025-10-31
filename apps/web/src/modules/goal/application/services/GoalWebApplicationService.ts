@@ -67,13 +67,13 @@ export class GoalWebApplicationService {
       const goalsData = await goalApiClient.getGoals(params);
 
       // 批量创建客户端实体并同步到 store
-      const goals = (goalsData.data || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
+      const goals = (goalsData.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
       this.goalStore.setGoals(goals);
 
       // 更新分页信息
       this.goalStore.setPagination({
         page: goalsData.page,
-        limit: goalsData.limit,
+        limit: goalsData.pageSize,
         total: goalsData.total,
       });
 
@@ -399,8 +399,8 @@ export class GoalWebApplicationService {
       });
 
       // 转换为客户端实体
-      const goals = (goalsData?.data || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
-      const goalFolders = (goalFoldersData?.data || []).map((dirData: any) => GoalFolderClient.fromClientDTO(dirData));
+      const goals = (goalsData?.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
+      const goalFolders = (goalFoldersData?.folders || []).map((dirData: any) => GoalFolderClient.fromClientDTO(dirData));
 
       // 批量同步到 store
       this.goalStore.setGoals(goals);
@@ -410,7 +410,7 @@ export class GoalWebApplicationService {
       if (goalsData?.page) {
         this.goalStore.setPagination({
           page: goalsData.page,
-          limit: goalsData.limit,
+          limit: goalsData.pageSize,
           total: goalsData.total,
         });
       }
@@ -895,7 +895,7 @@ export class GoalWebApplicationService {
       ]);
 
       // 转换为客户端实体
-      const goals = (goalsResponse?.data || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
+      const goals = (goalsResponse?.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
       const goalFolders = (goalFoldersResponse?.folders || []).map((dirData: any) =>
         GoalFolderClient.fromClientDTO(dirData),
       );

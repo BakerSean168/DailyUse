@@ -74,17 +74,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useUserSettingStore } from '../stores/userSettingStore';
 
 const settingStore = useUserSettingStore();
 
-// Local state
-const theme = ref(settingStore.settings?.appearanceTheme ?? 'AUTO');
-const fontSize = ref(settingStore.settings?.appearanceFontSize ?? 'MEDIUM');
-const compactMode = ref(settingStore.settings?.appearanceCompactMode ?? false);
-const accentColor = ref(settingStore.settings?.appearanceAccentColor ?? '#3B82F6');
-const fontFamily = ref(settingStore.settings?.appearanceFontFamily ?? null);
+// 直接使用 Store 的 computed，无需本地 state
+const appearance = computed(() => settingStore.appearance);
+
+// Local state（用于 v-model）
+const theme = ref(appearance.value.theme);
+const fontSize = ref(appearance.value.fontSize);
+const compactMode = ref(appearance.value.compactMode);
+const accentColor = ref(appearance.value.accentColor);
+const fontFamily = ref(appearance.value.fontFamily);
 
 // Options
 const themeOptions = [
@@ -101,46 +104,45 @@ const fontSizeOptions = [
 
 const fontFamilyOptions = [
   { label: '系统默认', value: null },
+  { label: 'Inter', value: 'Inter' },
   { label: 'Arial', value: 'Arial' },
-  { label: 'Helvetica', value: 'Helvetica' },
-  { label: 'Microsoft YaHei', value: 'Microsoft YaHei' },
-  { label: 'PingFang SC', value: 'PingFang SC' },
-  { label: 'Source Han Sans', value: 'Source Han Sans' },
+  { label: 'Roboto', value: 'Roboto' },
+  { label: '微软雅黑', value: 'Microsoft YaHei' },
+  { label: '苹方', value: 'PingFang SC' },
 ];
 
-// Watch store changes
+// Watch store changes to update local state
 watch(
-  () => settingStore.settings,
-  (newSettings) => {
-    if (newSettings) {
-      theme.value = newSettings.appearanceTheme;
-      fontSize.value = newSettings.appearanceFontSize;
-      compactMode.value = newSettings.appearanceCompactMode;
-      accentColor.value = newSettings.appearanceAccentColor;
-      fontFamily.value = newSettings.appearanceFontFamily;
-    }
+  appearance,
+  (newAppearance) => {
+    theme.value = newAppearance.theme;
+    fontSize.value = newAppearance.fontSize;
+    compactMode.value = newAppearance.compactMode;
+    accentColor.value = newAppearance.accentColor;
+    fontFamily.value = newAppearance.fontFamily;
   },
   { deep: true },
 );
 
-// Handlers
-async function handleThemeChange(value: 'AUTO' | 'LIGHT' | 'DARK') {
-  await settingStore.updateSettings({ appearanceTheme: value });
+// Handlers - 使用新的便捷方法
+async function handleThemeChange(value: string) {
+  await settingStore.updateAppearance({ theme: value as any });
 }
 
-async function handleFontSizeChange(value: 'SMALL' | 'MEDIUM' | 'LARGE') {
-  await settingStore.updateSettings({ appearanceFontSize: value });
+async function handleFontSizeChange(value: string) {
+  await settingStore.updateAppearance({ fontSize: value as any });
 }
 
 async function handleCompactModeChange(value: boolean) {
-  await settingStore.updateSettings({ appearanceCompactMode: value });
+  await settingStore.updateAppearance({ compactMode: value });
 }
 
 async function handleAccentColorChange() {
-  await settingStore.updateSettingsDebounced({ appearanceAccentColor: accentColor.value });
+  // 颜色选择器使用防抖版本，避免频繁更新
+  await settingStore.updateAppearanceDebounced({ accentColor: accentColor.value }, 300);
 }
 
 async function handleFontFamilyChange(value: string | null) {
-  await settingStore.updateSettings({ appearanceFontFamily: value });
+  await settingStore.updateAppearance({ fontFamily: value });
 }
 </script>

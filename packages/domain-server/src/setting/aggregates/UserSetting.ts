@@ -15,9 +15,8 @@ import { SettingContracts } from '@dailyuse/contracts';
 // 类型别名（从命名空间导入）
 type UserSettingServerDTO = SettingContracts.UserSettingServerDTO;
 type UserSettingPersistenceDTO = SettingContracts.UserSettingPersistenceDTO;
-type UserSettingClientDTO = SettingContracts.UserSettingDTO;
-type DefaultSettingsDTO = SettingContracts.DefaultSettingsDTO;
-type UpdateUserSettingDTO = SettingContracts.UpdateUserSettingDTO;
+type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
+type UpdateUserSettingRequest = SettingContracts.UpdateUserSettingRequest;
 
 /**
  * UserSetting 聚合根
@@ -359,11 +358,19 @@ export class UserSetting extends AggregateRoot {
    * 从持久化 DTO 重建聚合根
    */
   public static fromPersistenceDTO(dto: UserSettingPersistenceDTO): UserSetting {
+    // Parse JSON strings back to objects/arrays
+    const shortcutsCustom = typeof dto.shortcutsCustom === 'string' 
+      ? JSON.parse(dto.shortcutsCustom) 
+      : dto.shortcutsCustom;
+    const experimentalFeatures = typeof dto.experimentalFeatures === 'string'
+      ? JSON.parse(dto.experimentalFeatures)
+      : dto.experimentalFeatures;
+
     return new UserSetting({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      appearanceTheme: dto.appearanceTheme,
-      appearanceFontSize: dto.appearanceFontSize,
+      appearanceTheme: dto.appearanceTheme as 'AUTO' | 'LIGHT' | 'DARK',
+      appearanceFontSize: dto.appearanceFontSize as 'SMALL' | 'MEDIUM' | 'LARGE',
       appearanceCompactMode: dto.appearanceCompactMode,
       appearanceAccentColor: dto.appearanceAccentColor,
       appearanceFontFamily: dto.appearanceFontFamily,
@@ -373,18 +380,18 @@ export class UserSetting extends AggregateRoot {
       localeTimeFormat: dto.localeTimeFormat,
       localeWeekStartsOn: dto.localeWeekStartsOn,
       localeCurrency: dto.localeCurrency,
-      notificationEmail: dto.notificationEmail,
-      notificationPush: dto.notificationPush,
-      notificationInApp: dto.notificationInApp,
-      notificationSound: dto.notificationSound,
-      editorTheme: dto.editorTheme,
-      editorFontSize: dto.editorFontSize,
-      editorTabSize: dto.editorTabSize,
-      editorWordWrap: dto.editorWordWrap,
-      editorLineNumbers: dto.editorLineNumbers,
-      editorMinimap: dto.editorMinimap,
+      notificationEmail: true, // These fields removed from PersistenceDTO, use defaults
+      notificationPush: true,
+      notificationInApp: true,
+      notificationSound: true,
+      editorTheme: 'vs-dark', // These fields removed from PersistenceDTO, use defaults
+      editorFontSize: 14,
+      editorTabSize: 2,
+      editorWordWrap: true,
+      editorLineNumbers: true,
+      editorMinimap: true,
       shortcutsEnabled: dto.shortcutsEnabled,
-      shortcutsCustom: dto.shortcutsCustom,
+      shortcutsCustom: shortcutsCustom,
       workflowAutoSave: dto.workflowAutoSave,
       workflowAutoSaveInterval: dto.workflowAutoSaveInterval,
       workflowConfirmBeforeDelete: dto.workflowConfirmBeforeDelete,
@@ -397,9 +404,9 @@ export class UserSetting extends AggregateRoot {
       privacyAllowSearchByPhone: dto.privacyAllowSearchByPhone,
       privacyShareUsageData: dto.privacyShareUsageData,
       experimentalEnabled: dto.experimentalEnabled,
-      experimentalFeatures: dto.experimentalFeatures,
-      startPage: dto.startPage,
-      sidebarCollapsed: dto.sidebarCollapsed,
+      experimentalFeatures: experimentalFeatures,
+      startPage: 'dashboard', // These fields removed from PersistenceDTO, use defaults
+      sidebarCollapsed: false,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
     });
@@ -410,76 +417,56 @@ export class UserSetting extends AggregateRoot {
   /**
    * 更新用户设置
    */
-  public update(updates: UpdateUserSettingDTO): void {
-    if (updates.appearanceTheme !== undefined) this._appearanceTheme = updates.appearanceTheme;
-    if (updates.appearanceFontSize !== undefined)
-      this._appearanceFontSize = updates.appearanceFontSize;
-    if (updates.appearanceCompactMode !== undefined)
-      this._appearanceCompactMode = updates.appearanceCompactMode;
-    if (updates.appearanceAccentColor !== undefined)
-      this._appearanceAccentColor = updates.appearanceAccentColor;
-    if (updates.appearanceFontFamily !== undefined)
-      this._appearanceFontFamily = updates.appearanceFontFamily;
+  public update(updates: UpdateUserSettingRequest): void {
+    // Appearance updates
+    if (updates.appearance) {
+      if (updates.appearance.theme !== undefined) this._appearanceTheme = updates.appearance.theme;
+      if (updates.appearance.fontSize !== undefined) this._appearanceFontSize = updates.appearance.fontSize;
+      if (updates.appearance.compactMode !== undefined) this._appearanceCompactMode = updates.appearance.compactMode;
+      if (updates.appearance.accentColor !== undefined) this._appearanceAccentColor = updates.appearance.accentColor;
+      if (updates.appearance.fontFamily !== undefined) this._appearanceFontFamily = updates.appearance.fontFamily;
+    }
 
-    if (updates.localeLanguage !== undefined) this._localeLanguage = updates.localeLanguage;
-    if (updates.localeTimezone !== undefined) this._localeTimezone = updates.localeTimezone;
-    if (updates.localeDateFormat !== undefined) this._localeDateFormat = updates.localeDateFormat;
-    if (updates.localeTimeFormat !== undefined) this._localeTimeFormat = updates.localeTimeFormat;
-    if (updates.localeWeekStartsOn !== undefined)
-      this._localeWeekStartsOn = updates.localeWeekStartsOn;
-    if (updates.localeCurrency !== undefined) this._localeCurrency = updates.localeCurrency;
+    // Locale updates
+    if (updates.locale) {
+      if (updates.locale.language !== undefined) this._localeLanguage = updates.locale.language;
+      if (updates.locale.timezone !== undefined) this._localeTimezone = updates.locale.timezone;
+      if (updates.locale.dateFormat !== undefined) this._localeDateFormat = updates.locale.dateFormat;
+      if (updates.locale.timeFormat !== undefined) this._localeTimeFormat = updates.locale.timeFormat;
+      if (updates.locale.weekStartsOn !== undefined) this._localeWeekStartsOn = updates.locale.weekStartsOn;
+      if (updates.locale.currency !== undefined) this._localeCurrency = updates.locale.currency;
+    }
 
-    if (updates.notificationEmail !== undefined)
-      this._notificationEmail = updates.notificationEmail;
-    if (updates.notificationPush !== undefined)
-      this._notificationPush = updates.notificationPush;
-    if (updates.notificationInApp !== undefined)
-      this._notificationInApp = updates.notificationInApp;
-    if (updates.notificationSound !== undefined)
-      this._notificationSound = updates.notificationSound;
+    // Workflow updates
+    if (updates.workflow) {
+      if (updates.workflow.autoSave !== undefined) this._workflowAutoSave = updates.workflow.autoSave;
+      if (updates.workflow.autoSaveInterval !== undefined) this._workflowAutoSaveInterval = updates.workflow.autoSaveInterval;
+      if (updates.workflow.confirmBeforeDelete !== undefined) this._workflowConfirmBeforeDelete = updates.workflow.confirmBeforeDelete;
+      if (updates.workflow.defaultGoalView !== undefined) this._workflowDefaultGoalView = updates.workflow.defaultGoalView;
+      if (updates.workflow.defaultScheduleView !== undefined) this._workflowDefaultScheduleView = updates.workflow.defaultScheduleView;
+      if (updates.workflow.defaultTaskView !== undefined) this._workflowDefaultTaskView = updates.workflow.defaultTaskView;
+    }
 
-    if (updates.editorTheme !== undefined) this._editorTheme = updates.editorTheme;
-    if (updates.editorFontSize !== undefined) this._editorFontSize = updates.editorFontSize;
-    if (updates.editorTabSize !== undefined) this._editorTabSize = updates.editorTabSize;
-    if (updates.editorWordWrap !== undefined) this._editorWordWrap = updates.editorWordWrap;
-    if (updates.editorLineNumbers !== undefined)
-      this._editorLineNumbers = updates.editorLineNumbers;
-    if (updates.editorMinimap !== undefined) this._editorMinimap = updates.editorMinimap;
+    // Shortcuts updates
+    if (updates.shortcuts) {
+      if (updates.shortcuts.enabled !== undefined) this._shortcutsEnabled = updates.shortcuts.enabled;
+      if (updates.shortcuts.custom !== undefined) this._shortcutsCustom = updates.shortcuts.custom;
+    }
 
-    if (updates.shortcutsEnabled !== undefined) this._shortcutsEnabled = updates.shortcutsEnabled;
-    if (updates.shortcutsCustom !== undefined) this._shortcutsCustom = updates.shortcutsCustom;
+    // Privacy updates
+    if (updates.privacy) {
+      if (updates.privacy.profileVisibility !== undefined) this._privacyProfileVisibility = updates.privacy.profileVisibility;
+      if (updates.privacy.showOnlineStatus !== undefined) this._privacyShowOnlineStatus = updates.privacy.showOnlineStatus;
+      if (updates.privacy.allowSearchByEmail !== undefined) this._privacyAllowSearchByEmail = updates.privacy.allowSearchByEmail;
+      if (updates.privacy.allowSearchByPhone !== undefined) this._privacyAllowSearchByPhone = updates.privacy.allowSearchByPhone;
+      if (updates.privacy.shareUsageData !== undefined) this._privacyShareUsageData = updates.privacy.shareUsageData;
+    }
 
-    if (updates.workflowAutoSave !== undefined) this._workflowAutoSave = updates.workflowAutoSave;
-    if (updates.workflowAutoSaveInterval !== undefined)
-      this._workflowAutoSaveInterval = updates.workflowAutoSaveInterval;
-    if (updates.workflowConfirmBeforeDelete !== undefined)
-      this._workflowConfirmBeforeDelete = updates.workflowConfirmBeforeDelete;
-    if (updates.workflowDefaultGoalView !== undefined)
-      this._workflowDefaultGoalView = updates.workflowDefaultGoalView;
-    if (updates.workflowDefaultScheduleView !== undefined)
-      this._workflowDefaultScheduleView = updates.workflowDefaultScheduleView;
-    if (updates.workflowDefaultTaskView !== undefined)
-      this._workflowDefaultTaskView = updates.workflowDefaultTaskView;
-
-    if (updates.privacyProfileVisibility !== undefined)
-      this._privacyProfileVisibility = updates.privacyProfileVisibility;
-    if (updates.privacyShowOnlineStatus !== undefined)
-      this._privacyShowOnlineStatus = updates.privacyShowOnlineStatus;
-    if (updates.privacyAllowSearchByEmail !== undefined)
-      this._privacyAllowSearchByEmail = updates.privacyAllowSearchByEmail;
-    if (updates.privacyAllowSearchByPhone !== undefined)
-      this._privacyAllowSearchByPhone = updates.privacyAllowSearchByPhone;
-    if (updates.privacyShareUsageData !== undefined)
-      this._privacyShareUsageData = updates.privacyShareUsageData;
-
-    if (updates.experimentalEnabled !== undefined)
-      this._experimentalEnabled = updates.experimentalEnabled;
-    if (updates.experimentalFeatures !== undefined)
-      this._experimentalFeatures = updates.experimentalFeatures;
-
-    if (updates.startPage !== undefined) this._startPage = updates.startPage;
-    if (updates.sidebarCollapsed !== undefined)
-      this._sidebarCollapsed = updates.sidebarCollapsed;
+    // Experimental updates
+    if (updates.experimental) {
+      if (updates.experimental.enabled !== undefined) this._experimentalEnabled = updates.experimental.enabled;
+      if (updates.experimental.features !== undefined) this._experimentalFeatures = updates.experimental.features;
+    }
 
     this._updatedAt = Date.now();
   }
@@ -541,46 +528,49 @@ export class UserSetting extends AggregateRoot {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
-      appearanceTheme: this._appearanceTheme,
-      appearanceFontSize: this._appearanceFontSize,
-      appearanceCompactMode: this._appearanceCompactMode,
-      appearanceAccentColor: this._appearanceAccentColor,
-      appearanceFontFamily: this._appearanceFontFamily,
-      localeLanguage: this._localeLanguage,
-      localeTimezone: this._localeTimezone,
-      localeDateFormat: this._localeDateFormat,
-      localeTimeFormat: this._localeTimeFormat,
-      localeWeekStartsOn: this._localeWeekStartsOn,
-      localeCurrency: this._localeCurrency,
-      notificationEmail: this._notificationEmail,
-      notificationPush: this._notificationPush,
-      notificationInApp: this._notificationInApp,
-      notificationSound: this._notificationSound,
-      editorTheme: this._editorTheme,
-      editorFontSize: this._editorFontSize,
-      editorTabSize: this._editorTabSize,
-      editorWordWrap: this._editorWordWrap,
-      editorLineNumbers: this._editorLineNumbers,
-      editorMinimap: this._editorMinimap,
-      shortcutsEnabled: this._shortcutsEnabled,
-      shortcutsCustom: this._shortcutsCustom,
-      workflowAutoSave: this._workflowAutoSave,
-      workflowAutoSaveInterval: this._workflowAutoSaveInterval,
-      workflowConfirmBeforeDelete: this._workflowConfirmBeforeDelete,
-      workflowDefaultGoalView: this._workflowDefaultGoalView,
-      workflowDefaultScheduleView: this._workflowDefaultScheduleView,
-      workflowDefaultTaskView: this._workflowDefaultTaskView,
-      privacyProfileVisibility: this._privacyProfileVisibility,
-      privacyShowOnlineStatus: this._privacyShowOnlineStatus,
-      privacyAllowSearchByEmail: this._privacyAllowSearchByEmail,
-      privacyAllowSearchByPhone: this._privacyAllowSearchByPhone,
-      privacyShareUsageData: this._privacyShareUsageData,
-      experimentalEnabled: this._experimentalEnabled,
-      experimentalFeatures: this._experimentalFeatures,
-      startPage: this._startPage,
-      sidebarCollapsed: this._sidebarCollapsed,
-      createdAt: new Date(this._createdAt).toISOString(),
-      updatedAt: new Date(this._updatedAt).toISOString(),
+      appearance: {
+        theme: this._appearanceTheme,
+        accentColor: this._appearanceAccentColor,
+        fontSize: this._appearanceFontSize,
+        fontFamily: this._appearanceFontFamily,
+        compactMode: this._appearanceCompactMode,
+      },
+      locale: {
+        language: this._localeLanguage,
+        timezone: this._localeTimezone,
+        dateFormat: this._localeDateFormat,
+        timeFormat: this._localeTimeFormat,
+        weekStartsOn: this._localeWeekStartsOn,
+        currency: this._localeCurrency,
+      },
+      workflow: {
+        defaultTaskView: this._workflowDefaultTaskView,
+        defaultGoalView: this._workflowDefaultGoalView,
+        defaultScheduleView: this._workflowDefaultScheduleView,
+        autoSave: this._workflowAutoSave,
+        autoSaveInterval: this._workflowAutoSaveInterval,
+        confirmBeforeDelete: this._workflowConfirmBeforeDelete,
+      },
+      shortcuts: {
+        enabled: this._shortcutsEnabled,
+        custom: this._shortcutsCustom,
+      },
+      privacy: {
+        profileVisibility: this._privacyProfileVisibility,
+        showOnlineStatus: this._privacyShowOnlineStatus,
+        allowSearchByEmail: this._privacyAllowSearchByEmail,
+        allowSearchByPhone: this._privacyAllowSearchByPhone,
+        shareUsageData: this._privacyShareUsageData,
+      },
+      experimental: {
+        enabled: this._experimentalEnabled,
+        features: this._experimentalFeatures,
+      },
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+      themeText: this._appearanceTheme,
+      languageText: this._localeLanguage,
+      experimentalFeatureCount: this._experimentalFeatures.length,
     };
   }
 
@@ -602,64 +592,24 @@ export class UserSetting extends AggregateRoot {
       localeTimeFormat: this._localeTimeFormat,
       localeWeekStartsOn: this._localeWeekStartsOn,
       localeCurrency: this._localeCurrency,
-      notificationEmail: this._notificationEmail,
-      notificationPush: this._notificationPush,
-      notificationInApp: this._notificationInApp,
-      notificationSound: this._notificationSound,
-      editorTheme: this._editorTheme,
-      editorFontSize: this._editorFontSize,
-      editorTabSize: this._editorTabSize,
-      editorWordWrap: this._editorWordWrap,
-      editorLineNumbers: this._editorLineNumbers,
-      editorMinimap: this._editorMinimap,
-      shortcutsEnabled: this._shortcutsEnabled,
-      shortcutsCustom: this._shortcutsCustom,
+      workflowDefaultTaskView: this._workflowDefaultTaskView,
+      workflowDefaultGoalView: this._workflowDefaultGoalView,
+      workflowDefaultScheduleView: this._workflowDefaultScheduleView,
       workflowAutoSave: this._workflowAutoSave,
       workflowAutoSaveInterval: this._workflowAutoSaveInterval,
       workflowConfirmBeforeDelete: this._workflowConfirmBeforeDelete,
-      workflowDefaultGoalView: this._workflowDefaultGoalView,
-      workflowDefaultScheduleView: this._workflowDefaultScheduleView,
-      workflowDefaultTaskView: this._workflowDefaultTaskView,
+      shortcutsEnabled: this._shortcutsEnabled,
+      shortcutsCustom: JSON.stringify(this._shortcutsCustom),
       privacyProfileVisibility: this._privacyProfileVisibility,
       privacyShowOnlineStatus: this._privacyShowOnlineStatus,
       privacyAllowSearchByEmail: this._privacyAllowSearchByEmail,
       privacyAllowSearchByPhone: this._privacyAllowSearchByPhone,
       privacyShareUsageData: this._privacyShareUsageData,
       experimentalEnabled: this._experimentalEnabled,
-      experimentalFeatures: this._experimentalFeatures,
-      startPage: this._startPage,
-      sidebarCollapsed: this._sidebarCollapsed,
+      experimentalFeatures: JSON.stringify(this._experimentalFeatures),
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     };
   }
 
-  /**
-   * 转换为默认设置 DTO
-   */
-  public toDefaultDTO(): DefaultSettingsDTO {
-    return {
-      appearanceTheme: this._appearanceTheme,
-      appearanceFontSize: this._appearanceFontSize,
-      appearanceCompactMode: this._appearanceCompactMode,
-      appearanceAccentColor: this._appearanceAccentColor,
-      localeLanguage: this._localeLanguage,
-      localeTimezone: this._localeTimezone,
-      localeDateFormat: this._localeDateFormat,
-      localeTimeFormat: this._localeTimeFormat,
-      notificationEmail: this._notificationEmail,
-      notificationPush: this._notificationPush,
-      notificationInApp: this._notificationInApp,
-      notificationSound: this._notificationSound,
-      editorTheme: this._editorTheme,
-      editorFontSize: this._editorFontSize,
-      editorTabSize: this._editorTabSize,
-      editorWordWrap: this._editorWordWrap,
-      workflowAutoSave: this._workflowAutoSave,
-      workflowAutoSaveInterval: this._workflowAutoSaveInterval,
-      workflowConfirmBeforeDelete: this._workflowConfirmBeforeDelete,
-      startPage: this._startPage,
-      sidebarCollapsed: this._sidebarCollapsed,
-    };
-  }
 }

@@ -49,7 +49,7 @@ export class OneTimeTaskGoalLinkService {
       const task = TaskTemplateClient.fromServerDTO(dto);
       
       const taskStore = useTaskStore();
-      taskStore.updateTaskTemplate(task);
+      taskStore.updateTaskTemplate(task.uuid, task);
       
       logger.info('Task linked to goal successfully', { uuid, goalUuid });
       return task;
@@ -69,7 +69,7 @@ export class OneTimeTaskGoalLinkService {
       const task = TaskTemplateClient.fromServerDTO(dto);
       
       const taskStore = useTaskStore();
-      taskStore.updateTaskTemplate(task);
+      taskStore.updateTaskTemplate(task.uuid, task);
       
       logger.info('Task unlinked from goal successfully', { uuid });
       return task;

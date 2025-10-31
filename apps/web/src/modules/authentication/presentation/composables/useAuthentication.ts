@@ -5,8 +5,8 @@ import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AuthManager } from '@/shared/api';
 import type { AuthenticationContracts } from '@dailyuse/contracts';
 
-type LoginRequest = AuthenticationContracts.LoginRequest;
-type PasswordChangeRequest = AuthenticationContracts.PasswordChangeRequest;
+type LoginRequestDTO = AuthenticationContracts.LoginRequestDTO;
+type ChangePasswordRequestDTO = AuthenticationContracts.ChangePasswordRequestDTO;
 
 /**
  * 认证模块 Composable
@@ -84,7 +84,7 @@ export function useAuthentication() {
   /**
    * 登录操作
    */
-  const login = async (credentials: LoginRequest): Promise<void> => {
+  const login = async (credentials: LoginRequestDTO): Promise<void> => {
     currentOperation.value = 'login';
     try {
       console.log('Attempting login with credentials:', credentials);
@@ -143,7 +143,7 @@ export function useAuthentication() {
   /**
    * 修改密码
    */
-  const changePassword = async (data: PasswordChangeRequest): Promise<void> => {
+  const changePassword = async (data: ChangePasswordRequestDTO): Promise<void> => {
     currentOperation.value = 'changePassword';
     try {
       const authService = await AuthApplicationService.getInstance();

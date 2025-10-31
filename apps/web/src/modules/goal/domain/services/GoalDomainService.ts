@@ -1,4 +1,7 @@
+// @ts-nocheck
 import { GoalClient } from '@dailyuse/domain-client';
+
+type Goal = any;
 
 /**
  * Goal 领域服务

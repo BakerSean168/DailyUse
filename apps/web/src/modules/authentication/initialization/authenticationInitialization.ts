@@ -52,8 +52,8 @@ export function registerAuthenticationInitializationTasks(): void {
           const authData = JSON.parse(persistedData);
           if (authData.user) {
             // 恢复账户信息到 accountStore
-            const accountEntity = Account.fromDTO(authData.user);
-            accountStore.setAccount(accountEntity);
+            const accountEntity = Account.fromClientDTO(authData.user);
+            accountStore.currentAccount = accountEntity.toClientDTO() as any;
             console.log('✅ [AuthModule] 账户信息已恢复:', accountEntity.username);
 
             // 触发自动登录流程

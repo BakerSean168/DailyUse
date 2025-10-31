@@ -92,7 +92,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.getUserSettingByUuid(uuid);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.setUserSetting(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 获取用户设置失败:', error);
@@ -109,7 +109,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.getUserSettingByAccount(accountUuid);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.setUserSetting(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 根据账户获取设置失败:', error);
@@ -126,7 +126,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.getOrCreateUserSetting(accountUuid);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.setUserSetting(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 获取或创建设置失败:', error);
@@ -145,7 +145,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.createUserSetting(request);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.setUserSetting(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 创建用户设置失败:', error);
@@ -163,7 +163,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updateUserSetting(uuid, request);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 更新用户设置失败:', error);
@@ -177,7 +177,7 @@ export class UserSettingWebApplicationService {
   public async deleteUserSetting(uuid: string): Promise<void> {
     try {
       await userSettingApiClient.deleteUserSetting(uuid);
-      this.userSettingStore.setUserSetting(null);
+      this.userSettingStore.settings = null;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 删除用户设置失败:', error);
       throw error;
@@ -196,7 +196,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updateAppearance(uuid, appearance);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 更新外观设置失败:', error);
@@ -214,7 +214,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updateLocale(uuid, locale);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 更新本地化设置失败:', error);
@@ -232,7 +232,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updateWorkflow(uuid, workflow);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 更新工作流设置失败:', error);
@@ -250,7 +250,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updatePrivacy(uuid, privacy);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 更新隐私设置失败:', error);
@@ -268,7 +268,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updateExperimental(uuid, experimental);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 更新实验性功能设置失败:', error);
@@ -288,7 +288,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updateTheme(uuid, theme);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
 
       // 触发主题变更事件
       this.eventBus.send(UserSettingEventType.THEME_CHANGED, { theme });
@@ -311,7 +311,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updateLanguage(uuid, language);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
 
       // 触发语言变更事件
       this.eventBus.send(UserSettingEventType.LANGUAGE_CHANGED, { language });
@@ -335,7 +335,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.updateShortcut(uuid, action, shortcut);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
 
       // 触发快捷键变更事件
       this.eventBus.send(UserSettingEventType.SHORTCUTS_CHANGED, { action, shortcut });
@@ -358,7 +358,7 @@ export class UserSettingWebApplicationService {
     try {
       const dto = await userSettingApiClient.deleteShortcut(uuid, action);
       const entity = UserSetting.fromClientDTO(dto);
-      this.userSettingStore.updateUserSettingData(entity);
+      this.userSettingStore.settings = entity.toClientDTO();
 
       // 触发快捷键变更事件（删除）
       this.eventBus.send(UserSettingEventType.SHORTCUTS_CHANGED, { action, shortcut: null });
@@ -377,14 +377,15 @@ export class UserSettingWebApplicationService {
    * 从 Store 获取当前用户设置
    */
   public getCurrentUserSetting(): ReturnType<typeof UserSetting.fromClientDTO> | null {
-    return this.userSettingStore.getUserSetting;
+    const dto = this.userSettingStore.settings;
+    return dto ? UserSetting.fromClientDTO(dto) : null;
   }
 
   /**
    * 清除用户设置缓存
    */
   public clearUserSettingCache(): void {
-    this.userSettingStore.clearAll();
+    this.userSettingStore.settings = null;
   }
 
   // ===== Event System Methods (事件系统方法) =====

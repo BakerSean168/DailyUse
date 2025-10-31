@@ -341,7 +341,7 @@ export class GoalFolderApiClient {
     page?: number;
     limit?: number;
     status?: string;
-    parentUuid?: string;
+    parentUuid?: string | null;
   }): Promise<GoalContracts.GoalFolderListResponse> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;

@@ -1,4 +1,4 @@
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import { AuthenticationContracts, AccountContracts } from '@dailyuse/contracts';
 import { AuthApiService } from '../../infrastructure/api/ApiClient';
 import { AuthManager } from '../../../../shared/api/core/interceptors';
 import { publishUserLoggedInEvent, publishUserLoggedOutEvent } from '../events/authEvents';
@@ -6,14 +6,14 @@ import { AppInitializationManager } from '../../../../shared/initialization/AppI
 import { useAuthenticationStore } from '../../presentation/stores/authenticationStore';
 
 // Type aliases for cleaner code
-type LoginRequest = AuthenticationContracts.LoginRequest;
-type LoginResponse = AuthenticationContracts.LoginResponse;
-type RefreshTokenRequest = AuthenticationContracts.RefreshTokenRequest;
-type RefreshTokenResponse = AuthenticationContracts.RefreshTokenResponse;
-type PasswordChangeRequest = AuthenticationContracts.PasswordChangeRequest;
-type UserInfoDTO = AuthenticationContracts.UserInfoDTO;
-type UserSessionClientDTO = AuthenticationContracts.UserSessionClientDTO;
-type MFADeviceClientDTO = AuthenticationContracts.MFADeviceClientDTO;
+type LoginRequestDTO = AuthenticationContracts.LoginRequestDTO;
+type LoginResponseDTO = AuthenticationContracts.LoginResponseDTO;
+type RefreshTokenRequestDTO = AuthenticationContracts.RefreshTokenRequestDTO;
+type RefreshTokenResponseDTO = AuthenticationContracts.RefreshTokenResponseDTO;
+type ChangePasswordRequestDTO = AuthenticationContracts.ChangePasswordRequestDTO;
+type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
+type DeviceInfoClientDTO = AuthenticationContracts.DeviceInfoClientDTO;
+type AccountClientDTO = AccountContracts.AccountClientDTO;
 
 /**
  * Authentication Application Service
@@ -52,12 +52,12 @@ export class AuthApplicationService {
    * 用户登录
    * User Login
    */
-  async login(request: LoginRequest): Promise<LoginResponse> {
+  async login(request: LoginRequestDTO): Promise<LoginResponseDTO> {
     try {
       this.authStore.setLoading(true);
       this.authStore.setError(null);
 
-      // 调用 API 登录 - 返回 LoginResponse['data'] 格式
+      // 调用 API 登录 - 返回 LoginResponseDTO['data'] 格式
       const loginData = await AuthApiService.login(request);
 
       // 提取数据 - 新格式: { user, accessToken, refreshToken, sessionId, ... }
@@ -67,7 +67,7 @@ export class AuthApplicationService {
       // 使用 AuthManager 保存令牌（用于请求拦截器）
       AuthManager.setTokens(accessToken, refreshToken, rememberToken, expiresIn);
 
-      // 同步到 store - 直接使用 UserInfoDTO
+      // 同步到 store - 直接使用 AccountClientDTO
       this.authStore.setUser(user);
       this.authStore.setTokens({
         accessToken,
@@ -97,8 +97,8 @@ export class AuthApplicationService {
         console.warn('⚠️ [AuthService] 用户会话初始化失败，但不影响登录', error);
       }
 
-      // 返回完整的 LoginResponse 格式
-      return { data: loginData } as LoginResponse;
+      // 返回完整的 LoginResponseDTO 格式
+      return loginData as unknown as LoginResponseDTO;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '登录失败';
       this.authStore.setError(errorMessage);
@@ -166,7 +166,7 @@ export class AuthApplicationService {
     try {
       this.authStore.setLoading(true);
 
-      // 调用 API 刷新令牌 - extractData 已解包返回 RefreshTokenResponse['data']
+      // 调用 API 刷新令牌 - extractData 已解包返回 RefreshTokenResponseDTO['data']
       const tokenData = await AuthApiService.refreshToken({ refreshToken });
 
       // 提取数据
@@ -194,7 +194,7 @@ export class AuthApplicationService {
    * 获取当前用户信息
    * Get Current User
    */
-  async getCurrentUser(): Promise<UserInfoDTO> {
+  async getCurrentUser(): Promise<AccountClientDTO> {
     try {
       this.authStore.setLoading(true);
 
@@ -217,7 +217,7 @@ export class AuthApplicationService {
    * 初始化认证状态
    * Initialize Authentication
    */
-  async initAuth(): Promise<UserInfoDTO | null> {
+  async initAuth(): Promise<AccountClientDTO | null> {
     if (!AuthManager.isAuthenticated()) return null;
 
     // 检查 Token 是否过期
@@ -242,7 +242,7 @@ export class AuthApplicationService {
    * 修改密码
    * Change Password
    */
-  async changePassword(data: PasswordChangeRequest): Promise<void> {
+  async changePassword(data: ChangePasswordRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
 
@@ -264,7 +264,7 @@ export class AuthApplicationService {
    * 获取 MFA 设备列表
    * Get MFA Devices
    */
-  async getMFADevices(): Promise<MFADeviceClientDTO[]> {
+  async getMFADevices(): Promise<DeviceInfoClientDTO[]> {
     try {
       this.authStore.setLoading(true);
 
@@ -312,14 +312,14 @@ export class AuthApplicationService {
    * 获取用户会话列表
    * Get User Sessions
    */
-  async getSessions(): Promise<UserSessionClientDTO[]> {
+  async getSessions(): Promise<AuthSessionClientDTO[]> {
     try {
       this.authStore.setLoading(true);
 
       const sessionsData = await AuthApiService.getSessions();
 
       // 找到当前会话
-      const currentSession = sessionsData.sessions.find((s: UserSessionClientDTO) => s.isCurrent);
+      const currentSession = sessionsData.sessions.find((s: any) => s.isCurrent);
       if (currentSession) {
         this.authStore.setCurrentSession(currentSession);
       }

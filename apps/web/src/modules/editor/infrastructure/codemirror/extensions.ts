@@ -5,7 +5,7 @@
  * 配置编辑器扩展、快捷键、行为等
  */
 
-import { EditorState, Extension } from '@codemirror/state';
+import { EditorState, type Extension } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';

@@ -561,8 +561,8 @@ export const useReminderStore = defineStore('reminder', () => {
   /**
    * 设置统计数据
    */
-  const setStatistics = (stats: ReminderContracts.ReminderStatsClientDTO) => {
-    statistics.value = stats;
+  const setStatistics = (stats: ReminderContracts.ReminderStatisticsClientDTO | ReminderContracts.ReminderStatsClientDTO) => {
+    statistics.value = stats as any;
   };
 
   /**
