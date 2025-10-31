@@ -5,7 +5,7 @@
  * Markdown 编辑器状态管理和操作方法
  */
 
-import { ref, computed, Ref } from 'vue';
+import { ref, computed, type Ref } from 'vue';
 import type { EditorView } from '@codemirror/view';
 
 export function useMarkdownEditor(initialContent = '') {

@@ -257,7 +257,8 @@ export function useTaskTemplate() {
       isOperating.value = true;
       operationError.value = null;
 
-      const result = await taskTemplateApplicationService.searchTaskTemplates(params.query, {
+      const result = await taskTemplateApplicationService.searchTaskTemplates({
+        query: params.query,
         page: params.page,
         limit: params.limit,
       });

@@ -1,0 +1,344 @@
+# 代码错误清理进度追踪
+# Created: 2025-10-31
+# Target: 0 TypeScript Errors
+
+baseline:
+  date: 2025-10-31
+  web_errors: 389
+  api_errors: 472
+  total_errors: 861
+  note: "Document 模块 (Web 20 + API 106 = 126 错误) 跳过，等待重构"
+
+current:
+  date: 2025-10-31
+  web_errors: 369  # 389 - 20 (Document)
+  api_errors: 366  # 472 - 106 (Document)
+  total_errors: 735  # 861 - 126 (Document)
+  progress_percentage: 0%
+  note: "从 Task 模块开始，跳过 Document"
+
+# ============================================
+# Week 1: 核心模块修复 (目标: 50% 完成)
+# ============================================
+
+week_1:
+  target_errors_fixed: 347  # Task 183 + Setting 73 + Goal 91
+  target_percentage: 47%  # 347/735
+  note: "跳过 Document 模块，从 Task 开始"
+  
+  day_1:
+    date: null
+    sprint: 1.1
+    module: Task (API 分析)
+    errors_before: 88
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "分析 Task 模块 API 端错误"
+        status: pending
+      - task: "修复 TaskTemplate Domain 层"
+        status: pending
+      - task: "修复 TaskInstance Domain 层"
+        status: pending
+      - task: "开始 Repository 层修复"
+        status: pending
+    notes: null
+  
+  day_2:
+    date: null
+    sprint: 1.1
+    module: Task (API 完成 + Web 开始)
+    errors_before: 88
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "完成 Repository 层修复"
+        status: pending
+      - task: "修复 Application Service"
+        status: pending
+      - task: "验证 API 端"
+        status: pending
+      - task: "开始 Web 端修复 (taskApiClient)"
+        status: pending
+    notes: null
+  
+  day_3:
+    date: null
+    sprint: 1.1
+    module: Task (Web)
+    errors_before: 95
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "修复 useTaskDashboard (summary 字段)"
+        status: pending
+      - task: "修复 useTaskBatchOperations (状态枚举)"
+        status: pending
+      - task: "修复 useOneTimeTask (状态比较)"
+        status: pending
+      - task: "验证整个 Task 模块"
+        status: pending
+    notes: null
+  
+  day_4:
+    date: null
+    sprint: 1.2
+    module: Setting
+    errors_before: 73
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "移除废弃文件 (3 个)"
+        status: pending
+      - task: "修复 API 端类型"
+        status: pending
+      - task: "验证 Setting 模块"
+        status: pending
+    notes: null
+  
+  day_5:
+    date: null
+    sprint: 1.3
+    module: Goal (开始)
+    errors_before: 91
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "分析 Goal 模块错误"
+        status: pending
+      - task: "修复 Goal domain 类型"
+        status: pending
+      - task: "修复 KeyResult 关联类型"
+        status: pending
+    notes: null
+  
+  day_6:
+    date: null
+    sprint: 1.3
+    module: Goal (完成)
+    errors_before: 91
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "完成 Repository 层"
+        status: pending
+      - task: "修复 Application Service"
+        status: pending
+      - task: "同步 Web 端 DTO"
+        status: pending
+      - task: "验证 Goal 模块"
+        status: pending
+    notes: null
+
+# ============================================
+# Week 2: 次要模块修复 (目标: 88% 完成)
+# ============================================
+
+week_2:
+  target_errors_fixed: 223  # Notification+Reminder 144 + Repository+Schedule 79
+  target_percentage: 78%  # 累计 570/735
+  
+  day_7_8:
+    date: null
+    sprint: 2.1
+    module: Notification + Reminder
+    errors_before: 144
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "Notification domain 修复"
+        status: pending
+      - task: "多渠道通知类型"
+        status: pending
+      - task: "Reminder 触发器类型"
+        status: pending
+      - task: "Cron 配置类型"
+        status: pending
+      - task: "前后端同步"
+        status: pending
+    notes: null
+  
+  day_9:
+    date: null
+    sprint: 2.2
+    module: Repository + Schedule
+    errors_before: 79
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "Repository 版本管理类型"
+        status: pending
+      - task: "Schedule 冲突检测类型"
+        status: pending
+      - task: "日历视图类型"
+        status: pending
+    notes: null
+
+# ============================================
+# Week 3: 收尾清理 (目标: 100% 完成)
+# ============================================
+
+week_3:
+  target_errors_fixed: 165  # Authentication+Account 87 + Editor 14 + 其他
+  target_percentage: 100%
+  note: "完成所有模块 (不含 Document)"
+  
+  day_10:
+    date: null
+    sprint: 3.1
+    module: Authentication + Account
+    errors_before: 87
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "认证流程类型"
+        status: pending
+      - task: "Token 管理类型"
+        status: pending
+      - task: "账户管理类型"
+        status: pending
+    notes: null
+  
+  day_11:
+    date: null
+    sprint: 3.2
+    module: Editor + 其他
+    errors_before: 14
+    errors_after: null
+    errors_fixed: null
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "Editor 组件类型"
+        status: pending
+      - task: "零散错误清理"
+        status: pending
+    notes: null
+  
+  day_12:
+    date: null
+    sprint: 3.3
+    module: Global Validation
+    errors_before: 0
+    errors_after: 0
+    errors_fixed: 0
+    time_spent: null
+    status: pending
+    tasks:
+      - task: "全局 TypeScript 检查"
+        status: pending
+      - task: "ESLint 全局检查"
+        status: pending
+      - task: "文档更新"
+        status: pending
+      - task: "最终验证"
+        status: pending
+    notes: null
+
+# ============================================
+# 里程碑追踪
+# ============================================
+
+milestones:
+  milestone_1:
+    name: "Week 1 完成"
+    target_date: null
+    target_progress: 47%
+    target_errors_fixed: 347  # Task + Setting + Goal
+    actual_date: null
+    actual_progress: null
+    actual_errors_fixed: null
+    status: pending
+    note: "不含 Document (126 错误)"
+  
+  milestone_2:
+    name: "Week 2 完成"
+    target_date: null
+    target_progress: 78%
+    target_errors_fixed: 570  # 累计
+    actual_date: null
+    actual_progress: null
+    actual_errors_fixed: null
+    status: pending
+    note: "不含 Document"
+  
+  milestone_3:
+    name: "达到 0 错误 (不含 Document)"
+    target_date: 2025-11-21
+    target_progress: 100%
+    target_errors_fixed: 735  # 861 - 126 (Document)
+    actual_date: null
+    actual_progress: null
+    actual_errors_fixed: null
+    status: pending
+    note: "Document 模块跳过，等待重构"
+
+# ============================================
+# 使用说明
+# ============================================
+
+# 更新进度示例:
+# 1. 完成某天工作后，更新对应 day 的字段
+# 2. 更新 current 部分的错误数
+# 3. 达到里程碑时，更新 milestones 部分
+
+# 验证命令:
+# bash tools/scripts/validate-types.sh
+
+# ===== 实际执行记录 =====
+execution:
+  day_1:
+    date: 2025-10-31
+    sprint: "Sprint 1.1 - Task 模块"
+    module: "Task (API)"
+    errors_before: 88
+    errors_after: 0
+    time_spent: "3.5h"
+    status: "✅ 完成"
+    tasks:
+      - status: "✅"
+        task: "domain-server 包构建修复 (21 Setting 错误)"
+      - status: "✅"
+        task: "TaskFilters 类型导出"
+      - status: "✅"
+        task: "TaskTemplateApplicationService 修复 (23 错误)"
+      - status: "✅"
+        task: "PrismaTaskTemplateRepository 修复 (11 错误)"
+      - status: "✅"
+        task: "PrismaTaskStatisticsRepository 修复 (5 错误)"
+      - status: "✅"
+        task: "PrismaTaskDependencyRepository 修复 (1 错误)"
+      - status: "✅"
+        task: "TaskTemplateController 修复 (17 错误)"
+    notes:
+      - "超预期完成，提前2.5小时"
+      - "建立了完整的类型修复模式"
+      - "修复了8个核心文件"
+      - "实现零错误里程碑"
+    files_modified:
+      - "packages/domain-server/src/setting/aggregates/UserSetting.ts"
+      - "packages/domain-server/src/task/repositories/index.ts"
+      - "packages/domain-server/src/task/index.ts"
+      - "apps/api/src/modules/task/application/services/TaskTemplateApplicationService.ts"
+      - "apps/api/src/modules/task/infrastructure/repositories/PrismaTaskTemplateRepository.ts"
+      - "apps/api/src/modules/task/infrastructure/repositories/PrismaTaskStatisticsRepository.ts"
+      - "apps/api/src/modules/task/infrastructure/repositories/PrismaTaskDependencyRepository.ts"
+      - "apps/api/src/modules/task/interface/http/controllers/TaskTemplateController.ts"

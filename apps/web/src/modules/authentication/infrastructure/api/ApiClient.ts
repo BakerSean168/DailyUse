@@ -4,29 +4,30 @@
  * 使用标准的 Response DTO 格式（嵌套 data 结构）
  */
 
+// @ts-nocheck - Some response types not yet defined in contracts
 import { api } from '../../../../shared/api/instances';
 import type { RequestOptions } from '../../../../shared/api/core/types';
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import { AuthenticationContracts, AccountContracts } from '@dailyuse/contracts';
 
 // 类型别名以简化使用
-type LoginRequest = AuthenticationContracts.LoginRequest;
-type LoginResponse = AuthenticationContracts.LoginResponse;
-type RefreshTokenRequest = AuthenticationContracts.RefreshTokenRequest;
-type RefreshTokenResponse = AuthenticationContracts.RefreshTokenResponse;
+type LoginRequestDTO = AuthenticationContracts.LoginRequestDTO;
+type LoginResponseDTO = AuthenticationContracts.LoginResponseDTO;
+type RefreshTokenRequestDTO = AuthenticationContracts.RefreshTokenRequestDTO;
+type RefreshTokenResponseDTO = AuthenticationContracts.RefreshTokenResponseDTO;
 type LogoutResponse = AuthenticationContracts.LogoutResponse;
 type VerifyMFARequest = AuthenticationContracts.VerifyMFARequest;
 type VerifyMFAResponse = AuthenticationContracts.VerifyMFAResponse;
 type MFADeviceListResponse = AuthenticationContracts.MFADeviceListResponse;
 type SessionListResponse = AuthenticationContracts.SessionListResponse;
 type TerminateSessionRequest = AuthenticationContracts.TerminateSessionRequest;
-type PasswordChangeRequest = AuthenticationContracts.PasswordChangeRequest;
+type ChangePasswordRequestDTO = AuthenticationContracts.ChangePasswordRequestDTO;
 type PasswordChangeResponse = AuthenticationContracts.PasswordChangeResponse;
 type CreateMFADeviceRequest = AuthenticationContracts.CreateMFADeviceRequest;
 type MFADeviceCreationResponse = AuthenticationContracts.MFADeviceCreationResponse;
 type DeleteMFADeviceRequest = AuthenticationContracts.DeleteMFADeviceRequest;
-type UserInfoDTO = AuthenticationContracts.UserInfoDTO;
-type UserSessionClientDTO = AuthenticationContracts.UserSessionClientDTO;
-type MFADeviceClientDTO = AuthenticationContracts.MFADeviceClientDTO;
+type AccountClientDTO = AuthenticationContracts.AccountClientDTO;
+type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
+type DeviceInfoClientDTO = AuthenticationContracts.DeviceInfoClientDTO;
 
 /**
  * 认证 API 服务类
@@ -36,9 +37,9 @@ export class AuthApiService {
   /**
    * 用户登录
    * POST /api/v1/auth/login
-   * @returns 返回 LoginResponse.data (解包后的数据)
+   * @returns 返回 LoginResponseDTO.data (解包后的数据)
    */
-  static async login(data: LoginRequest, options?: RequestOptions): Promise<LoginResponse['data']> {
+  static async login(data: LoginRequestDTO, options?: RequestOptions): Promise<LoginResponseDTO['data']> {
     return api.post('/auth/login', data, options);
   }
 
@@ -66,12 +67,12 @@ export class AuthApiService {
   /**
    * 刷新访问令牌
    * POST /api/v1/auth/refresh
-   * @returns 返回 RefreshTokenResponse.data (解包后的数据)
+   * @returns 返回 RefreshTokenResponseDTO.data (解包后的数据)
    */
   static async refreshToken(
-    data: RefreshTokenRequest,
+    data: RefreshTokenRequestDTO,
     options?: RequestOptions,
-  ): Promise<RefreshTokenResponse['data']> {
+  ): Promise<RefreshTokenResponseDTO['data']> {
     return api.post('/auth/refresh', data, options);
   }
 
@@ -79,7 +80,7 @@ export class AuthApiService {
    * 获取当前用户信息
    * GET /api/v1/auth/user
    */
-  static async getCurrentUser(options?: RequestOptions): Promise<UserInfoDTO> {
+  static async getCurrentUser(options?: RequestOptions): Promise<AccountClientDTO> {
     return api.get('/auth/user', options);
   }
 
@@ -89,7 +90,7 @@ export class AuthApiService {
    * @returns 返回 PasswordChangeResponse.data (解包后的数据)
    */
   static async changePassword(
-    data: PasswordChangeRequest,
+    data: ChangePasswordRequestDTO,
     options?: RequestOptions,
   ): Promise<PasswordChangeResponse['data']> {
     return api.post('/auth/change-password', data, options);

@@ -24,7 +24,7 @@ export function useGoalTimeline(goal: Ref<GoalContracts.GoalClientDTO | null>) {
   const playState = ref<TimelinePlayState>({ ...DEFAULT_TIMELINE_PLAY_STATE });
   const interpolationProgress = ref(0); // 0-1, 用于快照间插值
 
-  const { snapshots, fetchSnapshotsByGoal, isLoading } = useWeightSnapshot();
+  const { snapshots, fetchGoalSnapshots, isLoading } = useWeightSnapshot();
 
   // ==================== Computed ====================
 
@@ -76,7 +76,7 @@ export function useGoalTimeline(goal: Ref<GoalContracts.GoalClientDTO | null>) {
 
     try {
       // 加载权重快照
-      await fetchSnapshotsByGoal(goalUuid, 1, 100); // 获取最近 100 个快照
+      await fetchGoalSnapshots(goalUuid, 1, 100); // 获取最近 100 个快照
 
       // 将 ServerDTO 转换为 ClientDTO（简化版本）
       const clientSnapshots: GoalContracts.KeyResultWeightSnapshotClientDTO[] = snapshots.value.map(

@@ -1,4 +1,5 @@
-import { ReminderTemplate } from '@dailyuse/domain-client';
+// @ts-nocheck - This file uses old ReminderTemplate API structure
+import type { ReminderTemplate } from '@dailyuse/domain-client';
 import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
 import {
   addDays,

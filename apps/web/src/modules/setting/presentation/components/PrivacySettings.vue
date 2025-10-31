@@ -188,18 +188,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useUserSettingStore } from '../stores/userSettingStore';
 
 const settingStore = useUserSettingStore();
 
+// Use computed getter for privacy settings
+const privacy = computed(() => settingStore.privacy);
+
 // Local state
-const profileVisibility = ref(settingStore.settings?.privacyProfileVisibility ?? 'FRIENDS');
-const showOnlineStatus = ref(settingStore.settings?.privacyShowOnlineStatus ?? true);
-const allowSearchByEmail = ref(settingStore.settings?.privacyAllowSearchByEmail ?? true);
-const allowSearchByPhone = ref(settingStore.settings?.privacyAllowSearchByPhone ?? false);
+const profileVisibility = ref(privacy.value.profileVisibility);
+const showOnlineStatus = ref(privacy.value.showOnlineStatus);
+const allowSearchByEmail = ref(privacy.value.allowSearchByEmail);
+const allowSearchByPhone = ref(privacy.value.allowSearchByPhone);
+const shareUsageData = ref(privacy.value.shareUsageData);
+
+// TODO: These fields are not in privacy DTO yet
 const showActivityStatus = ref(settingStore.settings?.privacyShowActivityStatus ?? true);
-const shareUsageData = ref(settingStore.settings?.privacyShareUsageData ?? true);
 const shareCrashReports = ref(settingStore.settings?.privacyShareCrashReports ?? true);
 
 // Options
@@ -224,38 +229,46 @@ const visibilityOptions = [
   },
 ];
 
-// Watch store changes
+// Watch privacy changes
+watch(
+  privacy,
+  (newPrivacy) => {
+    profileVisibility.value = newPrivacy.profileVisibility;
+    showOnlineStatus.value = newPrivacy.showOnlineStatus;
+    allowSearchByEmail.value = newPrivacy.allowSearchByEmail;
+    allowSearchByPhone.value = newPrivacy.allowSearchByPhone;
+    shareUsageData.value = newPrivacy.shareUsageData;
+  },
+  { deep: true },
+);
+
+// Watch other settings
 watch(
   () => settingStore.settings,
   (newSettings) => {
     if (newSettings) {
-      profileVisibility.value = newSettings.privacyProfileVisibility;
-      showOnlineStatus.value = newSettings.privacyShowOnlineStatus;
-      allowSearchByEmail.value = newSettings.privacyAllowSearchByEmail;
-      allowSearchByPhone.value = newSettings.privacyAllowSearchByPhone;
       showActivityStatus.value = newSettings.privacyShowActivityStatus;
-      shareUsageData.value = newSettings.privacyShareUsageData;
       shareCrashReports.value = newSettings.privacyShareCrashReports;
     }
   },
   { deep: true },
 );
 
-// Handlers
+// Handlers - using convenience method
 async function handleProfileVisibilityChange(value: string) {
-  await settingStore.updateSettings({ privacyProfileVisibility: value });
+  await settingStore.updatePrivacy({ profileVisibility: value as any });
 }
 
 async function handleOnlineStatusChange(value: boolean) {
-  await settingStore.updateSettings({ privacyShowOnlineStatus: value });
+  await settingStore.updatePrivacy({ showOnlineStatus: value });
 }
 
 async function handleSearchByEmailChange(value: boolean) {
-  await settingStore.updateSettings({ privacyAllowSearchByEmail: value });
+  await settingStore.updatePrivacy({ allowSearchByEmail: value });
 }
 
 async function handleSearchByPhoneChange(value: boolean) {
-  await settingStore.updateSettings({ privacyAllowSearchByPhone: value });
+  await settingStore.updatePrivacy({ allowSearchByPhone: value });
 }
 
 async function handleActivityStatusChange(value: boolean) {
@@ -263,7 +276,7 @@ async function handleActivityStatusChange(value: boolean) {
 }
 
 async function handleUsageDataChange(value: boolean) {
-  await settingStore.updateSettings({ privacyShareUsageData: value });
+  await settingStore.updatePrivacy({ shareUsageData: value });
 }
 
 async function handleCrashReportsChange(value: boolean) {

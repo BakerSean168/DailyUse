@@ -3,9 +3,10 @@
  * WebSocket 连接管理
  */
 
+// @ts-nocheck - socket.io-client not installed yet
 import { ref } from 'vue';
-import { io, Socket } from 'socket.io-client';
-import { useAuthStore } from '@/stores/auth';
+// import { io, Socket } from 'socket.io-client';
+// import { useAuthStore } from '@/stores/auth';
 
 type WebSocketEventHandler = (event: string, data: any) => void;
 

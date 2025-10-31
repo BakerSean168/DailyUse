@@ -83,13 +83,13 @@ export class GoalManagementApplicationService {
       const goalsData = await goalApiClient.getGoals(params);
 
       // 批量创建客户端实体并同步到 store
-      const goals = (goalsData.data || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
+      const goals = (goalsData.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
       this.goalStore.setGoals(goals);
 
       // 更新分页信息
       this.goalStore.setPagination({
         page: goalsData.page,
-        limit: goalsData.limit,
+        limit: goalsData.pageSize,
         total: goalsData.total,
       });
 
@@ -302,16 +302,22 @@ export class GoalManagementApplicationService {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
 
-      const response = await goalApiClient.searchGoals(params);
+      const response = await goalApiClient.searchGoals({
+        query: params.keywords || '',
+        status: params.status,
+        dirUuid: params.dirUuid,
+        page: params.page,
+        limit: params.limit,
+      });
 
       // 批量创建客户端实体并同步到 store
-      const goals = (response.data || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
+      const goals = (response.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
       this.goalStore.setGoals(goals);
 
       // 更新分页信息
       this.goalStore.setPagination({
         page: response.page,
-        limit: response.limit,
+        limit: response.pageSize,
         total: response.total,
       });
 

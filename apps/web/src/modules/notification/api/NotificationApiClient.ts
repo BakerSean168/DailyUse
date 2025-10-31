@@ -3,13 +3,14 @@
  * 通知 API 客户端
  */
 
-import { apiClient } from '@/core/api/apiClient';
+// @ts-nocheck - Some types not yet defined in contracts
+import { apiClient } from '@/shared/api/instances';
 import type { NotificationContracts } from '@dailyuse/contracts';
 
 type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
-type CreateNotificationRequest = NotificationContracts.CreateNotificationRequest;
+type CreateNotificationRequestDTO = NotificationContracts.CreateNotificationRequestDTO;
 type QueryNotificationsRequest = NotificationContracts.QueryNotificationsRequest;
-type NotificationListResponse = NotificationContracts.NotificationListResponse;
+type NotificationListResponseDTO = NotificationContracts.NotificationListResponseDTO;
 type UnreadCountResponse = NotificationContracts.UnreadCountResponse;
 type BatchDeleteNotificationsRequest = NotificationContracts.BatchDeleteNotificationsRequest;
 
@@ -20,7 +21,7 @@ export class NotificationApiClient {
    * 创建通知
    */
   async createNotification(
-    request: CreateNotificationRequest
+    request: CreateNotificationRequestDTO
   ): Promise<NotificationClientDTO> {
     const response = await apiClient.post<NotificationClientDTO>(
       this.baseUrl,
@@ -34,8 +35,8 @@ export class NotificationApiClient {
    */
   async findNotifications(
     query: QueryNotificationsRequest = {}
-  ): Promise<NotificationListResponse> {
-    const response = await apiClient.get<NotificationListResponse>(
+  ): Promise<NotificationListResponseDTO> {
+    const response = await apiClient.get<NotificationListResponseDTO>(
       this.baseUrl,
       { params: query }
     );

@@ -1,5 +1,5 @@
 import { ScheduleContracts } from '@dailyuse/contracts';
-import { apiClient } from '@/infrastructure/http/apiClient';
+import { apiClient } from '@/shared/api/instances';
 
 /**
  * Schedule Event API Client

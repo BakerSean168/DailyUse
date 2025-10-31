@@ -6,7 +6,7 @@ import {
   type UpdateScheduleEventRequest,
   type GetSchedulesByTimeRangeRequest,
 } from '../../infrastructure/api/scheduleEventApiClient';
-import { useSnackbarNotification } from '@/composables/useSnackbarNotification';
+import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 /**
  * Schedule Event Composable
@@ -27,7 +27,7 @@ const error = ref<Error | null>(null);
  * useScheduleEvent Composable
  */
 export function useScheduleEvent() {
-  const { showSuccess, showError, showWarning } = useSnackbarNotification();
+  const snackbar = useSnackbar();
 
   // ============ Computed ============
 
@@ -56,12 +56,12 @@ export function useScheduleEvent() {
     try {
       const schedule = await scheduleEventApiClient.createSchedule(data);
       schedules.value.set(schedule.uuid, schedule);
-      showSuccess('日程创建成功');
+      snackbar.showSuccess('日程创建成功');
       return schedule;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '创建日程失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      showError(errorMsg);
+      snackbar.showError(errorMsg);
       return null;
     } finally {
       isLoading.value = false;
@@ -92,7 +92,7 @@ export function useScheduleEvent() {
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '获取日程详情失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      showError(errorMsg);
+      snackbar.showError(errorMsg);
       return null;
     } finally {
       isLoading.value = false;
@@ -122,7 +122,7 @@ export function useScheduleEvent() {
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '获取日程列表失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      showError(errorMsg);
+      snackbar.showError(errorMsg);
       return [];
     } finally {
       isLoading.value = false;
@@ -148,7 +148,7 @@ export function useScheduleEvent() {
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '获取日程列表失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      showError(errorMsg);
+      snackbar.showError(errorMsg);
       return [];
     } finally {
       isLoading.value = false;
@@ -168,12 +168,12 @@ export function useScheduleEvent() {
     try {
       const updatedSchedule = await scheduleEventApiClient.updateSchedule(uuid, data);
       schedules.value.set(updatedSchedule.uuid, updatedSchedule);
-      showSuccess('日程更新成功');
+      snackbar.showSuccess('日程更新成功');
       return updatedSchedule;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '更新日程失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      showError(errorMsg);
+      snackbar.showError(errorMsg);
       return null;
     } finally {
       isLoading.value = false;
@@ -193,12 +193,12 @@ export function useScheduleEvent() {
       if (activeScheduleUuid.value === uuid) {
         activeScheduleUuid.value = null;
       }
-      showSuccess('日程删除成功');
+      snackbar.showSuccess('日程删除成功');
       return true;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '删除日程失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      showError(errorMsg);
+      snackbar.showError(errorMsg);
       return false;
     } finally {
       isLoading.value = false;
@@ -210,7 +210,7 @@ export function useScheduleEvent() {
    */
   function setActiveSchedule(uuid: string | null) {
     if (uuid && !schedules.value.has(uuid)) {
-      showWarning('日程不存在');
+      snackbar.showWarning('日程不存在');
       return;
     }
     activeScheduleUuid.value = uuid;

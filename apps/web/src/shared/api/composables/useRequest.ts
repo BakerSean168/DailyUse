@@ -157,6 +157,7 @@ export function usePagination<T = any>(
     if (hasNext.value) {
       return goToPage(page.value + 1, ...args);
     }
+    return undefined;
   };
 
   /**
@@ -166,6 +167,7 @@ export function usePagination<T = any>(
     if (hasPrev.value) {
       return goToPage(page.value - 1, ...args);
     }
+    return undefined;
   };
 
   /**

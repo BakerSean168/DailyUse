@@ -13,4 +13,4 @@ export { default as MediaViewer } from './presentation/components/MediaViewer.vu
 export { useEditor } from './presentation/composables/useEditor';
 
 // Types
-export type { EditorTab } from './presentation/components/EditorTabBar.vue';
+// export type { EditorTab } from './presentation/components/EditorTabBar.vue';

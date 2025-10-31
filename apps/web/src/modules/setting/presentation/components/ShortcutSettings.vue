@@ -91,10 +91,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useUserSettingStore } from '../stores/userSettingStore';
 
 const settingStore = useUserSettingStore();
+
+// Use computed getter for shortcuts settings
+const shortcuts = computed(() => settingStore.shortcuts);
 
 // Local state
 const searchQuery = ref('');
@@ -313,26 +316,54 @@ async function saveEdit() {
 
     editingShortcut.value.key = editingKey.value;
     
-    // TODO: 保存到后端
-    // await settingStore.updateSettings({ shortcuts: ... });
+    // Save to backend using convenience method
+    const customShortcuts = categories.value
+      .flatMap((cat) => cat.shortcuts)
+      .reduce((acc, s) => {
+        if (s.key !== s.defaultKey) {
+          acc[s.id] = s.key;
+        }
+        return acc;
+      }, {} as Record<string, string>);
+    
+    await settingStore.updateShortcuts({
+      custom: customShortcuts,
+    });
     
     cancelEdit();
   }
 }
 
-function resetShortcut(shortcut: ShortcutItem) {
+async function resetShortcut(shortcut: ShortcutItem) {
   shortcut.key = shortcut.defaultKey;
-  // TODO: 保存到后端
+  
+  // Update backend
+  const customShortcuts = categories.value
+    .flatMap((cat) => cat.shortcuts)
+    .reduce((acc, s) => {
+      if (s.key !== s.defaultKey) {
+        acc[s.id] = s.key;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+  
+  await settingStore.updateShortcuts({
+    custom: customShortcuts,
+  });
 }
 
-function resetAllShortcuts() {
+async function resetAllShortcuts() {
   if (confirm('确定要重置所有快捷键吗？')) {
     categories.value.forEach((category) => {
       category.shortcuts.forEach((shortcut) => {
         shortcut.key = shortcut.defaultKey;
       });
     });
-    // TODO: 保存到后端
+    
+    // Clear all custom shortcuts
+    await settingStore.updateShortcuts({
+      custom: {},
+    });
   }
 }
 </script>
