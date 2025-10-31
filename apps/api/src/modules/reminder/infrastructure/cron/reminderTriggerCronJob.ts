@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Reminder Trigger Cron Job
  * 

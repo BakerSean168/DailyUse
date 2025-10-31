@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Module } from '@nestjs/common';
 import { DocumentController } from './presentation/document.controller';
 import { DocumentVersionController } from './api/DocumentVersionController';

@@ -1,4 +1,4 @@
-import type { PrismaClient, Goal as PrismaGoal } from '@prisma/client';
+import type { PrismaClient, goal as PrismaGoal } from '@prisma/client';
 import type { IGoalRepository } from '@dailyuse/domain-server';
 import { Goal, KeyResult } from '@dailyuse/domain-server';
 import { GoalContracts } from '@dailyuse/contracts';

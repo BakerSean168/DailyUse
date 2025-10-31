@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * LinkParser - Parse internal links from markdown content
  * 

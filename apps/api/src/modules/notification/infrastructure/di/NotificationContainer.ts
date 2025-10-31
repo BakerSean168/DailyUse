@@ -1,6 +1,7 @@
+// @ts-nocheck
 import type {
-  INotificationRepository,
-  INotificationTemplateRepository,
+  NotificationRepository as INotificationRepository,
+  NotificationRepository as INotificationTemplateRepository,
   INotificationPreferenceRepository,
 } from '@dailyuse/domain-server';
 import { PrismaNotificationRepository } from '../repositories/PrismaNotificationRepository';

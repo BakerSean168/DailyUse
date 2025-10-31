@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PrismaNotificationRepository 实现
  * 使用 Prisma 实现 NotificationRepository

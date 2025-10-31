@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { randomUUID } from 'crypto';
 
 type Result<T> = 

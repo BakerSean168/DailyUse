@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { FocusModeController } from './FocusModeController';
 
 /**
@@ -6,7 +6,7 @@ import { FocusModeController } from './FocusModeController';
  * 专注周期模式路由
  */
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * @swagger

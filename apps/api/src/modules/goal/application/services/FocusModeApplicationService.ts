@@ -108,13 +108,13 @@ export class FocusModeApplicationService {
     await this.validateGoalsExist(accountUuid, focusedGoalUuids);
 
     // 4. 创建 FocusMode 值对象（会进行时间范围校验）
-    const focusMode = FocusMode.create({
+    const focusMode = FocusMode.create(
+      crypto.randomUUID(),
       accountUuid,
       focusedGoalUuids,
-      startTime,
       endTime,
-      hiddenGoalsMode,
-    });
+      hiddenGoalsMode || 'hide',
+    );
 
     // 5. 持久化
     await this.focusModeRepository.save(focusMode);
@@ -222,7 +222,7 @@ export class FocusModeApplicationService {
    */
   private async validateGoalsExist(accountUuid: string, goalUuids: string[]): Promise<void> {
     for (const goalUuid of goalUuids) {
-      const goal = await this.goalRepository.findById(goalUuid);
+      const goal = await this.goalRepository.findById(goalUuid, { includeChildren: false });
       if (!goal) {
         throw new Error(`Goal not found: ${goalUuid}`);
       }
