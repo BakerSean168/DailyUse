@@ -19,7 +19,7 @@ export class PrismaRepositoryStatisticsRepository implements IRepositoryStatisti
   async upsert(statistics: RepositoryStatistics): Promise<void> {
     const persistence = statistics.toPersistenceDTO();
 
-    await this.prisma.repositoryStatistics.upsert({
+    await this.prisma.repositoryStatistic.upsert({
       where: { accountUuid: persistence.accountUuid },
       create: {
         accountUuid: persistence.accountUuid,
@@ -59,7 +59,7 @@ export class PrismaRepositoryStatisticsRepository implements IRepositoryStatisti
    * 通过账户 UUID 查找统计
    */
   async findByAccountUuid(accountUuid: string): Promise<RepositoryStatistics | null> {
-    const record = await this.prisma.repositoryStatistics.findUnique({
+    const record = await this.prisma.repositoryStatistic.findUnique({
       where: { accountUuid },
     });
 
@@ -90,7 +90,7 @@ export class PrismaRepositoryStatisticsRepository implements IRepositoryStatisti
    * 删除统计
    */
   async delete(accountUuid: string): Promise<void> {
-    await this.prisma.repositoryStatistics.delete({
+    await this.prisma.repositoryStatistic.delete({
       where: { accountUuid },
     });
   }
@@ -99,7 +99,7 @@ export class PrismaRepositoryStatisticsRepository implements IRepositoryStatisti
    * 检查统计是否存在
    */
   async exists(accountUuid: string): Promise<boolean> {
-    const count = await this.prisma.repositoryStatistics.count({
+    const count = await this.prisma.repositoryStatistic.count({
       where: { accountUuid },
     });
     return count > 0;
@@ -109,7 +109,7 @@ export class PrismaRepositoryStatisticsRepository implements IRepositoryStatisti
    * 批量获取多个账户的统计
    */
   async findByAccountUuids(accountUuids: string[]): Promise<RepositoryStatistics[]> {
-    const records = await this.prisma.repositoryStatistics.findMany({
+    const records = await this.prisma.repositoryStatistic.findMany({
       where: {
         accountUuid: {
           in: accountUuids,
@@ -142,7 +142,7 @@ export class PrismaRepositoryStatisticsRepository implements IRepositoryStatisti
    * 获取所有统计（分页）
    */
   async findAll(options?: { skip?: number; take?: number }): Promise<RepositoryStatistics[]> {
-    const records = await this.prisma.repositoryStatistics.findMany({
+    const records = await this.prisma.repositoryStatistic.findMany({
       skip: options?.skip,
       take: options?.take,
       orderBy: {
@@ -175,6 +175,6 @@ export class PrismaRepositoryStatisticsRepository implements IRepositoryStatisti
    * 统计总数
    */
   async count(): Promise<number> {
-    return await this.prisma.repositoryStatistics.count();
+    return await this.prisma.repositoryStatistic.count();
   }
 }

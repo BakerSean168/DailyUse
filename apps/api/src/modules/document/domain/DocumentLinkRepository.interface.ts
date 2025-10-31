@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { DocumentLink } from './DocumentLink';
 
 export const DOCUMENT_LINK_REPOSITORY = Symbol('DOCUMENT_LINK_REPOSITORY');

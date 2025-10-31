@@ -87,7 +87,7 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
   async save(stats: ScheduleStatistics): Promise<void> {
     const data = this.mapToPrisma(stats);
 
-    await this.prisma.scheduleStatistics.upsert({
+    await this.prisma.scheduleStatistic.upsert({
       where: { accountUuid: data.accountUuid },
       create: data,
       update: data,
@@ -98,7 +98,7 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
    * 根据账户UUID查找统计数据
    */
   async findByAccountUuid(accountUuid: string): Promise<ScheduleStatistics | null> {
-    const data = await this.prisma.scheduleStatistics.findUnique({
+    const data = await this.prisma.scheduleStatistic.findUnique({
       where: { accountUuid },
     });
 
@@ -125,7 +125,7 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
    * 删除统计数据（接口要求的方法名）
    */
   async deleteByAccountUuid(accountUuid: string): Promise<void> {
-    await this.prisma.scheduleStatistics.delete({
+    await this.prisma.scheduleStatistic.delete({
       where: { accountUuid },
     });
   }
@@ -134,7 +134,7 @@ export class PrismaScheduleStatisticsRepository implements IScheduleStatisticsRe
    * 查询所有统计数据
    */
   async findAll(limit?: number, offset?: number): Promise<ScheduleStatistics[]> {
-    const data = await this.prisma.scheduleStatistics.findMany({
+    const data = await this.prisma.scheduleStatistic.findMany({
       take: limit,
       skip: offset,
       orderBy: { lastUpdatedAt: 'desc' },

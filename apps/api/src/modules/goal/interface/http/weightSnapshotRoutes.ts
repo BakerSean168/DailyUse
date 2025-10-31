@@ -3,11 +3,11 @@
  * 权重快照路由配置
  */
 
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { WeightSnapshotController } from './WeightSnapshotController';
 // import { authMiddleware } from '../../../../middleware/auth';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * 更新 KeyResult 权重并创建快照

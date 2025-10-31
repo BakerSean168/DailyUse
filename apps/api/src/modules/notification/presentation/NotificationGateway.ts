@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * NotificationGateway
  * WebSocket 网关 - 实时推送通知

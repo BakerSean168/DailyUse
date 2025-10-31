@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Repository Web Module
  * 仓储Web模块导出

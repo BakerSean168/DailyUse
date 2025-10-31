@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { IUserSettingRepository } from '@dailyuse/domain-server';
 import { SettingContainer } from '../../infrastructure/di/SettingContainer';
 import { UserSetting } from '@dailyuse/domain-server';

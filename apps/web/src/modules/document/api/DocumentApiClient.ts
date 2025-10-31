@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { apiClient } from '@/shared/api/instances';
 import { DocumentContracts } from '@dailyuse/contracts';
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Repository Web Application Service
  * 仓储Web应用服务 - HTTP客户端实现

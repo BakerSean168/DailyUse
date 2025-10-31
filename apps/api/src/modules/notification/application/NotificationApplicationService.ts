@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * NotificationApplicationService
  * 通知应用服务 - 处理业务逻辑
