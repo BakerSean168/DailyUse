@@ -91,8 +91,8 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
   public get icon(): string | null {
     return this._icon;
   }
-  public get stats(): ReminderContracts.GroupStatsServerDTO {
-    return this._stats.toServerDTO();
+  public get stats(): ReminderContracts.GroupStatsServer {
+    return this._stats;
   }
   public get createdAt(): number {
     return this._createdAt;

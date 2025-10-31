@@ -7,6 +7,8 @@ import type { NotificationContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type IChannelError = NotificationContracts.ChannelErrorServerDTO;
+type ChannelErrorPersistenceDTO = NotificationContracts.ChannelErrorPersistenceDTO;
+type ChannelErrorClientDTO = NotificationContracts.ChannelErrorClientDTO;
 
 /**
  * ChannelError 值对象
@@ -60,9 +62,9 @@ export class ChannelError extends ValueObject implements IChannelError {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IChannelError {
+  public toServerDTO(): IChannelError {
     return {
       code: this.code,
       message: this.message,
@@ -70,10 +72,33 @@ export class ChannelError extends ValueObject implements IChannelError {
     };
   }
 
-  /**
-   * 从 Contract 接口创建值对象
-   */
+  public toClientDTO(): ChannelErrorClientDTO {
+    return {
+      code: this.code,
+      message: this.message,
+      details: this.details,
+      displayMessage: `[${this.code}] ${this.message}`,
+      isRetryable: !['AUTH_FAILED', 'INVALID_CONFIG'].includes(this.code),
+    };
+  }
+
+  public toPersistenceDTO(): ChannelErrorPersistenceDTO {
+    return {
+      code: this.code,
+      message: this.message,
+      details: this.details ? JSON.stringify(this.details) : null,
+    };
+  }
+
+  public toContract(): IChannelError {
+    return this.toServerDTO();
+  }
+
+  public static fromServerDTO(dto: IChannelError): ChannelError {
+    return new ChannelError(dto);
+  }
+
   public static fromContract(error: IChannelError): ChannelError {
-    return new ChannelError(error);
+    return ChannelError.fromServerDTO(error);
   }
 }

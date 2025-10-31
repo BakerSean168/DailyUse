@@ -6,6 +6,7 @@
 import type {
   ReminderStatsServerDTO,
   ReminderStatsClientDTO,
+  ReminderStatsPersistenceDTO,
 } from '@dailyuse/contracts/src/modules/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
@@ -92,6 +93,16 @@ export class ReminderStats extends ValueObject implements ReminderStatsServerDTO
       lastTriggeredAt: this.lastTriggeredAt,
       totalTriggersText,
       lastTriggeredText,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（数据库存储格式）
+   */
+  public toPersistenceDTO(): ReminderStatsPersistenceDTO {
+    return {
+      total_triggers: this.totalTriggers,
+      last_triggered_at: this.lastTriggeredAt,
     };
   }
 

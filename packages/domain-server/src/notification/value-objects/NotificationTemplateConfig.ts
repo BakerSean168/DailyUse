@@ -7,6 +7,8 @@ import type { NotificationContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type INotificationTemplateConfig = NotificationContracts.NotificationTemplateConfigServerDTO;
+type NotificationTemplateConfigPersistenceDTO = NotificationContracts.NotificationTemplateConfigPersistenceDTO;
+type NotificationTemplateConfigClientDTO = NotificationContracts.NotificationTemplateConfigClientDTO;
 type TemplateContent = NotificationContracts.TemplateContent;
 type ChannelConfig = NotificationContracts.ChannelConfig;
 type EmailTemplateContent = NotificationContracts.EmailTemplateContent;
@@ -87,7 +89,7 @@ export class NotificationTemplateConfig extends ValueObject implements INotifica
   /**
    * 转换为 Contract 接口
    */
-  public toContract(): INotificationTemplateConfig {
+  public toServerDTO(): INotificationTemplateConfig {
     return {
       template: {
         ...this.template,
@@ -99,11 +101,42 @@ export class NotificationTemplateConfig extends ValueObject implements INotifica
     };
   }
 
-  /**
-   * 从 Contract 接口创建值对象
-   */
+  public toClientDTO(): NotificationTemplateConfigClientDTO {
+    const enabledChannels = Object.entries(this.channels).filter(([_, enabled]) => enabled);
+    return {
+      template: {
+        ...this.template,
+        variables: [...this.template.variables],
+      },
+      channels: { ...this.channels },
+      emailTemplate: this.emailTemplate ? { ...this.emailTemplate } : null,
+      pushTemplate: this.pushTemplate ? { ...this.pushTemplate } : null,
+      enabledChannelsCount: enabledChannels.length,
+      enabledChannelsList: enabledChannels.map(([name]) => name),
+      hasEmailTemplate: !!this.emailTemplate,
+      hasPushTemplate: !!this.pushTemplate,
+    };
+  }
+
+  public toPersistenceDTO(): NotificationTemplateConfigPersistenceDTO {
+    return {
+      template: JSON.stringify(this.template),
+      channels: JSON.stringify(this.channels),
+      emailTemplate: this.emailTemplate ? JSON.stringify(this.emailTemplate) : null,
+      pushTemplate: this.pushTemplate ? JSON.stringify(this.pushTemplate) : null,
+    };
+  }
+
+  public toContract(): INotificationTemplateConfig {
+    return this.toServerDTO();
+  }
+
+  public static fromServerDTO(dto: INotificationTemplateConfig): NotificationTemplateConfig {
+    return new NotificationTemplateConfig(dto);
+  }
+
   public static fromContract(config: INotificationTemplateConfig): NotificationTemplateConfig {
-    return new NotificationTemplateConfig(config);
+    return NotificationTemplateConfig.fromServerDTO(config);
   }
 
   /**

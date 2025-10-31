@@ -35,15 +35,33 @@ export interface TaskTemplateClientDTO {
   color?: string | null;
   status: TaskTemplateStatus;
   lastGeneratedDate?: number | null;
-  generateAheadDays: number;
+  generateAheadDays: number | null; // null for ONE_TIME tasks
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
   history?: any[];
   instances?: any[];
+  // ONE_TIME task fields
+  goalUuid?: string | null;
+  keyResultUuid?: string | null;
+  parentTaskUuid?: string | null;
+  startDate?: number | null;
+  dueDate?: number | null;
+  completedAt?: number | null;
+  estimatedMinutes?: number | null;
+  actualMinutes?: number | null;
+  note?: string | null;
+  dependencyStatus?: string;
+  isBlocked?: boolean;
+  blockingReason?: string | null;
+  // ONE_TIME task display fields
+  priorityLevel?: string | null;
+  priorityScore?: number | null;
+  isOverdue?: boolean | null;
+  daysUntilDue?: number | null;
   displayTitle: string;
   taskTypeText: string;
-  timeDisplayText: string;
+  timeDisplayText: string | null; // null for ONE_TIME tasks
   recurrenceText?: string | null;
   importanceText: string;
   urgencyText: string;
@@ -77,14 +95,14 @@ export interface TaskTemplateClient {
   color?: string | null;
   status: TaskTemplateStatus;
   lastGeneratedDate?: number | null;
-  generateAheadDays: number;
+  generateAheadDays: number | null; // null for ONE_TIME tasks
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
   instances?: TaskInstanceClient[];
   displayTitle: string;
   taskTypeText: string;
-  timeDisplayText: string;
+  timeDisplayText: string | null; // null for ONE_TIME tasks
   recurrenceText?: string | null;
   importanceText: string;
   urgencyText: string;
