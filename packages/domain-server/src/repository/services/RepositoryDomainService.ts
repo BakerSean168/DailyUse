@@ -15,6 +15,7 @@ import type { RepositoryContracts } from '@dailyuse/contracts';
 type RepositoryType = RepositoryContracts.RepositoryType;
 type ResourceType = RepositoryContracts.ResourceType;
 type GitInfoServerDTO = RepositoryContracts.GitInfoServerDTO;
+type CreateRepositoryRequestDTO = RepositoryContracts.CreateRepositoryRequestDTO;
 
 /**
  * RepositoryDomainService
@@ -188,7 +189,7 @@ export class RepositoryDomainService {
       remoteUrl: remoteUrl || null,
     };
 
-    repository.enableGit(gitInfo);
+    repository.enableGitWithInfo(gitInfo);
     await this.repositoryRepo.save(repository);
   }
 

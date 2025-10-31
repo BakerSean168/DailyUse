@@ -9,107 +9,153 @@
  * 4. 发布领域事件
  */
 
-import { v4 as uuidv4 } from 'uuid';
+import { AggregateRoot } from '@dailyuse/utils';
+import { RepositoryContracts } from '@dailyuse/contracts';
 import {
   RepositoryType,
   RepositoryStatus,
   ResourceType,
   ResourceStatus,
 } from '@dailyuse/contracts';
-import type {
-  RepositoryServerDTO,
-  RepositoryPersistenceDTO,
-  RepositoryConfigServerDTO,
-  RepositoryStatsServerDTO,
-  SyncStatusServerDTO,
-  GitInfoServerDTO,
-  RepositoryClientDTO,
-  ResourceServer,
-  RepositoryExplorerServer,
-} from '@dailyuse/contracts';
 import { Resource } from '../entities/Resource';
 import { RepositoryExplorerEntity } from '../entities/RepositoryExplorer';
+import { RepositoryConfig } from '../value-objects/RepositoryConfig';
+import { RepositoryStats } from '../value-objects/RepositoryStats';
+import { GitInfo } from '../value-objects/GitInfo';
+import { SyncStatus } from '../value-objects/SyncStatus';
 
-// ==================== 创建 DTO ====================
-
-export interface CreateRepositoryDTO {
-  accountUuid: string;
-  name: string;
-  type: RepositoryType;
-  path: string;
-  description?: string;
-  config?: Partial<RepositoryConfigServerDTO>;
-  relatedGoals?: string[];
-}
+// 类型别名（从命名空间导入）
+type IRepositoryServer = RepositoryContracts.RepositoryServer;
+type RepositoryServerDTO = RepositoryContracts.RepositoryServerDTO;
+type RepositoryPersistenceDTO = RepositoryContracts.RepositoryPersistenceDTO;
+type RepositoryClientDTO = RepositoryContracts.RepositoryClientDTO;
+type RepositoryConfigServerDTO = RepositoryContracts.RepositoryConfigServerDTO;
+type RepositoryStatsServerDTO = RepositoryContracts.RepositoryStatsServerDTO;
+type SyncStatusServerDTO = RepositoryContracts.SyncStatusServerDTO;
+type GitInfoServerDTO = RepositoryContracts.GitInfoServerDTO;
+type ResourceServer = RepositoryContracts.ResourceServer;
+type RepositoryExplorerServer = RepositoryContracts.RepositoryExplorerServer;
 
 // ==================== Repository 聚合根 ====================
 
-export class Repository {
+/**
+ * Repository 聚合根
+ */
+export class Repository extends AggregateRoot implements IRepositoryServer {
+  // ===== 私有字段 =====
+  private _accountUuid: string;
+  private _name: string;
+  private _type: RepositoryType;
+  private _path: string;
+  private _description: string | null;
+  private _config: RepositoryConfig; // Value Object
+  private _relatedGoals: string[];
+  private _status: RepositoryStatus;
+  private _git: GitInfo | null; // Value Object
+  private _syncStatus: SyncStatus | null; // Value Object
+  private _stats: RepositoryStats; // Value Object
+  private _lastAccessedAt: number | null;
+  private _createdAt: number;
+  private _updatedAt: number;
+
   // ===== 子实体集合 =====
   private _resources: Resource[] = [];
   private _explorer: RepositoryExplorerEntity | null = null;
 
-  private constructor(
-    public readonly uuid: string,
-    public readonly accountUuid: string,
-    private _name: string,
-    public readonly type: RepositoryType,
-    private _path: string,
-    private _description: string | null,
-    private _config: RepositoryConfigServerDTO,
-    private _relatedGoals: string[],
-    private _status: RepositoryStatus,
-    private _git: GitInfoServerDTO | null,
-    private _syncStatus: SyncStatusServerDTO | null,
-    private _stats: RepositoryStatsServerDTO,
-    private _lastAccessedAt: number | null,
-    public readonly createdAt: number,
-    private _updatedAt: number,
-  ) {}
+  // ===== 构造函数（私有） =====
+  private constructor(params: {
+    uuid?: string;
+    accountUuid: string;
+    name: string;
+    type: RepositoryType;
+    path: string;
+    description?: string | null;
+    config: RepositoryConfig; // Value Object 实例
+    relatedGoals: string[];
+    status: RepositoryStatus;
+    git?: GitInfo | null; // Value Object 实例
+    syncStatus?: SyncStatus | null; // Value Object 实例
+    stats: RepositoryStats; // Value Object 实例
+    lastAccessedAt?: number | null;
+    createdAt: number;
+    updatedAt: number;
+  }) {
+    super(params.uuid ?? AggregateRoot.generateUUID());
+    this._accountUuid = params.accountUuid;
+    this._name = params.name;
+    this._type = params.type;
+    this._path = params.path;
+    this._description = params.description ?? null;
+    this._config = params.config;
+    this._relatedGoals = params.relatedGoals;
+    this._status = params.status;
+    this._git = params.git ?? null;
+    this._syncStatus = params.syncStatus ?? null;
+    this._stats = params.stats;
+    this._lastAccessedAt = params.lastAccessedAt ?? null;
+    this._createdAt = params.createdAt;
+    this._updatedAt = params.updatedAt;
+  }
 
   // ==================== Getters ====================
 
-  get name(): string {
+  public override get uuid(): string {
+    return this._uuid;
+  }
+
+  public get accountUuid(): string {
+    return this._accountUuid;
+  }
+
+  public get name(): string {
     return this._name;
   }
 
-  get path(): string {
+  public get type(): RepositoryType {
+    return this._type;
+  }
+
+  public get path(): string {
     return this._path;
   }
 
-  get description(): string | null {
+  public get description(): string | null {
     return this._description;
   }
 
-  get config(): RepositoryConfigServerDTO {
-    return this._config;
+  public get config(): RepositoryContracts.RepositoryConfigServer {
+    return this._config as any; // TODO: 实现完整的 Value Object
   }
 
-  get relatedGoals(): string[] {
-    return [...this._relatedGoals];
+  public get relatedGoals(): string[] | null {
+    return this._relatedGoals.length > 0 ? [...this._relatedGoals] : null;
   }
 
-  get status(): RepositoryStatus {
+  public get status(): RepositoryStatus {
     return this._status;
   }
 
-  get git(): GitInfoServerDTO | null {
-    return this._git;
+  public get git(): RepositoryContracts.GitInfoServer | null {
+    return this._git as any; // TODO: 实现完整的 Value Object
   }
 
-  get syncStatus(): SyncStatusServerDTO | null {
-    return this._syncStatus;
+  public get syncStatus(): RepositoryContracts.SyncStatusServer | null {
+    return this._syncStatus as any; // TODO: 实现完整的 Value Object
   }
 
-  get stats(): RepositoryStatsServerDTO {
-    return this._stats;
+  public get stats(): RepositoryContracts.RepositoryStatsServer {
+    return this._stats as any; // TODO: 实现完整的 Value Object
   }
 
-  get lastAccessedAt(): number | null {
+  public get lastAccessedAt(): number | null {
     return this._lastAccessedAt;
   }
 
-  get updatedAt(): number {
+  public get createdAt(): number {
+    return this._createdAt;
+  }
+
+  public get updatedAt(): number {
     return this._updatedAt;
   }
 
@@ -118,17 +164,24 @@ export class Repository {
   /**
    * 创建新的 Repository
    */
-  static create(dto: CreateRepositoryDTO): Repository {
+  public static create(params: {
+    accountUuid: string;
+    name: string;
+    type: RepositoryType;
+    path: string;
+    description?: string;
+    config?: Partial<RepositoryConfigServerDTO>;
+    relatedGoals?: string[];
+  }): Repository {
     const now = Date.now();
-    const uuid = uuidv4();
 
-    // 默认配置
-    const defaultConfig: RepositoryConfigServerDTO = {
-      enableGit: false,
-      autoSync: false,
-      syncInterval: null,
-      defaultLinkedDocName: 'README',
-      supportedFileTypes: [
+    // 默认配置 - 创建 Value Object
+    const defaultConfig = new RepositoryConfig({
+      enableGit: params.config?.enableGit ?? false,
+      autoSync: params.config?.autoSync ?? false,
+      syncInterval: params.config?.syncInterval ?? null,
+      defaultLinkedDocName: params.config?.defaultLinkedDocName ?? 'README',
+      supportedFileTypes: params.config?.supportedFileTypes ?? [
         ResourceType.MARKDOWN,
         ResourceType.IMAGE,
         ResourceType.VIDEO,
@@ -138,12 +191,12 @@ export class Repository {
         ResourceType.CODE,
         ResourceType.OTHER,
       ],
-      maxFileSize: 100 * 1024 * 1024, // 100 MB
-      enableVersionControl: true,
-    };
+      maxFileSize: params.config?.maxFileSize ?? 100 * 1024 * 1024, // 100 MB
+      enableVersionControl: params.config?.enableVersionControl ?? true,
+    });
 
-    // 默认统计
-    const defaultStats: RepositoryStatsServerDTO = {
+    // 默认统计 - 创建 Value Object
+    const defaultStats = new RepositoryStats({
       totalResources: 0,
       resourcesByType: {
         [ResourceType.MARKDOWN]: 0,
@@ -165,48 +218,74 @@ export class Repository {
       recentActiveResources: 0,
       favoriteResources: 0,
       lastUpdated: now,
-    };
+    });
 
-    return new Repository(
-      uuid,
-      dto.accountUuid,
-      dto.name,
-      dto.type,
-      dto.path,
-      dto.description || null,
-      { ...defaultConfig, ...dto.config },
-      dto.relatedGoals || [],
-      RepositoryStatus.ACTIVE,
-      null, // git
-      null, // syncStatus
-      defaultStats,
-      null, // lastAccessedAt
-      now, // createdAt
-      now, // updatedAt
-    );
+    const repository = new Repository({
+      accountUuid: params.accountUuid,
+      name: params.name,
+      type: params.type,
+      path: params.path,
+      description: params.description || null,
+      config: defaultConfig,
+      relatedGoals: params.relatedGoals || [],
+      status: RepositoryStatus.ACTIVE,
+      git: null,
+      syncStatus: null,
+      stats: defaultStats,
+      lastAccessedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // 触发领域事件
+    repository.addDomainEvent({
+      eventType: 'repository.created',
+      aggregateId: repository.uuid,
+      occurredOn: new Date(now),
+      accountUuid: params.accountUuid,
+      payload: {
+        repository: repository.toServerDTO(),
+        accountUuid: params.accountUuid,
+      },
+    });
+
+    return repository;
   }
 
   /**
    * 从持久化数据创建仓库实例
    */
-  static fromPersistenceDTO(data: RepositoryPersistenceDTO): Repository {
-    return new Repository(
-      data.uuid,
-      data.accountUuid,
-      data.name,
-      data.type,
-      data.path,
-      data.description || null,
-      JSON.parse(data.config) as RepositoryConfigServerDTO,
-      data.relatedGoals ? JSON.parse(data.relatedGoals) : [],
-      data.status,
-      data.git ? (JSON.parse(data.git) as GitInfoServerDTO) : null,
-      data.syncStatus ? (JSON.parse(data.syncStatus) as SyncStatusServerDTO) : null,
-      JSON.parse(data.stats) as RepositoryStatsServerDTO,
-      data.lastAccessedAt || null,
-      data.createdAt,
-      data.updatedAt,
-    );
+  public static fromPersistenceDTO(data: RepositoryPersistenceDTO): Repository {
+    // 从 JSON string 解析为 DTO，然后创建 Value Object 实例
+    const configDTO = JSON.parse(data.config) as RepositoryConfigServerDTO;
+    const config = new RepositoryConfig(configDTO);
+
+    const gitDTO = data.git ? (JSON.parse(data.git) as GitInfoServerDTO) : null;
+    const git = gitDTO ? new GitInfo(gitDTO) : null;
+
+    const syncStatusDTO = data.syncStatus ? (JSON.parse(data.syncStatus) as SyncStatusServerDTO) : null;
+    const syncStatus = syncStatusDTO ? new SyncStatus(syncStatusDTO) : null;
+
+    const statsDTO = JSON.parse(data.stats) as RepositoryStatsServerDTO;
+    const stats = new RepositoryStats(statsDTO);
+
+    return new Repository({
+      uuid: data.uuid,
+      accountUuid: data.accountUuid,
+      name: data.name,
+      type: data.type,
+      path: data.path,
+      description: data.description || null,
+      config,
+      relatedGoals: data.relatedGoals ? JSON.parse(data.relatedGoals) : [],
+      status: data.status,
+      git,
+      syncStatus,
+      stats,
+      lastAccessedAt: data.lastAccessedAt || null,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    });
   }
 
   // ==================== 业务方法 ====================
@@ -251,7 +330,8 @@ export class Repository {
    * 更新配置
    */
   updateConfig(config: Partial<RepositoryConfigServerDTO>): void {
-    this._config = { ...this._config, ...config };
+    // 使用 Value Object 的 with() 方法创建新实例
+    this._config = this._config.with(config);
     this._updatedAt = Date.now();
   }
 
@@ -310,10 +390,19 @@ export class Repository {
   }
 
   /**
+   * 更新统计信息（async 版本，符合接口）
+   */
+  async updateStats(): Promise<void> {
+    // 统计信息将由 RepositoryStatisticsDomainService 计算和更新
+    this._updatedAt = Date.now();
+  }
+
+  /**
    * 更新统计信息（同步版本 - 直接更新）
    */
-  updateStats(stats: Partial<RepositoryStatsServerDTO>): void {
-    this._stats = { ...this._stats, ...stats };
+  updateStatsSync(stats: Partial<RepositoryStatsServerDTO>): void {
+    // 使用 Value Object 的 with() 方法
+    this._stats = this._stats.with(stats);
     this._updatedAt = Date.now();
   }
 
@@ -333,11 +422,28 @@ export class Repository {
   }
 
   /**
-   * 启用 Git
+   * 启用 Git（符合接口：接受 remoteUrl）
    */
-  enableGit(gitInfo: GitInfoServerDTO): void {
-    this._git = gitInfo;
-    this._config.enableGit = true;
+  async enableGit(remoteUrl?: string): Promise<void> {
+    // 创建 Value Object
+    this._git = new GitInfo({
+      isGitRepo: true,
+      currentBranch: 'main',
+      hasChanges: false,
+      remoteUrl: remoteUrl || null,
+    });
+    // Value Object 不可变，需要创建新实例
+    this._config = this._config.with({ enableGit: true });
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 启用 Git（内部方法：接受 GitInfo 对象）
+   */
+  enableGitWithInfo(gitInfo: GitInfoServerDTO): void {
+    // 从 DTO 创建 Value Object
+    this._git = new GitInfo(gitInfo);
+    this._config = this._config.with({ enableGit: true });
     this._updatedAt = Date.now();
   }
 
@@ -346,7 +452,7 @@ export class Repository {
    */
   disableGit(): void {
     this._git = null;
-    this._config.enableGit = false;
+    this._config = this._config.with({ enableGit: false });
     this._updatedAt = Date.now();
   }
 
@@ -354,7 +460,8 @@ export class Repository {
    * 更新 Git 状态
    */
   updateGitStatus(gitInfo: GitInfoServerDTO): void {
-    this._git = gitInfo;
+    // 从 DTO 创建 Value Object
+    this._git = new GitInfo(gitInfo);
     this._updatedAt = Date.now();
   }
 
@@ -362,7 +469,8 @@ export class Repository {
    * 更新同步状态
    */
   updateSyncStatus(syncStatus: SyncStatusServerDTO): void {
-    this._syncStatus = syncStatus;
+    // 从 DTO 创建 Value Object
+    this._syncStatus = new SyncStatus(syncStatus);
     this._updatedAt = Date.now();
   }
 
@@ -378,13 +486,14 @@ export class Repository {
     }
 
     const now = Date.now();
-    this._syncStatus = {
+    // 创建新的 Value Object
+    this._syncStatus = new SyncStatus({
       isSyncing: true,
       lastSyncAt: this._syncStatus?.lastSyncAt ?? null,
       syncError: null,
       pendingSyncCount: this._syncStatus?.pendingSyncCount ?? 0,
       conflictCount: this._syncStatus?.conflictCount ?? 0,
-    };
+    });
     this._updatedAt = now;
   }
 
@@ -396,11 +505,11 @@ export class Repository {
       throw new Error('No sync in progress');
     }
 
-    this._syncStatus = {
-      ...this._syncStatus,
+    // 使用 Value Object 的 with() 方法
+    this._syncStatus = this._syncStatus.with({
       isSyncing: false,
       lastSyncAt: Date.now(),
-    };
+    });
     this._updatedAt = Date.now();
   }
 
@@ -414,12 +523,11 @@ export class Repository {
     if (!this._syncStatus?.isSyncing) {
       throw new Error('No sync in progress');
     }
-    // 减少冲突计数
+    // 减少冲突计数 - 使用 with() 方法
     if (this._syncStatus.conflictCount > 0) {
-      this._syncStatus = {
-        ...this._syncStatus,
+      this._syncStatus = this._syncStatus.with({
         conflictCount: this._syncStatus.conflictCount - 1,
-      };
+      });
     }
     this._updatedAt = Date.now();
   }
@@ -428,11 +536,17 @@ export class Repository {
    * 增加资源计数
    */
   incrementResourceCount(type: ResourceType): void {
-    if (!this._stats.resourcesByType[type]) {
-      this._stats.resourcesByType[type] = 0;
-    }
-    this._stats.resourcesByType[type]++;
-    this._stats.totalResources++;
+    // 创建更新后的 resourcesByType map
+    const updatedByType = {
+      ...this._stats.resourcesByType,
+      [type]: (this._stats.resourcesByType[type] ?? 0) + 1,
+    };
+
+    // 使用 with() 创建新的 Value Object
+    this._stats = this._stats.with({
+      resourcesByType: updatedByType,
+      totalResources: this._stats.totalResources + 1,
+    });
     this._updatedAt = Date.now();
   }
 
@@ -440,14 +554,21 @@ export class Repository {
    * 减少资源计数
    */
   decrementResourceCount(type: ResourceType): void {
-    if (this._stats.resourcesByType[type] && this._stats.resourcesByType[type] > 0) {
-      this._stats.resourcesByType[type]--;
-      this._stats.totalResources = Math.max(0, this._stats.totalResources - 1);
+    if (this._stats.resourcesByType[type]) {
+      // 创建更新后的 resourcesByType map
+      const updatedByType = {
+        ...this._stats.resourcesByType,
+        [type]: this._stats.resourcesByType[type] - 1,
+      };
+
+      // 使用 with() 创建新的 Value Object
+      this._stats = this._stats.with({
+        resourcesByType: updatedByType,
+        totalResources: Math.max(0, this._stats.totalResources - 1),
+      });
       this._updatedAt = Date.now();
     }
-  }
-
-  // ==================== 子实体管理（聚合根统一管理） ====================
+  }  // ==================== 子实体管理（聚合根统一管理） ====================
 
   /**
    * 创建资源（工厂方法）
