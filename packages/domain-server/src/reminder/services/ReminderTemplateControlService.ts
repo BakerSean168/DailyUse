@@ -23,6 +23,9 @@ const ControlMode = ReminderContracts.ControlMode;
 type ReminderStatus = ReminderContracts.ReminderStatus;
 const ReminderStatus = ReminderContracts.ReminderStatus;
 
+// 显式导出类型以解决 tsup dts 生成问题
+export type { ControlMode, ReminderStatus };
+
 /**
  * 模板有效状态结果
  */

@@ -36,6 +36,12 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
       icon: data.icon,
       nextTriggerAt: data.nextTriggerAt ? Number(data.nextTriggerAt) : null, // database field: next_trigger_at
       stats: data.stats,
+      
+      // Smart Frequency fields
+      responseMetrics: data.responseMetrics || null,
+      frequencyAdjustment: data.frequencyAdjustment || null,
+      smartFrequencyEnabled: data.smartFrequencyEnabled ?? true,
+      
       createdAt: Number(data.createdAt),
       updatedAt: Number(data.updatedAt),
       deletedAt: data.deletedAt ? Number(data.deletedAt) : null,
@@ -82,6 +88,12 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
       icon: persistence.icon,
       nextTriggerAt: persistence.nextTriggerAt ? new Date(persistence.nextTriggerAt) : null, // database field: next_trigger_at
       stats: persistence.stats,
+      
+      // Smart Frequency fields
+      responseMetrics: persistence.responseMetrics || null,
+      frequencyAdjustment: persistence.frequencyAdjustment || null,
+      smartFrequencyEnabled: persistence.smartFrequencyEnabled ?? true,
+      
       createdAt: new Date(persistence.createdAt),
       updatedAt: new Date(persistence.updatedAt),
       deletedAt: persistence.deletedAt ? new Date(persistence.deletedAt) : null,

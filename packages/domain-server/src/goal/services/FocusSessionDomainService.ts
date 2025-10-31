@@ -24,6 +24,9 @@ type FocusSessionStatus = GoalContracts.FocusSessionStatus;
 // 枚举值别名
 const FocusSessionStatus = GoalContracts.FocusSessionStatus;
 
+// 显式导出类型以解决 tsup dts 生成问题
+export type { FocusSessionStatus };
+
 /**
  * FocusSessionDomainService
  *

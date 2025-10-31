@@ -23,12 +23,12 @@
     // Composite 项目配置（Monorepo 库的核心）
     // ============================================================
 
-    // 启用 composite（支持跨包类型热更新）
-    // 注意：composite 不影响 tsup 打包，只用于 tsc 类型检查
-    "composite": true,
+    // 禁用 composite（与 tsup dts 不兼容）
+    // tsup 会使用自己的方式生成类型
+    "composite": false,
 
-    // 启用增量编译（提升性能）
-    "incremental": true,
+    // 禁用增量编译（与 tsup dts 不兼容）
+    "incremental": false,
 
     // 生成类型声明文件（.d.ts）
     // 必须启用，否则其他项目无法获取类型信息

@@ -1,5 +1,6 @@
 import { Router, type Router as ExpressRouter } from 'express';
 import { ReminderController } from './ReminderController';
+import { SmartFrequencyController } from './SmartFrequencyController';
 
 /**
  * Reminder 模块路由
@@ -8,7 +9,7 @@ import { ReminderController } from './ReminderController';
  * 1. RESTful API 设计
  * 2. 统一的错误处理
  * 3. Swagger/OpenAPI 文档
- * 4. 路由分组：模板管理、搜索统计
+ * 4. 路由分组：模板管理、搜索统计、智能频率
  */
 
 const router: ExpressRouter = Router();
@@ -216,5 +217,291 @@ router.get('/templates/search', ReminderController.searchReminderTemplates);
  *         description: 获取成功
  */
 router.get('/statistics/:accountUuid', ReminderController.getReminderStatistics);
+
+// ===== 智能频率调整 =====
+
+/**
+ * @swagger
+ * /api/reminders/smart-frequency/effectiveness-report/{accountUuid}:
+ *   get:
+ *     tags: [Smart Frequency]
+ *     summary: 获取账户的效果分析报告
+ *     description: 分析账户下所有提醒模板的效果,包括高效和低效提醒列表
+ *     parameters:
+ *       - in: path
+ *         name: accountUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 账户 UUID
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accountUuid:
+ *                   type: string
+ *                 totalTemplates:
+ *                   type: number
+ *                 avgClickRate:
+ *                   type: number
+ *                 avgEffectivenessScore:
+ *                   type: number
+ *                 highEffective:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 lowEffective:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 analyzedAt:
+ *                   type: number
+ */
+router.get(
+  '/smart-frequency/effectiveness-report/:accountUuid',
+  SmartFrequencyController.getEffectivenessReport,
+);
+
+/**
+ * @swagger
+ * /api/reminders/smart-frequency/analyze/{templateId}:
+ *   post:
+ *     tags: [Smart Frequency]
+ *     summary: 分析单个提醒模板的效果
+ *     description: 分析指定提醒模板的响应指标并计算效果评分
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 提醒模板 UUID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               lookbackDays:
+ *                 type: number
+ *                 default: 30
+ *                 description: 回溯分析天数
+ *     responses:
+ *       200:
+ *         description: 分析成功
+ *       400:
+ *         description: 数据不足(需要至少10条响应记录)
+ */
+router.post('/smart-frequency/analyze/:templateId', SmartFrequencyController.analyzeTemplate);
+
+/**
+ * @swagger
+ * /api/reminders/smart-frequency/suggestion/{templateId}:
+ *   get:
+ *     tags: [Smart Frequency]
+ *     summary: 获取频率调整建议
+ *     description: 基于效果分析生成频率调整建议
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 提醒模板 UUID
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 needsAdjustment:
+ *                   type: boolean
+ *                 suggestion:
+ *                   type: object
+ *                   properties:
+ *                     originalInterval:
+ *                       type: number
+ *                     adjustedInterval:
+ *                       type: number
+ *                     reason:
+ *                       type: string
+ */
+router.get(
+  '/smart-frequency/suggestion/:templateId',
+  SmartFrequencyController.getAdjustmentSuggestion,
+);
+
+/**
+ * @swagger
+ * /api/reminders/smart-frequency/accept-adjustment/{templateId}:
+ *   post:
+ *     tags: [Smart Frequency]
+ *     summary: 接受频率调整建议
+ *     description: 用户确认并应用频率调整建议
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 提醒模板 UUID
+ *     responses:
+ *       200:
+ *         description: 调整已接受并应用
+ *       400:
+ *         description: 没有待确认的调整建议
+ */
+router.post(
+  '/smart-frequency/accept-adjustment/:templateId',
+  SmartFrequencyController.acceptAdjustment,
+);
+
+/**
+ * @swagger
+ * /api/reminders/smart-frequency/reject-adjustment/{templateId}:
+ *   post:
+ *     tags: [Smart Frequency]
+ *     summary: 拒绝频率调整建议
+ *     description: 用户拒绝频率调整建议,保持原频率不变
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 提醒模板 UUID
+ *     responses:
+ *       200:
+ *         description: 调整已拒绝
+ *       400:
+ *         description: 没有待确认的调整建议
+ */
+router.post(
+  '/smart-frequency/reject-adjustment/:templateId',
+  SmartFrequencyController.rejectAdjustment,
+);
+
+/**
+ * @swagger
+ * /api/reminders/smart-frequency/toggle/{templateId}:
+ *   post:
+ *     tags: [Smart Frequency]
+ *     summary: 切换智能频率功能
+ *     description: 启用或禁用指定提醒模板的智能频率调整功能
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 提醒模板 UUID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - enabled
+ *             properties:
+ *               enabled:
+ *                 type: boolean
+ *                 description: 是否启用智能频率
+ *     responses:
+ *       200:
+ *         description: 切换成功
+ */
+router.post('/smart-frequency/toggle/:templateId', SmartFrequencyController.toggleSmartFrequency);
+
+/**
+ * @swagger
+ * /api/reminders/smart-frequency/record-response:
+ *   post:
+ *     tags: [Smart Frequency]
+ *     summary: 记录用户响应行为
+ *     description: 记录用户对提醒的响应行为(点击/忽略/延迟等),用于后续分析
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - templateId
+ *               - action
+ *             properties:
+ *               templateId:
+ *                 type: string
+ *                 description: 提醒模板 UUID
+ *               action:
+ *                 type: string
+ *                 enum: [clicked, ignored, snoozed, dismissed, completed]
+ *                 description: 响应行为类型
+ *               responseTime:
+ *                 type: number
+ *                 description: 响应时间(秒)
+ *     responses:
+ *       200:
+ *         description: 响应已记录
+ *       400:
+ *         description: 请求参数错误
+ *       404:
+ *         description: 提醒模板不存在
+ */
+router.post('/smart-frequency/record-response', SmartFrequencyController.recordResponse);
+
+/**
+ * @swagger
+ * /api/reminders/smart-frequency/response-stats/{templateId}:
+ *   get:
+ *     tags: [Smart Frequency]
+ *     summary: 获取响应统计
+ *     description: 获取指定提醒模板的响应统计信息
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 提醒模板 UUID
+ *       - in: query
+ *         name: lookbackDays
+ *         schema:
+ *           type: number
+ *           default: 30
+ *         description: 回溯天数
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: number
+ *                 clicked:
+ *                   type: number
+ *                 ignored:
+ *                   type: number
+ *                 snoozed:
+ *                   type: number
+ *                 dismissed:
+ *                   type: number
+ *                 completed:
+ *                   type: number
+ *                 avgResponseTime:
+ *                   type: number
+ */
+router.get(
+  '/smart-frequency/response-stats/:templateId',
+  SmartFrequencyController.getResponseStats,
+);
 
 export default router;
