@@ -88,6 +88,13 @@ export class ReminderContainer {
   }
 
   /**
+   * 获取 Prisma 客户端实例
+   */
+  getPrismaClient(): typeof prisma {
+    return prisma;
+  }
+
+  /**
    * 重置容器（用于测试）
    */
   reset(): void {

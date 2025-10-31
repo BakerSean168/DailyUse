@@ -27,6 +27,9 @@ type FocusSessionCancelledEvent = GoalContracts.FocusSessionCancelledEvent;
 // 枚举值别名
 const FocusSessionStatus = GoalContracts.FocusSessionStatus;
 
+// 显式导出类型以解决 tsup dts 生成问题
+export type { FocusSessionStatus };
+
 /**
  * FocusSession 聚合根
  */

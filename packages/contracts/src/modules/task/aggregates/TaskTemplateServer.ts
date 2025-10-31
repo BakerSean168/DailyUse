@@ -47,7 +47,7 @@ export interface TaskTemplateClientDTO {
   color?: string | null;
   status: TaskTemplateStatus;
   lastGeneratedDate?: number | null;
-  generateAheadDays: number;
+  generateAheadDays: number | null; // null for ONE_TIME tasks
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;

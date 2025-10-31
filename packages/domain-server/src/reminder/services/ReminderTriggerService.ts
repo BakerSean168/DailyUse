@@ -26,6 +26,9 @@ type TriggerResult = ReminderContracts.TriggerResult;
 const TriggerResult = ReminderContracts.TriggerResult;
 type RecurrenceType = ReminderContracts.RecurrenceType;
 
+// 显式导出类型以解决 tsup dts 生成问题
+export type { TriggerResult };
+
 /**
  * 触发参数
  */

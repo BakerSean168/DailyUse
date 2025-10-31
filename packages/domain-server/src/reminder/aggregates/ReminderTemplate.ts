@@ -361,6 +361,14 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       : null;
     const stats = ReminderStats.fromServerDTO(JSON.parse(dto.stats));
     const tags = JSON.parse(dto.tags);
+    
+    // Smart Frequency fields
+    const responseMetrics = dto.responseMetrics
+      ? ResponseMetrics.fromServerDTO(JSON.parse(dto.responseMetrics))
+      : null;
+    const frequencyAdjustment = dto.frequencyAdjustment
+      ? FrequencyAdjustment.fromServerDTO(JSON.parse(dto.frequencyAdjustment))
+      : null;
 
     return new ReminderTemplate({
       uuid: dto.uuid,
@@ -382,6 +390,12 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       icon: dto.icon,
       nextTriggerAt: dto.nextTriggerAt,
       stats,
+      
+      // Smart Frequency fields
+      responseMetrics,
+      frequencyAdjustment,
+      smartFrequencyEnabled: dto.smartFrequencyEnabled ?? true,
+      
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
@@ -933,6 +947,12 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       icon: this.icon,
       nextTriggerAt: this.nextTriggerAt,
       stats: JSON.stringify(this._stats.toServerDTO()),
+      
+      // Smart Frequency fields
+      responseMetrics: this._responseMetrics ? JSON.stringify(this._responseMetrics.toServerDTO()) : null,
+      frequencyAdjustment: this._frequencyAdjustment ? JSON.stringify(this._frequencyAdjustment.toServerDTO()) : null,
+      smartFrequencyEnabled: this._smartFrequencyEnabled ?? true,
+      
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt,

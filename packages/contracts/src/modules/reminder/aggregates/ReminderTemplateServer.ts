@@ -92,6 +92,12 @@ export interface ReminderTemplatePersistenceDTO {
   icon?: string | null;
   nextTriggerAt?: number | null;
   stats: string; // JSON string
+  
+  // Smart Frequency fields
+  responseMetrics?: string | null; // JSON string of ResponseMetricsServer
+  frequencyAdjustment?: string | null; // JSON string of FrequencyAdjustmentServer
+  smartFrequencyEnabled?: boolean;
+  
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;

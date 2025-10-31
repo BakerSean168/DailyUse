@@ -15,6 +15,11 @@ import {
   startReminderTriggerCronJob,
   stopReminderTriggerCronJob,
 } from './modules/reminder/infrastructure/cron/reminderTriggerCronJob';
+import {
+  registerAllCronJobs,
+  startCronScheduler,
+  stopCronScheduler,
+} from './infrastructure/cron';
 
 // 初始化日志系统
 initializeLogger();
@@ -86,6 +91,13 @@ const PORT = process.env.PORT || 3888;
       description: 'Trigger due reminder templates',
     });
 
+    // 启动统一 Cron 调度器 (Smart Frequency 等)
+    registerAllCronJobs();
+    startCronScheduler();
+    logger.info('✅ Unified cron scheduler started', {
+      description: 'Smart Frequency Daily Analysis, etc.',
+    });
+
     app.listen(PORT, () => {
       logger.info(`API server listening on http://localhost:${PORT}`);
     });
@@ -99,6 +111,7 @@ process.on('SIGINT', async () => {
   logger.info('Received SIGINT signal, shutting down gracefully...');
   stopFocusModeCronJob();
   await stopReminderTriggerCronJob();
+  stopCronScheduler();
   await disconnectPrisma();
   logger.info('Database disconnected');
   process.exit(0);
@@ -106,6 +119,7 @@ process.on('SIGINT', async () => {
 process.on('SIGTERM', async () => {
   logger.info('Received SIGTERM signal, shutting down gracefully...');
   stopFocusModeCronJob();
+  stopCronScheduler();
   await disconnectPrisma();
   logger.info('Database disconnected');
   process.exit(0);

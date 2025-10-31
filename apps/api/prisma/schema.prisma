@@ -640,14 +640,49 @@ model reminderTemplate {
   activeHours String? @map("active_hours")
   notificationConfig String @map("notification_config")
   stats               String
+  
+  // Smart Frequency: Response Metrics
+  clickRate              Float?   @map("click_rate")
+  ignoreRate             Float?   @map("ignore_rate")
+  avgResponseTime        Int?     @map("avg_response_time")
+  snoozeCount            Int      @default(0) @map("snooze_count")
+  effectivenessScore     Float?   @map("effectiveness_score")
+  sampleSize             Int      @default(0) @map("sample_size")
+  lastAnalysisTime       BigInt?  @map("last_analysis_time")
+  
+  // Smart Frequency: Frequency Adjustment
+  originalInterval       Int?     @map("original_interval")
+  adjustedInterval       Int?     @map("adjusted_interval")
+  adjustmentReason       String?  @map("adjustment_reason")
+  adjustmentTime         BigInt?  @map("adjustment_time")
+  isAutoAdjusted         Boolean  @default(false) @map("is_auto_adjusted")
+  userConfirmed          Boolean  @default(false) @map("user_confirmed")
+  
+  smartFrequencyEnabled  Boolean  @default(true) @map("smart_frequency_enabled")
+  
   reminderHistory    reminderHistory[]
   reminderInstance  reminderInstance[]
+  reminderResponse  reminderResponse[]
   account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
   reminderGroup     reminderGroup?     @relation(fields: [groupUuid], references: [uuid])
 
   @@index([status])
 
   @@map("reminder_templates")
+}
+
+model reminderResponse {
+  uuid          String           @id @default(uuid())
+  templateUuid  String           @map("template_uuid")
+  action        String           // clicked, ignored, snoozed, dismissed, completed
+  responseTime  Int?             @map("response_time") // seconds
+  timestamp     BigInt
+  createdAt     DateTime         @default(now()) @map("created_at")
+  
+  reminderTemplate reminderTemplate @relation(fields: [templateUuid], references: [uuid], onDelete: Cascade)
+
+  @@index([templateUuid, timestamp(sort: Desc)])
+  @@map("reminder_responses")
 }
 
 model repository {
