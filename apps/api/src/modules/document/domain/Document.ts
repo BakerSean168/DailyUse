@@ -34,6 +34,8 @@ interface DocumentProps {
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   currentVersion: number;
   lastVersionedAt: number | null;
+  lastEditedAt: number | null;
+  editSessionId: string | null;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;
@@ -83,6 +85,8 @@ export class Document {
       status: 'DRAFT',
       currentVersion: 0,
       lastVersionedAt: null,
+      lastEditedAt: null,
+      editSessionId: null,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -193,6 +197,43 @@ export class Document {
     return this.props.lastVersionedAt;
   }
 
+  // Edit Conflict Detection Methods
+  updateWithConflictCheck(
+    newContent: string,
+    clientLastEditedAt: number | null,
+    newSessionId: string
+  ): Result<{ updated: boolean; conflict: boolean }> {
+    // Check for conflict: another session has edited since client's last known edit
+    if (
+      this.props.lastEditedAt !== null &&
+      clientLastEditedAt !== null &&
+      this.props.lastEditedAt > clientLastEditedAt &&
+      this.props.editSessionId !== newSessionId
+    ) {
+      return success({ updated: false, conflict: true });
+    }
+
+    // No conflict, update content
+    const updateResult = this.updateContent(newContent);
+    if (updateResult.isFailure) {
+      return failure(updateResult.error);
+    }
+
+    // Update edit tracking fields
+    this.props.lastEditedAt = Math.floor(Date.now() / 1000);
+    this.props.editSessionId = newSessionId;
+
+    return success({ updated: true, conflict: false });
+  }
+
+  getLastEditedAt(): number | null {
+    return this.props.lastEditedAt;
+  }
+
+  getEditSessionId(): string | null {
+    return this.props.editSessionId;
+  }
+
   // Getters
   get uuid(): string {
     return this.props.uuid;
@@ -259,6 +300,8 @@ export class Document {
       status: this.props.status,
       currentVersion: this.props.currentVersion,
       lastVersionedAt: this.props.lastVersionedAt,
+      lastEditedAt: this.props.lastEditedAt,
+      editSessionId: this.props.editSessionId,
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
       deletedAt: this.props.deletedAt,
@@ -292,6 +335,8 @@ export class Document {
       status: this.props.status,
       currentVersion: this.props.currentVersion,
       lastVersionedAt: this.props.lastVersionedAt,
+      lastEditedAt: this.props.lastEditedAt,
+      editSessionId: this.props.editSessionId,
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
       deletedAt: this.props.deletedAt,

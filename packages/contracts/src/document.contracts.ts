@@ -10,6 +10,8 @@ export namespace DocumentContracts {
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     currentVersion: number;
     lastVersionedAt: number | null;
+    lastEditedAt: number | null;
+    editSessionId: string | null;
     createdAt: number;
     updatedAt: number;
     deletedAt: number | null;
@@ -26,6 +28,7 @@ export namespace DocumentContracts {
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     currentVersion: number;
     lastVersionedAt: number | null;
+    lastEditedAt: number | null;
     createdAt: number;
     updatedAt: number;
   }
@@ -145,5 +148,96 @@ export namespace DocumentContracts {
     page: number;
     pageSize: number;
     totalPages: number;
+  }
+
+  // ==================== Editor Auto-Save DTOs ====================
+
+  // Save document with conflict detection
+  export interface SaveDocumentDTO {
+    content: string;
+    lastEditedAt: number | null;
+    sessionId: string;
+  }
+
+  // Save document response
+  export interface SaveDocumentResponseDTO {
+    success: boolean;
+    conflict: boolean;
+    document?: DocumentClientDTO;
+    message?: string;
+  }
+
+  // ==================== Bidirectional Links DTOs ====================
+
+  // Document Link DTO
+  export interface DocumentLinkDTO {
+    uuid: string;
+    sourceDocumentUuid: string;
+    targetDocumentUuid: string | null;
+    linkText: string;
+    linkPosition: number;
+    isBroken: boolean;
+    createdAt: number;
+    updatedAt: number;
+  }
+
+  // Backlink with context
+  export interface BacklinkDTO {
+    link: DocumentLinkDTO;
+    sourceDocument: {
+      uuid: string;
+      title: string;
+      excerpt: string;
+      updatedAt: number;
+    };
+    context: string; // Surrounding text around the link
+  }
+
+  // Backlinks response
+  export interface BacklinksResponseDTO {
+    documentUuid: string;
+    backlinks: BacklinkDTO[];
+    total: number;
+  }
+
+  // Link graph node
+  export interface LinkGraphNodeDTO {
+    uuid: string;
+    title: string;
+    linkCount: number;
+    backlinkCount: number;
+    isCurrent: boolean;
+  }
+
+  // Link graph edge
+  export interface LinkGraphEdgeDTO {
+    source: string;
+    target: string;
+    linkText: string;
+  }
+
+  // Link graph response
+  export interface LinkGraphResponseDTO {
+    nodes: LinkGraphNodeDTO[];
+    edges: LinkGraphEdgeDTO[];
+    centerUuid: string;
+    depth: number;
+  }
+
+  // Broken links response
+  export interface BrokenLinksResponseDTO {
+    links: Array<{
+      link: DocumentLinkDTO;
+      sourceDocument: {
+        uuid: string;
+        title: string;
+      };
+    }>;
+    total: number;
+  }
+
+  // Repair link request
+  export interface RepairLinkRequestDTO {
+    newTargetUuid: string;
   }
 }
