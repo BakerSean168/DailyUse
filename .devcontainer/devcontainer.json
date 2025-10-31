@@ -1,6 +1,7 @@
 {
   "name": "DailyUse Development Environment",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "runArgs": ["--cpus=4", "--memory=16g"],
   
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
