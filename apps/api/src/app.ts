@@ -21,10 +21,12 @@ import reminderRouter from './modules/reminder/interface/http/reminderRoutes';
 import scheduleRouter from './modules/schedule/interface/http/routes/scheduleRoutes';
 import notificationRouter from './modules/notification/interface/http/notificationRoutes';
 import notificationSSERouter from './modules/notification/interface/http/sseRoutes';
-import settingRouter from './modules/setting/interface/http/settingRoutes';
+// import settingRouter from './modules/setting/interface/http/settingRoutes'; // TEMPORARILY DISABLED
 // import themeRoutes from './modules/theme/interface/http/themeRoutes';
 import editorRouter from './modules/editor/interface/http/routes/editorRoutes';
 import repositoryRouter from './modules/repository/interface/http/routes/repositoryRoutes';
+import repositoryNewRouter from './modules/repository-new/presentation/RepositoryController';
+import resourceNewRouter from './modules/repository-new/presentation/ResourceController';
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
 
 import { authMiddleware, optionalAuthMiddleware } from './shared/middlewares/index';
@@ -123,10 +125,18 @@ api.use('/editor', authMiddleware, editorRouter);
 api.use('/repositories', authMiddleware, repositoryRouter);
 
 /**
+ * repository-new 仓储模块 (Epic 7 重构版本 - MVP)
+ */
+// 挂载新版仓储路由 - 需要认证
+api.use('', repositoryNewRouter);
+api.use('', resourceNewRouter);
+
+/**
  * setting 设置模块
  */
 // 挂载用户设置路由 - 需要认证
-api.use('/settings', authMiddleware, settingRouter);
+// TEMPORARILY DISABLED due to UserSetting compilation issues
+// api.use('/settings', authMiddleware, settingRouter);
 
 /**
  * metrics 性能指标模块

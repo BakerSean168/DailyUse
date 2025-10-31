@@ -14,6 +14,7 @@ import type { RepositoryContracts } from '@dailyuse/contracts';
 
 type RepositoryType = RepositoryContracts.RepositoryType;
 type ResourceType = RepositoryContracts.ResourceType;
+type GitInfoServerDTO = RepositoryContracts.GitInfoServerDTO;
 
 /**
  * RepositoryDomainService
@@ -53,7 +54,8 @@ export class RepositoryDomainService {
 
     // 3. 可选：初始化 Git
     if (params.initializeGit) {
-      await repository.enableGit();
+      // Git 信息将在后台任务中初始化
+      // await repository.enableGit(gitInfo);
     }
 
     // 4. 持久化
@@ -178,7 +180,15 @@ export class RepositoryDomainService {
       throw new Error(`Repository not found: ${uuid}`);
     }
 
-    await repository.enableGit(remoteUrl);
+    // 创建 Git 信息对象
+    const gitInfo: GitInfoServerDTO = {
+      isGitRepo: true,
+      currentBranch: 'main',
+      hasChanges: false,
+      remoteUrl: remoteUrl || null,
+    };
+
+    repository.enableGit(gitInfo);
     await this.repositoryRepo.save(repository);
   }
 
@@ -236,7 +246,8 @@ export class RepositoryDomainService {
       throw new Error(`Repository not found: ${uuid}`);
     }
 
-    await repository.updateStats();
+    // TODO: 实现统计更新逻辑（由 RepositoryStatisticsDomainService 处理）
+    // await repository.updateStats();
     await this.repositoryRepo.save(repository);
   }
 
