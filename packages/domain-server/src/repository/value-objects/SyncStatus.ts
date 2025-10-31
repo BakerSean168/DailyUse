@@ -7,6 +7,8 @@ import type { RepositoryContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type ISyncStatus = RepositoryContracts.SyncStatusServerDTO;
+type SyncStatusClientDTO = RepositoryContracts.SyncStatusClientDTO;
+type SyncStatusPersistenceDTO = RepositoryContracts.SyncStatusPersistenceDTO;
 
 /**
  * SyncStatus 值对象
@@ -82,9 +84,9 @@ export class SyncStatus extends ValueObject implements ISyncStatus {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): ISyncStatus {
+  public toServerDTO(): ISyncStatus {
     return {
       isSyncing: this.isSyncing,
       lastSyncAt: this.lastSyncAt,
@@ -95,10 +97,71 @@ export class SyncStatus extends ValueObject implements ISyncStatus {
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): SyncStatusClientDTO {
+    let syncStatusText = '未同步';
+    let syncStatusColor = 'gray';
+
+    if (this.isSyncing) {
+      syncStatusText = '同步中...';
+      syncStatusColor = 'blue';
+    } else if (this.syncError) {
+      syncStatusText = `同步失败: ${this.syncError}`;
+      syncStatusColor = 'red';
+    } else if (this.lastSyncAt) {
+      syncStatusText = '同步成功';
+      syncStatusColor = 'green';
+    }
+
+    const lastSyncFormatted = this.lastSyncAt
+      ? new Date(this.lastSyncAt).toLocaleString('zh-CN')
+      : null;
+
+    return {
+      isSyncing: this.isSyncing,
+      syncError: this.syncError,
+      lastSyncAt: this.lastSyncAt,
+      syncStatusText,
+      syncStatusColor,
+      lastSyncFormatted,
+      hasPendingChanges: this.pendingSyncCount > 0,
+      hasConflicts: this.conflictCount > 0,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): SyncStatusPersistenceDTO {
+    return {
+      is_syncing: this.isSyncing,
+      last_sync_at: this.lastSyncAt,
+      sync_error: this.syncError,
+      pending_sync_count: this.pendingSyncCount,
+      conflict_count: this.conflictCount,
+    };
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(data: ISyncStatus): SyncStatus {
+    return new SyncStatus(data);
+  }
+
+  /**
+   * 转换为 Contract 接口 (兼容旧代码)
+   */
+  public toContract(): ISyncStatus {
+    return this.toServerDTO();
+  }
+
+  /**
+   * 从 Contract 接口创建值对象 (兼容旧代码)
    */
   public static fromContract(data: ISyncStatus): SyncStatus {
-    return new SyncStatus(data);
+    return SyncStatus.fromServerDTO(data);
   }
 
   /**

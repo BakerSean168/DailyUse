@@ -5,3 +5,4 @@
 
 export * from './ReminderHistoryServer';
 export * from './ReminderHistoryClient';
+export * from './ReminderResponseServer';

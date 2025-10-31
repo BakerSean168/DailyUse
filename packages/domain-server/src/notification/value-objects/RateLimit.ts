@@ -7,6 +7,8 @@ import type { NotificationContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type IRateLimit = NotificationContracts.RateLimitServerDTO;
+type RateLimitPersistenceDTO = NotificationContracts.RateLimitPersistenceDTO;
+type RateLimitClientDTO = NotificationContracts.RateLimitClientDTO;
 
 /**
  * RateLimit 值对象
@@ -60,9 +62,9 @@ export class RateLimit extends ValueObject implements IRateLimit {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IRateLimit {
+  public toServerDTO(): IRateLimit {
     return {
       enabled: this.enabled,
       maxPerHour: this.maxPerHour,
@@ -71,10 +73,47 @@ export class RateLimit extends ValueObject implements IRateLimit {
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): RateLimitClientDTO {
+    return {
+      enabled: this.enabled,
+      maxPerHour: this.maxPerHour,
+      maxPerDay: this.maxPerDay,
+      limitText: this.enabled ? `每小时${this.maxPerHour}次，每天${this.maxPerDay}次` : '无限制',
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): RateLimitPersistenceDTO {
+    return {
+      enabled: this.enabled,
+      maxPerHour: this.maxPerHour,
+      maxPerDay: this.maxPerDay,
+    };
+  }
+
+  /**
+   * 转换为 Contract 接口 (兼容旧代码)
+   */
+  public toContract(): IRateLimit {
+    return this.toServerDTO();
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: IRateLimit): RateLimit {
+    return new RateLimit(dto);
+  }
+
+  /**
+   * 从 Contract 接口创建值对象 (兼容旧代码)
    */
   public static fromContract(rateLimit: IRateLimit): RateLimit {
-    return new RateLimit(rateLimit);
+    return RateLimit.fromServerDTO(rateLimit);
   }
 
   /**

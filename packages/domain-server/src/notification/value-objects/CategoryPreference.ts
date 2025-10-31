@@ -7,6 +7,8 @@ import type { NotificationContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type ICategoryPreference = NotificationContracts.CategoryPreferenceServerDTO;
+type CategoryPreferencePersistenceDTO = NotificationContracts.CategoryPreferencePersistenceDTO;
+type CategoryPreferenceClientDTO = NotificationContracts.CategoryPreferenceClientDTO;
 type ImportanceLevel = NotificationContracts.ImportanceLevel;
 type ChannelPreference = NotificationContracts.ChannelPreference;
 
@@ -72,9 +74,9 @@ export class CategoryPreference extends ValueObject implements ICategoryPreferen
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): ICategoryPreference {
+  public toServerDTO(): ICategoryPreference {
     return {
       enabled: this.enabled,
       channels: { ...this.channels },
@@ -82,11 +84,36 @@ export class CategoryPreference extends ValueObject implements ICategoryPreferen
     };
   }
 
-  /**
-   * 从 Contract 接口创建值对象
-   */
+  public toClientDTO(): CategoryPreferenceClientDTO {
+    const enabledChannels = Object.entries(this.channels).filter(([_, enabled]) => enabled);
+    return {
+      enabled: this.enabled,
+      channels: { ...this.channels },
+      importance: [...this.importance],
+      enabledChannelsCount: enabledChannels.length,
+      enabledChannelsList: enabledChannels.map(([name]) => name),
+      importanceText: this.importance.join(', '),
+    };
+  }
+
+  public toPersistenceDTO(): CategoryPreferencePersistenceDTO {
+    return {
+      enabled: this.enabled,
+      channels: JSON.stringify(this.channels),
+      importance: JSON.stringify(this.importance),
+    };
+  }
+
+  public toContract(): ICategoryPreference {
+    return this.toServerDTO();
+  }
+
+  public static fromServerDTO(dto: ICategoryPreference): CategoryPreference {
+    return new CategoryPreference(dto);
+  }
+
   public static fromContract(preference: ICategoryPreference): CategoryPreference {
-    return new CategoryPreference(preference);
+    return CategoryPreference.fromServerDTO(preference);
   }
 
   /**

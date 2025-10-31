@@ -6,6 +6,7 @@
 import type {
   GroupStatsServerDTO,
   GroupStatsClientDTO,
+  GroupStatsPersistenceDTO,
 } from '@dailyuse/contracts/src/modules/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
@@ -106,6 +107,19 @@ export class GroupStats extends ValueObject implements GroupStatsServerDTO {
       selfPausedTemplates: this.selfPausedTemplates,
       templateCountText: `${this.totalTemplates} 个提醒`,
       activeStatusText: `${this.activeTemplates} 个活跃`,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（数据库存储格式）
+   */
+  public toPersistenceDTO(): GroupStatsPersistenceDTO {
+    return {
+      total_templates: this.totalTemplates,
+      active_templates: this.activeTemplates,
+      paused_templates: this.pausedTemplates,
+      self_enabled_templates: this.selfEnabledTemplates,
+      self_paused_templates: this.selfPausedTemplates,
     };
   }
 

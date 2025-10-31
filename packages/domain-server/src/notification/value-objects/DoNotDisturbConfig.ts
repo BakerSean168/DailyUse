@@ -7,6 +7,8 @@ import type { NotificationContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type IDoNotDisturbConfig = NotificationContracts.DoNotDisturbConfigServerDTO;
+type DoNotDisturbConfigPersistenceDTO = NotificationContracts.DoNotDisturbConfigPersistenceDTO;
+type DoNotDisturbConfigClientDTO = NotificationContracts.DoNotDisturbConfigClientDTO;
 
 /**
  * DoNotDisturbConfig 值对象
@@ -100,9 +102,9 @@ export class DoNotDisturbConfig extends ValueObject implements IDoNotDisturbConf
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IDoNotDisturbConfig {
+  public toServerDTO(): IDoNotDisturbConfig {
     return {
       enabled: this.enabled,
       startTime: this.startTime,
@@ -112,10 +114,53 @@ export class DoNotDisturbConfig extends ValueObject implements IDoNotDisturbConf
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): DoNotDisturbConfigClientDTO {
+    const weekDayNames = ['日', '一', '二', '三', '四', '五', '六'];
+    const daysOfWeekText = this.daysOfWeek.map(d => weekDayNames[d]).join('、');
+    return {
+      enabled: this.enabled,
+      startTime: this.startTime,
+      endTime: this.endTime,
+      daysOfWeek: [...this.daysOfWeek],
+      timeRangeText: `${this.startTime} - ${this.endTime}`,
+      daysOfWeekText,
+      isActive: this.enabled,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): DoNotDisturbConfigPersistenceDTO {
+    return {
+      enabled: this.enabled,
+      startTime: this.startTime,
+      endTime: this.endTime,
+      daysOfWeek: JSON.stringify(this.daysOfWeek),
+    };
+  }
+
+  /**
+   * 转换为 Contract 接口 (兼容旧代码)
+   */
+  public toContract(): IDoNotDisturbConfig {
+    return this.toServerDTO();
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: IDoNotDisturbConfig): DoNotDisturbConfig {
+    return new DoNotDisturbConfig(dto);
+  }
+
+  /**
+   * 从 Contract 接口创建值对象 (兼容旧代码)
    */
   public static fromContract(config: IDoNotDisturbConfig): DoNotDisturbConfig {
-    return new DoNotDisturbConfig(config);
+    return DoNotDisturbConfig.fromServerDTO(config);
   }
 
   /**

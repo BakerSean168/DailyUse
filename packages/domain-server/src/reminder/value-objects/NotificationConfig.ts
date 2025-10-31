@@ -6,6 +6,7 @@
 import type {
   NotificationConfigServerDTO,
   NotificationConfigClientDTO,
+  NotificationConfigPersistenceDTO,
   NotificationChannel,
   SoundConfig,
   VibrationConfig,
@@ -143,6 +144,20 @@ export class NotificationConfig extends ValueObject implements NotificationConfi
       channelsText,
       hasSoundEnabled: this.sound?.enabled ?? false,
       hasVibrationEnabled: this.vibration?.enabled ?? false,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（数据库存储格式）
+   */
+  public toPersistenceDTO(): NotificationConfigPersistenceDTO {
+    return {
+      channels: JSON.stringify(this.channels),
+      title: this.title,
+      body: this.body,
+      sound: this.sound ? JSON.stringify(this.sound) : null,
+      vibration: this.vibration ? JSON.stringify(this.vibration) : null,
+      actions: this.actions ? JSON.stringify(this.actions) : null,
     };
   }
 

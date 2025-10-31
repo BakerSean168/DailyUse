@@ -10,3 +10,5 @@ export * from './ActiveTimeConfig';
 export * from './ActiveHoursConfig';
 export * from './ReminderStats';
 export * from './GroupStats';
+export * from './ResponseMetricsServer';
+export * from './FrequencyAdjustmentServer';

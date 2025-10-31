@@ -6,6 +6,7 @@
 import type {
   RecurrenceConfigServerDTO,
   RecurrenceConfigClientDTO,
+  RecurrenceConfigPersistenceDTO,
   RecurrenceType,
   WeekDay,
   DailyRecurrence,
@@ -172,6 +173,18 @@ export class RecurrenceConfig extends ValueObject implements RecurrenceConfigSer
       weekly: this.weekly,
       customDays: this.customDays,
       displayText,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（数据库存储格式）
+   */
+  public toPersistenceDTO(): RecurrenceConfigPersistenceDTO {
+    return {
+      type: this.type,
+      daily: this.daily ? JSON.stringify(this.daily) : null,
+      weekly: this.weekly ? JSON.stringify(this.weekly) : null,
+      custom_days: this.customDays ? JSON.stringify(this.customDays) : null,
     };
   }
 

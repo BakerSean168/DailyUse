@@ -7,6 +7,8 @@ import type { RepositoryContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type IRepositoryStats = RepositoryContracts.RepositoryStatsServerDTO;
+type RepositoryStatsClientDTO = RepositoryContracts.RepositoryStatsClientDTO;
+type RepositoryStatsPersistenceDTO = RepositoryContracts.RepositoryStatsPersistenceDTO;
 type ResourceType = RepositoryContracts.ResourceType;
 type ResourceStatus = RepositoryContracts.ResourceStatus;
 
@@ -91,9 +93,9 @@ export class RepositoryStats extends ValueObject implements IRepositoryStats {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IRepositoryStats {
+  public toServerDTO(): IRepositoryStats {
     return {
       totalResources: this.totalResources,
       resourcesByType: { ...this.resourcesByType },
@@ -106,10 +108,61 @@ export class RepositoryStats extends ValueObject implements IRepositoryStats {
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): RepositoryStatsClientDTO {
+    const formatBytes = (bytes: number): string => {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return `${Math.round(bytes / Math.pow(k, i) * 100) / 100} ${sizes[i]}`;
+    };
+
+    return {
+      totalResources: this.totalResources,
+      totalSize: this.totalSize,
+      totalSizeFormatted: formatBytes(this.totalSize),
+      favoriteCount: this.favoriteResources,
+      recentCount: this.recentActiveResources,
+      resourcesByType: { ...this.resourcesByType },
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): RepositoryStatsPersistenceDTO {
+    return {
+      total_resources: this.totalResources,
+      resources_by_type: JSON.stringify(this.resourcesByType),
+      resources_by_status: JSON.stringify(this.resourcesByStatus),
+      total_size: this.totalSize,
+      recent_active_resources: this.recentActiveResources,
+      favorite_resources: this.favoriteResources,
+      last_updated: this.lastUpdated,
+    };
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(stats: IRepositoryStats): RepositoryStats {
+    return new RepositoryStats(stats);
+  }
+
+  /**
+   * 转换为 Contract 接口 (兼容旧代码)
+   */
+  public toContract(): IRepositoryStats {
+    return this.toServerDTO();
+  }
+
+  /**
+   * 从 Contract 接口创建值对象 (兼容旧代码)
    */
   public static fromContract(stats: IRepositoryStats): RepositoryStats {
-    return new RepositoryStats(stats);
+    return RepositoryStats.fromServerDTO(stats);
   }
 
   /**
