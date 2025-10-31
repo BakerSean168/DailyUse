@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { PrismaClient } from '@prisma/client';
 import type { IUserSettingRepository } from '@dailyuse/domain-server';
-import { UserSetting } from '@dailyuse/domain-server';
+import { UserSettingServer as UserSetting } from '@dailyuse/domain-server';
 
 export class PrismaUserSettingRepository implements IUserSettingRepository {
   constructor(private prisma: PrismaClient) {}

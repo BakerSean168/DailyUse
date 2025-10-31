@@ -288,7 +288,7 @@ export class RepositoryStatisticsDomainService {
       }
 
       // 资源统计
-      const resources = repo.resources ?? [];
+      const resources = repo.getAllResources();
       for (const resource of resources) {
         const resourceEvent: StatisticsUpdateEvent = {
           type: 'resource.created',

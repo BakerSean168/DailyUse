@@ -83,9 +83,18 @@ development_status:
   epic-6-retrospective: optional
 
   # Epic 7: Repository Module (知识仓库)
-  epic-7: contexted
-  7-1-document-crud-basics: backlog
-  7-2-git-style-version-management: backlog
+  epic-7: in-progress  # 🚧 完整重构进行中 (2025-10-31) - Phase 1-4 实施
+  # 现状：Document 模块已实现 (2,373 backend + 1,326 frontend lines) 但架构不符合 contracts
+  # 重构目标：Repository (聚合根) → Resource[] (实体)，支持 MARKDOWN/IMAGE/VIDEO/AUDIO/PDF/LINK/CODE/OTHER
+  # 实施计划：Phase 1 Domain (6-8h) → Phase 2 Application (4-6h) → Phase 3 API (3-4h) → Phase 4 Frontend (4-6h)
+  # 详细文档：docs/epic-7-efficient-refactor.md + docs/epic-7-architecture-comparison.md
+  7-1-document-crud-basics:
+    status: in-progress
+    progress: 65
+    story_points: 8
+    notes: "🚧 MVP 实施中: Phase 2 完成 (Infrastructure + Controllers) → 准备测试核心流程"
+  7-2-git-style-version-management: backlog  # 待实现 - Git 集成、同步管理
+  7-3-image-resource-support: backlog  # 新增 - 图片上传/下载/缩略图
   epic-7-retrospective: optional
 
   # Epic 8: Editor Module (Markdown 编辑器)
