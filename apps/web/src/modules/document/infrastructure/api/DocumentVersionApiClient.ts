@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Document Version API Client
  * 

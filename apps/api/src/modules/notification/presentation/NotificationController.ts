@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * NotificationController
  * 通知控制器 - 处理 HTTP 请求

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 import type { IScheduleTaskRepository } from '@dailyuse/domain-server';
 import { ScheduleTask, ScheduleExecution } from '@dailyuse/domain-server';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, Inject, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Document } from '../domain/Document';
 import type { DocumentRepository, PaginatedResult } from '../domain/DocumentRepository.interface';

@@ -1,7 +1,7 @@
-import { Router, type Request, type Response } from 'express';
+import { Router, type Request, type Response, type Router as ExpressRouter } from 'express';
 import { getAllMetrics } from '../../../../../middleware/performance.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 /**
  * GET /api/v1/metrics/performance

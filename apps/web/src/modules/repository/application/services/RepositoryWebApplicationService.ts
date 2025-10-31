@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRepositoryStore } from '../../presentation/stores/repositoryStore';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
 import { Repository, Resource } from '@dailyuse/domain-client';

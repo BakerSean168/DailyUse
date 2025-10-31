@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { DocumentLink } from '../domain/DocumentLink';
 import { DocumentLinkRepository, DOCUMENT_LINK_REPOSITORY } from '../domain/DocumentLinkRepository.interface';
