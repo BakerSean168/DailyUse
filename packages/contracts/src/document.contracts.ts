@@ -10,6 +10,8 @@ export namespace DocumentContracts {
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     currentVersion: number;
     lastVersionedAt: number | null;
+    lastEditedAt: number | null;
+    editSessionId: string | null;
     createdAt: number;
     updatedAt: number;
     deletedAt: number | null;
@@ -26,6 +28,7 @@ export namespace DocumentContracts {
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     currentVersion: number;
     lastVersionedAt: number | null;
+    lastEditedAt: number | null;
     createdAt: number;
     updatedAt: number;
   }
@@ -145,5 +148,22 @@ export namespace DocumentContracts {
     page: number;
     pageSize: number;
     totalPages: number;
+  }
+
+  // ==================== Editor Auto-Save DTOs ====================
+
+  // Save document with conflict detection
+  export interface SaveDocumentDTO {
+    content: string;
+    lastEditedAt: number | null;
+    sessionId: string;
+  }
+
+  // Save document response
+  export interface SaveDocumentResponseDTO {
+    success: boolean;
+    conflict: boolean;
+    document?: DocumentClientDTO;
+    message?: string;
   }
 }
