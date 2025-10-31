@@ -124,7 +124,8 @@ export class Repository extends AggregateRoot implements IRepositoryServer {
   }
 
   public get config(): RepositoryContracts.RepositoryConfigServer {
-    return this._config as any; // TODO: 实现完整的 Value Object
+    // Value Object 实现了接口，可以直接返回
+    return this._config;
   }
 
   public get relatedGoals(): string[] | null {
@@ -136,15 +137,18 @@ export class Repository extends AggregateRoot implements IRepositoryServer {
   }
 
   public get git(): RepositoryContracts.GitInfoServer | null {
-    return this._git as any; // TODO: 实现完整的 Value Object
+    // Value Object 实现了接口，可以直接返回
+    return this._git;
   }
 
   public get syncStatus(): RepositoryContracts.SyncStatusServer | null {
-    return this._syncStatus as any; // TODO: 实现完整的 Value Object
+    // Value Object 实现了接口，可以直接返回
+    return this._syncStatus;
   }
 
   public get stats(): RepositoryContracts.RepositoryStatsServer {
-    return this._stats as any; // TODO: 实现完整的 Value Object
+    // Value Object 实现了接口，可以直接返回
+    return this._stats;
   }
 
   public get lastAccessedAt(): number | null {
