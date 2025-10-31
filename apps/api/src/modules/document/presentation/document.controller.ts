@@ -6,6 +6,7 @@ import type { DocumentContracts } from '@dailyuse/contracts';
 type CreateDocumentDTO = DocumentContracts.CreateDocumentDTO;
 type UpdateDocumentDTO = DocumentContracts.UpdateDocumentDTO;
 type FindDocumentsQueryDTO = DocumentContracts.FindDocumentsQueryDTO;
+type SaveDocumentDTO = DocumentContracts.SaveDocumentDTO;
 
 interface AuthRequest extends Request {
   user: { accountUuid: string };
@@ -14,7 +15,10 @@ interface AuthRequest extends Request {
 @Controller('documents')
 @UseGuards(JwtAuthGuard)
 export class DocumentController {
-  constructor(private readonly service: DocumentApplicationService) {}
+  constructor(
+    private readonly service: DocumentApplicationService,
+    private readonly linkService?: any, // DocumentLinkApplicationService - optional for now
+  ) {}
 
   @Post()
   async createDocument(@Req() req: AuthRequest, @Body() dto: CreateDocumentDTO) {
@@ -51,5 +55,70 @@ export class DocumentController {
   async deleteDocument(@Req() req: AuthRequest, @Param('uuid') uuid: string) {
     await this.service.deleteDocument(req.user.accountUuid, uuid);
     return { success: true, message: 'Document deleted successfully' };
+  }
+
+  @Put(':uuid/save')
+  async saveDocument(
+    @Req() req: AuthRequest,
+    @Param('uuid') uuid: string,
+    @Body() dto: SaveDocumentDTO
+  ) {
+    const result = await this.service.saveDocumentWithConflictCheck(
+      req.user.accountUuid,
+      uuid,
+      dto
+    );
+    return result;
+  }
+
+  // ==================== Link Endpoints ====================
+
+  @Get(':uuid/backlinks')
+  async getBacklinks(@Req() req: AuthRequest, @Param('uuid') uuid: string) {
+    if (!this.linkService) {
+      return { success: false, message: 'Link service not available' };
+    }
+    
+    const result = await this.linkService.getBacklinks(uuid);
+    return { success: true, data: result };
+  }
+
+  @Get(':uuid/link-graph')
+  async getLinkGraph(
+    @Req() req: AuthRequest,
+    @Param('uuid') uuid: string,
+    @Query('depth') depth?: string
+  ) {
+    if (!this.linkService) {
+      return { success: false, message: 'Link service not available' };
+    }
+    
+    const depthNum = depth ? parseInt(depth, 10) : 2;
+    const result = await this.linkService.getLinkGraph(uuid, depthNum);
+    return { success: true, data: result };
+  }
+
+  @Get('links/broken')
+  async getBrokenLinks(@Req() req: AuthRequest) {
+    if (!this.linkService) {
+      return { success: false, message: 'Link service not available' };
+    }
+    
+    const result = await this.linkService.findBrokenLinks();
+    return { success: true, data: result };
+  }
+
+  @Put('links/:linkUuid/repair')
+  async repairBrokenLink(
+    @Req() req: AuthRequest,
+    @Param('linkUuid') linkUuid: string,
+    @Body() dto: { newTargetUuid: string }
+  ) {
+    if (!this.linkService) {
+      return { success: false, message: 'Link service not available' };
+    }
+    
+    await this.linkService.repairBrokenLink(linkUuid, dto.newTargetUuid);
+    return { success: true, message: 'Link repaired successfully' };
   }
 }
