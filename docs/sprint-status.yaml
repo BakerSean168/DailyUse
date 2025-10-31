@@ -95,6 +95,6 @@ development_status:
   epic-8-retrospective: optional
 
   # Epic 9: Setting Module (用户设置)
-  epic-9: in-progress  # 🚧 开始实施 (2025-10-31)
-  9-1-user-preference-settings: in-progress  # 🚧 IN PROGRESS (2025-10-31) - Story created, ready for implementation
+  epic-9: in-progress  # 🚧 进行中 (2025-10-31)
+  9-1-user-preference-settings: done  # ✅ COMPLETED (2025-10-31) - 类型修复 ✅ Store重构 ✅ 组件迁移 ✅ (5/5) 主题服务 ✅ 文档 ✅ (~1,200 lines total)
   epic-9-retrospective: optional
