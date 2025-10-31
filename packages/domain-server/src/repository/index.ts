@@ -4,11 +4,11 @@
  */
 
 // Aggregates
-export { Repository, type CreateRepositoryDTO } from './aggregates/Repository';
+export { Repository } from './aggregates/Repository';
 export { RepositoryStatistics } from './aggregates/RepositoryStatistics';
 
 // Entities
-export { Resource, type CreateResourceDTO } from './entities/Resource';
+export { Resource } from './entities/Resource';
 export { LinkedContent } from './entities/LinkedContent';
 export { ResourceReference } from './entities/ResourceReference';
 export { RepositoryExplorerEntity } from './entities/RepositoryExplorer';
