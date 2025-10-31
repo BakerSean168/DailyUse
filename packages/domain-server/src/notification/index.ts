@@ -1,18 +1,9 @@
 /**
- * Notification 模块 - 总导出文件
+ * Notification Domain Server - 导出
  */
 
-// 值对象
-export * from './value-objects';
+// Aggregates
+export * from './aggregates/Notification';
 
-// 实体
-export * from './entities';
-
-// 聚合根
-export * from './aggregates';
-
-// 仓储接口
-export * from './repositories';
-
-// 领域服务
-export * from './services';
+// Repositories
+export * from './repositories/NotificationRepository.interface';
