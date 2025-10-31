@@ -67,12 +67,12 @@ export function createTsupConfig(options: CreateTsupConfigOptions): Options {
     // 类型声明配置
     // ============================================================
 
-    // 使用 tsup 生成类型声明 (解决 ESM 扩展名问题)
+    // 不使用 tsup 生成类型声明 (由 tsc --build 生成)
     // 原因：
-    // 1. tsup 会自动添加 .js 扩展名到导入语句
-    // 2. 避免 ERR_MODULE_NOT_FOUND 错误
-    // 3. 支持 ESM 模块解析
-    dts: true,
+    // 1. 支持 composite 项目引用
+    // 2. 实现跨包类型热更新
+    // 3. 生成 declarationMap 便于 IDE 跳转
+    dts: false,
 
     // ============================================================
     // 构建优化

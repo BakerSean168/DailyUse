@@ -1,29 +1,34 @@
 /**
- * Notification 聚合根实现 (Server)
- * 通知聚合根 - 负责管理单个通知的生命周期
+ * Notification 聚合根实现
+ * 实现 NotificationServer 接口
  */
 
 import type { NotificationContracts } from '@dailyuse/contracts';
+import {
+  NotificationType,
+  NotificationCategory,
+  NotificationStatus,
+  RelatedEntityType,
+  ImportanceLevel,
+  UrgencyLevel,
+} from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { NotificationAction } from '../value-objects/NotificationAction';
+import { NotificationMetadata } from '../value-objects/NotificationMetadata';
+import { NotificationChannel } from '../entities/NotificationChannel';
+import { NotificationHistory } from '../entities/NotificationHistory';
 
-type NotificationType = NotificationContracts.NotificationType;
-type NotificationCategory = NotificationContracts.NotificationCategory;
-type NotificationStatus = NotificationContracts.NotificationStatus;
-type RelatedEntityType = NotificationContracts.RelatedEntityType;
+type INotificationServer = NotificationContracts.NotificationServer;
 type NotificationServerDTO = NotificationContracts.NotificationServerDTO;
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
 type NotificationPersistenceDTO = NotificationContracts.NotificationPersistenceDTO;
+type NotificationActionDTO = NotificationContracts.NotificationActionServerDTO;
+type NotificationMetadataDTO = NotificationContracts.NotificationMetadataServerDTO;
 
 /**
  * Notification 聚合根
- *
- * DDD 聚合根职责：
- * - 管理通知的生命周期
- * - 执行业务规则
- * - 是事务边界
  */
-export class Notification extends AggregateRoot {
+export class Notification extends AggregateRoot implements INotificationServer {
+  // ===== 私有字段 =====
   private _accountUuid: string;
   private _title: string;
   private _content: string;
@@ -36,7 +41,8 @@ export class Notification extends AggregateRoot {
   private _readAt: number | null;
   private _relatedEntityType: RelatedEntityType | null;
   private _relatedEntityUuid: string | null;
-  private _metadata: Record<string, any> | null;
+  private _actions: NotificationAction[] | null;
+  private _metadata: NotificationMetadata | null;
   private _expiresAt: number | null;
   private _createdAt: number;
   private _updatedAt: number;
@@ -369,36 +375,49 @@ export class Notification extends AggregateRoot {
     };
   }
 
-  // ===== 工厂方法 =====
+  // ===== 静态工厂方法 =====
 
-  /**
-   * 创建新通知
-   */
-  static create(props: CreateNotificationProps): Notification {
+  public static create(params: {
+    accountUuid: string;
+    title: string;
+    content: string;
+    type: NotificationType;
+    category: NotificationCategory;
+    importance?: ImportanceLevel;
+    urgency?: UrgencyLevel;
+    relatedEntityType?: RelatedEntityType;
+    relatedEntityUuid?: string;
+    actions?: NotificationActionDTO[];
+    metadata?: NotificationMetadataDTO;
+    expiresAt?: number;
+  }): Notification {
+    const now = Date.now();
     const notification = new Notification({
-      accountUuid: props.accountUuid,
-      title: props.title,
-      content: props.content,
-      type: props.type,
-      category: props.category,
-      importance: props.importance,
-      urgency: props.urgency,
-      relatedEntityType: props.relatedEntityType,
-      relatedEntityUuid: props.relatedEntityUuid,
-      metadata: props.metadata,
-      expiresAt: props.expiresAt,
-      status: 'PENDING',
+      accountUuid: params.accountUuid,
+      title: params.title,
+      content: params.content,
+      type: params.type,
+      category: params.category,
+      importance: params.importance ?? ImportanceLevel.Moderate,
+      urgency: params.urgency ?? UrgencyLevel.Low,
+      status: NotificationStatus.PENDING,
       isRead: false,
+      relatedEntityType: params.relatedEntityType,
+      relatedEntityUuid: params.relatedEntityUuid,
+      actions: params.actions?.map((a) => NotificationAction.fromContract(a)) ?? null,
+      metadata: params.metadata ? NotificationMetadata.fromContract(params.metadata) : null,
+      expiresAt: params.expiresAt,
+      createdAt: now,
+      updatedAt: now,
     });
 
+    notification.addHistory('CREATED', { createdAt: now });
     return notification;
   }
 
-  /**
-   * 从持久化数据恢复
-   */
-  static fromPersistence(dto: NotificationPersistenceDTO): Notification {
-    return new Notification({
+  public static fromServerDTO(dto: NotificationServerDTO): Notification {
+    const notification = new Notification({
+      uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
       content: dto.content,
@@ -411,205 +430,51 @@ export class Notification extends AggregateRoot {
       readAt: dto.readAt,
       relatedEntityType: dto.relatedEntityType,
       relatedEntityUuid: dto.relatedEntityUuid,
-      metadata: dto.metadata ? JSON.parse(dto.metadata as any) : null,
+      actions: dto.actions?.map((a) => NotificationAction.fromContract(a)) ?? null,
+      metadata: dto.metadata ? NotificationMetadata.fromContract(dto.metadata) : null,
       expiresAt: dto.expiresAt,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       sentAt: dto.sentAt,
       deliveredAt: dto.deliveredAt,
       deletedAt: dto.deletedAt,
-    }, dto.uuid);
-  }
+    });
 
-  // ===== Getters =====
-
-  get accountUuid(): string { return this._accountUuid; }
-  get title(): string { return this._title; }
-  get content(): string { return this._content; }
-  get type(): NotificationType { return this._type; }
-  get category(): NotificationCategory { return this._category; }
-  get importance(): ImportanceLevel { return this._importance; }
-  get urgency(): UrgencyLevel { return this._urgency; }
-  get status(): NotificationStatus { return this._status; }
-  get isRead(): boolean { return this._isRead; }
-  get readAt(): number | null { return this._readAt; }
-  get relatedEntityType(): RelatedEntityType | null { return this._relatedEntityType; }
-  get relatedEntityUuid(): string | null { return this._relatedEntityUuid; }
-  get metadata(): Record<string, any> | null { return this._metadata; }
-  get expiresAt(): number | null { return this._expiresAt; }
-  get createdAt(): number { return this._createdAt; }
-  get updatedAt(): number { return this._updatedAt; }
-  get sentAt(): number | null { return this._sentAt; }
-  get deliveredAt(): number | null { return this._deliveredAt; }
-  get deletedAt(): number | null { return this._deletedAt; }
-
-  // ===== 业务方法 =====
-
-  /**
-   * 标记为已读
-   */
-  markAsRead(): void {
-    if (this._isRead) {
-      return; // 已经是已读状态
+    if (dto.channels) {
+      notification._channels = dto.channels.map((c) => NotificationChannel.fromServerDTO(c));
+    }
+    if (dto.history) {
+      notification._history = dto.history.map((h) => NotificationHistory.fromServerDTO(h));
     }
 
-    this._isRead = true;
-    this._readAt = Date.now();
-    this._updatedAt = Date.now();
-
-    if (this._status === 'SENT') {
-      this._status = 'READ';
-    }
+    return notification;
   }
 
-  /**
-   * 标记为已发送
-   */
-  markAsSent(): void {
-    if (this._status !== 'PENDING') {
-      return;
-    }
-
-    this._status = 'SENT';
-    this._sentAt = Date.now();
-    this._updatedAt = Date.now();
+  public static fromPersistenceDTO(dto: NotificationPersistenceDTO): Notification {
+    return new Notification({
+      uuid: dto.uuid,
+      accountUuid: dto.accountUuid,
+      title: dto.title,
+      content: dto.content,
+      type: dto.type,
+      category: dto.category,
+      importance: dto.importance,
+      urgency: dto.urgency,
+      status: dto.status,
+      isRead: dto.isRead,
+      readAt: dto.readAt,
+      relatedEntityType: dto.relatedEntityType,
+      relatedEntityUuid: dto.relatedEntityUuid,
+      actions: dto.actions
+        ? JSON.parse(dto.actions).map((a: any) => NotificationAction.fromContract(a))
+        : null,
+      metadata: dto.metadata ? NotificationMetadata.fromContract(JSON.parse(dto.metadata)) : null,
+      expiresAt: dto.expiresAt,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      sentAt: dto.sentAt,
+      deliveredAt: dto.deliveredAt,
+      deletedAt: dto.deletedAt,
+    });
   }
-
-  /**
-   * 标记为已送达
-   */
-  markAsDelivered(): void {
-    this._deliveredAt = Date.now();
-    this._updatedAt = Date.now();
-  }
-
-  /**
-   * 软删除
-   */
-  softDelete(): void {
-    this._deletedAt = Date.now();
-    this._status = 'DELETED';
-    this._updatedAt = Date.now();
-  }
-
-  /**
-   * 检查是否过期
-   */
-  isExpired(): boolean {
-    if (!this._expiresAt) {
-      return false;
-    }
-    return Date.now() > this._expiresAt;
-  }
-
-  // ===== DTO 转换 =====
-
-  toServerDTO(): NotificationServerDTO {
-    return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
-      title: this._title,
-      content: this._content,
-      type: this._type,
-      category: this._category,
-      importance: this._importance,
-      urgency: this._urgency,
-      status: this._status,
-      isRead: this._isRead,
-      readAt: this._readAt,
-      relatedEntityType: this._relatedEntityType,
-      relatedEntityUuid: this._relatedEntityUuid,
-      metadata: this._metadata as any,
-      expiresAt: this._expiresAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      sentAt: this._sentAt,
-      deliveredAt: this._deliveredAt,
-      deletedAt: this._deletedAt,
-    };
-  }
-
-  toClientDTO(): NotificationClientDTO {
-    return {
-      uuid: this.uuid,
-      title: this._title,
-      content: this._content,
-      type: this._type,
-      category: this._category,
-      importance: this._importance,
-      urgency: this._urgency,
-      status: this._status,
-      isRead: this._isRead,
-      readAt: this._readAt ? new Date(this._readAt).toISOString() : null,
-      relatedEntityType: this._relatedEntityType,
-      relatedEntityUuid: this._relatedEntityUuid,
-      metadata: this._metadata as any,
-      expiresAt: this._expiresAt ? new Date(this._expiresAt).toISOString() : null,
-      createdAt: new Date(this._createdAt).toISOString(),
-      updatedAt: new Date(this._updatedAt).toISOString(),
-    };
-  }
-
-  toPersistence(): NotificationPersistenceDTO {
-    return {
-      uuid: this.uuid,
-      accountUuid: this._accountUuid,
-      title: this._title,
-      content: this._content,
-      type: this._type,
-      category: this._category,
-      importance: this._importance,
-      urgency: this._urgency,
-      status: this._status,
-      isRead: this._isRead,
-      readAt: this._readAt,
-      relatedEntityType: this._relatedEntityType,
-      relatedEntityUuid: this._relatedEntityUuid,
-      metadata: this._metadata ? JSON.stringify(this._metadata) : null,
-      expiresAt: this._expiresAt,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      sentAt: this._sentAt,
-      deliveredAt: this._deliveredAt,
-      deletedAt: this._deletedAt,
-    };
-  }
-}
-
-// ===== Props 类型定义 =====
-
-interface NotificationProps {
-  accountUuid: string;
-  title: string;
-  content: string;
-  type: NotificationType;
-  category?: NotificationCategory;
-  importance?: ImportanceLevel;
-  urgency?: UrgencyLevel;
-  status?: NotificationStatus;
-  isRead?: boolean;
-  readAt?: number | null;
-  relatedEntityType?: RelatedEntityType | null;
-  relatedEntityUuid?: string | null;
-  metadata?: Record<string, any> | null;
-  expiresAt?: number | null;
-  createdAt?: number;
-  updatedAt?: number;
-  sentAt?: number | null;
-  deliveredAt?: number | null;
-  deletedAt?: number | null;
-}
-
-interface CreateNotificationProps {
-  accountUuid: string;
-  title: string;
-  content: string;
-  type: NotificationType;
-  category?: NotificationCategory;
-  importance?: ImportanceLevel;
-  urgency?: UrgencyLevel;
-  relatedEntityType?: RelatedEntityType | null;
-  relatedEntityUuid?: string | null;
-  metadata?: Record<string, any> | null;
-  expiresAt?: number | null;
 }

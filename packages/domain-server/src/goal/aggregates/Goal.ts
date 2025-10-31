@@ -39,9 +39,9 @@ type ImportanceLevel = GoalContracts.ImportanceLevel;
 type UrgencyLevel = GoalContracts.UrgencyLevel;
 
 // 枚举值别名
-const GoalStatus = GoalContracts.GoalStatus;
-const ImportanceLevel = GoalContracts.ImportanceLevel;
-const UrgencyLevel = GoalContracts.UrgencyLevel;
+const GoalStatusEnum = GoalContracts.GoalStatus;
+const ImportanceLevelEnum = GoalContracts.ImportanceLevel;
+const UrgencyLevelEnum = GoalContracts.UrgencyLevel;
 /**
  * Goal 聚合根
  */
@@ -520,7 +520,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
    * 激活目标
    */
   public activate(): void {
-    this._status = GoalStatus.ACTIVE;
+    this._status = GoalStatusEnum.ACTIVE;
     this._updatedAt = Date.now();
   }
 
@@ -535,9 +535,9 @@ export class Goal extends AggregateRoot implements IGoalServer {
    * 标记为完成
    */
   public markAsCompleted(): void {
-    if (this._status === GoalStatus.COMPLETED) return;
+    if (this._status === GoalStatusEnum.COMPLETED) return;
 
-    this._status = GoalStatus.COMPLETED;
+    this._status = GoalStatusEnum.COMPLETED;
     this._completedAt = Date.now();
     this._updatedAt = this._completedAt;
 
@@ -560,7 +560,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
   public archive(): void {
     if (this._archivedAt) return;
 
-    this._status = GoalStatus.ARCHIVED; // 更新状态
+    this._status = GoalStatusEnum.ARCHIVED; // 更新状态
     this._archivedAt = Date.now();
     this._updatedAt = this._archivedAt;
 
@@ -1119,7 +1119,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
    * 是否为高优先级（高重要性 + 高紧急性）
    */
   public isHighPriority(): boolean {
-    return this._importance === ImportanceLevel.Important && this._urgency === UrgencyLevel.High;
+    return this._importance === ImportanceLevelEnum.Important && this._urgency === UrgencyLevelEnum.High;
   }
 
   /**
@@ -1143,20 +1143,20 @@ export class Goal extends AggregateRoot implements IGoalServer {
    */
   public getPriorityScore(): number {
     // 根据重要性和紧急性计算优先级得分
-    const importanceScores: Record<ImportanceLevel, number> = {
-      [ImportanceLevel.Vital]: 5,
-      [ImportanceLevel.Important]: 4,
-      [ImportanceLevel.Moderate]: 3,
-      [ImportanceLevel.Minor]: 2,
-      [ImportanceLevel.Trivial]: 1,
+    const importanceScores = {
+      [ImportanceLevelEnum.Vital]: 5,
+      [ImportanceLevelEnum.Important]: 4,
+      [ImportanceLevelEnum.Moderate]: 3,
+      [ImportanceLevelEnum.Minor]: 2,
+      [ImportanceLevelEnum.Trivial]: 1,
     };
 
-    const urgencyScores: Record<UrgencyLevel, number> = {
-      [UrgencyLevel.Critical]: 5,
-      [UrgencyLevel.High]: 4,
-      [UrgencyLevel.Medium]: 3,
-      [UrgencyLevel.Low]: 2,
-      [UrgencyLevel.None]: 1,
+    const urgencyScores = {
+      [UrgencyLevelEnum.Critical]: 5,
+      [UrgencyLevelEnum.High]: 4,
+      [UrgencyLevelEnum.Medium]: 3,
+      [UrgencyLevelEnum.Low]: 2,
+      [UrgencyLevelEnum.None]: 1,
     };
 
     const importanceScore = importanceScores[this._importance] || 0;
@@ -1203,7 +1203,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
           ? this._reviews.map((r) => r.toClientDTO())
           : [],
       overallProgress: progress,
-      isCompleted: this._status === GoalStatus.COMPLETED,
+      isCompleted: this._status === GoalStatusEnum.COMPLETED,
       isArchived: !!this._archivedAt,
       isDeleted: !!this._deletedAt,
       isOverdue: this.isOverdue(),

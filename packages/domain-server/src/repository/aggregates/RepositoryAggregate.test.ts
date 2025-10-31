@@ -10,9 +10,9 @@ import { GitInfo } from '../value-objects/GitInfo';
 import { Resource } from '../entities/Resource';
 import { RepositoryContracts } from '@dailyuse/contracts';
 
-const RepositoryType = RepositoryContracts.RepositoryType;
-const RepositoryStatus = RepositoryContracts.RepositoryStatus;
-const ResourceType = RepositoryContracts.ResourceType;
+const RepositoryTypeEnum = RepositoryContracts.RepositoryType;
+const RepositoryStatusEnum = RepositoryContracts.RepositoryStatus;
+const ResourceTypeEnum = RepositoryContracts.ResourceType;
 
 describe('Repository Aggregate Root', () => {
   describe('创建和初始化', () => {
@@ -20,7 +20,7 @@ describe('Repository Aggregate Root', () => {
       const repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
         description: 'Test description',
       });
@@ -28,17 +28,17 @@ describe('Repository Aggregate Root', () => {
       expect(repository.uuid).toBeDefined();
       expect(repository.accountUuid).toBe('account-123');
       expect(repository.name).toBe('Test Repository');
-      expect(repository.type).toBe(RepositoryType.LOCAL);
+      expect(repository.type).toBe(RepositoryTypeEnum.LOCAL);
       expect(repository.path).toBe('/path/to/repo');
       expect(repository.description).toBe('Test description');
-      expect(repository.status).toBe(RepositoryStatus.ACTIVE);
+      expect(repository.status).toBe(RepositoryStatusEnum.ACTIVE);
     });
 
     it('应该创建带默认配置的仓库', () => {
       const repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
 
@@ -51,7 +51,7 @@ describe('Repository Aggregate Root', () => {
       const repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
         config: {
           enableGit: true,
@@ -67,7 +67,7 @@ describe('Repository Aggregate Root', () => {
       const repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
 
@@ -84,14 +84,14 @@ describe('Repository Aggregate Root', () => {
       const repo1 = Repository.create({
         accountUuid: 'account-123',
         name: 'Repo 1',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/1',
       });
 
       const repo2 = Repository.create({
         accountUuid: 'account-123',
         name: 'Repo 2',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/2',
       });
 
@@ -109,7 +109,7 @@ describe('Repository Aggregate Root', () => {
       repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
       repository.clearDomainEvents(); // 清除创建事件
@@ -159,7 +159,7 @@ describe('Repository Aggregate Root', () => {
       repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
       repository.clearDomainEvents();
@@ -213,7 +213,7 @@ describe('Repository Aggregate Root', () => {
       repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
       await repository.enableGit();
@@ -241,7 +241,7 @@ describe('Repository Aggregate Root', () => {
       const repoWithoutGit = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
 
@@ -278,7 +278,7 @@ describe('Repository Aggregate Root', () => {
       repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
       repository.clearDomainEvents();
@@ -287,7 +287,7 @@ describe('Repository Aggregate Root', () => {
     it('应该添加资源', () => {
       const resource = repository.createResource({
         name: 'test.md',
-        type: ResourceType.MARKDOWN,
+        type: ResourceTypeEnum.MARKDOWN,
         path: '/test.md',
       });
 
@@ -300,7 +300,7 @@ describe('Repository Aggregate Root', () => {
     it('应该在添加资源时发布事件', () => {
       const resource = repository.createResource({
         name: 'test.md',
-        type: ResourceType.MARKDOWN,
+        type: ResourceTypeEnum.MARKDOWN,
         path: '/test.md',
       });
 
@@ -310,13 +310,13 @@ describe('Repository Aggregate Root', () => {
       expect(events).toHaveLength(1);
       expect(events[0].eventType).toBe('ResourceAdded');
       expect((events[0].payload as any).resourceName).toBe('test.md');
-      expect((events[0].payload as any).resourceType).toBe(ResourceType.MARKDOWN);
+      expect((events[0].payload as any).resourceType).toBe(ResourceTypeEnum.MARKDOWN);
     });
 
     it('应该移除资源', () => {
       const resource = repository.createResource({
         name: 'test.md',
-        type: ResourceType.MARKDOWN,
+        type: ResourceTypeEnum.MARKDOWN,
         path: '/test.md',
       });
       repository.addResource(resource);
@@ -331,7 +331,7 @@ describe('Repository Aggregate Root', () => {
     it('应该在移除资源时发布事件', () => {
       const resource = repository.createResource({
         name: 'test.md',
-        type: ResourceType.MARKDOWN,
+        type: ResourceTypeEnum.MARKDOWN,
         path: '/test.md',
       });
       repository.addResource(resource);
@@ -348,7 +348,7 @@ describe('Repository Aggregate Root', () => {
     it('应该通过 UUID 获取资源', () => {
       const resource = repository.createResource({
         name: 'test.md',
-        type: ResourceType.MARKDOWN,
+        type: ResourceTypeEnum.MARKDOWN,
         path: '/test.md',
       });
       repository.addResource(resource);
@@ -361,19 +361,19 @@ describe('Repository Aggregate Root', () => {
     it('应该通过类型获取资源', () => {
       const mdResource = repository.createResource({
         name: 'test.md',
-        type: ResourceType.MARKDOWN,
+        type: ResourceTypeEnum.MARKDOWN,
         path: '/test.md',
       });
       const imgResource = repository.createResource({
         name: 'test.png',
-        type: ResourceType.IMAGE,
+        type: ResourceTypeEnum.IMAGE,
         path: '/test.png',
       });
 
       repository.addResource(mdResource);
       repository.addResource(imgResource);
 
-      const markdownResources = repository.getResourcesByType(ResourceType.MARKDOWN);
+      const markdownResources = repository.getResourcesByType(ResourceTypeEnum.MARKDOWN);
 
       expect(markdownResources).toHaveLength(1);
       expect(markdownResources[0]).toBe(mdResource);
@@ -387,7 +387,7 @@ describe('Repository Aggregate Root', () => {
       repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
       repository.clearDomainEvents();
@@ -396,7 +396,7 @@ describe('Repository Aggregate Root', () => {
     it('应该归档仓库', () => {
       repository.archive();
 
-      expect(repository.status).toBe(RepositoryStatus.ARCHIVED);
+      expect(repository.status).toBe(RepositoryStatusEnum.ARCHIVED);
     });
 
     it('应该在归档时发布事件', () => {
@@ -413,7 +413,7 @@ describe('Repository Aggregate Root', () => {
 
       repository.activate();
 
-      expect(repository.status).toBe(RepositoryStatus.ACTIVE);
+      expect(repository.status).toBe(RepositoryStatusEnum.ACTIVE);
     });
 
     it('应该在激活时发布事件', () => {
@@ -433,7 +433,7 @@ describe('Repository Aggregate Root', () => {
       const repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
         description: 'Test description',
       });
@@ -443,7 +443,7 @@ describe('Repository Aggregate Root', () => {
       expect(dto.uuid).toBe(repository.uuid);
       expect(dto.accountUuid).toBe('account-123');
       expect(dto.name).toBe('Test Repository');
-      expect(dto.type).toBe(RepositoryType.LOCAL);
+      expect(dto.type).toBe(RepositoryTypeEnum.LOCAL);
       expect(dto.path).toBe('/path/to/repo');
       expect(dto.description).toBe('Test description');
       expect(dto.config).toBeDefined();
@@ -455,12 +455,12 @@ describe('Repository Aggregate Root', () => {
         uuid: 'repo-123',
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
         description: 'Test description',
         config: RepositoryConfig.createDefault().toContract(),
         relatedGoals: null,
-        status: RepositoryStatus.ACTIVE,
+        status: RepositoryStatusEnum.ACTIVE,
         git: null,
         syncStatus: null,
         stats: {
@@ -482,14 +482,14 @@ describe('Repository Aggregate Root', () => {
       expect(repository.uuid).toBe('repo-123');
       expect(repository.accountUuid).toBe('account-123');
       expect(repository.name).toBe('Test Repository');
-      expect(repository.type).toBe(RepositoryType.LOCAL);
+      expect(repository.type).toBe(RepositoryTypeEnum.LOCAL);
     });
 
     it('应该支持往返转换（roundtrip）', () => {
       const original = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
         description: 'Test description',
       });
@@ -510,7 +510,7 @@ describe('Repository Aggregate Root', () => {
       const repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
 
@@ -525,7 +525,7 @@ describe('Repository Aggregate Root', () => {
       const repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
 
@@ -539,7 +539,7 @@ describe('Repository Aggregate Root', () => {
       const repository = Repository.create({
         accountUuid: 'account-123',
         name: 'Test Repository',
-        type: RepositoryType.LOCAL,
+        type: RepositoryTypeEnum.LOCAL,
         path: '/path/to/repo',
       });
 

@@ -21,11 +21,7 @@ import { GoalContracts } from '@dailyuse/contracts';
 
 type FocusSessionStatus = GoalContracts.FocusSessionStatus;
 
-// 枚举值别名
-const FocusSessionStatus = GoalContracts.FocusSessionStatus;
-
-// 显式导出类型以解决 tsup dts 生成问题
-export type { FocusSessionStatus };
+// 枚举值使用（避免与类型别名冲突）
 
 /**
  * FocusSessionDomainService
@@ -136,27 +132,27 @@ export class FocusSessionDomainService {
   ): void {
     switch (action) {
       case 'start':
-        if (currentStatus !== FocusSessionStatus.DRAFT) {
+        if (currentStatus !== GoalContracts.FocusSessionStatus.DRAFT) {
           throw new Error(`只能从草稿状态开始专注周期，当前状态：${currentStatus}`);
         }
         break;
 
       case 'pause':
-        if (currentStatus !== FocusSessionStatus.IN_PROGRESS) {
+        if (currentStatus !== GoalContracts.FocusSessionStatus.IN_PROGRESS) {
           throw new Error(`只能暂停进行中的专注周期，当前状态：${currentStatus}`);
         }
         break;
 
       case 'resume':
-        if (currentStatus !== FocusSessionStatus.PAUSED) {
+        if (currentStatus !== GoalContracts.FocusSessionStatus.PAUSED) {
           throw new Error(`只能恢复已暂停的专注周期，当前状态：${currentStatus}`);
         }
         break;
 
       case 'complete':
         if (
-          currentStatus !== FocusSessionStatus.IN_PROGRESS &&
-          currentStatus !== FocusSessionStatus.PAUSED
+          currentStatus !== GoalContracts.FocusSessionStatus.IN_PROGRESS &&
+          currentStatus !== GoalContracts.FocusSessionStatus.PAUSED
         ) {
           throw new Error(`只能完成进行中或已暂停的专注周期，当前状态：${currentStatus}`);
         }
@@ -164,8 +160,8 @@ export class FocusSessionDomainService {
 
       case 'cancel':
         if (
-          currentStatus === FocusSessionStatus.COMPLETED ||
-          currentStatus === FocusSessionStatus.CANCELLED
+          currentStatus === GoalContracts.FocusSessionStatus.COMPLETED ||
+          currentStatus === GoalContracts.FocusSessionStatus.CANCELLED
         ) {
           throw new Error(`不能取消已完成或已取消的专注周期，当前状态：${currentStatus}`);
         }
@@ -185,7 +181,7 @@ export class FocusSessionDomainService {
    * @returns 实际专注时长（分钟）
    */
   calculateActualDuration(session: FocusSession): number {
-    if (session.status !== FocusSessionStatus.COMPLETED) {
+    if (session.status !== GoalContracts.FocusSessionStatus.COMPLETED) {
       throw new Error('只能计算已完成会话的实际时长');
     }
 
@@ -221,13 +217,13 @@ export class FocusSessionDomainService {
    * @returns 进度百分比（0-100）
    */
   calculateProgressPercentage(session: FocusSession): number {
-    if (session.status === FocusSessionStatus.DRAFT) {
+    if (session.status === GoalContracts.FocusSessionStatus.DRAFT) {
       return 0;
     }
 
     if (
-      session.status === FocusSessionStatus.COMPLETED ||
-      session.status === FocusSessionStatus.CANCELLED
+      session.status === GoalContracts.FocusSessionStatus.COMPLETED ||
+      session.status === GoalContracts.FocusSessionStatus.CANCELLED
     ) {
       return 100;
     }
@@ -282,8 +278,8 @@ export class FocusSessionDomainService {
    */
   validateSessionDeletion(session: FocusSession): void {
     if (
-      session.status !== FocusSessionStatus.COMPLETED &&
-      session.status !== FocusSessionStatus.CANCELLED
+      session.status !== GoalContracts.FocusSessionStatus.COMPLETED &&
+      session.status !== GoalContracts.FocusSessionStatus.CANCELLED
     ) {
       throw new Error(`只能删除已完成或已取消的专注周期，当前状态：${session.status}`);
     }
@@ -304,8 +300,8 @@ export class FocusSessionDomainService {
     averageFocusMinutes: number;
     completionRate: number;
   } {
-    const completedSessions = sessions.filter((s) => s.status === FocusSessionStatus.COMPLETED);
-    const cancelledSessions = sessions.filter((s) => s.status === FocusSessionStatus.CANCELLED);
+    const completedSessions = sessions.filter((s) => s.status === GoalContracts.FocusSessionStatus.COMPLETED);
+    const cancelledSessions = sessions.filter((s) => s.status === GoalContracts.FocusSessionStatus.CANCELLED);
 
     const totalFocusMinutes = completedSessions.reduce(
       (sum, s) => sum + s.actualDurationMinutes,

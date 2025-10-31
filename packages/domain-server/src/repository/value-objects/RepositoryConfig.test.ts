@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { RepositoryConfig } from './RepositoryConfig';
 import { RepositoryContracts } from '@dailyuse/contracts';
 
-const ResourceType = RepositoryContracts.ResourceType;
+const ResourceTypeEnum = RepositoryContracts.ResourceType;
 
 describe('RepositoryConfig Value Object', () => {
   describe('创建和初始化', () => {
@@ -28,7 +28,7 @@ describe('RepositoryConfig Value Object', () => {
         autoSync: true,
         syncInterval: 3600,
         defaultLinkedDocName: 'README.md',
-        supportedFileTypes: [ResourceType.MARKDOWN, ResourceType.CODE],
+        supportedFileTypes: [ResourceTypeEnum.MARKDOWN, ResourceTypeEnum.CODE],
         maxFileSize: 50 * 1024 * 1024,
         enableVersionControl: false,
       });
@@ -37,7 +37,7 @@ describe('RepositoryConfig Value Object', () => {
       expect(config.autoSync).toBe(true);
       expect(config.syncInterval).toBe(3600);
       expect(config.defaultLinkedDocName).toBe('README.md');
-      expect(config.supportedFileTypes).toEqual([ResourceType.MARKDOWN, ResourceType.CODE]);
+      expect(config.supportedFileTypes).toEqual([ResourceTypeEnum.MARKDOWN, ResourceTypeEnum.CODE]);
       expect(config.maxFileSize).toBe(50 * 1024 * 1024);
       expect(config.enableVersionControl).toBe(false);
     });
@@ -77,13 +77,13 @@ describe('RepositoryConfig Value Object', () => {
         enableGit: false,
         autoSync: false,
         defaultLinkedDocName: 'index.md',
-        supportedFileTypes: [ResourceType.MARKDOWN],
+        supportedFileTypes: [ResourceTypeEnum.MARKDOWN],
         maxFileSize: 100,
         enableVersionControl: true,
       });
 
       expect(() => {
-        config.supportedFileTypes.push(ResourceType.CODE as any);
+        config.supportedFileTypes.push(ResourceTypeEnum.CODE as any);
       }).toThrow();
     });
   });
@@ -128,7 +128,7 @@ describe('RepositoryConfig Value Object', () => {
         autoSync: true,
         syncInterval: 3600,
         defaultLinkedDocName: 'index.md',
-        supportedFileTypes: [ResourceType.MARKDOWN, ResourceType.CODE],
+        supportedFileTypes: [ResourceTypeEnum.MARKDOWN, ResourceTypeEnum.CODE],
         maxFileSize: 100,
         enableVersionControl: true,
       });
@@ -138,7 +138,7 @@ describe('RepositoryConfig Value Object', () => {
         autoSync: true,
         syncInterval: 3600,
         defaultLinkedDocName: 'index.md',
-        supportedFileTypes: [ResourceType.MARKDOWN, ResourceType.CODE],
+        supportedFileTypes: [ResourceTypeEnum.MARKDOWN, ResourceTypeEnum.CODE],
         maxFileSize: 100,
         enableVersionControl: true,
       });
@@ -160,7 +160,7 @@ describe('RepositoryConfig Value Object', () => {
         enableGit: false,
         autoSync: false,
         defaultLinkedDocName: 'index.md',
-        supportedFileTypes: [ResourceType.MARKDOWN, ResourceType.CODE],
+        supportedFileTypes: [ResourceTypeEnum.MARKDOWN, ResourceTypeEnum.CODE],
         maxFileSize: 100,
         enableVersionControl: true,
       });
@@ -169,7 +169,7 @@ describe('RepositoryConfig Value Object', () => {
         enableGit: false,
         autoSync: false,
         defaultLinkedDocName: 'index.md',
-        supportedFileTypes: [ResourceType.CODE, ResourceType.MARKDOWN],
+        supportedFileTypes: [ResourceTypeEnum.CODE, ResourceTypeEnum.MARKDOWN],
         maxFileSize: 100,
         enableVersionControl: true,
       });
@@ -192,7 +192,7 @@ describe('RepositoryConfig Value Object', () => {
         autoSync: true,
         syncInterval: 3600,
         defaultLinkedDocName: 'README.md',
-        supportedFileTypes: [ResourceType.MARKDOWN],
+        supportedFileTypes: [ResourceTypeEnum.MARKDOWN],
         maxFileSize: 50,
         enableVersionControl: false,
       });
@@ -203,7 +203,7 @@ describe('RepositoryConfig Value Object', () => {
       expect(dto.autoSync).toBe(true);
       expect(dto.syncInterval).toBe(3600);
       expect(dto.defaultLinkedDocName).toBe('README.md');
-      expect(dto.supportedFileTypes).toEqual([ResourceType.MARKDOWN]);
+      expect(dto.supportedFileTypes).toEqual([ResourceTypeEnum.MARKDOWN]);
       expect(dto.maxFileSize).toBe(50);
       expect(dto.enableVersionControl).toBe(false);
     });
@@ -214,7 +214,7 @@ describe('RepositoryConfig Value Object', () => {
         autoSync: false,
         syncInterval: 1800,
         defaultLinkedDocName: 'index.md',
-        supportedFileTypes: [ResourceType.MARKDOWN, ResourceType.CODE],
+        supportedFileTypes: [ResourceTypeEnum.MARKDOWN, ResourceTypeEnum.CODE],
         maxFileSize: 200,
         enableVersionControl: true,
       };
@@ -225,7 +225,7 @@ describe('RepositoryConfig Value Object', () => {
       expect(config.autoSync).toBe(false);
       expect(config.syncInterval).toBe(1800);
       expect(config.defaultLinkedDocName).toBe('index.md');
-      expect(config.supportedFileTypes).toEqual([ResourceType.MARKDOWN, ResourceType.CODE]);
+      expect(config.supportedFileTypes).toEqual([ResourceTypeEnum.MARKDOWN, ResourceTypeEnum.CODE]);
       expect(config.maxFileSize).toBe(200);
       expect(config.enableVersionControl).toBe(true);
     });
@@ -236,7 +236,7 @@ describe('RepositoryConfig Value Object', () => {
         autoSync: true,
         syncInterval: 3600,
         defaultLinkedDocName: 'README.md',
-        supportedFileTypes: [ResourceType.MARKDOWN, ResourceType.CODE],
+        supportedFileTypes: [ResourceTypeEnum.MARKDOWN, ResourceTypeEnum.CODE],
         maxFileSize: 100,
         enableVersionControl: true,
       });
