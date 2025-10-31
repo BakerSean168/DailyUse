@@ -10,6 +10,8 @@ type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 type CreateDocumentDTO = DocumentContracts.CreateDocumentDTO;
 type UpdateDocumentDTO = DocumentContracts.UpdateDocumentDTO;
 type FindDocumentsQueryDTO = DocumentContracts.FindDocumentsQueryDTO;
+type SaveDocumentDTO = DocumentContracts.SaveDocumentDTO;
+type SaveDocumentResponseDTO = DocumentContracts.SaveDocumentResponseDTO;
 
 @Injectable()
 export class DocumentApplicationService {
@@ -155,5 +157,53 @@ export class DocumentApplicationService {
 
     document.softDelete();
     await this.repository.save(document);
+  }
+
+  async saveDocumentWithConflictCheck(
+    accountUuid: string,
+    uuid: string,
+    dto: SaveDocumentDTO
+  ): Promise<SaveDocumentResponseDTO> {
+    const document = await this.repository.findByUuid(uuid);
+
+    if (!document) {
+      throw new NotFoundException('Document not found');
+    }
+
+    if (document.accountUuid !== accountUuid) {
+      throw new ForbiddenException('You do not have access to this document');
+    }
+
+    // Try to update with conflict check
+    const result = document.updateWithConflictCheck(
+      dto.content,
+      dto.lastEditedAt,
+      dto.sessionId
+    );
+
+    if (result.isFailure) {
+      throw new BadRequestException(result.error);
+    }
+
+    const { updated, conflict } = result.getValue();
+
+    if (conflict) {
+      // Return conflict response
+      return {
+        success: false,
+        conflict: true,
+        document: document.toClientDTO(),
+        message: 'Edit conflict detected. Another user has modified this document.',
+      };
+    }
+
+    // Save document
+    await this.repository.save(document);
+
+    return {
+      success: true,
+      conflict: false,
+      document: document.toClientDTO(),
+    };
   }
 }

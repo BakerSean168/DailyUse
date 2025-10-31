@@ -6,6 +6,7 @@ import type { DocumentContracts } from '@dailyuse/contracts';
 type CreateDocumentDTO = DocumentContracts.CreateDocumentDTO;
 type UpdateDocumentDTO = DocumentContracts.UpdateDocumentDTO;
 type FindDocumentsQueryDTO = DocumentContracts.FindDocumentsQueryDTO;
+type SaveDocumentDTO = DocumentContracts.SaveDocumentDTO;
 
 interface AuthRequest extends Request {
   user: { accountUuid: string };
@@ -51,5 +52,19 @@ export class DocumentController {
   async deleteDocument(@Req() req: AuthRequest, @Param('uuid') uuid: string) {
     await this.service.deleteDocument(req.user.accountUuid, uuid);
     return { success: true, message: 'Document deleted successfully' };
+  }
+
+  @Put(':uuid/save')
+  async saveDocument(
+    @Req() req: AuthRequest,
+    @Param('uuid') uuid: string,
+    @Body() dto: SaveDocumentDTO
+  ) {
+    const result = await this.service.saveDocumentWithConflictCheck(
+      req.user.accountUuid,
+      uuid,
+      dto
+    );
+    return result;
   }
 }
