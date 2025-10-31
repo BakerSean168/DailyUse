@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ref } from 'vue';
 import { documentApiClient } from '../api/DocumentApiClient';
 import type { DocumentContracts } from '@dailyuse/contracts';

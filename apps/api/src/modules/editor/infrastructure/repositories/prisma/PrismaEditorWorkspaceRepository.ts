@@ -36,7 +36,7 @@ export class PrismaEditorWorkspaceRepository implements IEditorWorkspaceReposito
         projectPath: wp.project_path,
         projectType: wp.project_type,
         layout: wp.layout as any,
-        settings: wp.settings as any,
+        setting: wp.settings as any,
         isActive: wp.is_active,
         createdAt: toDate(wp.createdAt) as Date,
         updatedAt: toDate(wp.updatedAt) as Date,
@@ -45,7 +45,7 @@ export class PrismaEditorWorkspaceRepository implements IEditorWorkspaceReposito
       update: {
         name: wp.name,
         layout: wp.layout as any,
-        settings: wp.settings as any,
+        setting: wp.settings as any,
         isActive: wp.is_active,
         updatedAt: toDate(wp.updatedAt) as Date,
         accessedAt: toDate(wp.lastAccessedAt) as Date,

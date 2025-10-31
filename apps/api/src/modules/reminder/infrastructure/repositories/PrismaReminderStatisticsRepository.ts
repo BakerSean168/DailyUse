@@ -36,7 +36,7 @@ export class PrismaReminderStatisticsRepository implements IReminderStatisticsRe
       calculatedAt: this.toDate(persistence.calculated_at),
     };
 
-    await this.prisma.reminderStatistics.upsert({
+    await this.prisma.reminderStatistic.upsert({
       where: { accountUuid: persistence.accountUuid },
       create: data,
       update: {
@@ -49,7 +49,7 @@ export class PrismaReminderStatisticsRepository implements IReminderStatisticsRe
   }
 
   async findOrCreate(accountUuid: string): Promise<ReminderStatistics> {
-    const existing = await this.prisma.reminderStatistics.findUnique({
+    const existing = await this.prisma.reminderStatistic.findUnique({
       where: { accountUuid },
     });
 
@@ -63,7 +63,7 @@ export class PrismaReminderStatisticsRepository implements IReminderStatisticsRe
   }
 
   async findByAccountUuid(accountUuid: string): Promise<ReminderStatistics | null> {
-    const record = await this.prisma.reminderStatistics.findUnique({
+    const record = await this.prisma.reminderStatistic.findUnique({
       where: { accountUuid },
     });
 
@@ -71,13 +71,13 @@ export class PrismaReminderStatisticsRepository implements IReminderStatisticsRe
   }
 
   async delete(accountUuid: string): Promise<void> {
-    await this.prisma.reminderStatistics.delete({
+    await this.prisma.reminderStatistic.delete({
       where: { accountUuid },
     });
   }
 
   async exists(accountUuid: string): Promise<boolean> {
-    const count = await this.prisma.reminderStatistics.count({
+    const count = await this.prisma.reminderStatistic.count({
       where: { accountUuid },
     });
     return count > 0;

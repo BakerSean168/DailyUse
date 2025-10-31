@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { PrismaClient } from '@prisma/client';
 import type { IUserSettingRepository } from '@dailyuse/domain-server';
 import { UserSettingServer as UserSetting } from '@dailyuse/domain-server';

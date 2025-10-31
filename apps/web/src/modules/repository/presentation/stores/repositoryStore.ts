@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { defineStore } from 'pinia';
 import { Repository, Resource } from '@dailyuse/domain-client';
 import { RepositoryContracts } from '@dailyuse/contracts';

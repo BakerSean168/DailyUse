@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import type { AuthCredential as PrismaAuthCredential } from '@prisma/client';
+import type { authCredential as PrismaAuthCredential } from '@prisma/client';
 import type {
   IAuthCredentialRepository,
   AuthCredentialPrismaTransactionClient as PrismaTransactionClient,

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import type { AuthSession as PrismaAuthSession } from '@prisma/client';
+import type { authSession as PrismaAuthSession } from '@prisma/client';
 import type {
   IAuthSessionRepository,
   AuthSessionPrismaTransactionClient as PrismaTransactionClient,

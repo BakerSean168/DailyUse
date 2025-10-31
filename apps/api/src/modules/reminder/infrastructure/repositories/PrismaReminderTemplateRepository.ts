@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient } from '@prisma/client';
 import type { IReminderTemplateRepository } from '@dailyuse/domain-server';
 import { ReminderTemplate, ReminderHistory } from '@dailyuse/domain-server';

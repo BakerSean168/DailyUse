@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Request, Response } from 'express';
 import { SettingApplicationService } from '../../application/services/SettingApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';

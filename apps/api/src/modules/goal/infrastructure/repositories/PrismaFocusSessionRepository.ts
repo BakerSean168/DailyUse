@@ -1,4 +1,4 @@
-import type { PrismaClient, FocusSession as PrismaFocusSession } from '@prisma/client';
+import type { PrismaClient, focusSession as PrismaFocusSession } from '@prisma/client';
 import type { IFocusSessionRepository } from '@dailyuse/domain-server';
 import { FocusSession } from '@dailyuse/domain-server';
 import { GoalContracts } from '@dailyuse/contracts';
