@@ -1,6 +1,6 @@
 <template>
   <div class="editor-preview">
-    <div v-html="renderedHtml" class="preview-content" />
+    <div v-html="renderedHtml" class="preview-content" @click="handleClick" />
   </div>
 </template>
 
@@ -11,9 +11,15 @@ import MarkdownIt from 'markdown-it';
 // ==================== Props ====================
 interface Props {
   content: string;
+  onLinkClick?: (title: string) => void;
 }
 
 const props = defineProps<Props>();
+
+// ==================== Emits ====================
+const emit = defineEmits<{
+  linkClick: [title: string];
+}>();
 
 // ==================== State ====================
 const renderedHtml = ref('');
@@ -27,16 +33,106 @@ function initializeMarkdownIt() {
     typographer: true,
     breaks: true,
   });
+
+  // 添加自定义插件：渲染双向链接 [[title]]
+  md.core.ruler.after('inline', 'bidirectional-links', (state) => {
+    const blockTokens = state.tokens;
+
+    for (let i = 0; i < blockTokens.length; i++) {
+      if (blockTokens[i].type !== 'inline') continue;
+
+      const inlineTokens = blockTokens[i].children || [];
+      const newTokens = [];
+
+      for (let j = 0; j < inlineTokens.length; j++) {
+        const token = inlineTokens[j];
+
+        if (token.type === 'text') {
+          // 匹配 [[title]], [[title|alias]], [[title#section]]
+          const linkPattern = /\[\[([^\]|#]+)(?:\|([^\]#]+))?(?:#([^\]]+))?\]\]/g;
+          const text = token.content;
+          let lastIndex = 0;
+          let match;
+
+          while ((match = linkPattern.exec(text)) !== null) {
+            const fullMatch = match[0];
+            const title = match[1].trim();
+            const alias = match[2]?.trim();
+            const section = match[3]?.trim();
+            const displayText = alias || (section ? `${title}#${section}` : title);
+
+            // 添加匹配前的文本
+            if (match.index > lastIndex) {
+              const textToken = new state.Token('text', '', 0);
+              textToken.content = text.slice(lastIndex, match.index);
+              newTokens.push(textToken);
+            }
+
+            // 创建链接 token
+            const linkOpen = new state.Token('link_open', 'a', 1);
+            linkOpen.attrSet('href', `#${title}`);
+            linkOpen.attrSet('class', 'internal-link');
+            linkOpen.attrSet('data-title', title);
+            if (section) {
+              linkOpen.attrSet('data-section', section);
+            }
+
+            const linkText = new state.Token('text', '', 0);
+            linkText.content = displayText;
+
+            const linkClose = new state.Token('link_close', 'a', -1);
+
+            newTokens.push(linkOpen, linkText, linkClose);
+            lastIndex = match.index + fullMatch.length;
+          }
+
+          // 添加剩余文本
+          if (lastIndex < text.length) {
+            const textToken = new state.Token('text', '', 0);
+            textToken.content = text.slice(lastIndex);
+            newTokens.push(textToken);
+          }
+
+          // 如果有链接，替换原 token
+          if (lastIndex > 0) {
+            inlineTokens.splice(j, 1, ...newTokens);
+            j += newTokens.length - 1;
+          }
+        } else {
+          newTokens.push(token);
+        }
+      }
+    }
+
+    return true;
+  });
 }
 
 function renderMarkdown() {
   if (!md) return;
   
   try {
-    renderedHtml.value = md.render(props.content);
+    let content = props.content;
+    
+    // 渲染 markdown
+    renderedHtml.value = md.render(content);
   } catch (error) {
     console.error('Markdown render error:', error);
     renderedHtml.value = '<p>渲染错误</p>';
+  }
+}
+
+function handleClick(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  
+  // 检查是否点击了内部链接
+  if (target.tagName === 'A' && target.classList.contains('internal-link')) {
+    event.preventDefault();
+    const title = target.getAttribute('data-title');
+    if (title) {
+      emit('linkClick', title);
+      props.onLinkClick?.(title);
+    }
   }
 }
 
@@ -108,6 +204,22 @@ watch(() => props.content, () => {
 
 .preview-content :deep(a:hover) {
   text-decoration: underline;
+}
+
+/* 内部链接样式 */
+.preview-content :deep(a.internal-link) {
+  color: #1976d2;
+  background-color: rgba(25, 118, 210, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preview-content :deep(a.internal-link:hover) {
+  background-color: rgba(25, 118, 210, 0.16);
+  text-decoration: none;
 }
 
 .preview-content :deep(code) {

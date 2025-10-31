@@ -25,6 +25,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: string];
   change: [value: string];
+  keydown: [event: KeyboardEvent];
+  'trigger-suggestion': [position: { x: number; y: number; query: string }];
 }>();
 
 // ==================== State ====================
@@ -35,6 +37,54 @@ let editorView: EditorView | null = null;
 function handleUpdate(content: string) {
   emit('update:modelValue', content);
   emit('change', content);
+}
+
+function getCursorPosition(): { x: number; y: number } | null {
+  if (!editorView) return null;
+
+  const { state } = editorView;
+  const { from } = state.selection.main;
+
+  // Get cursor coordinates from CodeMirror
+  const coords = editorView.coordsAtPos(from);
+  if (!coords) return null;
+
+  return {
+    x: coords.left,
+    y: coords.bottom, // Use bottom position for dropdown below cursor
+  };
+}
+
+function getTextBeforeCursor(length: number = 50): string {
+  if (!editorView) return '';
+
+  const { state } = editorView;
+  const { from } = state.selection.main;
+  const startPos = Math.max(0, from - length);
+
+  return state.doc.sliceString(startPos, from);
+}
+
+function handleKeyDown(event: KeyboardEvent) {
+  emit('keydown', event);
+
+  // Check for [[ trigger
+  if (event.key === '[') {
+    const textBefore = getTextBeforeCursor(2);
+    if (textBefore.endsWith('[')) {
+      // User just typed the second [
+      const position = getCursorPosition();
+      if (position) {
+        // Extract any partial query after [[
+        setTimeout(() => {
+          const textAfter = getTextBeforeCursor(50);
+          const match = textAfter.match(/\[\[([^\]]*?)$/);
+          const query = match ? match[1] : '';
+          emit('trigger-suggestion', { ...position, query });
+        }, 0);
+      }
+    }
+  }
 }
 
 function initializeEditor() {
@@ -48,6 +98,9 @@ function initializeEditor() {
     parent: editorRef.value,
   });
 
+  // Add keydown listener
+  editorView.contentDOM.addEventListener('keydown', handleKeyDown);
+
   // 只读模式
   if (props.readonly) {
     editorView.contentDOM.setAttribute('contenteditable', 'false');
@@ -56,6 +109,7 @@ function initializeEditor() {
 
 function destroyEditor() {
   if (editorView) {
+    editorView.contentDOM.removeEventListener('keydown', handleKeyDown);
     editorView.destroy();
     editorView = null;
   }
@@ -72,6 +126,35 @@ function insertText(text: string) {
     changes: { from, to, insert: text },
     selection: { anchor: from + text.length },
   });
+  
+  editorView.focus();
+}
+
+function insertTextAtCursor(text: string) {
+  if (!editorView) return;
+  
+  const { state } = editorView;
+  const { from } = state.selection.main;
+  
+  // Find the [[ before cursor and replace from there
+  const textBefore = getTextBeforeCursor(100);
+  const lastBracketIndex = textBefore.lastIndexOf('[[');
+  
+  if (lastBracketIndex !== -1) {
+    // Calculate actual position in document
+    const deleteFrom = from - (textBefore.length - lastBracketIndex);
+    
+    editorView.dispatch({
+      changes: { from: deleteFrom, to: from, insert: text },
+      selection: { anchor: deleteFrom + text.length },
+    });
+  } else {
+    // Fallback: just insert at cursor
+    editorView.dispatch({
+      changes: { from, insert: text },
+      selection: { anchor: from + text.length },
+    });
+  }
   
   editorView.focus();
 }
@@ -126,6 +209,7 @@ function focus() {
 // ==================== Expose ====================
 defineExpose({
   insertText,
+  insertTextAtCursor,
   wrapSelection,
   replaceSelection,
   getSelection,
