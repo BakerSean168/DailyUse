@@ -16,33 +16,68 @@
         @wrap-selection="handleWrapSelection"
         @view-mode-change="handleViewModeChange"
         @save="handleSave"
-      />
-
-      <!-- 分屏布局 -->
-      <EditorSplitView
-        :view-mode="viewMode"
-        :initial-split-position="50"
-        @split-position-change="handleSplitPositionChange"
       >
-        <!-- 编辑器插槽 -->
-        <template #editor>
+        <!-- 添加链接图谱按钮 -->
+        <template #append>
+          <v-btn
+            v-if="documentUuid"
+            icon
+            size="small"
+            variant="text"
+            @click="handleOpenLinkGraph"
+            title="链接图谱"
+          >
+            <v-icon>mdi-graph-outline</v-icon>
+          </v-btn>
+        </template>
+      </EditorToolbar>
+
+      <!-- 三栏布局：编辑器 + 预览 + 反向链接面板 -->
+      <v-row no-gutters class="editor-content-row">
+        <!-- 左侧：编辑器 -->
+        <v-col :cols="documentUuid ? 5 : 6" class="editor-col">
           <div class="editor-container">
             <MarkdownEditor
+              ref="editorRef"
               v-model="content"
               :dark-mode="isDarkMode"
               @update:model-value="handleContentChange"
               @editor-ready="handleEditorReady"
+              @trigger-suggestion="handleTriggerSuggestion"
+            />
+            
+            <!-- 链接建议下拉框 -->
+            <LinkSuggestion
+              :visible="showSuggestion"
+              :search-query="searchQuery"
+              :position="suggestionPosition"
+              @select="handleLinkSelect"
+              @close="showSuggestion = false"
+              @create-new="handleCreateNewDocument"
             />
           </div>
-        </template>
+        </v-col>
 
-        <!-- 预览插槽 -->
-        <template #preview>
+        <!-- 中间：预览 -->
+        <v-col :cols="documentUuid ? 4 : 6" class="preview-col">
           <div class="preview-container">
-            <EditorPreview :content="content" :dark-mode="isDarkMode" />
+            <EditorPreview 
+              :content="content" 
+              :dark-mode="isDarkMode"
+              @link-click="handleLinkClick"
+            />
           </div>
-        </template>
-      </EditorSplitView>
+        </v-col>
+
+        <!-- 右侧：反向链接面板（仅在有文档UUID时显示） -->
+        <v-col v-if="documentUuid" cols="3" class="backlink-col">
+          <BacklinkPanel
+            ref="backlinkPanelRef"
+            :document-uuid="documentUuid"
+            @navigate="navigateToDocument"
+          />
+        </v-col>
+      </v-row>
 
       <!-- 状态栏 -->
       <v-divider />
@@ -86,18 +121,34 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- 链接图谱对话框 -->
+    <v-dialog v-model="showLinkGraph" fullscreen transition="dialog-bottom-transition">
+      <LinkGraphView
+        v-if="documentUuid && showLinkGraph"
+        :document-uuid="documentUuid"
+        @close="showLinkGraph = false"
+        @node-click="handleGraphNodeClick"
+      />
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useTheme } from 'vuetify';
+import { useRouter } from 'vue-router';
 import MarkdownEditor from '../components/MarkdownEditor.vue';
 import EditorToolbar from '../components/EditorToolbar.vue';
 import EditorPreview from '../components/EditorPreview.vue';
 import EditorSplitView from '../components/EditorSplitView.vue';
+import LinkSuggestion from '../components/LinkSuggestion.vue';
+import BacklinkPanel from '../components/BacklinkPanel.vue';
+import LinkGraphView from '../components/LinkGraphView.vue';
 import { useMarkdownEditor } from '../composables/useMarkdownEditor';
 import { useAutoSave } from '../composables/useAutoSave';
+import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
+import type { DocumentContracts } from '@packages/contracts';
 
 // ==================== Props ====================
 interface Props {
@@ -156,8 +207,17 @@ const {
 });
 
 // ==================== State ====================
+const router = useRouter();
 const viewMode = ref<'edit' | 'preview' | 'split'>('split');
 const showConflictDialog = ref(false);
+
+// Bidirectional Links State
+const showSuggestion = ref(false);
+const searchQuery = ref('');
+const suggestionPosition = ref({ x: 0, y: 0 });
+const showLinkGraph = ref(false);
+const editorRef = ref<InstanceType<typeof MarkdownEditor> | null>(null);
+const backlinkPanelRef = ref<InstanceType<typeof BacklinkPanel> | null>(null);
 
 // ==================== Computed ====================
 const isDarkMode = computed(() => theme.global.current.value.dark);
@@ -211,6 +271,70 @@ function handleRefresh() {
   window.location.reload();
 }
 
+// ==================== Bidirectional Links Methods ====================
+function handleTriggerSuggestion(position: { x: number; y: number; query: string }) {
+  suggestionPosition.value = { x: position.x, y: position.y };
+  searchQuery.value = position.query;
+  showSuggestion.value = true;
+}
+
+function handleLinkSelect(document: DocumentContracts.DocumentClientDTO) {
+  if (!editorRef.value) return;
+  
+  // Insert [[title]] at cursor position
+  const linkText = `[[${document.title}]]`;
+  editorRef.value.insertTextAtCursor(linkText);
+  
+  showSuggestion.value = false;
+  searchQuery.value = '';
+}
+
+function handleCreateNewDocument(title: string) {
+  // TODO: Implement create new document logic
+  console.log('Create new document:', title);
+  
+  // For now, just insert the link
+  if (!editorRef.value) return;
+  const linkText = `[[${title}]]`;
+  editorRef.value.insertTextAtCursor(linkText);
+  
+  showSuggestion.value = false;
+  searchQuery.value = '';
+}
+
+function handleLinkClick(title: string) {
+  // Navigate to document by title
+  navigateByTitle(title);
+}
+
+async function navigateByTitle(title: string) {
+  try {
+    // Search for document by exact title
+    const results = await documentApiClient.searchDocuments(title, 1);
+    if (results.length > 0) {
+      navigateToDocument(results[0].uuid);
+    } else {
+      console.warn('Document not found:', title);
+      // TODO: Show snackbar notification
+    }
+  } catch (error) {
+    console.error('Error navigating to document:', error);
+  }
+}
+
+function navigateToDocument(uuid: string) {
+  router.push({ name: 'editor', params: { id: uuid } });
+}
+
+function handleOpenLinkGraph() {
+  showLinkGraph.value = true;
+}
+
+function handleGraphNodeClick(nodeUuid: string) {
+  showLinkGraph.value = false;
+  navigateToDocument(nodeUuid);
+}
+
 // ==================== Watchers ====================
 watch(saveStatus, (status) => {
   if (status === 'conflict') {
@@ -236,11 +360,35 @@ startAutoSave();
   flex-direction: column;
 }
 
+.editor-content-row {
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-col,
+.preview-col,
+.backlink-col {
+  height: calc(100vh - 120px);
+  overflow: hidden;
+  border-right: 1px solid #e0e0e0;
+}
+
+.backlink-col {
+  border-right: none;
+}
+
 .editor-container,
 .preview-container {
-  height: calc(100vh - 120px); /* 减去工具栏和状态栏高度 */
+  height: 100%;
   overflow: auto;
   padding: 16px;
+  position: relative;
+}
+
+/* 暗色模式边框 */
+:deep(.v-theme--dark) .editor-col,
+:deep(.v-theme--dark) .preview-col {
+  border-right-color: #424242;
 }
 
 .status-bar {

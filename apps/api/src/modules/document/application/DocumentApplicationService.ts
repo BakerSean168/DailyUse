@@ -19,6 +19,7 @@ export class DocumentApplicationService {
     @Inject(DOCUMENT_REPOSITORY)
     private readonly repository: DocumentRepository,
     private readonly versionRepository: DocumentVersionRepository,
+    private readonly linkService?: any, // DocumentLinkApplicationService - optional for now
   ) {}
 
   async createDocument(dto: CreateDocumentDTO & { accountUuid: string }): Promise<DocumentClientDTO> {
@@ -199,6 +200,16 @@ export class DocumentApplicationService {
 
     // Save document
     await this.repository.save(document);
+
+    // Sync links if linkService is available
+    if (this.linkService) {
+      try {
+        await this.linkService.syncLinksForDocument(uuid, dto.content);
+      } catch (error) {
+        console.error('Failed to sync links:', error);
+        // Don't fail the save operation if link sync fails
+      }
+    }
 
     return {
       success: true,

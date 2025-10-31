@@ -135,12 +135,16 @@ model document {
   status          String   @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
   currentVersion  Int      @default(0) @map("current_version") // 当前版本号
   lastVersionedAt Int?     @map("last_versioned_at") // 最后版本创建时间
+  lastEditedAt    Int?     @map("last_edited_at") // 最后编辑时间（用于冲突检测）
+  editSessionId   String?  @map("edit_session_id") // 编辑会话 ID（用于冲突检测）
   createdAt       Int      @default(dbgenerated("extract(epoch from now())::integer")) @map("created_at")
   updatedAt       Int      @default(dbgenerated("extract(epoch from now())::integer")) @map("updated_at")
   deletedAt       Int?     @map("deleted_at")
 
-  account  account            @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
-  versions document_version[] // 版本历史关联
+  account      account            @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  versions     document_version[] // 版本历史关联
+  sourceLinks  document_link[]    @relation("source_links") // 此文档链接到其他文档
+  targetLinks  document_link[]    @relation("target_links") // 其他文档链接到此文档（反向链接）
 
   @@index([accountUuid, deletedAt])
   @@index([accountUuid, folderPath])
@@ -168,6 +172,25 @@ model document_version {
   @@index([documentUuid, createdAt])
   @@index([changedBy])
   @@map("document_versions")
+}
+
+model document_link {
+  uuid               String  @id
+  sourceDocumentUuid String  @map("source_document_uuid")
+  targetDocumentUuid String? @map("target_document_uuid") // Nullable for broken links
+  linkText           String  @map("link_text") // Original text like "项目计划"
+  linkPosition       Int     @map("link_position") // Character position in source document
+  isBroken           Boolean @default(false) @map("is_broken") // True if target deleted
+  createdAt          Int     @default(dbgenerated("extract(epoch from now())::integer")) @map("created_at")
+  updatedAt          Int     @default(dbgenerated("extract(epoch from now())::integer")) @map("updated_at")
+
+  sourceDocument document @relation("source_links", fields: [sourceDocumentUuid], references: [uuid], onDelete: Cascade)
+  targetDocument document? @relation("target_links", fields: [targetDocumentUuid], references: [uuid], onDelete: SetNull)
+
+  @@index([sourceDocumentUuid])
+  @@index([targetDocumentUuid])
+  @@index([isBroken])
+  @@map("document_links")
 }
 
 model editorWorkspaceSessionGroupTab {
