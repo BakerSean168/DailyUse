@@ -15,3 +15,6 @@ export { useAccount } from './presentation/composables/useAccount';
 
 // 初始化
 export { registerAccountInitializationTasks } from './initialization/accountInitialization';
+
+// 事件处理器
+export { AccountEventHandlers } from './application/events/accountEventHandlers';

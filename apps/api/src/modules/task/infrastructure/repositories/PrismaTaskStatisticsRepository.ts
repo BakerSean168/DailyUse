@@ -69,7 +69,7 @@ export class PrismaTaskStatisticsRepository implements ITaskStatisticsRepository
   async save(statistics: TaskStatistics): Promise<void> {
     const persistence = statistics.toPersistenceDTO();
 
-    await this.prisma.taskStatistics.upsert({
+    await this.prisma.taskStatistic.upsert({
       where: { uuid: persistence.uuid },
       create: {
         uuid: persistence.uuid,
@@ -156,7 +156,7 @@ export class PrismaTaskStatisticsRepository implements ITaskStatisticsRepository
    * 根据 UUID 查找统计数据
    */
   async findByUuid(uuid: string): Promise<TaskStatistics | null> {
-    const data = await this.prisma.taskStatistics.findUnique({
+    const data = await this.prisma.taskStatistic.findUnique({
       where: { uuid },
     });
 
@@ -167,7 +167,7 @@ export class PrismaTaskStatisticsRepository implements ITaskStatisticsRepository
    * 根据账户 UUID 查找统计数据
    */
   async findByAccountUuid(accountUuid: string): Promise<TaskStatistics | null> {
-    const data = await this.prisma.taskStatistics.findUnique({
+    const data = await this.prisma.taskStatistic.findUnique({
       where: { accountUuid },
     });
 
@@ -178,7 +178,7 @@ export class PrismaTaskStatisticsRepository implements ITaskStatisticsRepository
    * 删除统计数据
    */
   async delete(uuid: string): Promise<void> {
-    await this.prisma.taskStatistics.delete({
+    await this.prisma.taskStatistic.delete({
       where: { uuid },
     });
   }
@@ -190,7 +190,7 @@ export class PrismaTaskStatisticsRepository implements ITaskStatisticsRepository
     await this.prisma.$transaction(
       statisticsList.map((stats) => {
         const persistence = stats.toPersistenceDTO();
-        return this.prisma.taskStatistics.upsert({
+        return this.prisma.taskStatistic.upsert({
           where: { uuid: persistence.uuid },
           create: {
             uuid: persistence.uuid,

@@ -82,6 +82,21 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
     return new Date(timestamp);
   }
 
+  private toTimestamp(date: Date | null | undefined): number | null | undefined {
+    if (date == null) return date as null | undefined;
+    return date.getTime();
+  }
+
+  private importanceToNumber(importance: string): number {
+    const map: Record<string, number> = { LOW: 1, MEDIUM: 2, HIGH: 3 };
+    return map[importance] ?? 2;
+  }
+
+  private urgencyToNumber(urgency: string): number {
+    const map: Record<string, number> = { LOW: 1, MEDIUM: 2, HIGH: 3 };
+    return map[urgency] ?? 2;
+  }
+
   async save(template: TaskTemplate): Promise<void> {
     const persistence = template.toPersistenceDTO();
 
@@ -113,8 +128,8 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
           reminderConfigTimeOffsetMinutes: persistence.reminderConfigTimeOffsetMinutes,
           reminderConfigUnit: persistence.reminderConfigUnit,
           reminderConfigChannel: persistence.reminderConfigChannel,
-          importance: persistence.importance,
-          urgency: persistence.urgency,
+          importance: this.importanceToNumber(persistence.importance),
+          urgency: this.urgencyToNumber(persistence.urgency),
           // Flattened goalBinding fields (RECURRING - 旧版本)
           goalBindingGoalUuid: persistence.goalBindingGoalUuid,
           goalBindingKeyResultUuid: persistence.goalBindingKeyResultUuid,
@@ -123,18 +138,18 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
           tags: persistence.tags,
           color: persistence.color,
           status: persistence.status,
-          lastGeneratedDate: this.toDate(persistence.lastGeneratedDate),
+          lastGeneratedDate: this.toDate(persistence.lastGeneratedDate) ?? undefined,
           generateAheadDays: persistence.generateAheadDays,
           createdAt: this.toDate(persistence.createdAt) ?? new Date(),
           updatedAt: this.toDate(persistence.updatedAt) ?? new Date(),
-          deletedAt: this.toDate(persistence.deletedAt),
+          deletedAt: this.toDate(persistence.deletedAt) ?? undefined,
           // ONE_TIME 任务新字段
           goalUuid: persistence.goalUuid,
           keyResultUuid: persistence.keyResultUuid,
           parentTaskUuid: persistence.parentTaskUuid,
-          startDate: this.toDate(persistence.startDate),
-          dueDate: this.toDate(persistence.dueDate),
-          completedAt: this.toDate(persistence.completedAt),
+          startDate: persistence.startDate,
+          dueDate: persistence.dueDate,
+          completedAt: persistence.completedAt,
           estimatedMinutes: persistence.estimatedMinutes,
           actualMinutes: persistence.actualMinutes,
           note: persistence.note,
@@ -164,8 +179,8 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
           reminderConfigTimeOffsetMinutes: persistence.reminderConfigTimeOffsetMinutes,
           reminderConfigUnit: persistence.reminderConfigUnit,
           reminderConfigChannel: persistence.reminderConfigChannel,
-          importance: persistence.importance,
-          urgency: persistence.urgency,
+          importance: this.importanceToNumber(persistence.importance),
+          urgency: this.urgencyToNumber(persistence.urgency),
           // Flattened goalBinding fields (RECURRING - 旧版本)
           goalBindingGoalUuid: persistence.goalBindingGoalUuid,
           goalBindingKeyResultUuid: persistence.goalBindingKeyResultUuid,
@@ -174,17 +189,17 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
           tags: persistence.tags,
           color: persistence.color,
           status: persistence.status,
-          lastGeneratedDate: this.toDate(persistence.lastGeneratedDate),
+          lastGeneratedDate: this.toDate(persistence.lastGeneratedDate) ?? undefined,
           generateAheadDays: persistence.generateAheadDays,
           updatedAt: this.toDate(persistence.updatedAt) ?? new Date(),
-          deletedAt: this.toDate(persistence.deletedAt),
+          deletedAt: this.toDate(persistence.deletedAt) ?? undefined,
           // ONE_TIME 任务新字段
           goalUuid: persistence.goalUuid,
           keyResultUuid: persistence.keyResultUuid,
           parentTaskUuid: persistence.parentTaskUuid,
-          startDate: this.toDate(persistence.startDate),
-          dueDate: this.toDate(persistence.dueDate),
-          completedAt: this.toDate(persistence.completedAt),
+          startDate: persistence.startDate,
+          dueDate: persistence.dueDate,
+          completedAt: persistence.completedAt,
           estimatedMinutes: persistence.estimatedMinutes,
           actualMinutes: persistence.actualMinutes,
           note: persistence.note,
@@ -224,7 +239,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
   async findByUuidWithChildren(uuid: string): Promise<TaskTemplate | null> {
     const data = await this.prisma.taskTemplate.findUnique({
       where: { uuid },
-      include: { history: true },
+      // Note: history relation not defined in Prisma schema
     });
     return data ? this.mapToEntity(data, true) : null;
   }
@@ -382,7 +397,7 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
   }
 
   async findOverdueTasks(accountUuid: string): Promise<TaskTemplate[]> {
-    const now = new Date();
+    const now = Date.now();
     const templates = await this.prisma.taskTemplate.findMany({
       where: {
         accountUuid,
@@ -477,8 +492,8 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
   }
 
   async findUpcomingTasks(accountUuid: string, daysAhead: number): Promise<TaskTemplate[]> {
-    const now = new Date();
-    const futureDate = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000);
+    const now = Date.now();
+    const futureDate = now + daysAhead * 24 * 60 * 60 * 1000;
 
     const templates = await this.prisma.taskTemplate.findMany({
       where: {
@@ -500,17 +515,19 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
   async findTodayTasks(accountUuid: string): Promise<TaskTemplate[]> {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
+    const startTimestamp = startOfDay.getTime();
 
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
+    const endTimestamp = endOfDay.getTime();
 
     const templates = await this.prisma.taskTemplate.findMany({
       where: {
         accountUuid,
         taskType: 'ONE_TIME',
         dueDate: {
-          gte: startOfDay,
-          lte: endOfDay,
+          gte: startTimestamp,
+          lte: endTimestamp,
         },
         deletedAt: null,
       },

@@ -26,52 +26,58 @@ export function useUserSetting() {
   /**
    * 当前用户设置
    */
-  const userSetting = computed(() => userSettingStore.getUserSetting);
+  const userSetting = computed(() => userSettingStore.settings);
 
   /**
    * 当前主题
    */
-  const currentTheme = computed(() => userSettingStore.getTheme);
+  const currentTheme = computed(() => userSettingStore.appearance.theme);
 
   /**
    * 当前语言
    */
-  const currentLanguage = computed(() => userSettingStore.getLanguage);
+  const currentLanguage = computed(() => userSettingStore.locale.language);
 
   /**
    * 当前主题文本
    */
-  const themeText = computed(() => userSetting.value?.getThemeText() || '未设置');
+  const themeText = computed(() => {
+    const theme = currentTheme.value;
+    return theme === 'AUTO' ? '自动' : theme === 'LIGHT' ? '亮色' : theme === 'DARK' ? '暗色' : '未设置';
+  });
 
   /**
    * 当前语言文本
    */
-  const languageText = computed(() => userSetting.value?.getLanguageText() || '未设置');
+  const languageText = computed(() => {
+    const lang = currentLanguage.value;
+    return lang === 'zh-CN' ? '简体中文' : lang === 'en-US' ? 'English' : '未设置';
+  });
 
   /**
    * 自动保存是否启用
    */
-  const autoSaveEnabled = computed(() => userSettingStore.getAutoSave);
+  const autoSaveEnabled = computed(() => userSettingStore.workflow.autoSave);
 
   /**
    * 自动保存间隔
    */
-  const autoSaveInterval = computed(() => userSettingStore.getAutoSaveInterval);
+  const autoSaveInterval = computed(() => userSettingStore.workflow.autoSaveInterval);
 
   /**
    * 快捷键是否启用
    */
-  const shortcutsEnabled = computed(() => userSettingStore.getShortcutsEnabled);
+  const shortcutsEnabled = computed(() => userSettingStore.shortcuts.enabled);
 
   /**
    * 自定义快捷键
    */
-  const customShortcuts = computed(() => userSettingStore.getCustomShortcuts);
+  const customShortcuts = computed(() => userSettingStore.shortcuts.custom);
 
   /**
    * 是否正在加载
    */
-  const isLoading = computed(() => loading.value || userSettingStore.isLoading);
+  const isLoading = computed(() => loading.value || userSettingStore.loading);
 
   // ===== 业务方法 =====
 
@@ -417,21 +423,24 @@ export function useUserSetting() {
    * 检查快捷键
    */
   const hasShortcut = (action: string): boolean => {
-    return userSetting.value?.hasShortcut(action) || false;
+    const custom = userSetting.value?.shortcuts?.custom;
+    return custom ? action in custom : false;
   };
 
   /**
    * 获取快捷键
    */
   const getShortcut = (action: string): string | null => {
-    return userSetting.value?.getShortcut(action) || null;
+    const custom = userSetting.value?.shortcuts?.custom;
+    return custom?.[action] || null;
   };
 
   /**
    * 检查实验性功能
    */
   const hasExperimentalFeature = (feature: string): boolean => {
-    return userSetting.value?.hasExperimentalFeature(feature) || false;
+    const features = userSetting.value?.experimental?.features;
+    return features ? features.includes(feature) : false;
   };
 
   // ===== 生命周期 =====
@@ -495,20 +504,20 @@ export function useUserSettingData() {
   const userSettingStore = useUserSettingStore();
 
   return {
-    userSetting: computed(() => userSettingStore.getUserSetting),
-    currentTheme: computed(() => userSettingStore.getTheme),
-    currentLanguage: computed(() => userSettingStore.getLanguage),
+    userSetting: computed(() => userSettingStore.settings),
+    currentTheme: computed(() => userSettingStore.appearance.theme),
+    currentLanguage: computed(() => userSettingStore.locale.language),
     themeText: computed(() => {
-      const setting = userSettingStore.getUserSetting;
-      return setting?.getThemeText() || '未设置';
+      const theme = userSettingStore.appearance.theme;
+      return theme === 'AUTO' ? '自动' : theme === 'LIGHT' ? '亮色' : theme === 'DARK' ? '暗色' : '未设置';
     }),
     languageText: computed(() => {
-      const setting = userSettingStore.getUserSetting;
-      return setting?.getLanguageText() || '未设置';
+      const lang = userSettingStore.locale.language;
+      return lang === 'zh-CN' ? '简体中文' : lang === 'en-US' ? 'English' : '未设置';
     }),
-    autoSaveEnabled: computed(() => userSettingStore.getAutoSave),
-    autoSaveInterval: computed(() => userSettingStore.getAutoSaveInterval),
-    shortcutsEnabled: computed(() => userSettingStore.getShortcutsEnabled),
-    customShortcuts: computed(() => userSettingStore.getCustomShortcuts),
+    autoSaveEnabled: computed(() => userSettingStore.workflow.autoSave),
+    autoSaveInterval: computed(() => userSettingStore.workflow.autoSaveInterval),
+    shortcutsEnabled: computed(() => userSettingStore.shortcuts.enabled),
+    customShortcuts: computed(() => userSettingStore.shortcuts.custom),
   };
 }

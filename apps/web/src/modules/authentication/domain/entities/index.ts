@@ -2,9 +2,9 @@
 // domain-client中的认证实体就是渲染进程/web端使用的最终domain对象
 
 export {
-  Session,
+  AuthSession,
   AuthCredential,
-  Password,
-  Token,
-  MFADevice,
+  PasswordCredential,
+  RefreshToken,
+  DeviceInfo,
 } from '../../../../../../../packages/domain-client/src/authentication';

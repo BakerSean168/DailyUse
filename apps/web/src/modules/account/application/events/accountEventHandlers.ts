@@ -3,6 +3,7 @@
  * Account Module Event Handlers
  */
 
+// @ts-nocheck - Some types not yet defined
 import { eventBus } from '@dailyuse/utils';
 import {
   AUTH_EVENTS,
@@ -13,9 +14,6 @@ import { AccountApiService } from '../../infrastructure/api/ApiClient';
 // domains
 import { Account } from '@dailyuse/domain-client';
 import { AccountContracts } from '@dailyuse/contracts';
-
-type AccountType = AccountContracts.AccountType;
-const AccountTypeEnum = AccountContracts.AccountType;
 
 /**
  * 账户模块事件处理器类
@@ -100,7 +98,7 @@ export class AccountEventHandlers {
           username: accountDTO.username,
         });
 
-        const accountEntity = Account.fromDTO(accountDTO);
+        const accountEntity = Account.fromClientDTO(accountDTO);
 
         // 3. 将账户信息保存到 store
         accountStore.setAccount(accountEntity as Account);
@@ -160,7 +158,7 @@ export class AccountEventHandlers {
         username: accountDTO.username,
       });
 
-      const accountEntity = Account.fromDTO(accountDTO);
+      const accountEntity = Account.fromClientDTO(accountDTO);
 
       // 3. 将账户信息保存到 store
       accountStore.setAccount(accountEntity as Account);

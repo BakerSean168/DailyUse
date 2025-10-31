@@ -3,6 +3,6 @@
  */
 
 export type { ITaskInstanceRepository } from './ITaskInstanceRepository';
-export type { ITaskTemplateRepository } from './ITaskTemplateRepository';
+export type { ITaskTemplateRepository, TaskFilters } from './ITaskTemplateRepository';
 export type { ITaskDependencyRepository } from './ITaskDependencyRepository';
 export type { ITaskStatisticsRepository } from './ITaskStatisticsRepository';

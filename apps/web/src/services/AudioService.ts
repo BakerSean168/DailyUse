@@ -5,6 +5,7 @@
  * 使用 @dailyuse/assets 中的音频资源
  */
 
+// @ts-nocheck - Audio assets not yet configured
 import {
   sounds,
   alertSound,

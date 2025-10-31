@@ -31,6 +31,7 @@ export type {
   ITaskTemplateRepository,
   ITaskDependencyRepository,
   ITaskStatisticsRepository,
+  TaskFilters,
 } from './repositories';
 
 // 领域服务

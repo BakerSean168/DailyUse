@@ -40,10 +40,12 @@ export class PrismaTaskDependencyRepository implements ITaskDependencyRepository
   async create(data: CreateTaskDependencyRequest): Promise<TaskDependencyServerDTO> {
     const dependency = await this.prisma.taskDependency.create({
       data: {
+        uuid: crypto.randomUUID(),
         predecessorTaskUuid: data.predecessorTaskUuid,
         successorTaskUuid: data.successorTaskUuid,
-        dependencyType: data.dependencyType || 'FINISH_TO_START',
-        lagDays: data.lagDays,
+        dependencyType: String(data.dependencyType || 'FINISH_TO_START'),
+        lagDays: data.lagDays ?? 0,
+        updatedAt: new Date(),
       },
     });
 

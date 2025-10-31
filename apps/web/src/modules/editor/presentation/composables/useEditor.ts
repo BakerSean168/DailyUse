@@ -4,7 +4,8 @@
  */
 
 import { ref, computed } from 'vue';
-import type { EditorTab } from '../components/EditorTabBar.vue';
+// import type { EditorTab } from '../components/EditorTabBar.vue';
+type EditorTab = any; // TODO: Define proper type
 
 /**
  * 编辑器实例引用

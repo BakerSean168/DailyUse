@@ -112,6 +112,7 @@
     "cron-parser": "^5.4.0",
     "cronstrue": "^3.3.0",
     "echarts": "^5.6.0",
+    "mitt": "^3.0.1",
     "node-schedule": "^2.1.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
