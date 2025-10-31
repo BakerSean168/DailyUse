@@ -7,6 +7,8 @@ import type { NotificationContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type INotificationAction = NotificationContracts.NotificationActionServerDTO;
+type NotificationActionPersistenceDTO = NotificationContracts.NotificationActionPersistenceDTO;
+type NotificationActionClientDTO = NotificationContracts.NotificationActionClientDTO;
 type NotificationActionType = NotificationContracts.NotificationActionType;
 
 /**
@@ -72,9 +74,9 @@ export class NotificationAction extends ValueObject implements INotificationActi
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): INotificationAction {
+  public toServerDTO(): INotificationAction {
     return {
       id: this.id,
       label: this.label,
@@ -84,9 +86,54 @@ export class NotificationAction extends ValueObject implements INotificationActi
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): NotificationActionClientDTO {
+    const typeTextMap = {
+      BUTTON: '按钮',
+      LINK: '链接',
+      DISMISS: '关闭',
+    };
+    return {
+      id: this.id,
+      label: this.label,
+      type: this.type,
+      payload: this.payload,
+      typeText: typeTextMap[this.type as keyof typeof typeTextMap] || this.type,
+      icon: String(this.type) === 'LINK' ? 'link' : 'button',
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): NotificationActionPersistenceDTO {
+    return {
+      id: this.id,
+      label: this.label,
+      type: this.type,
+      payload: this.payload ? JSON.stringify(this.payload) : null,
+    };
+  }
+
+  /**
+   * 转换为 Contract 接口 (兼容旧代码)
+   */
+  public toContract(): INotificationAction {
+    return this.toServerDTO();
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: INotificationAction): NotificationAction {
+    return new NotificationAction(dto);
+  }
+
+  /**
+   * 从 Contract 接口创建值对象 (兼容旧代码)
    */
   public static fromContract(action: INotificationAction): NotificationAction {
-    return new NotificationAction(action);
+    return NotificationAction.fromServerDTO(action);
   }
 }

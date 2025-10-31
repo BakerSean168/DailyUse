@@ -14,6 +14,7 @@ export * from './value-objects';
 // ============ 实体 ============
 export * from './entities/ReminderHistoryServer';
 export * from './entities/ReminderHistoryClient';
+export * from './entities/ReminderResponseServer';
 
 // ============ 聚合根 ============
 export * from './aggregates/ReminderTemplateServer';
@@ -22,6 +23,7 @@ export * from './aggregates/ReminderGroupServer';
 export * from './aggregates/ReminderGroupClient';
 export * from './aggregates/ReminderStatisticsServer';
 export * from './aggregates/ReminderStatisticsClient';
+export * from './aggregates/UserReminderPreferencesServer';
 
 // ============ API 请求/响应类型 ============
 export * from './api-requests';

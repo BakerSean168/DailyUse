@@ -6,6 +6,7 @@
 import type {
   ActiveTimeConfigServerDTO,
   ActiveTimeConfigClientDTO,
+  ActiveTimeConfigPersistenceDTO,
 } from '@dailyuse/contracts/src/modules/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
@@ -85,6 +86,16 @@ export class ActiveTimeConfig extends ValueObject implements ActiveTimeConfigSer
       endDate: this.endDate,
       displayText,
       isActive,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（数据库存储格式）
+   */
+  public toPersistenceDTO(): ActiveTimeConfigPersistenceDTO {
+    return {
+      startDate: this.startDate,
+      endDate: this.endDate,
     };
   }
 

@@ -105,8 +105,8 @@ export class Repository extends AggregateRoot implements IRepositoryServer {
   public get description(): string | null {
     return this._description;
   }
-  public get config(): RepositoryContracts.RepositoryConfig {
-    return this._config.toContract();
+  public get config(): RepositoryContracts.RepositoryConfigServer {
+    return this._config;
   }
   public get relatedGoals(): string[] | null {
     return this._relatedGoals ? [...this._relatedGoals] : null;
@@ -114,14 +114,14 @@ export class Repository extends AggregateRoot implements IRepositoryServer {
   public get status(): RepositoryStatus {
     return this._status;
   }
-  public get git(): GitInfo | null {
+  public get git(): RepositoryContracts.GitInfoServer | null {
     return this._git;
   }
-  public get syncStatus(): SyncStatus | null {
+  public get syncStatus(): RepositoryContracts.SyncStatusServer | null {
     return this._syncStatus;
   }
-  public get stats(): RepositoryContracts.RepositoryStats {
-    return this._stats.toContract();
+  public get stats(): RepositoryContracts.RepositoryStatsServer {
+    return this._stats;
   }
   public get lastAccessedAt(): number | null {
     return this._lastAccessedAt;
@@ -626,15 +626,11 @@ export class Repository extends AggregateRoot implements IRepositoryServer {
       type: this._type,
       path: this._path,
       description: this._description,
-      // @ts-expect-error: toClientDTO will be added to value objects
       config: this._config.toClientDTO(),
       relatedGoals: this._relatedGoals,
       status: this._status,
-      // @ts-expect-error: toClientDTO will be added to value objects
       git: this._git?.toClientDTO() ?? null,
-      // @ts-expect-error: toClientDTO will be added to value objects
       syncStatus: this._syncStatus?.toClientDTO() ?? null,
-      // @ts-expect-error: toClientDTO will be added to value objects
       stats: this._stats.toClientDTO(),
       lastAccessedAt: this._lastAccessedAt,
       createdAt: this._createdAt,

@@ -12,6 +12,8 @@ import {
   ActiveTimeConfig,
   ActiveHoursConfig,
   ReminderStats,
+  ResponseMetrics,
+  FrequencyAdjustment,
 } from '../value-objects';
 import { ReminderHistory } from '../entities';
 
@@ -57,6 +59,11 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   private _updatedAt: number;
   private _deletedAt: number | null;
 
+  // ===== 智能频率相关字段 (Story 5-2) =====
+  private _responseMetrics: ResponseMetrics | null;
+  private _frequencyAdjustment: FrequencyAdjustment | null;
+  private _smartFrequencyEnabled: boolean;
+
   // ===== 子实体集合 =====
   private _history: ReminderHistory[];
 
@@ -84,6 +91,10 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
+    // 智能频率相关 (Story 5-2)
+    responseMetrics?: ResponseMetrics | null;
+    frequencyAdjustment?: FrequencyAdjustment | null;
+    smartFrequencyEnabled?: boolean;
   }) {
     super(params.uuid || AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -107,6 +118,10 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
     this._deletedAt = params.deletedAt ?? null;
+    // 智能频率相关 (Story 5-2)
+    this._responseMetrics = params.responseMetrics ?? null;
+    this._frequencyAdjustment = params.frequencyAdjustment ?? null;
+    this._smartFrequencyEnabled = params.smartFrequencyEnabled ?? true;
     this._history = [];
   }
 
@@ -126,20 +141,20 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   public get type(): ReminderType {
     return this._type;
   }
-  public get trigger(): ReminderContracts.TriggerConfigServerDTO {
-    return this._trigger.toServerDTO();
+  public get trigger(): ReminderContracts.TriggerConfigServer {
+    return this._trigger;
   }
-  public get recurrence(): ReminderContracts.RecurrenceConfigServerDTO | null {
-    return this._recurrence ? this._recurrence.toServerDTO() : null;
+  public get recurrence(): ReminderContracts.RecurrenceConfigServer | null {
+    return this._recurrence;
   }
-  public get activeTime(): ReminderContracts.ActiveTimeConfigServerDTO {
-    return this._activeTime.toServerDTO();
+  public get activeTime(): ReminderContracts.ActiveTimeConfigServer {
+    return this._activeTime;
   }
-  public get activeHours(): ReminderContracts.ActiveHoursConfigServerDTO | null {
-    return this._activeHours ? this._activeHours.toServerDTO() : null;
+  public get activeHours(): ReminderContracts.ActiveHoursConfigServer | null {
+    return this._activeHours;
   }
-  public get notificationConfig(): ReminderContracts.NotificationConfigServerDTO {
-    return this._notificationConfig.toServerDTO();
+  public get notificationConfig(): ReminderContracts.NotificationConfigServer {
+    return this._notificationConfig;
   }
   public get selfEnabled(): boolean {
     return this._selfEnabled;
@@ -165,8 +180,8 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   public get nextTriggerAt(): number | null {
     return this._nextTriggerAt;
   }
-  public get stats(): ReminderContracts.ReminderStatsServerDTO {
-    return this._stats.toServerDTO();
+  public get stats(): ReminderContracts.ReminderStatsServer {
+    return this._stats;
   }
   public get createdAt(): number {
     return this._createdAt;
@@ -176,6 +191,19 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   }
   public get deletedAt(): number | null {
     return this._deletedAt;
+  }
+
+  // ===== 智能频率相关 Getter (Story 5-2) =====
+  public get responseMetrics(): ReminderContracts.ResponseMetricsServer | null {
+    return this._responseMetrics;
+  }
+
+  public get frequencyAdjustment(): ReminderContracts.FrequencyAdjustmentServer | null {
+    return this._frequencyAdjustment;
+  }
+
+  public get smartFrequencyEnabled(): boolean {
+    return this._smartFrequencyEnabled;
   }
 
   public get history(): ReminderHistory[] | null {
@@ -273,6 +301,13 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     const recurrence = dto.recurrence ? RecurrenceConfig.fromServerDTO(dto.recurrence) : null;
     const activeHours = dto.activeHours ? ActiveHoursConfig.fromServerDTO(dto.activeHours) : null;
     const stats = ReminderStats.fromServerDTO(dto.stats);
+    // 智能频率相关 (Story 5-2)
+    const responseMetrics = dto.responseMetrics
+      ? ResponseMetrics.fromServerDTO(dto.responseMetrics)
+      : null;
+    const frequencyAdjustment = dto.frequencyAdjustment
+      ? FrequencyAdjustment.fromServerDTO(dto.frequencyAdjustment)
+      : null;
 
     const template = new ReminderTemplate({
       uuid: dto.uuid,
@@ -297,6 +332,10 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
+      // 智能频率相关 (Story 5-2)
+      responseMetrics,
+      frequencyAdjustment,
+      smartFrequencyEnabled: dto.smartFrequencyEnabled,
     });
 
     // 加载历史记录
@@ -631,6 +670,131 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     }
   }
 
+  // ===== 智能频率相关方法 (Story 5-2) =====
+
+  /**
+   * 更新响应指标
+   */
+  public updateResponseMetrics(metrics: ReminderContracts.ResponseMetricsServerDTO): void {
+    this._responseMetrics = ResponseMetrics.fromServerDTO(metrics);
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 应用频率调整（自动调整或用户手动调整）
+   */
+  public applyFrequencyAdjustment(
+    adjustment: ReminderContracts.FrequencyAdjustmentServerDTO,
+  ): void {
+    this._frequencyAdjustment = FrequencyAdjustment.fromServerDTO(adjustment);
+    // 注意：实际的触发间隔调整应该在 Domain Service 或 Application Service 中处理
+    // 这里只记录调整信息
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 用户确认频率调整
+   */
+  public confirmFrequencyAdjustment(): void {
+    if (!this._frequencyAdjustment) {
+      throw new Error('No frequency adjustment to confirm');
+    }
+    this._frequencyAdjustment = this._frequencyAdjustment.with({
+      userConfirmed: true,
+    });
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 用户拒绝频率调整
+   */
+  public rejectFrequencyAdjustment(reason?: string): void {
+    if (!this._frequencyAdjustment) {
+      throw new Error('No frequency adjustment to reject');
+    }
+    this._frequencyAdjustment = this._frequencyAdjustment.with({
+      rejectionReason: reason ?? '用户拒绝',
+    });
+    // 注意：实际的触发间隔恢复应该在 Domain Service 或 Application Service 中处理
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 启用/禁用智能频率
+   */
+  public toggleSmartFrequency(enabled: boolean): void {
+    this._smartFrequencyEnabled = enabled;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 判断是否需要频率调整（基于响应指标）
+   */
+  public needsFrequencyAdjustment(): boolean {
+    if (!this._responseMetrics || !this._smartFrequencyEnabled) {
+      return false;
+    }
+    return this._responseMetrics.needsAdjustment();
+  }
+
+  /**
+   * 计算建议的频率调整
+   */
+  public calculateSuggestedAdjustment(): ReminderContracts.FrequencyAdjustmentServerDTO | null {
+    if (!this._responseMetrics || !this._smartFrequencyEnabled || !this._trigger) {
+      return null;
+    }
+
+    // 如果不需要调整，返回 null
+    if (!this.needsFrequencyAdjustment()) {
+      return null;
+    }
+
+    const effectivenessScore = this._responseMetrics.effectivenessScore;
+    const ignoreRate = this._responseMetrics.ignoreRate;
+    
+    // 获取当前间隔（秒）
+    let currentIntervalSeconds: number;
+    if (this._trigger.interval) {
+      // interval.minutes 转换为秒
+      currentIntervalSeconds = this._trigger.interval.minutes * 60;
+    } else {
+      // 默认每天（86400秒）
+      currentIntervalSeconds = 86400;
+    }
+
+    let adjustedIntervalSeconds: number;
+    let reason = '';
+
+    // 频率调整策略
+    if (effectivenessScore < 20 && ignoreRate > 80) {
+      // 大幅降低频率（×3）
+      adjustedIntervalSeconds = currentIntervalSeconds * 3;
+      reason = `效果评分过低(${effectivenessScore.toFixed(1)})且忽略率过高(${ignoreRate.toFixed(1)}%)，建议降低频率`;
+    } else if (effectivenessScore < 40 && ignoreRate > 60) {
+      // 降低频率（×2）
+      adjustedIntervalSeconds = currentIntervalSeconds * 2;
+      reason = `效果评分较低(${effectivenessScore.toFixed(1)})且忽略率较高(${ignoreRate.toFixed(1)}%)，建议降低频率`;
+    } else if (effectivenessScore > 80 && ignoreRate < 20) {
+      // 可考虑增加频率（×0.8）
+      adjustedIntervalSeconds = Math.round(currentIntervalSeconds * 0.8);
+      reason = `效果评分高(${effectivenessScore.toFixed(1)})且忽略率低(${ignoreRate.toFixed(1)}%)，可适当提高频率`;
+    } else {
+      // 不需要调整
+      return null;
+    }
+
+    return {
+      originalInterval: currentIntervalSeconds,
+      adjustedInterval: adjustedIntervalSeconds,
+      adjustmentReason: reason,
+      adjustmentTime: Date.now(),
+      isAutoAdjusted: true,
+      userConfirmed: false,
+      rejectionReason: null,
+    };
+  }
+
   // ===== 转换方法 (To) =====
 
   /**
@@ -660,6 +824,10 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt,
+      // 智能频率相关 (Story 5-2)
+      responseMetrics: this.responseMetrics,
+      frequencyAdjustment: this.frequencyAdjustment,
+      smartFrequencyEnabled: this.smartFrequencyEnabled,
     };
 
     if (includeChildren && this._history.length > 0) {

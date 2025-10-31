@@ -7,6 +7,8 @@ import type { NotificationContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
 type INotificationMetadata = NotificationContracts.NotificationMetadataServerDTO;
+type NotificationMetadataPersistenceDTO = NotificationContracts.NotificationMetadataPersistenceDTO;
+type NotificationMetadataClientDTO = NotificationContracts.NotificationMetadataClientDTO;
 
 /**
  * NotificationMetadata 值对象
@@ -82,9 +84,9 @@ export class NotificationMetadata extends ValueObject implements INotificationMe
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): INotificationMetadata {
+  public toServerDTO(): INotificationMetadata {
     return {
       icon: this.icon,
       image: this.image,
@@ -96,10 +98,55 @@ export class NotificationMetadata extends ValueObject implements INotificationMe
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): NotificationMetadataClientDTO {
+    return {
+      icon: this.icon,
+      image: this.image,
+      color: this.color,
+      sound: this.sound,
+      badge: this.badge,
+      data: this.data,
+      hasIcon: !!this.icon,
+      hasImage: !!this.image,
+      hasBadge: this.badge !== null && this.badge !== undefined,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): NotificationMetadataPersistenceDTO {
+    return {
+      icon: this.icon,
+      image: this.image,
+      color: this.color,
+      sound: this.sound,
+      badge: this.badge,
+      data: this.data ? JSON.stringify(this.data) : null,
+    };
+  }
+
+  /**
+   * 转换为 Contract 接口 (兼容旧代码)
+   */
+  public toContract(): INotificationMetadata {
+    return this.toServerDTO();
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: INotificationMetadata): NotificationMetadata {
+    return new NotificationMetadata(dto);
+  }
+
+  /**
+   * 从 Contract 接口创建值对象 (兼容旧代码)
    */
   public static fromContract(metadata: INotificationMetadata): NotificationMetadata {
-    return new NotificationMetadata(metadata);
+    return NotificationMetadata.fromServerDTO(metadata);
   }
 
   /**

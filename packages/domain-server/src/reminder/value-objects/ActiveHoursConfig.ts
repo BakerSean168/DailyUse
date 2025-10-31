@@ -6,6 +6,7 @@
 import type {
   ActiveHoursConfigServerDTO,
   ActiveHoursConfigClientDTO,
+  ActiveHoursConfigPersistenceDTO,
 } from '@dailyuse/contracts/src/modules/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
@@ -89,6 +90,17 @@ export class ActiveHoursConfig extends ValueObject implements ActiveHoursConfigS
       startHour: this.startHour,
       endHour: this.endHour,
       displayText,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（数据库存储格式）
+   */
+  public toPersistenceDTO(): ActiveHoursConfigPersistenceDTO {
+    return {
+      enabled: this.enabled,
+      start_hour: this.startHour,
+      end_hour: this.endHour,
     };
   }
 

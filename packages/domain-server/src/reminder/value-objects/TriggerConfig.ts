@@ -6,6 +6,7 @@
 import type {
   TriggerConfigServerDTO,
   TriggerConfigClientDTO,
+  TriggerConfigPersistenceDTO,
   TriggerType,
   FixedTimeTrigger,
   IntervalTrigger,
@@ -101,6 +102,17 @@ export class TriggerConfig extends ValueObject implements TriggerConfigServerDTO
       fixedTime: this.fixedTime,
       interval: this.interval,
       displayText,
+    };
+  }
+
+  /**
+   * 转换为 Persistence DTO（数据库存储格式）
+   */
+  public toPersistenceDTO(): TriggerConfigPersistenceDTO {
+    return {
+      type: this.type,
+      fixed_time: this.fixedTime ? JSON.stringify(this.fixedTime) : null,
+      interval: this.interval ? JSON.stringify(this.interval) : null,
     };
   }
 

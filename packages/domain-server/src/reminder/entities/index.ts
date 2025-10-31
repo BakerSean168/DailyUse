@@ -4,3 +4,4 @@
  */
 
 export { ReminderHistory } from './ReminderHistory';
+export { ReminderResponse } from './ReminderResponse';

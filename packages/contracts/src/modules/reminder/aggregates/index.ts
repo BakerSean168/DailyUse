@@ -9,3 +9,4 @@ export * from './ReminderGroupServer';
 export * from './ReminderGroupClient';
 export * from './ReminderStatisticsServer';
 export * from './ReminderStatisticsClient';
+export * from './UserReminderPreferencesServer';

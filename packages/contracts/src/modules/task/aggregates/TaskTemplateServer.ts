@@ -162,8 +162,8 @@ export interface TaskTemplatePersistenceDTO {
   generateAheadDays?: number | null;
 
   // === 通用属性 ===
-  importance: number; // 0-4
-  urgency: number; // 0-4
+  importance: string; // 'vital' | 'important' | 'moderate' | 'minor' | 'trivial'
+  urgency: string; // 'critical' | 'high' | 'medium' | 'low' | 'none'
   tags: string; // JSON array
   color?: string | null;
   status: string;
@@ -208,7 +208,7 @@ export interface TaskTemplateServer {
   title: string;
   description?: string | null;
   taskType: TaskType;
-  timeConfig: TaskTimeConfigServer;
+  timeConfig: TaskTimeConfigServer | null; // null for ONE_TIME tasks
   recurrenceRule?: RecurrenceRuleServer | null;
   reminderConfig?: TaskReminderConfigServer | null;
   importance: ImportanceLevel;
@@ -219,7 +219,7 @@ export interface TaskTemplateServer {
   color?: string | null;
   status: TaskTemplateStatus;
   lastGeneratedDate?: number | null;
-  generateAheadDays: number;
+  generateAheadDays: number | null; // null for ONE_TIME tasks
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
