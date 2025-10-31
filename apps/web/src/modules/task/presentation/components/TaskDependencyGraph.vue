@@ -173,10 +173,10 @@ function updateChart() {
           if (params.dataType === 'node') {
             const task = props.tasks.find(t => t.uuid === params.data.id);
             if (!task) return '';
-            return \`<div style="padding: 8px;">
-              <div style="font-weight: bold;">\${task.title}</div>
-              <div>预估: \${task.estimatedMinutes || 0} 分钟</div>
-            </div>\`;
+            return `<div style="padding: 8px;">
+              <div style="font-weight: bold;">${task.title}</div>
+              <div>预估: ${task.estimatedMinutes || 0} 分钟</div>
+            </div>`;
           }
           return '';
         },
@@ -217,7 +217,7 @@ function refreshGraph() {
 function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return hours > 0 ? \`\${hours}小时\${mins}分钟\` : \`\${mins}分钟\`;
+  return hours > 0 ? `${hours}小时${mins}分钟` : `${mins}分钟`;
 }
 
 // Watchers

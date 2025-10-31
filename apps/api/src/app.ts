@@ -21,8 +21,7 @@ import reminderRouter from './modules/reminder/interface/http/reminderRoutes';
 import scheduleRouter from './modules/schedule/interface/http/routes/scheduleRoutes';
 import notificationRouter from './modules/notification/interface/http/notificationRoutes';
 import notificationSSERouter from './modules/notification/interface/http/sseRoutes';
-import userPreferencesRoutes from './modules/setting/interface/http/routes/settingRoutes';
-import userSettingRoutes from './modules/setting/interface/http/routes/userSettingRoutes';
+import settingRouter from './modules/setting/interface/http/settingRoutes';
 // import themeRoutes from './modules/theme/interface/http/themeRoutes';
 import editorRouter from './modules/editor/interface/http/routes/editorRoutes';
 import repositoryRouter from './modules/repository/interface/http/routes/repositoryRoutes';
@@ -126,10 +125,8 @@ api.use('/repositories', authMiddleware, repositoryRouter);
 /**
  * setting 设置模块
  */
-// 挂载用户偏好设置路由 - 需要认证
-api.use('/settings/preferences', authMiddleware, userPreferencesRoutes);
 // 挂载用户设置路由 - 需要认证
-api.use('/user-settings', authMiddleware, userSettingRoutes);
+api.use('/settings', authMiddleware, settingRouter);
 
 /**
  * metrics 性能指标模块

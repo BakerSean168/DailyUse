@@ -1229,7 +1229,26 @@ model userSetting {
   workflowDefaultGoalView     String   @default("LIST") @map("workflow_default_goal_view")
   workflowDefaultScheduleView String   @default("WEEK") @map("workflow_default_schedule_view")
   workflowDefaultTaskView     String   @default("LIST") @map("workflow_default_task_view")
-  account                     account  @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+
+  // 通知偏好设置
+  notificationEmail Boolean @default(true) @map("notification_email")
+  notificationPush  Boolean @default(true) @map("notification_push")
+  notificationInApp Boolean @default(true) @map("notification_in_app")
+  notificationSound Boolean @default(true) @map("notification_sound")
+
+  // 编辑器设置
+  editorTheme       String  @default("default") @map("editor_theme")
+  editorFontSize    Int     @default(14) @map("editor_font_size")
+  editorTabSize     Int     @default(2) @map("editor_tab_size")
+  editorWordWrap    Boolean @default(true) @map("editor_word_wrap")
+  editorLineNumbers Boolean @default(true) @map("editor_line_numbers")
+  editorMinimap     Boolean @default(true) @map("editor_minimap")
+
+  // 其他偏好
+  startPage        String  @default("dashboard") @map("start_page")
+  sidebarCollapsed Boolean @default(false) @map("sidebar_collapsed")
+
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
 
   @@index([accountUuid])
   @@map("user_settings")

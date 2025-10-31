@@ -24,6 +24,7 @@ export { SettingGroup } from './entities/SettingGroup';
 export { Setting } from './aggregates/Setting';
 export { AppConfigServer } from './aggregates/AppConfigServer';
 export { UserSettingServer } from './aggregates/UserSettingServer';
+export { UserSetting } from './aggregates/UserSetting';
 
 // ============ 仓储接口 ============
 export type { ISettingRepository } from './repositories/ISettingRepository';
