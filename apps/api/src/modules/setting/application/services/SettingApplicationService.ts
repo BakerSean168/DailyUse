@@ -1,6 +1,6 @@
-import type { ISettingRepository } from '@dailyuse/domain-server';
+import type { IUserSettingRepository } from '@dailyuse/domain-server';
 import { SettingContainer } from '../../infrastructure/di/SettingContainer';
-import { SettingDomainService } from '@dailyuse/domain-server';
+import { UserSetting } from '@dailyuse/domain-server';
 import type { SettingContracts } from '@dailyuse/contracts';
 
 /**
@@ -11,26 +11,27 @@ import type { SettingContracts } from '@dailyuse/contracts';
  * - 委托给 DomainService 处理业务逻辑
  * - 协调多个领域服务
  * - 事务管理
- * - DTO 转换（Domain ↔ Contracts）
+ * - DTO 转换（Domain → ClientDTO）
+ * - 调用 Repository 进行持久化
+ *
+ * 注意：返回给客户端的数据必须使用 ClientDTO（通过 toClientDTO() 方法）
  */
 export class SettingApplicationService {
   private static instance: SettingApplicationService;
-  private domainService: SettingDomainService;
-  private settingRepository: ISettingRepository;
+  private userSettingRepository: IUserSettingRepository;
 
-  private constructor(settingRepository: ISettingRepository) {
-    this.domainService = new SettingDomainService(settingRepository);
-    this.settingRepository = settingRepository;
+  private constructor(userSettingRepository: IUserSettingRepository) {
+    this.userSettingRepository = userSettingRepository;
   }
 
   /**
    * 创建应用服务实例（支持依赖注入）
    */
   static async createInstance(
-    settingRepository?: ISettingRepository,
+    userSettingRepository?: IUserSettingRepository,
   ): Promise<SettingApplicationService> {
     const container = SettingContainer.getInstance();
-    const repo = settingRepository || container.getSettingRepository();
+    const repo = userSettingRepository || container.getUserSettingRepository();
 
     SettingApplicationService.instance = new SettingApplicationService(repo);
     return SettingApplicationService.instance;
@@ -46,199 +47,65 @@ export class SettingApplicationService {
     return SettingApplicationService.instance;
   }
 
-  // ===== Setting 管理 =====
+  // ===== UserSetting CRUD 操作 =====
 
   /**
-   * 创建设置项
+   * 获取用户设置（如果不存在则创建默认设置）
    */
-  async createSetting(params: {
-    key: string;
-    name: string;
-    description?: string;
-    valueType: SettingContracts.SettingValueType;
-    value: any;
-    defaultValue: any;
-    scope: SettingContracts.SettingScope;
-    accountUuid?: string;
-    deviceId?: string;
-    groupUuid?: string;
-    validation?: SettingContracts.ValidationRuleServer;
-    ui?: SettingContracts.UIConfigServer;
-    isEncrypted?: boolean;
-    isReadOnly?: boolean;
-    isSystemSetting?: boolean;
-    syncConfig?: SettingContracts.SyncConfigServer;
-  }): Promise<SettingContracts.SettingClientDTO> {
-    // 委托给领域服务处理业务逻辑
-    const setting = await this.domainService.createSetting(params);
+  async getUserSetting(accountUuid: string): Promise<SettingContracts.UserSettingDTO> {
+    let setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
-    // 转换为 ClientDTO (API 返回给客户端)
-    return setting.toClientDTO();
-  }
-
-  /**
-   * 获取设置详情
-   */
-  async getSetting(
-    uuid: string,
-    options?: { includeHistory?: boolean },
-  ): Promise<SettingContracts.SettingClientDTO | null> {
-    // 委托给领域服务处理
-    const setting = await this.domainService.getSetting(uuid, options);
-
-    return setting ? setting.toClientDTO() : null;
-  }
-
-  /**
-   * 通过 key 获取设置
-   */
-  async getSettingByKey(
-    key: string,
-    scope: SettingContracts.SettingScope,
-    contextUuid?: string,
-  ): Promise<SettingContracts.SettingClientDTO | null> {
-    // 委托给领域服务处理
-    const setting = await this.domainService.getSettingByKey(key, scope, contextUuid);
-
-    return setting ? setting.toClientDTO() : null;
-  }
-
-  /**
-   * 更新设置值
-   */
-  async updateSettingValue(
-    uuid: string,
-    newValue: any,
-    operatorUuid?: string,
-  ): Promise<SettingContracts.SettingClientDTO> {
-    // 委托给领域服务处理业务逻辑
-    const setting = await this.domainService.updateSettingValue(uuid, newValue, operatorUuid);
+    if (!setting) {
+      // 首次访问，创建默认设置
+      setting = UserSetting.createDefault(accountUuid);
+      await this.userSettingRepository.save(setting);
+    }
 
     return setting.toClientDTO();
   }
 
   /**
-   * 重置设置为默认值
+   * 更新用户设置
    */
-  async resetSetting(uuid: string): Promise<SettingContracts.SettingClientDTO> {
-    // 委托给领域服务处理
-    const setting = await this.domainService.resetSetting(uuid);
-
-    return setting.toClientDTO();
-  }
-
-  /**
-   * 批量更新设置
-   */
-  async updateManySettings(
-    updates: Array<{ uuid: string; value: any; operatorUuid?: string }>,
-  ): Promise<SettingContracts.SettingClientDTO[]> {
-    // 委托给领域服务处理
-    const settings = await this.domainService.updateManySettings(updates);
-
-    return settings.map((s) => s.toClientDTO());
-  }
-
-  /**
-   * 获取作用域内的所有设置
-   */
-  async getSettingsByScope(
-    scope: SettingContracts.SettingScope,
-    contextUuid?: string,
-    options?: { includeHistory?: boolean },
-  ): Promise<SettingContracts.SettingClientDTO[]> {
-    // 委托给领域服务处理
-    const settings = await this.domainService.getSettingsByScope(scope, contextUuid, options);
-
-    return settings.map((s) => s.toClientDTO());
-  }
-
-  /**
-   * 获取用户设置
-   */
-  async getUserSettings(
+  async updateUserSetting(
     accountUuid: string,
-    options?: { includeHistory?: boolean },
-  ): Promise<SettingContracts.SettingClientDTO[]> {
-    // 委托给领域服务处理
-    const settings = await this.domainService.getUserSettings(accountUuid, options);
+    updates: SettingContracts.UpdateUserSettingDTO,
+  ): Promise<SettingContracts.UserSettingDTO> {
+    let setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
-    return settings.map((s) => s.toClientDTO());
+    if (!setting) {
+      // 如果设置不存在，先创建默认设置
+      setting = UserSetting.createDefault(accountUuid);
+    }
+
+    // 更新设置
+    setting.update(updates);
+    await this.userSettingRepository.save(setting);
+
+    return setting.toClientDTO();
   }
 
   /**
-   * 获取系统设置
+   * 重置用户设置为默认值
    */
-  async getSystemSettings(options?: {
-    includeHistory?: boolean;
-  }): Promise<SettingContracts.SettingClientDTO[]> {
-    // 委托给领域服务处理
-    const settings = await this.domainService.getSystemSettings(options);
+  async resetUserSetting(accountUuid: string): Promise<SettingContracts.UserSettingDTO> {
+    const setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
-    return settings.map((s) => s.toClientDTO());
+    if (!setting) {
+      throw new Error('User setting not found');
+    }
+
+    setting.resetToDefaults();
+    await this.userSettingRepository.save(setting);
+
+    return setting.toClientDTO();
   }
 
   /**
-   * 搜索设置
+   * 获取默认设置
    */
-  async searchSettings(
-    query: string,
-    scope?: SettingContracts.SettingScope,
-  ): Promise<SettingContracts.SettingClientDTO[]> {
-    // 委托给领域服务处理
-    const settings = await this.domainService.searchSettings(query, scope);
-
-    return settings.map((s) => s.toClientDTO());
-  }
-
-  /**
-   * 同步设置
-   */
-  async syncSetting(uuid: string): Promise<void> {
-    // 委托给领域服务处理
-    await this.domainService.syncSetting(uuid);
-  }
-
-  /**
-   * 删除设置
-   */
-  async deleteSetting(uuid: string): Promise<void> {
-    // 委托给领域服务处理
-    await this.domainService.deleteSetting(uuid);
-  }
-
-  /**
-   * 验证设置值
-   */
-  async validateSettingValue(
-    uuid: string,
-    value: any,
-  ): Promise<{ valid: boolean; error?: string }> {
-    // 委托给领域服务处理
-    return await this.domainService.validateSettingValue(uuid, value);
-  }
-
-  /**
-   * 导出设置配置
-   */
-  async exportSettings(
-    scope: SettingContracts.SettingScope,
-    contextUuid?: string,
-  ): Promise<Record<string, any>> {
-    // 委托给领域服务处理
-    return await this.domainService.exportSettings(scope, contextUuid);
-  }
-
-  /**
-   * 导入设置配置
-   */
-  async importSettings(
-    scope: SettingContracts.SettingScope,
-    config: Record<string, any>,
-    contextUuid?: string,
-    operatorUuid?: string,
-  ): Promise<void> {
-    // 委托给领域服务处理
-    await this.domainService.importSettings(scope, config, contextUuid, operatorUuid);
+  async getDefaultSettings(): Promise<SettingContracts.DefaultSettingsDTO> {
+    const defaultSetting = UserSetting.createDefault('temp-uuid');
+    return defaultSetting.toDefaultDTO();
   }
 }

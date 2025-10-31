@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import { DocumentContracts } from '@dailyuse/contracts';
 
@@ -107,7 +108,7 @@ const filteredDocuments = computed(() => {
 });
 
 // ==================== Methods ====================
-async function searchDocuments(query: string) {
+async function searchDocumentsImpl(query: string) {
   if (!query || query.length < 1) {
     documents.value = [];
     return;
@@ -125,6 +126,9 @@ async function searchDocuments(query: string) {
     loading.value = false;
   }
 }
+
+// 使用 VueUse 的防抖函数，延迟 300ms 执行搜索
+const searchDocuments = useDebounceFn(searchDocumentsImpl, 300);
 
 function selectDocument(doc: DocumentClientDTO) {
   emit('select', doc);

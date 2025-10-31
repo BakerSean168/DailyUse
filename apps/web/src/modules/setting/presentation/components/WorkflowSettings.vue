@@ -1,260 +1,244 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col cols="12">
-        <h3 class="text-h5 mb-4">
-          <v-icon class="mr-2">mdi-cog-outline</v-icon>
-          工作流设置
-        </h3>
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <v-col cols="12">
-        <v-list lines="two">
-          <!-- 默认任务视图 -->
-          <v-list-item>
-            <template v-slot:prepend>
-              <v-icon>mdi-check-circle</v-icon>
-            </template>
-            <v-list-item-title>默认任务视图</v-list-item-title>
-            <v-list-item-subtitle>打开任务时的默认视图</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-select
-                v-model="localWorkflow.defaultTaskView"
-                :items="taskViewOptions"
-                item-title="text"
-                item-value="value"
-                density="compact"
-                style="max-width: 150px"
-                hide-details
-                @update:model-value="handleWorkflowChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
-
-          <v-divider />
-
-          <!-- 默认目标视图 -->
-          <v-list-item>
-            <template v-slot:prepend>
-              <v-icon>mdi-target</v-icon>
-            </template>
-            <v-list-item-title>默认目标视图</v-list-item-title>
-            <v-list-item-subtitle>打开目标时的默认视图</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-select
-                v-model="localWorkflow.defaultGoalView"
-                :items="goalViewOptions"
-                item-title="text"
-                item-value="value"
-                density="compact"
-                style="max-width: 150px"
-                hide-details
-                @update:model-value="handleWorkflowChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
-
-          <v-divider />
-
-          <!-- 默认日程视图 -->
-          <v-list-item>
-            <template v-slot:prepend>
-              <v-icon>mdi-calendar</v-icon>
-            </template>
-            <v-list-item-title>默认日程视图</v-list-item-title>
-            <v-list-item-subtitle>打开日程时的默认视图</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-select
-                v-model="localWorkflow.defaultScheduleView"
-                :items="scheduleViewOptions"
-                item-title="text"
-                item-value="value"
-                density="compact"
-                style="max-width: 150px"
-                hide-details
-                @update:model-value="handleWorkflowChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
-
-          <v-divider />
-
-          <!-- 自动保存 -->
-          <v-list-item>
-            <template v-slot:prepend>
+  <v-card flat>
+    <v-card-title>工作流设置</v-card-title>
+    <v-card-text>
+      <v-row>
+        <!-- 自动保存 -->
+        <v-col cols="12">
+          <v-switch
+            v-model="autoSave"
+            label="自动保存"
+            color="primary"
+            hide-details
+            @update:model-value="handleAutoSaveChange"
+          >
+            <template #prepend>
               <v-icon>mdi-content-save-auto</v-icon>
             </template>
-            <v-list-item-title>自动保存</v-list-item-title>
-            <v-list-item-subtitle>自动保存您的更改</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-switch
-                v-model="localWorkflow.autoSave"
-                color="primary"
-                hide-details
-                @update:model-value="handleWorkflowChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
+          </v-switch>
+          <p class="text-caption text-medium-emphasis mt-2">
+            编辑内容时自动保存更改
+          </p>
+        </v-col>
 
-          <v-divider />
+        <!-- 自动保存间隔 -->
+        <v-col cols="12" v-if="autoSave">
+          <v-slider
+            v-model="autoSaveInterval"
+            label="自动保存间隔 (秒)"
+            :min="5"
+            :max="60"
+            :step="5"
+            thumb-label="always"
+            prepend-icon="mdi-timer-outline"
+            @update:model-value="handleAutoSaveIntervalChange"
+          />
+        </v-col>
 
-          <!-- 自动保存间隔 -->
-          <v-list-item v-if="localWorkflow.autoSave">
-            <template v-slot:prepend>
-              <v-icon>mdi-timer-outline</v-icon>
-            </template>
-            <v-list-item-title>自动保存间隔</v-list-item-title>
-            <v-list-item-subtitle>自动保存的时间间隔（秒）</v-list-item-subtitle>
-            <template v-slot:append>
-              <div class="d-flex align-center ga-2">
-                <v-text-field
-                  v-model.number="localWorkflow.autoSaveInterval"
-                  type="number"
-                  min="5"
-                  max="300"
-                  step="5"
-                  density="compact"
-                  style="max-width: 100px"
-                  hide-details
-                  @blur="handleWorkflowChange"
-                  :disabled="loading"
-                />
-                <span class="text-body-2">秒</span>
-              </div>
-            </template>
-          </v-list-item>
+        <v-divider class="my-2" />
 
-          <v-divider v-if="localWorkflow.autoSave" />
-
-          <!-- 删除前确认 -->
-          <v-list-item>
-            <template v-slot:prepend>
+        <!-- 删除确认 -->
+        <v-col cols="12">
+          <v-switch
+            v-model="confirmBeforeDelete"
+            label="删除前确认"
+            color="primary"
+            hide-details
+            @update:model-value="handleConfirmDeleteChange"
+          >
+            <template #prepend>
               <v-icon>mdi-alert-circle-outline</v-icon>
             </template>
-            <v-list-item-title>删除前确认</v-list-item-title>
-            <v-list-item-subtitle>删除项目前显示确认对话框</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-switch
-                v-model="localWorkflow.confirmBeforeDelete"
-                color="primary"
-                hide-details
-                @update:model-value="handleWorkflowChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
-        </v-list>
-      </v-col>
-    </v-row>
+          </v-switch>
+          <p class="text-caption text-medium-emphasis mt-2">
+            删除项目前显示确认对话框
+          </p>
+        </v-col>
 
-    <!-- 操作按钮 -->
-    <v-row>
-      <v-col cols="12" class="d-flex justify-end ga-2">
-        <v-btn
-          color="primary"
-          @click="handleSaveAll"
-          :disabled="loading || !hasChanges"
-          :loading="loading"
-        >
-          保存更改
-        </v-btn>
-        <v-btn variant="outlined" @click="handleReset" :disabled="loading"> 重置 </v-btn>
-      </v-col>
-    </v-row>
-  </v-container>
+        <v-divider class="my-2" />
+
+        <!-- 默认目标视图 -->
+        <v-col cols="12" md="4">
+          <v-select
+            v-model="defaultGoalView"
+            label="默认目标视图"
+            :items="goalViewOptions"
+            item-title="label"
+            item-value="value"
+            variant="outlined"
+            prepend-icon="mdi-target"
+            @update:model-value="handleGoalViewChange"
+          />
+        </v-col>
+
+        <!-- 默认日程视图 -->
+        <v-col cols="12" md="4">
+          <v-select
+            v-model="defaultScheduleView"
+            label="默认日程视图"
+            :items="scheduleViewOptions"
+            item-title="label"
+            item-value="value"
+            variant="outlined"
+            prepend-icon="mdi-calendar"
+            @update:model-value="handleScheduleViewChange"
+          />
+        </v-col>
+
+        <!-- 默认任务视图 -->
+        <v-col cols="12" md="4">
+          <v-select
+            v-model="defaultTaskView"
+            label="默认任务视图"
+            :items="taskViewOptions"
+            item-title="label"
+            item-value="value"
+            variant="outlined"
+            prepend-icon="mdi-checkbox-marked-outline"
+            @update:model-value="handleTaskViewChange"
+          />
+        </v-col>
+
+        <v-divider class="my-2" />
+
+        <!-- 起始页 -->
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="startPage"
+            label="起始页"
+            :items="startPageOptions"
+            item-title="label"
+            item-value="value"
+            variant="outlined"
+            prepend-icon="mdi-home"
+            @update:model-value="handleStartPageChange"
+          />
+          <p class="text-caption text-medium-emphasis mt-2">
+            登录后默认打开的页面
+          </p>
+        </v-col>
+
+        <!-- 侧边栏折叠 -->
+        <v-col cols="12" md="6">
+          <v-switch
+            v-model="sidebarCollapsed"
+            label="侧边栏默认折叠"
+            color="primary"
+            hide-details
+            @update:model-value="handleSidebarCollapsedChange"
+          >
+            <template #prepend>
+              <v-icon>mdi-dock-left</v-icon>
+            </template>
+          </v-switch>
+          <p class="text-caption text-medium-emphasis mt-2">
+            启动时侧边栏处于折叠状态
+          </p>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useUserSetting } from '../composables/useUserSetting';
-import { type SettingContracts } from '@dailyuse/contracts';
+import { ref, watch, computed } from 'vue';
+import { useUserSettingStore } from '../stores/userSettingStore';
 
-// ===== Props =====
-const props = defineProps<{
-  autoSave?: boolean;
-}>();
+const settingStore = useUserSettingStore();
 
-// ===== Composables =====
-const { userSetting, loading, updateWorkflow } = useUserSetting();
+// Local state
+const autoSave = ref(settingStore.settings?.workflowAutoSave ?? true);
+const autoSaveInterval = ref(
+  Math.floor((settingStore.settings?.workflowAutoSaveInterval ?? 30000) / 1000),
+);
+const confirmBeforeDelete = ref(settingStore.settings?.workflowConfirmBeforeDelete ?? true);
+const defaultGoalView = ref(settingStore.settings?.workflowDefaultGoalView ?? 'LIST');
+const defaultScheduleView = ref(settingStore.settings?.workflowDefaultScheduleView ?? 'WEEK');
+const defaultTaskView = ref(settingStore.settings?.workflowDefaultTaskView ?? 'LIST');
+const startPage = ref(settingStore.settings?.startPage ?? 'dashboard');
+const sidebarCollapsed = ref(settingStore.settings?.sidebarCollapsed ?? false);
 
-// ===== 选项配置 =====
-const taskViewOptions = [
-  { value: 'LIST', text: '列表视图' },
-  { value: 'KANBAN', text: '看板视图' },
-  { value: 'CALENDAR', text: '日历视图' },
-];
-
+// Options
 const goalViewOptions = [
-  { value: 'LIST', text: '列表视图' },
-  { value: 'TREE', text: '树形视图' },
-  { value: 'TIMELINE', text: '时间线视图' },
+  { label: '列表视图', value: 'LIST' },
+  { label: '看板视图', value: 'KANBAN' },
+  { label: '甘特图', value: 'GANTT' },
+  { label: '树形视图', value: 'TREE' },
 ];
 
 const scheduleViewOptions = [
-  { value: 'DAY', text: '日视图' },
-  { value: 'WEEK', text: '周视图' },
-  { value: 'MONTH', text: '月视图' },
+  { label: '日视图', value: 'DAY' },
+  { label: '周视图', value: 'WEEK' },
+  { label: '月视图', value: 'MONTH' },
+  { label: '列表视图', value: 'LIST' },
 ];
 
-// ===== 本地状态 =====
-const localWorkflow = ref<SettingContracts.UpdateWorkflowRequest>({
-  defaultTaskView: 'LIST',
-  defaultGoalView: 'LIST',
-  defaultScheduleView: 'WEEK',
-  autoSave: true,
-  autoSaveInterval: 30,
-  confirmBeforeDelete: true,
-});
+const taskViewOptions = [
+  { label: '列表视图', value: 'LIST' },
+  { label: '看板视图', value: 'KANBAN' },
+  { label: '日历视图', value: 'CALENDAR' },
+  { label: '矩阵视图', value: 'MATRIX' },
+];
 
-const originalWorkflow = ref<SettingContracts.UpdateWorkflowRequest>({});
+const startPageOptions = [
+  { label: '仪表盘', value: 'dashboard' },
+  { label: '目标', value: 'goals' },
+  { label: '任务', value: 'tasks' },
+  { label: '日程', value: 'schedule' },
+  { label: '文档', value: 'documents' },
+];
 
-// ===== 计算属性 =====
-const hasChanges = computed(() => {
-  return JSON.stringify(localWorkflow.value) !== JSON.stringify(originalWorkflow.value);
-});
-
-// ===== 监听用户设置变化 =====
+// Watch store changes
 watch(
-  () => userSetting.value?.workflow,
-  (workflow) => {
-    if (workflow) {
-      localWorkflow.value = {
-        defaultTaskView: workflow.defaultTaskView as 'LIST' | 'KANBAN' | 'CALENDAR',
-        defaultGoalView: workflow.defaultGoalView as 'LIST' | 'TREE' | 'TIMELINE',
-        defaultScheduleView: workflow.defaultScheduleView as 'DAY' | 'WEEK' | 'MONTH',
-        autoSave: workflow.autoSave,
-        autoSaveInterval: workflow.autoSaveInterval,
-        confirmBeforeDelete: workflow.confirmBeforeDelete,
-      };
-      originalWorkflow.value = { ...localWorkflow.value };
+  () => settingStore.settings,
+  (newSettings) => {
+    if (newSettings) {
+      autoSave.value = newSettings.workflowAutoSave;
+      autoSaveInterval.value = Math.floor(newSettings.workflowAutoSaveInterval / 1000);
+      confirmBeforeDelete.value = newSettings.workflowConfirmBeforeDelete;
+      defaultGoalView.value = newSettings.workflowDefaultGoalView;
+      defaultScheduleView.value = newSettings.workflowDefaultScheduleView;
+      defaultTaskView.value = newSettings.workflowDefaultTaskView;
+      startPage.value = newSettings.startPage;
+      sidebarCollapsed.value = newSettings.sidebarCollapsed;
     }
   },
-  { immediate: true, deep: true },
+  { deep: true },
 );
 
-// ===== 事件处理 =====
-const handleWorkflowChange = async () => {
-  if (props.autoSave) {
-    await updateWorkflow(localWorkflow.value);
-  }
-};
+// Handlers
+async function handleAutoSaveChange(value: boolean) {
+  await settingStore.updateSettings({ workflowAutoSave: value });
+}
 
-const handleSaveAll = async () => {
-  await updateWorkflow(localWorkflow.value);
-  originalWorkflow.value = { ...localWorkflow.value };
-};
+async function handleAutoSaveIntervalChange(value: number) {
+  await settingStore.updateSettingsDebounced(
+    { workflowAutoSaveInterval: value * 1000 },
+    300,
+  );
+}
 
-const handleReset = () => {
-  localWorkflow.value = { ...originalWorkflow.value };
-};
+async function handleConfirmDeleteChange(value: boolean) {
+  await settingStore.updateSettings({ workflowConfirmBeforeDelete: value });
+}
+
+async function handleGoalViewChange(value: string) {
+  await settingStore.updateSettings({ workflowDefaultGoalView: value });
+}
+
+async function handleScheduleViewChange(value: string) {
+  await settingStore.updateSettings({ workflowDefaultScheduleView: value });
+}
+
+async function handleTaskViewChange(value: string) {
+  await settingStore.updateSettings({ workflowDefaultTaskView: value });
+}
+
+async function handleStartPageChange(value: string) {
+  await settingStore.updateSettings({ startPage: value });
+}
+
+async function handleSidebarCollapsedChange(value: boolean) {
+  await settingStore.updateSettings({ sidebarCollapsed: value });
+}
 </script>
-
-<style scoped>
-/* Vuetify 组件自带样式，无需额外 CSS */
-</style>

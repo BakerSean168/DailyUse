@@ -1,27 +1,24 @@
-import type {
-  ISettingRepository,
-  IUserSettingRepository,
-  IAppConfigRepository,
-} from '@dailyuse/domain-server';
-import { PrismaSettingRepository } from '../repositories/PrismaSettingRepository';
-import { PrismaUserSettingRepository } from '../repositories';
-import { PrismaAppConfigRepository } from '../repositories';
+import type { IUserSettingRepository } from '@dailyuse/domain-server';
+import { PrismaUserSettingRepository } from '../repositories/PrismaUserSettingRepository';
 import { prisma } from '@/config/prisma';
 
 /**
- * Setting Module DI Container
- * 管理 Setting 模块的所有仓储实例
+ * Setting 模块依赖注入容器
+ * 负责管理领域服务和仓储的实例创建和生命周期
+ *
+ * 采用懒加载模式：
+ * - 只在首次调用时创建实例
+ * - 后续调用返回已有实例（单例）
+ *
+ * 支持测试替换：
+ * - 允许注入 Mock 仓储用于单元测试
  */
 export class SettingContainer {
   private static instance: SettingContainer;
-  private settingRepository: ISettingRepository | null = null;
-  private userSettingRepository: IUserSettingRepository | null = null;
-  private appConfigRepository: IAppConfigRepository | null = null;
+  private userSettingRepository?: IUserSettingRepository;
+
   private constructor() {}
 
-  /**
-   * 获取容器单例
-   */
   static getInstance(): SettingContainer {
     if (!SettingContainer.instance) {
       SettingContainer.instance = new SettingContainer();
@@ -30,42 +27,26 @@ export class SettingContainer {
   }
 
   /**
-   * 获取 Setting 仓储
-   * 使用懒加载，第一次访问时创建实例
-   */
-  getSettingRepository(): ISettingRepository {
-    if (!this.settingRepository) {
-      this.settingRepository = new PrismaSettingRepository(prisma);
-    }
-    return this.settingRepository!;
-  }
-
-  /**
-   * 获取 User Setting 仓储
-   * 使用懒加载，第一次访问时创建实例
+   * 获取用户设置仓储实例（懒加载）
    */
   getUserSettingRepository(): IUserSettingRepository {
     if (!this.userSettingRepository) {
       this.userSettingRepository = new PrismaUserSettingRepository(prisma);
     }
-    return this.userSettingRepository!;
+    return this.userSettingRepository;
   }
 
   /**
-   * 获取 App Config 仓储
-   * 使用懒加载，第一次访问时创建实例
+   * 设置用户设置仓储实例（用于测试）
    */
-  getAppConfigRepository(): IAppConfigRepository {
-    if (!this.appConfigRepository) {
-      this.appConfigRepository = new PrismaAppConfigRepository(prisma);
-    }
-    return this.appConfigRepository!;
+  setUserSettingRepository(repository: IUserSettingRepository): void {
+    this.userSettingRepository = repository;
   }
 
   /**
-   * 设置 Setting 仓储（用于测试）
+   * 重置容器（用于测试）
    */
-  setSettingRepository(repository: ISettingRepository): void {
-    this.settingRepository = repository;
+  reset(): void {
+    this.userSettingRepository = undefined;
   }
 }

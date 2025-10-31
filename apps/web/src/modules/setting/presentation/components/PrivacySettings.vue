@@ -1,210 +1,272 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col cols="12">
-        <h3 class="text-h5 mb-4">
-          <v-icon class="mr-2">mdi-shield-account</v-icon>
-          隐私设置
-        </h3>
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <v-col cols="12">
-        <v-list lines="two">
-          <!-- 个人资料可见性 -->
-          <v-list-item>
-            <template v-slot:prepend>
-              <v-icon>mdi-eye-outline</v-icon>
+  <v-card flat>
+    <v-card-title>隐私设置</v-card-title>
+    <v-card-text>
+      <v-row>
+        <!-- 个人资料可见性 -->
+        <v-col cols="12">
+          <v-select
+            v-model="profileVisibility"
+            label="个人资料可见性"
+            :items="visibilityOptions"
+            item-title="label"
+            item-value="value"
+            variant="outlined"
+            prepend-icon="mdi-account-eye"
+            @update:model-value="handleProfileVisibilityChange"
+          >
+            <template #item="{ props, item }">
+              <v-list-item v-bind="props">
+                <template #prepend>
+                  <v-icon :icon="item.raw.icon" />
+                </template>
+                <template #subtitle>
+                  <span class="text-caption">{{ item.raw.description }}</span>
+                </template>
+              </v-list-item>
             </template>
-            <v-list-item-title>个人资料可见性</v-list-item-title>
-            <v-list-item-subtitle>控制谁可以查看您的个人资料</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-select
-                v-model="localPrivacy.profileVisibility"
-                :items="visibilityOptions"
-                item-title="text"
-                item-value="value"
-                density="compact"
-                style="max-width: 150px"
-                hide-details
-                @update:model-value="handlePrivacyChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
+          </v-select>
+        </v-col>
 
-          <v-divider />
+        <v-divider class="my-2" />
 
-          <!-- 显示在线状态 -->
-          <v-list-item>
-            <template v-slot:prepend>
+        <!-- 在线状态 -->
+        <v-col cols="12">
+          <v-switch
+            v-model="showOnlineStatus"
+            label="显示在线状态"
+            color="primary"
+            hide-details
+            @update:model-value="handleOnlineStatusChange"
+          >
+            <template #prepend>
               <v-icon>mdi-circle</v-icon>
             </template>
-            <v-list-item-title>显示在线状态</v-list-item-title>
-            <v-list-item-subtitle>让其他用户看到您是否在线</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-switch
-                v-model="localPrivacy.showOnlineStatus"
-                color="primary"
-                hide-details
-                @update:model-value="handlePrivacyChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
+          </v-switch>
+          <p class="text-caption text-medium-emphasis mt-2">
+            让其他用户看到您的在线状态
+          </p>
+        </v-col>
 
-          <v-divider />
+        <v-divider class="my-2" />
 
-          <!-- 允许通过邮箱搜索 -->
-          <v-list-item>
-            <template v-slot:prepend>
-              <v-icon>mdi-email-search-outline</v-icon>
-            </template>
-            <v-list-item-title>允许通过邮箱搜索</v-list-item-title>
-            <v-list-item-subtitle>其他用户可以通过您的邮箱找到您</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-switch
-                v-model="localPrivacy.allowSearchByEmail"
-                color="primary"
-                hide-details
-                @update:model-value="handlePrivacyChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
+        <!-- 搜索权限 -->
+        <v-col cols="12">
+          <p class="text-subtitle-2 mb-3">
+            <v-icon>mdi-account-search</v-icon>
+            搜索权限
+          </p>
+          <v-switch
+            v-model="allowSearchByEmail"
+            label="允许通过邮箱搜索"
+            color="primary"
+            hide-details
+            class="mb-3"
+            @update:model-value="handleSearchByEmailChange"
+          />
+          <v-switch
+            v-model="allowSearchByPhone"
+            label="允许通过手机号搜索"
+            color="primary"
+            hide-details
+            @update:model-value="handleSearchByPhoneChange"
+          />
+          <p class="text-caption text-medium-emphasis mt-2">
+            控制其他用户是否可以通过您的联系方式找到您
+          </p>
+        </v-col>
 
-          <v-divider />
+        <v-divider class="my-2" />
 
-          <!-- 允许通过手机搜索 -->
-          <v-list-item>
-            <template v-slot:prepend>
-              <v-icon>mdi-phone-search-outline</v-icon>
-            </template>
-            <v-list-item-title>允许通过手机搜索</v-list-item-title>
-            <v-list-item-subtitle>其他用户可以通过您的手机号找到您</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-switch
-                v-model="localPrivacy.allowSearchByPhone"
-                color="primary"
-                hide-details
-                @update:model-value="handlePrivacyChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
+        <!-- 活动可见性 -->
+        <v-col cols="12">
+          <p class="text-subtitle-2 mb-3">
+            <v-icon>mdi-chart-timeline</v-icon>
+            活动可见性
+          </p>
+          <v-switch
+            v-model="showActivityStatus"
+            label="显示活动状态"
+            color="primary"
+            hide-details
+            class="mb-3"
+            @update:model-value="handleActivityStatusChange"
+          />
+          <p class="text-caption text-medium-emphasis">
+            显示您最近的活动，如完成的任务、创建的目标等
+          </p>
+        </v-col>
 
-          <v-divider />
+        <v-divider class="my-2" />
 
-          <!-- 共享使用数据 -->
-          <v-list-item>
-            <template v-slot:prepend>
-              <v-icon>mdi-chart-line</v-icon>
-            </template>
-            <v-list-item-title>共享使用数据</v-list-item-title>
-            <v-list-item-subtitle>帮助我们改进产品体验</v-list-item-subtitle>
-            <template v-slot:append>
-              <v-switch
-                v-model="localPrivacy.shareUsageData"
-                color="primary"
-                hide-details
-                @update:model-value="handlePrivacyChange"
-                :disabled="loading"
-              />
-            </template>
-          </v-list-item>
-        </v-list>
-      </v-col>
-    </v-row>
+        <!-- 数据共享 -->
+        <v-col cols="12">
+          <p class="text-subtitle-2 mb-3">
+            <v-icon>mdi-database-export</v-icon>
+            数据共享
+          </p>
+          <v-switch
+            v-model="shareUsageData"
+            label="共享使用数据"
+            color="primary"
+            hide-details
+            class="mb-3"
+            @update:model-value="handleUsageDataChange"
+          />
+          <p class="text-caption text-medium-emphasis mb-3">
+            帮助我们改进产品，您的数据将被匿名化处理
+          </p>
+          
+          <v-switch
+            v-model="shareCrashReports"
+            label="共享崩溃报告"
+            color="primary"
+            hide-details
+            @update:model-value="handleCrashReportsChange"
+          />
+          <p class="text-caption text-medium-emphasis mt-2">
+            自动发送崩溃报告以帮助我们修复问题
+          </p>
+        </v-col>
 
-    <!-- 操作按钮 -->
-    <v-row>
-      <v-col cols="12" class="d-flex justify-end ga-2">
-        <v-btn
-          color="primary"
-          @click="handleSaveAll"
-          :disabled="loading || !hasChanges"
-          :loading="loading"
-        >
-          保存更改
-        </v-btn>
-        <v-btn variant="outlined" @click="handleReset" :disabled="loading"> 重置 </v-btn>
-      </v-col>
-    </v-row>
-  </v-container>
+        <v-divider class="my-2" />
+
+        <!-- 数据管理 -->
+        <v-col cols="12">
+          <p class="text-subtitle-2 mb-3">
+            <v-icon>mdi-database-cog</v-icon>
+            数据管理
+          </p>
+          <v-row>
+            <v-col cols="12" md="4">
+              <v-btn
+                block
+                variant="outlined"
+                prepend-icon="mdi-download"
+              >
+                导出数据
+              </v-btn>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-btn
+                block
+                variant="outlined"
+                prepend-icon="mdi-delete-sweep"
+              >
+                清除缓存
+              </v-btn>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-btn
+                block
+                variant="outlined"
+                color="error"
+                prepend-icon="mdi-account-remove"
+              >
+                删除账户
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-col>
+
+        <!-- 隐私说明 -->
+        <v-col cols="12">
+          <v-alert
+            type="info"
+            variant="tonal"
+            density="compact"
+            icon="mdi-information"
+          >
+            您的隐私对我们很重要。查看我们的
+            <a href="#" class="text-primary">隐私政策</a>
+            了解更多关于我们如何保护您的数据。
+          </v-alert>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { useUserSetting } from '../composables/useUserSetting';
-import { type SettingContracts } from '@dailyuse/contracts';
+import { ref, watch } from 'vue';
+import { useUserSettingStore } from '../stores/userSettingStore';
 
-// ===== Props =====
-const props = defineProps<{
-  autoSave?: boolean;
-}>();
+const settingStore = useUserSettingStore();
 
-// ===== Composables =====
-const { userSetting, loading, updatePrivacy } = useUserSetting();
+// Local state
+const profileVisibility = ref(settingStore.settings?.privacyProfileVisibility ?? 'FRIENDS');
+const showOnlineStatus = ref(settingStore.settings?.privacyShowOnlineStatus ?? true);
+const allowSearchByEmail = ref(settingStore.settings?.privacyAllowSearchByEmail ?? true);
+const allowSearchByPhone = ref(settingStore.settings?.privacyAllowSearchByPhone ?? false);
+const showActivityStatus = ref(settingStore.settings?.privacyShowActivityStatus ?? true);
+const shareUsageData = ref(settingStore.settings?.privacyShareUsageData ?? true);
+const shareCrashReports = ref(settingStore.settings?.privacyShareCrashReports ?? true);
 
-// ===== 选项配置 =====
+// Options
 const visibilityOptions = [
-  { value: 'PUBLIC', text: '公开' },
-  { value: 'FRIENDS_ONLY', text: '仅好友' },
-  { value: 'PRIVATE', text: '私密' },
+  {
+    label: '公开',
+    value: 'PUBLIC',
+    icon: 'mdi-earth',
+    description: '所有人都可以查看您的资料',
+  },
+  {
+    label: '好友',
+    value: 'FRIENDS',
+    icon: 'mdi-account-group',
+    description: '只有您的好友可以查看',
+  },
+  {
+    label: '私密',
+    value: 'PRIVATE',
+    icon: 'mdi-lock',
+    description: '只有您自己可以查看',
+  },
 ];
 
-// ===== 本地状态 =====
-const localPrivacy = ref<SettingContracts.UpdatePrivacyRequest>({
-  profileVisibility: 'PUBLIC',
-  showOnlineStatus: true,
-  allowSearchByEmail: true,
-  allowSearchByPhone: false,
-  shareUsageData: true,
-});
-
-const originalPrivacy = ref<SettingContracts.UpdatePrivacyRequest>({});
-
-// ===== 计算属性 =====
-const hasChanges = computed(() => {
-  return JSON.stringify(localPrivacy.value) !== JSON.stringify(originalPrivacy.value);
-});
-
-// ===== 监听用户设置变化 =====
+// Watch store changes
 watch(
-  () => userSetting.value?.privacy,
-  (privacy) => {
-    if (privacy) {
-      localPrivacy.value = {
-        profileVisibility: privacy.profileVisibility as 'PUBLIC' | 'PRIVATE' | 'FRIENDS_ONLY',
-        showOnlineStatus: privacy.showOnlineStatus,
-        allowSearchByEmail: privacy.allowSearchByEmail,
-        allowSearchByPhone: privacy.allowSearchByPhone,
-        shareUsageData: privacy.shareUsageData,
-      };
-      originalPrivacy.value = { ...localPrivacy.value };
+  () => settingStore.settings,
+  (newSettings) => {
+    if (newSettings) {
+      profileVisibility.value = newSettings.privacyProfileVisibility;
+      showOnlineStatus.value = newSettings.privacyShowOnlineStatus;
+      allowSearchByEmail.value = newSettings.privacyAllowSearchByEmail;
+      allowSearchByPhone.value = newSettings.privacyAllowSearchByPhone;
+      showActivityStatus.value = newSettings.privacyShowActivityStatus;
+      shareUsageData.value = newSettings.privacyShareUsageData;
+      shareCrashReports.value = newSettings.privacyShareCrashReports;
     }
   },
-  { immediate: true, deep: true },
+  { deep: true },
 );
 
-// ===== 事件处理 =====
-const handlePrivacyChange = async () => {
-  if (props.autoSave) {
-    await updatePrivacy(localPrivacy.value);
-  }
-};
+// Handlers
+async function handleProfileVisibilityChange(value: string) {
+  await settingStore.updateSettings({ privacyProfileVisibility: value });
+}
 
-const handleSaveAll = async () => {
-  await updatePrivacy(localPrivacy.value);
-  originalPrivacy.value = { ...localPrivacy.value };
-};
+async function handleOnlineStatusChange(value: boolean) {
+  await settingStore.updateSettings({ privacyShowOnlineStatus: value });
+}
 
-const handleReset = () => {
-  localPrivacy.value = { ...originalPrivacy.value };
-};
+async function handleSearchByEmailChange(value: boolean) {
+  await settingStore.updateSettings({ privacyAllowSearchByEmail: value });
+}
+
+async function handleSearchByPhoneChange(value: boolean) {
+  await settingStore.updateSettings({ privacyAllowSearchByPhone: value });
+}
+
+async function handleActivityStatusChange(value: boolean) {
+  await settingStore.updateSettings({ privacyShowActivityStatus: value });
+}
+
+async function handleUsageDataChange(value: boolean) {
+  await settingStore.updateSettings({ privacyShareUsageData: value });
+}
+
+async function handleCrashReportsChange(value: boolean) {
+  await settingStore.updateSettings({ privacyShareCrashReports: value });
+}
 </script>
-
-<style scoped>
-/* Vuetify 组件自带样式，无需额外 CSS */
-</style>
