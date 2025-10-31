@@ -234,15 +234,29 @@ export const appRoutes: RouteRecordRaw[] = [
 
       ...scheduleRoutes,
 
-      // 仓储管理
+      // 知识仓库 (Knowledge Repository - Document Management)
+      {
+        path: '/repository',
+        name: 'repository',
+        component: () => import('@/modules/document/views/RepositoryPage.vue'),
+        meta: {
+          title: '知识仓库',
+          showInNav: true,
+          icon: 'mdi-book-open-variant',
+          order: 6,
+          requiresAuth: true,
+        },
+      },
+
+      // 仓储管理 (Legacy)
       {
         path: '/repositories',
         name: 'repositories',
         meta: {
           title: '仓储管理',
-          showInNav: true,
+          showInNav: false, // 隐藏旧的仓储管理，使用新的知识仓库
           icon: 'mdi-source-repository',
-          order: 6,
+          order: 7,
           requiresAuth: true,
         },
         children: [
@@ -278,7 +292,7 @@ export const appRoutes: RouteRecordRaw[] = [
           title: '账户设置',
           showInNav: true,
           icon: 'mdi-account-cog',
-          order: 7,
+          order: 8,
           requiresAuth: true,
         },
         children: [
@@ -322,7 +336,7 @@ export const appRoutes: RouteRecordRaw[] = [
           title: '应用设置',
           showInNav: true,
           icon: 'mdi-cog',
-          order: 8,
+          order: 9,
           requiresAuth: true,
         },
         // 新版本使用内部标签导航，不需要子路由

@@ -18,6 +18,7 @@ export * as AuthenticationContracts from './modules/authentication';
 export * as ScheduleContracts from './modules/schedule';
 export * as SettingContracts from './modules/setting';
 export * as NotificationContracts from './modules/notification';
+export * as DocumentContracts from './document.contracts';
 
 export {
   ScheduleTaskStatus,
