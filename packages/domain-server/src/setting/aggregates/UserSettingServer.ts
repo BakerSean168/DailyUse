@@ -17,13 +17,13 @@ type ScheduleViewType = SettingContracts.ScheduleViewType;
 type ProfileVisibility = SettingContracts.ProfileVisibility;
 
 const ThemeMode = SettingContracts.ThemeMode;
-const FontSize = SettingContracts.FontSize;
-const DateFormat = SettingContracts.DateFormat;
-const TimeFormat = SettingContracts.TimeFormat;
-const TaskViewType = SettingContracts.TaskViewType;
-const GoalViewType = SettingContracts.GoalViewType;
-const ScheduleViewType = SettingContracts.ScheduleViewType;
-const ProfileVisibility = SettingContracts.ProfileVisibility;
+const FontSizeEnum = SettingContracts.FontSize;
+const DateFormatEnum = SettingContracts.DateFormat;
+const TimeFormatEnum = SettingContracts.TimeFormat;
+const TaskViewTypeEnum = SettingContracts.TaskViewType;
+const GoalViewTypeEnum = SettingContracts.GoalViewType;
+const ScheduleViewTypeEnum = SettingContracts.ScheduleViewType;
+const ProfileVisibilityEnum = SettingContracts.ProfileVisibility;
 
 /**
  * 用户设置聚合根服务端实现
@@ -312,7 +312,7 @@ export class UserSettingServer extends AggregateRoot implements IUserSettingServ
     const defaultAppearance: UserSettingServer['_appearance'] = {
       theme: ThemeMode.AUTO,
       accentColor: '#3B82F6',
-      fontSize: FontSize.MEDIUM,
+      fontSize: FontSizeEnum.MEDIUM,
       fontFamily: null,
       compactMode: false,
     };
@@ -321,17 +321,17 @@ export class UserSettingServer extends AggregateRoot implements IUserSettingServ
     const defaultLocale: UserSettingServer['_locale'] = {
       language: 'zh-CN',
       timezone: 'Asia/Shanghai',
-      dateFormat: DateFormat.YYYY_MM_DD,
-      timeFormat: TimeFormat.H24,
+      dateFormat: DateFormatEnum.YYYY_MM_DD,
+      timeFormat: TimeFormatEnum.H24,
       weekStartsOn: 1, // Monday
       currency: 'CNY',
     };
 
     // 默认工作流设置
     const defaultWorkflow: UserSettingServer['_workflow'] = {
-      defaultTaskView: TaskViewType.LIST,
-      defaultGoalView: GoalViewType.LIST,
-      defaultScheduleView: ScheduleViewType.WEEK,
+      defaultTaskView: TaskViewTypeEnum.LIST,
+      defaultGoalView: GoalViewTypeEnum.LIST,
+      defaultScheduleView: ScheduleViewTypeEnum.WEEK,
       autoSave: true,
       autoSaveInterval: 30000, // 30 seconds
       confirmBeforeDelete: true,
@@ -345,7 +345,7 @@ export class UserSettingServer extends AggregateRoot implements IUserSettingServ
 
     // 默认隐私设置
     const defaultPrivacy: UserSettingServer['_privacy'] = {
-      profileVisibility: ProfileVisibility.PRIVATE,
+      profileVisibility: ProfileVisibilityEnum.PRIVATE,
       showOnlineStatus: true,
       allowSearchByEmail: true,
       allowSearchByPhone: false,

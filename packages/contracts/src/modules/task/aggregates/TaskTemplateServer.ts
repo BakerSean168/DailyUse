@@ -55,7 +55,7 @@ export interface TaskTemplateClientDTO {
   instances?: any[];
   displayTitle: string;
   taskTypeText: string;
-  timeDisplayText: string;
+  timeDisplayText: string | null; // null for ONE_TIME tasks
   recurrenceText?: string | null;
   importanceText: string;
   urgencyText: string;

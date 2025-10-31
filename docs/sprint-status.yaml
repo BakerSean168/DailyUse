@@ -78,19 +78,19 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Notification Module (通知中心)
-  epic-6: done  # ✅ COMPLETED (2025-10-30) - 100% 完成
-  6-1-notification-crud-and-multi-channel: done  # Backend ✅ (8 files, ~1,220 lines) Frontend ✅ (9 files, ~795 lines)
+  epic-6: contexted
+  6-1-notification-crud-and-multi-channel: backlog
   epic-6-retrospective: optional
 
   # Epic 7: Repository Module (知识仓库)
-  epic-7: done  # ✅ COMPLETED (2025-10-31) - 13 Story Points
-  7-1-document-crud-basics: done  # ✅ COMPLETED (2025-10-30) Backend ✅ (8 files, 700 lines) Frontend ✅ (7 files, 573 lines) Total: 1,273 lines
-  7-2-git-style-version-management: done  # ✅ COMPLETED (2025-10-31) Backend ✅ (~890 lines) Frontend ✅ (~810 lines) Total: ~1,700 lines
+  epic-7: contexted
+  7-1-document-crud-basics: backlog
+  7-2-git-style-version-management: backlog
   epic-7-retrospective: optional
 
   # Epic 8: Editor Module (Markdown 编辑器)
-  epic-8: in-progress  # 🚧 开始实施 (2025-10-31)
-  8-1-markdown-editor-basics: in-progress  # 🚧 开始实施 (2025-10-31)
+  epic-8: contexted
+  8-1-markdown-editor-basics: backlog
   8-2-bidirectional-links: backlog
   epic-8-retrospective: optional
 
