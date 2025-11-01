@@ -205,16 +205,30 @@ export const loginRedirectGuard = async (
     }
   }
 
-  // 如果访问登录页面但已经认证，重定向到首页
-  if (to.name === 'auth' && AuthManager.isAuthenticated()) {
-    console.log('🔄 [LoginRedirectGuard] 用户已认证，重定向到首页');
-    const redirect = (to.query.redirect as string) || '/';
-    next(redirect);
-    return;
+  // 如果访问登录页面，检查认证状态
+  if (to.name === 'auth') {
+    // 检查 token 是否过期
+    if (AuthManager.isTokenExpired()) {
+      console.log('⏰ [LoginRedirectGuard] Token已过期，清除认证状态');
+      AuthManager.clearTokens();
+      localStorage.removeItem('authentication');
+      localStorage.removeItem('auth');
+      // 继续到登录页
+      next();
+      return;
+    }
+    
+    // 如果已认证且 token 有效，重定向到首页
+    if (AuthManager.isAuthenticated()) {
+      console.log('🔄 [LoginRedirectGuard] 用户已认证且token有效，重定向到首页');
+      const redirect = (to.query.redirect as string) || '/';
+      next(redirect);
+      return;
+    }
   }
 
   // 如果未认证或访问的不是认证页面，继续导航
-  console.log('✅ [LoginRedirectGuard] 继续导航到认证页面');
+  console.log('✅ [LoginRedirectGuard] 继续导航');
   next();
 };
 

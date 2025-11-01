@@ -33,13 +33,28 @@ export function registerAuthenticationInitializationTasks(): void {
       const isTokenExpired = AuthManager.isTokenExpired();
 
       if (!accessToken || !refreshToken) {
-        console.log('ℹ️ [AuthModule] 未发现有效的 token');
+        console.log('ℹ️ [AuthModule] 未发现有效的 token，清除旧数据');
+        // 清除可能残留的认证数据
+        localStorage.removeItem('authentication');
+        localStorage.removeItem('auth');
+        accountStore.currentAccount = null;
+        // 确保 loading 状态为 false
+        const authStore = useAuthStore();
+        authStore.setLoading(false);
         return;
       }
 
       if (isTokenExpired) {
         console.log('⚠️ [AuthModule] Token已过期，清除认证状态');
         AuthManager.clearTokens();
+        // 清除 Pinia 持久化的数据
+        localStorage.removeItem('authentication');
+        localStorage.removeItem('auth'); // 兼容旧版本
+        // 清除账户信息
+        accountStore.currentAccount = null;
+        // 确保 loading 状态为 false
+        const authStore = useAuthStore();
+        authStore.setLoading(false);
         return;
       }
 
@@ -67,9 +82,15 @@ export function registerAuthenticationInitializationTasks(): void {
         } catch (error) {
           console.error('❌ [AuthModule] 解析持久化数据失败:', error);
           localStorage.removeItem('authentication');
+          // 确保 loading 状态为 false
+          const authStore = useAuthStore();
+          authStore.setLoading(false);
         }
       } else {
         console.log('ℹ️ [AuthModule] 未发现持久化的账户信息');
+        // 确保 loading 状态为 false
+        const authStore = useAuthStore();
+        authStore.setLoading(false);
       }
     },
     cleanup: async () => {

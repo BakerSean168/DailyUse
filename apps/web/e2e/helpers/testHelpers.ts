@@ -1,11 +1,41 @@
 import { Page } from '@playwright/test';
 
 /**
- * 测试用户凭据
+ * ========================================
+ * 测试用户配置
+ * ========================================
+ * 
+ * 这些用户需要在运行 E2E 测试前预先创建
+ * 运行命令: pnpm test:seed
+ * 
+ * 详细说明: /tools/test/README.md
+ */
+
+/**
+ * 主要测试用户（用于大部分测试）
  */
 export const TEST_USER = {
   username: 'testuser',
   password: 'Test123456!',
+  email: 'testuser@example.com',
+};
+
+/**
+ * 第二个测试用户（用于多用户交互测试）
+ */
+export const TEST_USER_2 = {
+  username: 'testuser2',
+  password: 'Test123456!',
+  email: 'testuser2@example.com',
+};
+
+/**
+ * 管理员测试用户
+ */
+export const ADMIN_TEST_USER = {
+  username: 'admintest',
+  password: 'Admin123456!',
+  email: 'admintest@example.com',
 };
 
 /**
@@ -51,13 +81,35 @@ export async function login(
 ) {
   console.log(`[Auth] 开始登录: ${username}`);
 
-  // 访问登录页面 (Web 端是 /auth)
-  await page.goto('/auth');
+  // 1. 先清理所有认证状态（清除旧的 token、session 等）
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    // 清除所有 cookies
+    document.cookie.split(';').forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, '')
+        .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+    });
+  });
+  console.log('[Auth] 已清理旧的认证状态');
+
+  // 2. 访问登录页面 (Web 端是 /auth)，使用 waitUntil: 'domcontentloaded' 避免缓存
+  await page.goto('/auth', { waitUntil: 'domcontentloaded' });
+  
+  // 再次确保清理完成（防止页面加载时恢复了状态）
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
 
   // 等待页面加载
   await page.waitForLoadState('networkidle');
+  
+  // 等待一下，确保页面状态更新完成
+  await page.waitForTimeout(500);
 
-  // 等待 "登录" 标签页加载 (确保在登录模式，而不是注册模式)
+  // 3. 等待 "登录" 标签页加载 (确保在登录模式，而不是注册模式)
   const loginTab = page.locator('button.v-tab:has-text("登录")');
   await loginTab.waitFor({ state: 'visible', timeout: 10000 });
   await loginTab.click();

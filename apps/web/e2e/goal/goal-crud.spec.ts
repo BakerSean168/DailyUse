@@ -12,7 +12,7 @@ test.describe('Goal CRUD - 目标管理基础功能', () => {
   test.beforeEach(async ({ page: testPage }) => {
     page = testPage;
 
-    // 登录
+    // 使用预先创建的测试用户登录
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // 导航到 Goal 页面
