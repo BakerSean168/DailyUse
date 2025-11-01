@@ -7,3 +7,4 @@ export { RepositoryConfig } from './RepositoryConfig';
 export { RepositoryStats } from './RepositoryStats';
 export { SyncStatus } from './SyncStatus';
 export { GitInfo } from './GitInfo';
+export { ResourceMetadata } from './ResourceMetadata';
