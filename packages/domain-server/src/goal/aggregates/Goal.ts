@@ -698,6 +698,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
         aggregationMethod: 'LAST' as any,
         unit: params.unit,
       },
+      weight: params.weight, // ✅ 传递weight参数
       order: this._keyResults.length,
     });
     return keyResult;

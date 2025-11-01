@@ -665,6 +665,8 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
    * 处理目标完成事件
    */
   public onGoalCompleted(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+    // 目标从 ACTIVE 状态变为 COMPLETED
+    this._activeGoals = Math.max(0, this._activeGoals - 1);
     this._completedGoals++;
 
     // 检查是否在本周/本月完成

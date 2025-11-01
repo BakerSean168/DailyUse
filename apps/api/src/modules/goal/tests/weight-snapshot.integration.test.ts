@@ -135,7 +135,7 @@ describe('Weight Snapshot Integration Tests', () => {
         operatorUuid: testAccountUuid,
       });
 
-      expect(snapshot.reason).toBeNull();
+      expect(snapshot.reason).toBeUndefined(); // ✅ reason 是 optional,未提供时为 undefined
       expect(snapshot.weightDelta).toBe(-5);
     });
 
