@@ -111,6 +111,7 @@ export class KeyResult extends Entity implements IKeyResultServer {
     title: string;
     description?: string;
     progress: KeyResultProgressServerDTO;
+    weight?: number;
     order?: number;
   }): KeyResult {
     // 验证
@@ -128,6 +129,7 @@ export class KeyResult extends Entity implements IKeyResultServer {
       title: params.title.trim(),
       description: params.description?.trim() || null,
       progress: params.progress,
+      weight: params.weight,
       order: params.order ?? 0,
       createdAt: now,
       updatedAt: now,
