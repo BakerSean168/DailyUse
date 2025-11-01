@@ -16,7 +16,7 @@ test.describe('Goal Statistics - 目标统计', () => {
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // 导航到 Goal 页面
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
   });
 
   test('[P0] 应该显示目标总数统计', async () => {
@@ -72,7 +72,7 @@ test.describe('Goal Statistics - 目标统计', () => {
     await completeGoal(page);
 
     // Act: 返回并查看统计
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
     await viewStatistics(page);
 
     // Assert: 验证已完成数量
@@ -192,7 +192,7 @@ test.describe('Goal Progress Tracking - 进度追踪', () => {
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // 导航并创建目标
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
     await createGoal(page, {
       title: testGoalTitle,
       description: '用于进度追踪测试',
@@ -450,7 +450,7 @@ async function updateKeyResultProgress(
 
 async function cleanupTestGoal(page: Page, goalTitle: string) {
   try {
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
     const goalCard = page.locator(`text=${goalTitle}`);
     if (await goalCard.isVisible()) {
       await goalCard.locator('..').hover();
