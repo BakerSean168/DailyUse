@@ -39,7 +39,10 @@ export class GoalNotFoundError extends DomainError {
  * KeyResult 未找到错误
  */
 export class KeyResultNotFoundError extends DomainError {
-  constructor(krUuid: string) {
-    super('KEY_RESULT_NOT_FOUND', `KeyResult not found: ${krUuid}`, { krUuid }, 404);
+  constructor(krUuid: string, goalUuid?: string) {
+    const message = goalUuid
+      ? `KeyResult not found in Goal ${goalUuid}: ${krUuid}`
+      : `KeyResult not found: ${krUuid}`;
+    super('KEY_RESULT_NOT_FOUND', message, { krUuid, goalUuid }, 404);
   }
 }

@@ -20,7 +20,7 @@ describe('Goal Statistics Integration Tests', () => {
     // 数据库清理由setup-database.ts自动处理
 
     // 预创建测试账户（简化的账户ID）
-    await createTestAccounts(['123', '456', '789', 'batch']);
+    await createTestAccounts(['123', '456', '789', 'batch', 'recalc', 'perf', 'init', 'delete']);
 
     // 获取真实 Prisma 客户端
     const prisma = getTestPrisma();
@@ -176,6 +176,9 @@ describe('Goal Statistics Integration Tests', () => {
         importance: ImportanceLevel.Important,
         urgency: UrgencyLevel.Medium,
       });
+
+      // Wait for event processing (async)
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Initialize statistics (like POST /api/goals/statistics/initialize)
       const result = await statisticsService.initializeStatistics({ accountUuid });
