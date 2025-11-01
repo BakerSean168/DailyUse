@@ -18,12 +18,13 @@ import type {
   ResourceServerDTO,
   ResourcePersistenceDTO,
   ResourceClientDTO,
-  ResourceMetadata,
+  ResourceMetadata as IResourceMetadata,
   ResourceReferenceServer,
   LinkedContentServer,
 } from '@dailyuse/contracts';
 import { ResourceReference } from './ResourceReference';
 import { LinkedContent } from './LinkedContent';
+import { ResourceMetadata } from '../value-objects/ResourceMetadata';
 
 // ==================== 创建 DTO ====================
 
@@ -105,8 +106,9 @@ export class Resource {
     return this._status;
   }
 
-  get metadata(): ResourceMetadata {
-    return { ...this._metadata };
+  get metadata(): IResourceMetadata {
+    // Value Object 可以直接返回，或返回其 DTO 表示
+    return this._metadata.toPlainObject();
   }
 
   get updatedAt(): number {
@@ -126,8 +128,8 @@ export class Resource {
     const now = Date.now();
     const uuid = uuidv4();
 
-    // 默认元数据
-    const defaultMetadata: ResourceMetadata = {
+    // 创建 Value Object - 默认元数据
+    const defaultMetadata = new ResourceMetadata({
       mimeType: Resource.getMimeTypeForResourceType(dto.type),
       encoding: 'utf-8',
       thumbnailPath: null,
@@ -135,7 +137,7 @@ export class Resource {
       accessCount: 0,
       lastAccessedAt: null,
       ...dto.metadata,
-    };
+    });
 
     return new Resource(
       uuid,
@@ -161,6 +163,10 @@ export class Resource {
    * 从持久化数据重建 Resource
    */
   static fromPersistence(data: ResourcePersistenceDTO): Resource {
+    // 从 JSON 解析并创建 Value Object
+    const metadataDTO = JSON.parse(data.metadata) as IResourceMetadata;
+    const metadata = ResourceMetadata.fromPlainObject(metadataDTO);
+
     return new Resource(
       data.uuid,
       data.repositoryUuid,
@@ -174,7 +180,7 @@ export class Resource {
       JSON.parse(data.tags),
       data.category || null,
       data.status,
-      JSON.parse(data.metadata),
+      metadata, // Value Object 实例
       data.createdAt,
       data.updatedAt,
       data.modifiedAt || null,
@@ -271,8 +277,9 @@ export class Resource {
   /**
    * 更新元数据
    */
-  updateMetadata(metadata: Partial<ResourceMetadata>): void {
-    this._metadata = { ...this._metadata, ...metadata };
+  updateMetadata(metadata: Partial<IResourceMetadata>): void {
+    // 使用 Value Object 的 with() 方法
+    this._metadata = this._metadata.with(metadata);
     this._updatedAt = Date.now();
   }
 
@@ -356,11 +363,8 @@ export class Resource {
    * 增加访问计数
    */
   incrementAccessCount(): void {
-    if (!this._metadata.accessCount) {
-      this._metadata.accessCount = 0;
-    }
-    this._metadata.accessCount++;
-    this._metadata.lastAccessedAt = Date.now();
+    // 使用 Value Object 的辅助方法
+    this._metadata = this._metadata.incrementAccessCount();
     this._updatedAt = Date.now();
   }
 
@@ -376,7 +380,12 @@ export class Resource {
    * 收藏/取消收藏
    */
   toggleFavorite(): void {
-    this._metadata.isFavorite = !this._metadata.isFavorite;
+    // 使用 Value Object 的辅助方法
+    if (this._metadata.isFavorite) {
+      this._metadata = this._metadata.unmarkAsFavorite();
+    } else {
+      this._metadata = this._metadata.markAsFavorite();
+    }
     this._updatedAt = Date.now();
   }
 
@@ -384,8 +393,8 @@ export class Resource {
    * 记录访问
    */
   recordAccess(): void {
-    this._metadata.accessCount = (this._metadata.accessCount || 0) + 1;
-    this._metadata.lastAccessedAt = Date.now();
+    // 使用 Value Object 的辅助方法
+    this._metadata = this._metadata.incrementAccessCount();
     this._updatedAt = Date.now();
   }
 
@@ -412,11 +421,8 @@ export class Resource {
       throw new Error('updateMarkdownContent() is only for MARKDOWN resources');
     }
 
-    // 更新 metadata 中的 content
-    this._metadata = {
-      ...this._metadata,
-      content,
-    };
+    // 使用 Value Object 的 with() 方法更新 metadata
+    this._metadata = this._metadata.with({ content });
 
     // 自动生成摘要 (取前 200 个字符)
     const summary = content
@@ -453,7 +459,8 @@ export class Resource {
     if (this.type !== 'image' && this.type !== 'video') {
       throw new Error('setThumbnailPath() is only for IMAGE or VIDEO resources');
     }
-    this._metadata.thumbnailPath = thumbnailPath;
+    // 使用 Value Object 的 with() 方法
+    this._metadata = this._metadata.with({ thumbnailPath });
     this._updatedAt = Date.now();
   }
 

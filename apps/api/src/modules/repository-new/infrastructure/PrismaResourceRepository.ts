@@ -15,7 +15,7 @@ export class PrismaResourceRepository implements IResourceRepository {
    * 保存资源（创建或更新）
    */
   async save(resource: Resource): Promise<void> {
-    const persistenceDTO = resource.toPersistence();
+    const persistenceDTO = resource.toPersistenceDTO();
 
     await this.prisma.resource.upsert({
       where: { uuid: persistenceDTO.uuid },
@@ -61,10 +61,11 @@ export class PrismaResourceRepository implements IResourceRepository {
     }
 
     if (options.tags && options.tags.length > 0) {
-      // JSON 查询（Prisma 语法）
-      where.tags = {
-        array_contains: options.tags,
-      };
+      // JSON 字符串查询：检查 tags JSON 是否包含任一标签
+      // 例如: tags='["tag1","tag2"]' 包含 "tag1"
+      where.OR = options.tags.map((tag) => ({
+        tags: { contains: `"${tag}"` },
+      }));
     }
 
     // 查询总数
@@ -101,10 +102,14 @@ export class PrismaResourceRepository implements IResourceRepository {
   async findByTags(tags: string[]): Promise<Resource[]> {
     const records = await this.prisma.resource.findMany({
       where: {
-        tags: {
-          array_contains: tags,
-        },
-        status: { not: 'DELETED' },
+        AND: [
+          { status: { not: 'DELETED' } },
+          {
+            OR: tags.map((tag) => ({
+              tags: { contains: `"${tag}"` },
+            })),
+          },
+        ],
       },
     });
 
@@ -135,7 +140,7 @@ export class PrismaResourceRepository implements IResourceRepository {
       name: dto.name,
       type: dto.type,
       path: dto.path,
-      size: dto.size,
+      size: BigInt(dto.size), // number → BigInt
       description: dto.description,
       author: dto.author,
       version: dto.version,
@@ -143,9 +148,9 @@ export class PrismaResourceRepository implements IResourceRepository {
       category: dto.category,
       status: dto.status,
       metadata: dto.metadata,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      modifiedAt: dto.modifiedAt,
+      createdAt: BigInt(dto.createdAt), // number → BigInt
+      updatedAt: BigInt(dto.updatedAt), // number → BigInt
+      modifiedAt: dto.modifiedAt ? BigInt(dto.modifiedAt) : null, // number → BigInt
     };
   }
 
@@ -153,7 +158,7 @@ export class PrismaResourceRepository implements IResourceRepository {
     return {
       name: dto.name,
       path: dto.path,
-      size: dto.size,
+      size: BigInt(dto.size), // number → BigInt
       description: dto.description,
       author: dto.author,
       version: dto.version,
@@ -161,8 +166,8 @@ export class PrismaResourceRepository implements IResourceRepository {
       category: dto.category,
       status: dto.status,
       metadata: dto.metadata,
-      updatedAt: dto.updatedAt,
-      modifiedAt: dto.modifiedAt,
+      updatedAt: BigInt(dto.updatedAt), // number → BigInt
+      modifiedAt: dto.modifiedAt ? BigInt(dto.modifiedAt) : null, // number → BigInt
     };
   }
 
@@ -173,7 +178,7 @@ export class PrismaResourceRepository implements IResourceRepository {
       name: record.name,
       type: record.type,
       path: record.path,
-      size: record.size,
+      size: Number(record.size), // BigInt → number
       description: record.description,
       author: record.author,
       version: record.version,
@@ -181,9 +186,9 @@ export class PrismaResourceRepository implements IResourceRepository {
       category: record.category,
       status: record.status,
       metadata: record.metadata,
-      createdAt: Number(record.createdAt),
-      updatedAt: Number(record.updatedAt),
-      modifiedAt: record.modifiedAt ? Number(record.modifiedAt) : null,
+      createdAt: Number(record.createdAt), // BigInt → number
+      updatedAt: Number(record.updatedAt), // BigInt → number
+      modifiedAt: record.modifiedAt ? Number(record.modifiedAt) : null, // BigInt → number
     };
 
     return Resource.fromPersistence(persistenceDTO);

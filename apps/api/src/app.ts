@@ -126,8 +126,9 @@ api.use('/repositories', authMiddleware, repositoryRouter);
 
 /**
  * repository-new 仓储模块 (Epic 7 重构版本 - MVP)
+ * DDD 架构 - Repository 聚合根 + Resource 实体
  */
-// 挂载新版仓储路由 - 需要认证
+// 挂载新版仓储路由 - 内置简单认证中间件（TODO: 升级为 JWT）
 api.use('', repositoryNewRouter);
 api.use('', resourceNewRouter);
 

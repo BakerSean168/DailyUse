@@ -15,7 +15,7 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
    * 保存仓库（创建或更新）
    */
   async save(repository: Repository): Promise<void> {
-    const data = repository.toPersistence();
+    const data = repository.toPersistenceDTO();
     await this.prisma.repository.upsert({
       where: { uuid: data.uuid },
       create: this.toPrismaCreateInput(data),
@@ -82,9 +82,10 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
       git: dto.git,
       syncStatus: dto.syncStatus,
       stats: dto.stats,
-      lastAccessedAt: dto.lastAccessedAt,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      // 转换: number (epoch ms) → DateTime
+      lastAccessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : null,
+      createdAt: new Date(dto.createdAt),
+      updatedAt: new Date(dto.updatedAt),
     };
   }
 
@@ -100,8 +101,9 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
       git: dto.git,
       syncStatus: dto.syncStatus,
       stats: dto.stats,
-      lastAccessedAt: dto.lastAccessedAt,
-      updatedAt: dto.updatedAt,
+      // 转换: number (epoch ms) → DateTime
+      lastAccessedAt: dto.lastAccessedAt ? new Date(dto.lastAccessedAt) : null,
+      updatedAt: new Date(dto.updatedAt),
     };
   }
 
@@ -119,11 +121,12 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
       git: record.git,
       syncStatus: record.syncStatus,
       stats: record.stats,
-      lastAccessedAt: record.lastAccessedAt ? Number(record.lastAccessedAt) : null,
-      createdAt: Number(record.createdAt),
-      updatedAt: Number(record.updatedAt),
+      // 转换: DateTime → number (epoch ms)
+      lastAccessedAt: record.lastAccessedAt ? record.lastAccessedAt.getTime() : null,
+      createdAt: record.createdAt.getTime(),
+      updatedAt: record.updatedAt.getTime(),
     };
 
-    return Repository.fromPersistence(persistenceDTO);
+    return Repository.fromPersistenceDTO(persistenceDTO);
   }
 }
