@@ -50,8 +50,15 @@ app.use(cookieParser());
 app.use(
   cors({
     origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-      if (!origin) return callback(null, true); // allow non-browser clients
+      // 允许非浏览器客户端（没有 origin header）
+      if (!origin) return callback(null, true);
+      
+      // 如果配置了通配符 *，允许所有源
+      if (allowedOrigins.includes('*')) return callback(null, true);
+      
+      // 检查是否在允许列表中
       if (allowedOrigins.includes(origin)) return callback(null, true);
+      
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,

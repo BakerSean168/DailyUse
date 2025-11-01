@@ -57,6 +57,7 @@
     "e2e:headed": "pnpm --filter @dailyuse/web e2e:headed",
     "e2e:debug": "pnpm --filter @dailyuse/web e2e:debug",
     "e2e:ui": "pnpm --filter @dailyuse/web e2e:ui",
+    "test:seed": "pnpm tsx tools/test/seed-test-user.ts",
     "// ========== Database (Prisma) ==========": "",
     "prisma": "pnpm --filter @dailyuse/api prisma",
     "prisma:generate": "pnpm --filter @dailyuse/api prisma:generate",
