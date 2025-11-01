@@ -81,7 +81,10 @@ export async function login(
 ) {
   console.log(`[Auth] 开始登录: ${username}`);
 
-  // 1. 先清理所有认证状态（清除旧的 token、session 等）
+  // 1. 先访问登录页面，这样才能访问 localStorage
+  await page.goto('http://localhost:5173/auth', { waitUntil: 'domcontentloaded' });
+  
+  // 2. 清理所有认证状态（清除旧的 token、session 等）
   await page.evaluate(() => {
     localStorage.clear();
     sessionStorage.clear();
@@ -94,16 +97,7 @@ export async function login(
   });
   console.log('[Auth] 已清理旧的认证状态');
 
-  // 2. 访问登录页面 (Web 端是 /auth)，使用 waitUntil: 'domcontentloaded' 避免缓存
-  await page.goto('/auth', { waitUntil: 'domcontentloaded' });
-  
-  // 再次确保清理完成（防止页面加载时恢复了状态）
-  await page.evaluate(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  });
-
-  // 等待页面加载
+  // 3. 等待页面加载完成
   await page.waitForLoadState('networkidle');
   
   // 等待一下，确保页面状态更新完成

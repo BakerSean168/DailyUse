@@ -18,7 +18,7 @@ test.describe('Goal KeyResult - 关键结果管理', () => {
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // 导航到 Goal 页面
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
 
     // 创建测试目标
     await createGoal(page, {
@@ -359,7 +359,7 @@ async function deleteKeyResult(page: Page, krTitle: string) {
 
 async function cleanupTestGoal(page: Page, goalTitle: string) {
   try {
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
     const goalCard = page.locator(`text=${goalTitle}`);
     if (await goalCard.isVisible()) {
       await goalCard.locator('..').hover();

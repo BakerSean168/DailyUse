@@ -20,7 +20,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // 导航到 Goal 页面
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
 
     // 创建两个测试目标
     await createGoal(page, {
@@ -353,7 +353,7 @@ async function viewFocusHistory(page: Page) {
 
 async function cleanupTestGoals(page: Page, goalTitles: string[]) {
   try {
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
     
     for (const title of goalTitles) {
       const goalCard = page.locator(`text=${title}`);

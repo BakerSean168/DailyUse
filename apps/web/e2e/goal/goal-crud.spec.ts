@@ -193,7 +193,7 @@ async function navigateToGoals(page: Page) {
   // 尝试多种导航方式
   try {
     // 方式 1: 直接访问 URL
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
   } catch {
     // 方式 2: 通过侧边栏点击
     const goalsLink = page.locator('text=目标').or(page.locator('text=Goals'));
