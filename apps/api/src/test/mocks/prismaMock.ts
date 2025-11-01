@@ -27,9 +27,10 @@ const mockDataStore = {
   reminderTemplate: new Map(),
   reminderExecution: new Map(),
   // Repository相关表
-  repositoryStatistics: new Map(),
+  repository: new Map(), // ✅ 添加：Repository 主表
+  repositoryStatistic: new Map(), // ✅ 修正：单数形式，与 Prisma Schema 一致
   // Goal Statistics
-  goalStatistics: new Map(),
+  goalStatistic: new Map(), // ✅ 修正：单数形式，与 Prisma Schema 一致
   // Setting相关表
   userSetting: new Map(),
   // 添加其他需要的表...
@@ -67,21 +68,31 @@ function includeRelations(tableName: keyof typeof mockDataStore, record: any, in
 
   // 处理 goal 表的关联
   if (tableName === 'goal') {
-    if (include.keyResults) {
+    // ✅ 支持 keyResults 和 keyResult (单复数都支持)
+    if (include.keyResults || include.keyResult) {
       const keyResults = Array.from(mockDataStore.keyResult.values()).filter(
         (kr: any) => kr.goalUuid === record.uuid,
       );
 
       // 如果 keyResults 也有 include，递归处理
-      if (include.keyResults.include?.records) {
+      const includeConfig = include.keyResults || include.keyResult;
+      if (includeConfig === true || includeConfig.include?.records) {
         result.keyResults = keyResults.map((kr: any) => {
-          const records = Array.from(mockDataStore.progressRecord.values()).filter(
-            (r: any) => r.keyResultUuid === kr.uuid,
-          );
-          return { ...kr, records };
+          if (includeConfig.include?.records) {
+            const records = Array.from(mockDataStore.progressRecord.values()).filter(
+              (r: any) => r.keyResultUuid === kr.uuid,
+            );
+            return { ...kr, records };
+          }
+          return kr;
         });
       } else {
         result.keyResults = keyResults;
+      }
+      
+      // ✅ 如果使用 keyResult (单数)，也返回到 keyResult 字段
+      if (include.keyResult) {
+        result.keyResult = result.keyResults;
       }
     }
 
@@ -434,10 +445,11 @@ export const mockPrismaClient = {
   reminderExecution: createMockModel('reminderExecution'),
 
   // Repository相关表
-  repositoryStatistics: createMockModel('repositoryStatistics'),
+  repository: createMockModel('repository'), // ✅ 添加：Repository 主表
+  repositoryStatistic: createMockModel('repositoryStatistic'), // ✅ 修正：单数形式
 
   // Goal Statistics
-  goalStatistics: createMockModel('goalStatistics'),
+  goalStatistic: createMockModel('goalStatistic'), // ✅ 修正：单数形式
 
   // Setting相关表
   userSetting: createMockModel('userSetting'),

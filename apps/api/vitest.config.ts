@@ -14,7 +14,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./src/test/setup-database.ts'], // ✅ 使用真实数据库
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}'],
     exclude: [
       'node_modules',

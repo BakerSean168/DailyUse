@@ -51,7 +51,7 @@ export class PrismaGoalRepository implements IGoalRepository {
    * 将 Prisma 模型映射为领域实体
    * 注意：Prisma Client 自动将 @map 的字段转换为 camelCase
    */
-  private mapToEntity(data: PrismaGoal & { keyResults?: any[] }): Goal {
+  private mapToEntity(data: PrismaGoal & { keyResults?: any[]; keyResult?: any[] }): Goal {
     const goal = Goal.fromPersistenceDTO({
       uuid: data.uuid,
       accountUuid: data.accountUuid, // Prisma camelCase
@@ -79,8 +79,10 @@ export class PrismaGoalRepository implements IGoalRepository {
     });
 
     // 恢复 KeyResults（如果有）
-    if (data.keyResults && data.keyResults.length > 0) {
-      for (const krData of data.keyResults) {
+    // ✅ 支持 keyResults 和 keyResult (单复数都支持)
+    const keyResultsData = data.keyResults || data.keyResult || [];
+    if (keyResultsData.length > 0) {
+      for (const krData of keyResultsData) {
         const keyResult = KeyResult.fromPersistenceDTO({
           uuid: krData.uuid,
           goalUuid: krData.goalUuid,
