@@ -48,6 +48,8 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
         completedFocusSessions: 0,
         totalFocusMinutes: 0,
         lastCalculatedAt: new Date(persistence.lastCalculatedAt),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       update: {
         totalGoals: persistence.totalGoals,
@@ -69,6 +71,7 @@ export class PrismaGoalStatisticsRepository implements IGoalStatisticsRepository
         totalReviews: persistence.totalReviews,
         averageRating: persistence.averageRating,
         lastCalculatedAt: new Date(persistence.lastCalculatedAt),
+        updatedAt: new Date(),
         // createdAt 不更新
       },
     });

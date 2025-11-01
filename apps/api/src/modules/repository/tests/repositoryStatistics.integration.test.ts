@@ -9,28 +9,22 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { setMockData, resetMockData } from '../../../test/mocks/prismaMock';
+import { getTestPrisma, cleanDatabase, createTestAccount } from '../../../test/helpers/database-helpers';
 
 // 测试配置
 const TEST_ACCOUNT_UUID = 'test-account-uuid-statistics';
 
 describe('RepositoryStatistics API 集成测试', () => {
   beforeEach(async () => {
-    // 重置 Mock 数据
-    resetMockData();
+    // 清理真实数据库
+    await cleanDatabase();
 
-    // 设置测试账户
-    setMockData('account', [
-      {
-        uuid: TEST_ACCOUNT_UUID,
-        username: 'testuser',
-        email: 'test@example.com',
-        accountType: 'local',
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]);
+    // 创建测试账户
+    await createTestAccount({
+      uuid: TEST_ACCOUNT_UUID,
+      username: 'testuser',
+      email: 'test@example.com',
+    });
   });
 
   describe('GET /api/repositories/statistics', () => {

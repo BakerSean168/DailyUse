@@ -10,13 +10,14 @@
  * 6. 业务规则验证（标题长度、日期有效性等）
  */
 
+import '../../../test/setup-database'; // 导入全局数据库清理钩子
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GoalApplicationService } from '../application/services/GoalApplicationService';
 import { GoalStatisticsApplicationService } from '../application/services/GoalStatisticsApplicationService';
 import { GoalContainer } from '../infrastructure/di/GoalContainer';
 import { PrismaGoalStatisticsRepository } from '../infrastructure/repositories/PrismaGoalStatisticsRepository';
 import { PrismaGoalRepository } from '../infrastructure/repositories/PrismaGoalRepository';
-import { mockPrismaClient, resetMockData } from '../../../test/mocks/prismaMock';
+import { getTestPrisma, createTestAccount } from '../../../test/helpers/database-helpers';
 import { GoalEventPublisher } from '../application/services/GoalEventPublisher';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 
@@ -25,15 +26,39 @@ describe('Goal Creation Integration Tests', () => {
   let goalService: GoalApplicationService;
 
   beforeEach(async () => {
-    // Reset mock data
-    resetMockData();
+    // 确保环境变量设置正确
+    process.env.DATABASE_URL = 'postgresql://test_user:test_pass@localhost:5433/dailyuse_test';
 
-    // Initialize DI container with mock repositories
+    // 数据库清理由setup-database.ts自动处理
+
+    // 预创建所有测试账户
+    const accountUuids = [
+      'test-account-creation-1', 'test-account-creation-2', 'test-account-creation-3',
+      'test-account-hierarchy-1', 'test-account-hierarchy-2',
+      'test-account-time-1', 'test-account-time-2', 'test-account-time-3', 'test-account-time-4',
+      'test-account-tags-1', 'test-account-tags-2',
+      'test-account-validation-1', 'test-account-validation-2',
+      'test-account-stats-1', 'test-account-stats-2',
+      'test-account-batch-1',
+    ];
+
+    for (const uuid of accountUuids) {
+      await createTestAccount({
+        uuid,
+        email: `${uuid}@test.com`,
+        username: uuid,
+      });
+    }
+
+    // 获取真实 Prisma 客户端
+    const prisma = getTestPrisma();
+
+    // Initialize DI container with real database repositories
     const container = GoalContainer.getInstance();
     container.setGoalStatisticsRepository(
-      new PrismaGoalStatisticsRepository(mockPrismaClient as any),
+      new PrismaGoalStatisticsRepository(prisma),
     );
-    container.setGoalRepository(new PrismaGoalRepository(mockPrismaClient as any));
+    container.setGoalRepository(new PrismaGoalRepository(prisma));
 
     // Reset and initialize event publisher
     GoalEventPublisher.reset();

@@ -1,10 +1,11 @@
+import '../../../test/setup-database'; // 导入全局数据库清理钩子
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GoalStatisticsApplicationService } from '../application/services/GoalStatisticsApplicationService';
 import { GoalApplicationService } from '../application/services/GoalApplicationService';
 import { GoalContainer } from '../infrastructure/di/GoalContainer';
 import { PrismaGoalStatisticsRepository } from '../infrastructure/repositories/PrismaGoalStatisticsRepository';
 import { PrismaGoalRepository } from '../infrastructure/repositories/PrismaGoalRepository';
-import { mockPrismaClient, resetMockData } from '../../../test/mocks/prismaMock';
+import { getTestPrisma, createTestAccounts } from '../../../test/helpers/database-helpers';
 import { GoalEventPublisher } from '../application/services/GoalEventPublisher';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 
@@ -13,15 +14,23 @@ describe('Goal Statistics Integration Tests', () => {
   let goalService: GoalApplicationService;
 
   beforeEach(async () => {
-    // Reset mock data before each test
-    resetMockData();
+    // 确保环境变量设置正确
+    process.env.DATABASE_URL = 'postgresql://test_user:test_pass@localhost:5433/dailyuse_test';
 
-    // Initialize container with mock repositories
+    // 数据库清理由setup-database.ts自动处理
+
+    // 预创建测试账户（简化的账户ID）
+    await createTestAccounts(['123', '456', '789', 'batch']);
+
+    // 获取真实 Prisma 客户端
+    const prisma = getTestPrisma();
+
+    // Initialize container with real database repositories
     const container = GoalContainer.getInstance();
     container.setGoalStatisticsRepository(
-      new PrismaGoalStatisticsRepository(mockPrismaClient as any),
+      new PrismaGoalStatisticsRepository(prisma),
     );
-    container.setGoalRepository(new PrismaGoalRepository(mockPrismaClient as any));
+    container.setGoalRepository(new PrismaGoalRepository(prisma));
 
     // Reset and initialize event publisher
     GoalEventPublisher.reset();

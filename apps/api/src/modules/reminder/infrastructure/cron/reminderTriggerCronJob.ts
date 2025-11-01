@@ -119,21 +119,22 @@ class ReminderTriggerCronJob {
       logger.debug('Starting reminder trigger scan...');
 
       // 调用调度服务执行触发
-      const result = await this.schedulerService.scheduleDueReminders();
+      const result = await this.schedulerService.schedule();
 
       const duration = Date.now() - startTime;
       
       logger.info('Reminder trigger scan completed', {
-        totalProcessed: result.totalProcessed,
-        totalTriggered: result.totalTriggered,
-        totalFailed: result.totalFailed,
+        totalProcessed: result.totalCount,
+        totalTriggered: result.successCount,
+        totalFailed: result.failedCount,
         duration: `${duration}ms`,
       });
 
       // 如果有失败的提醒，记录详细信息
-      if (result.totalFailed > 0) {
+      if (result.failedCount > 0) {
         logger.warn('Some reminders failed to trigger', {
-          failed: result.failed,
+          failedCount: result.failedCount,
+          details: result.details.filter(d => !d.success),
         });
       }
     } catch (error) {

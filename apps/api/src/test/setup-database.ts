@@ -23,9 +23,9 @@ export async function setupTestDatabase() {
   process.env.DATABASE_URL = TEST_DATABASE_URL;
 
   try {
-    // 运行 Prisma Migrate（部署 migrations）
-    console.log('📦 运行数据库迁移...');
-    execSync('pnpm prisma migrate deploy', {
+    // 使用 db push 同步 schema（跳过迁移历史）
+    console.log('📦 同步数据库 schema...');
+    execSync('pnpm prisma db push --skip-generate', {
       stdio: 'inherit',
       env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL },
       cwd: process.cwd(),
@@ -38,7 +38,7 @@ export async function setupTestDatabase() {
       },
     });
 
-    await prisma.\();
+    await prisma.$connect();
     console.log('✅ 测试数据库初始化完成');
 
     isSetupComplete = true;
@@ -59,23 +59,23 @@ export async function cleanDatabase() {
 
   try {
     // 获取所有表名
-    const tables = await prisma.\<Array<{ tablename: string }>>\
+    const tables = await prisma.$queryRaw<Array<{ tablename: string }>>`
       SELECT tablename 
       FROM pg_tables 
       WHERE schemaname = 'public'
       AND tablename != '_prisma_migrations'
-    \;
+    `;
 
     // 禁用外键约束
-    await prisma.\\SET session_replication_role = 'replica'\;
+    await prisma.$executeRaw`SET session_replication_role = 'replica'`;
 
     // 清空所有表
     for (const { tablename } of tables) {
-      await prisma.\(\TRUNCATE TABLE "\" CASCADE\);
+      await prisma.$executeRawUnsafe(`TRUNCATE TABLE "${tablename}" CASCADE`);
     }
 
     // 恢复外键约束
-    await prisma.\\SET session_replication_role = 'origin'\;
+    await prisma.$executeRaw`SET session_replication_role = 'origin'`;
   } catch (error) {
     console.error('❌ 清理数据库失败:', error);
     throw error;
@@ -87,7 +87,7 @@ export async function cleanDatabase() {
  */
 export async function teardownTestDatabase() {
   if (prisma) {
-    await prisma.\();
+    await prisma.$disconnect();
     console.log('🔌 测试数据库连接已断开');
   }
 }

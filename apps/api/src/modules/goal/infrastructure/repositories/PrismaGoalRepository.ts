@@ -151,6 +151,12 @@ export class PrismaGoalRepository implements IGoalRepository {
     const serverDTO = goal.toServerDTO(true); // includeChildren=true
     if (serverDTO.keyResults && serverDTO.keyResults.length > 0) {
       for (const kr of serverDTO.keyResults) {
+        // 防御性检查: 确保progress对象存在
+        if (!kr.progress) {
+          console.error(`KeyResult ${kr.uuid} has no progress data, skipping save`);
+          continue;
+        }
+
         await (this.prisma as any).keyResult.upsert({
           where: { uuid: kr.uuid },
           create: {
