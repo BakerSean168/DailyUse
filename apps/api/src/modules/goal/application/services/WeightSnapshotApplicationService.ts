@@ -112,7 +112,7 @@ export class WeightSnapshotApplicationService {
     // 2. 验证 KR 存在于该 Goal
     const kr = goal.keyResults.find((k: KeyResult) => k.uuid === dto.krUuid);
     if (!kr) {
-      throw new KeyResultNotFoundError(dto.krUuid);
+      throw new KeyResultNotFoundError(dto.krUuid, dto.goalUuid);
     }
 
     // 3. 创建快照值对象（使用 UUID 生成）

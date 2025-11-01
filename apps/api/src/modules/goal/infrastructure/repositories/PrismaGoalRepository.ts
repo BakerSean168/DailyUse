@@ -169,6 +169,7 @@ export class PrismaGoalRepository implements IGoalRepository {
             targetValue: kr.progress.targetValue,
             currentValue: kr.progress.currentValue,
             unit: kr.progress.unit || null,
+            weight: kr.weight ?? 0, // ✅ 添加 weight
             order: kr.order,
             createdAt: new Date(kr.createdAt),
             updatedAt: new Date(kr.updatedAt),
@@ -181,6 +182,7 @@ export class PrismaGoalRepository implements IGoalRepository {
             targetValue: kr.progress.targetValue,
             currentValue: kr.progress.currentValue,
             unit: kr.progress.unit || null,
+            weight: kr.weight ?? 0, // ✅ 添加 weight
             order: kr.order,
             updatedAt: new Date(kr.updatedAt),
           },
