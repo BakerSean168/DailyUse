@@ -10,14 +10,15 @@
  * 6. 边界情况和错误处理
  */
 
+import '../../../test/setup-database'; // 导入全局数据库清理钩子
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WeightSnapshotApplicationService } from '../application/services/WeightSnapshotApplicationService';
 import { GoalApplicationService } from '../application/services/GoalApplicationService';
 import { GoalContainer } from '../infrastructure/di/GoalContainer';
 import { PrismaWeightSnapshotRepository } from '../infrastructure/repositories/PrismaWeightSnapshotRepository';
 import { PrismaGoalRepository } from '../infrastructure/repositories/PrismaGoalRepository';
-import { mockPrismaClient, resetMockData } from '../../../test/mocks/prismaMock';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { getTestPrisma } from '../../../test/helpers/database-helpers';
+import { GoalContracts, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 
 describe('Weight Snapshot Integration Tests', () => {
   let snapshotService: WeightSnapshotApplicationService;
@@ -29,57 +30,71 @@ describe('Weight Snapshot Integration Tests', () => {
   let testKR3Uuid: string;
 
   beforeEach(async () => {
-    // Reset mock data
-    resetMockData();
+    // 确保环境变量设置正确
+    process.env.DATABASE_URL = 'postgresql://test_user:test_pass@localhost:5433/dailyuse_test';
 
-    // Initialize DI container with mock repositories
+    // 数据库清理由setup-database.ts自动处理
+
+    // 预创建测试账户
+    const { createTestAccount } = await import('../../../test/helpers/database-helpers');
+    testAccountUuid = 'test-account-snapshot-1';
+    await createTestAccount({
+      uuid: testAccountUuid,
+      email: `${testAccountUuid}@test.com`,
+      username: testAccountUuid,
+    });
+
+    // 获取真实 Prisma 客户端
+    const prisma = getTestPrisma();
+
+    // Initialize DI container with real database repositories
     const container = GoalContainer.getInstance();
-    container.setGoalRepository(new PrismaGoalRepository(mockPrismaClient as any));
+    container.setGoalRepository(new PrismaGoalRepository(prisma));
 
-    const snapshotRepo = new PrismaWeightSnapshotRepository(mockPrismaClient as any);
-    const goalRepo = new PrismaGoalRepository(mockPrismaClient as any);
+    const snapshotRepo = new PrismaWeightSnapshotRepository(prisma);
+    const goalRepo = new PrismaGoalRepository(prisma);
 
     // Get service instances
     goalService = await GoalApplicationService.getInstance();
     snapshotService = WeightSnapshotApplicationService.getInstance(goalRepo, snapshotRepo);
-
-    // Setup test data
-    testAccountUuid = 'test-account-snapshot-1';
 
     // Create a goal
     const goal = await goalService.createGoal({
       accountUuid: testAccountUuid,
       title: 'Q4 Growth Target',
       description: 'Quarterly growth objectives',
-      importance: ImportanceLevel.Critical,
+      importance: ImportanceLevel.Important,
       urgency: UrgencyLevel.High,
     });
     testGoalUuid = goal.uuid;
 
     // Add 3 key results with weights
-    const kr1 = await goalService.addKeyResult(testGoalUuid, {
+    let goalAfterKR1 = await goalService.addKeyResult(testGoalUuid, {
       title: 'User Growth',
+      valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
       targetValue: 1000,
       currentValue: 0,
       weight: 40, // 40%
     });
-    testKR1Uuid = kr1.uuid;
+    testKR1Uuid = goalAfterKR1.keyResults![0].uuid; // 从返回的Goal DTO中获取KeyResult UUID
 
-    const kr2 = await goalService.addKeyResult(testGoalUuid, {
+    let goalAfterKR2 = await goalService.addKeyResult(testGoalUuid, {
       title: 'Revenue Growth',
+      valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
       targetValue: 100,
       currentValue: 0,
       weight: 30, // 30%
     });
-    testKR2Uuid = kr2.uuid;
+    testKR2Uuid = goalAfterKR2.keyResults![1].uuid; // 第二个KeyResult
 
-    const kr3 = await goalService.addKeyResult(testGoalUuid, {
+    let goalAfterKR3 = await goalService.addKeyResult(testGoalUuid, {
       title: 'Retention Rate',
+      valueType: GoalContracts.KeyResultValueType.PERCENTAGE,
       targetValue: 100,
       currentValue: 0,
       weight: 30, // 30%
     });
-    testKR3Uuid = kr3.uuid;
+    testKR3Uuid = goalAfterKR3.keyResults![2].uuid; // 第三个KeyResult
   });
 
   describe('创建权重快照', () => {

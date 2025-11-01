@@ -271,6 +271,54 @@ export class GoalApplicationService {
   }
 
   /**
+   * 更新关键结果配置（标题、权重等）
+   */
+  async updateKeyResult(
+    goalUuid: string,
+    keyResultUuid: string,
+    updates: {
+      title?: string;
+      description?: string;
+      weight?: number;
+      targetValue?: number;
+      unit?: string;
+    },
+  ): Promise<GoalContracts.GoalClientDTO> {
+    // 1. 查询目标（包含子实体）
+    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    if (!goal) {
+      throw new Error(`Goal not found: ${goalUuid}`);
+    }
+
+    // 2. 查找关键结果
+    const keyResult = goal.keyResults.find((kr) => kr.uuid === keyResultUuid);
+    if (!keyResult) {
+      throw new Error(`KeyResult not found: ${keyResultUuid}`);
+    }
+
+    // 3. 更新关键结果属性
+    if (updates.title !== undefined) {
+      keyResult.updateTitle(updates.title);
+    }
+    if (updates.description !== undefined) {
+      keyResult.updateDescription(updates.description);
+    }
+    if (updates.weight !== undefined) {
+      keyResult.updateWeight(updates.weight);
+    }
+    // 注意: targetValue和unit目前没有直接的update方法,需要通过progress对象更新
+
+    // 4. 持久化
+    await this.goalRepository.save(goal);
+
+    // 5. 发布领域事件
+    await GoalEventPublisher.publishGoalEvents(goal);
+
+    // 6. 返回 ClientDTO（包含子实体）
+    return goal.toClientDTO(true);
+  }
+
+  /**
    * 更新关键结果进度
    */
   async updateKeyResultProgress(

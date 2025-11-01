@@ -12,13 +12,14 @@
  * 8. 不同聚合方法 (SUM, AVERAGE, MAX, MIN, LAST)
  */
 
+import '../../../test/setup-database'; // 导入全局数据库清理钩子
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GoalApplicationService } from '../application/services/GoalApplicationService';
 import { GoalStatisticsApplicationService } from '../application/services/GoalStatisticsApplicationService';
 import { GoalContainer } from '../infrastructure/di/GoalContainer';
 import { PrismaGoalStatisticsRepository } from '../infrastructure/repositories/PrismaGoalStatisticsRepository';
 import { PrismaGoalRepository } from '../infrastructure/repositories/PrismaGoalRepository';
-import { mockPrismaClient, resetMockData } from '../../../test/mocks/prismaMock';
+import { getTestPrisma, createTestAccounts } from '../../../test/helpers/database-helpers';
 import { GoalEventPublisher } from '../application/services/GoalEventPublisher';
 import { GoalContracts, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 
@@ -37,15 +38,30 @@ describe('KeyResult Management Integration Tests', () => {
   let goalService: GoalApplicationService;
 
   beforeEach(async () => {
-    // Reset mock data
-    resetMockData();
+    // 确保环境变量设置正确
+    process.env.DATABASE_URL = 'postgresql://test_user:test_pass@localhost:5433/dailyuse_test';
 
-    // Initialize DI container with mock repositories
+    // 数据库清理由setup-database.ts自动处理
+
+    // 预创建所有测试账户
+    await createTestAccounts([
+      'kr-add-1', 'kr-add-2', 'kr-add-3', 'kr-add-multi',
+      'kr-progress-1', 'kr-progress-2', 'kr-auto-calc',
+      'kr-complete-1', 'kr-complete-all',
+      'kr-delete-1', 'kr-delete-2',
+      'kr-type-absolute', 'kr-type-percentage',
+      'kr-concurrent',
+    ]);
+
+    // 获取真实 Prisma 客户端
+    const prisma = getTestPrisma();
+
+    // Initialize DI container with real database repositories
     const container = GoalContainer.getInstance();
     container.setGoalStatisticsRepository(
-      new PrismaGoalStatisticsRepository(mockPrismaClient as any),
+      new PrismaGoalStatisticsRepository(prisma),
     );
-    container.setGoalRepository(new PrismaGoalRepository(mockPrismaClient as any));
+    container.setGoalRepository(new PrismaGoalRepository(prisma));
 
     // Reset and initialize event publisher
     GoalEventPublisher.reset();

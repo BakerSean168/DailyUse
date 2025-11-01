@@ -42,7 +42,7 @@ export default defineConfig({
         singleFork: true, // API 测试使用单进程避免数据库锁
       },
     },
-    // 测试数据库配置
-    globalSetup: './src/test/globalSetup.ts',
+    // 测试数据库配置 - 暂时禁用 globalSetup (shell 路径问题)
+    // globalSetup: './src/test/globalSetup.ts',
   },
 });
