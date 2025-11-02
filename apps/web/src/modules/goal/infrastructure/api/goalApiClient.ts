@@ -29,7 +29,6 @@ export class GoalApiClient {
     endDate?: string;
   }): Promise<GoalContracts.GoalsResponse> {
     const data = await apiClient.get(this.baseUrl, { params });
-    console.log('🌐 获取目标列表响应:', data);
     return data;
   }
 

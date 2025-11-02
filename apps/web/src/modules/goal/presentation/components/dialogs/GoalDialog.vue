@@ -340,7 +340,7 @@ import type { GoalTemplate } from '../../../domain/templates/GoalTemplates';
 // composables
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
-import { useAccountStore } from '@/modules/account/presentation/stores/useAccountStore';
+import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 
 const goalManagement = useGoalManagement();
 const keyResultComposable = useKeyResult();
@@ -710,10 +710,10 @@ const handleSave = async () => {
       await updateGoal(goalModel.value.uuid, updateData);
     } else {
       // 创建模式：注入 accountUuid（乐观更新）
-      // 优先使用 accountStore.accountUuid（state），fallback 到 account.uuid（computed）
-      let accountUuid = accountStore.accountUuid || accountStore.getAccountUuid;
+      // 使用新 accountStore 的 currentAccountUuid computed property
+      let accountUuid = accountStore.currentAccountUuid;
       
-      // 如果还是失败，尝试从 localStorage 获取 token 并解析
+      // 如果还是失败，尝试从 localStorage 获取 token 并解析（兜底方案）
       if (!accountUuid) {
         const token = localStorage.getItem('token');
         if (token) {
@@ -729,11 +729,9 @@ const handleSave = async () => {
       
       if (!accountUuid) {
         console.error('❌ 无法获取 accountUuid，AccountStore 状态:', {
-          account: accountStore.account,
-          accountUuid: accountStore.accountUuid,
-          isAuthenticated: accountStore.isAuthenticated,
           currentAccount: accountStore.currentAccount,
-          getAccountUuid: accountStore.getAccountUuid,
+          currentAccountUuid: accountStore.currentAccountUuid,
+          isAuthenticated: accountStore.isAuthenticated,
           token: !!localStorage.getItem('token'),
         });
         throw new Error('无法获取用户信息，请重新登录');
@@ -790,9 +788,35 @@ const closeDialog = () => {
   visible.value = false;
 };
 
+/**
+ * 通用的打开对话框方法（保留向后兼容）
+ */
 const openDialog = (goal?: GoalClient) => {
   propGoal.value = goal || null;
   visible.value = true;
+};
+
+/**
+ * 打开创建目标对话框
+ */
+const openForCreate = () => {
+  propGoal.value = null;
+  visible.value = true;
+  activeTab.value = 0; // 定位到基本信息标签
+};
+
+/**
+ * 打开编辑目标对话框
+ * @param goal 要编辑的目标对象
+ */
+const openForEdit = (goal: GoalClient) => {
+  if (!goal) {
+    console.error('[GoalDialog] openForEdit: goal is required');
+    return;
+  }
+  propGoal.value = goal;
+  visible.value = true;
+  activeTab.value = 0; // 定位到基本信息标签
 };
 
 watch(visible, (newVal) => {
@@ -807,6 +831,8 @@ watch(visible, (newVal) => {
 
 defineExpose({
   openDialog,
+  openForCreate,
+  openForEdit,
 });
 </script>
 

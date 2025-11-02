@@ -6,6 +6,8 @@
 import type { AuthenticationContracts } from '@dailyuse/contracts';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
+import { useAccountStore } from '../../../account/presentation/stores/accountStore';
+import { accountApiClient } from '../../../account/infrastructure/api/accountApiClient';
 
 export class LoginApplicationService {
   private static instance: LoginApplicationService;
@@ -37,6 +39,13 @@ export class LoginApplicationService {
     return useAuthStore();
   }
 
+  /**
+   * 懒加载获取 Account Store
+   */
+  private get accountStore(): ReturnType<typeof useAccountStore> {
+    return useAccountStore();
+  }
+
   // ============ 登录用例 ============
 
   /**
@@ -54,6 +63,19 @@ export class LoginApplicationService {
       this.authStore.setRefreshToken(response.refreshToken);
       this.authStore.setCurrentSessionId(response.sessionId);
       this.authStore.setTokenExpiresAt(response.accessTokenExpiresAt);
+
+      // 🔧 修复: 登录成功后获取并设置用户信息到 AccountStore
+      try {
+        const account = await accountApiClient.getMyProfile();
+        this.accountStore.setCurrentAccount(account);
+        console.log('✅ [LoginService] 用户信息已设置到 AccountStore:', {
+          accountUuid: account.uuid,
+          username: account.username,
+        });
+      } catch (profileError) {
+        console.error('❌ [LoginService] 获取用户信息失败，但登录已成功:', profileError);
+        // 不抛出错误，因为登录本身是成功的
+      }
 
       return response;
     } catch (error) {

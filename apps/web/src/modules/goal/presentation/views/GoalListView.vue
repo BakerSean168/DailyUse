@@ -33,7 +33,7 @@
               size="large"
               prepend-icon="mdi-plus"
               variant="elevated"
-              @click="goalDialogRef?.openDialog()"
+              @click="goalDialogRef?.openForCreate()"
             >
               创建目标
             </v-btn>
@@ -117,6 +117,7 @@
                     <v-col v-for="goal in filteredGoals" :key="goal.uuid" cols="12" lg="6" xl="4">
                       <goal-card
                         :goal="goal"
+                        @edit-goal="handleEditGoal"
                         @delete-goal="confirmDeleteGoal"
                         @toggle-status="onToggleGoalStatus"
                       />
@@ -136,7 +137,7 @@
                         color="primary"
                         variant="elevated"
                         prepend-icon="mdi-plus"
-                        @click="goalDialogRef?.openDialog()"
+                        @click="goalDialogRef?.openForCreate()"
                       >
                         创建第一个目标
                       </v-btn>
@@ -298,6 +299,13 @@ const onSelectedGoalFolder = (dirUuid: string) => {
  */
 const goToComparison = () => {
   router.push('/goals/compare');
+};
+
+/**
+ * 处理编辑目标
+ */
+const handleEditGoal = (goal: GoalClient) => {
+  goalDialogRef.value?.openForEdit(goal);
 };
 
 /**

@@ -71,7 +71,7 @@ export class AccountApiClient {
    * 获取当前用户资料
    */
   async getMyProfile(): Promise<AccountContracts.AccountDTO> {
-    const data = await apiClient.get(`${this.baseUrl}/me`);
+    const data = await apiClient.get<AccountContracts.AccountDTO>(`${this.baseUrl}/me`);
     return data;
   }
 

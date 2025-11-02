@@ -23,6 +23,7 @@ export function useGoalManagement() {
   const showCreateDialog = ref(false);
   const showEditDialog = ref(false);
   const editingGoal = ref<any | null>(null);
+  const goalDialogRef = ref<any>(null);
 
   // ===== 数据获取方法 =====
 
@@ -149,6 +150,43 @@ export function useGoalManagement() {
     }
   };
 
+  // ===== 对话框控制方法 =====
+
+  /**
+   * 打开创建目标对话框
+   */
+  const openCreateDialog = () => {
+    showCreateDialog.value = true;
+    editingGoal.value = null;
+  };
+
+  /**
+   * 打开编辑目标对话框
+   */
+  const openEditDialog = (goal: any) => {
+    if (!goal) {
+      console.error('[useGoalManagement] openEditDialog: goal is required');
+      return;
+    }
+    editingGoal.value = goal;
+    showEditDialog.value = true;
+  };
+
+  /**
+   * 关闭创建对话框
+   */
+  const closeCreateDialog = () => {
+    showCreateDialog.value = false;
+  };
+
+  /**
+   * 关闭编辑对话框
+   */
+  const closeEditDialog = () => {
+    showEditDialog.value = false;
+    editingGoal.value = null;
+  };
+
   return {
     // 状态
     isLoading,
@@ -158,6 +196,7 @@ export function useGoalManagement() {
     showCreateDialog,
     showEditDialog,
     editingGoal,
+    goalDialogRef,
 
     // 方法
     fetchGoals,
@@ -167,5 +206,11 @@ export function useGoalManagement() {
     updateGoal,
     deleteGoal,
     refresh,
+    
+    // 对话框控制
+    openCreateDialog,
+    openEditDialog,
+    closeCreateDialog,
+    closeEditDialog,
   };
 }

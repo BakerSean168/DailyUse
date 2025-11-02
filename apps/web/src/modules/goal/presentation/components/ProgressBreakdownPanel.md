@@ -208,7 +208,7 @@ GET /api/goals/:uuid/progress-breakdown
 ## 依赖
 
 - `@dailyuse/contracts` - TypeScript 类型定义
-- `dayjs` - 时间格式化
+- `date-fns` - 时间格式化
 - `useGoal` composable - 数据获取
 
 ## 注意事项

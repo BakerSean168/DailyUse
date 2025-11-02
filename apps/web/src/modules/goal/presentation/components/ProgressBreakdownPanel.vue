@@ -130,7 +130,7 @@
 import { ref, onMounted } from 'vue';
 import type { GoalContracts } from '@dailyuse/contracts';
 import { useGoal } from '../composables/useGoal';
-import dayjs from 'dayjs';
+import { format } from 'date-fns';
 
 // Props
 const props = defineProps<{
@@ -181,7 +181,7 @@ const getProgressColor = (progress: number): string => {
  * 格式化时间
  */
 const formatTime = (timestamp: number): string => {
-  return dayjs(timestamp).format('YYYY-MM-DD HH:mm');
+  return format(new Date(timestamp), 'yyyy-MM-dd HH:mm');
 };
 
 /**
