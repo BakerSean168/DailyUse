@@ -6,39 +6,20 @@
   <v-container fluid class="one-time-task-list-view">
     <!-- 创建/编辑任务 Dialog -->
     <v-dialog v-model="formDialog" max-width="900px" persistent scrollable>
-      <TaskForm
-        v-if="formDialog"
-        :task="editingTask"
-        :submitting="formSubmitting"
-        @submit="handleFormSubmit"
-        @cancel="handleFormCancel"
-      />
+      <TaskForm v-if="formDialog" :task="editingTask" :submitting="formSubmitting" @submit="handleFormSubmit"
+        @cancel="handleFormCancel" />
     </v-dialog>
 
     <!-- 批量操作工具栏 -->
-    <TaskBatchToolbar
-      v-if="selectedTasks.size > 0"
-      :selected-count="selectedTasks.size"
-      :total-count="tasks.length"
-      :all-selected="allSelected"
-      :operation-loading="batchOperationLoading"
-      :operation-progress="batchOperationProgress"
-      :operation-message="batchOperationMessage"
-      @select-all="handleSelectAll"
-      @clear-selection="handleClearSelection"
-      @invert-selection="handleInvertSelection"
-      @select-overdue="handleSelectOverdue"
-      @select-high-priority="handleSelectHighPriority"
-      @select-pending="handleSelectPending"
-      @batch-update-priority="handleBatchUpdatePriority"
-      @batch-start="handleBatchStart"
-      @batch-complete="handleBatchComplete"
-      @batch-cancel="handleBatchCancel"
-      @batch-add-tags="handleBatchAddTags"
-      @batch-link-goal="handleBatchLinkGoal"
-      @batch-export="handleBatchExport"
-      @batch-delete="handleBatchDelete"
-    />
+    <TaskBatchToolbar v-if="selectedTasks.size > 0" :selected-count="selectedTasks.size" :total-count="tasks.length"
+      :all-selected="allSelected" :operation-loading="batchOperationLoading"
+      :operation-progress="batchOperationProgress" :operation-message="batchOperationMessage"
+      @select-all="handleSelectAll" @clear-selection="handleClearSelection" @invert-selection="handleInvertSelection"
+      @select-overdue="handleSelectOverdue" @select-high-priority="handleSelectHighPriority"
+      @select-pending="handleSelectPending" @batch-update-priority="handleBatchUpdatePriority"
+      @batch-start="handleBatchStart" @batch-complete="handleBatchComplete" @batch-cancel="handleBatchCancel"
+      @batch-add-tags="handleBatchAddTags" @batch-link-goal="handleBatchLinkGoal" @batch-export="handleBatchExport"
+      @batch-delete="handleBatchDelete" />
 
     <v-row>
       <v-col cols="12">
@@ -67,7 +48,7 @@
             </v-btn-toggle>
 
             <!-- 创建任务 -->
-            <v-btn color="primary" @click="handleCreateTask">
+            <v-btn color="primary" data-testid="create-task-button" @click="handleCreateTask">
               <v-icon start>mdi-plus</v-icon>
               创建任务
             </v-btn>
@@ -75,39 +56,18 @@
         </div>
 
         <!-- 仪表盘视图 -->
-        <TaskDashboard
-          v-if="viewMode === 'dashboard'"
-          :statistics="statistics"
-          :priority-distribution="priorityDistribution"
-          :status-distribution="statusDistribution"
-          :overdue-tasks="overdueTasks"
-          :upcoming-tasks="upcomingTasks"
-          :recent-completed="recentCompleted"
-          :loading="loading"
-          @view-overdue="handleViewOverdue"
-          @view-upcoming="handleViewUpcoming"
-          @view-recent="handleViewRecent"
-          @view-all="handleViewAll"
-        />
+        <TaskDashboard v-if="viewMode === 'dashboard'" :statistics="statistics"
+          :priority-distribution="priorityDistribution" :status-distribution="statusDistribution"
+          :overdue-tasks="overdueTasks" :upcoming-tasks="upcomingTasks" :recent-completed="recentCompleted"
+          :loading="loading" @view-overdue="handleViewOverdue" @view-upcoming="handleViewUpcoming"
+          @view-recent="handleViewRecent" @view-all="handleViewAll" />
 
         <!-- 列表/卡片视图 -->
-        <TaskList
-          v-else
-          :tasks="filteredTasks"
-          :loading="loading"
-          :view-mode="viewMode"
-          :selected-tasks="Array.from(selectedTasks)"
-          :sort-by="sortBy"
-          :sort-order="sortOrder"
-          :show-selection="true"
-          @task-click="handleTaskClick"
-          @task-select="handleTaskSelect"
-          @task-start="handleTaskStart"
-          @task-complete="handleTaskComplete"
-          @task-edit="handleTaskEdit"
-          @task-delete="handleTaskDelete"
-          @update-sort="handleUpdateSort"
-        />
+        <TaskList v-else :tasks="filteredTasks" :loading="loading" :view-mode="viewMode"
+          :selected-tasks="Array.from(selectedTasks)" :sort-by="sortBy" :sort-order="sortOrder" :show-selection="true"
+          @task-click="handleTaskClick" @task-select="handleTaskSelect" @task-start="handleTaskStart"
+          @task-complete="handleTaskComplete" @task-edit="handleTaskEdit" @task-delete="handleTaskDelete"
+          @update-sort="handleUpdateSort" />
       </v-col>
     </v-row>
   </v-container>
@@ -187,7 +147,7 @@ const filterMode = ref<'all' | 'overdue' | 'upcoming' | 'recent'>('all');
 // Computed
 const filteredTasks = computed(() => {
   let result = tasks.value;
-  
+
   // 根据筛选模式
   const now = new Date();
   switch (filterMode.value) {
@@ -198,7 +158,7 @@ const filteredTasks = computed(() => {
         return dueDate < now && task.status !== 'COMPLETED';
       });
       break;
-      
+
     case 'upcoming':
       const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       result = result.filter(task => {
@@ -207,7 +167,7 @@ const filteredTasks = computed(() => {
         return dueDate >= now && dueDate <= weekLater;
       });
       break;
-      
+
     case 'recent':
       result = result.filter(task => task.status === 'COMPLETED');
       // 按完成时间排序（最新的在前）
@@ -218,7 +178,7 @@ const filteredTasks = computed(() => {
       });
       break;
   }
-  
+
   return result;
 });
 
@@ -283,7 +243,7 @@ const handleTaskDelete = async (task: TaskContracts.OneTimeTaskClientDTO) => {
   if (!confirm(`确定要删除任务「${task.title}」吗？`)) {
     return;
   }
-  
+
   try {
     await deleteTask(task.uuid);
     showSuccess('任务已删除');
@@ -403,7 +363,7 @@ const handleBatchCancel = async () => {
   if (!confirm(`确定要取消 ${count} 个任务吗？`)) {
     return;
   }
-  
+
   try {
     await batchUpdateStatus(Array.from(selectedTasks.value), 'CANCELLED');
     showSuccess(`已取消 ${count} 个任务`);
@@ -449,7 +409,7 @@ const handleBatchDelete = async () => {
   if (!confirm(`确定要删除 ${count} 个任务吗？此操作不可恢复。`)) {
     return;
   }
-  
+
   try {
     await batchDelete(Array.from(selectedTasks.value));
     showSuccess(`已删除 ${count} 个任务`);

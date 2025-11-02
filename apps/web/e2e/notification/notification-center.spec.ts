@@ -1,6 +1,6 @@
 /**
  * Notification Center E2E Test
- * 测试通知中心功能
+ * ????????
  */
 import { test, expect } from '@playwright/test';
 import { login, TEST_USER } from '../helpers/testHelpers';
@@ -20,7 +20,7 @@ test.describe('Notification Center', () => {
     await page.click('[data-testid="notification-bell-icon"]');
     
     const notificationsList = page.locator('[data-testid="notifications-list"]');
-    const emptyState = page.locator('text=/暂无通知|No notifications/i');
+    const emptyState = page.locator('text=/????|No notifications/i');
     
     await expect(notificationsList.or(emptyState)).toBeVisible({ timeout: 5000 });
   });
@@ -39,7 +39,7 @@ test.describe('Notification Center', () => {
     await page.click('[data-testid="notification-bell-icon"]');
     await page.click('[data-testid="mark-all-read-button"]');
     
-    await expect(page.locator('text=/全部已读|All marked as read/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/????|All marked as read/i')).toBeVisible({ timeout: 5000 });
   });
 
   test('[P2] should filter notifications by type', async ({ page }) => {

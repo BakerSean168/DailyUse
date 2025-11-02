@@ -12,8 +12,8 @@ test.describe('DAG Visualization', () => {
     // Wait for page to load
     await page.waitForLoadState('networkidle');
 
-    // Click "权重关系图" tab
-    await page.click('text=权重关系图');
+    // Click "?????" tab
+    await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization', { timeout: 5000 });
   });
 
@@ -23,15 +23,15 @@ test.describe('DAG Visualization', () => {
     await expect(container).toBeVisible();
 
     // Check title
-    await expect(page.locator('text=目标权重分布图')).toBeVisible();
+    await expect(page.locator('text=???????')).toBeVisible();
 
     // Check layout toggle buttons
-    await expect(page.locator('text=力导向')).toBeVisible();
-    await expect(page.locator('text=分层')).toBeVisible();
+    await expect(page.locator('text=???')).toBeVisible();
+    await expect(page.locator('text=??')).toBeVisible();
 
     // Check legend
-    await expect(page.locator('text=Goal 节点')).toBeVisible();
-    await expect(page.locator('text=权重 70-100%')).toBeVisible();
+    await expect(page.locator('text=Goal ??')).toBeVisible();
+    await expect(page.locator('text=?? 70-100%')).toBeVisible();
   });
 
   test('should render chart with nodes', async () => {
@@ -54,7 +54,7 @@ test.describe('DAG Visualization', () => {
     await expect(forceBtn).toHaveAttribute('aria-pressed', 'true');
 
     // Click hierarchical button
-    const hierarchicalBtn = page.locator('text=分层');
+    const hierarchicalBtn = page.locator('text=??');
     await hierarchicalBtn.click();
 
     // Wait for animation
@@ -73,7 +73,7 @@ test.describe('DAG Visualization', () => {
 
   test('should persist layout type preference', async () => {
     // Switch to hierarchical
-    await page.click('text=分层');
+    await page.click('text=??');
     await page.waitForTimeout(500);
 
     // Check localStorage
@@ -83,7 +83,7 @@ test.describe('DAG Visualization', () => {
     // Reload page
     await page.reload();
     await page.waitForLoadState('networkidle');
-    await page.click('text=权重关系图');
+    await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization');
 
     // Check preference was restored
@@ -92,7 +92,7 @@ test.describe('DAG Visualization', () => {
 
   test('should show weight warning for invalid total', async () => {
     // Check if warning chip exists (assuming test data has invalid weight)
-    const warningChip = page.locator('.v-chip:has-text("权重总和")');
+    const warningChip = page.locator('.v-chip:has-text("????")');
 
     // If warning exists, verify alert is shown
     const chipCount = await warningChip.count();
@@ -101,7 +101,7 @@ test.describe('DAG Visualization', () => {
       expect(chipText).not.toContain('100%');
 
       // Check warning alert
-      const alert = page.locator('text=权重分配异常');
+      const alert = page.locator('text=??????');
       await expect(alert).toBeVisible();
     }
   });
@@ -118,7 +118,7 @@ test.describe('DAG Visualization', () => {
     // Reload to apply custom layout
     await page.reload();
     await page.waitForLoadState('networkidle');
-    await page.click('text=权重关系图');
+    await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization');
 
     // Reset button should be visible
@@ -137,7 +137,7 @@ test.describe('DAG Visualization', () => {
 
     await page.reload();
     await page.waitForLoadState('networkidle');
-    await page.click('text=权重关系图');
+    await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization');
 
     // Click reset button
@@ -179,19 +179,19 @@ test.describe('DAG Visualization', () => {
 
   test('should display legend with correct items', async () => {
     // Check legend items
-    await expect(page.locator('text=Goal 节点')).toBeVisible();
-    await expect(page.locator('text=权重 70-100%')).toBeVisible();
-    await expect(page.locator('text=权重 30-70%')).toBeVisible();
-    await expect(page.locator('text=权重 0-30%')).toBeVisible();
+    await expect(page.locator('text=Goal ??')).toBeVisible();
+    await expect(page.locator('text=?? 70-100%')).toBeVisible();
+    await expect(page.locator('text=?? 30-70%')).toBeVisible();
+    await expect(page.locator('text=?? 0-30%')).toBeVisible();
 
     // Check legend hint text
-    await expect(page.locator('text=节点大小表示权重，边宽度表示权重占比')).toBeVisible();
+    await expect(page.locator('text=????????,?????????')).toBeVisible();
   });
 
   test('should handle empty state gracefully', async () => {
     // Navigate to goal without KRs (if test data supports)
     // This is a placeholder - actual implementation depends on test data
-    const emptyAlert = page.locator('text=该 Goal 暂无 KeyResult');
+    const emptyAlert = page.locator('text=? Goal ?? KeyResult');
     const emptyCount = await emptyAlert.count();
 
     if (emptyCount > 0) {
@@ -209,7 +209,7 @@ test.describe('DAG Visualization', () => {
     await page.goto('/goals/another-goal-id');
 
     // Click DAG tab quickly
-    await page.click('text=权重关系图', { timeout: 1000 }).catch(() => {});
+    await page.click('text=?????', { timeout: 1000 }).catch(() => {});
 
     // Check for loading indicator (may be too fast to catch)
     const loader = page.locator('.v-progress-linear');
@@ -226,15 +226,15 @@ test.describe('DAG Visualization', () => {
 
   test('should maintain layout across tab switches', async () => {
     // Switch to hierarchical
-    await page.click('text=分层');
+    await page.click('text=??');
     await page.waitForTimeout(500);
 
     // Switch to another tab
-    await page.click('text=关键结果');
+    await page.click('text=????');
     await page.waitForTimeout(500);
 
     // Switch back to DAG
-    await page.click('text=权重关系图');
+    await page.click('text=?????');
     await page.waitForTimeout(500);
 
     // Check layout type is still hierarchical
@@ -243,9 +243,9 @@ test.describe('DAG Visualization', () => {
 
   test('should show correct colors for different weight ranges', async () => {
     // Check legend chips have correct colors
-    const successChip = page.locator('.v-chip:has-text("权重 70-100%")');
-    const warningChip = page.locator('.v-chip:has-text("权重 30-70%")');
-    const errorChip = page.locator('.v-chip:has-text("权重 0-30%")');
+    const successChip = page.locator('.v-chip:has-text("?? 70-100%")');
+    const warningChip = page.locator('.v-chip:has-text("?? 30-70%")');
+    const errorChip = page.locator('.v-chip:has-text("?? 0-30%")');
 
     await expect(successChip).toHaveAttribute('color', 'success');
     await expect(warningChip).toHaveAttribute('color', 'warning');
@@ -275,7 +275,7 @@ test.describe('DAG Visualization - Advanced Interactions', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/goals/test-goal-1');
     await page.waitForLoadState('networkidle');
-    await page.click('text=权重关系图');
+    await page.click('text=?????');
     await page.waitForSelector('.goal-dag-visualization');
   });
 
@@ -300,9 +300,9 @@ test.describe('DAG Visualization - Advanced Interactions', () => {
   test('should handle rapid layout switches', async ({ page }) => {
     // Rapidly switch layouts
     for (let i = 0; i < 5; i++) {
-      await page.click('text=分层');
+      await page.click('text=??');
       await page.waitForTimeout(100);
-      await page.click('text=力导向');
+      await page.click('text=???');
       await page.waitForTimeout(100);
     }
 
@@ -313,11 +313,11 @@ test.describe('DAG Visualization - Advanced Interactions', () => {
 
   test('should preserve state after navigation', async ({ page }) => {
     // Set preferences
-    await page.click('text=分层');
+    await page.click('text=??');
     await page.waitForTimeout(500);
 
     // Navigate away
-    await page.click('text=关键结果');
+    await page.click('text=????');
     await page.waitForTimeout(300);
 
     // Navigate to different goal
@@ -327,7 +327,7 @@ test.describe('DAG Visualization - Advanced Interactions', () => {
     // Come back to original goal
     await page.goto('/goals/test-goal-1');
     await page.waitForLoadState('networkidle');
-    await page.click('text=权重关系图');
+    await page.click('text=?????');
 
     // Layout type should be restored (global preference)
     await expect(page.locator('[value="hierarchical"]')).toHaveAttribute('aria-pressed', 'true');

@@ -27,7 +27,7 @@
             </v-btn-toggle>
 
             <!-- 创建任务 -->
-            <v-btn color="primary" @click="handleCreateTask">
+            <v-btn color="primary" data-testid="create-task-button" @click="handleCreateTask">
               <v-icon start>mdi-plus</v-icon>
               创建任务
             </v-btn>
@@ -42,30 +42,12 @@
 
               <!-- 筛选和搜索 -->
               <div class="d-flex gap-2">
-                <v-select
-                  v-model="filterStatus"
-                  :items="statusOptions"
-                  label="状态筛选"
-                  density="compact"
-                  style="width: 150px"
-                  clearable
-                />
-                <v-select
-                  v-model="filterPriority"
-                  :items="priorityOptions"
-                  label="优先级"
-                  density="compact"
-                  style="width: 150px"
-                  clearable
-                />
-                <v-text-field
-                  v-model="searchQuery"
-                  label="搜索任务"
-                  prepend-inner-icon="mdi-magnify"
-                  density="compact"
-                  style="width: 200px"
-                  clearable
-                />
+                <v-select v-model="filterStatus" :items="statusOptions" label="状态筛选" density="compact"
+                  style="width: 150px" clearable />
+                <v-select v-model="filterPriority" :items="priorityOptions" label="优先级" density="compact"
+                  style="width: 150px" clearable />
+                <v-text-field v-model="searchQuery" label="搜索任务" prepend-inner-icon="mdi-magnify" density="compact"
+                  style="width: 200px" clearable />
               </div>
             </div>
           </v-card-title>
@@ -87,42 +69,24 @@
                     : '还没有任务'
                 }}
               </p>
-              <v-btn
-                v-if="!searchQuery && !filterStatus && !filterPriority"
-                color="primary"
-                variant="outlined"
-                class="mt-4"
-                @click="handleCreateTask"
-              >
+              <v-btn v-if="!searchQuery && !filterStatus && !filterPriority" color="primary" variant="outlined"
+                class="mt-4" @click="handleCreateTask">
                 创建第一个任务
               </v-btn>
             </div>
 
             <!-- 任务列表 -->
             <v-list v-else>
-              <v-list-item
-                v-for="task in filteredTasks"
-                :key="task.uuid"
-                :title="task.title"
-                :subtitle="task.description || undefined"
-                @click="handleTaskClick(task)"
-              >
+              <v-list-item v-for="task in filteredTasks" :key="task.uuid" :title="task.title"
+                :subtitle="task.description || undefined" @click="handleTaskClick(task)">
                 <template #prepend>
-                  <v-checkbox-btn
-                    :model-value="task.status === 'COMPLETED'"
-                    @click.stop="toggleTaskStatus(task)"
-                  />
+                  <v-checkbox-btn :model-value="task.status === 'COMPLETED'" @click.stop="toggleTaskStatus(task)" />
                 </template>
 
                 <template #append>
                   <div class="d-flex align-center gap-2">
                     <!-- 优先级标签 -->
-                    <v-chip
-                      v-if="task.priority"
-                      :color="getPriorityColor(task.priority)"
-                      size="small"
-                      variant="flat"
-                    >
+                    <v-chip v-if="task.priority" :color="getPriorityColor(task.priority)" size="small" variant="flat">
                       {{ task.priority }}
                     </v-chip>
 
@@ -138,12 +102,8 @@
                     </v-chip>
 
                     <!-- 截止日期 -->
-                    <v-chip
-                      v-if="task.dueDate"
-                      size="small"
-                      variant="outlined"
-                      :color="isOverdue(task.dueDate) ? 'error' : undefined"
-                    >
+                    <v-chip v-if="task.dueDate" size="small" variant="outlined"
+                      :color="isOverdue(task.dueDate) ? 'error' : undefined">
                       <v-icon start size="small">mdi-calendar</v-icon>
                       {{ formatDate(task.dueDate) }}
                     </v-chip>
@@ -163,12 +123,8 @@
         </v-card>
 
         <!-- DAG 视图 -->
-        <TaskDAGVisualization
-          v-else-if="viewMode === 'dag'"
-          :tasks="tasks"
-          :dependencies="dependencies"
-          @node-click="handleTaskClick"
-        />
+        <TaskDAGVisualization v-else-if="viewMode === 'dag'" :tasks="tasks" :dependencies="dependencies"
+          @node-click="handleTaskClick" />
       </v-col>
     </v-row>
   </v-container>

@@ -33,18 +33,18 @@ test.describe('Command Palette', () => {
     taskPage = new TaskPage(page);
 
     console.log('\n========================================');
-    console.log('🚀 Starting Command Palette Test');
+    console.log('[START] Starting Command Palette Test');
     console.log('========================================\n');
 
     // Login
     await login(page, TEST_USER.username, TEST_USER.password);
 
-    console.log('✅ Setup complete\n');
+    console.log('[PASS] Setup complete\n');
   });
 
   test.afterEach(async ({ page }) => {
     console.log('\n========================================');
-    console.log('🧹 Cleaning up test data');
+    console.log('? Cleaning up test data');
     console.log('========================================\n');
 
     // Clean up test tasks
@@ -71,7 +71,7 @@ test.describe('Command Palette', () => {
    * Then: Command palette closes
    */
   test('should open and close with keyboard shortcuts', async ({ page }) => {
-    console.log('\n📝 Test: Open and Close Command Palette\n');
+    console.log('\n? Test: Open and Close Command Palette\n');
 
     // Screenshot: Initial state
     await page.screenshot({ path: 'test-results/46-cmd-initial.png', fullPage: true });
@@ -82,14 +82,14 @@ test.describe('Command Palette', () => {
 
     // Assert: Command palette is visible
     await commandPalette.expectOpen();
-    console.log('✅ Command palette opened\n');
+    console.log('[PASS] Command palette opened\n');
 
     // Screenshot: Command palette open
     await page.screenshot({ path: 'test-results/47-cmd-opened.png', fullPage: true });
 
     // Assert: Input field is focused
     await commandPalette.expectInputFocused();
-    console.log('✅ Input field is focused\n');
+    console.log('[PASS] Input field is focused\n');
 
     // Act: Close command palette
     console.log('Step 2: Closing command palette with Escape...');
@@ -97,18 +97,18 @@ test.describe('Command Palette', () => {
 
     // Assert: Command palette is closed
     await commandPalette.expectClosed();
-    console.log('✅ Command palette closed\n');
+    console.log('[PASS] Command palette closed\n');
 
     // Screenshot: After close
     await page.screenshot({ path: 'test-results/48-cmd-closed.png', fullPage: true });
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Keyboard Shortcuts                       ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Open: Ctrl+K (Cmd+K on Mac)                               ║');
-    console.log('║  Close: Escape                                             ║');
-    console.log('║  Focus: ✅ Auto-focused on input                           ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Keyboard Shortcuts                       |');
+    console.log('+============================================================+');
+    console.log('|  Open: Ctrl+K (Cmd+K on Mac)                               |');
+    console.log('|  Close: Escape                                             |');
+    console.log('|  Focus: [PASS] Auto-focused on input                           |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -121,7 +121,7 @@ test.describe('Command Palette', () => {
    * And: Pressing Enter opens the selected task
    */
   test('should search for tasks and navigate results', async ({ page }) => {
-    console.log('\n📝 Test: Search for Tasks\n');
+    console.log('\n? Test: Search for Tasks\n');
 
     // Arrange: Create test tasks
     console.log('Step 1: Creating test tasks...');
@@ -131,7 +131,7 @@ test.describe('Command Palette', () => {
     await taskPage.createTask(createTestTask('E2E CMD - Urgent Task', { duration: 90 }));
     await taskPage.createTask(createTestTask('E2E CMD - Quick Task', { duration: 60 }));
 
-    console.log('✅ Tasks created:\n');
+    console.log('[PASS] Tasks created:\n');
     console.log('  - E2E CMD - Important Task');
     console.log('  - E2E CMD - Urgent Task');
     console.log('  - E2E CMD - Quick Task\n');
@@ -154,7 +154,7 @@ test.describe('Command Palette', () => {
 
     const resultsCount = await commandPalette.getSearchResultCount();
     expect(resultsCount).toBeGreaterThanOrEqual(3);
-    console.log(`✅ Found ${resultsCount} results\n`);
+    console.log(`[PASS] Found ${resultsCount} results\n`);
 
     // Assert: Search stats are shown
     const stats = await commandPalette.getSearchStats();
@@ -176,7 +176,7 @@ test.describe('Command Palette', () => {
     // Screenshot: After navigation
     await page.screenshot({ path: 'test-results/51-cmd-navigation.png', fullPage: true });
 
-    console.log('✅ Keyboard navigation working\n');
+    console.log('[PASS] Keyboard navigation working\n');
 
     // Act: Press up to go back
     await commandPalette.pressArrowUp();
@@ -189,18 +189,18 @@ test.describe('Command Palette', () => {
 
     // Assert: Command palette closed after selection
     await commandPalette.expectClosed();
-    console.log('✅ Command palette closed after selection\n');
+    console.log('[PASS] Command palette closed after selection\n');
 
     // Screenshot: After selection
     await page.screenshot({ path: 'test-results/52-cmd-after-selection.png', fullPage: true });
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Task Search                              ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log(`║  Results Found: ${resultsCount}                                         ║`);
-    console.log('║  Keyboard Navigation: ✅                                   ║');
-    console.log('║  Enter to Select: ✅                                       ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Task Search                              |');
+    console.log('+============================================================+');
+    console.log(`|  Results Found: ${resultsCount}                                         |`);
+    console.log('|  Keyboard Navigation: [PASS]                                   |');
+    console.log('|  Enter to Select: [PASS]                                       |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -212,7 +212,7 @@ test.describe('Command Palette', () => {
    * And: User can quickly access recent items
    */
   test('should display and access recent items', async ({ page }) => {
-    console.log('\n📝 Test: Recent Items History\n');
+    console.log('\n? Test: Recent Items History\n');
 
     // Arrange: Create and access tasks
     console.log('Step 1: Creating tasks...');
@@ -221,7 +221,7 @@ test.describe('Command Palette', () => {
     await taskPage.createTask(createTestTask('E2E CMD - Important Task', { duration: 120 }));
     await taskPage.createTask(createTestTask('E2E CMD - Urgent Task', { duration: 90 }));
 
-    console.log('✅ Tasks created\n');
+    console.log('[PASS] Tasks created\n');
 
     // Access tasks via command palette to add to history
     console.log('Step 2: Accessing tasks to build history...');
@@ -240,7 +240,7 @@ test.describe('Command Palette', () => {
     await commandPalette.pressEnter();
     await page.waitForTimeout(500);
 
-    console.log('✅ History built\n');
+    console.log('[PASS] History built\n');
 
     // Act: Open command palette without searching
     console.log('Step 3: Opening command palette to see recent items...');
@@ -254,7 +254,7 @@ test.describe('Command Palette', () => {
     const hasRecentItems = await commandPalette.hasRecentItems();
 
     if (hasRecentItems) {
-      console.log('✅ Recent items displayed\n');
+      console.log('[PASS] Recent items displayed\n');
 
       // Assert: Recent items contain accessed tasks
       const recentCount = await commandPalette.getRecentItemCount();
@@ -268,24 +268,24 @@ test.describe('Command Palette', () => {
       await commandPalette.pressEnter();
       await page.waitForTimeout(500);
 
-      console.log('✅ Recent item selected\n');
+      console.log('[PASS] Recent item selected\n');
 
-      console.log('╔════════════════════════════════════════════════════════════╗');
-      console.log('║  ✅ Test Passed: Recent Items                             ║');
-      console.log('╠════════════════════════════════════════════════════════════╣');
-      console.log(`║  Recent Items: ${recentCount}                                          ║`);
-      console.log('║  Quick Access: ✅                                          ║');
-      console.log('╚════════════════════════════════════════════════════════════╝\n');
+      console.log('+============================================================+');
+      console.log('|  [PASS] Test Passed: Recent Items                             |');
+      console.log('+============================================================+');
+      console.log(`|  Recent Items: ${recentCount}                                          |`);
+      console.log('|  Quick Access: [PASS]                                          |');
+      console.log('+============================================================+\n');
     } else {
-      console.log('⚠️  Recent items feature not yet implemented\n');
+      console.log('[WARN]  Recent items feature not yet implemented\n');
       console.log('This is acceptable - recent items may be future feature\n');
 
-      console.log('╔════════════════════════════════════════════════════════════╗');
-      console.log('║  ✅ Test Passed: Recent Items Check                       ║');
-      console.log('╠════════════════════════════════════════════════════════════╣');
-      console.log('║  Feature: Recent items                                     ║');
-      console.log('║  Status: Not implemented (Expected)                        ║');
-      console.log('╚════════════════════════════════════════════════════════════╝\n');
+      console.log('+============================================================+');
+      console.log('|  [PASS] Test Passed: Recent Items Check                       |');
+      console.log('+============================================================+');
+      console.log('|  Feature: Recent items                                     |');
+      console.log('|  Status: Not implemented (Expected)                        |');
+      console.log('+============================================================+\n');
     }
 
     await closeCommandPalette(page);
@@ -300,7 +300,7 @@ test.describe('Command Palette', () => {
    * And: User can execute commands (create task, navigate, etc.)
    */
   test('should execute commands in command mode', async ({ page }) => {
-    console.log('\n📝 Test: Command Mode\n');
+    console.log('\n? Test: Command Mode\n');
 
     // Act: Open command palette
     console.log('Step 1: Opening command palette...');
@@ -320,12 +320,12 @@ test.describe('Command Palette', () => {
     // Assert: Command mode indicator is visible
     const inCommandMode = await commandPalette.isInCommandMode();
     expect(inCommandMode).toBe(true);
-    console.log('✅ Command mode activated\n');
+    console.log('[PASS] Command mode activated\n');
 
     // Assert: Commands are listed
     const commandsCount = await commandPalette.getCommandCount();
     expect(commandsCount).toBeGreaterThan(0);
-    console.log(`✅ Found ${commandsCount} commands\n`);
+    console.log(`[PASS] Found ${commandsCount} commands\n`);
 
     // Act: Search for "create" commands
     console.log('Step 3: Searching for "create" commands...');
@@ -336,7 +336,7 @@ test.describe('Command Palette', () => {
     await page.screenshot({ path: 'test-results/56-cmd-mode-filtered.png', fullPage: true });
 
     const filteredCount = await commandPalette.getCommandCount();
-    console.log(`✅ Filtered to ${filteredCount} commands\n`);
+    console.log(`[PASS] Filtered to ${filteredCount} commands\n`);
 
     // Try to execute a command (if available)
     if (filteredCount > 0) {
@@ -353,20 +353,20 @@ test.describe('Command Palette', () => {
       await commandPalette.pressEnter();
       await page.waitForTimeout(500);
 
-      console.log('✅ Command executed\n');
+      console.log('[PASS] Command executed\n');
 
       // Screenshot: After command execution
       await page.screenshot({ path: 'test-results/58-cmd-mode-executed.png', fullPage: true });
     }
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Command Mode                             ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Activation: ">" prefix                                    ║');
-    console.log(`║  Commands Available: ${commandsCount}                                  ║`);
-    console.log('║  Search/Filter: ✅                                         ║');
-    console.log('║  Execution: ✅                                             ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Command Mode                             |');
+    console.log('+============================================================+');
+    console.log('|  Activation: ">" prefix                                    |');
+    console.log(`|  Commands Available: ${commandsCount}                                  |`);
+    console.log('|  Search/Filter: [PASS]                                         |');
+    console.log('|  Execution: [PASS]                                             |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -377,7 +377,7 @@ test.describe('Command Palette', () => {
    * Then: Quick actions are executed (create task, navigate, etc.)
    */
   test('should support quick actions', async ({ page }) => {
-    console.log('\n📝 Test: Quick Actions\n');
+    console.log('\n? Test: Quick Actions\n');
 
     // Act: Open command palette
     console.log('Step 1: Testing quick task creation...');
@@ -394,13 +394,13 @@ test.describe('Command Palette', () => {
       // Screenshot: Task creation dialog
       await page.screenshot({ path: 'test-results/60-quick-create-task.png', fullPage: true });
 
-      console.log('✅ Quick task creation triggered\n');
+      console.log('[PASS] Quick task creation triggered\n');
 
       // Cancel the dialog
       await page.keyboard.press('Escape');
       await page.waitForTimeout(300);
     } catch (error) {
-      console.log('⚠️  Quick task creation not available or requires different approach\n');
+      console.log('[WARN]  Quick task creation not available or requires different approach\n');
     }
 
     // Act: Try quick navigation
@@ -414,21 +414,21 @@ test.describe('Command Palette', () => {
       // Screenshot: After navigation
       await page.screenshot({ path: 'test-results/61-quick-navigate.png', fullPage: true });
 
-      console.log('✅ Quick navigation triggered\n');
+      console.log('[PASS] Quick navigation triggered\n');
     } catch (error) {
-      console.log('⚠️  Quick navigation not available\n');
+      console.log('[WARN]  Quick navigation not available\n');
     }
 
     // Close command palette
     await closeCommandPalette(page);
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Quick Actions                            ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Quick Create: Tested                                      ║');
-    console.log('║  Quick Navigate: Tested                                    ║');
-    console.log('║  Note: Some actions may be context-dependent              ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Quick Actions                            |');
+    console.log('+============================================================+');
+    console.log('|  Quick Create: Tested                                      |');
+    console.log('|  Quick Navigate: Tested                                    |');
+    console.log('|  Note: Some actions may be context-dependent              |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -439,7 +439,7 @@ test.describe('Command Palette', () => {
    * Then: Relevant results are returned
    */
   test('should support fuzzy search', async ({ page }) => {
-    console.log('\n📝 Test: Fuzzy Search\n');
+    console.log('\n? Test: Fuzzy Search\n');
 
     // Arrange: Create tasks with searchable names
     console.log('Step 1: Creating tasks...');
@@ -447,7 +447,7 @@ test.describe('Command Palette', () => {
     await navigateToTasks(page);
     await taskPage.createTask(createTestTask('E2E CMD - Important Task', { duration: 60 }));
 
-    console.log('✅ Task created: E2E CMD - Important Task\n');
+    console.log('[PASS] Task created: E2E CMD - Important Task\n');
 
     // Act: Open command palette and search with fuzzy query
     console.log('Step 2: Testing fuzzy search...');
@@ -464,18 +464,18 @@ test.describe('Command Palette', () => {
     const resultsCount = await commandPalette.getSearchResultCount();
 
     if (resultsCount > 0) {
-      console.log(`✅ Fuzzy search found ${resultsCount} results\n`);
+      console.log(`[PASS] Fuzzy search found ${resultsCount} results\n`);
 
-      console.log('╔════════════════════════════════════════════════════════════╗');
-      console.log('║  ✅ Test Passed: Fuzzy Search                             ║');
-      console.log('╠════════════════════════════════════════════════════════════╣');
-      console.log('║  Query: "impt"                                             ║');
-      console.log('║  Match: "Important Task"                                   ║');
-      console.log(`║  Results: ${resultsCount}                                              ║`);
-      console.log('║  Fuzzy Matching: ✅                                        ║');
-      console.log('╚════════════════════════════════════════════════════════════╝\n');
+      console.log('+============================================================+');
+      console.log('|  [PASS] Test Passed: Fuzzy Search                             |');
+      console.log('+============================================================+');
+      console.log('|  Query: "impt"                                             |');
+      console.log('|  Match: "Important Task"                                   |');
+      console.log(`|  Results: ${resultsCount}                                              |`);
+      console.log('|  Fuzzy Matching: [PASS]                                        |');
+      console.log('+============================================================+\n');
     } else {
-      console.log('⚠️  Fuzzy search may not be implemented (exact match only)\n');
+      console.log('[WARN]  Fuzzy search may not be implemented (exact match only)\n');
 
       // Try exact search to verify
       await commandPalette.clearSearch();
@@ -485,12 +485,12 @@ test.describe('Command Palette', () => {
       const exactResults = await commandPalette.getSearchResultCount();
       console.log(`Exact search results: ${exactResults}\n`);
 
-      console.log('╔════════════════════════════════════════════════════════════╗');
-      console.log('║  ✅ Test Passed: Fuzzy Search Check                       ║');
-      console.log('╠════════════════════════════════════════════════════════════╣');
-      console.log('║  Fuzzy Search: Not implemented                             ║');
-      console.log('║  Exact Search: ✅ Working                                  ║');
-      console.log('╚════════════════════════════════════════════════════════════╝\n');
+      console.log('+============================================================+');
+      console.log('|  [PASS] Test Passed: Fuzzy Search Check                       |');
+      console.log('+============================================================+');
+      console.log('|  Fuzzy Search: Not implemented                             |');
+      console.log('|  Exact Search: [PASS] Working                                  |');
+      console.log('+============================================================+\n');
     }
 
     await closeCommandPalette(page);

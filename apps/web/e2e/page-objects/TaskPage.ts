@@ -16,8 +16,10 @@ export class TaskPage {
   constructor(page: Page) {
     this.page = page;
 
-    // Initialize locators
-    this.createTaskButton = page.getByRole('button', { name: /创建任务|Create Task|新建/i });
+    // Initialize locators - prefer data-testid for stability
+    this.createTaskButton = page
+      .getByTestId('create-task-button')
+      .or(page.getByRole('button', { name: /创建任务|Create Task|新建/i }));
     this.taskList = page.getByTestId('task-list').or(page.locator('.task-list'));
     this.taskSearchInput = page.getByPlaceholder(/搜索任务|Search tasks/i);
     this.dagVisualizationButton = page.getByRole('button', { name: /DAG|依赖关系图/i });
@@ -27,6 +29,14 @@ export class TaskPage {
   async goto() {
     await this.page.goto('/tasks');
     await this.page.waitForLoadState('networkidle');
+    
+    // Wait for page to be fully loaded
+    await this.page.waitForTimeout(1000);
+    
+    // Wait for the create button to be visible
+    await this.createTaskButton.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {
+      console.log('[TaskPage] Create button not found, page might need authentication or different route');
+    });
   }
 
   // Task Card Locators
@@ -75,6 +85,10 @@ export class TaskPage {
   }) {
     console.log(`[TaskPage] Creating task: ${taskData.title}`);
 
+    // Wait for button to be visible and enabled
+    await this.createTaskButton.waitFor({ state: 'visible', timeout: 15000 });
+    await this.page.waitForTimeout(500);
+    
     await this.createTaskButton.click();
 
     // Wait for dialog

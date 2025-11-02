@@ -1,6 +1,6 @@
 /**
  * Account Profile E2E Test
- * 测试账户个人资料管理
+ * ??????????
  */
 import { test, expect } from '@playwright/test';
 import { login, TEST_USER } from '../helpers/testHelpers';
@@ -23,13 +23,13 @@ test.describe('Account - Profile Management', () => {
     await page.fill('[data-testid="display-name-input"]', newDisplayName);
     await page.click('[data-testid="save-profile-button"]');
 
-    await expect(page.locator('text=/更新成功|Updated successfully/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/????|Updated successfully/i')).toBeVisible({ timeout: 5000 });
   });
 
   test('[P1] should upload avatar', async ({ page }) => {
     await page.click('[data-testid="avatar-upload-button"]');
     
-    // 模拟文件上传
+    // ??????
     const fileInput = page.locator('[data-testid="avatar-file-input"]');
     if (await fileInput.isVisible()) {
       await expect(page.locator('[data-testid="avatar-preview"]')).toBeVisible({ timeout: 5000 });
@@ -41,6 +41,6 @@ test.describe('Account - Profile Management', () => {
     await page.fill('[data-testid="email-input"]', 'newemail@example.com');
     await page.click('[data-testid="save-profile-button"]');
 
-    await expect(page.locator('text=/验证邮件已发送|Verification email sent/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/???????|Verification email sent/i')).toBeVisible({ timeout: 5000 });
   });
 });
