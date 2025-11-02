@@ -459,15 +459,20 @@ export async function navigateToTasks(page: Page) {
   console.log('[Navigation] 导航到 Task 页面');
 
   try {
-    // 方式1: 直接访问
-    await page.goto('/tasks', { waitUntil: 'networkidle' });
-  } catch {
+    // 直接访问一次性任务列表页面（这是实际的任务CRUD页面）
+    await page.goto('/tasks/one-time', { waitUntil: 'networkidle' });
+    // 等待页面加载完成
+    await page.waitForTimeout(1000);
+  } catch (error) {
+    console.log('[Navigation] 导航失败，尝试通过菜单:', error);
     // 方式2: 通过菜单点击
     await page.click('a[href="/tasks"], a:has-text("Task"), a:has-text("任务")');
     await page.waitForURL(/\/tasks/);
+    // 再导航到one-time页面
+    await page.goto('/tasks/one-time', { waitUntil: 'networkidle' });
   }
 
-  console.log('[Navigation] 已到达 Task 页面');
+  console.log('[Navigation] 已到达 Task 页面 (/tasks/one-time)');
 }
 
 /**

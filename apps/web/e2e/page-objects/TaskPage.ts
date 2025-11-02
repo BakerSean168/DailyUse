@@ -27,7 +27,8 @@ export class TaskPage {
 
   // Navigation
   async goto() {
-    await this.page.goto('/tasks');
+    // 访问一次性任务列表页面（实际的任务CRUD页面）
+    await this.page.goto('/tasks/one-time');
     await this.page.waitForLoadState('networkidle');
     
     // Wait for page to be fully loaded
