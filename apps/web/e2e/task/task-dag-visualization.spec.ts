@@ -24,7 +24,7 @@ test.describe('Task DAG Visualization', () => {
     dagPage = new TaskDAGPage(page);
 
     console.log('\n========================================');
-    console.log('🚀 Starting Task DAG Visualization Test');
+    console.log('[START] Starting Task DAG Visualization Test');
     console.log('========================================\n');
 
     // Login
@@ -33,12 +33,12 @@ test.describe('Task DAG Visualization', () => {
     // Navigate to Tasks page
     await navigateToTasks(page);
     
-    console.log('✅ Setup complete\n');
+    console.log('[PASS] Setup complete\n');
   });
 
   test.afterEach(async ({ page }) => {
     console.log('\n========================================');
-    console.log('🧹 Cleaning up test data');
+    console.log('? Cleaning up test data');
     console.log('========================================\n');
 
     // Clean up test tasks
@@ -69,7 +69,7 @@ test.describe('Task DAG Visualization', () => {
    * And: Layout is clear without overlapping
    */
   test('should render task DAG correctly', async ({ page }) => {
-    console.log('\n📝 Test: Render Task DAG\n');
+    console.log('\n? Test: Render Task DAG\n');
 
     // Arrange: Create 5 tasks with dependencies
     console.log('Step 1: Creating tasks with dependencies...');
@@ -94,10 +94,10 @@ test.describe('Task DAG Visualization', () => {
     await taskPage.createDependency('E2E DAG - Task 5', 'E2E DAG - Task 3', 'finish-to-start');
     await page.waitForTimeout(500);
 
-    console.log('✅ Tasks and dependencies created\n');
+    console.log('[PASS] Tasks and dependencies created\n');
     console.log('Dependency structure:');
-    console.log('  Task 1 ─┬─→ Task 2 ─→ Task 3 ─┐');
-    console.log('          └─→ Task 4 ─────────────┼─→ Task 5');
+    console.log('  Task 1 -+--> Task 2 --> Task 3 -+');
+    console.log('          +--> Task 4 -------------+--> Task 5');
     console.log('');
 
     // Screenshot: Task list
@@ -124,27 +124,27 @@ test.describe('Task DAG Visualization', () => {
     expect(dimensions!.width).toBeGreaterThan(400);
     expect(dimensions!.height).toBeGreaterThan(300);
 
-    console.log(`✅ DAG rendered: ${dimensions!.width}x${dimensions!.height}px\n');
+    console.log(`[PASS] DAG rendered: ${dimensions!.width}x${dimensions!.height}px\n');
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Task DAG Rendering                       ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Nodes: 5 tasks                                            ║');
-    console.log('║  Edges: 5 dependencies                                     ║');
-    console.log('║  Layout: Clear and organized                               ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Task DAG Rendering                       |');
+    console.log('+============================================================+');
+    console.log('|  Nodes: 5 tasks                                            |');
+    console.log('|  Edges: 5 dependencies                                     |');
+    console.log('|  Layout: Clear and organized                               |');
+    console.log('+============================================================+\n');
   });
 
   /**
    * Scenario 2.2: Highlight Critical Path
    * 
    * Given: Task chain: A(3d) -> B(2d) -> C(4d) and A -> D(1d) -> C
-   * When: User clicks "显示关键路径"
+   * When: User clicks "??????"
    * Then: Path A -> B -> C is highlighted (total 9 days)
    * And: Node colors change to red
    */
   test('should highlight critical path', async ({ page }) => {
-    console.log('\n📝 Test: Highlight Critical Path\n');
+    console.log('\n? Test: Highlight Critical Path\n');
 
     // Arrange: Create tasks with durations
     console.log('Step 1: Creating tasks with different durations...');
@@ -164,9 +164,9 @@ test.describe('Task DAG Visualization', () => {
     await taskPage.createDependency('E2E DAG - Task 4', 'E2E DAG - Task 1', 'finish-to-start');
     await page.waitForTimeout(500);
 
-    console.log('✅ Tasks created with paths:\n');
-    console.log('  Path 1: Task 1 (3h) → Task 2 (2h) → Task 3 (4h) = 9h (CRITICAL)');
-    console.log('  Path 2: Task 1 (3h) → Task 4 (1h) = 4h\n');
+    console.log('[PASS] Tasks created with paths:\n');
+    console.log('  Path 1: Task 1 (3h) -> Task 2 (2h) -> Task 3 (4h) = 9h (CRITICAL)');
+    console.log('  Path 2: Task 1 (3h) -> Task 4 (1h) = 4h\n');
 
     // Act: Open DAG and enable critical path
     console.log('Step 2: Opening DAG and enabling critical path...');
@@ -194,7 +194,7 @@ test.describe('Task DAG Visualization', () => {
     expect(duration).toBeTruthy();
     expect(duration).toBeGreaterThan(0);
 
-    console.log(`✅ Critical path duration: ${duration} minutes\n`);
+    console.log(`[PASS] Critical path duration: ${duration} minutes\n`);
 
     // Assert: Check if critical nodes have special styling
     // (This would require inspecting canvas or checking for highlighted elements)
@@ -202,25 +202,25 @@ test.describe('Task DAG Visualization', () => {
     const chartBox = await chart.boundingBox();
     expect(chartBox).toBeTruthy();
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Critical Path Highlighting               ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log(`║  Critical Path: Task 1 → Task 2 → Task 3                   ║`);
-    console.log(`║  Duration: ${duration} minutes                                      ║`);
-    console.log('║  Highlighted: ✅                                            ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Critical Path Highlighting               |');
+    console.log('+============================================================+');
+    console.log(`|  Critical Path: Task 1 -> Task 2 -> Task 3                   |`);
+    console.log(`|  Duration: ${duration} minutes                                      |`);
+    console.log('|  Highlighted: [PASS]                                            |');
+    console.log('+============================================================+\n');
   });
 
   /**
    * Scenario 2.3: Export DAG as PNG
    * 
    * Given: DAG is rendered
-   * When: User clicks "导出为 PNG"
+   * When: User clicks "??? PNG"
    * Then: Browser downloads PNG file
    * And: PNG contains complete DAG image
    */
   test('should export DAG as PNG', async ({ page }) => {
-    console.log('\n📝 Test: Export DAG as PNG\n');
+    console.log('\n? Test: Export DAG as PNG\n');
 
     // Arrange: Create simple task structure
     console.log('Step 1: Creating tasks...');
@@ -249,18 +249,18 @@ test.describe('Task DAG Visualization', () => {
       expect(filename).toBeTruthy();
       expect(filename).toMatch(/\.png$/i);
       
-      console.log(`✅ Exported as: ${filename}\n`);
+      console.log(`[PASS] Exported as: ${filename}\n`);
       
-      console.log('╔════════════════════════════════════════════════════════════╗');
-      console.log('║  ✅ Test Passed: Export DAG as PNG                        ║');
-      console.log('╠════════════════════════════════════════════════════════════╣');
-      console.log(`║  File: ${filename?.padEnd(49) || 'task-dag.png'}║`);
-      console.log('║  Format: PNG                                               ║');
-      console.log('║  Status: Downloaded                                        ║');
-      console.log('╚════════════════════════════════════════════════════════════╝\n');
+      console.log('+============================================================+');
+      console.log('|  [PASS] Test Passed: Export DAG as PNG                        |');
+      console.log('+============================================================+');
+      console.log(`|  File: ${filename?.padEnd(49) || 'task-dag.png'}|`);
+      console.log('|  Format: PNG                                               |');
+      console.log('|  Status: Downloaded                                        |');
+      console.log('+============================================================+\n');
       
     } catch (error) {
-      console.log('⚠️  Export functionality not yet implemented or unavailable');
+      console.log('[WARN]  Export functionality not yet implemented or unavailable');
       console.log('Test marked as passed with caveat\n');
     }
   });
@@ -274,7 +274,7 @@ test.describe('Task DAG Visualization', () => {
    * And: Layout preference is persisted
    */
   test('should switch between layout types', async ({ page }) => {
-    console.log('\n📝 Test: Switch Layout Types\n');
+    console.log('\n? Test: Switch Layout Types\n');
 
     // Arrange: Create tasks
     console.log('Step 1: Creating tasks...');
@@ -308,7 +308,7 @@ test.describe('Task DAG Visualization', () => {
     // Assert: Verify layout changed
     layout = await dagPage.getCurrentLayout();
     await dagPage.expectLayoutType('hierarchical');
-    console.log(`✅ Layout changed to: ${layout}\n`);
+    console.log(`[PASS] Layout changed to: ${layout}\n`);
 
     // Assert: Verify preference is persisted
     console.log('Step 4: Verifying layout preference is persisted...');
@@ -325,15 +325,15 @@ test.describe('Task DAG Visualization', () => {
     // Assert: Verify layout changed back
     layout = await dagPage.getCurrentLayout();
     await dagPage.expectLayoutType('force');
-    console.log(`✅ Layout changed back to: ${layout}\n`);
+    console.log(`[PASS] Layout changed back to: ${layout}\n`);
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Layout Switching                         ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Force Layout: ✅                                          ║');
-    console.log('║  Hierarchical Layout: ✅                                   ║');
-    console.log('║  Persistence: ✅                                           ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Layout Switching                         |');
+    console.log('+============================================================+');
+    console.log('|  Force Layout: [PASS]                                          |');
+    console.log('|  Hierarchical Layout: [PASS]                                   |');
+    console.log('|  Persistence: [PASS]                                           |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -344,7 +344,7 @@ test.describe('Task DAG Visualization', () => {
    * Then: Chart responds correctly to interactions
    */
   test('should support chart zoom and pan', async ({ page }) => {
-    console.log('\n📝 Test: Chart Zoom and Pan\n');
+    console.log('\n? Test: Chart Zoom and Pan\n');
 
     // Arrange: Create tasks
     console.log('Step 1: Creating tasks...');
@@ -390,14 +390,14 @@ test.describe('Task DAG Visualization', () => {
     // Assert: Chart is still visible
     await dagPage.expectVisible();
 
-    console.log('✅ Zoom and pan operations completed\n');
+    console.log('[PASS] Zoom and pan operations completed\n');
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Interactive Chart Features               ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Zoom In: ✅                                               ║');
-    console.log('║  Zoom Out: ✅                                              ║');
-    console.log('║  Pan: ✅                                                   ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Interactive Chart Features               |');
+    console.log('+============================================================+');
+    console.log('|  Zoom In: [PASS]                                               |');
+    console.log('|  Zoom Out: [PASS]                                              |');
+    console.log('|  Pan: [PASS]                                                   |');
+    console.log('+============================================================+\n');
   });
 });

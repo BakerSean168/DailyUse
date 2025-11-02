@@ -26,7 +26,7 @@ test.describe('Task Drag & Drop', () => {
     taskPage = new TaskPage(page);
 
     console.log('\n========================================');
-    console.log('🚀 Starting Drag & Drop Test');
+    console.log('[START] Starting Drag & Drop Test');
     console.log('========================================\n');
 
     // Login
@@ -35,12 +35,12 @@ test.describe('Task Drag & Drop', () => {
     // Navigate to Tasks page
     await navigateToTasks(page);
 
-    console.log('✅ Setup complete\n');
+    console.log('[PASS] Setup complete\n');
   });
 
   test.afterEach(async ({ page }) => {
     console.log('\n========================================');
-    console.log('🧹 Cleaning up test data');
+    console.log('? Cleaning up test data');
     console.log('========================================\n');
 
     // Clean up test tasks
@@ -70,7 +70,7 @@ test.describe('Task Drag & Drop', () => {
    * And: Dependency is created successfully
    */
   test('should create dependency by dragging task', async ({ page }) => {
-    console.log('\n📝 Test: Drag to Create Dependency\n');
+    console.log('\n? Test: Drag to Create Dependency\n');
 
     // Arrange: Create two tasks
     console.log('Step 1: Creating two tasks...');
@@ -78,7 +78,7 @@ test.describe('Task Drag & Drop', () => {
     await taskPage.createTask(createTestTask('E2E Drag - Task 1', { duration: 120 }));
     await taskPage.createTask(createTestTask('E2E Drag - Task 2', { duration: 180 }));
 
-    console.log('✅ Tasks created:\n');
+    console.log('[PASS] Tasks created:\n');
     console.log('  Task 1: Independent');
     console.log('  Task 2: Independent\n');
 
@@ -130,7 +130,7 @@ test.describe('Task Drag & Drop', () => {
     await page.mouse.up();
     await page.waitForTimeout(500);
 
-    console.log('✅ Drag operation completed\n');
+    console.log('[PASS] Drag operation completed\n');
 
     // Assert: Dependency creation dialog or notification appears
     console.log('Step 3: Verifying dependency creation...');
@@ -148,7 +148,7 @@ test.describe('Task Drag & Drop', () => {
       // Select finish-to-start type (default)
       // Click confirm button
       const confirmBtn = page
-        .locator('button:has-text("确认"), button:has-text("创建"), button:has-text("OK")')
+        .locator('button:has-text("??"), button:has-text("??"), button:has-text("OK")')
         .first();
       await confirmBtn.click();
       await page.waitForTimeout(500);
@@ -164,16 +164,16 @@ test.describe('Task Drag & Drop', () => {
     const status = await taskPage.getTaskStatus('E2E Drag - Task 2');
     expect(status).toBe('blocked');
 
-    console.log('✅ Dependency created: Task 2 depends on Task 1\n');
-    console.log('✅ Task 2 status: blocked\n');
+    console.log('[PASS] Dependency created: Task 2 depends on Task 1\n');
+    console.log('[PASS] Task 2 status: blocked\n');
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Drag to Create Dependency                ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Method: Drag & Drop                                       ║');
-    console.log('║  Dependency: Task 2 -> Task 1                              ║');
-    console.log('║  Status Update: ✅ Blocked                                 ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Drag to Create Dependency                |');
+    console.log('+============================================================+');
+    console.log('|  Method: Drag & Drop                                       |');
+    console.log('|  Dependency: Task 2 -> Task 1                              |');
+    console.log('|  Status Update: [PASS] Blocked                                 |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -186,7 +186,7 @@ test.describe('Task Drag & Drop', () => {
    * And: Invalid drop zones show negative feedback
    */
   test('should provide visual feedback during drag', async ({ page }) => {
-    console.log('\n📝 Test: Visual Feedback During Drag\n');
+    console.log('\n? Test: Visual Feedback During Drag\n');
 
     // Arrange: Create tasks with existing dependency
     console.log('Step 1: Creating tasks...');
@@ -199,7 +199,7 @@ test.describe('Task Drag & Drop', () => {
     await taskPage.createDependency('E2E Drag - Task 2', 'E2E Drag - Task 1', 'finish-to-start');
     await page.waitForTimeout(500);
 
-    console.log('✅ Tasks created with existing dependency:\n');
+    console.log('[PASS] Tasks created with existing dependency:\n');
     console.log('  Task 1: Independent');
     console.log('  Task 2: Depends on Task 1');
     console.log('  Task 3: Independent\n');
@@ -220,7 +220,7 @@ test.describe('Task Drag & Drop', () => {
     // Assert: Check dragging state attribute
     const isDragging = await sourceTask.getAttribute('data-dragging');
     expect(isDragging).toBe('true');
-    console.log('✅ Task 3 dragging state: active\n');
+    console.log('[PASS] Task 3 dragging state: active\n');
 
     // Screenshot: Dragging state
     await page.screenshot({ path: 'test-results/37-dragging-active.png', fullPage: true });
@@ -243,7 +243,7 @@ test.describe('Task Drag & Drop', () => {
     const isValidVisible = await validDropZone.isVisible().catch(() => false);
 
     if (isValidVisible) {
-      console.log('✅ Valid drop zone highlighted\n');
+      console.log('[PASS] Valid drop zone highlighted\n');
     }
 
     // Screenshot: Valid drop zone
@@ -267,7 +267,7 @@ test.describe('Task Drag & Drop', () => {
     const isInvalidVisible = await invalidDropZone.isVisible().catch(() => false);
 
     if (isInvalidVisible) {
-      console.log('✅ Invalid drop zone indicated\n');
+      console.log('[PASS] Invalid drop zone indicated\n');
     }
 
     // Screenshot: Invalid drop zone
@@ -281,19 +281,19 @@ test.describe('Task Drag & Drop', () => {
     // Assert: Dragging state is cleared
     const isDraggingAfter = await sourceTask.getAttribute('data-dragging');
     expect(isDraggingAfter).not.toBe('true');
-    console.log('✅ Dragging state cleared\n');
+    console.log('[PASS] Dragging state cleared\n');
 
     // Screenshot: After cancel
     await page.screenshot({ path: 'test-results/40-drag-canceled.png', fullPage: true });
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Visual Feedback                          ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Dragging State: ✅                                        ║');
-    console.log('║  Valid Drop Zone: ✅ Highlighted                           ║');
-    console.log('║  Invalid Drop Zone: ✅ Indicated                           ║');
-    console.log('║  Cancel Operation: ✅                                      ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Visual Feedback                          |');
+    console.log('+============================================================+');
+    console.log('|  Dragging State: [PASS]                                        |');
+    console.log('|  Valid Drop Zone: [PASS] Highlighted                           |');
+    console.log('|  Invalid Drop Zone: [PASS] Indicated                           |');
+    console.log('|  Cancel Operation: [PASS]                                      |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -305,7 +305,7 @@ test.describe('Task Drag & Drop', () => {
    * And: Error message explains circular dependency
    */
   test('should prevent circular dependency via drag', async ({ page }) => {
-    console.log('\n📝 Test: Prevent Circular Dependency via Drag\n');
+    console.log('\n? Test: Prevent Circular Dependency via Drag\n');
 
     // Arrange: Create tasks with dependency chain
     console.log('Step 1: Creating dependency chain...');
@@ -321,7 +321,7 @@ test.describe('Task Drag & Drop', () => {
     await taskPage.createDependency('E2E Drag - Task 3', 'E2E Drag - Task 2', 'finish-to-start');
     await page.waitForTimeout(500);
 
-    console.log('✅ Dependency chain created:\n');
+    console.log('[PASS] Dependency chain created:\n');
     console.log('  Task 1 <- Task 2 <- Task 3\n');
 
     // Screenshot: Initial chain
@@ -351,7 +351,7 @@ test.describe('Task Drag & Drop', () => {
     // Assert: Check for invalid drop indicator
     const invalidAttr = await targetTask.getAttribute('data-invalid-drop');
     expect(invalidAttr).toBe('true');
-    console.log('✅ Invalid drop indicator shown\n');
+    console.log('[PASS] Invalid drop indicator shown\n');
 
     // Screenshot: Invalid drop attempt
     await page.screenshot({ path: 'test-results/42-circular-blocked.png', fullPage: true });
@@ -361,11 +361,11 @@ test.describe('Task Drag & Drop', () => {
     await page.waitForTimeout(500);
 
     // Assert: Error message appears
-    const errorMessage = page.locator('text=/会形成循环依赖|circular|cycle/i').first();
+    const errorMessage = page.locator('text=/???????|circular|cycle/i').first();
     const hasError = await errorMessage.isVisible().catch(() => false);
 
     if (hasError) {
-      console.log('✅ Error message displayed\n');
+      console.log('[PASS] Error message displayed\n');
 
       // Screenshot: Error message
       await page.screenshot({ path: 'test-results/43-circular-error.png', fullPage: true });
@@ -380,16 +380,16 @@ test.describe('Task Drag & Drop', () => {
       .catch(() => false);
 
     expect(dependencyExists).toBe(false);
-    console.log('✅ Circular dependency prevented\n');
+    console.log('[PASS] Circular dependency prevented\n');
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Circular Dependency Prevention           ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Chain: Task 1 <- Task 2 <- Task 3                         ║');
-    console.log('║  Attempted: Task 1 -> Task 3                               ║');
-    console.log('║  Result: ✅ Blocked                                        ║');
-    console.log('║  Error Message: ✅ Displayed                               ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Circular Dependency Prevention           |');
+    console.log('+============================================================+');
+    console.log('|  Chain: Task 1 <- Task 2 <- Task 3                         |');
+    console.log('|  Attempted: Task 1 -> Task 3                               |');
+    console.log('|  Result: [PASS] Blocked                                        |');
+    console.log('|  Error Message: [PASS] Displayed                               |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -401,7 +401,7 @@ test.describe('Task Drag & Drop', () => {
    * And: No dependencies are created
    */
   test('should reorder tasks by dragging (if supported)', async ({ page }) => {
-    console.log('\n📝 Test: Drag to Reorder Tasks\n');
+    console.log('\n? Test: Drag to Reorder Tasks\n');
 
     // Arrange: Create tasks
     console.log('Step 1: Creating tasks...');
@@ -411,7 +411,7 @@ test.describe('Task Drag & Drop', () => {
     await taskPage.createTask(createTestTask('E2E Drag - Task 3', { duration: 60 }));
     await taskPage.createTask(createTestTask('E2E Drag - Task 4', { duration: 60 }));
 
-    console.log('✅ Tasks created in order: 1, 2, 3, 4\n');
+    console.log('[PASS] Tasks created in order: 1, 2, 3, 4\n');
 
     // Screenshot: Initial order
     await page.screenshot({ path: 'test-results/44-reorder-initial.png', fullPage: true });
@@ -433,24 +433,24 @@ test.describe('Task Drag & Drop', () => {
       await page.screenshot({ path: 'test-results/45-reorder-after.png', fullPage: true });
 
       // Check if order changed (this is optional behavior)
-      console.log('✅ Reorder operation completed\n');
+      console.log('[PASS] Reorder operation completed\n');
 
-      console.log('╔════════════════════════════════════════════════════════════╗');
-      console.log('║  ✅ Test Passed: Task Reordering                          ║');
-      console.log('╠════════════════════════════════════════════════════════════╣');
-      console.log('║  Feature: Task reordering via drag-drop                   ║');
-      console.log('║  Status: ✅ Supported                                      ║');
-      console.log('╚════════════════════════════════════════════════════════════╝\n');
+      console.log('+============================================================+');
+      console.log('|  [PASS] Test Passed: Task Reordering                          |');
+      console.log('+============================================================+');
+      console.log('|  Feature: Task reordering via drag-drop                   |');
+      console.log('|  Status: [PASS] Supported                                      |');
+      console.log('+============================================================+\n');
     } catch (error) {
-      console.log('⚠️  Task reordering not implemented or not supported\n');
+      console.log('[WARN]  Task reordering not implemented or not supported\n');
       console.log('This is expected - reordering may be future feature\n');
 
-      console.log('╔════════════════════════════════════════════════════════════╗');
-      console.log('║  ✅ Test Passed: Reordering Check                         ║');
-      console.log('╠════════════════════════════════════════════════════════════╣');
-      console.log('║  Feature: Task reordering                                  ║');
-      console.log('║  Status: Not implemented (Expected)                        ║');
-      console.log('╚════════════════════════════════════════════════════════════╝\n');
+      console.log('+============================================================+');
+      console.log('|  [PASS] Test Passed: Reordering Check                         |');
+      console.log('+============================================================+');
+      console.log('|  Feature: Task reordering                                  |');
+      console.log('|  Status: Not implemented (Expected)                        |');
+      console.log('+============================================================+\n');
     }
   });
 });

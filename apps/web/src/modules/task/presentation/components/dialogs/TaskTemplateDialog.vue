@@ -48,15 +48,10 @@
 
         <!-- 表单内容 -->
         <div v-else class="form-container pa-4" :class="{ readonly: operationState.loading }">
-          <TaskTemplateForm
-            ref="formRef"
-            :model-value="formData.taskTemplate as TaskTemplate"
-            :is-edit-mode="dialogState.mode === 'edit'"
-            :readonly="operationState.loading"
-            @update:model-value="handleTemplateUpdate"
-            @update:validation="handleValidationUpdate"
-            @close="handleCancel"
-          />
+          <TaskTemplateForm ref="formRef" :model-value="formData.taskTemplate as TaskTemplate"
+            :is-edit-mode="dialogState.mode === 'edit'" :readonly="operationState.loading"
+            @update:model-value="handleTemplateUpdate" @update:validation="handleValidationUpdate"
+            @close="handleCancel" />
         </div>
       </v-card-text>
 
@@ -70,13 +65,8 @@
         </v-btn>
 
         <!-- 保存按钮 -->
-        <v-btn
-          color="primary"
-          variant="elevated"
-          :disabled="!canSave"
-          :loading="operationState.saving"
-          @click="handleSave"
-        >
+        <v-btn color="primary" variant="elevated" :disabled="!canSave" :loading="operationState.saving"
+          @click="handleSave">
           {{ getSaveButtonText() }}
         </v-btn>
       </v-card-actions>
@@ -548,11 +538,9 @@ defineExpose({
 }
 
 .dialog-header {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.1),
-    rgba(var(--v-theme-secondary), 0.05)
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--v-theme-primary), 0.1),
+      rgba(var(--v-theme-secondary), 0.05));
   border-bottom: 1px solid rgba(var(--v-theme-outline), 0.12);
   padding: 1.5rem;
 }
@@ -638,11 +626,9 @@ defineExpose({
 /* 深色模式适配 */
 @media (prefers-color-scheme: dark) {
   .dialog-header {
-    background: linear-gradient(
-      135deg,
-      rgba(var(--v-theme-primary), 0.15),
-      rgba(var(--v-theme-secondary), 0.08)
-    );
+    background: linear-gradient(135deg,
+        rgba(var(--v-theme-primary), 0.15),
+        rgba(var(--v-theme-secondary), 0.08));
   }
 
   .dialog-actions {

@@ -26,6 +26,17 @@ export enum TimeType {
   timeRange = 'TIME_RANGE', // 时间段任务
 }
 
+/**
+ * 任务调度模式
+ */
+export enum TaskScheduleMode {
+  ONCE = 'ONCE', // 单次任务
+  DAILY = 'DAILY', // 每天
+  WEEKLY = 'WEEKLY', // 每周
+  MONTHLY = 'MONTHLY', // 每月
+  CUSTOM = 'CUSTOM', // 自定义
+}
+
 // ============ 状态枚举 ============
 
 /**

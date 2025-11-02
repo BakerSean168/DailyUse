@@ -89,11 +89,15 @@ export {
   TaskInstanceStatus,
   TaskType,
   TimeType,
+  TaskScheduleMode,
   RecurrenceFrequency,
   DayOfWeek,
   ReminderType,
   ReminderTimeUnit,
 } from './modules/task/enums';
+
+// 类型别名（向后兼容）
+export { TimeType as TaskTimeType } from './modules/task/enums';
 
 // 导出所有模块的类型定义（向后兼容，待迁移）
 export * from './modules/account';

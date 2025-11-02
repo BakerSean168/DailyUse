@@ -1,6 +1,6 @@
 /**
  * Schedule CRUD E2E Test
- * 测试日程管理的增删改查功能
+ * ?????????????
  */
 import { test, expect } from '@playwright/test';
 import { login, TEST_USER } from '../helpers/testHelpers';
@@ -24,7 +24,7 @@ test.describe('Schedule CRUD', () => {
   });
 
   test('[P0] should update schedule', async ({ page }) => {
-    // 假设列表中有日程
+    // ????????
     const firstSchedule = page.locator('[data-testid="schedule-item"]').first();
     await firstSchedule.click();
 
@@ -41,6 +41,6 @@ test.describe('Schedule CRUD', () => {
     await page.click('[data-testid="delete-schedule-button"]');
     await page.click('[data-testid="confirm-delete-button"]');
 
-    await expect(page.locator('text=/删除成功|Deleted/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/????|Deleted/i')).toBeVisible({ timeout: 5000 });
   });
 });

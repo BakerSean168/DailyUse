@@ -29,7 +29,7 @@ test.describe('Task Critical Path Analysis', () => {
     dagPage = new TaskDAGPage(page);
 
     console.log('\n========================================');
-    console.log('🚀 Starting Critical Path Analysis Test');
+    console.log('[START] Starting Critical Path Analysis Test');
     console.log('========================================\n');
 
     // Login
@@ -38,12 +38,12 @@ test.describe('Task Critical Path Analysis', () => {
     // Navigate to Tasks page
     await navigateToTasks(page);
 
-    console.log('✅ Setup complete\n');
+    console.log('[PASS] Setup complete\n');
   });
 
   test.afterEach(async ({ page }) => {
     console.log('\n========================================');
-    console.log('🧹 Cleaning up test data');
+    console.log('? Cleaning up test data');
     console.log('========================================\n');
 
     // Clean up test tasks
@@ -75,7 +75,7 @@ test.describe('Task Critical Path Analysis', () => {
    * And: Critical tasks are highlighted in DAG
    */
   test('should calculate and display critical path', async ({ page }) => {
-    console.log('\n📝 Test: Calculate Critical Path\n');
+    console.log('\n? Test: Calculate Critical Path\n');
 
     // Arrange: Create complex task structure with multiple paths
     console.log('Step 1: Creating tasks with multiple paths...');
@@ -88,7 +88,7 @@ test.describe('Task Critical Path Analysis', () => {
     await taskPage.createTask(createTestTask('E2E CP - Task E', { duration: 90 })); // 1.5h
     await taskPage.createTask(createTestTask('E2E CP - Task F', { duration: 150 })); // 2.5h
 
-    console.log('✅ Tasks created:\n');
+    console.log('[PASS] Tasks created:\n');
     console.log('  Task A: 2h');
     console.log('  Task B: 3h');
     console.log('  Task C: 4h');
@@ -124,7 +124,7 @@ test.describe('Task Critical Path Analysis', () => {
     await taskPage.createDependency('E2E CP - Task F', 'E2E CP - Task E', 'finish-to-start');
     await page.waitForTimeout(500);
 
-    console.log('✅ Dependencies created:\n');
+    console.log('[PASS] Dependencies created:\n');
     console.log('  Path 1: A (2h) -> B (3h) -> C (4h) -> F (2.5h) = 11.5h (CRITICAL)');
     console.log('  Path 2: A (2h) -> D (1h) -----------> F (2.5h) = 5.5h');
     console.log('  Path 3: A (2h) -> E (1.5h) ---------> F (2.5h) = 6h\n');
@@ -150,11 +150,11 @@ test.describe('Task Critical Path Analysis', () => {
 
     const isActive = await dagPage.isCriticalPathActive();
     expect(isActive).toBe(true);
-    console.log('✅ Critical path is active\n');
+    console.log('[PASS] Critical path is active\n');
 
     // Assert: Verify critical path chip is visible
     await dagPage.expectCriticalPathVisible();
-    console.log('✅ Critical path chip is visible\n');
+    console.log('[PASS] Critical path chip is visible\n');
 
     // Assert: Verify critical path duration
     const duration = await dagPage.getCriticalPathDuration();
@@ -162,7 +162,7 @@ test.describe('Task Critical Path Analysis', () => {
     expect(duration).toBeGreaterThanOrEqual(690); // 11.5h = 690 minutes
 
     console.log(
-      `✅ Critical path duration: ${duration} minutes (${(duration! / 60).toFixed(1)}h)\n`,
+      `[PASS] Critical path duration: ${duration} minutes (${(duration! / 60).toFixed(1)}h)\n`,
     );
 
     // Assert: Expected critical path is A -> B -> C -> F
@@ -172,14 +172,14 @@ test.describe('Task Critical Path Analysis', () => {
     const expectedDuration = 120 + 180 + 240 + 150; // A + B + C + F = 690 minutes
     expect(Math.abs(duration! - expectedDuration)).toBeLessThanOrEqual(5); // Allow 5 min tolerance
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Critical Path Calculation                ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Critical Path: A -> B -> C -> F                          ║');
-    console.log(`║  Duration: ${duration} min (11.5h)                             ║`);
-    console.log('║  Alternative Paths: 2 shorter paths                        ║');
-    console.log('║  Calculation: ✅ Correct                                   ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Critical Path Calculation                |');
+    console.log('+============================================================+');
+    console.log('|  Critical Path: A -> B -> C -> F                          |');
+    console.log(`|  Duration: ${duration} min (11.5h)                             |`);
+    console.log('|  Alternative Paths: 2 shorter paths                        |');
+    console.log('|  Calculation: [PASS] Correct                                   |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -191,7 +191,7 @@ test.describe('Task Critical Path Analysis', () => {
    * And: DAG updates to highlight new critical path
    */
   test('should update critical path when dependencies change', async ({ page }) => {
-    console.log('\n📝 Test: Update Critical Path on Change\n');
+    console.log('\n? Test: Update Critical Path on Change\n');
 
     // Arrange: Create initial task structure
     console.log('Step 1: Creating initial task structure...');
@@ -208,7 +208,7 @@ test.describe('Task Critical Path Analysis', () => {
     await taskPage.createDependency('E2E CP - Task C', 'E2E CP - Task B', 'finish-to-start');
     await page.waitForTimeout(500);
 
-    console.log('✅ Initial structure created:\n');
+    console.log('[PASS] Initial structure created:\n');
     console.log('  Path 1: A (2h) -> B (3h) -> C (4h) = 9h (CRITICAL)');
     console.log('  Task D (10h) is independent\n');
 
@@ -226,7 +226,7 @@ test.describe('Task Critical Path Analysis', () => {
     expect(duration).toBeTruthy();
     expect(duration).toBeGreaterThanOrEqual(540); // 9h = 540 minutes
 
-    console.log(`✅ Initial critical path: ${duration} minutes (9h)\n`);
+    console.log(`[PASS] Initial critical path: ${duration} minutes (9h)\n`);
 
     // Act: Close DAG and add new dependency
     console.log('Step 3: Adding new dependency D -> C...');
@@ -242,7 +242,7 @@ test.describe('Task Critical Path Analysis', () => {
     await taskPage.createDependency('E2E CP - Task C', 'E2E CP - Task D', 'finish-to-start');
     await page.waitForTimeout(500);
 
-    console.log('✅ New dependencies created:\n');
+    console.log('[PASS] New dependencies created:\n');
     console.log('  Path 1: A (2h) -> B (3h) -> C (4h) = 9h');
     console.log('  Path 2: A (2h) -> D (10h) -> C (4h) = 16h (NEW CRITICAL)\n');
 
@@ -263,20 +263,20 @@ test.describe('Task Critical Path Analysis', () => {
     expect(duration).toBeTruthy();
     expect(duration).toBeGreaterThanOrEqual(960); // 16h = 960 minutes
 
-    console.log(`✅ Updated critical path: ${duration} minutes (16h)\n`);
+    console.log(`[PASS] Updated critical path: ${duration} minutes (16h)\n`);
 
     // Assert: New critical path should be longer than initial
     const expectedNewDuration = 120 + 600 + 240; // A + D + C = 960 minutes
     expect(Math.abs(duration! - expectedNewDuration)).toBeLessThanOrEqual(5);
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Critical Path Update                     ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Initial Path: A -> B -> C (9h)                            ║');
-    console.log('║  Updated Path: A -> D -> C (16h)                           ║');
-    console.log('║  Change: +7h                                               ║');
-    console.log('║  Auto-Update: ✅ Successful                                ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Critical Path Update                     |');
+    console.log('+============================================================+');
+    console.log('|  Initial Path: A -> B -> C (9h)                            |');
+    console.log('|  Updated Path: A -> D -> C (16h)                           |');
+    console.log('|  Change: +7h                                               |');
+    console.log('|  Auto-Update: [PASS] Successful                                |');
+    console.log('+============================================================+\n');
   });
 
   /**
@@ -288,7 +288,7 @@ test.describe('Task Critical Path Analysis', () => {
    * And: Other parallel paths are not highlighted
    */
   test('should identify critical path among parallel tasks', async ({ page }) => {
-    console.log('\n📝 Test: Critical Path with Parallel Tasks\n');
+    console.log('\n? Test: Critical Path with Parallel Tasks\n');
 
     // Arrange: Create parallel task structure
     console.log('Step 1: Creating parallel task structure...');
@@ -326,10 +326,10 @@ test.describe('Task Critical Path Analysis', () => {
     await taskPage.createDependency('E2E CP - Task E', 'E2E CP - Task D', 'finish-to-start');
     await page.waitForTimeout(500);
 
-    console.log('✅ Parallel structure created:\n');
-    console.log('         ┌─→ B (3h) ─┐');
-    console.log('  A (1h) ├─→ C (2h) ─┤─→ E (1h)');
-    console.log('         └─→ D (1.5h)─┘');
+    console.log('[PASS] Parallel structure created:\n');
+    console.log('         +--> B (3h) -+');
+    console.log('  A (1h) +--> C (2h) -+--> E (1h)');
+    console.log('         +--> D (1.5h)-+');
     console.log('');
     console.log('  Path 1: A -> B -> E = 1 + 3 + 1 = 5h (CRITICAL)');
     console.log('  Path 2: A -> C -> E = 1 + 2 + 1 = 4h');
@@ -354,14 +354,14 @@ test.describe('Task Critical Path Analysis', () => {
     const expectedDuration = 60 + 180 + 60; // A + B + E = 300 minutes (5h)
     expect(Math.abs(duration! - expectedDuration)).toBeLessThanOrEqual(5);
 
-    console.log(`✅ Critical path through longest parallel task: ${duration} minutes (5h)\n`);
+    console.log(`[PASS] Critical path through longest parallel task: ${duration} minutes (5h)\n`);
 
-    console.log('╔════════════════════════════════════════════════════════════╗');
-    console.log('║  ✅ Test Passed: Parallel Path Analysis                   ║');
-    console.log('╠════════════════════════════════════════════════════════════╣');
-    console.log('║  Critical Path: A -> B -> E (5h)                           ║');
-    console.log('║  Parallel Paths: C (4h), D (3.5h)                          ║');
-    console.log('║  Longest Identified: ✅                                    ║');
-    console.log('╚════════════════════════════════════════════════════════════╝\n');
+    console.log('+============================================================+');
+    console.log('|  [PASS] Test Passed: Parallel Path Analysis                   |');
+    console.log('+============================================================+');
+    console.log('|  Critical Path: A -> B -> E (5h)                           |');
+    console.log('|  Parallel Paths: C (4h), D (3.5h)                          |');
+    console.log('|  Longest Identified: [PASS]                                    |');
+    console.log('+============================================================+\n');
   });
 });
