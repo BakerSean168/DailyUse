@@ -140,33 +140,34 @@ const props = defineProps<{
   goal: GoalClient;
 }>();
 
+// 定义 emits
+const emit = defineEmits<{
+  'edit-goal': [goal: GoalClient];
+  'delete-goal': [goalUuid: string];
+  'toggle-status': [goalUuid: string];
+}>();
+
 // 内部状态控制
 const isCardOpen = ref(false);
 
 // ===== 内部业务逻辑方法 =====
 
 /**
- * 编辑目标
+ * 编辑目标 - 通过事件通知父组件
  */
 const editGoal = async () => {
   try {
-    goalComposable.openEditDialog(props.goal);
+    emit('edit-goal', props.goal);
   } catch (error) {
-    console.error('Failed to open edit dialog:', error);
+    console.error('Failed to emit edit event:', error);
   }
 };
 
 /**
- * 删除目标
+ * 删除目标 - 通过事件通知父组件（已有 delete-goal 事件）
  */
 const deleteGoal = async () => {
-  try {
-    if (confirm(`确定要删除目标 "${props.goal.title}" 吗？此操作不可撤销。`)) {
-      await goalComposable.deleteGoal(props.goal.uuid);
-    }
-  } catch (error) {
-    console.error('Failed to delete goal:', error);
-  }
+  emit('delete-goal', props.goal.uuid);
 };
 
 /**

@@ -182,10 +182,10 @@ export class GoalController {
       return GoalController.responseBuilder.sendSuccess(
         res,
         {
-          data: paginatedGoals,
+          goals: paginatedGoals,  // 修改字段名从 data 到 goals，与前端 GoalsResponse 类型匹配
           total,
           page,
-          limit: limit || total,
+          pageSize: limit || total,  // 修改字段名从 limit 到 pageSize，与前端类型匹配
           hasMore: limit ? page * limit < total : false,
         },
         'Goals retrieved successfully',

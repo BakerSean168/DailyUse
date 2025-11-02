@@ -60,7 +60,7 @@ import type { GoalFolderClient } from '@dailyuse/domain-client';
 import { GoalFolderClient as GoalFolder } from '@dailyuse/domain-client';
 // composables
 import { useGoalFolder } from '../../composables/useGoalFolder';
-import { useAccountStore } from '@/modules/account/presentation/stores/useAccountStore';
+import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 import { vi } from 'date-fns/locale';
 
 const goalFolderComposable = useGoalFolder();
@@ -130,8 +130,8 @@ const handleSave = () => {
     };
     updateFolder(localGoalFolder.value.uuid, updateRequest);
   } else {
-    // 创建模式：注入 accountUuid
-    const accountUuid = accountStore.accountUuid || accountStore.getAccountUuid;
+    // 创建模式：注入 accountUuid（使用新 accountStore 的 currentAccountUuid）
+    const accountUuid = accountStore.currentAccountUuid;
     if (!accountUuid) {
       console.error('❌ GoalFolderDialog: 无法获取 accountUuid');
       return;

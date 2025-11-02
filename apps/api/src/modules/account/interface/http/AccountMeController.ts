@@ -118,9 +118,7 @@ export class AccountMeController {
 
       return AccountMeController.responseBuilder.sendSuccess(
         res,
-        {
-          account,
-        },
+        account,  // 直接返回 account，不要包装成 { account: ... }
         'Profile retrieved successfully',
         200,
       );
@@ -181,9 +179,7 @@ export class AccountMeController {
 
       return AccountMeController.responseBuilder.sendSuccess(
         res,
-        {
-          account: result.account,
-        },
+        result.account,  // 直接返回 account，不要包装成 { account: ... }
         'Profile updated successfully',
         200,
       );

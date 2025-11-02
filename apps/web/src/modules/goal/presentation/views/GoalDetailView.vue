@@ -17,7 +17,7 @@
       <v-spacer />
 
       <!-- 编辑按钮 -->
-      <v-btn icon @click="goalDialogRef?.openDialog(goal as GoalClient)">
+      <v-btn icon @click="handleEditGoal">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
@@ -438,6 +438,13 @@ const gotoGoalReviewDetailView = (goalUuid: string) => {
 const openGoalReviewListCard = () => {
   console.log('Opening goal review list card');
   goalReviewListCardRef.value?.openDialog();
+};
+
+// 处理编辑目标
+const handleEditGoal = () => {
+  if (goal.value) {
+    goalDialogRef.value?.openForEdit(goal.value as GoalClient);
+  }
 };
 
 // DAG 节点点击处理

@@ -30,6 +30,13 @@ export class RegistrationApplicationService {
     return RegistrationApplicationService.instance;
   }
 
+  /**
+   * 懒加载获取 Auth Store
+   */
+  private get authStore(): ReturnType<typeof useAuthStore> {
+    return useAuthStore();
+  }
+
   // ============ 注册用例 ============
 
   /**
@@ -43,11 +50,9 @@ export class RegistrationApplicationService {
   async register(
     request: AuthenticationContracts.RegisterRequestDTO,
   ): Promise<{ account: any; message: string }> {
-    const authStore = useAuthStore();
-    
     try {
-      authStore.setLoading(true);
-      authStore.clearError();
+      this.authStore.setLoading(true);
+      this.authStore.clearError();
 
       const response = await authApiClient.register(request);
 
@@ -56,10 +61,10 @@ export class RegistrationApplicationService {
       return response; // { account: AccountClientDTO, message: string }
     } catch (error) {
       console.error('Registration failed:', error);
-      authStore.setError('Registration failed');
+      this.authStore.setError('Registration failed');
       throw error;
     } finally {
-      authStore.setLoading(false);
+      this.authStore.setLoading(false);
     }
   }
 }

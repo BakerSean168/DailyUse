@@ -72,9 +72,8 @@ export class ApiClient implements IApiClient {
       params: options.params,
     });
 
-    console.log('🌐 GET 请求响应:', response.data);
     const result = this.extractData<T>(response.data);
-    console.log('🔍 提取后的响应数据:', result);
+    
     // 缓存结果
     if (options.enableCache !== false && this.config.enableCache) {
       this.setCache(cacheKey, result);

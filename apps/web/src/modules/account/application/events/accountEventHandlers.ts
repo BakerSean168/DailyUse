@@ -9,10 +9,8 @@ import {
   AUTH_EVENTS,
   type UserLoggedInEventPayload,
 } from '../../../authentication/application/events/authEvents';
-import { useAccountStore } from '../../presentation/stores/useAccountStore';
-import { AccountApiService } from '../../infrastructure/api/ApiClient';
-// domains
-import { Account } from '@dailyuse/domain-client';
+import { useAccountStore } from '../../presentation/stores/accountStore';
+import { accountApiClient } from '../../infrastructure/api/accountApiClient';
 import { AccountContracts } from '@dailyuse/contracts';
 
 /**
@@ -78,37 +76,27 @@ export class AccountEventHandlers {
       }
 
       const accountStore = useAccountStore();
-
-      // 1. 设置 accountUuid
-      accountStore.setAccountUuid(payload.accountUuid);
-      accountStore.loading = true;
-      accountStore.error = null;
+      accountStore.setLoading(true);
+      accountStore.setError(null);
 
       try {
-        // 2. 通过 accountUuid 获取完整的账户信息
-        const accountDTO = await AccountApiService.getAccountById(payload.accountUuid);
-        if (!accountDTO) {
-          throw new Error('未找到账户信息');
-        }
+        // 通过 /accounts/me 获取当前登录用户的完整信息
+        const accountDTO = await accountApiClient.getMyProfile();
+        
         console.log('✅ [AccountEventHandlers] 成功获取账户信息', {
-          apiResponse: accountDTO, // 显示完整的 API 响应
-          responseType: typeof accountDTO,
-          responseKeys: accountDTO ? Object.keys(accountDTO) : null,
           accountUuid: accountDTO.uuid,
           username: accountDTO.username,
         });
 
-        const accountEntity = Account.fromClientDTO(accountDTO);
+        // 将账户信息保存到 store（使用新的 setCurrentAccount 方法）
+        accountStore.setCurrentAccount(accountDTO);
 
-        // 3. 将账户信息保存到 store
-        accountStore.setAccount(accountEntity as Account);
-
-        console.log('💾 [AccountEventHandlers] 账户信息已保存到 Store');
+        console.log('💾 [AccountEventHandlers] 账户信息已保存到 AccountStore');
       } catch (error) {
         console.error('❌ [AccountEventHandlers] 获取账户信息失败', error);
-        accountStore.error = error instanceof Error ? error.message : '获取账户信息失败';
+        accountStore.setError(error instanceof Error ? error.message : '获取账户信息失败');
       } finally {
-        accountStore.loading = false;
+        accountStore.setLoading(false);
       }
     } catch (error) {
       console.error('❌ [AccountEventHandlers] 处理用户登录事件失败', error);
@@ -126,7 +114,7 @@ export class AccountEventHandlers {
       const accountStore = useAccountStore();
 
       // 清理账户数据
-      accountStore.logout();
+      accountStore.clearCurrentAccount();
 
       console.log('🧹 [AccountEventHandlers] 账户数据已清理');
     } catch (error) {
@@ -143,33 +131,24 @@ export class AccountEventHandlers {
       console.log('🔄 [AccountEventHandlers] 手动刷新账户信息', { accountUuid });
 
       const accountStore = useAccountStore();
-      accountStore.loading = true;
-      accountStore.error = null;
+      accountStore.setLoading(true);
+      accountStore.setError(null);
 
-      const accountDTO = await AccountApiService.getAccountById(accountUuid);
-      if (!accountDTO) {
-        throw new Error('未找到账户信息');
-      }
+      const accountDTO = await accountApiClient.getMyProfile();
       console.log('✅ [AccountEventHandlers] 成功获取账户信息', {
-        apiResponse: accountDTO, // 显示完整的 API 响应
-        responseType: typeof accountDTO,
-        responseKeys: accountDTO ? Object.keys(accountDTO) : null,
         accountUuid: accountDTO.uuid,
         username: accountDTO.username,
       });
 
-      const accountEntity = Account.fromClientDTO(accountDTO);
-
-      // 3. 将账户信息保存到 store
-      accountStore.setAccount(accountEntity as Account);
+      accountStore.setCurrentAccount(accountDTO);
       console.log('✅ [AccountEventHandlers] 账户信息刷新完成');
     } catch (error) {
       console.error('❌ [AccountEventHandlers] 刷新账户信息失败', error);
       const accountStore = useAccountStore();
-      accountStore.error = error instanceof Error ? error.message : '刷新账户信息失败';
+      accountStore.setError(error instanceof Error ? error.message : '刷新账户信息失败');
     } finally {
       const accountStore = useAccountStore();
-      accountStore.loading = false;
+      accountStore.setLoading(false);
     }
   }
 
