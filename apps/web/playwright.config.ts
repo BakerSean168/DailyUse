@@ -40,7 +40,7 @@ export default defineConfig({
   // 全局配置
   use: {
     // 基础 URL
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://127.0.0.1:5173',
 
     // 追踪配置
     trace: 'on-first-retry',
@@ -64,11 +64,11 @@ export default defineConfig({
     },
   ],
 
-  // 开发服务器配置 (可选，如果需要 Playwright 自动启动服务器)
-  // webServer: {
-  //   command: 'pnpm dev',
-  //   url: 'http://localhost:5173',
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120 * 1000,
-  // },
+  // 由 Playwright 自动管理 Web 服务器，避免手动启动/销毁差异
+  webServer: {
+    command: 'pnpm --filter @dailyuse/web dev -- --host 127.0.0.1 --port 5173',
+    url: 'http://127.0.0.1:5173',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
 });

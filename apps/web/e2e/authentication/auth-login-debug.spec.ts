@@ -264,17 +264,31 @@ test.describe('Login Debug - 登录调试', () => {
 
     // 检查 localStorage
     const authInfo = await page.evaluate(() => {
+      const read = (key: string) =>
+        localStorage.getItem(key) || sessionStorage.getItem(key) ? '已存在' : '不存在';
+
       return {
-        token: localStorage.getItem('token') ? '已存在' : '不存在',
-        userInfo: localStorage.getItem('userInfo') ? '已存在' : '不存在',
-        allKeys: Object.keys(localStorage),
+        accessToken: read('access_token'),
+        refreshToken: read('refresh_token'),
+        rememberToken: read('remember_token'),
+        userInfo:
+          read('auth') === '已存在' || read('authentication') === '已存在'
+            ? '已存在'
+            : '不存在',
+        allKeys: {
+          local: Object.keys(localStorage),
+          session: Object.keys(sessionStorage),
+        },
       };
     });
 
     console.log('   localStorage 状态:');
-    console.log(`     - token: ${authInfo.token}`);
-    console.log(`     - userInfo: ${authInfo.userInfo}`);
-    console.log(`     - 所有 keys: ${authInfo.allKeys.join(', ')}`);
+    console.log(`     - access_token: ${authInfo.accessToken}`);
+    console.log(`     - refresh_token: ${authInfo.refreshToken}`);
+    console.log(`     - remember_token: ${authInfo.rememberToken}`);
+    console.log(`     - userInfo(auth): ${authInfo.userInfo}`);
+    console.log(`     - localStorage keys: ${authInfo.allKeys.local.join(', ')}`);
+    console.log(`     - sessionStorage keys: ${authInfo.allKeys.session.join(', ')}`);
 
     await page.screenshot({ path: '/tmp/10-final-state.png' });
     console.log('   📸 最终状态截图: /tmp/10-final-state.png');
@@ -285,7 +299,7 @@ test.describe('Login Debug - 登录调试', () => {
 
     // 断言：登录应该成功
     expect(currentUrl).not.toContain(WEB_CONFIG.LOGIN_PATH);
-    expect(authInfo.token).toBe('已存在');
+  expect(authInfo.accessToken).toBe('已存在');
   });
 
   test('[DEBUG] 测试 API 健康检查', async ({ page }) => {
