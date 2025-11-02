@@ -5,6 +5,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { login, TEST_USER } from '../helpers/testHelpers';
+import { WEB_CONFIG } from '../config';
 
 test.describe('Goal CRUD - 目标管理基础功能', () => {
   let page: Page;
@@ -193,7 +194,7 @@ async function navigateToGoals(page: Page) {
   // 尝试多种导航方式
   try {
     // 方式 1: 直接访问 URL
-    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
+    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), { waitUntil: 'networkidle' });
   } catch {
     // 方式 2: 通过侧边栏点击
     const goalsLink = page.locator('text=目标').or(page.locator('text=Goals'));

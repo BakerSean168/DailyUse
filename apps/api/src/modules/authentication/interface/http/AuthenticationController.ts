@@ -160,6 +160,8 @@ export class AuthenticationController {
     } catch (error) {
       logger.error('[AuthenticationController] Login failed', {
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        requestBody: req.body,
       });
 
       // ===== 步骤 4: 处理错误 =====

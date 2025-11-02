@@ -46,22 +46,24 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
   }
 
   async save(session: AuthSession, tx?: PrismaTransactionClient): Promise<void> {
-    const client = tx || this.prisma;
-    const persistence = session.toPersistenceDTO();
-    const {
-      uuid,
-      accountUuid,
-      accessToken,
-      accessTokenExpiresAt,
-      refreshToken,
-      refreshTokenExpiresAt,
-      status,
-      ipAddress,
-      history,
-      lastActivityAt,
-      revokedAt,
-    } = persistence;
+    try {
+      const client = tx || this.prisma;
+      const persistence = session.toPersistenceDTO();
+      const {
+        uuid,
+        accountUuid,
+        accessToken,
+        accessTokenExpiresAt,
+        refreshToken,
+        refreshTokenExpiresAt,
+        status,
+        ipAddress,
+        history,
+        lastActivityAt,
+        revokedAt,
+      } = persistence;
 
+    // 序列化 JSON 字段
     const device = JSON.stringify({
       deviceId: persistence.deviceId,
       deviceType: persistence.deviceType,
@@ -76,6 +78,7 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
       timezone: persistence.locationTimezone,
     });
 
+    // history 已经在 toPersistenceDTO() 中被序列化为字符串了，直接使用
     const dataForPrisma = {
       uuid,
       accountUuid,
@@ -87,23 +90,41 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
       device,
       ipAddress,
       userAgent,
-      history,
+      history, // 已经是字符串
       lastAccessedAt: new Date(lastActivityAt),
       revokedAt: this.toDate(revokedAt),
     };
 
-    await client.authSession.upsert({
-      where: { uuid },
-      create: {
-        ...dataForPrisma,
-        createdAt: new Date(persistence.createdAt),
-        updatedAt: new Date(),
-      },
-      update: {
-        ...dataForPrisma,
-        updatedAt: new Date(),
-      },
-    });
+      await client.authSession.upsert({
+        where: { uuid },
+        create: {
+          ...dataForPrisma,
+          createdAt: new Date(persistence.createdAt),
+          updatedAt: new Date(),
+        },
+        update: {
+          ...dataForPrisma,
+          updatedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      const persistence = session.toPersistenceDTO();
+      console.error('[PrismaAuthSessionRepository] Save session failed:', {
+        uuid: session.uuid,
+        accountUuid: session.accountUuid,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        persistenceDTO: {
+          ...persistence,
+          accessToken: '***REDACTED***',
+          refreshToken: '***REDACTED***',
+        },
+        historyType: typeof persistence.history,
+        historyLength: persistence.history?.length,
+        historySample: typeof persistence.history === 'string' ? persistence.history.substring(0, 100) : 'NOT A STRING',
+      });
+      throw new Error(`Session save failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   async findByUuid(uuid: string, tx?: PrismaTransactionClient): Promise<AuthSession | null> {
