@@ -16,6 +16,7 @@
           density="comfortable"
           clearable
           required
+          data-testid="login-username-input"
         >
           <!-- 自定义下拉选项 -->
           <template v-slot:item="{ item, props }">
@@ -62,6 +63,7 @@
           @click:append-inner="showPassword = !showPassword"
           :type="showPassword ? 'text' : 'password'"
           required
+          data-testid="login-password-input"
         />
 
         <!-- 记住密码选项 -->
@@ -70,6 +72,7 @@
           label="记住密码"
           color="primary"
           density="comfortable"
+          data-testid="login-remember-checkbox"
         />
       </v-card-text>
 
@@ -82,27 +85,13 @@
           :disabled="!!loading || !isCurrentFormValid"
           block
           size="large"
+          data-testid="login-submit-button"
         >
           登录
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-form>
-
-  <!-- 错误提示 Snackbar -->
-  <v-snackbar
-    v-model="snackbar.show"
-    :color="snackbar.color"
-    :timeout="5000"
-    location="top"
-    variant="tonal"
-    elevation="4"
-  >
-    {{ snackbar.message }}
-    <template v-slot:actions>
-      <v-btn variant="text" @click="snackbar.show = false"> 关闭 </v-btn>
-    </template>
-  </v-snackbar>
 </template>
 
 <script setup lang="ts">
@@ -111,21 +100,16 @@ import { computed, ref } from 'vue';
 import type { AuthenticationContracts } from '@dailyuse/contracts';
 // components
 import { useAuthentication } from '../composables/useAuthentication';
+import { useSnackbar } from '@/shared/composables/useSnackbar';
 // utils
 import { usernameRules, passwordRules } from '@/shared/utils/validations/rules';
 
 const { login: handleLogin, isLoading: authLoading } = useAuthentication();
+const { showError } = useSnackbar();
 const loading = computed(() => authLoading.value);
 const formRef = ref();
 const isCurrentFormValid = computed(() => {
   return formRef.value?.isValid ?? false;
-});
-
-// Snackbar 状态
-const snackbar = ref({
-  show: false,
-  message: '',
-  color: 'error',
 });
 
 const passwordAuthenticationForm = ref<AuthenticationContracts.LoginRequestDTO>({
@@ -149,13 +133,8 @@ const onFormSubmit = async (event: Event) => {
     await handleLogin(passwordAuthenticationForm.value);
   } catch (error: any) {
     console.error('Login failed:', error);
-
-    // 显示具体的错误消息（使用 Snackbar）
-    snackbar.value = {
-      show: true,
-      message: error?.message || '登录失败，请重试',
-      color: 'error',
-    };
+    // 使用全局 Snackbar 显示错误消息
+    showError(error?.message || '登录失败，请重试');
   }
 };
 

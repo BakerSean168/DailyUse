@@ -111,12 +111,8 @@ export async function login(
   await page.waitForTimeout(TIMEOUT_CONFIG.MEDIUM_WAIT);
 
   // ===== 填写用户名 =====
-  // v-combobox 渲染为带有特定 role 的 input
-  // 查找 label="用户名" 的 v-combobox
   console.log('[Auth] 查找用户名输入框...');
-  
-  // 方法1: 通过 label 定位（最可靠）
-  const usernameField = page.locator('label:has-text("用户名")').locator('..').locator('input');
+  const usernameField = page.locator('[data-testid="login-username-input"] input');
   
   await usernameField.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await usernameField.click();
@@ -125,7 +121,7 @@ export async function login(
 
   // ===== 填写密码 =====
   console.log('[Auth] 查找密码输入框...');
-  const passwordField = page.locator('label:has-text("密码")').locator('..').locator('input[type="password"]');
+  const passwordField = page.locator('[data-testid="login-password-input"] input');
   
   await passwordField.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await passwordField.click();
@@ -134,7 +130,7 @@ export async function login(
 
   // ===== 点击登录按钮 =====
   console.log('[Auth] 点击登录按钮...');
-  const loginButton = page.locator('button[type="submit"]:has-text("登录")');
+  const loginButton = page.locator('[data-testid="login-submit-button"]');
   await loginButton.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await loginButton.click();
 
@@ -151,7 +147,7 @@ export async function login(
     console.log('[Auth] 已离开登录页面');
   } catch (error) {
     // 方式2: 检查是否有错误提示
-    const errorSnackbar = page.locator('.v-snackbar:visible');
+    const errorSnackbar = page.locator('[data-testid="login-error-snackbar"]');
     if (await errorSnackbar.isVisible()) {
       const errorText = await errorSnackbar.textContent();
       console.error(`[Auth] 登录失败: ${errorText}`);

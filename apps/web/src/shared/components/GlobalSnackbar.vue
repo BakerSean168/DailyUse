@@ -7,6 +7,7 @@
     :multi-line="message.length > 50"
     elevation="6"
     rounded="lg"
+    data-testid="global-snackbar"
   >
     <div class="d-flex align-center">
       <v-icon :icon="snackbarIcon" class="me-3" size="small" />
