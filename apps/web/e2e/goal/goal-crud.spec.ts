@@ -5,6 +5,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { login, TEST_USER } from '../helpers/testHelpers';
+import { WEB_CONFIG } from '../config';
 
 test.describe('Goal CRUD - ????????', () => {
   let page: Page;
@@ -12,7 +13,7 @@ test.describe('Goal CRUD - ????????', () => {
   test.beforeEach(async ({ page: testPage }) => {
     page = testPage;
 
-    // ??
+    // 使用预先创建的测试用户登录
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // ??? Goal ??
@@ -192,8 +193,8 @@ async function navigateToGoals(page: Page) {
 
   // ????????
   try {
-    // ?? 1: ???? URL
-    await page.goto('/goals', { waitUntil: 'networkidle' });
+    // 方式 1: 直接访问 URL
+    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), { waitUntil: 'networkidle' });
   } catch {
     // ?? 2: ???????
     const goalsLink = page.locator('text=??').or(page.locator('text=Goals'));
