@@ -1,5 +1,5 @@
 <template>
-  <v-form ref="formRef" :loading="loading">
+  <v-form ref="formRef" v-model="valid" validate-on="input lazy" :loading="loading">
     <v-container>
       <v-row>
         <v-col cols="12" md="6" offset-md="3">
@@ -15,6 +15,7 @@
           prepend-inner-icon="mdi-account"
           clearable
           required
+          data-testid="register-username-input"
         />
       </v-row>
       <v-row>
@@ -26,6 +27,7 @@
           prepend-inner-icon="mdi-email"
           clearable
           required
+          data-testid="register-email-input"
         />
       </v-row>
       <v-row>
@@ -41,6 +43,7 @@
           @click:append-inner="showPassword = !showPassword"
           clearable
           required
+          data-testid="register-password-input"
         >
           <!-- 密码强度指示器 -->
           <template v-slot:details>
@@ -71,16 +74,18 @@
           @click:append-inner="showConfirmPassword = !showConfirmPassword"
           clearable
           required
+          data-testid="register-confirm-password-input"
         />
       </v-row>
 
       <v-row>
         <v-col>
           <v-checkbox
-            v-model="agreeTerms"
+            v-model="form.agree"
             :rules="[(v) => !!v || '请同意服务条款']"
             color="primary"
-            density="compact"
+            hide-details="auto"
+            data-testid="register-agree-checkbox"
           >
             <template v-slot:label>
               <span
@@ -102,6 +107,7 @@
             :loading="loading"
             :disabled="!!loading || !isCurrentFormValid"
             size="large"
+            data-testid="register-submit-button"
           >
             <v-icon start>mdi-account-plus</v-icon>
             注册
@@ -110,18 +116,6 @@
       </v-row>
     </v-container>
   </v-form>
-
-  <!-- 提示信息 -->
-  <v-snackbar
-    v-model="snackbar.show"
-    :color="snackbar.color"
-    :timeout="snackbar.timeout"
-    location="top"
-    variant="tonal"
-    elevation="4"
-  >
-    {{ snackbar.message }}
-  </v-snackbar>
 
   <!-- 服务条款对话框 -->
   <v-dialog v-model="showTerms" max-width="600">
@@ -157,7 +151,7 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { passwordRules, usernameRules, emailRules } from '@/shared/utils/validations/rules';
 
 const { register, login } = useAuth();
-const { snackbar, showSuccess, showError } = useSnackbar();
+const { showSuccess, showError } = useSnackbar();
 
 // 定义 emit（用于切换到登录模式）
 const emit = defineEmits<{
@@ -240,7 +234,8 @@ const confirmPasswordRules = [
 const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
 
 const isCurrentFormValid = computed(() => {
-  return formRef.value?.isValid ?? false;
+  // 使用 v-model="valid" 绑定的 valid 值，实时反映表单验证状态
+  return valid.value;
 });
 
 const passwordStrength = computed(() => {
@@ -268,11 +263,14 @@ const passwordStrength = computed(() => {
 const resetForm = () => {
   formRef.value?.reset();
   form.agree = false;
+  valid.value = false;
 };
 
 const acceptTerms = () => {
   form.agree = true;
   showTerms.value = false;
+  // 手动触发表单验证
+  formRef.value?.validate();
 };
 </script>
 

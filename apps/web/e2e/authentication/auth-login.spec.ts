@@ -37,11 +37,13 @@ test.describe('Authentication - 登录页基础验证', () => {
   });
 
   test('[P0] 错误凭证会显示错误提示', async () => {
-    await fillLoginForm(page, 'wronguser', 'wrongpassword');
+    // 使用满足密码规则的错误密码
+    await fillLoginForm(page, 'wronguser', 'WrongPass123!');
     await submitLoginForm(page);
 
-    const errorSnackbar = page.locator('.v-snackbar:visible, [role="alert"]:visible');
-    await expect(errorSnackbar).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+    // 等待错误提示出现（使用全局 snackbar）
+    const errorSnackbar = page.locator('[data-testid="global-snackbar"]');
+    await expect(errorSnackbar).toBeVisible({ timeout: 5000 });
     await expect.poll(async () => page.url()).toContain(WEB_CONFIG.LOGIN_PATH);
 
     console.log('[PASS] 错误凭证提示校验通过');
@@ -50,42 +52,36 @@ test.describe('Authentication - 登录页基础验证', () => {
   test('[P1] 空表单会提示必填错误', async () => {
     await submitLoginForm(page);
 
-    const validationMessages = page.locator('.v-messages, [role="alert"]');
+    const validationMessages = page.locator('.v-messages__message, [role="alert"]');
     await expect(validationMessages.first()).toBeVisible({ timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
 
-    console.log('[PASS] 必填校验通过');
+    console.log('[PASS] 空表单错误提示校验通过');
   });
 
   test('[P2] 可以切换密码可见性', async () => {
-    const passwordField = page.locator('label:has-text("密码")').locator('..').locator('input');
-    await passwordField.fill(TEST_USERS.MAIN.password);
+    const passwordInput = page.locator('[data-testid="login-password-input"] input');
+    await passwordInput.fill(TEST_USERS.MAIN.password);
 
-    await expect(passwordField).toHaveAttribute('type', 'password');
+    await expect(passwordInput).toHaveAttribute('type', 'password');
 
-    const toggleButton = page.locator('button:has([class*="icon"])').filter({ hasText: /眼|可见|visibility/i }).first()
-      .or(page.locator('[data-testid="toggle-password-visibility"]'));
+    const visibilityToggle = page.locator('[data-testid="login-password-input"] i.mdi-eye-off, [data-testid="login-password-input"] i.mdi-eye');
+    await visibilityToggle.click();
 
-    if (await toggleButton.isVisible()) {
-      await toggleButton.click();
-      await expect(passwordField).toHaveAttribute('type', 'text');
-    } else {
-      console.warn('[WARN] 未找到密码可见性切换按钮');
-    }
-
-    console.log('[PASS] 密码可见性切换校验通过');
+    await expect(passwordInput).toHaveAttribute('type', 'text');
+    console.log('[PASS] 密码可见性切换通过');
   });
 });
 
 async function fillLoginForm(page: Page, username: string, password: string): Promise<void> {
-  const usernameField = page.locator('label:has-text("用户名")').locator('..').locator('input');
+  const usernameField = page.locator('[data-testid="login-username-input"] input');
   await usernameField.fill(username);
 
-  const passwordField = page.locator('label:has-text("密码")').locator('..').locator('input[type="password"], input[type="text"]');
+  const passwordField = page.locator('[data-testid="login-password-input"] input');
   await passwordField.fill(password);
 }
 
 async function submitLoginForm(page: Page): Promise<void> {
-  const submitButton = page.locator('button[type="submit"], button:has-text("登录")').first();
+  const submitButton = page.locator('[data-testid="login-submit-button"]');
   await submitButton.click();
 }
 

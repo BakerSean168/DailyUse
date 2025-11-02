@@ -335,6 +335,24 @@ export class InterceptorManager {
 
         // 401 错误处理 - Token 过期或无效
         if (error.response?.status === 401 && !config._retry) {
+          // 检查是否是登录或注册等无需认证的请求（这些请求返回 401 是正常的业务错误）
+          const isAuthRequest = 
+            config.url?.includes('/auth/login') || 
+            config.url?.includes('/auth/register') ||
+            config.url?.includes('/auth/refresh') ||
+            config.url?.includes('/accounts'); // 注册账号接口
+          
+          // 如果是认证请求本身返回 401，直接返回错误（用户名密码错误等）
+          // 不应该触发 token 刷新逻辑
+          if (isAuthRequest) {
+            LogManager.warn('认证请求失败（业务错误）', {
+              url: config.url,
+              status: error.response?.status,
+              message: (error.response?.data as any)?.message
+            });
+            return Promise.reject(this.transformError(error));
+          }
+
           if (this.isRefreshing) {
             // 如果正在刷新，将请求加入队列
             return new Promise((resolve, reject) => {
@@ -366,7 +384,7 @@ export class InterceptorManager {
 
             // 返回一个被拒绝的 Promise，但不抛出错误到控制台
             // 因为我们已经处理了（跳转到登录页）
-            return Promise.reject(new Error('Authentication failed, redirecting to login'));
+            return Promise.reject(this.transformError(error));
           } finally {
             this.isRefreshing = false;
           }
@@ -636,13 +654,17 @@ export class InterceptorManager {
    * 获取错误消息
    */
   private getErrorMessage(error: AxiosError): string {
-    // 1. 优先使用 API 返回的业务错误消息
+    // 1. 最高优先级：API 返回的业务错误消息（后端明确告知的错误）
     if (
       error.response?.data &&
       typeof error.response.data === 'object' &&
       'message' in error.response.data
     ) {
-      return (error.response.data as any).message;
+      const backendMessage = (error.response.data as any).message;
+      // 如果后端返回了有意义的消息，直接使用
+      if (backendMessage && typeof backendMessage === 'string' && backendMessage.trim()) {
+        return backendMessage;
+      }
     }
 
     // 2. 处理网络错误（更友好的提示）
@@ -656,14 +678,14 @@ export class InterceptorManager {
       return '网络连接失败，请检查网络设置';
     }
 
-    // 3. 根据 HTTP 状态码返回友好提示
+    // 3. 根据 HTTP 状态码返回友好提示（作为后备方案）
     const status = error.response?.status;
 
     switch (status) {
       case 400:
         return '请求参数错误，请检查输入';
       case 401:
-        return '用户名或密码错误，请重新输入';
+        return '认证失败，请检查用户名和密码';
       case 403:
         return '没有访问权限';
       case 404:
