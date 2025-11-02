@@ -191,7 +191,28 @@ export class AuthCredential extends AggregateRoot implements IAuthCredentialServ
     const twoFactor = dto.two_factor ? JSON.parse(dto.two_factor) : null;
     const biometric = dto.biometric ? JSON.parse(dto.biometric) : null;
     const security = JSON.parse(dto.security);
-    const history = JSON.parse(dto.history);
+    
+    // 防御性处理 history 字段 - 确保是有效的 JSON 字符串
+    let history: any[];
+    try {
+      if (!dto.history || typeof dto.history !== 'string') {
+        console.warn('[AuthCredential] Invalid history format, using empty array', {
+          historyType: typeof dto.history,
+          historyValue: dto.history,
+          uuid: dto.uuid,
+        });
+        history = [];
+      } else {
+        history = JSON.parse(dto.history);
+      }
+    } catch (error) {
+      console.error('[AuthCredential] Failed to parse history, using empty array', {
+        error: error instanceof Error ? error.message : String(error),
+        historyValue: dto.history,
+        uuid: dto.uuid,
+      });
+      history = [];
+    }
 
     return new AuthCredential({
       uuid: dto.uuid,

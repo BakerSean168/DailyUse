@@ -1,4 +1,5 @@
 /**
+import { WEB_CONFIG } from '../config';
  * Goal Focus Mode E2E 测试
  * 测试专注模式的核心业务流程
  */
@@ -20,7 +21,7 @@ test.describe('Goal Focus Mode - 专注模式', () => {
     await login(page, TEST_USER.username, TEST_USER.password);
 
     // 导航到 Goal 页面
-    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
+    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), { waitUntil: 'networkidle' });
 
     // 创建两个测试目标
     await createGoal(page, {
@@ -353,7 +354,7 @@ async function viewFocusHistory(page: Page) {
 
 async function cleanupTestGoals(page: Page, goalTitles: string[]) {
   try {
-    await page.goto('http://localhost:5173/goals', { waitUntil: 'networkidle' });
+    await page.goto(WEB_CONFIG.getFullUrl(WEB_CONFIG.GOALS_PATH), { waitUntil: 'networkidle' });
     
     for (const title of goalTitles) {
       const goalCard = page.locator(`text=${title}`);

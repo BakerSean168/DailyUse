@@ -69,7 +69,7 @@ function extractBrowser(userAgent: string): string {
 /**
  * 从 User-Agent 提取设备类型
  */
-function extractDeviceType(userAgent: string): string {
+function extractDeviceType(userAgent: string): 'WEB' | 'MOBILE' | 'DESKTOP' | 'TABLET' | 'OTHER' {
   const ua = userAgent.toLowerCase();
   if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
     return 'MOBILE';
@@ -77,7 +77,8 @@ function extractDeviceType(userAgent: string): string {
   if (ua.includes('tablet') || ua.includes('ipad')) {
     return 'TABLET';
   }
-  return 'DESKTOP';
+  // 默认返回 WEB (用于浏览器访问)
+  return 'WEB';
 }
 
 /**

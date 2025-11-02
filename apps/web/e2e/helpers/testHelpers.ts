@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { API_CONFIG, WEB_CONFIG, TIMEOUT_CONFIG, TEST_USERS } from '../config';
 
 /**
  * ========================================
@@ -9,34 +10,27 @@ import { Page } from '@playwright/test';
  * 运行命令: pnpm test:seed
  * 
  * 详细说明: /tools/test/README.md
+ * 
+ * 配置来源: /apps/web/e2e/config.ts
  */
 
 /**
  * 主要测试用户（用于大部分测试）
+ * @deprecated 请使用 TEST_USERS.MAIN
  */
-export const TEST_USER = {
-  username: 'testuser',
-  password: 'Test123456!',
-  email: 'testuser@example.com',
-};
+export const TEST_USER = TEST_USERS.MAIN;
 
 /**
  * 第二个测试用户（用于多用户交互测试）
+ * @deprecated 请使用 TEST_USERS.SECONDARY
  */
-export const TEST_USER_2 = {
-  username: 'testuser2',
-  password: 'Test123456!',
-  email: 'testuser2@example.com',
-};
+export const TEST_USER_2 = TEST_USERS.SECONDARY;
 
 /**
  * 管理员测试用户
+ * @deprecated 请使用 TEST_USERS.ADMIN
  */
-export const ADMIN_TEST_USER = {
-  username: 'admintest',
-  password: 'Admin123456!',
-  email: 'admintest@example.com',
-};
+export const ADMIN_TEST_USER = TEST_USERS.ADMIN;
 
 /**
  * 测试数据工厂
@@ -76,13 +70,18 @@ export function createTestGoal(
  */
 export async function login(
   page: Page,
-  username: string = TEST_USER.username,
-  password: string = TEST_USER.password,
+  username: string = TEST_USERS.MAIN.username,
+  password: string = TEST_USERS.MAIN.password,
 ) {
   console.log(`[Auth] 开始登录: ${username}`);
+  console.log(`[Auth] 使用配置 - API: ${API_CONFIG.FULL_URL}, Web: ${WEB_CONFIG.BASE_URL}`);
 
   // 1. 先访问登录页面，这样才能访问 localStorage
-  await page.goto('http://localhost:5173/auth', { waitUntil: 'domcontentloaded' });
+  const loginUrl = WEB_CONFIG.getFullUrl(WEB_CONFIG.LOGIN_PATH);
+  await page.goto(loginUrl, { 
+    waitUntil: 'domcontentloaded',
+    timeout: TIMEOUT_CONFIG.NAVIGATION,
+  });
   
   // 2. 清理所有认证状态（清除旧的 token、session 等）
   await page.evaluate(() => {
@@ -101,44 +100,70 @@ export async function login(
   await page.waitForLoadState('networkidle');
   
   // 等待一下，确保页面状态更新完成
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(TIMEOUT_CONFIG.SHORT_WAIT);
 
   // 3. 等待 "登录" 标签页加载 (确保在登录模式，而不是注册模式)
   const loginTab = page.locator('button.v-tab:has-text("登录")');
-  await loginTab.waitFor({ state: 'visible', timeout: 10000 });
+  await loginTab.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await loginTab.click();
 
   // 等待表单出现
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(TIMEOUT_CONFIG.MEDIUM_WAIT);
 
-  // 填写用户名 (v-combobox 使用 input 标签)
-  const usernameField = page.locator('input[type="text"]').first();
+  // ===== 填写用户名 =====
+  // v-combobox 渲染为带有特定 role 的 input
+  // 查找 label="用户名" 的 v-combobox
+  console.log('[Auth] 查找用户名输入框...');
+  
+  // 方法1: 通过 label 定位（最可靠）
+  const usernameField = page.locator('label:has-text("用户名")').locator('..').locator('input');
+  
+  await usernameField.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await usernameField.click();
   await usernameField.fill(username);
+  console.log(`[Auth] 已填写用户名: ${username}`);
 
-  // 填写密码
-  const passwordField = page.locator('input[type="password"]').first();
+  // ===== 填写密码 =====
+  console.log('[Auth] 查找密码输入框...');
+  const passwordField = page.locator('label:has-text("密码")').locator('..').locator('input[type="password"]');
+  
+  await passwordField.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
   await passwordField.click();
   await passwordField.fill(password);
+  console.log('[Auth] 已填写密码');
 
-  // 点击登录按钮
-  await page.click('button[type="submit"]:has-text("登录")');
+  // ===== 点击登录按钮 =====
+  console.log('[Auth] 点击登录按钮...');
+  const loginButton = page.locator('button[type="submit"]:has-text("登录")');
+  await loginButton.waitFor({ state: 'visible', timeout: TIMEOUT_CONFIG.ELEMENT_WAIT });
+  await loginButton.click();
 
-  // 等待登录处理 - 不依赖 URL 变化，而是等待 /auth 页面消失
+  // ===== 等待登录完成 =====
+  console.log('[Auth] 等待登录完成...');
+  
+  // 等待离开 /auth 页面 或者 等待特定元素出现表示登录成功
   try {
-    // 尝试等待 URL 变化
-    await page.waitForURL(/^(?!.*\/auth).*$/, { timeout: 5000 });
-  } catch {
-    // 如果 URL 没变化，等待一下然后手动导航
-    await page.waitForTimeout(2000);
-
-    // 检查是否仍在 /auth 页面
-    const currentUrl = page.url();
-    if (currentUrl.includes('/auth')) {
-      console.log('[Auth] 登录后仍在 /auth 页面，手动导航到首页');
-      await page.goto('/');
+    // 方式1: 等待 URL 变化（离开 /auth）
+    await page.waitForURL(
+      (url) => !url.pathname.includes(WEB_CONFIG.LOGIN_PATH), 
+      { timeout: TIMEOUT_CONFIG.LOGIN }
+    );
+    console.log('[Auth] 已离开登录页面');
+  } catch (error) {
+    // 方式2: 检查是否有错误提示
+    const errorSnackbar = page.locator('.v-snackbar:visible');
+    if (await errorSnackbar.isVisible()) {
+      const errorText = await errorSnackbar.textContent();
+      console.error(`[Auth] 登录失败: ${errorText}`);
+      throw new Error(`Login failed: ${errorText}`);
     }
+    
+    console.warn('[Auth] 登录超时，但没有错误提示，继续执行...');
   }
+
+  // 等待页面稳定
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(TIMEOUT_CONFIG.MEDIUM_WAIT);
 
   console.log('[Auth] 登录成功');
 }
