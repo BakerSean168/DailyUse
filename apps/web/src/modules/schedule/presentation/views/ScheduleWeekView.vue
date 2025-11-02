@@ -4,15 +4,12 @@
       :schedules="weekSchedules"
       :is-loading="isLoading"
       @week-change="handleWeekChange"
-      @create="showCreateDialog = true"
+      @create="scheduleDialogRef?.openForCreate()"
       @event-click="handleEventClick"
     />
 
-    <!-- 创建日程对话框 -->
-    <CreateScheduleDialog
-      v-model="showCreateDialog"
-      @created="handleScheduleCreated"
-    />
+    <!-- 创建/编辑日程对话框 -->
+    <CreateScheduleDialog ref="scheduleDialogRef" />
 
     <!-- 事件详情对话框 （简化版）-->
     <v-dialog v-model="showEventDetails" max-width="500">
@@ -54,10 +51,15 @@
 
         <v-card-actions>
           <v-spacer />
+          <v-btn color="primary" variant="text" @click="handleEdit">
+            <v-icon left>mdi-pencil</v-icon>
+            编辑
+          </v-btn>
           <v-btn color="error" variant="text" @click="handleDelete">
+            <v-icon left>mdi-delete</v-icon>
             删除
           </v-btn>
-          <v-btn color="primary" variant="text" @click="showEventDetails = false">
+          <v-btn variant="text" @click="showEventDetails = false">
             关闭
           </v-btn>
         </v-card-actions>
@@ -81,7 +83,7 @@ const {
   deleteSchedule,
 } = useScheduleEvent();
 
-const showCreateDialog = ref(false);
+const scheduleDialogRef = ref<InstanceType<typeof CreateScheduleDialog> | null>(null);
 const showEventDetails = ref(false);
 const selectedEvent = ref<ScheduleContracts.ScheduleClientDTO | null>(null);
 const currentWeekStart = ref<Date>(new Date());
@@ -89,7 +91,7 @@ const currentWeekEnd = ref<Date>(new Date());
 
 // Computed
 const weekSchedules = computed(() => {
-  return Array.from(schedules.values());
+  return schedules.value;
 });
 
 // Methods
@@ -108,12 +110,14 @@ function handleEventClick(event: ScheduleContracts.ScheduleClientDTO) {
   showEventDetails.value = true;
 }
 
-async function handleScheduleCreated() {
-  // 重新加载当前周的日程
-  await loadSchedulesByTimeRange(
-    currentWeekStart.value.getTime(),
-    currentWeekEnd.value.getTime()
-  );
+/**
+ * 处理编辑日程
+ */
+function handleEdit() {
+  if (!selectedEvent.value) return;
+  
+  showEventDetails.value = false;
+  scheduleDialogRef.value?.openForEdit(selectedEvent.value);
 }
 
 async function handleDelete() {

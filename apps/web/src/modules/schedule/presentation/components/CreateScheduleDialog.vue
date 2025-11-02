@@ -1,8 +1,8 @@
 <template>
-  <v-dialog :model-value="modelValue" max-width="600" @update:model-value="emit('update:modelValue', $event)">
+  <v-dialog :model-value="visible" max-width="600" persistent @update:model-value="visible = $event">
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
-        <span>创建日程事件</span>
+        <span>{{ isEditing ? '编辑日程事件' : '创建日程事件' }}</span>
         <v-btn icon="mdi-close" variant="text" @click="handleClose" />
       </v-card-title>
 
@@ -109,29 +109,28 @@
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="handleClose">取消</v-btn>
-        <v-btn color="primary" :loading="isLoading" @click="handleSubmit">创建</v-btn>
+        <v-btn color="primary" :loading="isLoading" @click="handleSubmit">
+          {{ isEditing ? '保存' : '创建' }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, computed } from 'vue';
 import { useScheduleEvent } from '../composables/useScheduleEvent';
-import type { CreateScheduleEventRequest } from '../../infrastructure/api/scheduleEventApiClient';
-
-// ===== Props & Emits =====
-const props = defineProps<{
-  modelValue: boolean;
-}>();
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void;
-  (e: 'created'): void;
-}>();
+import type { CreateScheduleEventRequest, UpdateScheduleEventRequest } from '../../infrastructure/api/scheduleEventApiClient';
+import type { ScheduleContracts } from '@dailyuse/contracts';
 
 // ===== Composables =====
-const { createSchedule, isLoading } = useScheduleEvent();
+const { createSchedule, updateSchedule, isLoading } = useScheduleEvent();
+
+// ===== State =====
+const visible = ref(false);
+const editingSchedule = ref<ScheduleContracts.ScheduleClientDTO | null>(null);
+
+const isEditing = computed(() => !!editingSchedule.value);
 
 // ===== State =====
 const formRef = ref();
@@ -184,7 +183,7 @@ function resetForm() {
  * 关闭对话框
  */
 function handleClose() {
-  emit('update:modelValue', false);
+  visible.value = false;
   resetForm();
 }
 
@@ -205,46 +204,123 @@ async function handleSubmit() {
     return;
   }
 
-  if (startTimestamp < Date.now()) {
+  if (!isEditing.value && startTimestamp < Date.now()) {
     alert('开始时间不能早于当前时间');
     return;
   }
 
-  // 构建请求数据
-  const requestData: CreateScheduleEventRequest = {
-    title: formData.title,
-    description: formData.description || undefined,
-    startTime: startTimestamp,
-    endTime: endTimestamp,
-    priority: formData.priority || undefined,
-    location: formData.location || undefined,
-    attendees: formData.attendees.length > 0 ? formData.attendees : undefined,
-  };
+  if (isEditing.value && editingSchedule.value) {
+    // 编辑模式
+    const updateData: UpdateScheduleEventRequest = {
+      title: formData.title,
+      description: formData.description || undefined,
+      startTime: startTimestamp,
+      endTime: endTimestamp,
+      priority: formData.priority || undefined,
+      location: formData.location || undefined,
+      attendees: formData.attendees.length > 0 ? formData.attendees : undefined,
+    };
 
-  // 调用创建方法
-  const result = await createSchedule(requestData);
-  if (result) {
-    emit('created');
-    handleClose();
+    const result = await updateSchedule(editingSchedule.value.uuid, updateData);
+    if (result) {
+      handleClose();
+    }
+  } else {
+    // 创建模式
+    const requestData: CreateScheduleEventRequest = {
+      title: formData.title,
+      description: formData.description || undefined,
+      startTime: startTimestamp,
+      endTime: endTimestamp,
+      priority: formData.priority || undefined,
+      location: formData.location || undefined,
+      attendees: formData.attendees.length > 0 ? formData.attendees : undefined,
+    };
+
+    const result = await createSchedule(requestData);
+    if (result) {
+      handleClose();
+    }
+  }
+}
+
+// ===== Public Methods =====
+
+/**
+ * 打开创建对话框
+ */
+function openForCreate() {
+  editingSchedule.value = null;
+  resetForm();
+  
+  // 设置默认值
+  const now = new Date();
+  const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+
+  formData.startDate = now.toISOString().split('T')[0];
+  formData.startTime = now.toTimeString().slice(0, 5);
+  formData.endDate = oneHourLater.toISOString().split('T')[0];
+  formData.endTime = oneHourLater.toTimeString().slice(0, 5);
+  
+  visible.value = true;
+}
+
+/**
+ * 打开编辑对话框
+ */
+function openForEdit(schedule: ScheduleContracts.ScheduleClientDTO) {
+  if (!schedule) {
+    console.error('[CreateScheduleDialog] openForEdit: schedule is required');
+    return;
+  }
+  
+  editingSchedule.value = schedule;
+  
+  // 填充表单数据
+  formData.title = schedule.title;
+  formData.description = schedule.description || '';
+  formData.priority = schedule.priority || null;
+  formData.location = schedule.location || '';
+  formData.attendees = schedule.attendees ? [...schedule.attendees] : [];
+  
+  // 转换时间戳为日期时间
+  const startDate = new Date(schedule.startTime);
+  const endDate = new Date(schedule.endTime);
+  
+  formData.startDate = startDate.toISOString().split('T')[0];
+  formData.startTime = startDate.toTimeString().slice(0, 5);
+  formData.endDate = endDate.toISOString().split('T')[0];
+  formData.endTime = endDate.toTimeString().slice(0, 5);
+  
+  visible.value = true;
+}
+
+/**
+ * 通用打开方法（向后兼容）
+ */
+function openDialog(schedule?: ScheduleContracts.ScheduleClientDTO) {
+  if (schedule) {
+    openForEdit(schedule);
+  } else {
+    openForCreate();
   }
 }
 
 // ===== Watchers =====
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    if (newValue) {
-      // 对话框打开时，设置默认值
-      const now = new Date();
-      const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-
-      formData.startDate = now.toISOString().split('T')[0];
-      formData.startTime = now.toTimeString().slice(0, 5);
-      formData.endDate = oneHourLater.toISOString().split('T')[0];
-      formData.endTime = oneHourLater.toTimeString().slice(0, 5);
-    }
+watch(visible, (newValue) => {
+  if (!newValue) {
+    // 对话框关闭时重置
+    editingSchedule.value = null;
+    resetForm();
   }
-);
+});
+
+// ===== Expose Public API =====
+defineExpose({
+  openForCreate,
+  openForEdit,
+  openDialog,
+});
 </script>
 
 <style scoped>
