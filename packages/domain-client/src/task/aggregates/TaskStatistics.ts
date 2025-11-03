@@ -5,8 +5,8 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 
-type ITaskStatisticsClient = TaskContracts.TaskStatisticsClient;
-type TaskStatisticsClientDTO = TaskContracts.TaskStatisticsClientDTO;
+type ITaskStatistics = TaskContracts.TaskStatistics;
+type TaskStatisticsDTO = TaskContracts.TaskStatisticsDTO;
 type TaskStatisticsServerDTO = TaskContracts.TaskStatisticsServerDTO;
 type TemplateStatsInfo = TaskContracts.TemplateStatsInfo;
 type InstanceStatsInfo = TaskContracts.InstanceStatsInfo;
@@ -19,7 +19,7 @@ type TrendData = TaskContracts.TrendData;
 /**
  * TaskStatistics 聚合根 (Client)
  */
-export class TaskStatisticsClient extends AggregateRoot implements ITaskStatisticsClient {
+export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
   private _accountUuid: string;
   private _templateStats: TemplateStatsInfo;
   private _instanceStats: InstanceStatsInfo;
@@ -317,7 +317,7 @@ export class TaskStatisticsClient extends AggregateRoot implements ITaskStatisti
     };
   }
 
-  toClientDTO(): TaskStatisticsClientDTO {
+  toClientDTO(): TaskStatisticsDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -340,8 +340,8 @@ export class TaskStatisticsClient extends AggregateRoot implements ITaskStatisti
   /**
    * 创建默认统计实例
    */
-  static createDefault(accountUuid: string): TaskStatisticsClient {
-    return new TaskStatisticsClient({
+  static createDefault(accountUuid: string): TaskStatistics {
+    return new TaskStatistics({
       uuid: AggregateRoot.generateUUID(),
       accountUuid,
       templateStats: {
@@ -391,8 +391,8 @@ export class TaskStatisticsClient extends AggregateRoot implements ITaskStatisti
   /**
    * 从 Server DTO 创建客户端实体
    */
-  static fromServerDTO(dto: TaskStatisticsServerDTO): TaskStatisticsClient {
-    return new TaskStatisticsClient({
+  static fromServerDTO(dto: TaskStatisticsServerDTO): TaskStatistics {
+    return new TaskStatistics({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       templateStats: dto.templateStats,
@@ -407,8 +407,8 @@ export class TaskStatisticsClient extends AggregateRoot implements ITaskStatisti
   /**
    * 从 Client DTO 创建客户端实体
    */
-  static fromClientDTO(dto: TaskStatisticsClientDTO): TaskStatisticsClient {
-    return new TaskStatisticsClient({
+  static fromClientDTO(dto: TaskStatisticsDTO): TaskStatistics {
+    return new TaskStatistics({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       templateStats: dto.templateStats,

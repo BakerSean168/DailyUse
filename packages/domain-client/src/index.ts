@@ -54,17 +54,14 @@ export type {
   KeyResultSnapshot,
 } from './goal/types';
 
-// Task 模块 - 直接从实现导出
-export { TaskTemplateClient } from './task/aggregates/TaskTemplateClient';
-export { TaskInstanceClient } from './task/aggregates/TaskInstanceClient';
-export { TaskStatisticsClient } from './task/aggregates/TaskStatisticsClient';
+// Task 模块 - 直接从实现导出（已移除 Client 后缀）
+export { TaskTemplate } from './task/aggregates/TaskTemplate';
+export { TaskInstance } from './task/aggregates/TaskInstance';
+export { TaskStatistics } from './task/aggregates/TaskStatistics';
 export { TaskTemplateHistoryClient } from './task/entities/TaskTemplateHistoryClient';
 
-// Task 模块 - 类型别名（为了向后兼容）
+// Task 模块 - 类型导出
 export type {
-  TaskTemplate,
-  TaskInstance,
-  TaskStatistics,
   TaskTemplateHistory,
   TaskTimeConfig,
   RecurrenceRule,
@@ -112,14 +109,14 @@ export { CredentialHistory } from './authentication/entities/CredentialHistory';
 export { SessionHistory } from './authentication/entities/SessionHistory';
 export { DeviceInfo } from './authentication/value-objects/DeviceInfo';
 
-// Reminder 模块 - 直接从实现导出
-export { ReminderTemplateClient } from './reminder/aggregates/ReminderTemplateClient';
-export { ReminderGroupClient } from './reminder/aggregates/ReminderGroupClient';
+// Reminder 模块 - 直接从实现导出（已移除 Client 后缀）
+export { ReminderTemplate } from './reminder/aggregates/ReminderTemplate';
+export { ReminderGroup } from './reminder/aggregates/ReminderGroup';
 
-// Reminder 模块 - 类型别名（为了向后兼容）
+// Reminder 模块 - 类型导出
 import type { ReminderContracts } from '@dailyuse/contracts';
-export type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
-export type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
+export type ReminderTemplateDTO = ReminderContracts.ReminderTemplateClientDTO;
+export type ReminderGroupDTO = ReminderContracts.ReminderGroupClientDTO;
 export type ReminderInstance = any; // TODO: 定义或移除
 
 // Setting 模块 - 直接从实现导出

@@ -3,18 +3,10 @@
  * 任务模板应用服务 - 负责任务模板的 CRUD 操作
  */
 
-import { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
-
-// 导入类实现
-const TaskTemplateClient = TaskDomain.TaskTemplateClient;
-const TaskInstanceClient = TaskDomain.TaskInstanceClient;
-
-// 类型别名
-type TaskTemplate = TaskDomain.TaskTemplate;
-type TaskInstance = TaskDomain.TaskInstance;
 
 export class TaskTemplateApplicationService {
   private static instance: TaskTemplateApplicationService;
@@ -57,7 +49,7 @@ export class TaskTemplateApplicationService {
       const templateDTO = await taskTemplateApiClient.createTaskTemplate(request);
 
       // 转换为实体对象并添加到缓存
-      const entityTemplate = TaskTemplateClient.fromClientDTO(templateDTO);
+      const entityTemplate = TaskTemplate.fromClientDTO(templateDTO);
       this.taskStore.addTaskTemplate(entityTemplate);
 
       // 更新同步时间
@@ -99,7 +91,7 @@ export class TaskTemplateApplicationService {
 
       // 转换为实体对象并批量同步到 store
       const entityTemplates = templates.map((dto: TaskContracts.TaskTemplateClientDTO) =>
-        TaskTemplateClient.fromClientDTO(dto),
+        TaskTemplate.fromClientDTO(dto),
       );
       this.taskStore.setTaskTemplates(entityTemplates);
 
@@ -126,7 +118,7 @@ export class TaskTemplateApplicationService {
       const templateDTO = await taskTemplateApiClient.getTaskTemplateById(uuid);
 
       // 转换为实体对象并添加到缓存
-      const entityTemplate = TaskTemplateClient.fromClientDTO(templateDTO);
+      const entityTemplate = TaskTemplate.fromClientDTO(templateDTO);
       this.taskStore.addTaskTemplate(entityTemplate);
 
       return templateDTO;
@@ -184,14 +176,14 @@ export class TaskTemplateApplicationService {
       const templateDTO = await taskTemplateApiClient.activateTaskTemplate(uuid);
 
       // 转换为实体对象并更新缓存
-      const entityTemplate = TaskTemplateClient.fromClientDTO(templateDTO);
+      const entityTemplate = TaskTemplate.fromClientDTO(templateDTO);
       this.taskStore.updateTaskTemplate(uuid, entityTemplate);
 
       // ✅ 激活后重新获取完整的模板数据（包含 instances）
       try {
         const fullTemplateDTO = await taskTemplateApiClient.getTaskTemplateById(uuid);
         if (fullTemplateDTO) {
-          const fullTemplate = TaskTemplateClient.fromClientDTO(fullTemplateDTO);
+          const fullTemplate = TaskTemplate.fromClientDTO(fullTemplateDTO);
           this.taskStore.updateTaskTemplate(uuid, fullTemplate);
 
           // 同步 instances 到 store（从聚合根中提取）
@@ -228,7 +220,7 @@ export class TaskTemplateApplicationService {
       const templateDTO = await taskTemplateApiClient.pauseTaskTemplate(uuid);
 
       // 转换为实体对象并更新缓存
-      const entityTemplate = TaskTemplateClient.fromClientDTO(templateDTO);
+      const entityTemplate = TaskTemplate.fromClientDTO(templateDTO);
       this.taskStore.updateTaskTemplate(uuid, entityTemplate);
 
       return templateDTO;

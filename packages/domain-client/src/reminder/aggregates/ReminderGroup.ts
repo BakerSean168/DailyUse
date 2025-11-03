@@ -6,7 +6,7 @@ import { ReminderContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 import * as ValueObjects from '../value-objects';
 
-type ReminderGroupClientDTO = ReminderContracts.ReminderGroupClientDTO;
+type ReminderGroupDTO = ReminderContracts.ReminderGroupDTO;
 type ReminderGroupServerDTO = ReminderContracts.ReminderGroupServerDTO;
 type GroupStatsClient = ReminderContracts.GroupStatsClient;
 type ControlMode = ReminderContracts.ControlMode;
@@ -15,8 +15,8 @@ type ReminderStatus = ReminderContracts.ReminderStatus;
 const ControlMode = ReminderContracts.ControlMode;
 const ReminderStatus = ReminderContracts.ReminderStatus;
 
-export class ReminderGroupClient extends AggregateRoot 
-  implements ReminderContracts.ReminderGroupClient {
+export class ReminderGroup extends AggregateRoot 
+  implements ReminderContracts.ReminderGroup {
   
   private _accountUuid: string;
   private _name: string;
@@ -161,7 +161,7 @@ export class ReminderGroupClient extends AggregateRoot
 
   // ========== 转换方法 ==========
   
-  public toClientDTO(): ReminderGroupClientDTO {
+  public toClientDTO(): ReminderGroupDTO {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
@@ -207,8 +207,8 @@ export class ReminderGroupClient extends AggregateRoot
 
   // ========== 静态工厂方法 ==========
   
-  public static fromServerDTO(dto: ReminderGroupServerDTO): ReminderGroupClient {
-    return new ReminderGroupClient({
+  public static fromServerDTO(dto: ReminderGroupServerDTO): ReminderGroup {
+    return new ReminderGroup({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       name: dto.name,
@@ -226,8 +226,8 @@ export class ReminderGroupClient extends AggregateRoot
     });
   }
   
-  public static fromClientDTO(dto: ReminderGroupClientDTO): ReminderGroupClient {
-    return new ReminderGroupClient({
+  public static fromClientDTO(dto: ReminderGroupDTO): ReminderGroup {
+    return new ReminderGroup({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       name: dto.name,

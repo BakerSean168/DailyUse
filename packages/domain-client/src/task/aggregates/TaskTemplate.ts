@@ -15,14 +15,14 @@ import {
 import { TaskTemplateHistoryClient } from '../entities';
 import { TaskInstanceClient } from './TaskInstanceClient';
 
-type ITaskTemplateClient = TaskContracts.TaskTemplateClient;
-type TaskTemplateClientDTO = TaskContracts.TaskTemplateClientDTO;
+type ITaskTemplate = TaskContracts.TaskTemplate;
+type TaskTemplateDTO = TaskContracts.TaskTemplateDTO;
 type TaskTemplateServerDTO = TaskContracts.TaskTemplateServerDTO;
 type TaskType = TaskContracts.TaskType;
 type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
 type TimeType = TaskContracts.TimeType;
 
-export class TaskTemplateClient extends AggregateRoot implements ITaskTemplateClient {
+export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   private _accountUuid: string;
   private _title: string;
   private _description?: string | null;
@@ -396,7 +396,7 @@ export class TaskTemplateClient extends AggregateRoot implements ITaskTemplateCl
   }
 
   // DTO 转换
-  public toClientDTO(): TaskTemplateClientDTO {
+  public toClientDTO(): TaskTemplateDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -468,8 +468,8 @@ export class TaskTemplateClient extends AggregateRoot implements ITaskTemplateCl
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskTemplateClientDTO): TaskTemplateClient {
-    return new TaskTemplateClient({
+  public static fromClientDTO(dto: TaskTemplateDTO): TaskTemplate {
+    return new TaskTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -499,8 +499,8 @@ export class TaskTemplateClient extends AggregateRoot implements ITaskTemplateCl
     });
   }
 
-  public static fromServerDTO(dto: TaskTemplateServerDTO): TaskTemplateClient {
-    return new TaskTemplateClient({
+  public static fromServerDTO(dto: TaskTemplateServerDTO): TaskTemplate {
+    return new TaskTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -530,10 +530,10 @@ export class TaskTemplateClient extends AggregateRoot implements ITaskTemplateCl
     });
   }
 
-  public static forCreate(accountUuid: string): TaskTemplateClient {
+  public static forCreate(accountUuid: string): TaskTemplate {
     const now = Date.now();
 
-    return new TaskTemplateClient({
+    return new TaskTemplate({
       accountUuid,
       title: '',
       taskType: 'ONE_TIME' as TaskType,
@@ -563,7 +563,7 @@ export class TaskTemplateClient extends AggregateRoot implements ITaskTemplateCl
     });
   }
 
-  public static create(params: any): TaskTemplateClient {
+  public static create(params: any): TaskTemplate {
     const now = Date.now();
 
     const defaultTimeConfig = TaskTimeConfigClient.fromClientDTO({
@@ -581,7 +581,7 @@ export class TaskTemplateClient extends AggregateRoot implements ITaskTemplateCl
       hasDateRange: false,
     });
 
-    return new TaskTemplateClient({
+    return new TaskTemplate({
       accountUuid: params.accountUuid,
       title: params.title || '',
       description: params.description,
@@ -606,7 +606,7 @@ export class TaskTemplateClient extends AggregateRoot implements ITaskTemplateCl
     });
   }
 
-  public clone(): TaskTemplateClient {
-    return TaskTemplateClient.fromClientDTO(this.toClientDTO());
+  public clone(): TaskTemplate {
+    return TaskTemplate.fromClientDTO(this.toClientDTO());
   }
 }

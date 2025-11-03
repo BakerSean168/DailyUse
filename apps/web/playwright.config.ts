@@ -26,7 +26,7 @@ export default defineConfig({
   // 报告配置
   reporter: process.env.CI
     ? [
-        ['html', { outputFolder: 'playwright-report', open: 'never' }],
+        ['html', { outputFolder: 'playwright-report', open: 'always' }],
         ['json', { outputFile: 'test-results/results.json' }],
         ['list'],
         ['github'], // GitHub Actions 集成
@@ -43,13 +43,13 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:5173',
 
     // 追踪配置
-    trace: 'on-first-retry',
+    trace: 'on',
 
     // 截图配置
-    screenshot: 'only-on-failure',
+    screenshot: 'on',
 
-    // 视频录制
-    video: 'retain-on-failure',
+    // 视频录制 - 始终录制
+    video: 'on',
 
     // 浏览器上下文选项
     viewport: { width: 1280, height: 720 },

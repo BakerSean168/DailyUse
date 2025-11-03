@@ -1,7 +1,7 @@
 <template>
   <div class="task-template-form-container">
-    <!-- 错误状态显示 -->
-    <v-alert v-if="!taskTemplateBeingEdited" type="error" variant="tonal" class="mb-4">
+    <!-- 错误状态显示 - 修复：检查 computed 的 value -->
+    <v-alert v-if="!props.modelValue" type="error" variant="tonal" class="mb-4">
       <v-alert-title>无法加载模板</v-alert-title>
       <div>没有找到正在编辑的任务模板，请重新选择或创建模板。</div>
       <template #append>
@@ -61,7 +61,7 @@ import ReminderSection from './sections/ReminderSection.vue';
 import MetadataSection from './sections/MetadataSection.vue';
 import KeyResultLinksSection from './sections/KeyResultLinksSection.vue';
 import { useTaskTemplateForm } from '../../composables/useTaskTemplateForm';
-import { TaskTemplateClient } from '@dailyuse/domain-client';
+import type { TaskTemplate } from '@dailyuse/domain-client';
 
 // ===== Props 定义 =====
 interface Props {

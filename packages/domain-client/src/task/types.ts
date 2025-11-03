@@ -5,18 +5,17 @@
  * 这个文件提供简短的类型别名，便于在应用中导入使用
  */
 
-import { TaskTemplateClient } from './aggregates/TaskTemplateClient';
-import { TaskInstanceClient } from './aggregates/TaskInstanceClient';
-import { TaskStatisticsClient } from './aggregates/TaskStatisticsClient';
+import { TaskTemplate } from './aggregates/TaskTemplate';
+import { TaskInstance } from './aggregates/TaskInstance';
+import { TaskStatistics } from './aggregates/TaskStatistics';
 import { TaskTemplateHistoryClient } from './entities/TaskTemplateHistoryClient';
 
-// 聚合根别名
-export type TaskTemplate = TaskTemplateClient;
-export type TaskInstance = TaskInstanceClient;
-export type TaskStatistics = TaskStatisticsClient;
+// 重新导出聚合根（现在不需要别名了）
+export { TaskTemplate, TaskInstance, TaskStatistics };
 
 // 实体别名
 export type TaskTemplateHistory = TaskTemplateHistoryClient;
+export { TaskTemplateHistoryClient };
 
 // 值对象别名
 export type {
@@ -25,14 +24,6 @@ export type {
   TaskReminderConfigClient as TaskReminderConfig,
   TaskGoalBindingClient as TaskGoalBinding,
 } from './value-objects';
-
-// 也导出原始类名（保持兼容性）
-export {
-  TaskTemplateClient,
-  TaskInstanceClient,
-  TaskStatisticsClient,
-  TaskTemplateHistoryClient,
-};
 
 // 从 contracts 重新导出常用类型
 export type {

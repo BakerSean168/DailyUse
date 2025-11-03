@@ -6,31 +6,27 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Reminder Template CRUD Operations', () => {
-  const baseUrl = 'http://localhost:3001';
-  const testEmail = 'test@example.com';
-  const testPassword = 'Test123456!';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
+  const testUsername = 'Test123123';
+  const testPassword = 'Llh123123!';
 
   test.beforeEach(async ({ page }) => {
     // 登录
-    await page.goto(`${baseUrl}/login`);
-    await page.fill('input[type="email"]', testEmail);
-    await page.fill('input[type="password"]', testPassword);
-    await page.click('button[type="submit"]');
-    
-    // 等待跳转
+    await page.goto(`${baseUrl}/auth`);
+    await page.locator('[data-testid="login-username-input"] input').fill(testUsername);
+    await page.locator('[data-testid="login-password-input"] input').fill(testPassword);
+    await page.locator('button[type="submit"]').click();
     await page.waitForURL(`${baseUrl}/`);
     await page.waitForTimeout(1000);
-    
-    // 导航到提醒桌面视图
+
+    // 导航到提醒模板页面（注意是复数 reminders）
     await page.goto(`${baseUrl}/reminders`);
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
   });
 
   test('should create a new reminder template', async ({ page }) => {
-    // 1. 点击创建按钮
-    const createButton = page.locator('button:has-text("创建")').or(
-      page.locator('button:has-text("新建提醒")')
-    ).first();
+    // 1. 点击创建按钮 - 使用 data-testid
+    const createButton = page.locator('[data-testid="create-reminder-template-button"]');
     await createButton.click();
     
     // 2. 等待对话框打开
@@ -52,8 +48,8 @@ test.describe('Reminder Template CRUD Operations', () => {
       await descInput.fill('This is an E2E test reminder template');
     }
     
-    // 4. 提交表单
-    await page.click('button:has-text("保存")');
+    // 4. 提交表单 - 使用 data-testid
+    await page.locator('[data-testid="reminder-dialog-save-button"]').click();
     
     // 5. 验证成功提示
     await expect(page.locator('text=创建成功').or(
@@ -74,10 +70,8 @@ test.describe('Reminder Template CRUD Operations', () => {
       page.locator('text=Reminder')
     )).toBeVisible();
     
-    // 验证有创建按钮
-    const createButton = page.locator('button:has-text("创建")').or(
-      page.locator('button:has-text("新建")')
-    ).first();
+    // 验证有创建按钮 - 使用 data-testid
+    const createButton = page.locator('[data-testid="create-reminder-template-button"]');
     await expect(createButton).toBeVisible();
   });
 
@@ -104,8 +98,8 @@ test.describe('Reminder Template CRUD Operations', () => {
     await titleInput.clear();
     await titleInput.fill(updatedTitle);
     
-    // 5. 保存
-    await page.click('button:has-text("保存")');
+    // 5. 保存 - 使用 data-testid
+    await page.locator('[data-testid="reminder-dialog-save-button"]').click();
     
     // 6. 验证成功提示
     await expect(page.locator('text=更新成功').or(
@@ -158,9 +152,8 @@ test.describe('Reminder Template CRUD Operations', () => {
 // ===== Helper Functions =====
 
 async function createTestReminder(page: any, title: string) {
-  const createButton = page.locator('button:has-text("创建")').or(
-    page.locator('button:has-text("新建提醒")')
-  ).first();
+  // 使用 data-testid 选择器
+  const createButton = page.locator('[data-testid="create-reminder-template-button"]');
   await createButton.click();
   
   await expect(page.locator('text=创建提醒模板')).toBeVisible({ timeout: 5000 });
@@ -170,7 +163,9 @@ async function createTestReminder(page: any, title: string) {
   ).first();
   await titleInput.fill(title);
   
-  await page.click('button:has-text("保存")');
+  // 使用 data-testid
+  await page.locator('[data-testid="reminder-dialog-save-button"]').click();
+  
   await expect(page.locator('text=创建成功').or(
     page.locator('text=保存成功')
   )).toBeVisible({ timeout: 5000 });
