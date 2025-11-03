@@ -218,6 +218,63 @@ router.get('/templates/search', ReminderController.searchReminderTemplates);
  */
 router.get('/statistics/:accountUuid', ReminderController.getReminderStatistics);
 
+// ===== 即将到来的提醒和调度状态 =====
+
+/**
+ * @swagger
+ * /api/reminders/upcoming:
+ *   get:
+ *     tags: [Reminder]
+ *     summary: 获取即将到来的提醒（基于调度计算）
+ *     parameters:
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: number
+ *           default: 7
+ *         description: 未来多少天
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *           default: 50
+ *         description: 返回数量限制
+ *       - in: query
+ *         name: importanceLevel
+ *         schema:
+ *           type: string
+ *         description: 按重要程度筛选
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: 按类型筛选
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ */
+router.get('/upcoming', ReminderController.getUpcomingReminders);
+
+/**
+ * @swagger
+ * /api/reminders/templates/{uuid}/schedule-status:
+ *   get:
+ *     tags: [Reminder]
+ *     summary: 获取模板的调度状态
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *       404:
+ *         description: 提醒模板不存在
+ */
+router.get('/templates/:uuid/schedule-status', ReminderController.getTemplateScheduleStatus);
+
 // ===== 智能频率调整 =====
 
 /**

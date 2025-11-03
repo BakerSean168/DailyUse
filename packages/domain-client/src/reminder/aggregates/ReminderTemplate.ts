@@ -291,6 +291,77 @@ export class ReminderTemplate extends AggregateRoot
     this._status = ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
   }
+  
+  public setEnabled(enabled: boolean): void {
+    this._selfEnabled = enabled;
+    this._status = enabled ? ReminderStatus.ACTIVE : ReminderStatus.PAUSED;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateGroup(groupUuid: string | null): void {
+    this._groupUuid = groupUuid;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateImportanceLevel(level: ImportanceLevel): void {
+    this._importanceLevel = level;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateTags(tags: string[]): void {
+    this._tags = [...tags];
+    this._updatedAt = Date.now();
+  }
+  
+  public addTag(tag: string): void {
+    if (!this._tags.includes(tag)) {
+      this._tags.push(tag);
+      this._updatedAt = Date.now();
+    }
+  }
+  
+  public removeTag(tag: string): void {
+    const index = this._tags.indexOf(tag);
+    if (index > -1) {
+      this._tags.splice(index, 1);
+      this._updatedAt = Date.now();
+    }
+  }
+  
+  public updateColor(color: string | null): void {
+    this._color = color;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateIcon(icon: string | null): void {
+    this._icon = icon;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateActiveTime(activeTime: ActiveTimeConfig): void {
+    this._activeTime = activeTime;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateActiveHours(activeHours: ActiveHoursConfig | null): void {
+    this._activeHours = activeHours;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateNotificationConfig(config: NotificationConfig): void {
+    this._notificationConfig = config;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateNextTriggerAt(timestamp: number | null): void {
+    this._nextTriggerAt = timestamp;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateStats(stats: ReminderStats): void {
+    this._stats = stats;
+    this._updatedAt = Date.now();
+  }
 
   // ===== 转换方法 =====
   

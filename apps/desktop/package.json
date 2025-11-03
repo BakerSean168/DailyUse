@@ -87,5 +87,10 @@
     "vitest": "^3.2.4",
     "vue-tsc": "^2.1.10"
   },
-  "main": "dist-electron/main.js"
+  "main": "dist-electron/main.js",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron"
+    ]
+  }
 }

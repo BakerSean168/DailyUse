@@ -300,4 +300,71 @@ export class ReminderController {
       });
     }
   }
+
+  /**
+   * 获取即将到来的提醒（基于调度计算）
+   * @route GET /api/reminders/upcoming
+   */
+  static async getUpcomingReminders(req: Request, res: Response): Promise<Response> {
+    try {
+      const { days, limit, importanceLevel, type } = req.query;
+
+      const service = await ReminderController.getReminderService();
+      const result = await service.getUpcomingReminders({
+        days: days ? Number(days) : undefined,
+        limit: limit ? Number(limit) : undefined,
+        importanceLevel: importanceLevel as any,
+        type: type as any,
+      });
+
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        result,
+        'Upcoming reminders retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error retrieving upcoming reminders', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取模板的调度状态
+   * @route GET /api/reminders/templates/:uuid/schedule-status
+   */
+  static async getTemplateScheduleStatus(req: Request, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+
+      const service = await ReminderController.getReminderService();
+      const status = await service.getTemplateScheduleStatus(uuid);
+
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        status,
+        'Template schedule status retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error retrieving template schedule status', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
 }

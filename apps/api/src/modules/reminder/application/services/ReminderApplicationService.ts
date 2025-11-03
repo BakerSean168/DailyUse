@@ -208,4 +208,70 @@ export class ReminderApplicationService {
     const stats = await this.reminderStatisticsRepository.findOrCreate(accountUuid);
     return stats.toClientDTO();
   }
+
+  /**
+   * 获取即将到来的提醒（基于模板和调度计算）
+   * TODO: 实现真实的调度计算逻辑
+   */
+  async getUpcomingReminders(params: {
+    days?: number;
+    limit?: number;
+    importanceLevel?: ImportanceLevel;
+    type?: ReminderType;
+  }): Promise<ReminderContracts.UpcomingRemindersResponseDTO> {
+    const days = params.days || 7;
+    const limit = params.limit || 50;
+
+    const now = Date.now();
+    const fromDate = now;
+    const toDate = now + days * 24 * 60 * 60 * 1000;
+
+    // TODO: 实现真实的调度计算逻辑
+    // 1. 查询所有活跃模板
+    // 2. 根据每个模板的 trigger + recurrence 配置计算未来触发时间
+    // 3. 筛选在时间范围内的触发点
+    // 4. 按时间排序并限制数量
+    console.warn(
+      `getUpcomingReminders: 此功能需要调度计算引擎支持，当前返回空数据`,
+    );
+
+    return {
+      reminders: [],
+      total: 0,
+      fromDate,
+      toDate,
+    };
+  }
+
+  /**
+   * 获取模板的调度状态
+   * TODO: 目前返回基于模板数据的简单状态，待实现调度系统后返回真实调度信息
+   */
+  async getTemplateScheduleStatus(
+    templateUuid: string,
+  ): Promise<ReminderContracts.TemplateScheduleStatusDTO> {
+    const template = await this.reminderTemplateRepository.findById(templateUuid);
+
+    if (!template) {
+      throw new Error(`Reminder template not found: ${templateUuid}`);
+    }
+
+    // TODO: 实现真实的调度状态查询
+    // 当前基于模板状态返回基本信息
+    const now = Date.now();
+    const effectiveEnabled = await template.getEffectiveEnabled();
+
+    return {
+      templateUuid: template.uuid,
+      hasSchedule: true, // 所有模板都有调度配置
+      enabled: template.selfEnabled && effectiveEnabled,
+      status: template.status,
+      nextTriggerAt: template.nextTriggerAt,
+      lastTriggeredAt: null, // TODO: 从调度历史中获取
+      triggerCount: 0, // TODO: 从调度历史中统计
+      lastTriggerResult: null, // TODO: 从调度历史中获取
+      errorMessage: null,
+      updatedAt: now,
+    };
+  }
 }

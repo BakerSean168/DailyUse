@@ -77,6 +77,14 @@
     "db:push": "pnpm --filter @dailyuse/api db:push",
     "db:seed": "pnpm prisma:seed",
     "db:reset": "pnpm prisma:reset",
+    "// ========== Docker Database ==========": "",
+    "docker:dev:up": "docker-compose up -d",
+    "docker:dev:down": "docker-compose down",
+    "docker:dev:logs": "docker-compose logs -f postgres-dev",
+    "docker:dev:reset": "docker-compose down -v && docker-compose up -d",
+    "docker:test:up": "docker-compose -f docker-compose.test.yml up -d",
+    "docker:test:down": "docker-compose -f docker-compose.test.yml down",
+    "docker:test:reset": "docker-compose -f docker-compose.test.yml down -v && docker-compose -f docker-compose.test.yml up -d",
     "// ========== Code Quality ==========": "",
     "lint": "pnpm nx run-many --target=lint --all --parallel=5",
     "lint:fix": "pnpm nx run-many --target=lint --all --fix --parallel=5",
@@ -195,8 +203,7 @@
       "vue-demi"
     ],
     "onlyBuiltDependencies": [
-      "core-js",
-      "electron"
+      "core-js"
     ]
   }
 }

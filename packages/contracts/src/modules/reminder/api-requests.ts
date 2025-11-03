@@ -199,3 +199,57 @@ export interface BatchOperationResponseDTO {
     error: string;
   }>;
 }
+
+// ============ Schedule（调度相关）============
+
+/**
+ * 模板调度状态 DTO
+ */
+export interface TemplateScheduleStatusDTO {
+  templateUuid: string;
+  hasSchedule: boolean; // 是否配置了调度
+  enabled: boolean; // 是否启用
+  status: ReminderStatus; // 当前状态
+  nextTriggerAt: number | null; // 下次触发时间
+  lastTriggeredAt: number | null; // 上次触发时间
+  triggerCount: number; // 总触发次数
+  lastTriggerResult?: 'SUCCESS' | 'FAILED' | null; // 上次触发结果
+  errorMessage?: string | null; // 错误信息（如果有）
+  updatedAt: number;
+}
+
+/**
+ * 即将到来的提醒项
+ * 基于模板+调度计算出的提醒触发时间
+ */
+export interface UpcomingReminderItemDTO {
+  templateUuid: string;
+  templateTitle: string;
+  templateType: ReminderType;
+  importanceLevel: ImportanceLevel;
+  scheduledTime: number; // 计划触发时间
+  description?: string | null;
+  tags?: string[];
+  color?: string | null;
+  icon?: string | null;
+}
+
+/**
+ * 获取即将到来的提醒请求
+ */
+export interface GetUpcomingRemindersRequestDTO {
+  days?: number; // 未来多少天，默认7天
+  limit?: number; // 返回数量限制
+  importanceLevel?: ImportanceLevel; // 按重要程度筛选
+  type?: ReminderType; // 按类型筛选
+}
+
+/**
+ * 即将到来的提醒响应
+ */
+export interface UpcomingRemindersResponseDTO {
+  reminders: UpcomingReminderItemDTO[];
+  total: number;
+  fromDate: number; // 查询起始时间
+  toDate: number; // 查询结束时间
+}
