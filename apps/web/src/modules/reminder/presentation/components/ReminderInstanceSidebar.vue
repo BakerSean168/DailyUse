@@ -308,7 +308,7 @@ const emit = defineEmits<Emits>();
 
 // ===== Composables =====
 const router = useRouter();
-const { getActiveReminders, isLoading, error } = useReminder();
+const { getUpcomingReminders, isLoading, error } = useReminder();
 
 // ===== 响应式状态 =====
 const showFilters = ref(false);
@@ -389,11 +389,11 @@ const overdueCount = computed(() => {
  */
 async function fetchUpcomingReminders(): Promise<void> {
   try {
-    const response = await getActiveReminders({
+    const response = await getUpcomingReminders({
       limit: settings.value.maxItems,
-      // TODO: 根据实际 API 调整参数
+      days: filters.value.days,
     });
-    // 将整个响应对象赋值，包含 reminders、total、page 等属性
+    // 将整个响应对象赋值，包含 reminders、total、fromDate、toDate 等属性
     upcomingData.value = response;
     console.log('📋 侧边栏获取到的提醒数据:', upcomingData.value);
   } catch (err: any) {

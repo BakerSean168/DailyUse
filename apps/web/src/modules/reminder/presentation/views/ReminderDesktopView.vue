@@ -154,7 +154,7 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 // 类型导入 - 使用 Contracts DTO
 import type { ReminderContracts } from '@dailyuse/contracts';
-import { ReminderTemplateClient } from '@dailyuse/domain-client';
+import { ReminderTemplate as ReminderTemplateEntity } from '@dailyuse/domain-client';
 
 // 类型别名
 type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
@@ -259,7 +259,7 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
       title: '编辑模板',
       icon: 'mdi-pencil',
       action: () => {
-        const entity = ReminderTemplateClient.fromClientDTO(template);
+        const entity = ReminderTemplateEntity.fromClientDTO(template);
         templateDialogRef.value?.openForEdit(entity);
         contextMenu.show = false;
       },
@@ -532,7 +532,7 @@ const handleTemplateCreated = async (template: ReminderTemplate) => {
  */
 const handleEditTemplate = (template: ReminderTemplate) => {
   console.log('打开编辑模板对话框:', template);
-  const entity = ReminderTemplateClient.fromClientDTO(template);
+  const entity = ReminderTemplateEntity.fromClientDTO(template);
   templateDialogRef.value?.openForEdit(entity);
 };
 

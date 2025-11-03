@@ -160,7 +160,7 @@ import { logo, logo128, defaultAvatar } from '@dailyuse/assets/images';
 import { audioService, type SoundType } from '@/services/AudioService';
 import { AuthManager } from '@/shared/api';
 import { reminderApiClient } from '@/modules/reminder/infrastructure/api/reminderApiClient';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
 import { generateUUID } from '@dailyuse/utils';
 
 // 音频控制状态
@@ -274,36 +274,50 @@ const createRecurringReminder = async () => {
     const templateUuid = generateUUID();
     const now = Date.now();
 
-    const request: ReminderContracts.CreateReminderTemplateRequest = {
-      uuid: templateUuid,
-      name: '测试提醒 - 每1分钟',
-      message: '这是一个测试提醒，每分钟触发一次',
-      timeConfig: {
-        type: ReminderContracts.ReminderTimeConfigType.CUSTOM,
-        customPattern: {
-          interval: 1,
-          unit: ReminderContracts.ReminderDurationUnit.MINUTES,
+    const request: ReminderContracts.CreateReminderTemplateRequestDTO = {
+      title: '测试提醒 - 每1分钟',
+      description: '这是一个测试提醒，每分钟触发一次',
+      type: ReminderContracts.ReminderType.RECURRING,
+      trigger: {
+        type: ReminderContracts.TriggerType.FIXED_TIME,
+        fixedTime: {
+          time: '09:00',
         },
+        interval: null,
       },
-      priority: ReminderContracts.ReminderPriority.NORMAL,
-      category: '测试',
+      recurrence: {
+        type: ReminderContracts.RecurrenceType.DAILY,
+        interval: 1,
+        daysOfWeek: null,
+        daysOfMonth: null,
+      },
+      activeTime: {
+        startDate: now,
+        endDate: null,
+      },
+      activeHours: null,
+      notificationConfig: {
+        channels: [ReminderContracts.NotificationChannel.IN_APP],
+        title: '测试提醒',
+        body: '这是一个测试提醒，每分钟触发一次',
+        sound: 'default',
+        vibration: null,
+        actions: null,
+      },
+      importanceLevel: ImportanceLevel.Moderate,
       tags: ['测试', '循环'],
-      enabled: true,
-      selfEnabled: true,
-      notificationSettings: {
-        sound: true,
-        vibration: false,
-        popup: true,
-      },
+      color: null,
+      icon: null,
+      groupUuid: null,
     };
 
     console.log('📤 发送创建请求:', request);
-    const response = await reminderApiClient.createReminderTemplate(request);
+    const response = await reminderApiClient.createTemplate(request);
     console.log('✅ 提醒模板创建成功:', response);
 
     audioService.playSuccess();
     alert(
-      `提醒模板创建成功！\nUUID: ${templateUuid}\n名称: ${request.name}\n\n请检查控制台查看详细信息。`,
+      `提醒模板创建成功！\nUUID: ${templateUuid}\n标题: ${request.title}\n\n请检查控制台查看详细信息。`,
     );
   } catch (error) {
     console.error('❌ 创建提醒模板失败:', error);

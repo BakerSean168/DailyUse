@@ -150,4 +150,30 @@ export const reminderApiClient = {
   getReminderStatistics(accountUuid: string): Promise<ReminderStatisticsClientDTO> {
     return this.getStatistics(accountUuid);
   },
+
+  /**
+   * 获取模板的调度状态
+   */
+  async getScheduleStatus(
+    templateUuid: string,
+  ): Promise<ReminderContracts.TemplateScheduleStatusDTO> {
+    return apiClient.get<ReminderContracts.TemplateScheduleStatusDTO>(
+      `/reminders/templates/${templateUuid}/schedule-status`,
+    );
+  },
+
+  /**
+   * 获取即将到来的提醒（基于调度计算）
+   */
+  async getUpcomingReminders(params?: {
+    days?: number;
+    limit?: number;
+    importanceLevel?: string;
+    type?: string;
+  }): Promise<ReminderContracts.UpcomingRemindersResponseDTO> {
+    return apiClient.get<ReminderContracts.UpcomingRemindersResponseDTO>(
+      '/reminders/upcoming',
+      { params },
+    );
+  },
 };

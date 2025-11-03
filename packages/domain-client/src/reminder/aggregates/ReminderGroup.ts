@@ -159,6 +159,74 @@ export class ReminderGroup extends AggregateRoot
     return this._controlMode === ControlMode.GROUP;
   }
 
+  // ========== 修改方法 ==========
+  
+  public updateName(name: string): void {
+    this._name = name;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateDescription(description: string | null): void {
+    this._description = description;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateColor(color: string | null): void {
+    this._color = color;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateIcon(icon: string | null): void {
+    this._icon = icon;
+    this._updatedAt = Date.now();
+  }
+  
+  public setEnabled(enabled: boolean): void {
+    this._enabled = enabled;
+    this._status = enabled ? ReminderStatus.ACTIVE : ReminderStatus.PAUSED;
+    this._updatedAt = Date.now();
+  }
+  
+  public setEnableMode(mode: ControlMode): void {
+    this._controlMode = mode;
+    this._updatedAt = Date.now();
+  }
+  
+  public switchControlMode(): void {
+    this._controlMode = this._controlMode === ControlMode.GROUP 
+      ? ControlMode.INDIVIDUAL 
+      : ControlMode.GROUP;
+    this._updatedAt = Date.now();
+  }
+  
+  public enable(): void {
+    this._enabled = true;
+    this._status = ReminderStatus.ACTIVE;
+    this._updatedAt = Date.now();
+  }
+  
+  public pause(): void {
+    this._enabled = false;
+    this._status = ReminderStatus.PAUSED;
+    this._updatedAt = Date.now();
+  }
+  
+  public toggleEnabled(): void {
+    this._enabled = !this._enabled;
+    this._status = this._enabled ? ReminderStatus.ACTIVE : ReminderStatus.PAUSED;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateOrder(order: number): void {
+    this._order = order;
+    this._updatedAt = Date.now();
+  }
+  
+  public updateStats(stats: ValueObjects.GroupStats): void {
+    this._stats = stats;
+    this._updatedAt = Date.now();
+  }
+
   // ========== 转换方法 ==========
   
   public toClientDTO(): ReminderGroupDTO {

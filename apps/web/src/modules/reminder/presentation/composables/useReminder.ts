@@ -62,6 +62,19 @@ export function useReminder() {
     return await reminderTemplateApplicationService.toggleTemplateEnabled(uuid, enabled);
   }
 
+  /**
+   * 获取即将到来的提醒（基于调度计算）
+   */
+  async function getUpcomingReminders(options?: {
+    limit?: number;
+    days?: number;
+    importanceLevel?: string;
+    type?: string;
+  }) {
+    const { reminderApiClient } = await import('../../infrastructure/api/reminderApiClient');
+    return await reminderApiClient.getUpcomingReminders(options);
+  }
+
   return {
     isLoading,
     error,
@@ -74,5 +87,6 @@ export function useReminder() {
     deleteTemplate,
     updateTemplate,
     toggleTemplateStatus,
+    getUpcomingReminders,
   };
 }
