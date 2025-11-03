@@ -5,8 +5,8 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { Entity } from '@dailyuse/utils';
 
-type ITaskTemplateHistory = TaskContracts.TaskTemplateHistory;
-type TaskTemplateHistoryDTO = TaskContracts.TaskTemplateHistoryDTO;
+type ITaskTemplateHistory = TaskContracts.TaskTemplateHistoryClient;
+type TaskTemplateHistoryDTO = TaskContracts.TaskTemplateHistoryClientDTO;
 type TaskTemplateHistoryServerDTO = TaskContracts.TaskTemplateHistoryServerDTO;
 
 export class TaskTemplateHistory extends Entity implements ITaskTemplateHistory {

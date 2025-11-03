@@ -5,11 +5,10 @@
 
 import { ref, computed, readonly } from 'vue';
 import type { TaskContracts } from '@dailyuse/contracts';
-import type { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client';
 import { taskInstanceApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
 
-type TaskInstance = TaskDomain.TaskInstance;
 
 /**
  * 任务实例管理 Composable

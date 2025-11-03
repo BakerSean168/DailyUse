@@ -4,10 +4,10 @@
 
 import type { GoalContracts } from '@dailyuse/contracts';
 import { Entity } from '@dailyuse/utils';
-import { KeyResultProgressClient } from '../value-objects/KeyResultProgressClient';
+import { KeyResultProgress } from '../value-objects/KeyResultProgress';
 
-type IKeyResult = GoalContracts.KeyResult;
-type KeyResultDTO = GoalContracts.KeyResultDTO;
+type IKeyResult = GoalContracts.KeyResultClient;
+type KeyResultDTO = GoalContracts.KeyResultClientDTO;
 type KeyResultServerDTO = GoalContracts.KeyResultServerDTO;
 type GoalRecordClientDTO = GoalContracts.GoalRecordClientDTO;
 
@@ -15,7 +15,7 @@ export class KeyResult extends Entity implements IKeyResult {
   private _goalUuid: string;
   private _title: string;
   private _description?: string | null;
-  private _progress: KeyResultProgressClient;
+  private _progress: KeyResultProgress;
   private _weight: number; // 权重 (0-100)
   private _order: number;
   private _createdAt: number;
@@ -27,7 +27,7 @@ export class KeyResult extends Entity implements IKeyResult {
     goalUuid: string;
     title: string;
     description?: string | null;
-    progress: KeyResultProgressClient;
+    progress: KeyResultProgress;
     weight?: number;
     order: number;
     createdAt: number;
@@ -225,7 +225,7 @@ export class KeyResult extends Entity implements IKeyResult {
       goalUuid: dto.goalUuid,
       title: dto.title,
       description: dto.description,
-      progress: KeyResultProgressClient.fromClientDTO(dto.progress),
+      progress: KeyResultProgress.fromClientDTO(dto.progress),
       weight: dto.weight,
       order: dto.order,
       createdAt: dto.createdAt,
@@ -240,7 +240,7 @@ export class KeyResult extends Entity implements IKeyResult {
       goalUuid: dto.goalUuid,
       title: dto.title,
       description: dto.description,
-      progress: KeyResultProgressClient.fromServerDTO(dto.progress),
+      progress: KeyResultProgress.fromServerDTO(dto.progress),
       weight: dto.weight,
       order: dto.order,
       createdAt: dto.createdAt,
@@ -255,7 +255,7 @@ export class KeyResult extends Entity implements IKeyResult {
       goalUuid,
       title: '',
       description: null,
-      progress: KeyResultProgressClient.createDefault(),
+      progress: KeyResultProgress.createDefault(),
       order: 0,
       createdAt: now,
       updatedAt: now,

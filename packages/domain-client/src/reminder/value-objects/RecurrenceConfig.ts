@@ -1,64 +1,112 @@
 /**
- * RecurrenceConfig 值对象实现 ()
+ * RecurrenceConfig 值对象实现 (Client)
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type RecurrenceConfigDTO = ReminderContracts.RecurrenceConfigDTO;
+type RecurrenceConfigClientDTO = ReminderContracts.RecurrenceConfigClientDTO;
 type RecurrenceConfigServerDTO = ReminderContracts.RecurrenceConfigServerDTO;
 type RecurrenceType = ReminderContracts.RecurrenceType;
 type DailyRecurrence = ReminderContracts.DailyRecurrence;
 type WeeklyRecurrence = ReminderContracts.WeeklyRecurrence;
 type CustomDaysRecurrence = ReminderContracts.CustomDaysRecurrence;
 
-export class RecurrenceConfig implements ReminderContracts.RecurrenceConfig {
-  private readonly dto: RecurrenceConfigDTO;
+export class RecurrenceConfig implements ReminderContracts.RecurrenceConfigClient {
+  private readonly _type: RecurrenceType;
+  private readonly _daily: DailyRecurrence | null;
+  private readonly _weekly: WeeklyRecurrence | null;
+  private readonly _customDays: CustomDaysRecurrence | null;
+  private readonly _displayText: string;
 
-  private constructor(dto: RecurrenceConfigDTO) {
-    this.dto = dto;
+  private constructor(params: {
+    type: RecurrenceType;
+    daily?: DailyRecurrence | null;
+    weekly?: WeeklyRecurrence | null;
+    customDays?: CustomDaysRecurrence | null;
+    displayText: string;
+  }) {
+    this._type = params.type;
+    this._daily = params.daily ?? null;
+    this._weekly = params.weekly ?? null;
+    this._customDays = params.customDays ?? null;
+    this._displayText = params.displayText;
   }
 
   // ===== Getters =====
-  get type(): RecurrenceType { return this.dto.type; }
-  get daily(): DailyRecurrence | null { return this.dto.daily ?? null; }
-  get weekly(): WeeklyRecurrence | null { return this.dto.weekly ?? null; }
-  get customDays(): CustomDaysRecurrence | null { return this.dto.customDays ?? null; }
-  get displayText(): string { return this.dto.displayText; }
-
-  // ===== 业务方法 =====
-  public equals(other: ReminderContracts.RecurrenceConfig): boolean {
-    return JSON.stringify(this.dto) === JSON.stringify((other as RecurrenceConfig).dto);
+  get type(): RecurrenceType {
+    return this._type;
   }
 
-  public toDTO(): RecurrenceConfigDTO {
-    return this.dto;
+  get daily(): DailyRecurrence | null {
+    return this._daily;
+  }
+
+  get weekly(): WeeklyRecurrence | null {
+    return this._weekly;
+  }
+
+  get customDays(): CustomDaysRecurrence | null {
+    return this._customDays;
+  }
+
+  get displayText(): string {
+    return this._displayText;
+  }
+
+  // ===== 业务方法 =====
+  public equals(other: ReminderContracts.RecurrenceConfigClient): boolean {
+    return (
+      this._type === other.type &&
+      JSON.stringify(this._daily) === JSON.stringify(other.daily) &&
+      JSON.stringify(this._weekly) === JSON.stringify(other.weekly) &&
+      JSON.stringify(this._customDays) === JSON.stringify(other.customDays)
+    );
+  }
+
+  // ===== DTO 转换方法 =====
+  public toClientDTO(): RecurrenceConfigClientDTO {
+    return {
+      type: this._type,
+      daily: this._daily,
+      weekly: this._weekly,
+      customDays: this._customDays,
+      displayText: this._displayText,
+    };
   }
 
   public toServerDTO(): RecurrenceConfigServerDTO {
     return {
-      type: this.dto.type,
-      daily: this.dto.daily,
-      weekly: this.dto.weekly,
-      customDays: this.dto.customDays,
+      type: this._type,
+      daily: this._daily,
+      weekly: this._weekly,
+      customDays: this._customDays,
     };
   }
 
   // ===== 静态工厂方法 =====
-  public static fromDTO(dto: RecurrenceConfigDTO): RecurrenceConfig {
-    return new RecurrenceConfig(dto);
+  public static fromClientDTO(dto: RecurrenceConfigClientDTO): RecurrenceConfig {
+    return new RecurrenceConfig({
+      type: dto.type,
+      daily: dto.daily,
+      weekly: dto.weekly,
+      customDays: dto.customDays,
+      displayText: dto.displayText,
+    });
   }
 
   public static fromServerDTO(dto: RecurrenceConfigServerDTO): RecurrenceConfig {
-    // 从 ServerDTO 转换为 DTO
+    // 从 ServerDTO 转换，生成 displayText
     let displayText = '';
     if (dto.type === ReminderContracts.RecurrenceType.DAILY && dto.daily) {
-      displayText = `每 ${dto.daily.interval || 1} 天`;
+      displayText = dto.daily.interval === 1 ? '每天' : `每 ${dto.daily.interval} 天`;
     } else if (dto.type === ReminderContracts.RecurrenceType.WEEKLY && dto.weekly) {
-      displayText = `每周`;
+      displayText = dto.weekly.interval === 1 ? '每周' : `每 ${dto.weekly.interval} 周`;
     } else if (dto.type === ReminderContracts.RecurrenceType.CUSTOM_DAYS && dto.customDays) {
-      displayText = `自定义`;
+      displayText = `自定义 ${dto.customDays.dates.length} 个日期`;
+    } else {
+      displayText = '未设置';
     }
-    
+
     return new RecurrenceConfig({
       type: dto.type,
       daily: dto.daily,

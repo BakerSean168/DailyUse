@@ -1,55 +1,95 @@
 /**
- * ActiveHoursConfig 值对象实现 ()
+ * ActiveHoursConfig 值对象实现 (Client)
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type ActiveHoursConfigDTO = ReminderContracts.ActiveHoursConfigDTO;
+type ActiveHoursConfigClientDTO = ReminderContracts.ActiveHoursConfigClientDTO;
 type ActiveHoursConfigServerDTO = ReminderContracts.ActiveHoursConfigServerDTO;
 
-export class ActiveHoursConfig implements ReminderContracts.ActiveHoursConfig {
-  private readonly dto: ActiveHoursConfigDTO;
+export class ActiveHoursConfig implements ReminderContracts.ActiveHoursConfigClient {
+  private readonly _enabled: boolean;
+  private readonly _startHour: number;
+  private readonly _endHour: number;
+  private readonly _displayText: string;
 
-  private constructor(dto: ActiveHoursConfigDTO) {
-    this.dto = dto;
+  private constructor(params: {
+    enabled: boolean;
+    startHour: number;
+    endHour: number;
+    displayText: string;
+  }) {
+    this._enabled = params.enabled;
+    this._startHour = params.startHour;
+    this._endHour = params.endHour;
+    this._displayText = params.displayText;
   }
 
-  get enabled(): boolean { return this.dto.enabled; }
-  get startHour(): number { return this.dto.startHour; }
-  get endHour(): number { return this.dto.endHour; }
-  get displayText(): string { return this.dto.displayText; }
+  // ===== Getters =====
+  get enabled(): boolean {
+    return this._enabled;
+  }
 
-  public equals(other: ReminderContracts.ActiveHoursConfig): boolean {
-    return JSON.stringify(this.dto) === JSON.stringify((other as ActiveHoursConfig).dto);
+  get startHour(): number {
+    return this._startHour;
+  }
+
+  get endHour(): number {
+    return this._endHour;
+  }
+
+  get displayText(): string {
+    return this._displayText;
+  }
+
+  // ===== 业务方法 =====
+  public equals(other: ReminderContracts.ActiveHoursConfigClient): boolean {
+    return (
+      this._enabled === other.enabled &&
+      this._startHour === other.startHour &&
+      this._endHour === other.endHour
+    );
+  }
+
+  // ===== DTO 转换方法 =====
+  public toClientDTO(): ActiveHoursConfigClientDTO {
+    return {
+      enabled: this._enabled,
+      startHour: this._startHour,
+      endHour: this._endHour,
+      displayText: this._displayText,
+    };
   }
 
   public toServerDTO(): ActiveHoursConfigServerDTO {
     return {
-      enabled: this.dto.enabled,
-      startHour: this.dto.startHour,
-      endHour: this.dto.endHour,
+      enabled: this._enabled,
+      startHour: this._startHour,
+      endHour: this._endHour,
     };
   }
 
-  public toDTO(): ActiveHoursConfigDTO {
-    return this.dto;
-  }
-
-  public static fromDTO(dto: ActiveHoursConfigDTO): ActiveHoursConfig {
-    return new ActiveHoursConfig(dto);
+  // ===== 静态工厂方法 =====
+  public static fromClientDTO(dto: ActiveHoursConfigClientDTO): ActiveHoursConfig {
+    return new ActiveHoursConfig({
+      enabled: dto.enabled,
+      startHour: dto.startHour,
+      endHour: dto.endHour,
+      displayText: dto.displayText,
+    });
   }
 
   public static fromServerDTO(dto: ActiveHoursConfigServerDTO): ActiveHoursConfig {
-    const clientDTO: ActiveHoursConfigDTO = {
-      ...dto,
-      displayText: dto.enabled 
-        ? `活跃时间：${dto.startHour}:00 - ${dto.endHour}:00`
-        : '全天活跃',
-    };
-    return new ActiveHoursConfig(clientDTO);
-  }
+    // 生成 displayText
+    const displayText = dto.enabled
+      ? `${String(dto.startHour).padStart(2, '0')}:00 - ${String(dto.endHour).padStart(2, '0')}:00`
+      : '全天';
 
-  public static toDTO(instance: ActiveHoursConfig): ActiveHoursConfigDTO {
-    return instance.dto;
+    return new ActiveHoursConfig({
+      enabled: dto.enabled,
+      startHour: dto.startHour,
+      endHour: dto.endHour,
+      displayText,
+    });
   }
 }

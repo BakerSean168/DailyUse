@@ -1,13 +1,14 @@
 /**
- * GroupStats 值对象实现 ()
+ * GroupStats 值对象实现 (分组统计信息)
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type GroupStatsDTO = ReminderContracts.GroupStatsDTO;
+type IGroupStats = ReminderContracts.IGroupStatsClient;
+type GroupStatsDTO = ReminderContracts.GroupStatsClientDTO;
 type GroupStatsServerDTO = ReminderContracts.GroupStatsServerDTO;
 
-export class GroupStats implements ReminderContracts.GroupStats {
+export class GroupStats implements IGroupStats {
   private readonly dto: GroupStatsDTO;
 
   private constructor(dto: GroupStatsDTO) {
@@ -22,11 +23,15 @@ export class GroupStats implements ReminderContracts.GroupStats {
   get templateCountText(): string { return this.dto.templateCountText; }
   get activeStatusText(): string { return this.dto.activeStatusText; }
 
-  public equals(other: ReminderContracts.GroupStats): boolean {
+  public equals(other: IGroupStats): boolean {
     return JSON.stringify(this.dto) === JSON.stringify((other as GroupStats).dto);
   }
 
   public toDTO(): GroupStatsDTO {
+    return this.dto;
+  }
+
+  public toClientDTO(): GroupStatsDTO {
     return this.dto;
   }
 
@@ -41,6 +46,10 @@ export class GroupStats implements ReminderContracts.GroupStats {
   }
 
   public static fromDTO(dto: GroupStatsDTO): GroupStats {
+    return new GroupStats(dto);
+  }
+
+  public static fromClientDTO(dto: GroupStatsDTO): GroupStats {
     return new GroupStats(dto);
   }
 

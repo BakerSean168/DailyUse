@@ -5,8 +5,8 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalReminderConfig = GoalContracts.GoalReminderConfig;
-type GoalReminderConfigDTO = GoalContracts.GoalReminderConfigDTO;
+type IGoalReminderConfig = GoalContracts.IGoalReminderConfigClient;
+type GoalReminderConfigDTO = GoalContracts.GoalReminderConfigClientDTO;
 type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
 type ReminderTrigger = GoalContracts.ReminderTrigger;
 type ReminderTriggerType = GoalContracts.ReminderTriggerType;

@@ -4,4 +4,4 @@
 
 export * from './ReminderTemplate';
 export * from './ReminderGroup';
-// export * from './ReminderStatistics'; // TODO: Implement ReminderStatistics
+export * from './ReminderStatistics';

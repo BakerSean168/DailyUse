@@ -5,8 +5,8 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 
-type ITaskStatistics = TaskContracts.TaskStatistics;
-type TaskStatisticsDTO = TaskContracts.TaskStatisticsDTO;
+type ITaskStatistics = TaskContracts.TaskStatisticsClient;
+type TaskStatisticsDTO = TaskContracts.TaskStatisticsClientDTO;
 type TaskStatisticsServerDTO = TaskContracts.TaskStatisticsServerDTO;
 type TemplateStatsInfo = TaskContracts.TemplateStatsInfo;
 type InstanceStatsInfo = TaskContracts.InstanceStatsInfo;

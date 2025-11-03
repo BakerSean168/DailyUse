@@ -5,15 +5,15 @@
 import { GoalContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
-  GoalMetadataClient,
-  GoalTimeRangeClient,
-  GoalReminderConfigClient,
+  GoalMetadata,
+  GoalTimeRange,
+  GoalReminderConfig,
 } from '../value-objects';
-import { KeyResultClient, GoalReviewClient } from '../entities';
+import { KeyResult, GoalReview } from '../entities';
 
 // 类型别名（从命名空间导入）
-type IGoal = GoalContracts.Goal;
-type GoalDTO = GoalContracts.GoalDTO;
+type IGoal = GoalContracts.GoalClient;
+type GoalDTO = GoalContracts.GoalClientDTO;
 type GoalServerDTO = GoalContracts.GoalServerDTO;
 type GoalStatus = GoalContracts.GoalStatus;
 type ImportanceLevel = GoalContracts.ImportanceLevel;
@@ -43,14 +43,14 @@ export class Goal extends AggregateRoot implements IGoal {
   private _folderUuid?: string | null;
   private _parentGoalUuid?: string | null;
   private _sortOrder: number;
-  private _reminderConfig?: GoalReminderConfigClient | null;
+  private _reminderConfig?: GoalReminderConfig | null;
   private _createdAt: number;
   private _updatedAt: number;
   private _deletedAt?: number | null;
 
   // 子实体集合
-  private _keyResults: KeyResultClient[];
-  private _reviews: GoalReviewClient[];
+  private _keyResults: KeyResult[];
+  private _reviews: GoalReview[];
 
   private constructor(params: {
     uuid?: string;
@@ -72,12 +72,12 @@ export class Goal extends AggregateRoot implements IGoal {
     folderUuid?: string | null;
     parentGoalUuid?: string | null;
     sortOrder?: number;
-    reminderConfig?: GoalReminderConfigClient | null;
+    reminderConfig?: GoalReminderConfig | null;
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
-    keyResults?: KeyResultClient[];
-    reviews?: GoalReviewClient[];
+    keyResults?: KeyResult[];
+    reviews?: GoalReview[];
   }) {
     super(params.uuid || AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -164,7 +164,7 @@ export class Goal extends AggregateRoot implements IGoal {
   public get sortOrder(): number {
     return this._sortOrder;
   }
-  public get reminderConfig(): GoalReminderConfigClient | null | undefined {
+  public get reminderConfig(): GoalReminderConfig | null | undefined {
     return this._reminderConfig;
   }
   public get createdAt(): number {
@@ -178,10 +178,10 @@ export class Goal extends AggregateRoot implements IGoal {
   }
 
   // 子实体访问
-  public get keyResults(): GoalContracts.KeyResultClient[] | null {
+  public get keyResults(): KeyResult[] | null {
     return this._keyResults.length > 0 ? [...this._keyResults] : null;
   }
-  public get reviews(): GoalContracts.GoalReviewClient[] | null {
+  public get reviews(): GoalReview[] | null {
     return this._reviews.length > 0 ? [...this._reviews] : null;
   }
 
@@ -290,8 +290,8 @@ export class Goal extends AggregateRoot implements IGoal {
     targetValue: number;
     unit?: string;
     weight: number;
-  }): GoalContracts.KeyResultClient {
-    const keyResult = KeyResultClient.forCreate(this._uuid);
+  }): KeyResult {
+    const keyResult = KeyResult.forCreate(this._uuid);
     // 这里应该设置参数，但由于 forCreate 返回的是预设的实例
     // 在实际使用中需要支持参数传递或在创建后更新
     return keyResult;
@@ -305,21 +305,21 @@ export class Goal extends AggregateRoot implements IGoal {
     achievements?: string;
     challenges?: string;
     nextActions?: string;
-  }): GoalContracts.GoalReviewClient {
-    const review = GoalReviewClient.forCreate(this._uuid);
+  }): GoalReview {
+    const review = GoalReview.forCreate(this._uuid);
     return review;
   }
 
   // 子实体管理方法
-  public addKeyResult(keyResult: GoalContracts.KeyResultClient): void {
-    if (!(keyResult instanceof KeyResultClient)) {
-      throw new Error('keyResult must be an instance of KeyResultClient');
+  public addKeyResult(keyResult: KeyResult): void {
+    if (!(keyResult instanceof KeyResult)) {
+      throw new Error('keyResult must be an instance of KeyResult');
     }
     this._keyResults.push(keyResult);
     this._updatedAt = Date.now();
   }
 
-  public removeKeyResult(keyResultUuid: string): GoalContracts.KeyResultClient | null {
+  public removeKeyResult(keyResultUuid: string): KeyResult | null {
     const index = this._keyResults.findIndex((kr) => kr.uuid === keyResultUuid);
     if (index === -1) return null;
     const removed = this._keyResults.splice(index, 1)[0];
@@ -329,14 +329,14 @@ export class Goal extends AggregateRoot implements IGoal {
 
   public updateKeyResult(
     keyResultUuid: string,
-    updates: Partial<GoalContracts.KeyResultClient>,
+    updates: Partial<KeyResult>,
   ): void {
     const index = this._keyResults.findIndex((kr) => kr.uuid === keyResultUuid);
     if (index === -1) throw new Error('KeyResult not found');
     // 由于 KeyResult 是不可变的，需要重新创建
     const current = this._keyResults[index];
     const dto = current.toClientDTO();
-    const updated = KeyResultClient.fromClientDTO({ ...dto, ...updates });
+    const updated = KeyResult.fromClientDTO({ ...dto, ...updates });
     this._keyResults[index] = updated;
     this._updatedAt = Date.now();
   }
@@ -344,16 +344,16 @@ export class Goal extends AggregateRoot implements IGoal {
   public reorderKeyResults(keyResultUuids: string[]): void {
     const reordered = keyResultUuids
       .map((uuid) => this._keyResults.find((kr) => kr.uuid === uuid))
-      .filter((kr): kr is KeyResultClient => !!kr);
+      .filter((kr): kr is KeyResult => !!kr);
     this._keyResults = reordered;
     this._updatedAt = Date.now();
   }
 
-  public getKeyResult(uuid: string): GoalContracts.KeyResultClient | null {
+  public getKeyResult(uuid: string): KeyResult | null {
     return this._keyResults.find((kr) => kr.uuid === uuid) ?? null;
   }
 
-  public getAllKeyResults(): GoalContracts.KeyResultClient[] {
+  public getAllKeyResults(): KeyResult[] {
     return [...this._keyResults];
   }
 
@@ -446,7 +446,7 @@ export class Goal extends AggregateRoot implements IGoal {
     this._updatedAt = Date.now();
   }
 
-  public updateReminderConfig(reminderConfig: GoalReminderConfigClient | null): void {
+  public updateReminderConfig(reminderConfig: GoalReminderConfig | null): void {
     this._reminderConfig = reminderConfig;
     this._updatedAt = Date.now();
   }
@@ -499,15 +499,15 @@ export class Goal extends AggregateRoot implements IGoal {
     this._updatedAt = Date.now();
   }
 
-  public addReview(review: GoalContracts.GoalReviewClient): void {
-    if (!(review instanceof GoalReviewClient)) {
-      throw new Error('review must be an instance of GoalReviewClient');
+  public addReview(review: GoalReview): void {
+    if (!(review instanceof GoalReview)) {
+      throw new Error('review must be an instance of GoalReview');
     }
     this._reviews.push(review);
     this._updatedAt = Date.now();
   }
 
-  public removeReview(reviewUuid: string): GoalContracts.GoalReviewClient | null {
+  public removeReview(reviewUuid: string): GoalReview | null {
     const index = this._reviews.findIndex((r) => r.uuid === reviewUuid);
     if (index === -1) return null;
     const removed = this._reviews.splice(index, 1)[0];
@@ -515,11 +515,11 @@ export class Goal extends AggregateRoot implements IGoal {
     return removed;
   }
 
-  public getReviews(): GoalContracts.GoalReviewClient[] {
+  public getReviews(): GoalReview[] {
     return [...this._reviews];
   }
 
-  public getLatestReview(): GoalContracts.GoalReviewClient | null {
+  public getLatestReview(): GoalReview | null {
     if (this._reviews.length === 0) return null;
     return this._reviews.sort((a, b) => b.reviewedAt - a.reviewedAt)[0];
   }
@@ -753,13 +753,13 @@ export class Goal extends AggregateRoot implements IGoal {
       parentGoalUuid: dto.parentGoalUuid,
       sortOrder: dto.sortOrder,
       reminderConfig: dto.reminderConfig
-        ? GoalReminderConfigClient.fromServerDTO(dto.reminderConfig)
+        ? GoalReminderConfig.fromServerDTO(dto.reminderConfig)
         : null,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
-      keyResults: dto.keyResults?.map((kr) => KeyResultClient.fromServerDTO(kr)),
-      reviews: dto.reviews?.map((r) => GoalReviewClient.fromServerDTO(r)),
+      keyResults: dto.keyResults?.map((kr) => KeyResult.fromServerDTO(kr)),
+      reviews: dto.reviews?.map((r) => GoalReview.fromServerDTO(r)),
     });
   }
 
@@ -785,13 +785,13 @@ export class Goal extends AggregateRoot implements IGoal {
       parentGoalUuid: dto.parentGoalUuid,
       sortOrder: dto.sortOrder,
       reminderConfig: dto.reminderConfig
-        ? GoalReminderConfigClient.fromClientDTO(dto.reminderConfig)
+        ? GoalReminderConfig.fromClientDTO(dto.reminderConfig)
         : null,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
-      keyResults: dto.keyResults?.map((kr) => KeyResultClient.fromClientDTO(kr)),
-      reviews: dto.reviews?.map((r) => GoalReviewClient.fromClientDTO(r)),
+      keyResults: dto.keyResults?.map((kr) => KeyResult.fromClientDTO(kr)),
+      reviews: dto.reviews?.map((r) => GoalReview.fromClientDTO(r)),
     });
   }
 

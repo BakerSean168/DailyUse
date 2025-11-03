@@ -3,16 +3,14 @@
  * 任务实例应用服务 - 负责任务实例的 CRUD 操作和状态管理
  */
 
-import { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskInstanceApiClient } from '../../infrastructure/api/taskApiClient';
 
 // 导入类实现
-const TaskInstanceClient = TaskDomain.TaskInstanceClient;
 
 // 类型别名
-type TaskInstance = TaskDomain.TaskInstance;
 
 export class TaskInstanceApplicationService {
   private static instance: TaskInstanceApplicationService;

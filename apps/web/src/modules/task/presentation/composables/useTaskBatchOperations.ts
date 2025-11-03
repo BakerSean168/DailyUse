@@ -9,10 +9,9 @@
  */
 
 import { ref, computed, readonly } from 'vue';
-import type { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client';
 import { oneTimeTaskBatchOperationService } from '../../application/services';
 
-type TaskTemplate = TaskDomain.TaskTemplate;
 
 /**
  * 批量操作结果

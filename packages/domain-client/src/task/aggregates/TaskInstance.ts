@@ -9,8 +9,8 @@ import { TaskTimeConfig } from '../value-objects/TaskTimeConfig';
 import { CompletionRecord } from '../value-objects/CompletionRecord';
 import { SkipRecord } from '../value-objects/SkipRecord';
 
-type ITaskInstance = TaskContracts.TaskInstance;
-type TaskInstanceDTO = TaskContracts.TaskInstanceDTO;
+type ITaskInstance = TaskContracts.TaskInstanceClient;
+type TaskInstanceDTO = TaskContracts.TaskInstanceClientDTO;
 type TaskInstanceServerDTO = TaskContracts.TaskInstanceServerDTO;
 type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
 

@@ -5,8 +5,8 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IKeyResultSnapshot = GoalContracts.KeyResultSnapshot;
-type KeyResultSnapshotDTO = GoalContracts.KeyResultSnapshotDTO;
+type IKeyResultSnapshot = GoalContracts.IKeyResultSnapshotClient;
+type KeyResultSnapshotDTO = GoalContracts.KeyResultSnapshotClientDTO;
 type KeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
 
 export class KeyResultSnapshot extends ValueObject implements IKeyResultSnapshot {

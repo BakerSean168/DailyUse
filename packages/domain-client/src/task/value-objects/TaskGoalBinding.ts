@@ -5,8 +5,8 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskGoalBinding = TaskContracts.TaskGoalBinding;
-type TaskGoalBindingDTO = TaskContracts.TaskGoalBindingDTO;
+type ITaskGoalBinding = TaskContracts.TaskGoalBindingClient;
+type TaskGoalBindingDTO = TaskContracts.TaskGoalBindingClientDTO;
 type TaskGoalBindingServerDTO = TaskContracts.TaskGoalBindingServerDTO;
 
 export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {

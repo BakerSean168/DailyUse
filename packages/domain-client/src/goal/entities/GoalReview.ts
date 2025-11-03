@@ -5,12 +5,12 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { GoalContracts as GC } from '@dailyuse/contracts';
 import { Entity } from '@dailyuse/utils';
-import { KeyResultSnapshotClient } from '../value-objects/KeyResultSnapshotClient';
+import { KeyResultSnapshot } from '../value-objects/KeyResultSnapshot';
 
-type IGoalReview = GoalContracts.GoalReview;
-type GoalReviewDTO = GoalContracts.GoalReviewDTO;
+type IGoalReview = GoalContracts.GoalReviewClient;
+type GoalReviewDTO = GoalContracts.GoalReviewClientDTO;
 type GoalReviewServerDTO = GoalContracts.GoalReviewServerDTO;
-type KeyResultSnapshotClientDTO = GoalContracts.KeyResultSnapshotClientDTO;
+type KeyResultSnapshotDTO = GoalContracts.KeyResultSnapshotClientDTO;
 type ReviewType = GoalContracts.ReviewType;
 
 export class GoalReview extends Entity implements IGoalReview {
@@ -21,7 +21,7 @@ export class GoalReview extends Entity implements IGoalReview {
   private _achievements?: string | null;
   private _challenges?: string | null;
   private _improvements?: string | null;
-  private _keyResultSnapshots: KeyResultSnapshotClient[];
+  private _keyResultSnapshots: KeyResultSnapshot[];
   private _reviewedAt: number;
   private _createdAt: number;
 
@@ -34,7 +34,7 @@ export class GoalReview extends Entity implements IGoalReview {
     achievements?: string | null;
     challenges?: string | null;
     improvements?: string | null;
-    keyResultSnapshots: KeyResultSnapshotClient[];
+    keyResultSnapshots: KeyResultSnapshot[];
     reviewedAt: number;
     createdAt: number;
   }) {
@@ -76,7 +76,7 @@ export class GoalReview extends Entity implements IGoalReview {
   public get improvements(): string | null | undefined {
     return this._improvements;
   }
-  public get keyResultSnapshots(): KeyResultSnapshotClientDTO[] {
+  public get keyResultSnapshots(): KeyResultSnapshotDTO[] {
     return this._keyResultSnapshots.map((s) => s.toClientDTO());
   }
   public get reviewedAt(): number {
@@ -212,7 +212,7 @@ export class GoalReview extends Entity implements IGoalReview {
       challenges: dto.challenges,
       improvements: dto.improvements,
       keyResultSnapshots: dto.keyResultSnapshots.map((s) =>
-        KeyResultSnapshotClient.fromClientDTO(s),
+        KeyResultSnapshot.fromClientDTO(s),
       ),
       reviewedAt: dto.reviewedAt,
       createdAt: dto.createdAt,
@@ -230,7 +230,7 @@ export class GoalReview extends Entity implements IGoalReview {
       challenges: dto.challenges,
       improvements: dto.improvements,
       keyResultSnapshots: dto.keyResultSnapshots.map((s) =>
-        KeyResultSnapshotClient.fromServerDTO(s),
+        KeyResultSnapshot.fromServerDTO(s),
       ),
       reviewedAt: dto.reviewedAt,
       createdAt: dto.createdAt,

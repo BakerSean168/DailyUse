@@ -6,9 +6,9 @@ import { ReminderContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 import * as ValueObjects from '../value-objects';
 
-type ReminderGroupDTO = ReminderContracts.ReminderGroupDTO;
+type IReminderGroup = ReminderContracts.ReminderGroupClient;
+type ReminderGroupDTO = ReminderContracts.ReminderGroupClientDTO;
 type ReminderGroupServerDTO = ReminderContracts.ReminderGroupServerDTO;
-type GroupStats = ReminderContracts.GroupStats;
 type ControlMode = ReminderContracts.ControlMode;
 type ReminderStatus = ReminderContracts.ReminderStatus;
 
@@ -16,7 +16,7 @@ const ControlMode = ReminderContracts.ControlMode;
 const ReminderStatus = ReminderContracts.ReminderStatus;
 
 export class ReminderGroup extends AggregateRoot 
-  implements ReminderContracts.ReminderGroup {
+  implements IReminderGroup {
   
   private _accountUuid: string;
   private _name: string;

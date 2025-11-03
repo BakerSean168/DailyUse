@@ -5,8 +5,8 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalTimeRange = GoalContracts.GoalTimeRange;
-type GoalTimeRangeDTO = GoalContracts.GoalTimeRangeDTO;
+type IGoalTimeRange = GoalContracts.GoalTimeRangeClient;
+type GoalTimeRangeDTO = GoalContracts.GoalTimeRangeClientDTO;
 type GoalTimeRangeServerDTO = GoalContracts.GoalTimeRangeServerDTO;
 
 export class GoalTimeRange extends ValueObject implements IGoalTimeRange {
