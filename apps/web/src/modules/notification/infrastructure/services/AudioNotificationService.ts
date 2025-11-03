@@ -4,8 +4,8 @@
  */
 
 // @ts-nocheck - Audio assets not yet configured
-import { SoundType } from '../../domain/types';
-import type { SoundConfig } from '../../domain/types';
+import { SoundType } from '../../application/types';
+import type { SoundConfig } from '../../application/types';
 import { publishNotificationError } from '../../application/events/notificationEvents';
 
 // 从 @dailyuse/assets 导入音频资源

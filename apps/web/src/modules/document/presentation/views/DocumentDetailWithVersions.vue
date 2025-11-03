@@ -105,7 +105,7 @@ import { useRoute } from 'vue-router';
 import { useDocumentVersion } from '../composables/useDocumentVersion';
 import VersionHistoryList from '../components/VersionHistoryList.vue';
 import VersionDiffViewer from '../components/VersionDiffViewer.vue';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import { DocumentContracts } from '@dailyuse/contracts';
 
 type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 type DocumentVersionClientDTO = DocumentContracts.DocumentVersionClientDTO;

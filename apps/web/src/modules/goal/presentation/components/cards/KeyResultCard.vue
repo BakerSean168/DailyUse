@@ -94,7 +94,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { format } from 'date-fns';
-import { KeyResultClient, GoalClient } from '@dailyuse/domain-client';
+import { KeyResultClient, Goal } from '@dailyuse/domain-client';
 // composables
 import { useGoal } from '../../composables/useGoal';
 // components

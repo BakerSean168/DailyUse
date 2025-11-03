@@ -7,7 +7,7 @@
  */
 
 import { apiClient } from '@/shared/api/instances';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import { DocumentContracts } from '@dailyuse/contracts';
 
 type DocumentVersionClientDTO = DocumentContracts.DocumentVersionClientDTO;
 type DocumentVersionServerDTO = DocumentContracts.DocumentVersionServerDTO;

@@ -230,7 +230,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import type { GoalTemplate } from '../../../domain/templates/GoalTemplates';
+import type { GoalTemplate } from '../../../application/templates/GoalTemplates';
 import templateRecommendationService from '../../../application/services/TemplateRecommendationService';
 import type { RecommendationFilters } from '../../../application/services/TemplateRecommendationService';
 

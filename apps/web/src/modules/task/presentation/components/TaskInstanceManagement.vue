@@ -201,7 +201,7 @@ import { format, startOfDay, isToday, isSameDay } from 'date-fns';
 import type { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
 import { TaskInstanceClient, TaskTemplateClient } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
-import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
+import { GoalClient, KeyResult } from '@dailyuse/domain-client';
 
 // composables
 import { useTaskInstance } from '../composables/useTaskInstance';

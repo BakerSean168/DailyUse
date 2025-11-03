@@ -339,8 +339,8 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 import GoalProgressChart from '../components/echarts/GoalProgressChart.vue';
 import KrProgressChart from '../components/echarts/KrProgressChart.vue';
 import PeriodBarChart from '../components/echarts/PeriodBarChart.vue';
-import { GoalReviewClient } from '@dailyuse/domain-client';
-import { GoalClient } from '@dailyuse/domain-client';
+import { GoalReview } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 
 // 路由和状态

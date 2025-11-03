@@ -225,7 +225,7 @@ import { UrgencyLevel } from '@dailyuse/contracts';
 // types
 import type { TaskContracts } from '@dailyuse/contracts';
 import type { TaskTemplate } from '@dailyuse/domain-client';
-import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
+import { GoalClient, KeyResult } from '@dailyuse/domain-client';
 
 // composables
 import { useTaskTemplate } from '../../composables/useTaskTemplate';

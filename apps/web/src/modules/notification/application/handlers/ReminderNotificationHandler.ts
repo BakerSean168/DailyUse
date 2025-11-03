@@ -10,8 +10,8 @@ import {
   NotificationPriority,
   NotificationMethod,
   SoundType,
-} from '../../domain/types';
-import type { NotificationConfig, SoundConfig } from '../../domain/types';
+} from '../../application/types';
+import type { NotificationConfig, SoundConfig } from '../../application/types';
 
 /**
  * SSE 提醒事件数据格式

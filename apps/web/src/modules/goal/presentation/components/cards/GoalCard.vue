@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 import { computed, ref, defineExpose } from 'vue';
-import type { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
+import type { GoalClient, KeyResult } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 import { useRouter } from 'vue-router';
 import { useGoal } from '../../composables/useGoal';
@@ -208,7 +208,7 @@ defineExpose({
 
 // ===== 计算属性 =====
 
-// 使用 GoalClient 自带的计算属性
+// 使用 Goal 自带的计算属性
 const goalProgress = computed(() => {
   return props.goal.overallProgress;
 });

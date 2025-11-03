@@ -9,7 +9,7 @@ import {
   NotificationMethod,
   NotificationPermission,
   SoundType,
-} from '../../domain/types';
+} from '../../application/types';
 
 import type {
   NotificationConfig,
@@ -20,7 +20,7 @@ import type {
   NotificationSearchResult,
   INotificationService,
   SoundConfig,
-} from '../../domain/types';
+} from '../../application/types';
 
 import { DesktopNotificationService } from '../../infrastructure/services/DesktopNotificationService';
 import { AudioNotificationService } from '../../infrastructure/services/AudioNotificationService';

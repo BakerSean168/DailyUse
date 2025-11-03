@@ -1,5 +1,5 @@
 import type { GoalContracts } from '@dailyuse/contracts';
-import { GoalFolderClient } from '@dailyuse/domain-client';
+import { GoalFolder } from '@dailyuse/domain-client';
 import { goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';

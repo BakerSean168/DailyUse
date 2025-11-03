@@ -333,10 +333,10 @@ import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
 import DuConfirmDialog from '@dailyuse/ui/components/dialog/DuConfirmDialog.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
-import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
+import { GoalClient, KeyResult } from '@dailyuse/domain-client';
 import { GoalContracts } from '@dailyuse/contracts';
 import type { WeightStrategy } from '../../../application/services/WeightRecommendationService';
-import type { GoalTemplate } from '../../../domain/templates/GoalTemplates';
+import type { GoalTemplate } from '../../../application/templates/GoalTemplates';
 // composables
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';

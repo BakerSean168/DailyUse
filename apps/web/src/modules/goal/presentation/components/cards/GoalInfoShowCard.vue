@@ -91,7 +91,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import type { GoalClient } from '@dailyuse/domain-client';
+import type { Goal } from '@dailyuse/domain-client';
 import KeyResultCard from './KeyResultCard.vue';
 
 const props = defineProps<{

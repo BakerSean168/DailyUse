@@ -5,11 +5,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
-import { GoalClient } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client';
 import { useTheme } from 'vuetify';
 
 const props = defineProps<{
-  goal: GoalClient | null;
+  goal: Goal | null;
 }>();
 const theme = useTheme();
 const surfaceColor = theme.current.value.colors.surface;

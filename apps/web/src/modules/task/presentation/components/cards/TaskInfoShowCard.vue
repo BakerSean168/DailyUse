@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import type { TaskInstance, KeyResultClient, GoalClient } from '@dailyuse/domain-client';
+import type { TaskInstance, KeyResultClient, Goal } from '@dailyuse/domain-client';
 const props = defineProps<{
   visible: boolean;
   task: TaskInstance;

@@ -11,9 +11,9 @@ import {
   NotificationPriority,
   NotificationMethod,
   SoundType,
-} from '../../domain/types';
+} from '../../application/types';
 
-import type { ReminderTriggeredPayload, NotificationConfig, SoundConfig } from '../../domain/types';
+import type { ReminderTriggeredPayload, NotificationConfig, SoundConfig } from '../../application/types';
 
 import {
   NOTIFICATION_EVENTS,

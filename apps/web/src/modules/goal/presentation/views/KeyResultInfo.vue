@@ -95,7 +95,7 @@ import { useGoalStore } from '../stores/goalStore';
 import KeyResultCard from '../components/cards/KeyResultCard.vue';
 import GoalRecordCard from '../components/cards/GoalRecordCard.vue';
 // domain
-import { KeyResultClient as KeyResult, GoalClient as Goal } from '@dailyuse/domain-client';
+import { KeyResult as KeyResult, Goal as Goal } from '@dailyuse/domain-client';
 import type { GoalContracts } from '@dailyuse/contracts';
 type GoalRecord = GoalContracts.GoalRecordClientDTO;
 
