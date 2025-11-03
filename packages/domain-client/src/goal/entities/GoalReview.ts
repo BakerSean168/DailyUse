@@ -7,13 +7,13 @@ import { GoalContracts as GC } from '@dailyuse/contracts';
 import { Entity } from '@dailyuse/utils';
 import { KeyResultSnapshotClient } from '../value-objects/KeyResultSnapshotClient';
 
-type IGoalReviewClient = GoalContracts.GoalReviewClient;
-type GoalReviewClientDTO = GoalContracts.GoalReviewClientDTO;
+type IGoalReview = GoalContracts.GoalReview;
+type GoalReviewDTO = GoalContracts.GoalReviewDTO;
 type GoalReviewServerDTO = GoalContracts.GoalReviewServerDTO;
 type KeyResultSnapshotClientDTO = GoalContracts.KeyResultSnapshotClientDTO;
 type ReviewType = GoalContracts.ReviewType;
 
-export class GoalReviewClient extends Entity implements IGoalReviewClient {
+export class GoalReview extends Entity implements IGoalReview {
   private _goalUuid: string;
   private _type: ReviewType;
   private _rating: number;
@@ -162,7 +162,7 @@ export class GoalReviewClient extends Entity implements IGoalReviewClient {
   }
 
   // DTO 转换
-  public toClientDTO(): GoalReviewClientDTO {
+  public toClientDTO(): GoalReviewDTO {
     return {
       uuid: this.uuid,
       goalUuid: this._goalUuid,
@@ -201,8 +201,8 @@ export class GoalReviewClient extends Entity implements IGoalReviewClient {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalReviewClientDTO): GoalReviewClient {
-    return new GoalReviewClient({
+  public static fromClientDTO(dto: GoalReviewDTO): GoalReview {
+    return new GoalReview({
       uuid: dto.uuid,
       goalUuid: dto.goalUuid,
       type: dto.type,
@@ -219,8 +219,8 @@ export class GoalReviewClient extends Entity implements IGoalReviewClient {
     });
   }
 
-  public static fromServerDTO(dto: GoalReviewServerDTO): GoalReviewClient {
-    return new GoalReviewClient({
+  public static fromServerDTO(dto: GoalReviewServerDTO): GoalReview {
+    return new GoalReview({
       uuid: dto.uuid,
       goalUuid: dto.goalUuid,
       type: dto.type,
@@ -237,9 +237,9 @@ export class GoalReviewClient extends Entity implements IGoalReviewClient {
     });
   }
 
-  public static forCreate(goalUuid: string): GoalReviewClient {
+  public static forCreate(goalUuid: string): GoalReview {
     const now = Date.now();
-    return new GoalReviewClient({
+    return new GoalReview({
       uuid: crypto.randomUUID(),
       goalUuid,
       type: GC.ReviewType.ADHOC,
@@ -251,7 +251,7 @@ export class GoalReviewClient extends Entity implements IGoalReviewClient {
     });
   }
 
-  public clone(): GoalReviewClient {
-    return GoalReviewClient.fromClientDTO(this.toClientDTO());
+  public clone(): GoalReview {
+    return GoalReview.fromClientDTO(this.toClientDTO());
   }
 }

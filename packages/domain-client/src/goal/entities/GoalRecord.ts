@@ -5,11 +5,11 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { Entity } from '@dailyuse/utils';
 
-type IGoalRecordClient = GoalContracts.GoalRecordClient;
-type GoalRecordClientDTO = GoalContracts.GoalRecordClientDTO;
+type IGoalRecord = GoalContracts.GoalRecord;
+type GoalRecordDTO = GoalContracts.GoalRecordDTO;
 type GoalRecordServerDTO = GoalContracts.GoalRecordServerDTO;
 
-export class GoalRecordClient extends Entity implements IGoalRecordClient {
+export class GoalRecord extends Entity implements IGoalRecord {
   private _keyResultUuid: string;
   private _goalUuid: string;
   private _previousValue: number;
@@ -125,7 +125,7 @@ export class GoalRecordClient extends Entity implements IGoalRecordClient {
   }
 
   // DTO 转换
-  public toClientDTO(): GoalRecordClientDTO {
+  public toClientDTO(): GoalRecordDTO {
     return {
       uuid: this.uuid,
       keyResultUuid: this._keyResultUuid,
@@ -161,8 +161,8 @@ export class GoalRecordClient extends Entity implements IGoalRecordClient {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalRecordClientDTO): GoalRecordClient {
-    return new GoalRecordClient({
+  public static fromClientDTO(dto: GoalRecordDTO): GoalRecord {
+    return new GoalRecord({
       uuid: dto.uuid,
       keyResultUuid: dto.keyResultUuid,
       goalUuid: dto.goalUuid,
@@ -175,8 +175,8 @@ export class GoalRecordClient extends Entity implements IGoalRecordClient {
     });
   }
 
-  public static fromServerDTO(dto: GoalRecordServerDTO): GoalRecordClient {
-    return new GoalRecordClient({
+  public static fromServerDTO(dto: GoalRecordServerDTO): GoalRecord {
+    return new GoalRecord({
       uuid: dto.uuid,
       keyResultUuid: dto.keyResultUuid,
       goalUuid: dto.goalUuid,
@@ -189,7 +189,7 @@ export class GoalRecordClient extends Entity implements IGoalRecordClient {
     });
   }
 
-  public clone(): GoalRecordClient {
-    return GoalRecordClient.fromClientDTO(this.toClientDTO());
+  public clone(): GoalRecord {
+    return GoalRecord.fromClientDTO(this.toClientDTO());
   }
 }

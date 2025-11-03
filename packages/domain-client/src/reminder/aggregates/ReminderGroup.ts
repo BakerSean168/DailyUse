@@ -8,7 +8,7 @@ import * as ValueObjects from '../value-objects';
 
 type ReminderGroupDTO = ReminderContracts.ReminderGroupDTO;
 type ReminderGroupServerDTO = ReminderContracts.ReminderGroupServerDTO;
-type GroupStatsClient = ReminderContracts.GroupStatsClient;
+type GroupStats = ReminderContracts.GroupStats;
 type ControlMode = ReminderContracts.ControlMode;
 type ReminderStatus = ReminderContracts.ReminderStatus;
 
@@ -27,7 +27,7 @@ export class ReminderGroup extends AggregateRoot
   private _enabled: boolean;
   private _status: ReminderStatus;
   private _order: number;
-  private _stats: ValueObjects.GroupStatsClient;
+  private _stats: ValueObjects.GroupStats;
   private _createdAt: number;
   private _updatedAt: number;
   private _deletedAt?: number | null;
@@ -43,7 +43,7 @@ export class ReminderGroup extends AggregateRoot
     enabled: boolean;
     status: ReminderStatus;
     order: number;
-    stats: ValueObjects.GroupStatsClient;
+    stats: ValueObjects.GroupStats;
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
@@ -76,7 +76,7 @@ export class ReminderGroup extends AggregateRoot
   public get enabled(): boolean { return this._enabled; }
   public get status(): ReminderStatus { return this._status; }
   public get order(): number { return this._order; }
-  public get stats(): ValueObjects.GroupStatsClient { return this._stats; }
+  public get stats(): ValueObjects.GroupStats { return this._stats; }
   public get createdAt(): number { return this._createdAt; }
   public get updatedAt(): number { return this._updatedAt; }
   public get deletedAt(): number | null | undefined { return this._deletedAt; }
@@ -219,7 +219,7 @@ export class ReminderGroup extends AggregateRoot
       enabled: dto.enabled,
       status: dto.status,
       order: dto.order,
-      stats: ValueObjects.GroupStatsClient.fromServerDTO(dto.stats),
+      stats: ValueObjects.GroupStats.fromServerDTO(dto.stats),
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
@@ -238,7 +238,7 @@ export class ReminderGroup extends AggregateRoot
       enabled: dto.enabled,
       status: dto.status,
       order: dto.order,
-      stats: ValueObjects.GroupStatsClient.fromClientDTO(dto.stats),
+      stats: ValueObjects.GroupStats.fromClientDTO(dto.stats),
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,

@@ -1,16 +1,16 @@
 /**
- * ReminderStats 值对象实现 (Client)
+ * ReminderStats 值对象实现 ()
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type ReminderStatsClientDTO = ReminderContracts.ReminderStatsClientDTO;
+type ReminderStatsDTO = ReminderContracts.ReminderStatsDTO;
 type ReminderStatsServerDTO = ReminderContracts.ReminderStatsServerDTO;
 
-export class ReminderStatsClient implements ReminderContracts.ReminderStatsClient {
-  private readonly dto: ReminderStatsClientDTO;
+export class ReminderStats implements ReminderContracts.ReminderStats {
+  private readonly dto: ReminderStatsDTO;
 
-  private constructor(dto: ReminderStatsClientDTO) {
+  private constructor(dto: ReminderStatsDTO) {
     this.dto = dto;
   }
 
@@ -19,11 +19,11 @@ export class ReminderStatsClient implements ReminderContracts.ReminderStatsClien
   get totalTriggersText(): string { return this.dto.totalTriggersText; }
   get lastTriggeredText(): string | null | undefined { return this.dto.lastTriggeredText; }
 
-  public equals(other: ReminderContracts.ReminderStatsClient): boolean {
-    return JSON.stringify(this.dto) === JSON.stringify((other as ReminderStatsClient).dto);
+  public equals(other: ReminderContracts.ReminderStats): boolean {
+    return JSON.stringify(this.dto) === JSON.stringify((other as ReminderStats).dto);
   }
 
-  public toClientDTO(): ReminderStatsClientDTO {
+  public toDTO(): ReminderStatsDTO {
     return this.dto;
   }
 
@@ -34,12 +34,12 @@ export class ReminderStatsClient implements ReminderContracts.ReminderStatsClien
     };
   }
 
-  public static fromClientDTO(dto: ReminderStatsClientDTO): ReminderStatsClient {
-    return new ReminderStatsClient(dto);
+  public static fromDTO(dto: ReminderStatsDTO): ReminderStats {
+    return new ReminderStats(dto);
   }
 
-  public static fromServerDTO(dto: ReminderStatsServerDTO): ReminderStatsClient {
-    const clientDTO: ReminderStatsClientDTO = {
+  public static fromServerDTO(dto: ReminderStatsServerDTO): ReminderStats {
+    const clientDTO: ReminderStatsDTO = {
       totalTriggers: dto.totalTriggers,
       lastTriggeredAt: dto.lastTriggeredAt,
       totalTriggersText: dto.totalTriggers > 0 ? `已触发 ${dto.totalTriggers} 次` : '未触发',
@@ -50,6 +50,6 @@ export class ReminderStatsClient implements ReminderContracts.ReminderStatsClien
         return `${Math.floor(diff / 86400000)} 天前`;
       })() : null,
     };
-    return new ReminderStatsClient(clientDTO);
+    return new ReminderStats(clientDTO);
   }
 }

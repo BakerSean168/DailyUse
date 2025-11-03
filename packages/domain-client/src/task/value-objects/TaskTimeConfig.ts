@@ -5,12 +5,12 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskTimeConfigClient = TaskContracts.TaskTimeConfigClient;
-type TaskTimeConfigClientDTO = TaskContracts.TaskTimeConfigClientDTO;
+type ITaskTimeConfig = TaskContracts.TaskTimeConfigClient;
+type TaskTimeConfigDTO = TaskContracts.TaskTimeConfigClientDTO;
 type TaskTimeConfigServerDTO = TaskContracts.TaskTimeConfigServerDTO;
 type TimeType = TaskContracts.TimeType;
 
-export class TaskTimeConfigClient extends ValueObject implements ITaskTimeConfigClient {
+export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
   private _timeType: TimeType;
   private _startDate: number | null;
   private _endDate: number | null;
@@ -96,7 +96,7 @@ export class TaskTimeConfigClient extends ValueObject implements ITaskTimeConfig
   }
 
   // 值对象方法
-  public equals(other: ITaskTimeConfigClient): boolean {
+  public equals(other: ITaskTimeConfig): boolean {
     return (
       this._timeType === other.timeType &&
       this._startDate === other.startDate &&
@@ -117,7 +117,7 @@ export class TaskTimeConfigClient extends ValueObject implements ITaskTimeConfig
     };
   }
 
-  public toClientDTO(): TaskTimeConfigClientDTO {
+  public toClientDTO(): TaskTimeConfigDTO {
     return {
       timeType: this._timeType,
       startDate: this._startDate,
@@ -135,8 +135,8 @@ export class TaskTimeConfigClient extends ValueObject implements ITaskTimeConfig
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskTimeConfigClientDTO): TaskTimeConfigClient {
-    return new TaskTimeConfigClient({
+  public static fromClientDTO(dto: TaskTimeConfigDTO): TaskTimeConfig {
+    return new TaskTimeConfig({
       timeType: dto.timeType,
       startDate: dto.startDate,
       endDate: dto.endDate,
@@ -145,8 +145,8 @@ export class TaskTimeConfigClient extends ValueObject implements ITaskTimeConfig
     });
   }
 
-  public static fromServerDTO(dto: TaskTimeConfigServerDTO): TaskTimeConfigClient {
-    return new TaskTimeConfigClient({
+  public static fromServerDTO(dto: TaskTimeConfigServerDTO): TaskTimeConfig {
+    return new TaskTimeConfig({
       timeType: dto.timeType,
       startDate: dto.startDate,
       endDate: dto.endDate,

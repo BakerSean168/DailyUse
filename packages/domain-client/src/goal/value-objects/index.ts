@@ -1,9 +1,9 @@
 /**
- * Goal Value Objects - Client Side
+ * Goal Value Objects
  */
 
-export { GoalMetadataClient } from './GoalMetadataClient';
-export { GoalTimeRangeClient } from './GoalTimeRangeClient';
-export { KeyResultProgressClient } from './KeyResultProgressClient';
-export { KeyResultSnapshotClient } from './KeyResultSnapshotClient';
-export { GoalReminderConfigClient } from './GoalReminderConfigClient';
+export { GoalMetadata } from './GoalMetadata';
+export { GoalTimeRange } from './GoalTimeRange';
+export { KeyResultProgress } from './KeyResultProgress';
+export { KeyResultSnapshot } from './KeyResultSnapshot';
+export { GoalReminderConfig } from './GoalReminderConfig';

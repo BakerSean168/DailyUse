@@ -12,8 +12,8 @@ import {
 import { KeyResultClient, GoalReviewClient } from '../entities';
 
 // 类型别名（从命名空间导入）
-type IGoalClient = GoalContracts.GoalClient;
-type GoalClientDTO = GoalContracts.GoalClientDTO;
+type IGoal = GoalContracts.Goal;
+type GoalDTO = GoalContracts.GoalDTO;
 type GoalServerDTO = GoalContracts.GoalServerDTO;
 type GoalStatus = GoalContracts.GoalStatus;
 type ImportanceLevel = GoalContracts.ImportanceLevel;
@@ -24,7 +24,7 @@ const GoalStatus = GoalContracts.GoalStatus;
 const ImportanceLevel = GoalContracts.ImportanceLevel;
 const UrgencyLevel = GoalContracts.UrgencyLevel;
 
-export class GoalClient extends AggregateRoot implements IGoalClient {
+export class Goal extends AggregateRoot implements IGoal {
   private _accountUuid: string;
   private _title: string;
   private _description?: string | null;
@@ -633,7 +633,7 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
     };
   }
 
-  public toClientDTO(includeChildren = false): GoalClientDTO {
+  public toClientDTO(includeChildren = false): GoalDTO {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
@@ -691,9 +691,9 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
     targetDate?: number;
     folderUuid?: string;
     parentGoalUuid?: string;
-  }): GoalClient {
+  }): Goal {
     const now = Date.now();
-    return new GoalClient({
+    return new Goal({
       uuid: crypto.randomUUID(),
       accountUuid: params.accountUuid,
       title: params.title,
@@ -716,9 +716,9 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
    * 创建新目标（用于前端表单）
    * accountUuid 会在保存时注入
    */
-  public static forCreate(): GoalClient {
+  public static forCreate(): Goal {
     const now = Date.now();
-    return new GoalClient({
+    return new Goal({
       uuid: crypto.randomUUID(), // 前端生成 UUID（乐观更新）
       accountUuid: '', // 占位符，保存时会被替换
       title: '',
@@ -731,8 +731,8 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
     });
   }
 
-  public static fromServerDTO(dto: GoalServerDTO): GoalClient {
-    return new GoalClient({
+  public static fromServerDTO(dto: GoalServerDTO): Goal {
+    return new Goal({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -763,8 +763,8 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
     });
   }
 
-  public static fromClientDTO(dto: GoalClientDTO): GoalClient {
-    return new GoalClient({
+  public static fromClientDTO(dto: GoalDTO): Goal {
+    return new Goal({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -795,7 +795,7 @@ export class GoalClient extends AggregateRoot implements IGoalClient {
     });
   }
 
-  public clone(): GoalClient {
-    return GoalClient.fromClientDTO(this.toClientDTO(true));
+  public clone(): Goal {
+    return Goal.fromClientDTO(this.toClientDTO(true));
   }
 }

@@ -1,16 +1,16 @@
 /**
- * GroupStats 值对象实现 (Client)
+ * GroupStats 值对象实现 ()
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type GroupStatsClientDTO = ReminderContracts.GroupStatsClientDTO;
+type GroupStatsDTO = ReminderContracts.GroupStatsDTO;
 type GroupStatsServerDTO = ReminderContracts.GroupStatsServerDTO;
 
-export class GroupStatsClient implements ReminderContracts.GroupStatsClient {
-  private readonly dto: GroupStatsClientDTO;
+export class GroupStats implements ReminderContracts.GroupStats {
+  private readonly dto: GroupStatsDTO;
 
-  private constructor(dto: GroupStatsClientDTO) {
+  private constructor(dto: GroupStatsDTO) {
     this.dto = dto;
   }
 
@@ -22,11 +22,11 @@ export class GroupStatsClient implements ReminderContracts.GroupStatsClient {
   get templateCountText(): string { return this.dto.templateCountText; }
   get activeStatusText(): string { return this.dto.activeStatusText; }
 
-  public equals(other: ReminderContracts.GroupStatsClient): boolean {
-    return JSON.stringify(this.dto) === JSON.stringify((other as GroupStatsClient).dto);
+  public equals(other: ReminderContracts.GroupStats): boolean {
+    return JSON.stringify(this.dto) === JSON.stringify((other as GroupStats).dto);
   }
 
-  public toClientDTO(): GroupStatsClientDTO {
+  public toDTO(): GroupStatsDTO {
     return this.dto;
   }
 
@@ -40,16 +40,16 @@ export class GroupStatsClient implements ReminderContracts.GroupStatsClient {
     };
   }
 
-  public static fromClientDTO(dto: GroupStatsClientDTO): GroupStatsClient {
-    return new GroupStatsClient(dto);
+  public static fromDTO(dto: GroupStatsDTO): GroupStats {
+    return new GroupStats(dto);
   }
 
-  public static fromServerDTO(dto: GroupStatsServerDTO): GroupStatsClient {
-    const clientDTO: GroupStatsClientDTO = {
+  public static fromServerDTO(dto: GroupStatsServerDTO): GroupStats {
+    const clientDTO: GroupStatsDTO = {
       ...dto,
       templateCountText: `${dto.totalTemplates} 个提醒`,
       activeStatusText: `${dto.activeTemplates} 个活跃`,
     };
-    return new GroupStatsClient(clientDTO);
+    return new GroupStats(clientDTO);
   }
 }

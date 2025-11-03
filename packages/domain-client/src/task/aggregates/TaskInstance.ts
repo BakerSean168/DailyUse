@@ -5,9 +5,9 @@
 
 import type { TaskContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
-import { TaskTimeConfigClient } from '../value-objects/TaskTimeConfigClient';
-import { CompletionRecordClient } from '../value-objects/CompletionRecordClient';
-import { SkipRecordClient } from '../value-objects/SkipRecordClient';
+import { TaskTimeConfig } from '../value-objects/TaskTimeConfig';
+import { CompletionRecord } from '../value-objects/CompletionRecord';
+import { SkipRecord } from '../value-objects/SkipRecord';
 
 type ITaskInstance = TaskContracts.TaskInstance;
 type TaskInstanceDTO = TaskContracts.TaskInstanceDTO;
@@ -18,10 +18,10 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
   private _templateUuid: string;
   private _accountUuid: string;
   private _instanceDate: number;
-  private _timeConfig: TaskTimeConfigClient;
+  private _timeConfig: TaskTimeConfig;
   private _status: TaskInstanceStatus;
-  private _completionRecord?: CompletionRecordClient | null;
-  private _skipRecord?: SkipRecordClient | null;
+  private _completionRecord?: CompletionRecord | null;
+  private _skipRecord?: SkipRecord | null;
   private _actualStartTime?: number | null;
   private _actualEndTime?: number | null;
   private _note?: string | null;
@@ -33,10 +33,10 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
     templateUuid: string;
     accountUuid: string;
     instanceDate: number;
-    timeConfig: TaskTimeConfigClient;
+    timeConfig: TaskTimeConfig;
     status: TaskInstanceStatus;
-    completionRecord?: CompletionRecordClient | null;
-    skipRecord?: SkipRecordClient | null;
+    completionRecord?: CompletionRecord | null;
+    skipRecord?: SkipRecord | null;
     actualStartTime?: number | null;
     actualEndTime?: number | null;
     note?: string | null;
@@ -71,16 +71,16 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
   public get instanceDate(): number {
     return this._instanceDate;
   }
-  public get timeConfig(): TaskTimeConfigClient {
+  public get timeConfig(): TaskTimeConfig {
     return this._timeConfig;
   }
   public get status(): TaskInstanceStatus {
     return this._status;
   }
-  public get completionRecord(): CompletionRecordClient | null | undefined {
+  public get completionRecord(): CompletionRecord | null | undefined {
     return this._completionRecord;
   }
-  public get skipRecord(): SkipRecordClient | null | undefined {
+  public get skipRecord(): SkipRecord | null | undefined {
     return this._skipRecord;
   }
   public get actualStartTime(): number | null | undefined {
@@ -258,12 +258,12 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
       templateUuid: dto.templateUuid,
       accountUuid: dto.accountUuid,
       instanceDate: dto.instanceDate,
-      timeConfig: TaskTimeConfigClient.fromClientDTO(dto.timeConfig),
+      timeConfig: TaskTimeConfig.fromClientDTO(dto.timeConfig),
       status: dto.status,
       completionRecord: dto.completionRecord
-        ? CompletionRecordClient.fromClientDTO(dto.completionRecord)
+        ? CompletionRecord.fromClientDTO(dto.completionRecord)
         : null,
-      skipRecord: dto.skipRecord ? SkipRecordClient.fromClientDTO(dto.skipRecord) : null,
+      skipRecord: dto.skipRecord ? SkipRecord.fromClientDTO(dto.skipRecord) : null,
       actualStartTime: dto.actualStartTime,
       actualEndTime: dto.actualEndTime,
       note: dto.note,
@@ -278,12 +278,12 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
       templateUuid: dto.templateUuid,
       accountUuid: dto.accountUuid,
       instanceDate: dto.instanceDate,
-      timeConfig: TaskTimeConfigClient.fromServerDTO(dto.timeConfig),
+      timeConfig: TaskTimeConfig.fromServerDTO(dto.timeConfig),
       status: dto.status,
       completionRecord: dto.completionRecord
-        ? CompletionRecordClient.fromServerDTO(dto.completionRecord)
+        ? CompletionRecord.fromServerDTO(dto.completionRecord)
         : null,
-      skipRecord: dto.skipRecord ? SkipRecordClient.fromServerDTO(dto.skipRecord) : null,
+      skipRecord: dto.skipRecord ? SkipRecord.fromServerDTO(dto.skipRecord) : null,
       actualStartTime: dto.actualStartTime,
       actualEndTime: dto.actualEndTime,
       note: dto.note,

@@ -32,21 +32,15 @@ export * as AuthenticationDomain from './authentication';
 // ============ 直接导出（便于直接导入常用类型） ============
 
 // Goal 模块 - 直接从实现导出
-export { GoalClient } from './goal/aggregates/GoalClient';
-export { GoalFolderClient } from './goal/aggregates/GoalFolderClient';
-export { GoalStatisticsClient } from './goal/aggregates/GoalStatisticsClient';
-export { KeyResultClient } from './goal/entities/KeyResultClient';
-export { GoalRecordClient } from './goal/entities/GoalRecordClient';
-export { GoalReviewClient } from './goal/entities/GoalReviewClient';
+export { Goal } from './goal/aggregates/Goal';
+export { GoalFolder } from './goal/aggregates/GoalFolder';
+export { GoalStatistics } from './goal/aggregates/GoalStatistics';
+export { KeyResult } from './goal/entities/KeyResult';
+export { GoalRecord } from './goal/entities/GoalRecord';
+export { GoalReview } from './goal/entities/GoalReview';
 
-// Goal 模块 - 类型别名（为了向后兼容）
+// Goal 模块 - 类型别名（只导出值对象类型）
 export type {
-  Goal,
-  GoalFolder,
-  GoalStatistics,
-  KeyResult,
-  GoalRecord,
-  GoalReview,
   GoalMetadata,
   GoalTimeRange,
   GoalReminderConfig,
@@ -58,11 +52,10 @@ export type {
 export { TaskTemplate } from './task/aggregates/TaskTemplate';
 export { TaskInstance } from './task/aggregates/TaskInstance';
 export { TaskStatistics } from './task/aggregates/TaskStatistics';
-export { TaskTemplateHistoryClient } from './task/entities/TaskTemplateHistoryClient';
+export { TaskTemplateHistory } from './task/entities/TaskTemplateHistory';
 
-// Task 模块 - 类型导出
+// Task 模块 - 类型导出（只导出类型别名，不导出已有的实现类）
 export type {
-  TaskTemplateHistory,
   TaskTimeConfig,
   RecurrenceRule,
   TaskReminderConfig,

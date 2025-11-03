@@ -5,11 +5,11 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type ICompletionRecordClient = TaskContracts.CompletionRecordClient;
-type CompletionRecordClientDTO = TaskContracts.CompletionRecordClientDTO;
+type ICompletionRecord = TaskContracts.CompletionRecord;
+type CompletionRecordDTO = TaskContracts.CompletionRecordDTO;
 type CompletionRecordServerDTO = TaskContracts.CompletionRecordServerDTO;
 
-export class CompletionRecordClient extends ValueObject implements ICompletionRecordClient {
+export class CompletionRecord extends ValueObject implements ICompletionRecord {
   private _completedAt: number;
   private _actualDuration: number | null;
   private _note: string | null;
@@ -71,7 +71,7 @@ export class CompletionRecordClient extends ValueObject implements ICompletionRe
   }
 
   // 值对象方法
-  public equals(other: ICompletionRecordClient): boolean {
+  public equals(other: ICompletionRecord): boolean {
     return (
       this._completedAt === other.completedAt &&
       this._actualDuration === other.actualDuration &&
@@ -90,7 +90,7 @@ export class CompletionRecordClient extends ValueObject implements ICompletionRe
     };
   }
 
-  public toClientDTO(): CompletionRecordClientDTO {
+  public toClientDTO(): CompletionRecordDTO {
     return {
       completedAt: this._completedAt,
       actualDuration: this._actualDuration,
@@ -105,8 +105,8 @@ export class CompletionRecordClient extends ValueObject implements ICompletionRe
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: CompletionRecordClientDTO): CompletionRecordClient {
-    return new CompletionRecordClient({
+  public static fromClientDTO(dto: CompletionRecordDTO): CompletionRecord {
+    return new CompletionRecord({
       completedAt: dto.completedAt,
       actualDuration: dto.actualDuration,
       note: dto.note,
@@ -114,8 +114,8 @@ export class CompletionRecordClient extends ValueObject implements ICompletionRe
     });
   }
 
-  public static fromServerDTO(dto: CompletionRecordServerDTO): CompletionRecordClient {
-    return new CompletionRecordClient({
+  public static fromServerDTO(dto: CompletionRecordServerDTO): CompletionRecord {
+    return new CompletionRecord({
       completedAt: dto.completedAt,
       actualDuration: dto.actualDuration,
       note: dto.note,

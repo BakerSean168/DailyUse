@@ -1,11 +1,11 @@
 /**
- * Reminder Value Objects - Client Implementations
+ * Reminder Value Objects
  */
 
-export { TriggerConfigClient } from './TriggerConfigClient';
-export { RecurrenceConfigClient } from './RecurrenceConfigClient';
-export { ActiveTimeConfigClient } from './ActiveTimeConfigClient';
-export { ActiveHoursConfigClient } from './ActiveHoursConfigClient';
-export { NotificationConfigClient } from './NotificationConfigClient';
-export { ReminderStatsClient } from './ReminderStatsClient';
-export { GroupStatsClient } from './GroupStatsClient';
+export { TriggerConfig } from './TriggerConfig';
+export { RecurrenceConfig } from './RecurrenceConfig';
+export { ActiveTimeConfig } from './ActiveTimeConfig';
+export { ActiveHoursConfig } from './ActiveHoursConfig';
+export { NotificationConfig } from './NotificationConfig';
+export { ReminderStats } from './ReminderStats';
+export { GroupStats } from './GroupStats';

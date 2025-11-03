@@ -1,10 +1,10 @@
 /**
- * NotificationConfig 值对象实现 (Client)
+ * NotificationConfig 值对象实现 ()
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type NotificationConfigClientDTO = ReminderContracts.NotificationConfigClientDTO;
+type NotificationConfigDTO = ReminderContracts.NotificationConfigDTO;
 type NotificationConfigServerDTO = ReminderContracts.NotificationConfigServerDTO;
 type NotificationChannel = ReminderContracts.NotificationChannel;
 type SoundConfig = ReminderContracts.SoundConfig;
@@ -13,10 +13,10 @@ type NotificationActionConfig = ReminderContracts.NotificationActionConfig;
 
 const NotificationChannel = ReminderContracts.NotificationChannel;
 
-export class NotificationConfigClient implements ReminderContracts.NotificationConfigClient {
-  private readonly dto: NotificationConfigClientDTO;
+export class NotificationConfig implements ReminderContracts.NotificationConfig {
+  private readonly dto: NotificationConfigDTO;
 
-  private constructor(dto: NotificationConfigClientDTO) {
+  private constructor(dto: NotificationConfigDTO) {
     this.dto = dto;
   }
 
@@ -30,11 +30,11 @@ export class NotificationConfigClient implements ReminderContracts.NotificationC
   get hasSoundEnabled(): boolean { return this.dto.hasSoundEnabled; }
   get hasVibrationEnabled(): boolean { return this.dto.hasVibrationEnabled; }
 
-  public equals(other: ReminderContracts.NotificationConfigClient): boolean {
-    return JSON.stringify(this.dto) === JSON.stringify((other as NotificationConfigClient).dto);
+  public equals(other: ReminderContracts.NotificationConfig): boolean {
+    return JSON.stringify(this.dto) === JSON.stringify((other as NotificationConfig).dto);
   }
 
-  public toClientDTO(): NotificationConfigClientDTO {
+  public toDTO(): NotificationConfigDTO {
     return this.dto;
   }
 
@@ -49,11 +49,11 @@ export class NotificationConfigClient implements ReminderContracts.NotificationC
     };
   }
 
-  public static fromClientDTO(dto: NotificationConfigClientDTO): NotificationConfigClient {
-    return new NotificationConfigClient(dto);
+  public static fromDTO(dto: NotificationConfigDTO): NotificationConfig {
+    return new NotificationConfig(dto);
   }
 
-  public static fromServerDTO(dto: NotificationConfigServerDTO): NotificationConfigClient {
+  public static fromServerDTO(dto: NotificationConfigServerDTO): NotificationConfig {
     const channelNames = dto.channels.map(c => {
       switch (c) {
         case NotificationChannel.IN_APP: return '应用内';
@@ -64,12 +64,12 @@ export class NotificationConfigClient implements ReminderContracts.NotificationC
       }
     });
 
-    const clientDTO: NotificationConfigClientDTO = {
+    const clientDTO: NotificationConfigDTO = {
       ...dto,
       channelsText: channelNames.join(' + '),
       hasSoundEnabled: !!dto.sound,
       hasVibrationEnabled: !!dto.vibration,
     };
-    return new NotificationConfigClient(clientDTO);
+    return new NotificationConfig(clientDTO);
   }
 }

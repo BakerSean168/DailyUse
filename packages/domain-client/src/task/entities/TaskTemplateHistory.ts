@@ -5,11 +5,11 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { Entity } from '@dailyuse/utils';
 
-type ITaskTemplateHistoryClient = TaskContracts.TaskTemplateHistoryClient;
-type TaskTemplateHistoryClientDTO = TaskContracts.TaskTemplateHistoryClientDTO;
+type ITaskTemplateHistory = TaskContracts.TaskTemplateHistory;
+type TaskTemplateHistoryDTO = TaskContracts.TaskTemplateHistoryDTO;
 type TaskTemplateHistoryServerDTO = TaskContracts.TaskTemplateHistoryServerDTO;
 
-export class TaskTemplateHistoryClient extends Entity implements ITaskTemplateHistoryClient {
+export class TaskTemplateHistory extends Entity implements ITaskTemplateHistory {
   private _templateUuid: string;
   private _action: string;
   private _changes: any | null;
@@ -120,7 +120,7 @@ export class TaskTemplateHistoryClient extends Entity implements ITaskTemplateHi
   }
 
   // DTO 转换
-  public toClientDTO(): TaskTemplateHistoryClientDTO {
+  public toClientDTO(): TaskTemplateHistoryDTO {
     return {
       uuid: this.uuid,
       templateUuid: this._templateUuid,
@@ -145,8 +145,8 @@ export class TaskTemplateHistoryClient extends Entity implements ITaskTemplateHi
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskTemplateHistoryClientDTO): TaskTemplateHistoryClient {
-    return new TaskTemplateHistoryClient({
+  public static fromClientDTO(dto: TaskTemplateHistoryDTO): TaskTemplateHistory {
+    return new TaskTemplateHistory({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,
       action: dto.action,
@@ -155,8 +155,8 @@ export class TaskTemplateHistoryClient extends Entity implements ITaskTemplateHi
     });
   }
 
-  public static fromServerDTO(dto: TaskTemplateHistoryServerDTO): TaskTemplateHistoryClient {
-    return new TaskTemplateHistoryClient({
+  public static fromServerDTO(dto: TaskTemplateHistoryServerDTO): TaskTemplateHistory {
+    return new TaskTemplateHistory({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,
       action: dto.action,
@@ -165,7 +165,7 @@ export class TaskTemplateHistoryClient extends Entity implements ITaskTemplateHi
     });
   }
 
-  public clone(): TaskTemplateHistoryClient {
-    return TaskTemplateHistoryClient.fromClientDTO(this.toClientDTO());
+  public clone(): TaskTemplateHistory {
+    return TaskTemplateHistory.fromClientDTO(this.toClientDTO());
   }
 }

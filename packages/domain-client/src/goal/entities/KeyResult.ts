@@ -6,12 +6,12 @@ import type { GoalContracts } from '@dailyuse/contracts';
 import { Entity } from '@dailyuse/utils';
 import { KeyResultProgressClient } from '../value-objects/KeyResultProgressClient';
 
-type IKeyResultClient = GoalContracts.KeyResultClient;
-type KeyResultClientDTO = GoalContracts.KeyResultClientDTO;
+type IKeyResult = GoalContracts.KeyResult;
+type KeyResultDTO = GoalContracts.KeyResultDTO;
 type KeyResultServerDTO = GoalContracts.KeyResultServerDTO;
 type GoalRecordClientDTO = GoalContracts.GoalRecordClientDTO;
 
-export class KeyResultClient extends Entity implements IKeyResultClient {
+export class KeyResult extends Entity implements IKeyResult {
   private _goalUuid: string;
   private _title: string;
   private _description?: string | null;
@@ -180,7 +180,7 @@ export class KeyResultClient extends Entity implements IKeyResultClient {
   }
 
   // DTO 转换
-  public toClientDTO(): KeyResultClientDTO {
+  public toClientDTO(): KeyResultDTO {
     return {
       uuid: this.uuid,
       goalUuid: this._goalUuid,
@@ -219,8 +219,8 @@ export class KeyResultClient extends Entity implements IKeyResultClient {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: KeyResultClientDTO): KeyResultClient {
-    return new KeyResultClient({
+  public static fromClientDTO(dto: KeyResultDTO): KeyResult {
+    return new KeyResult({
       uuid: dto.uuid,
       goalUuid: dto.goalUuid,
       title: dto.title,
@@ -234,8 +234,8 @@ export class KeyResultClient extends Entity implements IKeyResultClient {
     });
   }
 
-  public static fromServerDTO(dto: KeyResultServerDTO): KeyResultClient {
-    return new KeyResultClient({
+  public static fromServerDTO(dto: KeyResultServerDTO): KeyResult {
+    return new KeyResult({
       uuid: dto.uuid,
       goalUuid: dto.goalUuid,
       title: dto.title,
@@ -248,9 +248,9 @@ export class KeyResultClient extends Entity implements IKeyResultClient {
     });
   }
 
-  public static forCreate(goalUuid: string): KeyResultClient {
+  public static forCreate(goalUuid: string): KeyResult {
     const now = Date.now();
-    return new KeyResultClient({
+    return new KeyResult({
       uuid: crypto.randomUUID(),
       goalUuid,
       title: '',
@@ -262,8 +262,8 @@ export class KeyResultClient extends Entity implements IKeyResultClient {
     });
   }
 
-  public clone(): KeyResultClient {
-    return KeyResultClient.fromClientDTO(this.toClientDTO());
+  public clone(): KeyResult {
+    return KeyResult.fromClientDTO(this.toClientDTO());
   }
 
   // ===== 修改方法 (Modification Methods) =====

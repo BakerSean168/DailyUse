@@ -1,20 +1,20 @@
 /**
- * RecurrenceConfig 值对象实现 (Client)
+ * RecurrenceConfig 值对象实现 ()
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type RecurrenceConfigClientDTO = ReminderContracts.RecurrenceConfigClientDTO;
+type RecurrenceConfigDTO = ReminderContracts.RecurrenceConfigDTO;
 type RecurrenceConfigServerDTO = ReminderContracts.RecurrenceConfigServerDTO;
 type RecurrenceType = ReminderContracts.RecurrenceType;
 type DailyRecurrence = ReminderContracts.DailyRecurrence;
 type WeeklyRecurrence = ReminderContracts.WeeklyRecurrence;
 type CustomDaysRecurrence = ReminderContracts.CustomDaysRecurrence;
 
-export class RecurrenceConfigClient implements ReminderContracts.RecurrenceConfigClient {
-  private readonly dto: RecurrenceConfigClientDTO;
+export class RecurrenceConfig implements ReminderContracts.RecurrenceConfig {
+  private readonly dto: RecurrenceConfigDTO;
 
-  private constructor(dto: RecurrenceConfigClientDTO) {
+  private constructor(dto: RecurrenceConfigDTO) {
     this.dto = dto;
   }
 
@@ -26,11 +26,11 @@ export class RecurrenceConfigClient implements ReminderContracts.RecurrenceConfi
   get displayText(): string { return this.dto.displayText; }
 
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.RecurrenceConfigClient): boolean {
-    return JSON.stringify(this.dto) === JSON.stringify((other as RecurrenceConfigClient).dto);
+  public equals(other: ReminderContracts.RecurrenceConfig): boolean {
+    return JSON.stringify(this.dto) === JSON.stringify((other as RecurrenceConfig).dto);
   }
 
-  public toClientDTO(): RecurrenceConfigClientDTO {
+  public toDTO(): RecurrenceConfigDTO {
     return this.dto;
   }
 
@@ -44,12 +44,12 @@ export class RecurrenceConfigClient implements ReminderContracts.RecurrenceConfi
   }
 
   // ===== 静态工厂方法 =====
-  public static fromClientDTO(dto: RecurrenceConfigClientDTO): RecurrenceConfigClient {
-    return new RecurrenceConfigClient(dto);
+  public static fromDTO(dto: RecurrenceConfigDTO): RecurrenceConfig {
+    return new RecurrenceConfig(dto);
   }
 
-  public static fromServerDTO(dto: RecurrenceConfigServerDTO): RecurrenceConfigClient {
-    // 从 ServerDTO 转换为 ClientDTO
+  public static fromServerDTO(dto: RecurrenceConfigServerDTO): RecurrenceConfig {
+    // 从 ServerDTO 转换为 DTO
     let displayText = '';
     if (dto.type === ReminderContracts.RecurrenceType.DAILY && dto.daily) {
       displayText = `每 ${dto.daily.interval || 1} 天`;
@@ -59,7 +59,7 @@ export class RecurrenceConfigClient implements ReminderContracts.RecurrenceConfi
       displayText = `自定义`;
     }
     
-    return new RecurrenceConfigClient({
+    return new RecurrenceConfig({
       type: dto.type,
       daily: dto.daily,
       weekly: dto.weekly,
