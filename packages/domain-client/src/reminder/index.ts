@@ -2,5 +2,5 @@
  * Reminder Module Exports (Domain Client)
  */
 
-export { ReminderTemplateClient } from './aggregates/ReminderTemplateClient';
-export { ReminderGroupClient } from './aggregates/ReminderGroupClient';
+export { ReminderTemplate } from './aggregates/ReminderTemplate';
+export { ReminderGroup } from './aggregates/ReminderGroup';

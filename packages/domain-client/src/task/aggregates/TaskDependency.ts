@@ -6,14 +6,14 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
+type TaskDependencyDTO = TaskContracts.TaskDependencyDTO;
 type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
 type DependencyType = TaskContracts.DependencyType;
 
 /**
  * TaskDependency 聚合根 (Client)
  */
-export class TaskDependencyClient extends AggregateRoot {
+export class TaskDependency extends AggregateRoot {
   private _predecessorTaskUuid: string;
   private _successorTaskUuid: string;
   private _dependencyType: DependencyType;
@@ -195,7 +195,7 @@ export class TaskDependencyClient extends AggregateRoot {
     };
   }
 
-  toClientDTO(): TaskDependencyClientDTO {
+  toClientDTO(): TaskDependencyDTO {
     return {
       uuid: this.uuid,
       predecessorTaskUuid: this._predecessorTaskUuid,
@@ -217,10 +217,10 @@ export class TaskDependencyClient extends AggregateRoot {
     successorTaskUuid: string;
     dependencyType: DependencyType;
     lagDays?: number;
-  }): TaskDependencyClient {
+  }): TaskDependency {
     const now = Date.now();
 
-    return new TaskDependencyClient({
+    return new TaskDependency({
       uuid: AggregateRoot.generateUUID(),
       predecessorTaskUuid: params.predecessorTaskUuid,
       successorTaskUuid: params.successorTaskUuid,
@@ -234,8 +234,8 @@ export class TaskDependencyClient extends AggregateRoot {
   /**
    * 从 Server DTO 创建客户端实体
    */
-  static fromServerDTO(dto: TaskDependencyServerDTO): TaskDependencyClient {
-    return new TaskDependencyClient({
+  static fromServerDTO(dto: TaskDependencyServerDTO): TaskDependency {
+    return new TaskDependency({
       uuid: dto.uuid,
       predecessorTaskUuid: dto.predecessorTaskUuid,
       successorTaskUuid: dto.successorTaskUuid,
@@ -249,8 +249,8 @@ export class TaskDependencyClient extends AggregateRoot {
   /**
    * 从 Client DTO 创建客户端实体
    */
-  static fromClientDTO(dto: TaskDependencyClientDTO): TaskDependencyClient {
-    return new TaskDependencyClient({
+  static fromClientDTO(dto: TaskDependencyDTO): TaskDependency {
+    return new TaskDependency({
       uuid: dto.uuid,
       predecessorTaskUuid: dto.predecessorTaskUuid,
       successorTaskUuid: dto.successorTaskUuid,

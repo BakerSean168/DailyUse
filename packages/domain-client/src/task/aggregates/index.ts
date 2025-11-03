@@ -2,7 +2,7 @@
  * Task Aggregates Barrel Export
  */
 
-export * from './TaskInstanceClient';
-export * from './TaskStatisticsClient';
-export * from './TaskTemplateClient';
-export * from './TaskDependencyClient';
+export * from './TaskInstance';
+export * from './TaskStatistics';
+export * from './TaskTemplate';
+export * from './TaskDependency';

@@ -16,6 +16,7 @@
         <v-col cols="12">
           <v-text-field
             v-model="title"
+            data-testid="task-template-title-input"
             label="任务标题"
             placeholder="请输入任务标题"
             variant="outlined"
@@ -27,6 +28,7 @@
         <v-col cols="12">
           <v-textarea
             v-model="description"
+            data-testid="task-template-description-input"
             label="任务描述"
             placeholder="请输入任务描述（可选）"
             variant="outlined"

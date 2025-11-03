@@ -40,11 +40,19 @@
 
       <!-- 操作按钮 -->
       <div class="template-actions">
-        <v-btn icon variant="text" size="small" @click="handleEdit" class="action-btn">
+        <v-btn 
+          data-testid="task-card-edit-button"
+          icon 
+          variant="text" 
+          size="small" 
+          @click="handleEdit" 
+          class="action-btn"
+        >
           <v-icon>mdi-pencil</v-icon>
           <v-tooltip activator="parent" location="bottom">编辑模板</v-tooltip>
         </v-btn>
         <v-btn
+          data-testid="task-card-delete-button"
           icon
           variant="text"
           size="small"
@@ -146,6 +154,7 @@
     <v-card-actions class="template-footer">
       <v-btn
         v-if="template.isActive"
+        data-testid="task-card-pause-button"
         color="primary"
         variant="outlined"
         size="small"
@@ -156,6 +165,7 @@
       </v-btn>
       <v-btn
         v-else-if="template.isPaused"
+        data-testid="task-card-resume-button"
         color="warning"
         variant="outlined"
         size="small"
@@ -166,6 +176,7 @@
       </v-btn>
       <v-btn
         v-else-if="template.status === 'ARCHIVED'"
+        data-testid="task-card-activate-button"
         color="info"
         variant="outlined"
         size="small"

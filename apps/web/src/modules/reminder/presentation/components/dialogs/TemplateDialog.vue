@@ -18,8 +18,22 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="grey-darken-1" variant="text" @click="close">关闭</v-btn>
-        <v-btn color="primary" variant="text" @click="handleSave">保存</v-btn>
+        <v-btn 
+          data-testid="reminder-dialog-close-button"
+          color="grey-darken-1" 
+          variant="text" 
+          @click="close"
+        >
+          关闭
+        </v-btn>
+        <v-btn 
+          data-testid="reminder-dialog-save-button"
+          color="primary" 
+          variant="text" 
+          @click="handleSave"
+        >
+          保存
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -27,15 +41,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { ReminderTemplateClient } from '@dailyuse/domain-client';
+import { ReminderTemplate } from '@dailyuse/domain-client';
 
 const visible = ref(false);
-const currentTemplate = ref<ReminderTemplateClient | null>(null);
+const currentTemplate = ref<ReminderTemplate | null>(null);
 const isEditMode = computed(() => !!currentTemplate.value?.uuid);
 
 const emit = defineEmits<{
-  templateCreated: [template: ReminderTemplateClient];
-  templateUpdated: [template: ReminderTemplateClient];
+  templateCreated: [template: ReminderTemplate];
+  templateUpdated: [template: ReminderTemplate];
 }>();
 
 const open = () => {
@@ -43,11 +57,11 @@ const open = () => {
 };
 
 const openForCreate = () => {
-  currentTemplate.value = ReminderTemplateClient.forCreate();
+  currentTemplate.value = ReminderTemplate.forCreate();
   visible.value = true;
 };
 
-const openForEdit = (template: ReminderTemplateClient) => {
+const openForEdit = (template: ReminderTemplate) => {
   currentTemplate.value = template.clone();
   visible.value = true;
 };
@@ -61,9 +75,9 @@ const handleSave = () => {
   if (!currentTemplate.value) return;
   
   if (isEditMode.value) {
-    emit('templateUpdated', currentTemplate.value as ReminderTemplateClient);
+    emit('templateUpdated', currentTemplate.value as ReminderTemplate);
   } else {
-    emit('templateCreated', currentTemplate.value as ReminderTemplateClient);
+    emit('templateCreated', currentTemplate.value as ReminderTemplate);
   }
   
   close();

@@ -37,6 +37,7 @@
         <!-- 查看依赖关系图按钮 -->
         <v-btn
           v-if="taskStore.getAllTaskTemplates.length > 0"
+          data-testid="view-dependency-graph-button"
           color="info"
           variant="outlined"
           size="large"
@@ -50,6 +51,7 @@
         <!-- 删除所有模板按钮 -->
         <v-btn
           v-if="taskStore.getAllTaskTemplates.length > 0"
+          data-testid="delete-all-templates-button"
           color="error"
           variant="outlined"
           size="large"
@@ -62,6 +64,7 @@
 
         <!-- 创建按钮 -->
         <v-btn
+          data-testid="create-task-template-button"
           color="primary"
           variant="elevated"
           size="large"
@@ -90,6 +93,7 @@
           </p>
           <v-btn
             v-if="currentStatus === 'active'"
+            data-testid="create-first-task-template-button"
             color="primary"
             variant="tonal"
             prepend-icon="mdi-plus"

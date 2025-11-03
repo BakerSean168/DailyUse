@@ -43,13 +43,13 @@
 
           <!-- 底部工具栏 -->
           <div class="bottom-dock">
-            <v-btn icon size="large" @click="templateDialogRef?.openForCreate()" class="dock-btn">
+            <v-btn icon size="large" @click="templateDialogRef?.openForCreate()" class="dock-btn" data-testid="create-reminder-template-button">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
-            <v-btn icon size="large" @click="groupDialogRef?.open()" class="dock-btn">
+            <v-btn icon size="large" @click="groupDialogRef?.open()" class="dock-btn" data-testid="create-reminder-group-button">
               <v-icon>mdi-folder-plus</v-icon>
             </v-btn>
-            <v-btn icon size="large" @click="refresh" :loading="isLoading" class="dock-btn">
+            <v-btn icon size="large" @click="refresh" :loading="isLoading" class="dock-btn" data-testid="refresh-reminders-button">
               <v-icon>mdi-refresh</v-icon>
             </v-btn>
           </div>

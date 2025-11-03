@@ -9,12 +9,12 @@ import { TaskTimeConfigClient } from '../value-objects/TaskTimeConfigClient';
 import { CompletionRecordClient } from '../value-objects/CompletionRecordClient';
 import { SkipRecordClient } from '../value-objects/SkipRecordClient';
 
-type ITaskInstanceClient = TaskContracts.TaskInstanceClient;
-type TaskInstanceClientDTO = TaskContracts.TaskInstanceClientDTO;
+type ITaskInstance = TaskContracts.TaskInstance;
+type TaskInstanceDTO = TaskContracts.TaskInstanceDTO;
 type TaskInstanceServerDTO = TaskContracts.TaskInstanceServerDTO;
 type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
 
-export class TaskInstanceClient extends AggregateRoot implements ITaskInstanceClient {
+export class TaskInstance extends AggregateRoot implements ITaskInstance {
   private _templateUuid: string;
   private _accountUuid: string;
   private _instanceDate: number;
@@ -203,7 +203,7 @@ export class TaskInstanceClient extends AggregateRoot implements ITaskInstanceCl
   }
 
   // DTO 转换
-  public toClientDTO(): TaskInstanceClientDTO {
+  public toClientDTO(): TaskInstanceDTO {
     return {
       uuid: this.uuid,
       templateUuid: this._templateUuid,
@@ -252,8 +252,8 @@ export class TaskInstanceClient extends AggregateRoot implements ITaskInstanceCl
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskInstanceClientDTO): TaskInstanceClient {
-    return new TaskInstanceClient({
+  public static fromClientDTO(dto: TaskInstanceDTO): TaskInstance {
+    return new TaskInstance({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,
       accountUuid: dto.accountUuid,
@@ -272,8 +272,8 @@ export class TaskInstanceClient extends AggregateRoot implements ITaskInstanceCl
     });
   }
 
-  public static fromServerDTO(dto: TaskInstanceServerDTO): TaskInstanceClient {
-    return new TaskInstanceClient({
+  public static fromServerDTO(dto: TaskInstanceServerDTO): TaskInstance {
+    return new TaskInstance({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,
       accountUuid: dto.accountUuid,
@@ -292,7 +292,7 @@ export class TaskInstanceClient extends AggregateRoot implements ITaskInstanceCl
     });
   }
 
-  public clone(): TaskInstanceClient {
-    return TaskInstanceClient.fromClientDTO(this.toClientDTO());
+  public clone(): TaskInstance {
+    return TaskInstance.fromClientDTO(this.toClientDTO());
   }
 }

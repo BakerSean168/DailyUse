@@ -8,7 +8,7 @@ import { AggregateRoot } from '@dailyuse/utils';
 import * as ValueObjects from '../value-objects';
 
 // 类型别名
-type ReminderTemplateClientDTO = ReminderContracts.ReminderTemplateClientDTO;
+type ReminderTemplateDTO = ReminderContracts.ReminderTemplateDTO;
 type ReminderTemplateServerDTO = ReminderContracts.ReminderTemplateServerDTO;
 type ReminderType = ReminderContracts.ReminderType;
 type ReminderStatus = ReminderContracts.ReminderStatus;
@@ -29,8 +29,8 @@ type ReminderStatsClientDTO = ReminderContracts.ReminderStatsClientDTO;
 const ReminderType = ReminderContracts.ReminderType;
 const ReminderStatus = ReminderContracts.ReminderStatus;
 
-export class ReminderTemplateClient extends AggregateRoot 
-  implements ReminderContracts.ReminderTemplateClient {
+export class ReminderTemplate extends AggregateRoot 
+  implements ReminderContracts.ReminderTemplate {
   
   // ===== 私有字段 =====
   private _accountUuid: string;
@@ -289,7 +289,7 @@ export class ReminderTemplateClient extends AggregateRoot
 
   // ===== 转换方法 =====
   
-  public toClientDTO(): ReminderTemplateClientDTO {
+  public toClientDTO(): ReminderTemplateDTO {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
@@ -361,9 +361,9 @@ export class ReminderTemplateClient extends AggregateRoot
   /**
    * 创建空白模板（用于前端新建）
    */
-  public static forCreate(): ReminderTemplateClient {
+  public static forCreate(): ReminderTemplate {
     const now = Date.now();
-    return new ReminderTemplateClient({
+    return new ReminderTemplate({
       uuid: crypto.randomUUID(),
       accountUuid: '', // 占位符
       title: '',
@@ -417,8 +417,8 @@ export class ReminderTemplateClient extends AggregateRoot
   /**
    * 从 ServerDTO 创建
    */
-  public static fromServerDTO(dto: ReminderTemplateServerDTO): ReminderTemplateClient {
-    return new ReminderTemplateClient({
+  public static fromServerDTO(dto: ReminderTemplateServerDTO): ReminderTemplate {
+    return new ReminderTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -447,8 +447,8 @@ export class ReminderTemplateClient extends AggregateRoot
   /**
    * 从 ClientDTO 创建
    */
-  public static fromClientDTO(dto: ReminderTemplateClientDTO): ReminderTemplateClient {
-    return new ReminderTemplateClient({
+  public static fromClientDTO(dto: ReminderTemplateDTO): ReminderTemplate {
+    return new ReminderTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -477,7 +477,7 @@ export class ReminderTemplateClient extends AggregateRoot
   /**
    * 克隆实例
    */
-  public clone(): ReminderTemplateClient {
-    return ReminderTemplateClient.fromClientDTO(this.toClientDTO());
+  public clone(): ReminderTemplate {
+    return ReminderTemplate.fromClientDTO(this.toClientDTO());
   }
 }

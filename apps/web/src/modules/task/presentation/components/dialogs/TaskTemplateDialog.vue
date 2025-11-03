@@ -14,19 +14,6 @@
             </p>
           </div>
         </div>
-
-        <!-- 步骤指示器（仅在基于元模板创建时显示） -->
-        <div v-if="dialogState.mode === 'createFromMeta'" class="mt-3">
-          <v-stepper-header class="elevation-0 pa-0">
-            <v-stepper-item :complete="dialogState.step > 1" :value="1" color="primary">
-              选择模板
-            </v-stepper-item>
-            <v-divider></v-divider>
-            <v-stepper-item :complete="dialogState.step > 2" :value="2" color="primary">
-              配置详情
-            </v-stepper-item>
-          </v-stepper-header>
-        </div>
       </v-card-title>
 
       <!-- 对话框内容 -->
@@ -48,7 +35,16 @@
 
         <!-- 表单内容 -->
         <div v-else class="form-container pa-4" :class="{ readonly: operationState.loading }">
-          <TaskTemplateForm ref="formRef" :model-value="formData.taskTemplate as TaskTemplate"
+          <!-- Debug: 显示 taskTemplate 状态 -->
+          <div v-if="!formData.taskTemplate" class="pa-4 text-center">
+            <v-alert type="warning" variant="tonal">
+              <v-alert-title>调试信息</v-alert-title>
+              <p>formData.taskTemplate is {{ formData.taskTemplate }}</p>
+              <p>dialogState.mode is {{ dialogState.mode }}</p>
+              <p>dialogState.visible is {{ dialogState.visible }}</p>
+            </v-alert>
+          </div>
+          <TaskTemplateForm v-else ref="formRef" :model-value="formData.taskTemplate as TaskTemplate"
             :is-edit-mode="dialogState.mode === 'edit'" :readonly="operationState.loading"
             @update:model-value="handleTemplateUpdate" @update:validation="handleValidationUpdate"
             @close="handleCancel" />
@@ -60,13 +56,24 @@
         <v-spacer />
 
         <!-- 取消按钮 -->
-        <v-btn variant="text" :disabled="operationState.loading" @click="handleCancel">
+        <v-btn 
+          data-testid="task-dialog-cancel-button"
+          variant="text" 
+          :disabled="operationState.loading" 
+          @click="handleCancel"
+        >
           取消
         </v-btn>
 
         <!-- 保存按钮 -->
-        <v-btn color="primary" variant="elevated" :disabled="!canSave" :loading="operationState.saving"
-          @click="handleSave">
+        <v-btn 
+          data-testid="task-dialog-save-button"
+          color="primary" 
+          variant="elevated" 
+          :disabled="!canSave" 
+          :loading="operationState.saving"
+          @click="handleSave"
+        >
           {{ getSaveButtonText() }}
         </v-btn>
       </v-card-actions>
@@ -101,20 +108,19 @@
  * ```
  */
 
-import { ref, computed, watch, reactive, nextTick, defineEmits } from 'vue';
+import { ref, computed, watch, reactive, defineEmits } from 'vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
-import type { TaskTemplate } from '@dailyuse/domain-client';
+import { TaskTemplate } from '@dailyuse/domain-client';
 import { TaskTimeType, TaskScheduleMode, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 import { useTaskTemplate } from '../../composables/useTaskTemplate';
 import { useTaskStore } from '../../stores/taskStore';
 
 // ===== 类型定义 =====
-type DialogMode = 'create' | 'edit' | 'createFromMeta';
+type DialogMode = 'create' | 'edit';
 
 interface DialogState {
   visible: boolean;
   mode: DialogMode;
-  step: number; // 用于步骤指示器
 }
 
 interface OperationState {
@@ -127,11 +133,10 @@ interface OperationState {
 interface FormData {
   taskTemplate: TaskTemplate | null;
   originalTemplate: TaskTemplate | null; // 用于编辑模式的原始数据备份
-  metaTemplateUuid: string | null; // 用于基于元模板创建
 }
 
 // ===== 组合式函数 =====
-const { createTaskTemplateByMetaTemplate, createTaskTemplate, updateTaskTemplate } = useTaskTemplate();
+const { createTaskTemplate, updateTaskTemplate } = useTaskTemplate();
 const taskStore = useTaskStore();
 
 // ===== Emits 定义 =====
@@ -148,7 +153,6 @@ const formRef = ref<InstanceType<typeof TaskTemplateForm> | null>(null);
 const dialogState = reactive<DialogState>({
   visible: false,
   mode: 'create',
-  step: 1,
 });
 
 const operationState = reactive<OperationState>({
@@ -161,7 +165,6 @@ const operationState = reactive<OperationState>({
 const formData = reactive<FormData>({
   taskTemplate: null,
   originalTemplate: null,
-  metaTemplateUuid: null,
 });
 
 const formValidation = ref({
@@ -189,8 +192,6 @@ const getHeaderIcon = (): string => {
       return 'mdi-plus-circle';
     case 'edit':
       return 'mdi-pencil';
-    case 'createFromMeta':
-      return 'mdi-view-grid-plus';
     default:
       return 'mdi-file-document';
   }
@@ -202,7 +203,6 @@ const getHeaderIcon = (): string => {
 const getHeaderIconColor = (): string => {
   switch (dialogState.mode) {
     case 'create':
-    case 'createFromMeta':
       return 'success';
     case 'edit':
       return 'primary';
@@ -220,8 +220,6 @@ const getHeaderTitle = (): string => {
       return '创建任务模板';
     case 'edit':
       return '编辑任务模板';
-    case 'createFromMeta':
-      return '基于元模板创建';
     default:
       return '任务模板';
   }
@@ -236,8 +234,6 @@ const getHeaderSubtitle = (): string => {
       return '创建一个新的任务模板';
     case 'edit':
       return '修改现有任务模板的配置';
-    case 'createFromMeta':
-      return '使用预定义模板快速创建';
     default:
       return '';
   }
@@ -249,7 +245,6 @@ const getHeaderSubtitle = (): string => {
 const getSaveButtonText = (): string => {
   switch (dialogState.mode) {
     case 'create':
-    case 'createFromMeta':
       return '创建模板';
     case 'edit':
       return '保存更改';
@@ -271,7 +266,6 @@ const clearError = (): void => {
 const resetDialog = (): void => {
   dialogState.visible = false;
   dialogState.mode = 'create';
-  dialogState.step = 1;
 
   operationState.loading = false;
   operationState.saving = false;
@@ -280,7 +274,6 @@ const resetDialog = (): void => {
 
   formData.taskTemplate = null;
   formData.originalTemplate = null;
-  formData.metaTemplateUuid = null;
 
   formValidation.value.isValid = false;
 };
@@ -289,41 +282,15 @@ const resetDialog = (): void => {
  * 创建空白的任务模板
  */
 const createBlankTemplate = (): TaskTemplate => {
-  return new TaskTemplate({
-    accountUuid: 'default-account', // 默认账户，实际项目中应该从认证状态获取
-    title: '新任务模板',
-    description: '',
-    timeConfig: {
-      time: {
-        timeType: TaskTimeType.ALL_DAY,
-        startTime: undefined,
-        endTime: undefined,
-      },
-      date: {
-        startDate: new Date(),
-        endDate: undefined,
-      },
-      schedule: {
-        mode: TaskScheduleMode.ONCE,
-        intervalDays: undefined,
-        weekdays: undefined,
-        monthDays: undefined,
-      },
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    },
-    reminderConfig: {
-      enabled: false,
-      minutesBefore: 15,
-      methods: [],
-    },
-    properties: {
-      importance: ImportanceLevel.Moderate, // 使用正确的枚举值
-      urgency: UrgencyLevel.Medium, // 使用正确的枚举值
-      location: '',
-      tags: [],
-    },
-    goalLinks: [],
-  });
+  console.log('Creating blank template...');
+  // 使用静态工厂方法创建空白模板
+  const template = TaskTemplate.forCreate('default-account'); // TODO: 从认证状态获取 accountUuid
+  
+  // 设置默认标题
+  template.updateTitle('新任务模板');
+  
+  console.log('Created blank template:', template);
+  return template;
 };
 
 /**
@@ -372,7 +339,6 @@ const handleSave = async (): Promise<void> => {
 
     switch (dialogState.mode) {
       case 'create':
-      case 'createFromMeta':
         // 将 TaskTemplate 对象转换为 CreateTaskTemplateRequest
         const createRequest: any = {
           accountUuid: formData.taskTemplate.accountUuid,
@@ -426,38 +392,15 @@ const handleSave = async (): Promise<void> => {
  * 打开创建模式
  */
 const openForCreation = (): void => {
+  console.log('[TaskTemplateDialog] openForCreation called');
   resetDialog();
   dialogState.mode = 'create';
   dialogState.visible = true;
 
   // 创建空白模板
   formData.taskTemplate = createBlankTemplate();
-};
-
-/**
- * 基于元模板打开创建模式
- */
-const openForCreationWithMetaTemplateUuid = async (metaTemplateUuid: string): Promise<void> => {
-  resetDialog();
-  dialogState.mode = 'createFromMeta';
-  dialogState.visible = true;
-
-  try {
-    operationState.loading = true;
-    operationState.loadingText = '正在加载元模板...';
-
-    // 通过应用服务获取基于元模板的任务模板
-    const template = await createTaskTemplateByMetaTemplate(metaTemplateUuid);
-
-    formData.taskTemplate = template;
-    formData.metaTemplateUuid = metaTemplateUuid;
-    dialogState.step = 2; // 跳到配置步骤
-  } catch (error) {
-    console.error('加载元模板失败:', error);
-    operationState.error = error instanceof Error ? error.message : '加载元模板失败';
-  } finally {
-    operationState.loading = false;
-  }
+  console.log('[TaskTemplateDialog] Created blank template:', formData.taskTemplate);
+  console.log('[TaskTemplateDialog] Dialog visible:', dialogState.visible);
 };
 
 /**
@@ -527,7 +470,6 @@ const handleKeyDown = (event: KeyboardEvent): void => {
 defineExpose({
   openForCreation,
   openForUpdate,
-  openForCreationWithMetaTemplateUuid,
 });
 </script>
 
