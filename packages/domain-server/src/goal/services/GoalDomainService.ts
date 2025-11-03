@@ -1,4 +1,5 @@
 import { Goal } from '../aggregates/Goal';
+import { GoalReminderConfig } from '../value-objects/GoalReminderConfig';
 import { GoalContracts } from '@dailyuse/contracts';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 
@@ -74,10 +75,18 @@ export class GoalDomainService {
       }
     }
 
-    // 5. 创建聚合根（业务逻辑在聚合根内部）
-    const goal = Goal.create(params);
+    // 5. 转换 reminderConfig DTO 为值对象（如果提供）
+    const reminderConfig = params.reminderConfig
+      ? GoalReminderConfig.fromServerDTO(params.reminderConfig)
+      : undefined;
 
-    // 6. 返回聚合根（不持久化）
+    // 6. 创建聚合根（业务逻辑在聚合根内部）
+    const goal = Goal.create({
+      ...params,
+      reminderConfig,
+    });
+
+    // 7. 返回聚合根（不持久化）
     return goal;
   }
 

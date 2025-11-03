@@ -7,4 +7,4 @@ export type { IFocusSessionRepository } from './IFocusSessionRepository';
 export type { IGoalFolderRepository } from './IGoalFolderRepository';
 export type { IGoalRepository } from './IGoalRepository';
 export type { IGoalStatisticsRepository } from './IGoalStatisticsRepository';
-export type { IWeightSnapshotRepository } from './IWeightSnapshotRepository';
+export type { IWeightSnapshotRepository, SnapshotQueryResult } from './IWeightSnapshotRepository';
