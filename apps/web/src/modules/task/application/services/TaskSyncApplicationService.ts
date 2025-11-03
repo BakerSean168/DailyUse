@@ -3,18 +3,14 @@
  * 任务数据同步应用服务 - 负责任务数据的同步与缓存管理
  */
 
-import { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
 
 // 导入类实现
-const TaskTemplateClient = TaskDomain.TaskTemplateClient;
-const TaskInstanceClient = TaskDomain.TaskInstanceClient;
 
 // 类型别名
-type TaskTemplate = TaskDomain.TaskTemplate;
-type TaskInstance = TaskDomain.TaskInstance;
 
 export class TaskSyncApplicationService {
   private static instance: TaskSyncApplicationService;

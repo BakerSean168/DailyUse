@@ -1,58 +1,100 @@
 /**
- * TriggerConfig 值对象实现 ()
+ * TriggerConfig 值对象实现 (Client)
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type TriggerConfigDTO = ReminderContracts.TriggerConfigDTO;
+type TriggerConfigClientDTO = ReminderContracts.TriggerConfigClientDTO;
 type TriggerConfigServerDTO = ReminderContracts.TriggerConfigServerDTO;
+type TriggerType = ReminderContracts.TriggerType;
+type FixedTimeTrigger = ReminderContracts.FixedTimeTrigger;
+type IntervalTrigger = ReminderContracts.IntervalTrigger;
 
-export class TriggerConfig implements ReminderContracts.TriggerConfig {
-  private readonly dto: TriggerConfigDTO;
+export class TriggerConfig implements ReminderContracts.TriggerConfigClient {
+  private readonly _type: TriggerType;
+  private readonly _fixedTime: FixedTimeTrigger | null;
+  private readonly _interval: IntervalTrigger | null;
+  private readonly _displayText: string;
 
-  private constructor(dto: TriggerConfigDTO) {
-    this.dto = dto;
+  private constructor(params: {
+    type: TriggerType;
+    fixedTime?: FixedTimeTrigger | null;
+    interval?: IntervalTrigger | null;
+    displayText: string;
+  }) {
+    this._type = params.type;
+    this._fixedTime = params.fixedTime ?? null;
+    this._interval = params.interval ?? null;
+    this._displayText = params.displayText;
   }
 
   // ===== Getters =====
-  get type(): ReminderContracts.TriggerType { return this.dto.type; }
-  get fixedTime(): ReminderContracts.FixedTimeTrigger | null { return this.dto.fixedTime ?? null; }
-  get interval(): ReminderContracts.IntervalTrigger | null { return this.dto.interval ?? null; }
-  get displayText(): string { return this.dto.displayText; }
-
-  // ===== 业务方法 =====
-  public equals(other: ReminderContracts.TriggerConfig): boolean {
-    return JSON.stringify(this.dto) === JSON.stringify((other as TriggerConfig).dto);
+  get type(): TriggerType {
+    return this._type;
   }
 
-  public toDTO(): TriggerConfigDTO {
-    return this.dto;
+  get fixedTime(): FixedTimeTrigger | null {
+    return this._fixedTime;
+  }
+
+  get interval(): IntervalTrigger | null {
+    return this._interval;
+  }
+
+  get displayText(): string {
+    return this._displayText;
+  }
+
+  // ===== 业务方法 =====
+  public equals(other: ReminderContracts.TriggerConfigClient): boolean {
+    return (
+      this._type === other.type &&
+      JSON.stringify(this._fixedTime) === JSON.stringify(other.fixedTime) &&
+      JSON.stringify(this._interval) === JSON.stringify(other.interval)
+    );
+  }
+
+  // ===== DTO 转换方法 =====
+  public toClientDTO(): TriggerConfigClientDTO {
+    return {
+      type: this._type,
+      fixedTime: this._fixedTime,
+      interval: this._interval,
+      displayText: this._displayText,
+    };
   }
 
   public toServerDTO(): TriggerConfigServerDTO {
     return {
-      type: this.dto.type,
-      fixedTime: this.dto.fixedTime,
-      interval: this.dto.interval,
+      type: this._type,
+      fixedTime: this._fixedTime,
+      interval: this._interval,
     };
   }
 
   // ===== 静态工厂方法 =====
-  public static fromDTO(dto: TriggerConfigDTO): TriggerConfig {
-    return new TriggerConfig(dto);
-  }
-
-  public static fromServerDTO(dto: TriggerConfigServerDTO): TriggerConfig {
-    // 从 ServerDTO 转换，添加 displayText
+  public static fromClientDTO(dto: TriggerConfigClientDTO): TriggerConfig {
     return new TriggerConfig({
       type: dto.type,
       fixedTime: dto.fixedTime,
       interval: dto.interval,
-      displayText: dto.fixedTime 
-        ? `每天 ${dto.fixedTime.time}` 
-        : dto.interval 
-        ? `每 ${dto.interval.minutes} 分钟` 
-        : '未设置',
+      displayText: dto.displayText,
+    });
+  }
+
+  public static fromServerDTO(dto: TriggerConfigServerDTO): TriggerConfig {
+    // 从 ServerDTO 转换，生成 displayText
+    const displayText = dto.fixedTime
+      ? `每天 ${dto.fixedTime.time}`
+      : dto.interval
+      ? `每隔 ${dto.interval.minutes} 分钟`
+      : '未设置';
+
+    return new TriggerConfig({
+      type: dto.type,
+      fixedTime: dto.fixedTime,
+      interval: dto.interval,
+      displayText,
     });
   }
 }

@@ -1,10 +1,6 @@
 import { defineStore } from 'pinia';
-import { GoalDomain } from '@dailyuse/domain-client';
+import { Goal, GoalFolder } from '@dailyuse/domain-client';
 import { type GoalContracts } from '@dailyuse/contracts';
-
-// 导入类实现（用于序列化/反序列化）
-const GoalClient = GoalDomain.GoalClient;
-const GoalFolderClient = GoalDomain.GoalFolderClient;
 
 // 类型定义
 interface GoalStoreState {
@@ -564,9 +560,9 @@ export const useGoalStore = defineStore('goal', {
         const state = JSON.parse(serialized);
         return {
           ...state,
-          goals: (state.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData)),
+          goals: (state.goals || []).map((goalData: any) => Goal.fromClientDTO(goalData)),
           goalFolders: (state.goalFolders || []).map((folderData: any) =>
-            GoalFolderClient.fromClientDTO(folderData),
+            GoalFolder.fromClientDTO(folderData),
           ),
           lastSyncTime: state.lastSyncTime ? new Date(state.lastSyncTime) : null,
         };

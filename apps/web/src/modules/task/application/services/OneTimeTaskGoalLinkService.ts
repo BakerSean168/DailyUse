@@ -7,15 +7,13 @@
  * - 任务与关键结果的关联
  */
 
-import { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { oneTimeTaskApiClient } from '../../infrastructure/api/taskApiClient';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('OneTimeTaskGoalLinkService');
-const TaskTemplateClient = TaskDomain.TaskTemplateClient;
-type TaskTemplate = TaskDomain.TaskTemplate;
 
 export class OneTimeTaskGoalLinkService {
   private static instance: OneTimeTaskGoalLinkService;

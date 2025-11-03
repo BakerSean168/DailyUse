@@ -5,8 +5,8 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IRecurrenceRule = TaskContracts.RecurrenceRule;
-type RecurrenceRuleDTO = TaskContracts.RecurrenceRuleDTO;
+type IRecurrenceRule = TaskContracts.RecurrenceRuleClient;
+type RecurrenceRuleDTO = TaskContracts.RecurrenceRuleClientDTO;
 type RecurrenceRuleServerDTO = TaskContracts.RecurrenceRuleServerDTO;
 type RecurrenceFrequency = TaskContracts.RecurrenceFrequency;
 type DayOfWeek = TaskContracts.DayOfWeek;

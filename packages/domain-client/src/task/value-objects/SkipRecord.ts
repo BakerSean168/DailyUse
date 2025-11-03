@@ -5,8 +5,8 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type ISkipRecord = TaskContracts.SkipRecord;
-type SkipRecordDTO = TaskContracts.SkipRecordDTO;
+type ISkipRecord = TaskContracts.SkipRecordClient;
+type SkipRecordDTO = TaskContracts.SkipRecordClientDTO;
 type SkipRecordServerDTO = TaskContracts.SkipRecordServerDTO;
 
 export class SkipRecord extends ValueObject implements ISkipRecord {

@@ -6,6 +6,9 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import { GoalContracts } from '@dailyuse/contracts';
 
+type IGoalStatistics = GoalContracts.GoalStatisticsClient;
+type GoalStatisticsDTO = GoalContracts.GoalStatisticsClientDTO;
+type GoalStatisticsServerDTO = GoalContracts.GoalStatisticsServerDTO;
 type TrendType = GoalContracts.TrendType;
 type ChartData = GoalContracts.ChartData;
 type TimelineData = GoalContracts.TimelineData;
@@ -15,7 +18,7 @@ type TimelineData = GoalContracts.TimelineData;
  */
 export class GoalStatistics
   extends AggregateRoot
-  implements GoalContracts.GoalStatistics
+  implements IGoalStatistics
 {
   private _accountUuid: string;
   private _totalGoals: number;
@@ -344,7 +347,7 @@ export class GoalStatistics
     };
   }
 
-  toClientDTO(): GoalContracts.GoalStatisticsDTO {
+  toClientDTO(): GoalStatisticsDTO {
     return {
       accountUuid: this._accountUuid,
       totalGoals: this._totalGoals,
@@ -428,7 +431,7 @@ export class GoalStatistics
     );
   }
 
-  static fromClientDTO(dto: GoalContracts.GoalStatisticsDTO): GoalStatistics {
+  static fromClientDTO(dto: GoalStatisticsDTO): GoalStatistics {
     return new GoalStatistics(
       dto.accountUuid,
       dto.totalGoals,

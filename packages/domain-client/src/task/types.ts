@@ -8,21 +8,17 @@
 import { TaskTemplate } from './aggregates/TaskTemplate';
 import { TaskInstance } from './aggregates/TaskInstance';
 import { TaskStatistics } from './aggregates/TaskStatistics';
-import { TaskTemplateHistoryClient } from './entities/TaskTemplateHistoryClient';
+import { TaskTemplateHistory } from './entities/TaskTemplateHistory';
 
-// 重新导出聚合根（现在不需要别名了）
-export { TaskTemplate, TaskInstance, TaskStatistics };
+// 重新导出聚合根和实体（作为值导出，可以使用类方法）
+export { TaskTemplate, TaskInstance, TaskStatistics, TaskTemplateHistory };
 
-// 实体别名
-export type TaskTemplateHistory = TaskTemplateHistoryClient;
-export { TaskTemplateHistoryClient };
-
-// 值对象别名
-export type {
-  TaskTimeConfigClient as TaskTimeConfig,
-  RecurrenceRuleClient as RecurrenceRule,
-  TaskReminderConfigClient as TaskReminderConfig,
-  TaskGoalBindingClient as TaskGoalBinding,
+// 重新导出值对象（作为值导出，可以使用类方法）
+export {
+  TaskTimeConfig,
+  RecurrenceRule,
+  TaskReminderConfig,
+  TaskGoalBinding,
 } from './value-objects';
 
 // 从 contracts 重新导出常用类型

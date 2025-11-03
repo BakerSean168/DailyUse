@@ -8,29 +8,31 @@ import { AggregateRoot } from '@dailyuse/utils';
 import * as ValueObjects from '../value-objects';
 
 // 类型别名
+type ReminderTemplateClient = ReminderContracts.ReminderTemplateClient;
 type ReminderTemplateDTO = ReminderContracts.ReminderTemplateDTO;
+type ReminderTemplateClientDTO = ReminderContracts.ReminderTemplateClientDTO;
 type ReminderTemplateServerDTO = ReminderContracts.ReminderTemplateServerDTO;
 type ReminderType = ReminderContracts.ReminderType;
 type ReminderStatus = ReminderContracts.ReminderStatus;
-type TriggerConfig = ReminderContracts.TriggerConfig;
-type TriggerConfigDTO = ReminderContracts.TriggerConfigDTO;
-type RecurrenceConfig = ReminderContracts.RecurrenceConfig;
-type RecurrenceConfigDTO = ReminderContracts.RecurrenceConfigDTO;
-type ActiveTimeConfig = ReminderContracts.ActiveTimeConfig;
-type ActiveTimeConfigDTO = ReminderContracts.ActiveTimeConfigDTO;
-type ActiveHoursConfig = ReminderContracts.ActiveHoursConfig;
-type ActiveHoursConfigDTO = ReminderContracts.ActiveHoursConfigDTO;
-type NotificationConfig = ReminderContracts.NotificationConfig;
-type NotificationConfigDTO = ReminderContracts.NotificationConfigDTO;
-type ReminderStats = ReminderContracts.ReminderStats;
-type ReminderStatsDTO = ReminderContracts.ReminderStatsDTO;
+type TriggerConfig = ReminderContracts.TriggerConfigClient;
+type TriggerConfigDTO = ReminderContracts.TriggerConfigClientDTO;
+type RecurrenceConfig = ReminderContracts.RecurrenceConfigClient;
+type RecurrenceConfigDTO = ReminderContracts.RecurrenceConfigClientDTO;
+type ActiveTimeConfig = ReminderContracts.ActiveTimeConfigClient;
+type ActiveTimeConfigDTO = ReminderContracts.ActiveTimeConfigClientDTO;
+type ActiveHoursConfig = ReminderContracts.ActiveHoursConfigClient;
+type ActiveHoursConfigDTO = ReminderContracts.ActiveHoursConfigClientDTO;
+type NotificationConfig = ReminderContracts.NotificationConfigClient;
+type NotificationConfigDTO = ReminderContracts.NotificationConfigClientDTO;
+type ReminderStats = ReminderContracts.ReminderStatsClient;
+type ReminderStatsDTO = ReminderContracts.ReminderStatsClientDTO;
 
 // 枚举别名
 const ReminderType = ReminderContracts.ReminderType;
 const ReminderStatus = ReminderContracts.ReminderStatus;
 
 export class ReminderTemplate extends AggregateRoot 
-  implements ReminderContracts.ReminderTemplate {
+  implements ReminderTemplateClient {
   
   // ===== 私有字段 =====
   private _accountUuid: string;
@@ -51,6 +53,7 @@ export class ReminderTemplate extends AggregateRoot
   private _icon?: string | null;
   private _nextTriggerAt?: number | null;
   private _stats: ReminderStats;
+  private _smartFrequencyEnabled: boolean;
   private _createdAt: number;
   private _updatedAt: number;
   private _deletedAt?: number | null;
@@ -76,6 +79,7 @@ export class ReminderTemplate extends AggregateRoot
     icon?: string | null;
     nextTriggerAt?: number | null;
     stats: ReminderStats;
+    smartFrequencyEnabled?: boolean;
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
@@ -99,6 +103,7 @@ export class ReminderTemplate extends AggregateRoot
     this._icon = params.icon;
     this._nextTriggerAt = params.nextTriggerAt;
     this._stats = params.stats;
+    this._smartFrequencyEnabled = params.smartFrequencyEnabled ?? false;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
     this._deletedAt = params.deletedAt;
@@ -328,7 +333,7 @@ export class ReminderTemplate extends AggregateRoot
       controlledByGroup: this.controlledByGroup,
     };
   }
-  
+
   public toServerDTO(): ReminderTemplateServerDTO {
     return {
       uuid: this._uuid,
@@ -336,11 +341,11 @@ export class ReminderTemplate extends AggregateRoot
       title: this._title,
       description: this._description,
       type: this._type,
-      trigger: this._trigger as any,
-      recurrence: this._recurrence as any,
-      activeTime: this._activeTime as any,
-      activeHours: this._activeHours as any,
-      notificationConfig: this._notificationConfig as any,
+      trigger: this._trigger.toServerDTO(),
+      recurrence: this._recurrence?.toServerDTO() ?? null,
+      activeTime: this._activeTime.toServerDTO(),
+      activeHours: this._activeHours?.toServerDTO() ?? null,
+      notificationConfig: this._notificationConfig.toServerDTO(),
       selfEnabled: this._selfEnabled,
       status: this._status,
       groupUuid: this._groupUuid,
@@ -349,7 +354,8 @@ export class ReminderTemplate extends AggregateRoot
       color: this._color,
       icon: this._icon,
       nextTriggerAt: this._nextTriggerAt,
-      stats: this._stats as any,
+      stats: this._stats.toServerDTO(),
+      smartFrequencyEnabled: this._smartFrequencyEnabled,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       deletedAt: this._deletedAt,
@@ -424,11 +430,11 @@ export class ReminderTemplate extends AggregateRoot
       title: dto.title,
       description: dto.description,
       type: dto.type,
-      trigger: ValueObjects.TriggerConfig.fromServerDTO(dto.trigger as any),
-      recurrence: dto.recurrence ? ValueObjects.RecurrenceConfig.fromServerDTO(dto.recurrence as any) : null,
-      activeTime: ValueObjects.ActiveTimeConfig.fromServerDTO(dto.activeTime as any),
-      activeHours: dto.activeHours ? ValueObjects.ActiveHoursConfig.fromServerDTO(dto.activeHours as any) : null,
-      notificationConfig: ValueObjects.NotificationConfig.fromServerDTO(dto.notificationConfig as any),
+      trigger: ValueObjects.TriggerConfig.fromServerDTO(dto.trigger),
+      recurrence: dto.recurrence ? ValueObjects.RecurrenceConfig.fromServerDTO(dto.recurrence) : null,
+      activeTime: ValueObjects.ActiveTimeConfig.fromServerDTO(dto.activeTime),
+      activeHours: dto.activeHours ? ValueObjects.ActiveHoursConfig.fromServerDTO(dto.activeHours) : null,
+      notificationConfig: ValueObjects.NotificationConfig.fromServerDTO(dto.notificationConfig),
       selfEnabled: dto.selfEnabled,
       status: dto.status,
       groupUuid: dto.groupUuid,
@@ -437,7 +443,8 @@ export class ReminderTemplate extends AggregateRoot
       color: dto.color,
       icon: dto.icon,
       nextTriggerAt: dto.nextTriggerAt,
-      stats: ValueObjects.ReminderStats.fromServerDTO(dto.stats as any),
+      stats: ValueObjects.ReminderStats.fromServerDTO(dto.stats),
+      smartFrequencyEnabled: dto.smartFrequencyEnabled,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,

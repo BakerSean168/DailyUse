@@ -10,14 +10,12 @@
  * - 子任务查询
  */
 
-import { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { oneTimeTaskApiClient } from '../../infrastructure/api/taskApiClient';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('OneTimeTaskQueryService');
-const TaskTemplateClient = TaskDomain.TaskTemplateClient;
-type TaskTemplate = TaskDomain.TaskTemplate;
 
 export class OneTimeTaskQueryService {
   private static instance: OneTimeTaskQueryService;

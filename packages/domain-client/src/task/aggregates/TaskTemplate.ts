@@ -15,8 +15,8 @@ import {
 import { TaskTemplateHistory } from '../entities';
 import { TaskInstance } from './TaskInstance';
 
-type ITaskTemplate = TaskContracts.TaskTemplate;
-type TaskTemplateDTO = TaskContracts.TaskTemplateDTO;
+type ITaskTemplate = TaskContracts.TaskTemplateClient;
+type TaskTemplateDTO = TaskContracts.TaskTemplateClientDTO;
 type TaskTemplateServerDTO = TaskContracts.TaskTemplateServerDTO;
 type TaskType = TaskContracts.TaskType;
 type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
@@ -490,7 +490,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       color: dto.color,
       status: dto.status,
       lastGeneratedDate: dto.lastGeneratedDate,
-      generateAheadDays: dto.generateAheadDays,
+      generateAheadDays: dto.generateAheadDays ?? undefined,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
@@ -500,13 +500,25 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   }
 
   public static fromServerDTO(dto: TaskTemplateServerDTO): TaskTemplate {
+    // 对于 timeConfig，如果为 null/undefined，创建默认配置（全天无时间范围）
+    const TaskContracts = require('@dailyuse/contracts').TaskContracts;
+    const defaultTimeConfig: TaskTimeConfig = dto.timeConfig
+      ? TaskTimeConfig.fromServerDTO(dto.timeConfig)
+      : TaskTimeConfig.fromServerDTO({
+          timeType: TaskContracts.TimeType.ALL_DAY,
+          startDate: null,
+          endDate: null,
+          timePoint: null,
+          timeRange: null,
+        });
+
     return new TaskTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
       description: dto.description,
       taskType: dto.taskType,
-      timeConfig: TaskTimeConfig.fromServerDTO(dto.timeConfig),
+      timeConfig: defaultTimeConfig,
       recurrenceRule: dto.recurrenceRule
         ? RecurrenceRule.fromServerDTO(dto.recurrenceRule)
         : null,
@@ -520,11 +532,11 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       tags: dto.tags,
       color: dto.color,
       status: dto.status,
-      lastGeneratedDate: dto.lastGeneratedDate,
-      generateAheadDays: dto.generateAheadDays,
+      lastGeneratedDate: dto.lastGeneratedDate ?? undefined,
+      generateAheadDays: dto.generateAheadDays ?? undefined,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
-      deletedAt: dto.deletedAt,
+      deletedAt: dto.deletedAt ?? undefined,
       history: dto.history?.map((h: any) => TaskTemplateHistory.fromServerDTO(h)) ?? [],
       instances: dto.instances?.map((i: any) => TaskInstance.fromServerDTO(i)) ?? [],
     });

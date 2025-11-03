@@ -6,8 +6,8 @@ import type { GoalContracts } from '@dailyuse/contracts';
 import { GoalContracts as GC } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IKeyResultProgress = GoalContracts.KeyResultProgress;
-type KeyResultProgressDTO = GoalContracts.KeyResultProgressDTO;
+type IKeyResultProgress = GoalContracts.IKeyResultProgressClient;
+type KeyResultProgressDTO = GoalContracts.KeyResultProgressClientDTO;
 type KeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
 type KeyResultValueType = GoalContracts.KeyResultValueType;
 type AggregationMethod = GoalContracts.AggregationMethod;

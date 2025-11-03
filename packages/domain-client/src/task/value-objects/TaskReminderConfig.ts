@@ -5,8 +5,8 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskReminderConfig = TaskContracts.TaskReminderConfig;
-type TaskReminderConfigDTO = TaskContracts.TaskReminderConfigDTO;
+type ITaskReminderConfig = TaskContracts.TaskReminderConfigClient;
+type TaskReminderConfigDTO = TaskContracts.TaskReminderConfigClientDTO;
 type TaskReminderConfigServerDTO = TaskContracts.TaskReminderConfigServerDTO;
 type ReminderType = TaskContracts.ReminderType;
 type ReminderTimeUnit = TaskContracts.ReminderTimeUnit;

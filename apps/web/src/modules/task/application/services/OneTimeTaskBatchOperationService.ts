@@ -8,15 +8,13 @@
  * - 其他批量操作（未来扩展）
  */
 
-import { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { oneTimeTaskApiClient } from '../../infrastructure/api/taskApiClient';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('OneTimeTaskBatchOperationService');
-const TaskTemplateClient = TaskDomain.TaskTemplateClient;
-type TaskTemplate = TaskDomain.TaskTemplate;
 
 export class OneTimeTaskBatchOperationService {
   private static instance: OneTimeTaskBatchOperationService;
@@ -52,7 +50,7 @@ export class OneTimeTaskBatchOperationService {
       };
       
       const dtos = await oneTimeTaskApiClient.batchUpdatePriority(request);
-      const tasks = dtos.map(dto => TaskTemplateClient.fromServerDTO(dto));
+      const tasks = dtos.map(dto => TaskTemplate.fromServerDTO(dto));
       
       // 批量更新 store
       const taskStore = useTaskStore();
@@ -92,7 +90,7 @@ export class OneTimeTaskBatchOperationService {
       };
       
       const dtos = await oneTimeTaskApiClient.batchCancelTasks(request);
-      const tasks = dtos.map(dto => TaskTemplateClient.fromServerDTO(dto));
+      const tasks = dtos.map(dto => TaskTemplate.fromServerDTO(dto));
       
       // 批量更新 store
       const taskStore = useTaskStore();

@@ -7,15 +7,13 @@
  * - 任务状态转换（开始、完成、阻塞、取消）
  */
 
-import { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { oneTimeTaskApiClient } from '../../infrastructure/api/taskApiClient';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('OneTimeTaskLifecycleService');
-const TaskTemplateClient = TaskDomain.TaskTemplateClient;
-type TaskTemplate = TaskDomain.TaskTemplate;
 
 export class OneTimeTaskLifecycleService {
   private static instance: OneTimeTaskLifecycleService;

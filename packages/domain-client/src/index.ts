@@ -2,118 +2,141 @@
  * Domain Client - 客户端领域层
  *
  * 此包包含所有领域模块的客户端实现
+ * 
+ * 导出规范：
+ * - 直接导出类（聚合根、实体、值对象），可使用类方法
+ * - 不使用命名空间导出
+ * - 不使用类型别名导出（除非特殊需要）
+ * - 保持简洁直观的命名
  */
 
-// ============ 命名空间导出（用于需要完整模块访问的场景） ============
-// 编辑器模块
-export * as EditorDomain from './editor';
+// ==================== Task 模块 ====================
+// 聚合根
+export { TaskTemplate } from './task/aggregates/TaskTemplate';
+export { TaskInstance } from './task/aggregates/TaskInstance';
+export { TaskStatistics } from './task/aggregates/TaskStatistics';
 
-// 目标模块
-export * as GoalDomain from './goal';
+// 实体
+export { TaskTemplateHistory } from './task/entities/TaskTemplateHistory';
 
-// 知识库模块
-export * as RepositoryDomain from './repository';
+// 值对象
+export {
+  TaskTimeConfig,
+  RecurrenceRule,
+  TaskReminderConfig,
+  TaskGoalBinding,
+  CompletionRecord,
+  SkipRecord,
+} from './task/value-objects';
 
-// 日程模块
-export * as ScheduleDomain from './schedule';
-
-// 任务模块
-export * as TaskDomain from './task';
-
-// 设置模块
-export * as SettingDomain from './setting';
-
-// ============ Account 模块 ============
-export * as AccountDomain from './account';
-
-// ============ Authentication 模块 ============
-export * as AuthenticationDomain from './authentication';
-
-// ============ 直接导出（便于直接导入常用类型） ============
-
-// Goal 模块 - 直接从实现导出
+// ==================== Goal 模块 ====================
+// 聚合根
 export { Goal } from './goal/aggregates/Goal';
 export { GoalFolder } from './goal/aggregates/GoalFolder';
 export { GoalStatistics } from './goal/aggregates/GoalStatistics';
+
+// 实体
 export { KeyResult } from './goal/entities/KeyResult';
 export { GoalRecord } from './goal/entities/GoalRecord';
 export { GoalReview } from './goal/entities/GoalReview';
 
-// Goal 模块 - 类型别名（只导出值对象类型）
-export type {
+// 值对象
+export {
   GoalMetadata,
   GoalTimeRange,
   GoalReminderConfig,
   KeyResultProgress,
   KeyResultSnapshot,
-} from './goal/types';
+} from './goal/value-objects';
 
-// Task 模块 - 直接从实现导出（已移除 Client 后缀）
-export { TaskTemplate } from './task/aggregates/TaskTemplate';
-export { TaskInstance } from './task/aggregates/TaskInstance';
-export { TaskStatistics } from './task/aggregates/TaskStatistics';
-export { TaskTemplateHistory } from './task/entities/TaskTemplateHistory';
+// ==================== Reminder 模块 ====================
+// 聚合根
+export { ReminderTemplate } from './reminder/aggregates/ReminderTemplate';
+export { ReminderGroup } from './reminder/aggregates/ReminderGroup';
+export { ReminderStatistics } from './reminder/aggregates/ReminderStatistics';
 
-// Task 模块 - 类型导出（只导出类型别名，不导出已有的实现类）
-export type {
-  TaskTimeConfig,
-  RecurrenceRule,
-  TaskReminderConfig,
-  TaskGoalBinding,
-} from './task/types';
+// 值对象
+export {
+  TriggerConfig,
+  RecurrenceConfig,
+  ActiveTimeConfig,
+  ActiveHoursConfig,
+  NotificationConfig,
+  ReminderStats,
+  GroupStats,
+} from './reminder/value-objects';
 
-// Repository 模块 - 直接从实现导出
+// ==================== Schedule 模块 ====================
+// 聚合根
+export { ScheduleTask } from './schedule/aggregates';
+
+// 实体
+export * from './schedule/entities';
+
+// 值对象
+export * from './schedule/value-objects';
+
+// ==================== Editor 模块 ====================
+// 聚合根
+export { EditorWorkspaceClient } from './editor/aggregates';
+
+// 实体
+export * from './editor/entities';
+
+// 值对象
+export * from './editor/value-objects';
+
+// ==================== Notification 模块 ====================
+// 聚合根
+export {
+  NotificationClient,
+  NotificationTemplateClient,
+  NotificationPreferenceClient,
+} from './notification/aggregates';
+
+// 值对象
+export * from './notification/value-objects';
+
+// ==================== Repository 模块 ====================
+// 聚合根
 export { Repository } from './repository/aggregates/Repository';
+
+// 实体
 export { Resource } from './repository/entities/Resource';
 export { LinkedContent } from './repository/entities/LinkedContent';
 export { ResourceReference } from './repository/entities/ResourceReference';
 export { RepositoryExplorer } from './repository/entities/RepositoryExplorer';
+
+// 值对象
 export { RepositoryConfig } from './repository/value-objects/RepositoryConfig';
 export { GitInfo } from './repository/value-objects/GitInfo';
 export { SyncStatus } from './repository/value-objects/SyncStatus';
 export { RepositoryStats } from './repository/value-objects/RepositoryStats';
 
-// Repository 模块 - 类型别名（为了向后兼容）
-export type {
-  Repository as RepositoryType,
-  Resource as ResourceType,
-  LinkedContent as LinkedContentType,
-  ResourceReference as ResourceReferenceType,
-  RepositoryExplorer as RepositoryExplorerType,
-  RepositoryConfig as RepositoryConfigType,
-  GitInfo as GitInfoType,
-  SyncStatus as SyncStatusType,
-  RepositoryStats as RepositoryStatsType,
-} from './repository';
-
-// Account 模块 - 直接从实现导出
+// ==================== Account 模块 ====================
+// 聚合根
 export { Account } from './account/aggregates/Account';
+
+// 实体
 export { Subscription } from './account/entities/Subscription';
 export { AccountHistory } from './account/entities/AccountHistory';
 
-// Authentication 模块 - 直接从实现导出
+// ==================== Authentication 模块 ====================
+// 聚合根
 export { AuthCredential } from './authentication/aggregates/AuthCredential';
 export { AuthSession } from './authentication/aggregates/AuthSession';
+
+// 实体
 export { PasswordCredential } from './authentication/entities/PasswordCredential';
 export { ApiKeyCredential } from './authentication/entities/ApiKeyCredential';
 export { RememberMeToken } from './authentication/entities/RememberMeToken';
 export { RefreshToken } from './authentication/entities/RefreshToken';
 export { CredentialHistory } from './authentication/entities/CredentialHistory';
 export { SessionHistory } from './authentication/entities/SessionHistory';
+
+// 值对象
 export { DeviceInfo } from './authentication/value-objects/DeviceInfo';
 
-// Reminder 模块 - 直接从实现导出（已移除 Client 后缀）
-export { ReminderTemplate } from './reminder/aggregates/ReminderTemplate';
-export { ReminderGroup } from './reminder/aggregates/ReminderGroup';
-
-// Reminder 模块 - 类型导出
-import type { ReminderContracts } from '@dailyuse/contracts';
-export type ReminderTemplateDTO = ReminderContracts.ReminderTemplateClientDTO;
-export type ReminderGroupDTO = ReminderContracts.ReminderGroupClientDTO;
-export type ReminderInstance = any; // TODO: 定义或移除
-
-// Setting 模块 - 直接从实现导出
+// ==================== Setting 模块 ====================
+// 聚合根
 export { UserSetting } from './setting/aggregates/UserSetting';
-
-// Setting 模块 - 类型别名（为了向后兼容）
-export type { UserSetting as UserPreferences } from './setting';

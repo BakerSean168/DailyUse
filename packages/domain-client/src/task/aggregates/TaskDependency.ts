@@ -6,7 +6,7 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 
-type TaskDependencyDTO = TaskContracts.TaskDependencyDTO;
+type TaskDependencyDTO = TaskContracts.TaskDependencyClientDTO;
 type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
 type DependencyType = TaskContracts.DependencyType;
 

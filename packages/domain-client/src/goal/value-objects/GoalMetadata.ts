@@ -5,8 +5,8 @@
 import { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalMetadata = GoalContracts.GoalMetadata;
-type GoalMetadataDTO = GoalContracts.GoalMetadataDTO;
+type IGoalMetadata = GoalContracts.GoalMetadataClient;
+type GoalMetadataDTO = GoalContracts.GoalMetadataClientDTO;
 type GoalMetadataServerDTO = GoalContracts.GoalMetadataServerDTO;
 
 type ImportanceLevel = GoalContracts.ImportanceLevel;

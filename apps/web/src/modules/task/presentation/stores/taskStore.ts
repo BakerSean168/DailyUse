@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { TaskDomain } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client';
 import { toDayStart } from '@dailyuse/utils';
 import { TaskContracts } from '@dailyuse/contracts';
 
@@ -8,16 +8,6 @@ type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
 
 const TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
 type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
-
-// 导入客户端类实现
-const TaskTemplateClient = TaskDomain.TaskTemplateClient;
-const TaskInstanceClient = TaskDomain.TaskInstanceClient;
-const TaskStatisticsClient = TaskDomain.TaskStatisticsClient;
-
-// 类型别名
-type TaskTemplate = TaskDomain.TaskTemplate;
-type TaskInstance = TaskDomain.TaskInstance;
-type TaskStatistics = TaskDomain.TaskStatistics;
 
 /**
  * Task Store - 新架构
@@ -83,11 +73,11 @@ export const useTaskStore = defineStore('task', {
 
         // 如果反序列化正常工作，这里应该已经是 TaskTemplate 实例
         // 但为了安全起见，如果不是实例则转换
-        if (found instanceof TaskTemplateClient) {
+        if (found instanceof TaskTemplate) {
           return found;
         } else {
           console.warn('[TaskStore] 发现非实体对象，正在转换为 TaskTemplate 实例');
-          return TaskTemplateClient.fromClientDTO(found as any);
+          return TaskTemplate.fromClientDTO(found as any);
         }
       },
 
@@ -101,11 +91,11 @@ export const useTaskStore = defineStore('task', {
         if (!found) return null;
 
         // 如果反序列化正常工作，这里应该已经是 TaskInstance 实例
-        if (found instanceof TaskInstanceClient) {
+        if (found instanceof TaskInstance) {
           return found;
         } else {
           console.warn('[TaskStore] 发现非实体对象，正在转换为 TaskInstance 实例');
-          return TaskInstanceClient.fromClientDTO(found as any);
+          return TaskInstance.fromClientDTO(found as any);
         }
       },
 
@@ -119,11 +109,11 @@ export const useTaskStore = defineStore('task', {
         if (!found) return null;
 
         // 确保返回的是 TaskTemplate 实例
-        if (found instanceof TaskTemplateClient) {
+        if (found instanceof TaskTemplate) {
           return found;
         } else {
           // 如果是普通对象，转换为 TaskTemplate 实例
-          return TaskTemplateClient.fromClientDTO(found as any);
+          return TaskTemplate.fromClientDTO(found as any);
         }
       },
 
@@ -138,10 +128,10 @@ export const useTaskStore = defineStore('task', {
       if (!found) return null;
 
       // 确保返回的是 TaskTemplate 实例
-      if (found instanceof TaskTemplateClient) {
+      if (found instanceof TaskTemplate) {
         return found;
       } else {
-        return TaskTemplateClient.fromClientDTO(found as any);
+        return TaskTemplate.fromClientDTO(found as any);
       }
     },
 
@@ -154,10 +144,10 @@ export const useTaskStore = defineStore('task', {
       if (!found) return null;
 
       // 确保返回的是 TaskInstance 实例
-      if (found instanceof TaskInstanceClient) {
+      if (found instanceof TaskInstance) {
         return found;
       } else {
-        return TaskInstanceClient.fromClientDTO(found as any);
+        return TaskInstance.fromClientDTO(found as any);
       }
     },
 
@@ -168,11 +158,11 @@ export const useTaskStore = defineStore('task', {
       if (!state.taskTemplateBeingEdited) return null;
 
       const template = state.taskTemplateBeingEdited;
-      if (template instanceof TaskTemplateClient) {
+      if (template instanceof TaskTemplate) {
         return template;
       } else {
         console.warn('[TaskStore] 发现非实体对象，正在转换为 TaskTemplate 实例');
-        return TaskTemplateClient.fromClientDTO(template as any);
+        return TaskTemplate.fromClientDTO(template as any);
       }
     },
 
@@ -188,10 +178,10 @@ export const useTaskStore = defineStore('task', {
             return t.goalBinding.keyResultUuid === keyResultUuid;
           })
           .map((template) => {
-            if (template instanceof TaskTemplateClient) {
+            if (template instanceof TaskTemplate) {
               return template;
             } else {
-              return TaskTemplateClient.fromClientDTO(template as any);
+              return TaskTemplate.fromClientDTO(template as any);
             }
           });
       },
@@ -205,10 +195,10 @@ export const useTaskStore = defineStore('task', {
         return state.taskInstances
           .filter((instance) => instance.templateUuid === templateUuid)
           .map((instance) => {
-            if (instance instanceof TaskInstanceClient) {
+            if (instance instanceof TaskInstance) {
               return instance;
             } else {
-              return TaskInstanceClient.fromClientDTO(instance as any);
+              return TaskInstance.fromClientDTO(instance as any);
             }
           });
       },
@@ -222,10 +212,10 @@ export const useTaskStore = defineStore('task', {
         return state.taskInstances
           .filter((instance) => instance.status === status)
           .map((instance) => {
-            if (instance instanceof TaskInstanceClient) {
+            if (instance instanceof TaskInstance) {
               return instance;
             } else {
-              return TaskInstanceClient.fromClientDTO(instance as any);
+              return TaskInstance.fromClientDTO(instance as any);
             }
           });
       },
@@ -696,16 +686,16 @@ export const useTaskStore = defineStore('task', {
             // 将DTO转换回Domain实体（当实体类可用时）
             taskTemplates:
               parsed.taskTemplates?.map((templateDTO: any) => {
-                if (templateDTO && TaskTemplateClient && typeof TaskTemplateClient.fromClientDTO === 'function') {
-                  return TaskTemplateClient.fromClientDTO(templateDTO);
+                if (templateDTO && TaskTemplate && typeof TaskTemplate.fromClientDTO === 'function') {
+                  return TaskTemplate.fromClientDTO(templateDTO);
                 }
                 return templateDTO;
               }) || [],
 
             taskInstances:
               parsed.taskInstances?.map((instanceDTO: any) => {
-                if (instanceDTO && TaskInstanceClient && typeof TaskInstanceClient.fromClientDTO === 'function') {
-                  return TaskInstanceClient.fromClientDTO(instanceDTO);
+                if (instanceDTO && TaskInstance && typeof TaskInstance.fromClientDTO === 'function') {
+                  return TaskInstance.fromClientDTO(instanceDTO);
                 }
                 return instanceDTO;
               }) || [],

@@ -6,13 +6,16 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import { GoalContracts } from '@dailyuse/contracts';
 
+type IGoalFolder = GoalContracts.GoalFolderClient;
+type GoalFolderDTO = GoalContracts.GoalFolderClientDTO;
+type GoalFolderServerDTO = GoalContracts.GoalFolderServerDTO;
 type FolderType = GoalContracts.FolderType;
 const FolderType = GoalContracts.FolderType;
 
 /**
  * 目标文件夹聚合根客户端实现
  */
-export class GoalFolder extends AggregateRoot implements GoalContracts.GoalFolder {
+export class GoalFolder extends AggregateRoot implements IGoalFolder {
   private _accountUuid: string;
   private _name: string;
   private _description?: string | null;
@@ -210,7 +213,7 @@ export class GoalFolder extends AggregateRoot implements GoalContracts.GoalFolde
 
   // ========== DTO 转换 ==========
 
-  toServerDTO(): GoalContracts.GoalFolderServerDTO {
+  toServerDTO(): GoalFolderServerDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -230,7 +233,7 @@ export class GoalFolder extends AggregateRoot implements GoalContracts.GoalFolde
     };
   }
 
-  toClientDTO(): GoalContracts.GoalFolderDTO {
+  toClientDTO(): GoalFolderDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -330,7 +333,7 @@ export class GoalFolder extends AggregateRoot implements GoalContracts.GoalFolde
     );
   }
 
-  static fromServerDTO(dto: GoalContracts.GoalFolderServerDTO): GoalFolder {
+  static fromServerDTO(dto: GoalFolderServerDTO): GoalFolder {
     return new GoalFolder(
       dto.uuid,
       dto.accountUuid,
@@ -350,7 +353,7 @@ export class GoalFolder extends AggregateRoot implements GoalContracts.GoalFolde
     );
   }
 
-  static fromClientDTO(dto: GoalContracts.GoalFolderDTO): GoalFolder {
+  static fromClientDTO(dto: GoalFolderDTO): GoalFolder {
     return new GoalFolder(
       dto.uuid,
       dto.accountUuid,

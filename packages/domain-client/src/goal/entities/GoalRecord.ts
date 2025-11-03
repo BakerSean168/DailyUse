@@ -5,8 +5,8 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { Entity } from '@dailyuse/utils';
 
-type IGoalRecord = GoalContracts.GoalRecord;
-type GoalRecordDTO = GoalContracts.GoalRecordDTO;
+type IGoalRecord = GoalContracts.GoalRecordClient;
+type GoalRecordDTO = GoalContracts.GoalRecordClientDTO;
 type GoalRecordServerDTO = GoalContracts.GoalRecordServerDTO;
 
 export class GoalRecord extends Entity implements IGoalRecord {
