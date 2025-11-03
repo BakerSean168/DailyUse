@@ -179,7 +179,7 @@ import { useRouter } from 'vue-router';
 import { useGoalManagement } from '../composables/useGoalManagement';
 import { useGoalFolder } from '../composables/useGoalFolder';
 import { useGoalStore } from '../stores/goalStore';
-import type { GoalClient, GoalFolderClient } from '@dailyuse/domain-client';
+import type { GoalClient, GoalFolder } from '@dailyuse/domain-client';
 
 // 组件导入
 import GoalCard from '../components/cards/GoalCard.vue';

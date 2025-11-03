@@ -40,7 +40,7 @@ import { ref, onMounted } from 'vue';
 import { useDocument } from '../composables/useDocument';
 import DocumentList from '../components/DocumentList.vue';
 import DocumentEditor from '../components/DocumentEditor.vue';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import { DocumentContracts } from '@dailyuse/contracts';
 
 type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 

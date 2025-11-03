@@ -10,7 +10,7 @@ import type {
   ReminderTriggeredPayload,
   NotificationPermission,
   NotificationServiceConfig,
-} from '../../domain/types';
+} from '../../application/types';
 
 /**
  * 通知模块事件常量

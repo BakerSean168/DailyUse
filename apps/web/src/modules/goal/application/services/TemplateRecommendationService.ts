@@ -3,13 +3,13 @@
  * 模板推荐服务 - 基于用户上下文推荐合适的目标模板
  */
 
-import type { GoalTemplate } from '../../domain/templates/GoalTemplates';
+import type { GoalTemplate } from '../../application/templates/GoalTemplates';
 import {
   BUILT_IN_TEMPLATES,
   getTemplatesByCategory,
   getTemplatesByRole,
   getTemplatesByIndustry,
-} from '../../domain/templates/GoalTemplates';
+} from '../../application/templates/GoalTemplates';
 
 /**
  * 推荐过滤条件

@@ -159,8 +159,8 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { KeyResultClient, GoalClient } from '@dailyuse/domain-client';
-import { KeyResultClient as KeyResult } from '@dailyuse/domain-client';
+import type { KeyResultClient, Goal } from '@dailyuse/domain-client';
+import { KeyResult as KeyResult } from '@dailyuse/domain-client';
 // composables
 import { useKeyResult } from '../../composables/useKeyResult';
 

@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import DocumentCard from './DocumentCard.vue';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import { DocumentContracts } from '@dailyuse/contracts';
 
 type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 

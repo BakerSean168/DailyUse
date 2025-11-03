@@ -56,8 +56,8 @@
 
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
-import type { GoalFolderClient } from '@dailyuse/domain-client';
-import { GoalFolderClient as GoalFolder } from '@dailyuse/domain-client';
+import type { GoalFolder } from '@dailyuse/domain-client';
+import { GoalFolder as GoalFolder } from '@dailyuse/domain-client';
 // composables
 import { useGoalFolder } from '../../composables/useGoalFolder';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';

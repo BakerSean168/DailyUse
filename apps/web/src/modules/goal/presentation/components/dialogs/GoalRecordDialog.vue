@@ -100,7 +100,7 @@ import { computed, watch, ref } from 'vue';
 // utils
 import { format } from 'date-fns';
 // domains
-import { GoalRecordClient } from '@dailyuse/domain-client';
+import { GoalRecord } from '@dailyuse/domain-client';
 // composables
 import { useGoal } from '../../composables/useGoal';
 

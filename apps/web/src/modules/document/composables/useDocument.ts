@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { ref } from 'vue';
 import { documentApiClient } from '../api/DocumentApiClient';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import { DocumentContracts } from '@dailyuse/contracts';
 
 type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 type CreateDocumentDTO = DocumentContracts.CreateDocumentDTO;

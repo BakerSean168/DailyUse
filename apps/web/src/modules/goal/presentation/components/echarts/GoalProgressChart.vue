@@ -26,13 +26,13 @@ type EChartsOption = ComposeOption<
 >;
 
 import { computed } from 'vue';
-import { GoalClient } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client';
 import { useTheme } from 'vuetify';
 import { format } from 'date-fns';
 const theme = useTheme();
 
 const props = defineProps<{
-  goal: GoalClient | null;
+  goal: Goal | null;
 }>();
 
 const danger_threshold = 20;

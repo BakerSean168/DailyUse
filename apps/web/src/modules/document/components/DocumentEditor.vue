@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import { DocumentContracts } from '@dailyuse/contracts';
 
 type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 

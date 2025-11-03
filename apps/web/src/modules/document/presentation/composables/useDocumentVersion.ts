@@ -8,7 +8,7 @@
 
 import { ref, computed } from 'vue';
 import { documentVersionApi } from '../../infrastructure/api/DocumentVersionApiClient';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import { DocumentContracts } from '@dailyuse/contracts';
 
 type DocumentVersionClientDTO = DocumentContracts.DocumentVersionClientDTO;
 type VersionComparisonDTO = DocumentContracts.VersionComparisonDTO;

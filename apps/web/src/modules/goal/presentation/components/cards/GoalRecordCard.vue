@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { GoalRecordClient } from '@dailyuse/domain-client';
+import { GoalRecord } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 
 defineProps<{

@@ -296,7 +296,7 @@ import type {
   RuleCondition,
 } from '../../../../../../../../packages/contracts/src/modules/goal/rules/StatusRule';
 import { GoalStatus } from '../../../../../../../../packages/contracts/src/modules/goal/enums';
-import { sortRulesByPriority } from '../../../domain/rules/BuiltInRules';
+import { sortRulesByPriority } from '../../../application/rules/BuiltInRules';
 
 const { config, getRuleEngine } = useAutoStatusRules();
 

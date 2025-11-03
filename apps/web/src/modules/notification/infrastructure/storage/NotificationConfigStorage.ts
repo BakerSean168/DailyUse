@@ -3,7 +3,7 @@
  * @description 管理通知配置的持久化存储
  */
 
-import type { NotificationServiceConfig } from '../../domain/types';
+import type { NotificationServiceConfig } from '../../application/types';
 
 /**
  * 通知配置存储服务

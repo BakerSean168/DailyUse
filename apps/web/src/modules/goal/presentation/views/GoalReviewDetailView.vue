@@ -298,7 +298,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { GoalReviewClient, GoalClient } from '@dailyuse/domain-client';
+import { GoalReviewClient, Goal } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 
 // 路由和状态

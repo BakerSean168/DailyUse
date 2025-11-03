@@ -56,7 +56,7 @@ import { computed } from 'vue';
 import { format } from 'date-fns';
 import type { TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
-import { GoalClient, KeyResultClient } from '@dailyuse/domain-client';
+import { GoalClient, KeyResult } from '@dailyuse/domain-client';
 
 // Props
 interface Props {

@@ -148,7 +148,7 @@ import LinkGraphView from '../components/LinkGraphView.vue';
 import { useMarkdownEditor } from '../composables/useMarkdownEditor';
 import { useAutoSave } from '../composables/useAutoSave';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
-import type { DocumentContracts } from '@packages/contracts';
+import { DocumentContracts } from '@packages/contracts';
 
 // ==================== Props ====================
 interface Props {

@@ -79,7 +79,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import { DocumentContracts } from '@dailyuse/contracts';
 
 type VersionComparisonDTO = DocumentContracts.VersionComparisonDTO;
 

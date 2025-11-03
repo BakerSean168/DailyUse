@@ -14,7 +14,7 @@ export {
   NotificationMethod,
   NotificationPermission,
   SoundType,
-} from './domain/types';
+} from './application/types';
 
 export type {
   NotificationConfig,
@@ -28,7 +28,7 @@ export type {
   NotificationSearchResult,
   ReminderTriggeredPayload,
   INotificationService,
-} from './domain/types';
+} from './application/types';
 
 // 事件相关
 export {

@@ -3,13 +3,13 @@
  * @description 管理系统级桌面通知（右下角弹窗）
  */
 
-import { NotificationPermission } from '../../domain/types';
+import { NotificationPermission } from '../../application/types';
 
 import type {
   NotificationConfig,
   DesktopNotificationConfig,
   NotificationAction,
-} from '../../domain/types';
+} from '../../application/types';
 
 /**
  * 扩展的通知选项接口（包含浏览器可能支持的特性）

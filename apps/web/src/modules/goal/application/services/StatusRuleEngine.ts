@@ -15,7 +15,7 @@ import {
   BUILT_IN_RULES,
   sortRulesByPriority,
   getEnabledRules,
-} from '../../domain/rules/BuiltInRules';
+} from '../../application/rules/BuiltInRules';
 
 /**
  * 目标数据接口（用于规则评估）

@@ -9,7 +9,7 @@ import { NotificationConfigStorage } from '../../infrastructure/storage/Notifica
 import { sseClient } from '../../infrastructure/sse/SSEClient';
 import { reminderNotificationHandler } from '../handlers/ReminderNotificationHandler';
 
-import type { NotificationServiceConfig } from '../../domain/types';
+import type { NotificationServiceConfig } from '../../application/types';
 
 /**
  * Notification 模块初始化管理器
