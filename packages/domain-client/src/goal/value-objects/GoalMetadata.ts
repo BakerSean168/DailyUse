@@ -5,8 +5,8 @@
 import { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalMetadataClient = GoalContracts.GoalMetadataClient;
-type GoalMetadataClientDTO = GoalContracts.GoalMetadataClientDTO;
+type IGoalMetadata = GoalContracts.GoalMetadata;
+type GoalMetadataDTO = GoalContracts.GoalMetadataDTO;
 type GoalMetadataServerDTO = GoalContracts.GoalMetadataServerDTO;
 
 type ImportanceLevel = GoalContracts.ImportanceLevel;
@@ -15,7 +15,7 @@ type UrgencyLevel = GoalContracts.UrgencyLevel;
 const ImportanceLevel = GoalContracts.ImportanceLevel;
 const UrgencyLevel = GoalContracts.UrgencyLevel;
 
-export class GoalMetadataClient extends ValueObject implements IGoalMetadataClient {
+export class GoalMetadata extends ValueObject implements IGoalMetadata {
   private _importance: ImportanceLevel;
   private _urgency: UrgencyLevel;
   private _category: string | null;
@@ -97,7 +97,7 @@ export class GoalMetadataClient extends ValueObject implements IGoalMetadataClie
   }
 
   // 值对象方法
-  public equals(other: IGoalMetadataClient): boolean {
+  public equals(other: IGoalMetadata): boolean {
     return (
       this._importance === other.importance &&
       this._urgency === other.urgency &&
@@ -121,7 +121,7 @@ export class GoalMetadataClient extends ValueObject implements IGoalMetadataClie
     };
   }
 
-  public toClientDTO(): GoalMetadataClientDTO {
+  public toClientDTO(): GoalMetadataDTO {
     return {
       importance: this._importance,
       urgency: this._urgency,
@@ -137,8 +137,8 @@ export class GoalMetadataClient extends ValueObject implements IGoalMetadataClie
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalMetadataClientDTO): GoalMetadataClient {
-    return new GoalMetadataClient({
+  public static fromClientDTO(dto: GoalMetadataDTO): GoalMetadata {
+    return new GoalMetadata({
       importance: dto.importance,
       urgency: dto.urgency,
       category: dto.category,
@@ -146,8 +146,8 @@ export class GoalMetadataClient extends ValueObject implements IGoalMetadataClie
     });
   }
 
-  public static fromServerDTO(dto: GoalMetadataServerDTO): GoalMetadataClient {
-    return new GoalMetadataClient({
+  public static fromServerDTO(dto: GoalMetadataServerDTO): GoalMetadata {
+    return new GoalMetadata({
       importance: dto.importance,
       urgency: dto.urgency,
       category: dto.category,

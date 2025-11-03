@@ -5,13 +5,13 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalReminderConfigClient = GoalContracts.GoalReminderConfigClient;
-type GoalReminderConfigClientDTO = GoalContracts.GoalReminderConfigClientDTO;
+type IGoalReminderConfig = GoalContracts.GoalReminderConfig;
+type GoalReminderConfigDTO = GoalContracts.GoalReminderConfigDTO;
 type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
 type ReminderTrigger = GoalContracts.ReminderTrigger;
 type ReminderTriggerType = GoalContracts.ReminderTriggerType;
 
-export class GoalReminderConfigClient extends ValueObject implements IGoalReminderConfigClient {
+export class GoalReminderConfig extends ValueObject implements IGoalReminderConfig {
   private _enabled: boolean;
   private _triggers: ReminderTrigger[];
 
@@ -65,7 +65,7 @@ export class GoalReminderConfigClient extends ValueObject implements IGoalRemind
   }
 
   // 值对象方法
-  public equals(other: IGoalReminderConfigClient): boolean {
+  public equals(other: IGoalReminderConfig): boolean {
     return (
       this._enabled === other.enabled &&
       JSON.stringify(this._triggers) === JSON.stringify(other.triggers)
@@ -100,7 +100,7 @@ export class GoalReminderConfigClient extends ValueObject implements IGoalRemind
     };
   }
 
-  public toClientDTO(): GoalReminderConfigClientDTO {
+  public toClientDTO(): GoalReminderConfigDTO {
     return {
       enabled: this._enabled,
       triggers: [...this._triggers],
@@ -113,22 +113,22 @@ export class GoalReminderConfigClient extends ValueObject implements IGoalRemind
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalReminderConfigClientDTO): GoalReminderConfigClient {
-    return new GoalReminderConfigClient({
+  public static fromClientDTO(dto: GoalReminderConfigDTO): GoalReminderConfig {
+    return new GoalReminderConfig({
       enabled: dto.enabled,
       triggers: dto.triggers,
     });
   }
 
-  public static fromServerDTO(dto: GoalReminderConfigServerDTO): GoalReminderConfigClient {
-    return new GoalReminderConfigClient({
+  public static fromServerDTO(dto: GoalReminderConfigServerDTO): GoalReminderConfig {
+    return new GoalReminderConfig({
       enabled: dto.enabled,
       triggers: dto.triggers,
     });
   }
 
-  public static createDefault(): GoalReminderConfigClient {
-    return new GoalReminderConfigClient({
+  public static createDefault(): GoalReminderConfig {
+    return new GoalReminderConfig({
       enabled: false,
       triggers: [],
     });

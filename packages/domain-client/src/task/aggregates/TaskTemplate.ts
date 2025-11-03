@@ -7,13 +7,13 @@ import type { TaskContracts } from '@dailyuse/contracts';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
-  TaskTimeConfigClient,
-  RecurrenceRuleClient,
-  TaskReminderConfigClient,
-  TaskGoalBindingClient,
+  TaskTimeConfig,
+  RecurrenceRule,
+  TaskReminderConfig,
+  TaskGoalBinding,
 } from '../value-objects';
-import { TaskTemplateHistoryClient } from '../entities';
-import { TaskInstanceClient } from './TaskInstanceClient';
+import { TaskTemplateHistory } from '../entities';
+import { TaskInstance } from './TaskInstance';
 
 type ITaskTemplate = TaskContracts.TaskTemplate;
 type TaskTemplateDTO = TaskContracts.TaskTemplateDTO;
@@ -27,12 +27,12 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   private _title: string;
   private _description?: string | null;
   private _taskType: TaskType;
-  private _timeConfig: TaskTimeConfigClient;
-  private _recurrenceRule?: RecurrenceRuleClient | null;
-  private _reminderConfig?: TaskReminderConfigClient | null;
+  private _timeConfig: TaskTimeConfig;
+  private _recurrenceRule?: RecurrenceRule | null;
+  private _reminderConfig?: TaskReminderConfig | null;
   private _importance: ImportanceLevel;
   private _urgency: UrgencyLevel;
-  private _goalBinding?: TaskGoalBindingClient | null;
+  private _goalBinding?: TaskGoalBinding | null;
   private _folderUuid?: string | null;
   private _tags: string[];
   private _color?: string | null;
@@ -44,8 +44,8 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   private _deletedAt?: number | null;
 
   // 子实体集合
-  private _history: TaskTemplateHistoryClient[];
-  private _instances: TaskInstanceClient[];
+  private _history: TaskTemplateHistory[];
+  private _instances: TaskInstance[];
 
   private constructor(params: {
     uuid?: string;
@@ -53,12 +53,12 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     title: string;
     description?: string | null;
     taskType: TaskType;
-    timeConfig: TaskTimeConfigClient;
-    recurrenceRule?: RecurrenceRuleClient | null;
-    reminderConfig?: TaskReminderConfigClient | null;
+    timeConfig: TaskTimeConfig;
+    recurrenceRule?: RecurrenceRule | null;
+    reminderConfig?: TaskReminderConfig | null;
     importance: ImportanceLevel;
     urgency: UrgencyLevel;
-    goalBinding?: TaskGoalBindingClient | null;
+    goalBinding?: TaskGoalBinding | null;
     folderUuid?: string | null;
     tags?: string[];
     color?: string | null;
@@ -68,8 +68,8 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     createdAt: number;
     updatedAt: number;
     deletedAt?: number | null;
-    history?: TaskTemplateHistoryClient[];
-    instances?: TaskInstanceClient[];
+    history?: TaskTemplateHistory[];
+    instances?: TaskInstance[];
   }) {
     super(params.uuid || AggregateRoot.generateUUID());
     this._accountUuid = params.accountUuid;
@@ -111,13 +111,13 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   public get taskType(): TaskType {
     return this._taskType;
   }
-  public get timeConfig(): TaskTimeConfigClient {
+  public get timeConfig(): TaskTimeConfig {
     return this._timeConfig;
   }
-  public get recurrenceRule(): RecurrenceRuleClient | null | undefined {
+  public get recurrenceRule(): RecurrenceRule | null | undefined {
     return this._recurrenceRule;
   }
-  public get reminderConfig(): TaskReminderConfigClient | null | undefined {
+  public get reminderConfig(): TaskReminderConfig | null | undefined {
     return this._reminderConfig;
   }
   public get importance(): ImportanceLevel {
@@ -126,7 +126,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   public get urgency(): UrgencyLevel {
     return this._urgency;
   }
-  public get goalBinding(): TaskGoalBindingClient | null | undefined {
+  public get goalBinding(): TaskGoalBinding | null | undefined {
     return this._goalBinding;
   }
   public get folderUuid(): string | null | undefined {
@@ -156,10 +156,10 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   public get deletedAt(): number | null | undefined {
     return this._deletedAt;
   }
-  public get history(): TaskTemplateHistoryClient[] {
+  public get history(): TaskTemplateHistory[] {
     return [...this._history];
   }
-  public get instances(): TaskInstanceClient[] {
+  public get instances(): TaskInstance[] {
     return [...this._instances];
   }
 
@@ -379,19 +379,19 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   }
 
   // 子实体操作
-  public getHistoryList(): TaskTemplateHistoryClient[] {
+  public getHistoryList(): TaskTemplateHistory[] {
     return [...this._history];
   }
 
-  public getInstanceList(): TaskInstanceClient[] {
+  public getInstanceList(): TaskInstance[] {
     return [...this._instances];
   }
 
-  public getPendingInstances(): TaskInstanceClient[] {
+  public getPendingInstances(): TaskInstance[] {
     return this._instances.filter((i) => i.isPending);
   }
 
-  public getCompletedInstances(): TaskInstanceClient[] {
+  public getCompletedInstances(): TaskInstance[] {
     return this._instances.filter((i) => i.isCompleted);
   }
 
@@ -475,16 +475,16 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       title: dto.title,
       description: dto.description,
       taskType: dto.taskType,
-      timeConfig: TaskTimeConfigClient.fromClientDTO(dto.timeConfig),
+      timeConfig: TaskTimeConfig.fromClientDTO(dto.timeConfig),
       recurrenceRule: dto.recurrenceRule
-        ? RecurrenceRuleClient.fromClientDTO(dto.recurrenceRule)
+        ? RecurrenceRule.fromClientDTO(dto.recurrenceRule)
         : null,
       reminderConfig: dto.reminderConfig
-        ? TaskReminderConfigClient.fromClientDTO(dto.reminderConfig)
+        ? TaskReminderConfig.fromClientDTO(dto.reminderConfig)
         : null,
       importance: dto.importance,
       urgency: dto.urgency,
-      goalBinding: dto.goalBinding ? TaskGoalBindingClient.fromClientDTO(dto.goalBinding) : null,
+      goalBinding: dto.goalBinding ? TaskGoalBinding.fromClientDTO(dto.goalBinding) : null,
       folderUuid: dto.folderUuid,
       tags: dto.tags,
       color: dto.color,
@@ -494,8 +494,8 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
-      history: dto.history?.map((h: any) => TaskTemplateHistoryClient.fromClientDTO(h)) ?? [],
-      instances: dto.instances?.map((i: any) => TaskInstanceClient.fromClientDTO(i)) ?? [],
+      history: dto.history?.map((h: any) => TaskTemplateHistory.fromClientDTO(h)) ?? [],
+      instances: dto.instances?.map((i: any) => TaskInstance.fromClientDTO(i)) ?? [],
     });
   }
 
@@ -506,16 +506,16 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       title: dto.title,
       description: dto.description,
       taskType: dto.taskType,
-      timeConfig: TaskTimeConfigClient.fromServerDTO(dto.timeConfig),
+      timeConfig: TaskTimeConfig.fromServerDTO(dto.timeConfig),
       recurrenceRule: dto.recurrenceRule
-        ? RecurrenceRuleClient.fromServerDTO(dto.recurrenceRule)
+        ? RecurrenceRule.fromServerDTO(dto.recurrenceRule)
         : null,
       reminderConfig: dto.reminderConfig
-        ? TaskReminderConfigClient.fromServerDTO(dto.reminderConfig)
+        ? TaskReminderConfig.fromServerDTO(dto.reminderConfig)
         : null,
       importance: dto.importance,
       urgency: dto.urgency,
-      goalBinding: dto.goalBinding ? TaskGoalBindingClient.fromServerDTO(dto.goalBinding) : null,
+      goalBinding: dto.goalBinding ? TaskGoalBinding.fromServerDTO(dto.goalBinding) : null,
       folderUuid: dto.folderUuid,
       tags: dto.tags,
       color: dto.color,
@@ -525,8 +525,8 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
-      history: dto.history?.map((h: any) => TaskTemplateHistoryClient.fromServerDTO(h)) ?? [],
-      instances: dto.instances?.map((i: any) => TaskInstanceClient.fromServerDTO(i)) ?? [],
+      history: dto.history?.map((h: any) => TaskTemplateHistory.fromServerDTO(h)) ?? [],
+      instances: dto.instances?.map((i: any) => TaskInstance.fromServerDTO(i)) ?? [],
     });
   }
 
@@ -537,7 +537,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       accountUuid,
       title: '',
       taskType: 'ONE_TIME' as TaskType,
-      timeConfig: TaskTimeConfigClient.fromClientDTO({
+      timeConfig: TaskTimeConfig.fromClientDTO({
         timeType: 'ALL_DAY' as TimeType,
         startDate: null,
         endDate: null,
@@ -566,7 +566,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   public static create(params: any): TaskTemplate {
     const now = Date.now();
 
-    const defaultTimeConfig = TaskTimeConfigClient.fromClientDTO({
+    const defaultTimeConfig = TaskTimeConfig.fromClientDTO({
       timeType: 'ALL_DAY' as TimeType,
       startDate: null,
       endDate: null,

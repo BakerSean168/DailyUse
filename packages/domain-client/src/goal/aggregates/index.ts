@@ -1,7 +1,7 @@
 /**
- * Goal Aggregates - Client Side
+ * Goal Aggregates
  */
 
-export { GoalClient } from './GoalClient';
-export { GoalFolderClient } from './GoalFolderClient';
-export { GoalStatisticsClient } from './GoalStatisticsClient';
+export { Goal } from './Goal';
+export { GoalFolder } from './GoalFolder';
+export { GoalStatistics } from './GoalStatistics';

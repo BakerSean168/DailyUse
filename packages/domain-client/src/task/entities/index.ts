@@ -2,4 +2,4 @@
  * Task Entities Barrel Export
  */
 
-export * from './TaskTemplateHistoryClient';
+export * from './TaskTemplateHistory';

@@ -12,7 +12,7 @@ const FolderType = GoalContracts.FolderType;
 /**
  * 目标文件夹聚合根客户端实现
  */
-export class GoalFolderClient extends AggregateRoot implements GoalContracts.GoalFolderClient {
+export class GoalFolder extends AggregateRoot implements GoalContracts.GoalFolder {
   private _accountUuid: string;
   private _name: string;
   private _description?: string | null;
@@ -230,7 +230,7 @@ export class GoalFolderClient extends AggregateRoot implements GoalContracts.Goa
     };
   }
 
-  toClientDTO(): GoalContracts.GoalFolderClientDTO {
+  toClientDTO(): GoalContracts.GoalFolderDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -257,8 +257,8 @@ export class GoalFolderClient extends AggregateRoot implements GoalContracts.Goa
 
   // ========== 其他实例方法 ==========
 
-  clone(): GoalFolderClient {
-    return new GoalFolderClient(
+  clone(): GoalFolder {
+    return new GoalFolder(
       this.uuid,
       this._accountUuid,
       this._name,
@@ -286,10 +286,10 @@ export class GoalFolderClient extends AggregateRoot implements GoalContracts.Goa
     icon?: string;
     color?: string;
     parentFolderUuid?: string;
-  }): GoalFolderClient {
+  }): GoalFolder {
     const now = Date.now();
 
-    return new GoalFolderClient(
+    return new GoalFolder(
       AggregateRoot.generateUUID(),
       params.accountUuid,
       params.name,
@@ -308,10 +308,10 @@ export class GoalFolderClient extends AggregateRoot implements GoalContracts.Goa
     );
   }
 
-  static forCreate(accountUuid: string): GoalFolderClient {
+  static forCreate(accountUuid: string): GoalFolder {
     const now = Date.now();
 
-    return new GoalFolderClient(
+    return new GoalFolder(
       AggregateRoot.generateUUID(),
       accountUuid,
       '',
@@ -330,8 +330,8 @@ export class GoalFolderClient extends AggregateRoot implements GoalContracts.Goa
     );
   }
 
-  static fromServerDTO(dto: GoalContracts.GoalFolderServerDTO): GoalFolderClient {
-    return new GoalFolderClient(
+  static fromServerDTO(dto: GoalContracts.GoalFolderServerDTO): GoalFolder {
+    return new GoalFolder(
       dto.uuid,
       dto.accountUuid,
       dto.name,
@@ -350,8 +350,8 @@ export class GoalFolderClient extends AggregateRoot implements GoalContracts.Goa
     );
   }
 
-  static fromClientDTO(dto: GoalContracts.GoalFolderClientDTO): GoalFolderClient {
-    return new GoalFolderClient(
+  static fromClientDTO(dto: GoalContracts.GoalFolderDTO): GoalFolder {
+    return new GoalFolder(
       dto.uuid,
       dto.accountUuid,
       dto.name,

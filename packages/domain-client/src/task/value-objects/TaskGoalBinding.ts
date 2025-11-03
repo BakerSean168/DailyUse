@@ -5,11 +5,11 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskGoalBindingClient = TaskContracts.TaskGoalBindingClient;
-type TaskGoalBindingClientDTO = TaskContracts.TaskGoalBindingClientDTO;
+type ITaskGoalBinding = TaskContracts.TaskGoalBinding;
+type TaskGoalBindingDTO = TaskContracts.TaskGoalBindingDTO;
 type TaskGoalBindingServerDTO = TaskContracts.TaskGoalBindingServerDTO;
 
-export class TaskGoalBindingClient extends ValueObject implements ITaskGoalBindingClient {
+export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {
   private _goalUuid: string;
   private _keyResultUuid: string;
   private _incrementValue: number;
@@ -42,7 +42,7 @@ export class TaskGoalBindingClient extends ValueObject implements ITaskGoalBindi
   }
 
   // 值对象方法
-  public equals(other: ITaskGoalBindingClient): boolean {
+  public equals(other: ITaskGoalBinding): boolean {
     return (
       this._goalUuid === other.goalUuid &&
       this._keyResultUuid === other.keyResultUuid &&
@@ -59,7 +59,7 @@ export class TaskGoalBindingClient extends ValueObject implements ITaskGoalBindi
     };
   }
 
-  public toClientDTO(): TaskGoalBindingClientDTO {
+  public toClientDTO(): TaskGoalBindingDTO {
     return {
       goalUuid: this._goalUuid,
       keyResultUuid: this._keyResultUuid,
@@ -70,16 +70,16 @@ export class TaskGoalBindingClient extends ValueObject implements ITaskGoalBindi
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskGoalBindingClientDTO): TaskGoalBindingClient {
-    return new TaskGoalBindingClient({
+  public static fromClientDTO(dto: TaskGoalBindingDTO): TaskGoalBinding {
+    return new TaskGoalBinding({
       goalUuid: dto.goalUuid,
       keyResultUuid: dto.keyResultUuid,
       incrementValue: dto.incrementValue,
     });
   }
 
-  public static fromServerDTO(dto: TaskGoalBindingServerDTO): TaskGoalBindingClient {
-    return new TaskGoalBindingClient({
+  public static fromServerDTO(dto: TaskGoalBindingServerDTO): TaskGoalBinding {
+    return new TaskGoalBinding({
       goalUuid: dto.goalUuid,
       keyResultUuid: dto.keyResultUuid,
       incrementValue: dto.incrementValue,

@@ -5,11 +5,11 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalTimeRangeClient = GoalContracts.GoalTimeRangeClient;
-type GoalTimeRangeClientDTO = GoalContracts.GoalTimeRangeClientDTO;
+type IGoalTimeRange = GoalContracts.GoalTimeRange;
+type GoalTimeRangeDTO = GoalContracts.GoalTimeRangeDTO;
 type GoalTimeRangeServerDTO = GoalContracts.GoalTimeRangeServerDTO;
 
-export class GoalTimeRangeClient extends ValueObject implements IGoalTimeRangeClient {
+export class GoalTimeRange extends ValueObject implements IGoalTimeRange {
   private _startDate: number | null;
   private _targetDate: number | null;
   private _completedAt: number | null;
@@ -103,7 +103,7 @@ export class GoalTimeRangeClient extends ValueObject implements IGoalTimeRangeCl
   }
 
   // 值对象方法
-  public equals(other: IGoalTimeRangeClient): boolean {
+  public equals(other: IGoalTimeRange): boolean {
     return (
       this._startDate === other.startDate &&
       this._targetDate === other.targetDate &&
@@ -137,7 +137,7 @@ export class GoalTimeRangeClient extends ValueObject implements IGoalTimeRangeCl
     };
   }
 
-  public toClientDTO(): GoalTimeRangeClientDTO {
+  public toClientDTO(): GoalTimeRangeDTO {
     return {
       startDate: this._startDate,
       targetDate: this._targetDate,
@@ -156,8 +156,8 @@ export class GoalTimeRangeClient extends ValueObject implements IGoalTimeRangeCl
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalTimeRangeClientDTO): GoalTimeRangeClient {
-    return new GoalTimeRangeClient({
+  public static fromClientDTO(dto: GoalTimeRangeDTO): GoalTimeRange {
+    return new GoalTimeRange({
       startDate: dto.startDate,
       targetDate: dto.targetDate,
       completedAt: dto.completedAt,
@@ -165,8 +165,8 @@ export class GoalTimeRangeClient extends ValueObject implements IGoalTimeRangeCl
     });
   }
 
-  public static fromServerDTO(dto: GoalTimeRangeServerDTO): GoalTimeRangeClient {
-    return new GoalTimeRangeClient({
+  public static fromServerDTO(dto: GoalTimeRangeServerDTO): GoalTimeRange {
+    return new GoalTimeRange({
       startDate: dto.startDate,
       targetDate: dto.targetDate,
       completedAt: dto.completedAt,

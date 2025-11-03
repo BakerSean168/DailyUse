@@ -5,11 +5,11 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IKeyResultSnapshotClient = GoalContracts.KeyResultSnapshotClient;
-type KeyResultSnapshotClientDTO = GoalContracts.KeyResultSnapshotClientDTO;
+type IKeyResultSnapshot = GoalContracts.KeyResultSnapshot;
+type KeyResultSnapshotDTO = GoalContracts.KeyResultSnapshotDTO;
 type KeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
 
-export class KeyResultSnapshotClient extends ValueObject implements IKeyResultSnapshotClient {
+export class KeyResultSnapshot extends ValueObject implements IKeyResultSnapshot {
   private _keyResultUuid: string;
   private _title: string;
   private _targetValue: number;
@@ -67,7 +67,7 @@ export class KeyResultSnapshotClient extends ValueObject implements IKeyResultSn
   }
 
   // 值对象方法
-  public equals(other: IKeyResultSnapshotClient): boolean {
+  public equals(other: IKeyResultSnapshot): boolean {
     return (
       this._keyResultUuid === other.keyResultUuid &&
       this._title === other.title &&
@@ -88,7 +88,7 @@ export class KeyResultSnapshotClient extends ValueObject implements IKeyResultSn
     };
   }
 
-  public toClientDTO(): KeyResultSnapshotClientDTO {
+  public toClientDTO(): KeyResultSnapshotDTO {
     return {
       keyResultUuid: this._keyResultUuid,
       title: this._title,
@@ -102,8 +102,8 @@ export class KeyResultSnapshotClient extends ValueObject implements IKeyResultSn
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: KeyResultSnapshotClientDTO): KeyResultSnapshotClient {
-    return new KeyResultSnapshotClient({
+  public static fromClientDTO(dto: KeyResultSnapshotDTO): KeyResultSnapshot {
+    return new KeyResultSnapshot({
       keyResultUuid: dto.keyResultUuid,
       title: dto.title,
       targetValue: dto.targetValue,
@@ -112,8 +112,8 @@ export class KeyResultSnapshotClient extends ValueObject implements IKeyResultSn
     });
   }
 
-  public static fromServerDTO(dto: KeyResultSnapshotServerDTO): KeyResultSnapshotClient {
-    return new KeyResultSnapshotClient({
+  public static fromServerDTO(dto: KeyResultSnapshotServerDTO): KeyResultSnapshot {
+    return new KeyResultSnapshot({
       keyResultUuid: dto.keyResultUuid,
       title: dto.title,
       targetValue: dto.targetValue,
@@ -128,8 +128,8 @@ export class KeyResultSnapshotClient extends ValueObject implements IKeyResultSn
     targetValue: number,
     currentValue: number,
     progressPercentage: number,
-  ): KeyResultSnapshotClient {
-    return new KeyResultSnapshotClient({
+  ): KeyResultSnapshot {
+    return new KeyResultSnapshot({
       keyResultUuid,
       title,
       targetValue,

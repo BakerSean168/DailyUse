@@ -1,7 +1,7 @@
 /**
- * Goal Entities - Client Side
+ * Goal Entities
  */
 
-export { GoalRecordClient } from './GoalRecordClient';
-export { GoalReviewClient } from './GoalReviewClient';
-export { KeyResultClient } from './KeyResultClient';
+export { GoalRecord } from './GoalRecord';
+export { GoalReview } from './GoalReview';
+export { KeyResult } from './KeyResult';

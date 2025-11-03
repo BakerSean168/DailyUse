@@ -5,13 +5,13 @@
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IRecurrenceRuleClient = TaskContracts.RecurrenceRuleClient;
-type RecurrenceRuleClientDTO = TaskContracts.RecurrenceRuleClientDTO;
+type IRecurrenceRule = TaskContracts.RecurrenceRule;
+type RecurrenceRuleDTO = TaskContracts.RecurrenceRuleDTO;
 type RecurrenceRuleServerDTO = TaskContracts.RecurrenceRuleServerDTO;
 type RecurrenceFrequency = TaskContracts.RecurrenceFrequency;
 type DayOfWeek = TaskContracts.DayOfWeek;
 
-export class RecurrenceRuleClient extends ValueObject implements IRecurrenceRuleClient {
+export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   private _frequency: RecurrenceFrequency;
   private _interval: number;
   private _daysOfWeek: DayOfWeek[];
@@ -101,7 +101,7 @@ export class RecurrenceRuleClient extends ValueObject implements IRecurrenceRule
   }
 
   // 值对象方法
-  public equals(other: IRecurrenceRuleClient): boolean {
+  public equals(other: IRecurrenceRule): boolean {
     return (
       this._frequency === other.frequency &&
       this._interval === other.interval &&
@@ -127,7 +127,7 @@ export class RecurrenceRuleClient extends ValueObject implements IRecurrenceRule
     };
   }
 
-  public toClientDTO(): RecurrenceRuleClientDTO {
+  public toClientDTO(): RecurrenceRuleDTO {
     return {
       frequency: this._frequency,
       interval: this._interval,
@@ -142,8 +142,8 @@ export class RecurrenceRuleClient extends ValueObject implements IRecurrenceRule
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: RecurrenceRuleClientDTO): RecurrenceRuleClient {
-    return new RecurrenceRuleClient({
+  public static fromClientDTO(dto: RecurrenceRuleDTO): RecurrenceRule {
+    return new RecurrenceRule({
       frequency: dto.frequency,
       interval: dto.interval,
       daysOfWeek: dto.daysOfWeek,
@@ -152,8 +152,8 @@ export class RecurrenceRuleClient extends ValueObject implements IRecurrenceRule
     });
   }
 
-  public static fromServerDTO(dto: RecurrenceRuleServerDTO): RecurrenceRuleClient {
-    return new RecurrenceRuleClient({
+  public static fromServerDTO(dto: RecurrenceRuleServerDTO): RecurrenceRule {
+    return new RecurrenceRule({
       frequency: dto.frequency,
       interval: dto.interval,
       daysOfWeek: dto.daysOfWeek,

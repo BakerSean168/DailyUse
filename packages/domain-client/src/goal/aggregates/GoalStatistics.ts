@@ -13,9 +13,9 @@ type TimelineData = GoalContracts.TimelineData;
 /**
  * 目标统计聚合根客户端实现
  */
-export class GoalStatisticsClient
+export class GoalStatistics
   extends AggregateRoot
-  implements GoalContracts.GoalStatisticsClient
+  implements GoalContracts.GoalStatistics
 {
   private _accountUuid: string;
   private _totalGoals: number;
@@ -344,7 +344,7 @@ export class GoalStatisticsClient
     };
   }
 
-  toClientDTO(): GoalContracts.GoalStatisticsClientDTO {
+  toClientDTO(): GoalContracts.GoalStatisticsDTO {
     return {
       accountUuid: this._accountUuid,
       totalGoals: this._totalGoals,
@@ -376,10 +376,10 @@ export class GoalStatisticsClient
 
   // ========== 静态工厂方法 ==========
 
-  static createDefault(accountUuid: string): GoalStatisticsClient {
+  static createDefault(accountUuid: string): GoalStatistics {
     const now = Date.now();
 
-    return new GoalStatisticsClient(
+    return new GoalStatistics(
       accountUuid,
       0, // totalGoals
       0, // activeGoals
@@ -403,8 +403,8 @@ export class GoalStatisticsClient
     );
   }
 
-  static fromServerDTO(dto: GoalContracts.GoalStatisticsServerDTO): GoalStatisticsClient {
-    return new GoalStatisticsClient(
+  static fromServerDTO(dto: GoalContracts.GoalStatisticsServerDTO): GoalStatistics {
+    return new GoalStatistics(
       dto.accountUuid,
       dto.totalGoals,
       dto.activeGoals,
@@ -428,8 +428,8 @@ export class GoalStatisticsClient
     );
   }
 
-  static fromClientDTO(dto: GoalContracts.GoalStatisticsClientDTO): GoalStatisticsClient {
-    return new GoalStatisticsClient(
+  static fromClientDTO(dto: GoalContracts.GoalStatisticsDTO): GoalStatistics {
+    return new GoalStatistics(
       dto.accountUuid,
       dto.totalGoals,
       dto.activeGoals,

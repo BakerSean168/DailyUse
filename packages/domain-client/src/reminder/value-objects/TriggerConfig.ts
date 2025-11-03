@@ -1,16 +1,16 @@
 /**
- * TriggerConfig 值对象实现 (Client)
+ * TriggerConfig 值对象实现 ()
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
 
-type TriggerConfigClientDTO = ReminderContracts.TriggerConfigClientDTO;
+type TriggerConfigDTO = ReminderContracts.TriggerConfigDTO;
 type TriggerConfigServerDTO = ReminderContracts.TriggerConfigServerDTO;
 
-export class TriggerConfigClient implements ReminderContracts.TriggerConfigClient {
-  private readonly dto: TriggerConfigClientDTO;
+export class TriggerConfig implements ReminderContracts.TriggerConfig {
+  private readonly dto: TriggerConfigDTO;
 
-  private constructor(dto: TriggerConfigClientDTO) {
+  private constructor(dto: TriggerConfigDTO) {
     this.dto = dto;
   }
 
@@ -21,11 +21,11 @@ export class TriggerConfigClient implements ReminderContracts.TriggerConfigClien
   get displayText(): string { return this.dto.displayText; }
 
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.TriggerConfigClient): boolean {
-    return JSON.stringify(this.dto) === JSON.stringify((other as TriggerConfigClient).dto);
+  public equals(other: ReminderContracts.TriggerConfig): boolean {
+    return JSON.stringify(this.dto) === JSON.stringify((other as TriggerConfig).dto);
   }
 
-  public toClientDTO(): TriggerConfigClientDTO {
+  public toDTO(): TriggerConfigDTO {
     return this.dto;
   }
 
@@ -38,13 +38,13 @@ export class TriggerConfigClient implements ReminderContracts.TriggerConfigClien
   }
 
   // ===== 静态工厂方法 =====
-  public static fromClientDTO(dto: TriggerConfigClientDTO): TriggerConfigClient {
-    return new TriggerConfigClient(dto);
+  public static fromDTO(dto: TriggerConfigDTO): TriggerConfig {
+    return new TriggerConfig(dto);
   }
 
-  public static fromServerDTO(dto: TriggerConfigServerDTO): TriggerConfigClient {
+  public static fromServerDTO(dto: TriggerConfigServerDTO): TriggerConfig {
     // 从 ServerDTO 转换，添加 displayText
-    return new TriggerConfigClient({
+    return new TriggerConfig({
       type: dto.type,
       fixedTime: dto.fixedTime,
       interval: dto.interval,
