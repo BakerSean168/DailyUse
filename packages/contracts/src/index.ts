@@ -20,6 +20,14 @@ export * as SettingContracts from './modules/setting';
 export * as NotificationContracts from './modules/notification';
 export * as DocumentContracts from './document.contracts';
 
+// 导出 Reminder 模块的常量和工具函数（运行时值不能通过命名空间导出）
+export {
+  ROOT_GROUP_CONFIG,
+  isRootGroup,
+  getRootGroupUuid,
+  isOnDesktop,
+} from './modules/reminder/constants';
+
 export {
   ScheduleTaskStatus,
   ExecutionStatus,
@@ -73,16 +81,6 @@ export {
   ProfileVisibility,
 } from './modules/setting/enums';
 
-// 旧的 Notification 枚举（已废弃，待迁移）
-// export {
-//   NotificationType,
-//   NotificationStatus,
-//   NotificationPriority,
-//   NotificationChannel,
-//   DeliveryStatus,
-//   NotificationActionType, // 添加 NotificationActionType
-// } from './modules/notification/enums';
-
 // 导出 Task 枚举（常用的）
 export {
   TaskTemplateStatus,
@@ -98,15 +96,3 @@ export {
 
 // 类型别名（向后兼容）
 export { TimeType as TaskTimeType } from './modules/task/enums';
-
-// 导出所有模块的类型定义（向后兼容，待迁移）
-export * from './modules/account';
-export * from './modules/authentication';
-export * from './modules/editor';
-// export * from './modules/goal'; // Conflicting exports
-// export * from './modules/notification';
-// export * from './modules/reminder'; // Conflicting exports
-export * from './modules/repository';
-export * from './modules/schedule';
-export * from './modules/setting';
-// export * from './modules/task'; // Conflicting exports
