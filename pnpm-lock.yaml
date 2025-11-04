@@ -817,6 +817,9 @@ importers:
       vite:
         specifier: ^5.1.6
         version: 5.4.20(@types/node@24.8.1)(sass-embedded@1.93.2)(sass@1.93.2)
+      vite-plugin-dts:
+        specifier: ^4.5.0
+        version: 4.5.4(@types/node@24.8.1)(rollup@4.52.5)(typescript@5.8.3)(vite@5.4.20(@types/node@24.8.1)(sass-embedded@1.93.2)(sass@1.93.2))
       vue-tsc:
         specifier: ^2.2.0
         version: 2.2.12(typescript@5.8.3)
@@ -9914,7 +9917,6 @@ snapshots:
       '@rushstack/node-core-library': 5.17.0(@types/node@24.8.1)
     transitivePeerDependencies:
       - '@types/node'
-    optional: true
 
   '@microsoft/api-extractor@7.53.1(@types/node@20.19.9)':
     dependencies:
@@ -9970,7 +9972,6 @@ snapshots:
       typescript: 5.8.2
     transitivePeerDependencies:
       - '@types/node'
-    optional: true
 
   '@microsoft/tsdoc-config@0.17.1':
     dependencies:
@@ -10569,7 +10570,6 @@ snapshots:
       semver: 7.5.4
     optionalDependencies:
       '@types/node': 24.8.1
-    optional: true
 
   '@rushstack/problem-matcher@0.1.1(@types/node@20.19.9)':
     optionalDependencies:
@@ -10583,7 +10583,6 @@ snapshots:
   '@rushstack/problem-matcher@0.1.1(@types/node@24.8.1)':
     optionalDependencies:
       '@types/node': 24.8.1
-    optional: true
 
   '@rushstack/rig-package@0.6.0':
     dependencies:
@@ -10614,7 +10613,6 @@ snapshots:
       supports-color: 8.1.1
     optionalDependencies:
       '@types/node': 24.8.1
-    optional: true
 
   '@rushstack/ts-command-line@5.1.1(@types/node@20.19.9)':
     dependencies:
@@ -10643,7 +10641,6 @@ snapshots:
       string-argv: 0.3.2
     transitivePeerDependencies:
       - '@types/node'
-    optional: true
 
   '@scarf/scarf@1.4.0': {}
 
@@ -16951,6 +16948,25 @@ snapshots:
       typescript: 5.8.3
     optionalDependencies:
       vite: 7.1.10(@types/node@20.19.9)(jiti@2.4.2)(sass-embedded@1.93.2)(sass@1.93.2)(tsx@4.20.6)(yaml@2.8.1)
+    transitivePeerDependencies:
+      - '@types/node'
+      - rollup
+      - supports-color
+
+  vite-plugin-dts@4.5.4(@types/node@24.8.1)(rollup@4.52.5)(typescript@5.8.3)(vite@5.4.20(@types/node@24.8.1)(sass-embedded@1.93.2)(sass@1.93.2)):
+    dependencies:
+      '@microsoft/api-extractor': 7.53.1(@types/node@24.8.1)
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.5)
+      '@volar/typescript': 2.4.23
+      '@vue/language-core': 2.2.0(typescript@5.8.3)
+      compare-versions: 6.1.1
+      debug: 4.4.3
+      kolorist: 1.8.0
+      local-pkg: 1.1.2
+      magic-string: 0.30.19
+      typescript: 5.8.3
+    optionalDependencies:
+      vite: 5.4.20(@types/node@24.8.1)(sass-embedded@1.93.2)(sass@1.93.2)
     transitivePeerDependencies:
       - '@types/node'
       - rollup
