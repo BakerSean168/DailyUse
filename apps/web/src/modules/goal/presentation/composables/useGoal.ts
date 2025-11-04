@@ -936,6 +936,7 @@ export function useGoal() {
     deleteKeyResultForGoal,
     batchUpdateKeyResultWeights,
     fetchProgressBreakdown,
+    fetchProgressBreakdown,
 
     // ===== DDD聚合根控制：GoalRecord管理 =====
     createGoalRecord,

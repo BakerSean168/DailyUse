@@ -154,19 +154,24 @@ const isCardOpen = ref(false);
 
 /**
  * 编辑目标 - 通过事件通知父组件
+ * 编辑目标 - 通过事件通知父组件
  */
 const editGoal = async () => {
   try {
     emit('edit-goal', props.goal);
+    emit('edit-goal', props.goal);
   } catch (error) {
+    console.error('Failed to emit edit event:', error);
     console.error('Failed to emit edit event:', error);
   }
 };
 
 /**
  * 删除目标 - 通过事件通知父组件（已有 delete-goal 事件）
+ * 删除目标 - 通过事件通知父组件（已有 delete-goal 事件）
  */
 const deleteGoal = async () => {
+  emit('delete-goal', props.goal.uuid);
   emit('delete-goal', props.goal.uuid);
 };
 
@@ -208,6 +213,7 @@ defineExpose({
 
 // ===== 计算属性 =====
 
+// 使用 Goal 自带的计算属性
 // 使用 Goal 自带的计算属性
 const goalProgress = computed(() => {
   return props.goal.overallProgress;

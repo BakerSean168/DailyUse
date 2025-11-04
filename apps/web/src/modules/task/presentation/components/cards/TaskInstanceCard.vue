@@ -24,12 +24,15 @@
       <v-list-item-title :class="['task-title', { completed: isCompleted }]">
         <!-- TaskInstance 没有 title，显示日期 -->
         任务实例 {{ task.instanceDateFormatted }}
+        <!-- TaskInstance 没有 title，显示日期 -->
+        任务实例 {{ task.instanceDateFormatted }}
       </v-list-item-title>
 
       <v-list-item-subtitle class="task-meta">
         <v-icon size="small" class="mr-1">{{
           isCompleted ? 'mdi-check' : 'mdi-clock-outline'
         }}</v-icon>
+        <span v-if="!isCompleted">{{ task.timeConfig.displayText }}</span>
         <span v-if="!isCompleted">{{ task.timeConfig.displayText }}</span>
         <span v-else>完成于 {{ formatCompletionTime }}</span>
       </v-list-item-subtitle>
@@ -55,6 +58,7 @@
 import { computed } from 'vue';
 import { format } from 'date-fns';
 import type { TaskInstance } from '@dailyuse/domain-client';
+import type { TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { Goal, KeyResult } from '@dailyuse/domain-client';
 
@@ -77,8 +81,10 @@ const emit = defineEmits<{
 
 // Computed
 const isCompleted = computed(() => props.task.isCompleted);
+const isCompleted = computed(() => props.task.isCompleted);
 
 const formatCompletionTime = computed(() => {
+  return props.task.actualEndTime ? format(props.task.actualEndTime, 'yyyy-MM-dd HH:mm:ss') : '';
   return props.task.actualEndTime ? format(props.task.actualEndTime, 'yyyy-MM-dd HH:mm:ss') : '';
 });
 
@@ -86,7 +92,12 @@ const formatCompletionTime = computed(() => {
 // 如果没有传入 goalStore，可以通过 composable 或全局 store 获取
 const getKeyResultName = (binding: any) => {
   if (!props.goalStore || !binding) return '';
+const getKeyResultName = (binding: any) => {
+  if (!props.goalStore || !binding) return '';
 
+  const goal = props.goalStore.getGoalByUuid(binding.goalUuid);
+  const kr = goal?.keyResults.find((k: any) => k.uuid === binding.keyResultUuid);
+  return kr?.title || '';
   const goal = props.goalStore.getGoalByUuid(binding.goalUuid);
   const kr = goal?.keyResults.find((k: any) => k.uuid === binding.keyResultUuid);
   return kr?.title || '';

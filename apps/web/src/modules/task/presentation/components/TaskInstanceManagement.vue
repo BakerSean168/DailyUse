@@ -222,7 +222,12 @@ const dayTasks = computed(() => {
   const selected = new Date(selectedDate.value);
   const selectedTimestamp = selected.getTime();
   
+  const selectedTimestamp = selected.getTime();
+  
   return taskInstances.value.filter((task) => {
+    // 使用 instanceDate 来比较日期
+    const taskDate = new Date(task.instanceDate);
+    return isSameDay(taskDate, selected);
     // 使用 instanceDate 来比较日期
     const taskDate = new Date(task.instanceDate);
     return isSameDay(taskDate, selected);
@@ -306,6 +311,8 @@ const getTaskCountForDate = (date: string) => {
   return taskStore.getAllTaskInstances.filter((task) => {
     const taskDate = new Date(task.instanceDate);
     return isSameDay(taskDate, selectedDate);
+    const taskDate = new Date(task.instanceDate);
+    return isSameDay(taskDate, selectedDate);
   }).length;
 };
 
@@ -339,6 +346,8 @@ const refreshData = async () => {
 
     // 通过 store 刷新数据
     await taskStore.initialize();
+    // 通过 store 刷新数据
+    await taskStore.initialize();
 
     // 显示更新后的数据统计
     const templates = taskStore.getAllTaskTemplates.length;
@@ -367,6 +376,10 @@ onMounted(async () => {
   try {
     loading.value = true;
 
+    // 确保 store 已初始化
+    if (!taskStore.isInitialized) {
+      await taskStore.initialize();
+      console.log('✅ [TaskInstanceManagement] 数据已初始化');
     // 确保 store 已初始化
     if (!taskStore.isInitialized) {
       await taskStore.initialize();

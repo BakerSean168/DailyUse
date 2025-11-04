@@ -346,6 +346,30 @@ export class Schedule extends AggregateRoot {
 
   /**
    * 转换为 ServerDTO (内部使用)
+   * 转换为 ClientDTO (发送给前端)
+   * Story 4-1: Schedule Event CRUD
+   */
+  public toClientDTO(): ScheduleContracts.ScheduleClientDTO {
+    return {
+      uuid: this._uuid,
+      accountUuid: this._accountUuid,
+      title: this._title,
+      description: this._description,
+      startTime: this._startTime,
+      endTime: this._endTime,
+      duration: this._duration,
+      hasConflict: this._hasConflict,
+      conflictingSchedules: this._conflictingSchedules,
+      priority: this._priority,
+      location: this._location,
+      attendees: this._attendees,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+    };
+  }
+
+  /**
+   * 转换为 ServerDTO (内部使用)
    */
   public toServerDTO(): ScheduleServerDTO {
     return {
@@ -402,6 +426,67 @@ export class Schedule extends AggregateRoot {
     this._startTime = newStartTime;
     this._endTime = newEndTime;
     this._duration = this.calculateDuration(newStartTime, newEndTime);
+    this._updatedAt = Date.now();
+  }
+
+  // ===== 更新方法 (Story 4-1) =====
+
+  /**
+   * 更新标题
+   */
+  public updateTitle(title: string): void {
+    if (!title || title.trim().length === 0) {
+      throw new Error('Title cannot be empty');
+    }
+    this._title = title;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新描述
+   */
+  public updateDescription(description: string | null): void {
+    this._description = description;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新时间范围
+   */
+  public updateTimeRange(startTime: number, endTime: number): void {
+    if (startTime >= endTime) {
+      throw new Error('Start time must be before end time');
+    }
+    this._startTime = startTime;
+    this._endTime = endTime;
+    this._duration = this.calculateDuration(startTime, endTime);
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新优先级
+   */
+  public updatePriority(priority: number | null): void {
+    if (priority !== null && (priority < 1 || priority > 5)) {
+      throw new Error('Priority must be between 1 and 5');
+    }
+    this._priority = priority;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新地点
+   */
+  public updateLocation(location: string | null): void {
+    this._location = location;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新参与者
+   */
+  public updateAttendees(attendees: string[] | null): void {
+    this._attendees = attendees ? [...attendees] : null;
     this._updatedAt = Date.now();
   }
 

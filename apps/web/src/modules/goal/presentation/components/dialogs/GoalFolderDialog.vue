@@ -123,6 +123,8 @@ const handleSave = () => {
   } else {
     // 创建模式：注入 accountUuid（使用新 accountStore 的 currentAccountUuid）
     const accountUuid = accountStore.currentAccountUuid;
+    // 创建模式：注入 accountUuid（使用新 accountStore 的 currentAccountUuid）
+    const accountUuid = accountStore.currentAccountUuid;
     if (!accountUuid) {
       console.error('❌ GoalFolderDialog: 无法获取 accountUuid');
       return;

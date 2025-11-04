@@ -18,6 +18,7 @@
 
       <!-- 编辑按钮 -->
       <v-btn icon @click="handleEditGoal">
+      <v-btn icon @click="handleEditGoal">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
@@ -94,6 +95,8 @@
               <!-- 进度圆环 -->
               <v-col cols="12" md="4" class="d-flex flex-column justify-center align-center">
                 <div class="progress-container mb-3">
+              <v-col cols="12" md="4" class="d-flex flex-column justify-center align-center">
+                <div class="progress-container mb-3">
                   <v-progress-circular
                     :model-value="goal?.overallProgress"
                     :color="goalColor"
@@ -110,6 +113,17 @@
                     </div>
                   </v-progress-circular>
                 </div>
+                <!-- 查看进度详情按钮 -->
+                <v-btn
+                  v-if="keyResults && keyResults.length > 0"
+                  size="small"
+                  variant="outlined"
+                  :color="goalColor"
+                  prepend-icon="mdi-chart-pie"
+                  @click="showProgressBreakdown = true"
+                >
+                  查看进度详情
+                </v-btn>
                 <!-- 查看进度详情按钮 -->
                 <v-btn
                   v-if="keyResults && keyResults.length > 0"
@@ -236,6 +250,18 @@
                       </v-btn>
                     </template>
                   </v-empty-state>
+                  >
+                    <template v-slot:actions>
+                      <v-btn
+                        color="primary"
+                        variant="elevated"
+                        prepend-icon="mdi-plus"
+                        @click="openCreateKeyResultDialog"
+                      >
+                        添加第一个关键结果
+                      </v-btn>
+                    </template>
+                  </v-empty-state>
                 </div>
               </v-window-item>
 
@@ -273,6 +299,8 @@
     <GoalDialog ref="goalDialogRef" />
     <!-- 关键结果对话框 -->
     <KeyResultDialog ref="keyResultDialogRef" />
+    <!-- 关键结果对话框 -->
+    <KeyResultDialog ref="keyResultDialogRef" />
     <!-- 确认对话框 -->
     <ConfirmDialog
       v-model="confirmDialog.show"
@@ -306,14 +334,17 @@ import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 // domain
 import { Goal } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client';
 
 // 组件
 import GoalDialog from '@/modules/goal/presentation/components/dialogs/GoalDialog.vue';
+import KeyResultDialog from '@/modules/goal/presentation/components/dialogs/KeyResultDialog.vue';
 import KeyResultDialog from '@/modules/goal/presentation/components/dialogs/KeyResultDialog.vue';
 import GoalReviewListCard from '@/modules/goal/presentation/components/cards/GoalReviewListCard.vue';
 import ConfirmDialog from '@/shared/components/ConfirmDialog.vue';
 import KeyResultCard from '@/modules/goal/presentation/components/cards/KeyResultCard.vue';
 import GoalDAGVisualization from '@/modules/goal/presentation/components/dag/GoalDAGVisualization.vue';
+import ProgressBreakdownPanel from '@/modules/goal/presentation/components/ProgressBreakdownPanel.vue';
 import ProgressBreakdownPanel from '@/modules/goal/presentation/components/ProgressBreakdownPanel.vue';
 // import RepoInfoCard from '@/modules/Repository/presentation/components/RepoInfoCard.vue';
 // utils
@@ -326,6 +357,7 @@ const { deleteGoal, getGoalAggregateView } = useGoal();
 
 // component refs
 const goalDialogRef = ref<InstanceType<typeof GoalDialog> | null>(null);
+const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
 const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
 const goalReviewListCardRef = ref<InstanceType<typeof GoalReviewListCard> | null>(null);
 
@@ -454,6 +486,13 @@ const handleNodeClick = (data: { id: string; type: 'goal' | 'kr' }) => {
     // 可以跳转到 KR 详情或滚动到对应的 KeyResultCard
     activeTab.value = 'keyResults';
     // TODO: 滚动到对应的 KR Card
+  }
+};
+
+// 打开创建关键结果对话框
+const openCreateKeyResultDialog = () => {
+  if (goal.value?.uuid && keyResultDialogRef.value) {
+    keyResultDialogRef.value.openForCreateKeyResult(goal.value.uuid);
   }
 };
 

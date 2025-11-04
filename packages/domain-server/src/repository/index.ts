@@ -1,22 +1,31 @@
 /**
  * Repository Domain Module Exports
  * 仓储领域模块导出
+ * Repository Domain Module Exports
+ * 仓储领域模块导出
  */
 
+// Aggregates
 // Aggregates
 export { Repository } from './aggregates/Repository';
 export { RepositoryStatistics } from './aggregates/RepositoryStatistics';
 
 // Entities
+// Entities
 export { Resource } from './entities/Resource';
+export { LinkedContent } from './entities/LinkedContent';
+export { ResourceReference } from './entities/ResourceReference';
 export { LinkedContent } from './entities/LinkedContent';
 export { ResourceReference } from './entities/ResourceReference';
 export { RepositoryExplorerEntity } from './entities/RepositoryExplorer';
 
 // Domain Services
+
+// Domain Services
 export { RepositoryDomainService } from './services/RepositoryDomainService';
 export { RepositoryStatisticsDomainService } from './services/RepositoryStatisticsDomainService';
 
+// Re-export contracts types for convenience
 // Re-export contracts types for convenience
 export type {
   RepositoryContracts,

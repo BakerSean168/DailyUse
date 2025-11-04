@@ -70,12 +70,70 @@ export class GoalController {
   }
 
   /**
+   * 验证目标归属权限
+   * @param goalUuid 目标UUID
+   * @param accountUuid 用户UUID
+   * @returns {goal, error} goal存在且有权限时返回goal，否则返回error响应
+   */
+  private static async verifyGoalOwnership(
+    goalUuid: string,
+    accountUuid: string,
+  ): Promise<
+    | { goal: any; error: null }
+    | { goal: null; error: { code: ResponseCode; message: string } }
+  > {
+    const service = await GoalController.getGoalService();
+    const goal = await service.getGoal(goalUuid);
+
+    if (!goal) {
+      return {
+        goal: null,
+        error: {
+          code: ResponseCode.NOT_FOUND,
+          message: 'Goal not found',
+        },
+      };
+    }
+
+    if (goal.accountUuid !== accountUuid) {
+      return {
+        goal: null,
+        error: {
+          code: ResponseCode.FORBIDDEN,
+          message: 'You do not have permission to access this goal',
+        },
+      };
+    }
+
+    return { goal, error: null };
+  }
+
+  /**
    * 创建目标
    * @route POST /api/goals
    */
   static async createGoal(req: AuthenticatedRequest, res: Response): Promise<Response> {
+  static async createGoal(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const service = await GoalController.getGoalService();
+      
+      // 从认证中间件获取 accountUuid（安全可靠）
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      logger.info('Creating goal', { accountUuid });
+
+      // 将 accountUuid 合并到请求体中
+      const goal = await service.createGoal({
+        ...req.body,
+        accountUuid,
+      });
       
       // 从认证中间件获取 accountUuid（安全可靠）
       const accountUuid = req.user?.accountUuid;
@@ -189,8 +247,10 @@ export class GoalController {
         res,
         {
           goals: paginatedGoals,  // 修改字段名从 data 到 goals，与前端 GoalsResponse 类型匹配
+          goals: paginatedGoals,  // 修改字段名从 data 到 goals，与前端 GoalsResponse 类型匹配
           total,
           page,
+          pageSize: limit || total,  // 修改字段名从 limit 到 pageSize，与前端类型匹配
           pageSize: limit || total,  // 修改字段名从 limit 到 pageSize，与前端类型匹配
           hasMore: limit ? page * limit < total : false,
         },
@@ -262,7 +322,24 @@ export class GoalController {
         return GoalController.responseBuilder.sendError(res, verification.error);
       }
 
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const verification = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (verification.error) {
+        logger.warn('Unauthorized goal update attempt', { uuid, accountUuid });
+        return GoalController.responseBuilder.sendError(res, verification.error);
+      }
+
       const service = await GoalController.getGoalService();
+      logger.info('Updating goal', { uuid, accountUuid });
       logger.info('Updating goal', { uuid, accountUuid });
       const goal = await service.updateGoal(uuid, req.body);
 
@@ -361,10 +438,26 @@ export class GoalController {
         logger.warn('Unauthorized goal deletion attempt', { uuid, accountUuid });
         return GoalController.responseBuilder.sendError(res, verification.error);
       }
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const verification = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (verification.error) {
+        logger.warn('Unauthorized goal deletion attempt', { uuid, accountUuid });
+        return GoalController.responseBuilder.sendError(res, verification.error);
+      }
 
       const service = await GoalController.getGoalService();
       await service.deleteGoal(uuid);
 
+      logger.info('Goal deleted successfully', { uuid, accountUuid });
       logger.info('Goal deleted successfully', { uuid, accountUuid });
       return GoalController.responseBuilder.sendSuccess(res, null, 'Goal deleted successfully');
     } catch (error) {
@@ -415,8 +508,23 @@ export class GoalController {
    * @route POST /api/goals/:uuid/key-results
    */
   static async addKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
+  static async addKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { goal: existingGoal, error } = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
       const accountUuid = req.user?.accountUuid;
 
       if (!accountUuid) {
@@ -435,6 +543,7 @@ export class GoalController {
       const service = await GoalController.getGoalService();
       const goal = await service.addKeyResult(uuid, req.body);
 
+      logger.info('Key result added successfully', { goalUuid: uuid, accountUuid });
       logger.info('Key result added successfully', { goalUuid: uuid, accountUuid });
       return GoalController.responseBuilder.sendSuccess(res, goal, 'Key result added', 201);
     } catch (error) {
@@ -457,9 +566,24 @@ export class GoalController {
    * @route PATCH /api/goals/:uuid/key-results/:keyResultUuid/progress
    */
   static async updateKeyResultProgress(req: AuthenticatedRequest, res: Response): Promise<Response> {
+  static async updateKeyResultProgress(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid, keyResultUuid } = req.params;
       const { currentValue, note } = req.body;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { goal: existingGoal, error } = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
       const accountUuid = req.user?.accountUuid;
 
       if (!accountUuid) {
@@ -479,6 +603,7 @@ export class GoalController {
       const goal = await service.updateKeyResultProgress(uuid, keyResultUuid, currentValue, note);
 
       logger.info('Key result progress updated', { goalUuid: uuid, keyResultUuid, accountUuid });
+      logger.info('Key result progress updated', { goalUuid: uuid, keyResultUuid, accountUuid });
       return GoalController.responseBuilder.sendSuccess(res, goal, 'Progress updated');
     } catch (error) {
       if (error instanceof Error) {
@@ -496,12 +621,28 @@ export class GoalController {
   }
 
     /**
+    /**
    * 删除关键结果
    * @route DELETE /api/goals/:uuid/key-results/:keyResultUuid
    */
   static async deleteKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
+  static async deleteKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid, keyResultUuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { goal: existingGoal, error } = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
       const accountUuid = req.user?.accountUuid;
 
       if (!accountUuid) {
@@ -520,6 +661,8 @@ export class GoalController {
       const service = await GoalController.getGoalService();
       const goal = await service.deleteKeyResult(uuid, keyResultUuid);
 
+      logger.info('Key result deleted', { goalUuid: uuid, keyResultUuid, accountUuid });
+      return GoalController.responseBuilder.sendSuccess(res, goal, 'Key result deleted');
       logger.info('Key result deleted', { goalUuid: uuid, keyResultUuid, accountUuid });
       return GoalController.responseBuilder.sendSuccess(res, goal, 'Key result deleted');
     } catch (error) {

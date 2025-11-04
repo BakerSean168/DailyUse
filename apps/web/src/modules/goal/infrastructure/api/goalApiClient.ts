@@ -58,6 +58,7 @@ export class GoalApiClient {
     request: GoalContracts.UpdateGoalRequest,
   ): Promise<GoalContracts.GoalClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}`, request);
+    const data = await apiClient.patch(`${this.baseUrl}/${uuid}`, request);
     return data;
   }
 
@@ -358,6 +359,7 @@ export class GoalFolderApiClient {
     page?: number;
     limit?: number;
     status?: string;
+    parentUuid?: string | null;
     parentUuid?: string | null;
   }): Promise<GoalContracts.GoalFolderListResponse> {
     const data = await apiClient.get(this.baseUrl, { params });

@@ -34,6 +34,7 @@
               prepend-icon="mdi-plus"
               variant="elevated"
               @click="goalDialogRef?.openForCreate()"
+              @click="goalDialogRef?.openForCreate()"
             >
               创建目标
             </v-btn>
@@ -118,6 +119,7 @@
                       <goal-card
                         :goal="goal"
                         @edit-goal="handleEditGoal"
+                        @edit-goal="handleEditGoal"
                         @delete-goal="confirmDeleteGoal"
                         @toggle-status="onToggleGoalStatus"
                       />
@@ -137,6 +139,7 @@
                         color="primary"
                         variant="elevated"
                         prepend-icon="mdi-plus"
+                        @click="goalDialogRef?.openForCreate()"
                         @click="goalDialogRef?.openForCreate()"
                       >
                         创建第一个目标

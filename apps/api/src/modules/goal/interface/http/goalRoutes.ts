@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { GoalController } from './GoalController';
 import goalStatisticsRoutes from './goalStatisticsRoutes';
 import focusModeRoutes from './focusModeRoutes';
+import focusModeRoutes from './focusModeRoutes';
 
 /**
  * Goal 模块路由
@@ -613,6 +614,10 @@ router.get('/user/:accountUuid', GoalController.getUserGoals);
  *         description: 搜索成功
  */
 router.get('/search', GoalController.searchGoals);
+
+// ===== 专注模式路由 =====
+// 挂载专注周期模式路由（使用独立的 Controller 和路由文件）
+router.use('/focus-mode', focusModeRoutes);
 
 // ===== 专注模式路由 =====
 // 挂载专注周期模式路由（使用独立的 Controller 和路由文件）
