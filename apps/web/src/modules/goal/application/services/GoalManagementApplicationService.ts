@@ -1,6 +1,5 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { Goal } from '@dailyuse/domain-client';
-import { Goal } from '@dailyuse/domain-client';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -107,7 +106,6 @@ export class GoalManagementApplicationService {
       // 更新分页信息
       this.goalStore.setPagination({
         page: goalsData.page,
-        limit: goalsData.pageSize,
         limit: goalsData.pageSize,
         total: goalsData.total,
       });
@@ -358,13 +356,6 @@ export class GoalManagementApplicationService {
         page: params.page,
         limit: params.limit,
       });
-      const response = await goalApiClient.searchGoals({
-        query: params.keywords || '',
-        status: params.status,
-        dirUuid: params.dirUuid,
-        page: params.page,
-        limit: params.limit,
-      });
 
       // 批量创建客户端实体并同步到 store
       const goals = (response.goals || []).map((goalData: any) => Goal.fromClientDTO(goalData));
@@ -373,7 +364,6 @@ export class GoalManagementApplicationService {
       // 更新分页信息
       this.goalStore.setPagination({
         page: response.page,
-        limit: response.pageSize,
         limit: response.pageSize,
         total: response.total,
       });

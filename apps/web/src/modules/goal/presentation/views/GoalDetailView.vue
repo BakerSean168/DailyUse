@@ -334,17 +334,14 @@ import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 // domain
 import { Goal } from '@dailyuse/domain-client';
-import { Goal } from '@dailyuse/domain-client';
 
 // 组件
 import GoalDialog from '@/modules/goal/presentation/components/dialogs/GoalDialog.vue';
-import KeyResultDialog from '@/modules/goal/presentation/components/dialogs/KeyResultDialog.vue';
 import KeyResultDialog from '@/modules/goal/presentation/components/dialogs/KeyResultDialog.vue';
 import GoalReviewListCard from '@/modules/goal/presentation/components/cards/GoalReviewListCard.vue';
 import ConfirmDialog from '@/shared/components/ConfirmDialog.vue';
 import KeyResultCard from '@/modules/goal/presentation/components/cards/KeyResultCard.vue';
 import GoalDAGVisualization from '@/modules/goal/presentation/components/dag/GoalDAGVisualization.vue';
-import ProgressBreakdownPanel from '@/modules/goal/presentation/components/ProgressBreakdownPanel.vue';
 import ProgressBreakdownPanel from '@/modules/goal/presentation/components/ProgressBreakdownPanel.vue';
 // import RepoInfoCard from '@/modules/Repository/presentation/components/RepoInfoCard.vue';
 // utils

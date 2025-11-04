@@ -360,7 +360,6 @@ export class GoalFolderApiClient {
     limit?: number;
     status?: string;
     parentUuid?: string | null;
-    parentUuid?: string | null;
   }): Promise<GoalContracts.GoalFolderListResponse> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;

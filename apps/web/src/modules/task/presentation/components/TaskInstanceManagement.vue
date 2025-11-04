@@ -380,10 +380,6 @@ onMounted(async () => {
     if (!taskStore.isInitialized) {
       await taskStore.initialize();
       console.log('✅ [TaskInstanceManagement] 数据已初始化');
-    // 确保 store 已初始化
-    if (!taskStore.isInitialized) {
-      await taskStore.initialize();
-      console.log('✅ [TaskInstanceManagement] 数据已初始化');
     } else {
       console.log('✅ [TaskInstanceManagement] 使用本地缓存数据');
     }

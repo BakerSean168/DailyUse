@@ -337,13 +337,8 @@ import DuConfirmDialog from '@dailyuse/ui/components/dialog/DuConfirmDialog.vue'
 import { useGoalStore } from '../../stores/goalStore';
 import { Goal, KeyResult } from '@dailyuse/domain-client';
 import { GoalContracts } from '@dailyuse/contracts';
-import type { WeightStrategy } from '../../../application/services/WeightRecommendationService';
-import type { GoalTemplate } from '../../../application/templates/GoalTemplates';
-import type { GoalTemplate } from '../../../application/templates/GoalTemplates';
-// composables
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
-import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 
 const goalManagement = useGoalManagement();
