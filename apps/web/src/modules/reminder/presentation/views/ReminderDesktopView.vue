@@ -2,7 +2,7 @@
   <v-container fluid class="pa-0 h-100">
     <div class="d-flex h-100">
       <!-- 左侧主要内容区域 -->
-      <div class="flex-grow-1">
+      <div class="flex-grow-1" style="position: relative;">
         <!-- 手机桌面风格的网格布局 -->
         <div class="phone-desktop">
           <!-- 网格容器 -->
@@ -66,15 +66,27 @@
             class="context-menu"
             :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
           >
-            <div
-              v-for="item in contextMenu.items"
-              :key="item.title"
-              class="context-menu-item"
-              @click="item.action"
-            >
-              <v-icon class="mr-2" size="small">{{ item.icon }}</v-icon>
-              {{ item.title }}
-            </div>
+            <template v-for="(item, index) in contextMenu.items" :key="index">
+              <div v-if="item.divider" class="context-menu-divider" />
+              <div
+                v-else
+                class="context-menu-item"
+                :class="{
+                  'context-menu-item-danger': item.danger,
+                  'context-menu-item-disabled': item.disabled,
+                }"
+                @click="!item.disabled && item.action && item.action()"
+              >
+                <v-icon 
+                  class="mr-2" 
+                  size="18" 
+                  :color="item.iconColor"
+                >
+                  {{ item.icon }}
+                </v-icon>
+                {{ item.title }}
+              </div>
+            </template>
           </div>
         </div>
 
@@ -132,8 +144,27 @@
       </div>
     </div>
 
-    <!-- 右侧 Sidebar -->
-    <ReminderInstanceSidebar />
+    <!-- 右侧可折叠的侧边栏 -->
+    <v-navigation-drawer
+      v-model="sidebarVisible"
+      location="right"
+      temporary
+      width="400"
+      class="reminder-sidebar"
+    >
+      <ReminderInstanceSidebar />
+    </v-navigation-drawer>
+
+    <!-- 侧边栏切换按钮 -->
+    <v-btn
+      icon
+      class="sidebar-toggle-btn"
+      color="primary"
+      @click="sidebarVisible = !sidebarVisible"
+      elevation="2"
+    >
+      <v-icon>{{ sidebarVisible ? 'mdi-chevron-right' : 'mdi-chart-box-outline' }}</v-icon>
+    </v-btn>
   </v-container>
 </template>
 
@@ -202,17 +233,24 @@ const groupDesktopCardRef = ref<InstanceType<typeof GroupDesktopCard> | null>(nu
 
 // 响应式数据
 const showError = ref(false);
+const sidebarVisible = ref(false); // 右侧侧边栏可见状态
 
 // 右键菜单状态
+interface ContextMenuItem {
+  title?: string;
+  icon?: string;
+  iconColor?: string;
+  action?: () => void;
+  danger?: boolean;
+  disabled?: boolean;
+  divider?: boolean;
+}
+
 const contextMenu = reactive({
   show: false,
   x: 0,
   y: 0,
-  items: [] as Array<{
-    title: string;
-    icon: string;
-    action: () => void;
-  }>,
+  items: [] as ContextMenuItem[],
 });
 
 // 删除对话框状态
@@ -256,6 +294,14 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
   contextMenu.y = event.clientY;
   contextMenu.items = [
     {
+      title: '查看详情',
+      icon: 'mdi-eye',
+      action: () => {
+        handleTemplateClick(template);
+        contextMenu.show = false;
+      },
+    },
+    {
       title: '编辑模板',
       icon: 'mdi-pencil',
       action: () => {
@@ -264,6 +310,7 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
         contextMenu.show = false;
       },
     },
+    { divider: true }, // 分隔符
     {
       title: '移动到分组',
       icon: 'mdi-folder-move',
@@ -280,25 +327,30 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
         contextMenu.show = false;
       },
     },
+    { divider: true }, // 分隔符
     {
       title: template.effectiveEnabled ? '禁用' : '启用',
       icon: template.effectiveEnabled ? 'mdi-pause' : 'mdi-play',
+      iconColor: template.effectiveEnabled ? 'orange' : 'success',
       action: () => {
         toggleTemplateEnabled(template);
         contextMenu.show = false;
       },
     },
     {
-      title: '测试模板',
-      icon: 'mdi-play-circle',
+      title: '测试触发',
+      icon: 'mdi-play-circle-outline',
+      iconColor: 'info',
       action: () => {
         testTemplate(template);
         contextMenu.show = false;
       },
     },
+    { divider: true }, // 分隔符
     {
       title: '删除模板',
       icon: 'mdi-delete',
+      danger: true, // 标记为危险操作
       action: () => {
         openDeleteDialog('template', template.uuid, template.title);
         contextMenu.show = false;
@@ -318,6 +370,7 @@ const handleGroupContextMenu = (group: ReminderTemplateGroup, event: MouseEvent)
     {
       title: '查看分组',
       icon: 'mdi-folder-open',
+      iconColor: 'primary',
       action: () => {
         showGroupTemplates(group);
         contextMenu.show = false;
@@ -331,9 +384,11 @@ const handleGroupContextMenu = (group: ReminderTemplateGroup, event: MouseEvent)
         contextMenu.show = false;
       },
     },
+    { divider: true },
     {
       title: '添加模板',
       icon: 'mdi-plus',
+      iconColor: 'success',
       action: () => {
         templateDialogRef.value?.openForCreate();
         contextMenu.show = false;
@@ -347,9 +402,11 @@ const handleGroupContextMenu = (group: ReminderTemplateGroup, event: MouseEvent)
         contextMenu.show = false;
       },
     },
+    { divider: true },
     {
       title: '删除分组',
       icon: 'mdi-delete',
+      danger: true,
       action: () => {
         openDeleteDialog('group', group.uuid, group.name);
         contextMenu.show = false;
@@ -369,6 +426,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
     {
       title: '新建模板',
       icon: 'mdi-plus',
+      iconColor: 'primary',
       action: () => {
         templateDialogRef.value?.openForCreate();
         contextMenu.show = false;
@@ -377,12 +435,14 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
     {
       title: '新建分组',
       icon: 'mdi-folder-plus',
+      iconColor: 'success',
       action: () => {
         // GroupDialog 目前是占位组件
         groupDialogRef.value?.open();
         contextMenu.show = false;
       },
     },
+    { divider: true },
     {
       title: '刷新',
       icon: 'mdi-refresh',
@@ -394,9 +454,19 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
     {
       title: '整理桌面',
       icon: 'mdi-view-grid',
+      disabled: true, // 功能暂未实现
       action: () => {
         // TODO: 实现桌面整理功能
         console.log('整理桌面');
+        contextMenu.show = false;
+      },
+    },
+    { divider: true },
+    {
+      title: '侧边栏',
+      icon: sidebarVisible.value ? 'mdi-chevron-right' : 'mdi-chart-box-outline',
+      action: () => {
+        sidebarVisible.value = !sidebarVisible.value;
         contextMenu.show = false;
       },
     },
@@ -454,11 +524,8 @@ const testTemplate = async (template: ReminderTemplate) => {
  * 显示分组内的模板（以桌面形式）
  */
 const showGroupTemplates = (group: ReminderTemplateGroup) => {
-  // 这里可以实现一个新的对话框显示分组内的模板
-  // 暂时先用简单的方式显示
-  const groupTemplates = templates.value.filter((t) => t.groupUuid === group.uuid);
-  console.log(`分组 "${group.name}" 包含 ${groupTemplates.length} 个模板:`, groupTemplates);
-  // TODO: 创建 GroupDetailDialog 组件来以桌面形式显示分组内的模板
+  // 打开 GroupDesktopCard 显示分组详情和模板
+  groupDesktopCardRef.value?.open(group);
 };
 
 /**
@@ -718,27 +785,63 @@ onMounted(async () => {
 .context-menu {
   position: fixed;
   z-index: 1000;
-  background: white;
+  background: rgb(var(--v-theme-surface));
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  min-width: 180px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  min-width: 200px;
+  max-width: 280px;
   overflow: hidden;
   backdrop-filter: blur(10px);
+  animation: menuFadeIn 0.15s ease-out;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .context-menu-item {
-  padding: 12px 16px;
+  padding: 10px 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   font-size: 14px;
-  transition: background-color 0.2s ease;
-  color: #333;
+  transition: all 0.15s ease;
+  color: rgb(var(--v-theme-on-surface));
+  user-select: none;
 }
 
-.context-menu-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+.context-menu-item:hover:not(.context-menu-item-disabled) {
+  background-color: rgba(var(--v-theme-primary), 0.08);
+}
+
+.context-menu-item:active:not(.context-menu-item-disabled) {
+  background-color: rgba(var(--v-theme-primary), 0.12);
+}
+
+.context-menu-item-danger {
+  color: rgb(var(--v-theme-error));
+}
+
+.context-menu-item-danger:hover:not(.context-menu-item-disabled) {
+  background-color: rgba(var(--v-theme-error), 0.08);
+}
+
+.context-menu-item-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.context-menu-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: rgba(var(--v-theme-on-surface), 0.12);
 }
 
 .context-menu-item:first-child {
@@ -747,5 +850,18 @@ onMounted(async () => {
 
 .context-menu-item:last-child {
   border-radius: 0 0 8px 8px;
+}
+/* 右侧侧边栏切换按钮 */
+.sidebar-toggle-btn {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+
+/* 侧边栏样式 */
+.reminder-sidebar {
+  z-index: 200;
 }
 </style>
