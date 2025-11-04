@@ -63,10 +63,49 @@ export class TaskTemplateApiClient {
   }
 
   /**
+   * 更新任务模板
+   */
+  async updateTaskTemplate(
+    uuid: string,
+    request: TaskContracts.UpdateTaskTemplateRequest,
+  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    const data = await apiClient.put(`${this.baseUrl}/${uuid}`, request);
+    return data;
+  }
+
+  /**
    * 删除任务模板
    */
   async deleteTaskTemplate(uuid: string): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/${uuid}`);
+  }
+
+  // ===== 方法别名（为了兼容 View 层调用）=====
+
+  /**
+   * 创建任务模板（别名）
+   */
+  async create(
+    request: TaskContracts.CreateTaskTemplateRequest,
+  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    return this.createTaskTemplate(request);
+  }
+
+  /**
+   * 根据 UUID 获取任务模板（别名）
+   */
+  async getByUuid(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+    return this.getTaskTemplateById(uuid);
+  }
+
+  /**
+   * 更新任务模板（别名）
+   */
+  async update(
+    uuid: string,
+    request: TaskContracts.UpdateTaskTemplateRequest,
+  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    return this.updateTaskTemplate(uuid, request);
   }
 
   // ===== Task Template 状态管理（聚合根操作）=====

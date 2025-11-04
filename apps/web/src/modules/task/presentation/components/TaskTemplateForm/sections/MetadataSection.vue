@@ -8,44 +8,20 @@
       <v-row>
         <!-- 重要性 -->
         <v-col cols="12" md="6">
-          <v-select
-            v-model="importance"
-            label="重要性"
-            :items="importanceOptions"
-            item-title="title"
-            item-value="value"
-            variant="outlined"
-            required
-          />
+          <v-select v-model="importance" label="重要性" :items="importanceOptions" item-title="title" item-value="value"
+            variant="outlined" required />
         </v-col>
 
         <!-- 紧急性 -->
         <v-col cols="12" md="6">
-          <v-select
-            v-model="urgency"
-            label="紧急性"
-            :items="urgencyOptions"
-            item-title="title"
-            item-value="value"
-            variant="outlined"
-            required
-          />
+          <v-select v-model="urgency" label="紧急性" :items="urgencyOptions" item-title="title" item-value="value"
+            variant="outlined" required />
         </v-col>
 
         <!-- 任务标签 -->
         <v-col cols="12" md="6">
-          <v-combobox
-            v-model="tags"
-            label="任务标签"
-            variant="outlined"
-            multiple
-            chips
-            closable-chips
-            :items="tagSuggestions"
-            prepend-inner-icon="mdi-tag-multiple-outline"
-            hint="按回车键添加新标签"
-            persistent-hint
-          />
+          <v-combobox v-model="tags" label="任务标签" variant="outlined" multiple chips closable-chips
+            :items="tagSuggestions" prepend-inner-icon="mdi-tag-multiple-outline" hint="按回车键添加新标签" persistent-hint />
         </v-col>
       </v-row>
     </v-card-text>
@@ -134,7 +110,7 @@ const importance = computed({
   get: () => props.modelValue.importance,
   set: (value: ImportanceLevel) => {
     updateTemplate((template) => {
-      (template as any)._importance = value;
+      template.updateImportance(value);
     });
   },
 });
@@ -144,7 +120,7 @@ const urgency = computed({
   get: () => props.modelValue.urgency,
   set: (value: UrgencyLevel) => {
     updateTemplate((template) => {
-      (template as any)._urgency = value;
+      template.updateUrgency(value);
     });
   },
 });
@@ -154,7 +130,7 @@ const tags = computed({
   get: () => props.modelValue.tags || [],
   set: (value: string[]) => {
     updateTemplate((template) => {
-      (template as any)._tags = value;
+      template.updateTags(value);
     });
   },
 });

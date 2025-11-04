@@ -395,6 +395,109 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     return this._instances.filter((i) => i.isCompleted);
   }
 
+  // 实体更新方法
+  public updateTimeConfig(newConfig: TaskTimeConfig): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._timeConfig = newConfig;
+    this._updatedAt = Date.now();
+  }
+
+  public updateTitle(title: string): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    if (!title.trim()) {
+      throw new Error('Title cannot be empty');
+    }
+    this._title = title;
+    this._updatedAt = Date.now();
+  }
+
+  public updateDescription(description: string | null): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._description = description;
+    this._updatedAt = Date.now();
+  }
+
+  public updateImportance(importance: ImportanceLevel): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._importance = importance;
+    this._updatedAt = Date.now();
+  }
+
+  public updateUrgency(urgency: UrgencyLevel): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._urgency = urgency;
+    this._updatedAt = Date.now();
+  }
+
+  public updateTags(tags: string[]): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._tags = [...tags];
+    this._updatedAt = Date.now();
+  }
+
+  public updateColor(color: string | null): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._color = color;
+    this._updatedAt = Date.now();
+  }
+
+  public updateFolderUuid(folderUuid: string | null): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._folderUuid = folderUuid;
+    this._updatedAt = Date.now();
+  }
+
+  public updateRecurrenceRule(rule: RecurrenceRule | null): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._recurrenceRule = rule;
+    this._updatedAt = Date.now();
+  }
+
+  public updateReminderConfig(config: TaskReminderConfig | null): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._reminderConfig = config;
+    this._updatedAt = Date.now();
+  }
+
+  public updateGoalBinding(binding: TaskGoalBinding | null): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    this._goalBinding = binding;
+    this._updatedAt = Date.now();
+  }
+
+  public updateGenerateAheadDays(days: number): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+    if (days < 0) {
+      throw new Error('Generate ahead days must be non-negative');
+    }
+    this._generateAheadDays = days;
+    this._updatedAt = Date.now();
+  }
+
   // DTO 转换
   public toClientDTO(): TaskTemplateDTO {
     return {

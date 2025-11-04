@@ -99,24 +99,6 @@ export const useTaskStore = defineStore('task', {
         }
       },
 
-    /**
-     * 根据UUID获取元模板
-     */
-    getMetaTemplateByUuid:
-      (state) =>
-      (uuid: string): TaskTemplate | null => {
-        const found = state.taskTemplates.find((t) => t.uuid === uuid);
-        if (!found) return null;
-
-        // 确保返回的是 TaskTemplate 实例
-        if (found instanceof TaskTemplate) {
-          return found;
-        } else {
-          // 如果是普通对象，转换为 TaskTemplate 实例
-          return TaskTemplate.fromClientDTO(found as any);
-        }
-      },
-
     // ===== 选中状态 =====
 
     /**
@@ -391,15 +373,6 @@ export const useTaskStore = defineStore('task', {
     /**
      * 添加单个元模板到缓存
      */
-    addMetaTemplate(metaTemplate: TaskTemplate) {
-      const existingIndex = this.taskTemplates.findIndex((t) => t.uuid === metaTemplate.uuid);
-      if (existingIndex >= 0) {
-        this.taskTemplates[existingIndex] = metaTemplate;
-      } else {
-        this.taskTemplates.push(metaTemplate);
-      }
-    },
-
     /**
      * 更新任务模板
      */
@@ -427,16 +400,6 @@ export const useTaskStore = defineStore('task', {
       instances.forEach((instance) => {
         this.updateTaskInstance(instance.uuid, instance);
       });
-    },
-
-    /**
-     * 更新元模板
-     */
-    updateMetaTemplate(uuid: string, updatedTemplate: TaskTemplate) {
-      const index = this.taskTemplates.findIndex((t) => t.uuid === uuid);
-      if (index >= 0) {
-        this.taskTemplates[index] = updatedTemplate;
-      }
     },
 
     /**
@@ -495,16 +458,6 @@ export const useTaskStore = defineStore('task', {
       );
     },
 
-    /**
-     * 移除元模板
-     */
-    removeMetaTemplate(uuid: string) {
-      const index = this.taskTemplates.findIndex((t) => t.uuid === uuid);
-      if (index >= 0) {
-        this.taskTemplates.splice(index, 1);
-      }
-    },
-
     // ===== 初始化和清理 =====
 
     /**
@@ -513,7 +466,7 @@ export const useTaskStore = defineStore('task', {
     initialize(): void {
       this.isInitialized = true;
       console.log(
-        `✅ [TaskStore] 初始化完成: ${this.taskTemplates.length} 个模板，${this.taskInstances.length} 个实例，${this.taskTemplates.length} 个元模板`,
+        `✅ [TaskStore] 初始化完成: ${this.taskTemplates.length} 个模板，${this.taskInstances.length} 个实例`,
       );
     },
 

@@ -15,17 +15,8 @@
         </v-col>
 
         <v-col cols="12">
-          <v-combobox
-            v-model="tags"
-            :items="[]"
-            label="标签"
-            variant="outlined"
-            multiple
-            chips
-            clearable
-            prepend-inner-icon="mdi-tag-multiple"
-            hint="按回车键添加新标签"
-          />
+          <v-combobox v-model="tags" :items="[]" label="标签" variant="outlined" multiple chips clearable
+            prepend-inner-icon="mdi-tag-multiple" hint="按回车键添加新标签" />
         </v-col>
       </v-row>
 
@@ -58,15 +49,16 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const updateTemplate = (updater: (template: TaskTemplate) => void) => {
-  updater(props.modelValue);
-  emit('update:modelValue', props.modelValue);
+  const updatedTemplate = props.modelValue.clone();
+  updater(updatedTemplate);
+  emit('update:modelValue', updatedTemplate);
 };
 
 const tags = computed({
   get: () => props.modelValue.tags || [],
   set: (value: string[]) => {
     updateTemplate((template) => {
-      (template as any)._tags = value;
+      template.updateTags(value);
     });
   },
 });

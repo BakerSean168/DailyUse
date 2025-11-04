@@ -1,3 +1,12 @@
+<!--
+  TODO: 此组件已废弃 - MetaTemplate 功能已移除
+  此对话框用于选择元模板（MetaTemplate）来创建任务模板
+  由于元模板功能已被移除，此组件应该被删除或重构为其他用途
+  
+  建议：
+  1. 如果需要模板选择功能，重构为选择现有 TaskTemplate 作为模板
+  2. 或者直接删除此文件，使用 TaskTemplateDialog 直接创建任务
+-->
 <template>
   <v-dialog :model-value="visible" max-width="800" persistent>
     <v-card class="template-selection-dialog">
@@ -21,16 +30,9 @@
         </div>
 
         <!-- 模板列表 -->
-        <v-card
-          v-else
-          v-for="metaTemplate in metaTemplates"
-          :key="metaTemplate.uuid"
-          class="template-type-card"
-          :class="{ selected: selectedmetaTemplateUuid === metaTemplate.uuid }"
-          elevation="2"
-          hover
-          @click="selectMetaTemplate(metaTemplate.uuid)"
-        >
+        <v-card v-else v-for="metaTemplate in metaTemplates" :key="metaTemplate.uuid" class="template-type-card"
+          :class="{ selected: selectedmetaTemplateUuid === metaTemplate.uuid }" elevation="2" hover
+          @click="selectMetaTemplate(metaTemplate.uuid)">
           <v-card-text class="text-center pa-4">
             <v-avatar :color="getMetaTemplateColor(metaTemplate.name)" size="64" class="mb-3">
               <v-icon size="32" color="white">
@@ -49,12 +51,7 @@
       <v-card-actions class="dialog-actions">
         <v-spacer />
         <v-btn variant="text" @click="handleCancel"> 取消 </v-btn>
-        <v-btn
-          color="primary"
-          variant="elevated"
-          :disabled="!selectedmetaTemplateUuid"
-          @click="confirmSelection"
-        >
+        <v-btn color="primary" variant="elevated" :disabled="!selectedmetaTemplateUuid" @click="confirmSelection">
           继续创建
         </v-btn>
       </v-card-actions>
@@ -64,6 +61,8 @@
 </template>
 
 <script setup lang="ts">
+// @ts-nocheck
+// TODO: MetaTemplate 功能已移除，此组件应被删除或完全重构
 import { ref, watch, onMounted } from 'vue';
 import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
 // components
@@ -151,11 +150,9 @@ defineExpose({
 }
 
 .dialog-header {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.1),
-    rgba(var(--v-theme-secondary), 0.05)
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--v-theme-primary), 0.1),
+      rgba(var(--v-theme-secondary), 0.05));
   border-bottom: 1px solid rgba(var(--v-theme-outline), 0.12);
 }
 

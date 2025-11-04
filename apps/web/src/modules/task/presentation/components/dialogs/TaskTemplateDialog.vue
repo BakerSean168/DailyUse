@@ -56,24 +56,14 @@
         <v-spacer />
 
         <!-- 取消按钮 -->
-        <v-btn 
-          data-testid="task-dialog-cancel-button"
-          variant="text" 
-          :disabled="operationState.loading" 
-          @click="handleCancel"
-        >
+        <v-btn data-testid="task-dialog-cancel-button" variant="text" :disabled="operationState.loading"
+          @click="handleCancel">
           取消
         </v-btn>
 
         <!-- 保存按钮 -->
-        <v-btn 
-          data-testid="task-dialog-save-button"
-          color="primary" 
-          variant="elevated" 
-          :disabled="!canSave" 
-          :loading="operationState.saving"
-          @click="handleSave"
-        >
+        <v-btn data-testid="task-dialog-save-button" color="primary" variant="elevated" :disabled="!canSave"
+          :loading="operationState.saving" @click="handleSave">
           {{ getSaveButtonText() }}
         </v-btn>
       </v-card-actions>
@@ -285,10 +275,10 @@ const createBlankTemplate = (): TaskTemplate => {
   console.log('Creating blank template...');
   // 使用静态工厂方法创建空白模板
   const template = TaskTemplate.forCreate('default-account'); // TODO: 从认证状态获取 accountUuid
-  
+
   // 设置默认标题
   template.updateTitle('新任务模板');
-  
+
   console.log('Created blank template:', template);
   return template;
 };
@@ -344,10 +334,17 @@ const handleSave = async (): Promise<void> => {
           accountUuid: formData.taskTemplate.accountUuid,
           title: formData.taskTemplate.title,
           description: formData.taskTemplate.description,
+          taskType: formData.taskTemplate.taskType,
           timeConfig: formData.taskTemplate.timeConfig,
+          recurrenceRule: formData.taskTemplate.recurrenceRule,
           reminderConfig: formData.taskTemplate.reminderConfig,
-          properties: formData.taskTemplate.properties,
-          goalLinks: formData.taskTemplate.goalLinks,
+          importance: formData.taskTemplate.importance,
+          urgency: formData.taskTemplate.urgency,
+          goalBinding: formData.taskTemplate.goalBinding,
+          folderUuid: formData.taskTemplate.folderUuid,
+          tags: formData.taskTemplate.tags,
+          color: formData.taskTemplate.color,
+          generateAheadDays: formData.taskTemplate.generateAheadDays,
         };
         result = await createTaskTemplate(createRequest);
         break;
@@ -360,10 +357,17 @@ const handleSave = async (): Promise<void> => {
         const updateRequest: any = {
           title: formData.taskTemplate.title,
           description: formData.taskTemplate.description,
+          taskType: formData.taskTemplate.taskType,
           timeConfig: formData.taskTemplate.timeConfig,
+          recurrenceRule: formData.taskTemplate.recurrenceRule,
           reminderConfig: formData.taskTemplate.reminderConfig,
-          properties: formData.taskTemplate.properties,
-          goalLinks: formData.taskTemplate.goalLinks,
+          importance: formData.taskTemplate.importance,
+          urgency: formData.taskTemplate.urgency,
+          goalBinding: formData.taskTemplate.goalBinding,
+          folderUuid: formData.taskTemplate.folderUuid,
+          tags: formData.taskTemplate.tags,
+          color: formData.taskTemplate.color,
+          generateAheadDays: formData.taskTemplate.generateAheadDays,
         };
         result = await updateTaskTemplate(formData.originalTemplate.uuid, updateRequest);
         break;

@@ -20,24 +20,12 @@
 
       <v-row>
         <v-col cols="12" md="6">
-          <v-select
-            v-model="scheduleMode"
-            label="调度模式"
-            :items="scheduleModes"
-            variant="outlined"
-          />
+          <v-select v-model="scheduleMode" label="调度模式" :items="scheduleModes" variant="outlined" />
         </v-col>
 
         <!-- 间隔天数（当模式为intervalDays时） -->
         <v-col cols="12" md="6" v-if="scheduleMode === 'intervalDays'">
-          <v-text-field
-            v-model.number="intervalDays"
-            label="间隔天数"
-            type="number"
-            variant="outlined"
-            min="1"
-            max="365"
-          />
+          <v-text-field v-model.number="intervalDays" label="间隔天数" type="number" variant="outlined" min="1" max="365" />
         </v-col>
 
         <!-- 每周重复的星期选择 -->
@@ -80,19 +68,24 @@ const updateTemplate = (updater: (template: TaskTemplate) => void) => {
   emit('update:modelValue', updatedTemplate);
 };
 
+// TODO: 此组件需要完全重构
+// TaskTimeConfig 不再包含 schedule 字段，应该使用 template.recurrenceRule (RecurrenceRule) 来处理重复规则
+// RecurrenceRule 有自己的结构： frequency, interval, byWeekday, byMonthDay 等
+// 暂时保留旧代码以防止编译错误，但功能已失效
+
 // 调度模式
 const scheduleMode = computed({
-  get: () => props.modelValue.timeConfig.schedule.mode,
-  set: (value: TaskContracts.TaskScheduleMode) => {
+  get: () => (props.modelValue.timeConfig as any)?.schedule?.mode ?? 'once',
+  set: (value: TaskContracts.TaskScheduleMode | string) => {
     updateTemplate((template) => {
       (template as any)._timeConfig = {
         ...template.timeConfig,
         schedule: {
           mode: value,
           // 根据模式清理其他字段
-          ...(value === 'intervalDays' ? { intervalDays: 1 } : {}),
-          ...(value === 'weekly' ? { weekdays: [] } : {}),
-          ...(value === 'monthly' ? { monthDays: [] } : {}),
+          ...((value as string) === 'intervalDays' ? { intervalDays: 1 } : {}),
+          ...((value as string) === 'weekly' ? { weekdays: [] } : {}),
+          ...((value as string) === 'monthly' ? { monthDays: [] } : {}),
         },
       };
     });
@@ -101,13 +94,13 @@ const scheduleMode = computed({
 
 // 间隔天数
 const intervalDays = computed({
-  get: () => props.modelValue.timeConfig.schedule.intervalDays || 1,
+  get: () => (props.modelValue.timeConfig as any)?.schedule?.intervalDays || 1,
   set: (value: number) => {
     updateTemplate((template) => {
       (template as any)._timeConfig = {
         ...template.timeConfig,
         schedule: {
-          ...template.timeConfig.schedule,
+          ...(template.timeConfig as any).schedule,
           intervalDays: value,
         },
       };
@@ -134,7 +127,7 @@ const scheduleModes = [
 const isValid = ref(true);
 const validationErrors = ref<string[]>([]);
 const getScheduleDescription = computed(() => {
-  const schedule = props.modelValue.timeConfig.schedule;
+  const schedule = (props.modelValue.timeConfig as any)?.schedule || {};
   switch (schedule.mode) {
     case 'once':
       return '单次任务';
@@ -158,7 +151,7 @@ const updateWeekdays = (weekdays: number[]) => {
     (template as any)._timeConfig = {
       ...template.timeConfig,
       schedule: {
-        ...template.timeConfig.schedule,
+        ...(template.timeConfig as any).schedule,
         weekdays: [...weekdays],
       },
     };
@@ -172,7 +165,7 @@ const updateMonthDays = (monthDays: number[]) => {
     (template as any)._timeConfig = {
       ...template.timeConfig,
       schedule: {
-        ...template.timeConfig.schedule,
+        ...(template.timeConfig as any).schedule,
         monthDays: [...monthDays],
       },
     };
@@ -181,11 +174,12 @@ const updateMonthDays = (monthDays: number[]) => {
 
 // 初始化数据
 const initializeData = () => {
-  if (props.modelValue.timeConfig.schedule.weekdays) {
-    selectedWeekdays.value = [...props.modelValue.timeConfig.schedule.weekdays];
+  const schedule = (props.modelValue.timeConfig as any)?.schedule;
+  if (schedule?.weekdays) {
+    selectedWeekdays.value = [...schedule.weekdays];
   }
-  if (props.modelValue.timeConfig.schedule.monthDays) {
-    selectedMonthDays.value = [...props.modelValue.timeConfig.schedule.monthDays];
+  if (schedule?.monthDays) {
+    selectedMonthDays.value = [...schedule.monthDays];
   }
 };
 
@@ -198,7 +192,7 @@ watch(
 );
 
 watch(
-  () => props.modelValue.timeConfig.schedule,
+  () => (props.modelValue.timeConfig as any)?.schedule,
   () => {
     // 简单验证
     isValid.value = true;

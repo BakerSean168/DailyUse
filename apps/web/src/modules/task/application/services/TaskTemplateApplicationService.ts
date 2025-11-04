@@ -66,15 +66,6 @@ export class TaskTemplateApplicationService {
   }
 
   /**
-   * 通过元模板创建任务模板
-   * @deprecated API 中暂未实现 MetaTemplate 功能
-   */
-  async createTaskTemplateByMetaTemplate(metaTemplateUuid: string): Promise<TaskTemplate> {
-    // TODO: 等待 API 实现 MetaTemplate 功能
-    throw new Error('MetaTemplate API not implemented yet');
-  }
-
-  /**
    * 获取任务模板列表
    */
   async getTaskTemplates(params?: {
