@@ -5,12 +5,12 @@
         <!-- 记录值 -->
         <v-col cols="4">
           <div class="d-flex align-center">
-            <v-avatar color="primary" variant="tonal" size="32" class="mr-3">
-              <v-icon size="16">mdi-plus</v-icon>
+            <v-avatar :color="record.changeColor || 'primary'" variant="tonal" size="32" class="mr-3">
+              <v-icon size="16">{{ record.changeIcon || 'mdi-plus' }}</v-icon>
             </v-avatar>
             <div>
-              <div class="text-h6 font-weight-bold">+{{ record.value }}</div>
-              <div class="text-caption text-medium-emphasis">增量</div>
+              <div class="text-h6 font-weight-bold">{{ record.changeText || `+${record.changeAmount}` }}</div>
+              <div class="text-caption text-medium-emphasis">{{ record.previousValue }} → {{ record.newValue }}</div>
             </div>
           </div>
         </v-col>
@@ -20,7 +20,7 @@
           <div class="d-flex align-center">
             <v-icon color="medium-emphasis" size="16" class="mr-2"> mdi-clock-outline </v-icon>
             <div>
-              {{ format(record.createdAt, 'yyyy/MM/dd HH:mm') }}
+              {{ record.formattedRecordedAt || format(record.recordedAt, 'yyyy/MM/dd HH:mm') }}
             </div>
           </div>
         </v-col>
@@ -42,11 +42,11 @@
 </template>
 
 <script setup lang="ts">
-import { GoalRecord } from '@dailyuse/domain-client';
+import type { GoalContracts } from '@dailyuse/contracts';
 import { format } from 'date-fns';
 
 defineProps<{
-  record: GoalRecord;
+  record: GoalContracts.GoalRecordClientDTO;
 }>();
 </script>
 

@@ -18,7 +18,6 @@
 
       <!-- 编辑按钮 -->
       <v-btn icon @click="handleEditGoal">
-      <v-btn icon @click="handleEditGoal">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
 
@@ -93,8 +92,6 @@
           <v-card-text class="pa-6">
             <v-row>
               <!-- 进度圆环 -->
-              <v-col cols="12" md="4" class="d-flex flex-column justify-center align-center">
-                <div class="progress-container mb-3">
               <v-col cols="12" md="4" class="d-flex flex-column justify-center align-center">
                 <div class="progress-container mb-3">
                   <v-progress-circular
@@ -238,18 +235,6 @@
                     icon="mdi-target"
                     title="暂无关键结果"
                     text="添加关键结果来跟踪目标进度"
-                  >
-                    <template v-slot:actions>
-                      <v-btn
-                        color="primary"
-                        variant="elevated"
-                        prepend-icon="mdi-plus"
-                        @click="openCreateKeyResultDialog"
-                      >
-                        添加第一个关键结果
-                      </v-btn>
-                    </template>
-                  </v-empty-state>
                   >
                     <template v-slot:actions>
                       <v-btn

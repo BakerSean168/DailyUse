@@ -346,30 +346,6 @@ export class Schedule extends AggregateRoot {
 
   /**
    * 转换为 ServerDTO (内部使用)
-   * 转换为 ClientDTO (发送给前端)
-   * Story 4-1: Schedule Event CRUD
-   */
-  public toClientDTO(): ScheduleContracts.ScheduleClientDTO {
-    return {
-      uuid: this._uuid,
-      accountUuid: this._accountUuid,
-      title: this._title,
-      description: this._description,
-      startTime: this._startTime,
-      endTime: this._endTime,
-      duration: this._duration,
-      hasConflict: this._hasConflict,
-      conflictingSchedules: this._conflictingSchedules,
-      priority: this._priority,
-      location: this._location,
-      attendees: this._attendees,
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-    };
-  }
-
-  /**
-   * 转换为 ServerDTO (内部使用)
    */
   public toServerDTO(): ScheduleServerDTO {
     return {
@@ -489,5 +465,4 @@ export class Schedule extends AggregateRoot {
     this._attendees = attendees ? [...attendees] : null;
     this._updatedAt = Date.now();
   }
-}
 }

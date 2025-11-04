@@ -436,21 +436,21 @@ export class GoalWebApplicationService {
   async createKeyResultForGoal(
     goalUuid: string,
     request: {
-      name: string;
+      title: string;
       description?: string;
-      startValue: number;
+      valueType: GoalContracts.KeyResultValueType;
+      aggregationMethod: GoalContracts.AggregationMethod;
       targetValue: number;
       currentValue?: number;
-      unit: string;
+      unit?: string;
       weight: number;
-      calculationMethod?: 'sum' | 'average' | 'max' | 'min' | 'custom';
     },
   ): Promise<GoalContracts.KeyResultClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
 
-      const data = await goalApiClient.createKeyResultForGoal(goalUuid, request);
+      const data = await goalApiClient.addKeyResultForGoal(goalUuid, request);
 
       // 更新关联的Goal实体（重新获取以包含新的KeyResult）
       await this.refreshGoalWithKeyResults(goalUuid);

@@ -394,7 +394,7 @@ const confirmDialog = ref<{
 });
 
 // Apply AI weight strategy
-const handleApplyWeightStrategy = (strategy: WeightStrategy) => {
+const handleApplyWeightStrategy = (strategy: any) => {
   if (!goalModel.value?.keyResults || goalModel.value.keyResults.length === 0) {
     return;
   }
@@ -417,7 +417,7 @@ const handleApplyWeightStrategy = (strategy: WeightStrategy) => {
 };
 
 // 应用目标模板
-const handleApplyTemplate = (template: GoalTemplate) => {
+const handleApplyTemplate = (template: any) => {
   // 填充目标基本信息
   goalName.value = template.title;
   goalDescription.value = template.description;
@@ -728,8 +728,6 @@ const handleSave = async () => {
       if (!accountUuid) {
         console.error('❌ 无法获取 accountUuid，AccountStore 状态:', {
           currentAccount: accountStore.currentAccount,
-          currentAccountUuid: accountStore.currentAccountUuid,
-          isAuthenticated: accountStore.isAuthenticated,
           currentAccountUuid: accountStore.currentAccountUuid,
           isAuthenticated: accountStore.isAuthenticated,
           token: !!localStorage.getItem('token'),
