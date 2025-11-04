@@ -24,6 +24,7 @@ type ConflictSuggestion = ScheduleContracts.ConflictSuggestion;
  * Schedule 聚合根
  * 
  * 注意：这是用户面向的日程（会议、约会等），不是 ScheduleTask（cron任务调度）
+ * TODO: 定义 ScheduleServer 接口后实现
  */
 export class Schedule extends AggregateRoot {
   // ===== 私有字段 =====

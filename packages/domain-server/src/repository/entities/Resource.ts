@@ -10,6 +10,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { Entity } from '@dailyuse/utils';
 import {
   ResourceType,
   ResourceStatus,
@@ -17,6 +18,7 @@ import {
 } from '@dailyuse/contracts';
 import type { RepositoryContracts as RC } from '@dailyuse/contracts';
 
+type IResourceServer = RC.ResourceServer;
 type ResourceServerDTO = RC.ResourceServerDTO;
 type ResourcePersistenceDTO = RC.ResourcePersistenceDTO;
 type ResourceClientDTO = RC.ResourceClientDTO;
@@ -45,13 +47,20 @@ export interface CreateResourceDTO {
 
 // ==================== Resource 实体 ====================
 
-export class Resource {
+/**
+ * Resource 实体
+ * 继承 Entity 并实现 IResourceServer 接口
+ * 
+ * 注意：Resource 是实体，不是聚合根
+ * Repository 才是聚合根，Resource 作为子实体由 Repository 管理
+ */
+export class Resource extends Entity implements IResourceServer {
   // ===== 子实体集合 =====
   private _references: ResourceReference[] = [];
   private _linkedContents: LinkedContent[] = [];
 
   private constructor(
-    public readonly uuid: string,
+    uuid: string,
     public readonly repositoryUuid: string,
     private _name: string,
     public readonly type: ResourceType,
@@ -67,7 +76,9 @@ export class Resource {
     public readonly createdAt: number,
     private _updatedAt: number,
     private _modifiedAt: number | null,
-  ) {}
+  ) {
+    super(uuid);
+  }
 
   // ==================== Getters ====================
 

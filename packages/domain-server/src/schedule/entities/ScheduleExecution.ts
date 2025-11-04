@@ -9,7 +9,12 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import { ExecutionStatus } from '@dailyuse/contracts';
+import { ExecutionStatus, ScheduleContracts } from '@dailyuse/contracts';
+
+type IScheduleExecutionServer = ScheduleContracts.ScheduleExecutionServer;
+type ScheduleExecutionServerDTO = ScheduleContracts.ScheduleExecutionServerDTO;
+type ScheduleExecutionClientDTO = ScheduleContracts.ScheduleExecutionClientDTO;
+type ScheduleExecutionPersistenceDTO = ScheduleContracts.ScheduleExecutionPersistenceDTO;
 
 interface ScheduleExecutionDTO {
   uuid: string;
@@ -26,7 +31,7 @@ interface ScheduleExecutionDTO {
 /**
  * ScheduleExecution 实体
  */
-export class ScheduleExecution extends Entity {
+export class ScheduleExecution extends Entity implements IScheduleExecutionServer {
   // ===== 私有字段 =====
   private _taskUuid: string;
   private _executionTime: number;
@@ -185,7 +190,49 @@ export class ScheduleExecution extends Entity {
   // ===== 转换方法 =====
 
   /**
-   * 转换为 DTO
+   * 转换为 Server DTO
+   */
+  public toServerDTO(): ScheduleExecutionServerDTO {
+    return {
+      uuid: this._uuid,
+      taskUuid: this._taskUuid,
+      executionTime: this._executionTime,
+      status: this._status,
+      duration: this._duration,
+      result: this._result ? { ...this._result } : null,
+      error: this._error,
+      retryCount: this._retryCount,
+      createdAt: this._createdAt,
+    };
+  }
+
+  /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): ScheduleExecutionClientDTO {
+    return {
+      uuid: this._uuid,
+      taskUuid: this._taskUuid,
+      executionTime: this._executionTime,
+      status: this._status,
+      duration: this._duration,
+      result: this._result ? { ...this._result } : null,
+      error: this._error,
+      retryCount: this._retryCount,
+      createdAt: this._createdAt,
+      // UI 辅助属性
+      executionTimeFormatted: new Date(this._executionTime).toLocaleString('zh-CN'),
+      statusDisplay: this._getStatusText(),
+      statusColor: this._getStatusColor(),
+      durationFormatted: this._formatDuration(),
+      hasError: this._error !== null,
+      hasResult: this._result !== null,
+      resultSummary: this._getResultSummary(),
+    };
+  }
+
+  /**
+   * 转换为 DTO（内部使用）
    */
   public toDTO(): ScheduleExecutionDTO {
     return {
@@ -204,7 +251,7 @@ export class ScheduleExecution extends Entity {
   /**
    * 转换为持久化 DTO
    */
-  public toPersistenceDTO(): any {
+  public toPersistenceDTO(): ScheduleExecutionPersistenceDTO {
     return {
       uuid: this._uuid,
       taskUuid: this._taskUuid,
@@ -216,6 +263,54 @@ export class ScheduleExecution extends Entity {
       retryCount: this._retryCount,
       createdAt: this._createdAt,
     };
+  }
+
+  // ===== 私有辅助方法 =====
+
+  private _getStatusText(): string {
+    switch (this._status) {
+      case ExecutionStatus.SUCCESS:
+        return '执行成功';
+      case ExecutionStatus.FAILED:
+        return '执行失败';
+      case ExecutionStatus.TIMEOUT:
+        return '执行超时';
+      case ExecutionStatus.SKIPPED:
+        return '已跳过';
+      case ExecutionStatus.RETRYING:
+        return '重试中';
+      default:
+        return '未知状态';
+    }
+  }
+
+  private _getStatusColor(): string {
+    switch (this._status) {
+      case ExecutionStatus.SUCCESS:
+        return 'green';
+      case ExecutionStatus.FAILED:
+        return 'red';
+      case ExecutionStatus.TIMEOUT:
+        return 'orange';
+      case ExecutionStatus.SKIPPED:
+        return 'gray';
+      case ExecutionStatus.RETRYING:
+        return 'blue';
+      default:
+        return 'gray';
+    }
+  }
+
+  private _formatDuration(): string {
+    if (this._duration === null) return '-';
+    if (this._duration < 1000) return `${this._duration} 毫秒`;
+    return `${(this._duration / 1000).toFixed(2)} 秒`;
+  }
+
+  private _getResultSummary(): string {
+    if (!this._result) return '空';
+    const keys = Object.keys(this._result);
+    return `${keys.length} 个字段`;
   }
 
   // ===== 静态工厂方法 =====
