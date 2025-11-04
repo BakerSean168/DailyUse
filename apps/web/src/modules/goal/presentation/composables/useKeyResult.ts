@@ -6,7 +6,7 @@
 import { ref } from 'vue';
 import type { GoalContracts } from '@dailyuse/contracts';
 import { GoalContracts as GC } from '@dailyuse/contracts';
-import { goalWebApplicationService } from '../../application/services';
+import { keyResultApplicationService } from '../../application/services';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 
 export function useKeyResult() {
@@ -25,7 +25,7 @@ export function useKeyResult() {
    */
   const fetchKeyResultsByGoal = async (goalUuid: string) => {
     try {
-      const result = await goalWebApplicationService.getKeyResultsByGoal(goalUuid);
+      const result = await keyResultApplicationService.getKeyResultsByGoal(goalUuid);
       return result;
     } catch (error) {
       snackbar.showError('获取关键结果列表失败');
@@ -63,7 +63,7 @@ export function useKeyResult() {
         weight: data.weight,
       };
 
-      const response = await goalWebApplicationService.createKeyResultForGoal(goalUuid, request);
+      const response = await keyResultApplicationService.createKeyResultForGoal(goalUuid, request);
       showCreateKeyResultDialog.value = false;
       snackbar.showSuccess('关键结果创建成功');
       return response;
@@ -82,7 +82,7 @@ export function useKeyResult() {
     data: GoalContracts.UpdateKeyResultRequest,
   ) => {
     try {
-      const response = await goalWebApplicationService.updateKeyResultForGoal(
+      const response = await keyResultApplicationService.updateKeyResultForGoal(
         goalUuid,
         keyResultUuid,
         data,
@@ -102,7 +102,7 @@ export function useKeyResult() {
    */
   const deleteKeyResult = async (goalUuid: string, keyResultUuid: string) => {
     try {
-      await goalWebApplicationService.deleteKeyResultForGoal(goalUuid, keyResultUuid);
+      await keyResultApplicationService.deleteKeyResultForGoal(goalUuid, keyResultUuid);
       snackbar.showSuccess('关键结果删除成功');
     } catch (error) {
       snackbar.showError('删除关键结果失败');

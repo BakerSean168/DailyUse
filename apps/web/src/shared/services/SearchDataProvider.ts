@@ -9,7 +9,7 @@
 
 import { ref } from 'vue';
 import type { GoalContracts, TaskContracts, ReminderContracts } from '@dailyuse/contracts';
-import { GoalWebApplicationService } from '@/modules/goal/application/services/GoalWebApplicationService';
+import { goalManagementApplicationService } from '@/modules/goal/application/services';
 import { TaskTemplateApplicationService } from '@/modules/task/application/services/TaskTemplateApplicationService';
 import { reminderTemplateApplicationService } from '@/modules/reminder/application/services';
 
@@ -45,7 +45,7 @@ interface SearchDataCache {
 export class SearchDataProvider {
   private static instance: SearchDataProvider;
 
-  private goalService = new GoalWebApplicationService();
+  private goalService = goalManagementApplicationService;
   private taskTemplateService = TaskTemplateApplicationService.getInstance();
   private reminderTemplateService = reminderTemplateApplicationService;
 

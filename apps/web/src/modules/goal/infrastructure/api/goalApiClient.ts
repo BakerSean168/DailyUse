@@ -182,59 +182,6 @@ export class GoalApiClient {
     return data;
   }
 
-  // ===== DDD聚合根控制：GoalRecord管理 =====
-
-  /**
-   * 通过Goal聚合根创建目标记录
-   */
-  async createGoalRecord(
-    goalUuid: string,
-    keyResultUuid: string,
-    request: GoalContracts.CreateGoalRecordRequest,
-  ): Promise<GoalContracts.GoalRecordClientDTO> {
-    // 将keyResultUuid添加到请求体中，而不是URL路径
-    const requestWithKeyResult = {
-      ...request,
-      keyResultUuid,
-    };
-
-    const data = await apiClient.post(`${this.baseUrl}/${goalUuid}/records`, requestWithKeyResult);
-    return data;
-  }
-
-  /**
-   * 获取关键结果的所有记录
-   */
-  async getGoalRecordsByKeyResult(
-    goalUuid: string,
-    keyResultUuid: string,
-    params?: {
-      page?: number;
-      limit?: number;
-      dateRange?: { start?: string; end?: string };
-    },
-  ): Promise<GoalContracts.GoalRecordsResponse> {
-    const data = await apiClient.get(`${this.baseUrl}/key-results/${keyResultUuid}/records`, {
-      params,
-    });
-    return data;
-  }
-
-  /**
-   * 获取目标的所有记录
-   */
-  async getGoalRecordsByGoal(
-    goalUuid: string,
-    params?: {
-      page?: number;
-      limit?: number;
-      dateRange?: { start?: string; end?: string };
-    },
-  ): Promise<GoalContracts.GoalRecordsResponse> {
-    const data = await apiClient.get(`${this.baseUrl}/${goalUuid}/records`, { params });
-    return data;
-  }
-
   // ===== DDD聚合根控制：GoalReview管理 =====
 
   /**
@@ -319,6 +266,70 @@ export class GoalApiClient {
   ): Promise<GoalContracts.GoalClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${goalUuid}/clone`, request);
     return data;
+  }
+
+  // ===== GoalRecord 管理 =====
+
+  /**
+   * 创建目标记录
+   */
+  async createGoalRecord(
+    goalUuid: string,
+    keyResultUuid: string,
+    request: GoalContracts.CreateGoalRecordRequest,
+  ): Promise<GoalContracts.GoalRecordClientDTO> {
+    const data = await apiClient.post(
+      `${this.baseUrl}/${goalUuid}/key-results/${keyResultUuid}/records`,
+      request,
+    );
+    return data;
+  }
+
+  /**
+   * 获取关键结果的所有记录
+   */
+  async getGoalRecordsByKeyResult(
+    goalUuid: string,
+    keyResultUuid: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      dateRange?: { start?: string; end?: string };
+    },
+  ): Promise<GoalContracts.GoalRecordsResponse> {
+    const data = await apiClient.get(
+      `${this.baseUrl}/${goalUuid}/key-results/${keyResultUuid}/records`,
+      { params },
+    );
+    return data;
+  }
+
+  /**
+   * 获取目标的所有记录
+   */
+  async getGoalRecordsByGoal(
+    goalUuid: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      dateRange?: { start?: string; end?: string };
+    },
+  ): Promise<GoalContracts.GoalRecordsResponse> {
+    const data = await apiClient.get(`${this.baseUrl}/${goalUuid}/records`, { params });
+    return data;
+  }
+
+  /**
+   * 删除目标记录
+   */
+  async deleteGoalRecord(
+    goalUuid: string,
+    keyResultUuid: string,
+    recordUuid: string,
+  ): Promise<void> {
+    await apiClient.delete(
+      `${this.baseUrl}/${goalUuid}/key-results/${keyResultUuid}/records/${recordUuid}`,
+    );
   }
 }
 

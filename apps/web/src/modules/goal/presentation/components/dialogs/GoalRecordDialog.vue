@@ -146,7 +146,7 @@ const handleCreateKeyResult = async () => {
     return;
   }
 
-  const previousValue = currentKeyResult.currentValue;
+  const previousValue = currentKeyResult.currentValue ?? 0; // ✅ 如果为 null/undefined，使用 0
   const changeAmount = localRecord.value.changeAmount;
   const newValue = previousValue + changeAmount;
 

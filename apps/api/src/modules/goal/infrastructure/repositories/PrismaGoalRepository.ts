@@ -173,18 +173,20 @@ export class PrismaGoalRepository implements IGoalRepository {
           where: { uuid: kr.uuid },
           create: {
             uuid: kr.uuid,
-            goalUuid: goal.uuid,
             title: kr.title,
             description: kr.description || null,
             valueType: kr.progress.valueType,
             aggregationMethod: kr.progress.aggregationMethod,
             targetValue: kr.progress.targetValue,
-            currentValue: kr.progress.currentValue,
+            currentValue: kr.progress.currentValue ?? 0, // ✅ 默认值 0 如果为 null
             unit: kr.progress.unit || null,
             weight: kr.weight ?? 0, // ✅ 添加 weight
             order: kr.order,
             createdAt: new Date(kr.createdAt),
             updatedAt: new Date(kr.updatedAt),
+            goal: {
+              connect: { uuid: goal.uuid }, // 关联现有的 Goal
+            },
           },
           update: {
             title: kr.title,
@@ -192,13 +194,38 @@ export class PrismaGoalRepository implements IGoalRepository {
             valueType: kr.progress.valueType,
             aggregationMethod: kr.progress.aggregationMethod,
             targetValue: kr.progress.targetValue,
-            currentValue: kr.progress.currentValue,
+            currentValue: kr.progress.currentValue ?? 0, // ✅ 默认值 0 如果为 null
             unit: kr.progress.unit || null,
             weight: kr.weight ?? 0, // ✅ 添加 weight
             order: kr.order,
             updatedAt: new Date(kr.updatedAt),
           },
         });
+
+        // 级联保存 GoalRecords（进度记录）
+        if (kr.records && kr.records.length > 0) {
+          console.log(`[PrismaGoalRepository.save] 保存 ${kr.records.length} 条 GoalRecords for KeyResult ${kr.uuid}`);
+          for (const record of kr.records) {
+            await (this.prisma as any).goalRecord.upsert({
+              where: { uuid: record.uuid },
+              create: {
+                uuid: record.uuid,
+                value: record.newValue ?? 0, // ✅ 默认值 0 如果为 null
+                note: record.note || null,
+                recordedAt: new Date(record.recordedAt),
+                createdAt: new Date(record.createdAt),
+                keyResult: {
+                  connect: { uuid: kr.uuid }, // ✅ 关联现有的 KeyResult
+                },
+              },
+              update: {
+                value: record.newValue ?? 0, // ✅ 默认值 0 如果为 null
+                note: record.note || null,
+                recordedAt: new Date(record.recordedAt),
+              },
+            });
+          }
+        }
       }
     }
   }

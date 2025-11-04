@@ -1,18 +1,51 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useGoal } from '../useGoal';
 
-// Mock 依赖
-vi.mock('../../../application/services/GoalWebApplicationService', () => ({
-  GoalWebApplicationService: vi.fn().mockImplementation(() => ({
+// Mock 依赖 - 新的应用服务
+vi.mock('../../../application/services', () => ({
+  goalManagementApplicationService: {
     getGoals: vi.fn(),
     createGoal: vi.fn(),
     updateGoal: vi.fn(),
     deleteGoal: vi.fn(),
+    getGoalById: vi.fn(),
+    activateGoal: vi.fn(),
+    pauseGoal: vi.fn(),
+    completeGoal: vi.fn(),
+    archiveGoal: vi.fn(),
+    searchGoals: vi.fn(),
+    getGoalAggregateView: vi.fn(),
+    cloneGoal: vi.fn(),
+  },
+  goalFolderApplicationService: {
     getGoalFolders: vi.fn(),
     createGoalFolder: vi.fn(),
     updateGoalFolder: vi.fn(),
     deleteGoalFolder: vi.fn(),
-  })),
+  },
+  keyResultApplicationService: {
+    getKeyResultsByGoal: vi.fn(),
+    createKeyResultForGoal: vi.fn(),
+    updateKeyResultForGoal: vi.fn(),
+    deleteKeyResultForGoal: vi.fn(),
+    batchUpdateKeyResultWeights: vi.fn(),
+    getProgressBreakdown: vi.fn(),
+  },
+  goalRecordApplicationService: {
+    createGoalRecord: vi.fn(),
+    getGoalRecordsByKeyResult: vi.fn(),
+    getGoalRecordsByGoal: vi.fn(),
+  },
+  goalReviewApplicationService: {
+    createGoalReview: vi.fn(),
+    getGoalReviewsByGoal: vi.fn(),
+    updateGoalReview: vi.fn(),
+    deleteGoalReview: vi.fn(),
+  },
+  goalSyncApplicationService: {
+    syncAllGoalsAndFolders: vi.fn(),
+    refreshAll: vi.fn(),
+  },
 }));
 
 vi.mock('../stores/goalStore', () => ({

@@ -682,4 +682,192 @@ export class GoalController {
       });
     }
   }
+
+  // ===== GoalRecord 管理 =====
+
+  /**
+   * 创建目标记录
+   * @route POST /api/goals/:uuid/key-results/:keyResultUuid/records
+   */
+  static async createGoalRecord(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const { goalUuid, keyResultUuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { error } = await GoalController.verifyGoalOwnership(goalUuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
+
+      const service = await GoalController.getGoalService();
+      const record = await service.createGoalRecord(goalUuid, keyResultUuid, req.body);
+
+      logger.info('Goal record created successfully', { goalUuid, keyResultUuid, accountUuid });
+      return GoalController.responseBuilder.sendSuccess(res, record, 'Goal record created', 201);
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error creating goal record', { error: error.message });
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return GoalController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取关键结果的所有记录
+   * @route GET /api/goals/:uuid/key-results/:keyResultUuid/records
+   */
+  static async getGoalRecordsByKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const { goalUuid, keyResultUuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { error } = await GoalController.verifyGoalOwnership(goalUuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
+
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
+      const startDate = req.query.startDate as string | undefined;
+      const endDate = req.query.endDate as string | undefined;
+
+      const service = await GoalController.getGoalService();
+      const result = await service.getGoalRecordsByKeyResult(goalUuid, keyResultUuid, {
+        page,
+        limit,
+        dateRange: startDate || endDate ? { start: startDate, end: endDate } : undefined,
+      });
+
+      return GoalController.responseBuilder.sendSuccess(
+        res,
+        result,
+        'Goal records retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error getting goal records', { error: error.message });
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return GoalController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取目标的所有记录
+   * @route GET /api/goals/:uuid/records
+   */
+  static async getGoalRecordsByGoal(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const { goalUuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { error } = await GoalController.verifyGoalOwnership(goalUuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
+
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
+
+      const service = await GoalController.getGoalService();
+      const result = await service.getGoalRecordsByGoal(goalUuid, { page, limit });
+
+      return GoalController.responseBuilder.sendSuccess(
+        res,
+        result,
+        'Goal records retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error getting goal records', { error: error.message });
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return GoalController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 删除目标记录
+   * @route DELETE /api/goals/:uuid/key-results/:keyResultUuid/records/:recordUuid
+   */
+  static async deleteGoalRecord(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const { goalUuid, keyResultUuid, recordUuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const { error } = await GoalController.verifyGoalOwnership(goalUuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
+
+      const service = await GoalController.getGoalService();
+      await service.deleteGoalRecord(goalUuid, keyResultUuid, recordUuid);
+
+      logger.info('Goal record deleted successfully', { goalUuid, keyResultUuid, recordUuid, accountUuid });
+      return GoalController.responseBuilder.sendSuccess(res, null, 'Goal record deleted');
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error deleting goal record', { error: error.message });
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return GoalController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
 }

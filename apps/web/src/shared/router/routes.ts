@@ -204,6 +204,16 @@ export const appRoutes: RouteRecordRaw[] = [
             },
             props: true,
           },
+          {
+            path: ':goalUuid/key-results/:keyResultUuid',
+            name: 'key-result-detail',
+            component: () => import('@/modules/goal/presentation/views/KeyResultDetailView.vue'),
+            meta: {
+              title: '关键结果详情',
+              requiresAuth: true,
+            },
+            props: true,
+          },
         ],
       },
 

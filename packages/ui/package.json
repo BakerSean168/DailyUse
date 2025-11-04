@@ -18,8 +18,9 @@
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "build": "nx vite:build && vue-tsc --emitDeclarationOnly --outDir dist",
-    "dev": "nx serve",
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
     "type-check": "vue-tsc --noEmit"
   },
   "peerDependencies": {
@@ -33,6 +34,7 @@
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3",
     "vite": "^5.1.6",
+    "vite-plugin-dts": "^4.5.0",
     "vue-tsc": "^2.2.0"
   }
 }

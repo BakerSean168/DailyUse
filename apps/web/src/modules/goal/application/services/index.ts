@@ -1,6 +1,14 @@
 /**
  * Goal Application Services
- * 按用例拆分的应用服务
+ * 按业务领域拆分的应用服务
+ * 
+ * 服务划分：
+ * - GoalManagementApplicationService: Goal CRUD 和状态管理
+ * - GoalFolderApplicationService: GoalFolder 管理
+ * - KeyResultApplicationService: KeyResult 管理
+ * - GoalRecordApplicationService: GoalRecord 管理
+ * - GoalReviewApplicationService: GoalReview 管理
+ * - GoalSyncApplicationService: 数据同步
  */
 
 export {
@@ -13,8 +21,22 @@ export {
   goalFolderApplicationService,
 } from './GoalFolderApplicationService';
 
-// 保留旧的导出用于向后兼容（如果需要）
-export { GoalWebApplicationService } from './GoalWebApplicationService';
+export {
+  KeyResultApplicationService,
+  keyResultApplicationService,
+} from './KeyResultApplicationService';
 
-// Web Application Service 单例
-export { goalWebApplicationService } from './GoalWebApplicationService';
+export {
+  GoalRecordApplicationService,
+  goalRecordApplicationService,
+} from './GoalRecordApplicationService';
+
+export {
+  GoalReviewApplicationService,
+  goalReviewApplicationService,
+} from './GoalReviewApplicationService';
+
+export {
+  GoalSyncApplicationService,
+  goalSyncApplicationService,
+} from './GoalSyncApplicationService';

@@ -5,7 +5,7 @@
 
 import { ref, computed } from 'vue';
 import type { GoalContracts } from '@dailyuse/contracts';
-import { goalManagementApplicationService, goalWebApplicationService } from '../../application/services';
+import { goalManagementApplicationService, goalSyncApplicationService } from '../../application/services';
 import { getGoalStore } from '../stores/goalStore';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 
@@ -78,7 +78,7 @@ export function useGoalManagement() {
    */
   const initializeData = async () => {
     try {
-      await goalWebApplicationService.syncAllGoals();
+      await goalSyncApplicationService.syncAllGoalsAndFolders();
       snackbar.showSuccess('数据加载完成');
     } catch (error) {
       snackbar.showError('数据加载失败');
@@ -142,7 +142,7 @@ export function useGoalManagement() {
    */
   const refresh = async () => {
     try {
-      await goalWebApplicationService.syncAllGoals();
+      await goalSyncApplicationService.syncAllGoalsAndFolders();
       snackbar.showInfo('数据刷新完成');
     } catch (error) {
       snackbar.showError('刷新失败');

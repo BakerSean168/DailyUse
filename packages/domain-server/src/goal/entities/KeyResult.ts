@@ -283,6 +283,20 @@ export class KeyResult extends Entity implements IKeyResultServer {
   }
 
   /**
+   * 删除记录
+   */
+  public removeRecord(recordUuid: string): void {
+    const index = this._records.findIndex(r => r.uuid === recordUuid);
+    if (index === -1) {
+      throw new Error(`Record with uuid ${recordUuid} not found`);
+    }
+    this._records.splice(index, 1);
+    this._updatedAt = Date.now();
+    // 删除后重新计算进度
+    this.recalculateProgress();
+  }
+
+  /**
    * 根据聚合方式重新计算进度
    */
   public recalculateProgress(): void {

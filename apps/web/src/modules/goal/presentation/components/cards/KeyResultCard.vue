@@ -60,18 +60,34 @@
           </v-chip>
         </div>
 
-        <!-- 添加记录按钮 -->
-        <v-btn
-          :color="goal?.color || 'primary'"
-          icon="mdi-plus"
-          size="small"
-          variant="tonal"
-          class="add-record-btn"
-          @click.stop="goalRecordDialogRef?.openDialog(keyResult.goalUuid, keyResult.uuid)"
-        >
-          <v-icon>mdi-plus</v-icon>
-          <v-tooltip activator="parent" location="bottom"> 添加进度记录 </v-tooltip>
-        </v-btn>
+        <!-- 右侧按钮组 -->
+        <div class="d-flex align-center gap-2">
+          <!-- 添加记录按钮 -->
+          <v-btn
+            :color="goal?.color || 'primary'"
+            icon="mdi-plus"
+            size="small"
+            variant="tonal"
+            class="add-record-btn"
+            @click.stop="goalRecordDialogRef?.openDialog(keyResult.goalUuid, keyResult.uuid)"
+          >
+            <v-icon>mdi-plus</v-icon>
+            <v-tooltip activator="parent" location="bottom"> 添加进度记录 </v-tooltip>
+          </v-btn>
+
+          <!-- 删除按钮 -->
+          <v-btn
+            icon="mdi-delete"
+            size="small"
+            variant="tonal"
+            color="error"
+            class="delete-kr-btn"
+            @click.stop="handleDeleteKeyResult"
+          >
+            <v-icon>mdi-delete</v-icon>
+            <v-tooltip activator="parent" location="bottom"> 删除关键结果 </v-tooltip>
+          </v-btn>
+        </div>
       </div>
 
       <!-- 关键结果描述 -->
@@ -93,14 +109,18 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
 import { KeyResult, Goal } from '@dailyuse/domain-client';
+import { useMessage } from '@dailyuse/ui';
 // composables
 import { useGoal } from '../../composables/useGoal';
 // components
 import GoalRecordDialog from '../dialogs/GoalRecordDialog.vue';
 
-const { archiveGoal } = useGoal();
+const router = useRouter();
+const message = useMessage();
+const { deleteKeyResultForGoal } = useGoal();
 const props = defineProps<{
   keyResult: KeyResult;
   goal?: Goal;
@@ -109,8 +129,36 @@ const props = defineProps<{
 // components
 const goalRecordDialogRef = ref<InstanceType<typeof GoalRecordDialog> | null>(null);
 
+// ✅ 导航到 KeyResult 详情页面
 const goToKeyResultInfo = () => {
-  console.log('好像没必要');
+  router.push({
+    name: 'key-result-detail',
+    params: {
+      goalUuid: props.keyResult.goalUuid,
+      keyResultUuid: props.keyResult.uuid,
+    },
+  });
+};
+
+// ✅ 删除 KeyResult - 使用优雅的确认对话框
+const handleDeleteKeyResult = async () => {
+  try {
+    // 使用 useMessage 的 delConfirm 获取用户确认
+    const confirmed = await message.delConfirm(
+      '此操作将同时删除所有关联的进度记录，无法撤销。',
+      '删除关键结果'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    // 用户确认删除
+    await deleteKeyResultForGoal(props.keyResult.goalUuid, props.keyResult.uuid);
+  } catch (error) {
+    console.error('删除关键结果失败:', error);
+    message.error('删除关键结果失败');
+  }
 };
 </script>
 
@@ -162,13 +210,20 @@ const goToKeyResultInfo = () => {
   align-items: center;
 }
 
-.add-record-btn {
+.add-record-btn,
+.delete-kr-btn {
   opacity: 0.7;
   transition: opacity 0.2s ease;
 }
 
-.key-result-card:hover .add-record-btn {
+.key-result-card:hover .add-record-btn,
+.key-result-card:hover .delete-kr-btn {
   opacity: 1;
+}
+
+/* 间距 */
+.gap-2 {
+  gap: 8px;
 }
 
 /* 响应式调整 */

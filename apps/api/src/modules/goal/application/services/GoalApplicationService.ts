@@ -1,6 +1,6 @@
 import type { IGoalRepository } from '@dailyuse/domain-server';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalDomainService, Goal } from '@dailyuse/domain-server';
+import { GoalDomainService, Goal, GoalRecord } from '@dailyuse/domain-server';
 import type { GoalContracts } from '@dailyuse/contracts';
 import { GoalEventPublisher } from './GoalEventPublisher';
 import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
@@ -447,7 +447,7 @@ export class GoalApplicationService {
     return statistics;
   }
 
-  // ===== 进度分解 =====
+    // ===== 进度分解 =====
 
   /**
    * 获取目标进度分解详情
@@ -469,5 +469,155 @@ export class GoalApplicationService {
 
     // 调用领域模型方法获取进度分解
     return goal.getProgressBreakdown();
+  }
+
+  // ===== GoalRecord 管理 =====
+
+  /**
+   * 创建目标记录（更新关键结果进度）
+   */
+  async createGoalRecord(
+    goalUuid: string,
+    keyResultUuid: string,
+    request: {
+      newValue: number;
+      note?: string;
+      recordedAt?: number;
+    }
+  ): Promise<GoalContracts.GoalRecordClientDTO> {
+    console.log('[GoalApplicationService.createGoalRecord] goalUuid:', goalUuid);
+    console.log('[GoalApplicationService.createGoalRecord] keyResultUuid:', keyResultUuid);
+    console.log('[GoalApplicationService.createGoalRecord] request:', request);
+
+    // 1. 查询目标（包含 KeyResults）
+    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    if (!goal) {
+      throw new Error(`Goal not found: ${goalUuid}`);
+    }
+
+    console.log('[GoalApplicationService.createGoalRecord] Goal KeyResults 数量:', goal.keyResults?.length || 0);
+
+    // 2. 找到对应的 KeyResult
+    const keyResult = goal.keyResults?.find((kr: any) => kr.uuid === keyResultUuid);
+    if (!keyResult) {
+      throw new Error(`KeyResult ${keyResultUuid} not found in Goal ${goalUuid}`);
+    }
+
+    console.log('[GoalApplicationService.createGoalRecord] KeyResult found:', keyResult);
+
+    // 3. 更新 KeyResult 进度并创建 GoalRecord
+    const recordDTO = keyResult.updateProgress(request.newValue, request.note);
+
+    console.log('[GoalApplicationService.createGoalRecord] Record created:', recordDTO);
+
+    // 4. 持久化
+    await this.goalRepository.save(goal);
+
+    // 5. 发布领域事件
+    await GoalEventPublisher.publishGoalEvents(goal);
+
+    // 6. 从 ServerDTO 创建实体，然后转换为 ClientDTO
+    const record = GoalRecord.fromServerDTO(recordDTO);
+    return record.toClientDTO();
+  }
+
+  /**
+   * 获取关键结果的所有记录
+   */
+  async getGoalRecordsByKeyResult(
+    goalUuid: string,
+    keyResultUuid: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      dateRange?: { start?: string; end?: string };
+    }
+  ): Promise<GoalContracts.GoalRecordsResponse> {
+    // 查询目标（包含 KeyResults）
+    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    if (!goal) {
+      throw new Error(`Goal not found: ${goalUuid}`);
+    }
+
+    // 找到对应的 KeyResult
+    const keyResult = goal.keyResults?.find((kr: any) => kr.uuid === keyResultUuid);
+    if (!keyResult) {
+      throw new Error(`KeyResult ${keyResultUuid} not found in Goal ${goalUuid}`);
+    }
+
+    // 获取记录
+    const allRecords = keyResult.records || [];
+    
+    // TODO: 实现日期范围过滤和分页
+    const records = allRecords.map((r: any) => r.toClientDTO());
+
+    return {
+      records,
+      total: records.length,
+    };
+  }
+
+  /**
+   * 获取目标的所有记录（所有 KeyResults 的记录）
+   */
+  async getGoalRecordsByGoal(
+    goalUuid: string,
+    params?: {
+      page?: number;
+      limit?: number;
+    }
+  ): Promise<GoalContracts.GoalRecordsResponse> {
+    // 查询目标（包含 KeyResults）
+    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    if (!goal) {
+      throw new Error(`Goal not found: ${goalUuid}`);
+    }
+
+    // 收集所有 KeyResults 的记录
+    const allRecords: any[] = [];
+    if (goal.keyResults) {
+      for (const keyResult of goal.keyResults) {
+        const records = keyResult.records || [];
+        allRecords.push(...records);
+      }
+    }
+
+    // TODO: 实现分页
+    const records = allRecords.map((r: any) => r.toClientDTO());
+
+    return {
+      records,
+      total: records.length,
+    };
+  }
+
+  /**
+   * 删除目标记录
+   */
+  async deleteGoalRecord(
+    goalUuid: string,
+    keyResultUuid: string,
+    recordUuid: string
+  ): Promise<void> {
+    // 查询目标（包含 KeyResults）
+    const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
+    if (!goal) {
+      throw new Error(`Goal not found: ${goalUuid}`);
+    }
+
+    // 找到对应的 KeyResult
+    const keyResult = goal.keyResults?.find((kr: any) => kr.uuid === keyResultUuid);
+    if (!keyResult) {
+      throw new Error(`KeyResult ${keyResultUuid} not found in Goal ${goalUuid}`);
+    }
+
+    // 删除记录
+    keyResult.removeRecord(recordUuid);
+
+    // 持久化
+    await this.goalRepository.save(goal);
+
+    // 发布领域事件
+    await GoalEventPublisher.publishGoalEvents(goal);
   }
 }

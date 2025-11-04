@@ -442,6 +442,131 @@ router.post('/:uuid/reviews', GoalController.addReview);
  */
 router.get('/:uuid/progress-breakdown', GoalController.getProgressBreakdown);
 
+// ===== GoalRecord 管理（进度记录）=====
+
+/**
+ * @swagger
+ * /api/goals/{goalUuid}/key-results/{keyResultUuid}/records:
+ *   post:
+ *     tags: [Goal]
+ *     summary: 创建目标记录
+ *     parameters:
+ *       - in: path
+ *         name: goalUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: keyResultUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - value
+ *             properties:
+ *               value:
+ *                 type: number
+ *               note:
+ *                 type: string
+ *               recordedAt:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: 创建成功
+ */
+router.post('/:goalUuid/key-results/:keyResultUuid/records', GoalController.createGoalRecord);
+
+/**
+ * @swagger
+ * /api/goals/{goalUuid}/key-results/{keyResultUuid}/records:
+ *   get:
+ *     tags: [Goal]
+ *     summary: 获取关键结果的所有记录
+ *     parameters:
+ *       - in: path
+ *         name: goalUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: keyResultUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ */
+router.get('/:goalUuid/key-results/:keyResultUuid/records', GoalController.getGoalRecordsByKeyResult);
+
+/**
+ * @swagger
+ * /api/goals/{goalUuid}/records:
+ *   get:
+ *     tags: [Goal]
+ *     summary: 获取目标的所有记录
+ *     parameters:
+ *       - in: path
+ *         name: goalUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ */
+router.get('/:goalUuid/records', GoalController.getGoalRecordsByGoal);
+
+/**
+ * @swagger
+ * /api/goals/{goalUuid}/key-results/{keyResultUuid}/records/{recordUuid}:
+ *   delete:
+ *     tags: [Goal]
+ *     summary: 删除目标记录
+ *     parameters:
+ *       - in: path
+ *         name: goalUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: keyResultUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: recordUuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 删除成功
+ */
+router.delete('/:goalUuid/key-results/:keyResultUuid/records/:recordUuid', GoalController.deleteGoalRecord);
+
 // ===== 查询和统计 =====
 
 /**
