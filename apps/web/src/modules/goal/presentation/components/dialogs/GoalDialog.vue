@@ -510,6 +510,7 @@ watch(
 
 // Tabs
 const activeTab = ref(0);
+
 const allTabs = [
   { name: '基本信息', icon: 'mdi-information', color: 'primary' },
   { name: '关键结果', icon: 'mdi-target', color: 'success' },

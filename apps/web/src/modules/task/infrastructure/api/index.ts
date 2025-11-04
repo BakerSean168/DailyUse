@@ -4,16 +4,16 @@
  */
 
 export {
-  oneTimeTaskApiClient,
   taskTemplateApiClient,
   taskInstanceApiClient,
+  taskDependencyApiClient,
   taskStatisticsApiClient,
 } from './taskApiClient';
 
 // 导出类型
 export type {
-  OneTimeTaskApiClient,
   TaskTemplateApiClient,
   TaskInstanceApiClient,
+  TaskDependencyApiClient,
   TaskStatisticsApiClient,
 } from './taskApiClient';
