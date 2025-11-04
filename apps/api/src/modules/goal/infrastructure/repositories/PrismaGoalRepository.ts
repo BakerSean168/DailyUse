@@ -1,5 +1,4 @@
 import type { PrismaClient, goal as PrismaGoal } from '@prisma/client';
-import type { PrismaClient, goal as PrismaGoal } from '@prisma/client';
 import type { IGoalRepository } from '@dailyuse/domain-server';
 import { Goal, KeyResult } from '@dailyuse/domain-server';
 import { GoalContracts } from '@dailyuse/contracts';
@@ -188,7 +187,6 @@ export class PrismaGoalRepository implements IGoalRepository {
             currentValue: kr.progress.currentValue ?? 0, // ✅ 默认值 0 如果为 null
             unit: kr.progress.unit || null,
             weight: kr.weight ?? 0, // ✅ 添加 weight
-            weight: kr.weight ?? 0, // ✅ 添加 weight
             order: kr.order,
             createdAt: new Date(kr.createdAt),
             updatedAt: new Date(kr.updatedAt),
@@ -204,7 +202,6 @@ export class PrismaGoalRepository implements IGoalRepository {
             targetValue: kr.progress.targetValue,
             currentValue: kr.progress.currentValue ?? 0, // ✅ 默认值 0 如果为 null
             unit: kr.progress.unit || null,
-            weight: kr.weight ?? 0, // ✅ 添加 weight
             weight: kr.weight ?? 0, // ✅ 添加 weight
             order: kr.order,
             updatedAt: new Date(kr.updatedAt),
@@ -243,13 +240,11 @@ export class PrismaGoalRepository implements IGoalRepository {
     const includeOptions = options?.includeChildren
       ? {
           keyResult: true,  // 修复: 使用 keyResult (单数) 匹配 Prisma schema
-          keyResult: true,  // 修复: 使用 keyResult (单数) 匹配 Prisma schema
         }
       : undefined;
 
     const data = await this.prisma.goal.findUnique({
       where: { uuid },
-      include: includeOptions as any, // 使用 any 绕过类型检查（因为 keyResult 关系还未在 Prisma Client 中生成）
       include: includeOptions as any, // 使用 any 绕过类型检查（因为 keyResult 关系还未在 Prisma Client 中生成）
     });
     return data ? this.mapToEntity(data) : null;

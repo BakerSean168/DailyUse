@@ -230,7 +230,7 @@
                 <div class="scrollable-content">
                   <v-row v-if="keyResults">
                     <v-col v-for="keyResult in keyResults" :key="keyResult.uuid" cols="12" lg="6">
-                      <KeyResultCard :keyResult="keyResult" :goal="goal as Goal" />
+                      <KeyResultCard :keyResult="keyResult" :goal="(goal as Goal)" />
                     </v-col>
                   </v-row>
                   <v-empty-state
@@ -354,7 +354,6 @@ const { deleteGoal, getGoalAggregateView } = useGoal();
 
 // component refs
 const goalDialogRef = ref<InstanceType<typeof GoalDialog> | null>(null);
-const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
 const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
 const goalReviewListCardRef = ref<InstanceType<typeof GoalReviewListCard> | null>(null);
 
@@ -493,12 +492,6 @@ const openCreateKeyResultDialog = () => {
   }
 };
 
-// 打开创建关键结果对话框
-const openCreateKeyResultDialog = () => {
-  if (goal.value?.uuid && keyResultDialogRef.value) {
-    keyResultDialogRef.value.openForCreateKeyResult(goal.value.uuid);
-  }
-};
 </script>
 
 <style scoped>

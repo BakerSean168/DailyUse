@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { GoalController } from './GoalController';
 import goalStatisticsRoutes from './goalStatisticsRoutes';
 import focusModeRoutes from './focusModeRoutes';
-import focusModeRoutes from './focusModeRoutes';
 
 /**
  * Goal 模块路由
