@@ -28,6 +28,8 @@ interface TaskDependencyProps {
  * - 管理任务之间的依赖关系
  * - 验证依赖关系的有效性
  * - 是事务边界
+ * 
+ * TODO: 在 contracts 中定义 TaskDependencyServer 接口后实现
  */
 export class TaskDependency extends AggregateRoot {
   // ===== 私有字段 =====

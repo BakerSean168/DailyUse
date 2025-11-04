@@ -49,7 +49,7 @@ interface ScheduleTaskDTO {
 /**
  * ScheduleTask 聚合根
  */
-export class ScheduleTask extends AggregateRoot {
+export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _name: string;
@@ -370,9 +370,12 @@ export class ScheduleTask extends AggregateRoot {
 
   /**
    * 计算下次执行时间
+   * 接口签名: calculateNextRun(): number
    */
-  public calculateNextRun(): number | null {
-    return this._schedule.calculateNextRun();
+  public calculateNextRun(): number {
+    const nextRun = this._schedule.calculateNextRun();
+    // 如果计算失败，返回当前时间（作为兜底）
+    return nextRun ?? Date.now();
   }
 
   // ===== 执行信息管理 =====

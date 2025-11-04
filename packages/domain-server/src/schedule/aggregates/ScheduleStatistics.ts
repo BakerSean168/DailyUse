@@ -1,9 +1,11 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import { ScheduleContracts, SourceModule, ExecutionStatus } from '@dailyuse/contracts';
+import { ScheduleContracts, SourceModule, ExecutionStatus, ScheduleTaskStatus } from '@dailyuse/contracts';
 
+type IScheduleStatisticsServer = ScheduleContracts.ScheduleStatisticsServer;
 type ScheduleStatisticsServerDTO = ScheduleContracts.ScheduleStatisticsServerDTO;
 type ScheduleStatisticsClientDTO = ScheduleContracts.ScheduleStatisticsClientDTO;
 type ScheduleStatisticsPersistenceDTO = ScheduleContracts.ScheduleStatisticsPersistenceDTO;
+type ModuleStatisticsServerDTO = ScheduleContracts.ModuleStatisticsServerDTO;
 
 /**
  * ScheduleStatistics 聚合根
@@ -15,9 +17,10 @@ type ScheduleStatisticsPersistenceDTO = ScheduleContracts.ScheduleStatisticsPers
  * - 模块级别统计 (reminder/task/goal/notification)
  * - 响应调度事件，实时更新统计
  *
+ * TODO: 修复接口实现签名不匹配的问题
  * @domain-server/schedule
  */
-export class ScheduleStatistics extends AggregateRoot {
+export class ScheduleStatistics extends AggregateRoot implements IScheduleStatisticsServer {
   // ============ 私有字段 ============
   private _accountUuid: string;
 
@@ -26,6 +29,7 @@ export class ScheduleStatistics extends AggregateRoot {
   private _activeTasks: number;
   private _pausedTasks: number;
   private _completedTasks: number;
+  private _cancelledTasks: number; // 添加取消任务统计
   private _failedTasks: number;
 
   // 执行统计
@@ -35,12 +39,19 @@ export class ScheduleStatistics extends AggregateRoot {
   private _timeoutExecutions: number;
   private _skippedExecutions: number;
 
+  // 性能统计
+  private _avgExecutionDuration: number;
+  private _minExecutionDuration: number;
+  private _maxExecutionDuration: number;
+  private _totalDuration: number; // 用于计算平均值
+
   // 模块级别统计 - Reminder
   private _reminderTotalTasks: number;
   private _reminderActiveTasks: number;
   private _reminderExecutions: number;
   private _reminderSuccessfulExecutions: number;
   private _reminderFailedExecutions: number;
+  private _reminderTotalDuration: number; // 添加总时长统计
 
   // 模块级别统计 - Task
   private _taskTotalTasks: number;
@@ -48,6 +59,7 @@ export class ScheduleStatistics extends AggregateRoot {
   private _taskExecutions: number;
   private _taskSuccessfulExecutions: number;
   private _taskFailedExecutions: number;
+  private _taskTotalDuration: number;
 
   // 模块级别统计 - Goal
   private _goalTotalTasks: number;
@@ -55,6 +67,7 @@ export class ScheduleStatistics extends AggregateRoot {
   private _goalExecutions: number;
   private _goalSuccessfulExecutions: number;
   private _goalFailedExecutions: number;
+  private _goalTotalDuration: number;
 
   // 模块级别统计 - Notification
   private _notificationTotalTasks: number;
@@ -62,6 +75,7 @@ export class ScheduleStatistics extends AggregateRoot {
   private _notificationExecutions: number;
   private _notificationSuccessfulExecutions: number;
   private _notificationFailedExecutions: number;
+  private _notificationTotalDuration: number;
 
   // 时间戳
   private _lastUpdatedAt: number;
@@ -74,32 +88,41 @@ export class ScheduleStatistics extends AggregateRoot {
     activeTasks: number;
     pausedTasks: number;
     completedTasks: number;
+    cancelledTasks?: number;
     failedTasks: number;
     totalExecutions: number;
     successfulExecutions: number;
     failedExecutions: number;
     timeoutExecutions: number;
     skippedExecutions: number;
+    avgExecutionDuration?: number;
+    minExecutionDuration?: number;
+    maxExecutionDuration?: number;
+    totalDuration?: number;
     reminderTotalTasks: number;
     reminderActiveTasks: number;
     reminderExecutions: number;
     reminderSuccessfulExecutions: number;
     reminderFailedExecutions: number;
+    reminderTotalDuration?: number;
     taskTotalTasks: number;
     taskActiveTasks: number;
     taskExecutions: number;
     taskSuccessfulExecutions: number;
     taskFailedExecutions: number;
+    taskTotalDuration?: number;
     goalTotalTasks: number;
     goalActiveTasks: number;
     goalExecutions: number;
     goalSuccessfulExecutions: number;
     goalFailedExecutions: number;
+    goalTotalDuration?: number;
     notificationTotalTasks: number;
     notificationActiveTasks: number;
     notificationExecutions: number;
     notificationSuccessfulExecutions: number;
     notificationFailedExecutions: number;
+    notificationTotalDuration?: number;
     lastUpdatedAt: number;
     createdAt: number;
   }) {
@@ -111,42 +134,58 @@ export class ScheduleStatistics extends AggregateRoot {
     this._activeTasks = params.activeTasks;
     this._pausedTasks = params.pausedTasks;
     this._completedTasks = params.completedTasks;
+    this._cancelledTasks = params.cancelledTasks ?? 0;
     this._failedTasks = params.failedTasks;
     this._totalExecutions = params.totalExecutions;
     this._successfulExecutions = params.successfulExecutions;
     this._failedExecutions = params.failedExecutions;
     this._timeoutExecutions = params.timeoutExecutions;
     this._skippedExecutions = params.skippedExecutions;
+    
+    this._avgExecutionDuration = params.avgExecutionDuration ?? 0;
+    this._minExecutionDuration = params.minExecutionDuration ?? 0;
+    this._maxExecutionDuration = params.maxExecutionDuration ?? 0;
+    this._totalDuration = params.totalDuration ?? 0;
 
     this._reminderTotalTasks = params.reminderTotalTasks;
     this._reminderActiveTasks = params.reminderActiveTasks;
     this._reminderExecutions = params.reminderExecutions;
     this._reminderSuccessfulExecutions = params.reminderSuccessfulExecutions;
     this._reminderFailedExecutions = params.reminderFailedExecutions;
+    this._reminderTotalDuration = params.reminderTotalDuration ?? 0;
 
     this._taskTotalTasks = params.taskTotalTasks;
     this._taskActiveTasks = params.taskActiveTasks;
     this._taskExecutions = params.taskExecutions;
     this._taskSuccessfulExecutions = params.taskSuccessfulExecutions;
     this._taskFailedExecutions = params.taskFailedExecutions;
+    this._taskTotalDuration = params.taskTotalDuration ?? 0;
 
     this._goalTotalTasks = params.goalTotalTasks;
     this._goalActiveTasks = params.goalActiveTasks;
     this._goalExecutions = params.goalExecutions;
     this._goalSuccessfulExecutions = params.goalSuccessfulExecutions;
     this._goalFailedExecutions = params.goalFailedExecutions;
+    this._goalTotalDuration = params.goalTotalDuration ?? 0;
 
     this._notificationTotalTasks = params.notificationTotalTasks;
     this._notificationActiveTasks = params.notificationActiveTasks;
     this._notificationExecutions = params.notificationExecutions;
     this._notificationSuccessfulExecutions = params.notificationSuccessfulExecutions;
     this._notificationFailedExecutions = params.notificationFailedExecutions;
+    this._notificationTotalDuration = params.notificationTotalDuration ?? 0;
 
     this._lastUpdatedAt = params.lastUpdatedAt;
     this._createdAt = params.createdAt;
   }
 
   // ============ 公共 Getters ============
+  public get id(): number {
+    // ScheduleStatistics 使用 accountUuid 作为唯一标识，没有自增 id
+    // 返回 0 表示无 id（兼容接口）
+    return 0;
+  }
+
   public get accountUuid(): string {
     return this._accountUuid;
   }
@@ -165,6 +204,10 @@ export class ScheduleStatistics extends AggregateRoot {
 
   public get completedTasks(): number {
     return this._completedTasks;
+  }
+
+  public get cancelledTasks(): number {
+    return this._cancelledTasks;
   }
 
   public get failedTasks(): number {
@@ -191,6 +234,27 @@ export class ScheduleStatistics extends AggregateRoot {
     return this._skippedExecutions;
   }
 
+  public get avgExecutionDuration(): number {
+    return this._avgExecutionDuration;
+  }
+
+  public get minExecutionDuration(): number {
+    return this._minExecutionDuration;
+  }
+
+  public get maxExecutionDuration(): number {
+    return this._maxExecutionDuration;
+  }
+
+  public get moduleStatistics(): Record<string, ModuleStatisticsServerDTO> {
+    return {
+      reminder: this.getModuleStats(SourceModule.REMINDER)!,
+      task: this.getModuleStats(SourceModule.TASK)!,
+      goal: this.getModuleStats(SourceModule.GOAL)!,
+      notification: this.getModuleStats(SourceModule.NOTIFICATION)!,
+    };
+  }
+
   public get lastUpdatedAt(): number {
     return this._lastUpdatedAt;
   }
@@ -199,25 +263,33 @@ export class ScheduleStatistics extends AggregateRoot {
     return this._createdAt;
   }
 
-  public get successRate(): number {
-    if (this._totalExecutions === 0) return 0;
-    return (this._successfulExecutions / this._totalExecutions) * 100;
-  }
-
-  public get failureRate(): number {
-    if (this._totalExecutions === 0) return 0;
-    return (this._failedExecutions / this._totalExecutions) * 100;
-  }
-
   // ============ 任务统计方法 ============
 
   /**
-   * 增加任务数 (新建任务时)
+   * 增加任务数 (按状态统计)
+   * 接口签名: incrementTaskCount(status: ScheduleTaskStatus): void
    */
-  public incrementTaskCount(module: SourceModule): void {
+  public incrementTaskCount(status: ScheduleTaskStatus): void {
     this._totalTasks++;
-    this._activeTasks++;
-    this._incrementModuleTaskCount(module);
+    
+    switch (status) {
+      case 'active':
+        this._activeTasks++;
+        break;
+      case 'paused':
+        this._pausedTasks++;
+        break;
+      case 'completed':
+        this._completedTasks++;
+        break;
+      case 'cancelled':
+        this._cancelledTasks++;
+        break;
+      case 'failed':
+        this._failedTasks++;
+        break;
+    }
+    
     this._lastUpdatedAt = Date.now();
 
     // 发布事件
@@ -227,7 +299,7 @@ export class ScheduleStatistics extends AggregateRoot {
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
       payload: {
-        module,
+        status,
         totalTasks: this._totalTasks,
         activeTasks: this._activeTasks,
       },
@@ -235,14 +307,30 @@ export class ScheduleStatistics extends AggregateRoot {
   }
 
   /**
-   * 减少任务数 (删除任务时)
+   * 减少任务数 (按状态统计)
+   * 接口签名: decrementTaskCount(status: ScheduleTaskStatus): void
    */
-  public decrementTaskCount(module: SourceModule, wasActive: boolean): void {
+  public decrementTaskCount(status: ScheduleTaskStatus): void {
     this._totalTasks = Math.max(0, this._totalTasks - 1);
-    if (wasActive) {
-      this._activeTasks = Math.max(0, this._activeTasks - 1);
+    
+    switch (status) {
+      case 'active':
+        this._activeTasks = Math.max(0, this._activeTasks - 1);
+        break;
+      case 'paused':
+        this._pausedTasks = Math.max(0, this._pausedTasks - 1);
+        break;
+      case 'completed':
+        this._completedTasks = Math.max(0, this._completedTasks - 1);
+        break;
+      case 'cancelled':
+        this._cancelledTasks = Math.max(0, this._cancelledTasks - 1);
+        break;
+      case 'failed':
+        this._failedTasks = Math.max(0, this._failedTasks - 1);
+        break;
     }
-    this._decrementModuleTaskCount(module, wasActive);
+    
     this._lastUpdatedAt = Date.now();
 
     // 发布事件
@@ -252,11 +340,57 @@ export class ScheduleStatistics extends AggregateRoot {
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
       payload: {
-        module,
+        status,
         totalTasks: this._totalTasks,
         activeTasks: this._activeTasks,
       },
     });
+  }
+
+  /**
+   * 更新任务状态 (从一个状态变更到另一个状态)
+   * 接口签名: updateTaskStatus(oldStatus: ScheduleTaskStatus, newStatus: ScheduleTaskStatus): void
+   */
+  public updateTaskStatus(oldStatus: ScheduleTaskStatus, newStatus: ScheduleTaskStatus): void {
+    // 减少旧状态计数
+    switch (oldStatus) {
+      case 'active':
+        this._activeTasks = Math.max(0, this._activeTasks - 1);
+        break;
+      case 'paused':
+        this._pausedTasks = Math.max(0, this._pausedTasks - 1);
+        break;
+      case 'completed':
+        this._completedTasks = Math.max(0, this._completedTasks - 1);
+        break;
+      case 'cancelled':
+        this._cancelledTasks = Math.max(0, this._cancelledTasks - 1);
+        break;
+      case 'failed':
+        this._failedTasks = Math.max(0, this._failedTasks - 1);
+        break;
+    }
+
+    // 增加新状态计数
+    switch (newStatus) {
+      case 'active':
+        this._activeTasks++;
+        break;
+      case 'paused':
+        this._pausedTasks++;
+        break;
+      case 'completed':
+        this._completedTasks++;
+        break;
+      case 'cancelled':
+        this._cancelledTasks++;
+        break;
+      case 'failed':
+        this._failedTasks++;
+        break;
+    }
+
+    this._lastUpdatedAt = Date.now();
   }
 
   /**
@@ -307,10 +441,12 @@ export class ScheduleStatistics extends AggregateRoot {
 
   /**
    * 记录执行结果
+   * 接口签名: recordExecution(status: ExecutionStatus, duration: number, sourceModule: SourceModule): void
    */
-  public recordExecution(module: SourceModule, status: ExecutionStatus): void {
+  public recordExecution(status: ExecutionStatus, duration: number, sourceModule: SourceModule): void {
     this._totalExecutions++;
 
+    // 更新执行状态统计
     switch (status) {
       case 'success':
         this._successfulExecutions++;
@@ -326,7 +462,11 @@ export class ScheduleStatistics extends AggregateRoot {
         break;
     }
 
-    this._recordModuleExecution(module, status);
+    // 更新性能统计
+    this._updateExecutionStats(duration);
+
+    // 更新模块执行统计
+    this._recordModuleExecution(sourceModule, status, duration);
     this._lastUpdatedAt = Date.now();
 
     // 发布事件
@@ -336,8 +476,9 @@ export class ScheduleStatistics extends AggregateRoot {
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
       payload: {
-        module,
+        module: sourceModule,
         status,
+        duration,
         totalExecutions: this._totalExecutions,
         successfulExecutions: this._successfulExecutions,
         failedExecutions: this._failedExecutions,
@@ -346,7 +487,46 @@ export class ScheduleStatistics extends AggregateRoot {
   }
 
   /**
+   * 更新执行统计数据 (性能相关)
+   * 接口签名: updateExecutionStats(duration: number): void
+   */
+  public updateExecutionStats(duration: number): void {
+    this._updateExecutionStats(duration);
+  }
+
+  /**
+   * 私有方法：更新执行时长统计
+   */
+  private _updateExecutionStats(duration: number): void {
+    // 更新总时长
+    this._totalDuration += duration;
+    
+    // 更新平均时长
+    this._avgExecutionDuration = this._totalExecutions > 0 
+      ? this._totalDuration / this._totalExecutions 
+      : 0;
+    
+    // 更新最小时长
+    if (this._minExecutionDuration === 0 || duration < this._minExecutionDuration) {
+      this._minExecutionDuration = duration;
+    }
+    
+    // 更新最大时长
+    if (duration > this._maxExecutionDuration) {
+      this._maxExecutionDuration = duration;
+    }
+  }
+
+  /**
    * 重置所有统计
+   * 接口方法: reset(): void
+   */
+  public reset(): void {
+    this.resetAllStats();
+  }
+
+  /**
+   * 重置所有统计 (内部方法)
    */
   public resetAllStats(): void {
     this._totalTasks = 0;
@@ -400,28 +580,24 @@ export class ScheduleStatistics extends AggregateRoot {
 
   /**
    * 获取模块统计
+   * 接口签名: getModuleStats(moduleName: SourceModule): ModuleStatisticsServerDTO | null
    */
-  public getModuleStats(module: SourceModule): {
-    totalTasks: number;
-    activeTasks: number;
-    totalExecutions: number;
-    successfulExecutions: number;
-    failedExecutions: number;
-    successRate: number;
-  } {
+  public getModuleStats(moduleName: SourceModule): ModuleStatisticsServerDTO | null {
     let totalTasks = 0;
     let activeTasks = 0;
     let totalExecutions = 0;
     let successfulExecutions = 0;
     let failedExecutions = 0;
+    let totalDuration = 0;
 
-    switch (module) {
+    switch (moduleName) {
       case 'reminder':
         totalTasks = this._reminderTotalTasks;
         activeTasks = this._reminderActiveTasks;
         totalExecutions = this._reminderExecutions;
         successfulExecutions = this._reminderSuccessfulExecutions;
         failedExecutions = this._reminderFailedExecutions;
+        totalDuration = this._reminderTotalDuration;
         break;
       case 'task':
         totalTasks = this._taskTotalTasks;
@@ -429,6 +605,7 @@ export class ScheduleStatistics extends AggregateRoot {
         totalExecutions = this._taskExecutions;
         successfulExecutions = this._taskSuccessfulExecutions;
         failedExecutions = this._taskFailedExecutions;
+        totalDuration = this._taskTotalDuration;
         break;
       case 'goal':
         totalTasks = this._goalTotalTasks;
@@ -436,6 +613,7 @@ export class ScheduleStatistics extends AggregateRoot {
         totalExecutions = this._goalExecutions;
         successfulExecutions = this._goalSuccessfulExecutions;
         failedExecutions = this._goalFailedExecutions;
+        totalDuration = this._goalTotalDuration;
         break;
       case 'notification':
         totalTasks = this._notificationTotalTasks;
@@ -443,19 +621,154 @@ export class ScheduleStatistics extends AggregateRoot {
         totalExecutions = this._notificationExecutions;
         successfulExecutions = this._notificationSuccessfulExecutions;
         failedExecutions = this._notificationFailedExecutions;
+        totalDuration = this._notificationTotalDuration;
         break;
+      default:
+        return null;
     }
 
-    const successRate = totalExecutions > 0 ? (successfulExecutions / totalExecutions) * 100 : 0;
+    const avgDuration = totalExecutions > 0 ? totalDuration / totalExecutions : 0;
 
     return {
+      moduleName,
       totalTasks,
       activeTasks,
       totalExecutions,
       successfulExecutions,
       failedExecutions,
-      successRate,
+      avgDuration,
     };
+  }
+
+  /**
+   * 获取所有模块统计
+   * 接口方法: getAllModuleStats(): ModuleStatisticsServerDTO[]
+   */
+  public getAllModuleStats(): ModuleStatisticsServerDTO[] {
+    return [
+      this.getModuleStats(SourceModule.REMINDER),
+      this.getModuleStats(SourceModule.TASK),
+      this.getModuleStats(SourceModule.GOAL),
+      this.getModuleStats(SourceModule.NOTIFICATION),
+    ].filter((stat): stat is ModuleStatisticsServerDTO => stat !== null);
+  }
+
+  /**
+   * 更新模块统计
+   * 接口方法: updateModuleStats(...)
+   */
+  public updateModuleStats(
+    moduleName: SourceModule,
+    tasksDelta: number,
+    activeTasksDelta: number,
+    executionsDelta: number,
+    successDelta: number,
+    failureDelta: number,
+    durationMs: number,
+  ): void {
+    switch (moduleName) {
+      case SourceModule.REMINDER:
+        this._reminderTotalTasks += tasksDelta;
+        this._reminderActiveTasks += activeTasksDelta;
+        this._reminderExecutions += executionsDelta;
+        this._reminderSuccessfulExecutions += successDelta;
+        this._reminderFailedExecutions += failureDelta;
+        this._reminderTotalDuration += durationMs;
+        break;
+      case SourceModule.TASK:
+        this._taskTotalTasks += tasksDelta;
+        this._taskActiveTasks += activeTasksDelta;
+        this._taskExecutions += executionsDelta;
+        this._taskSuccessfulExecutions += successDelta;
+        this._taskFailedExecutions += failureDelta;
+        this._taskTotalDuration += durationMs;
+        break;
+      case SourceModule.GOAL:
+        this._goalTotalTasks += tasksDelta;
+        this._goalActiveTasks += activeTasksDelta;
+        this._goalExecutions += executionsDelta;
+        this._goalSuccessfulExecutions += successDelta;
+        this._goalFailedExecutions += failureDelta;
+        this._goalTotalDuration += durationMs;
+        break;
+      case SourceModule.NOTIFICATION:
+        this._notificationTotalTasks += tasksDelta;
+        this._notificationActiveTasks += activeTasksDelta;
+        this._notificationExecutions += executionsDelta;
+        this._notificationSuccessfulExecutions += successDelta;
+        this._notificationFailedExecutions += failureDelta;
+        this._notificationTotalDuration += durationMs;
+        break;
+    }
+    this._lastUpdatedAt = Date.now();
+  }
+
+  /**
+   * 计算成功率
+   * 接口方法: calculateSuccessRate(): number
+   */
+  public calculateSuccessRate(): number {
+    if (this._totalExecutions === 0) return 0;
+    return (this._successfulExecutions / this._totalExecutions) * 100;
+  }
+
+  /**
+   * 计算失败率
+   * 接口方法: calculateFailureRate(): number
+   */
+  public calculateFailureRate(): number {
+    if (this._totalExecutions === 0) return 0;
+    return (this._failedExecutions / this._totalExecutions) * 100;
+  }
+
+  /**
+   * 计算平均时长
+   * 接口方法: calculateAverageDuration(): number
+   */
+  public calculateAverageDuration(): number {
+    return this._avgExecutionDuration;
+  }
+
+  /**
+   * 重置模块统计
+   * 接口方法: resetModuleStats(moduleName: SourceModule): void
+   */
+  public resetModuleStats(moduleName: SourceModule): void {
+    switch (moduleName) {
+      case SourceModule.REMINDER:
+        this._reminderTotalTasks = 0;
+        this._reminderActiveTasks = 0;
+        this._reminderExecutions = 0;
+        this._reminderSuccessfulExecutions = 0;
+        this._reminderFailedExecutions = 0;
+        this._reminderTotalDuration = 0;
+        break;
+      case SourceModule.TASK:
+        this._taskTotalTasks = 0;
+        this._taskActiveTasks = 0;
+        this._taskExecutions = 0;
+        this._taskSuccessfulExecutions = 0;
+        this._taskFailedExecutions = 0;
+        this._taskTotalDuration = 0;
+        break;
+      case SourceModule.GOAL:
+        this._goalTotalTasks = 0;
+        this._goalActiveTasks = 0;
+        this._goalExecutions = 0;
+        this._goalSuccessfulExecutions = 0;
+        this._goalFailedExecutions = 0;
+        this._goalTotalDuration = 0;
+        break;
+      case SourceModule.NOTIFICATION:
+        this._notificationTotalTasks = 0;
+        this._notificationActiveTasks = 0;
+        this._notificationExecutions = 0;
+        this._notificationSuccessfulExecutions = 0;
+        this._notificationFailedExecutions = 0;
+        this._notificationTotalDuration = 0;
+        break;
+    }
+    this._lastUpdatedAt = Date.now();
   }
 
   // ============ 私有辅助方法 ============
@@ -544,25 +857,29 @@ export class ScheduleStatistics extends AggregateRoot {
     }
   }
 
-  private _recordModuleExecution(module: SourceModule, status: ExecutionStatus): void {
+  private _recordModuleExecution(module: SourceModule, status: ExecutionStatus, duration: number): void {
     switch (module) {
       case 'reminder':
         this._reminderExecutions++;
+        this._reminderTotalDuration += duration;
         if (status === 'success') this._reminderSuccessfulExecutions++;
         if (status === 'failed') this._reminderFailedExecutions++;
         break;
       case 'task':
         this._taskExecutions++;
+        this._taskTotalDuration += duration;
         if (status === 'success') this._taskSuccessfulExecutions++;
         if (status === 'failed') this._taskFailedExecutions++;
         break;
       case 'goal':
         this._goalExecutions++;
+        this._goalTotalDuration += duration;
         if (status === 'success') this._goalSuccessfulExecutions++;
         if (status === 'failed') this._goalFailedExecutions++;
         break;
       case 'notification':
         this._notificationExecutions++;
+        this._notificationTotalDuration += duration;
         if (status === 'success') this._notificationSuccessfulExecutions++;
         if (status === 'failed') this._notificationFailedExecutions++;
         break;
