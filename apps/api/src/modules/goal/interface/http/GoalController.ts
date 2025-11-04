@@ -1,5 +1,8 @@
 import type { Request, Response } from 'express';
 import { GoalApplicationService } from '../../application/services/GoalApplicationService';
+import { GoalKeyResultApplicationService } from '../../application/services/GoalKeyResultApplicationService';
+import { GoalRecordApplicationService } from '../../application/services/GoalRecordApplicationService';
+import { GoalReviewApplicationService } from '../../application/services/GoalReviewApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
@@ -18,6 +21,9 @@ const logger = createLogger('GoalController');
  */
 export class GoalController {
   private static goalService: GoalApplicationService | null = null;
+  private static keyResultService: GoalKeyResultApplicationService | null = null;
+  private static recordService: GoalRecordApplicationService | null = null;
+  private static reviewService: GoalReviewApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
   /**
@@ -28,6 +34,27 @@ export class GoalController {
       GoalController.goalService = await GoalApplicationService.getInstance();
     }
     return GoalController.goalService;
+  }
+
+  private static async getKeyResultService(): Promise<GoalKeyResultApplicationService> {
+    if (!GoalController.keyResultService) {
+      GoalController.keyResultService = await GoalKeyResultApplicationService.getInstance();
+    }
+    return GoalController.keyResultService;
+  }
+
+  private static async getRecordService(): Promise<GoalRecordApplicationService> {
+    if (!GoalController.recordService) {
+      GoalController.recordService = await GoalRecordApplicationService.getInstance();
+    }
+    return GoalController.recordService;
+  }
+
+  private static async getReviewService(): Promise<GoalReviewApplicationService> {
+    if (!GoalController.reviewService) {
+      GoalController.reviewService = await GoalReviewApplicationService.getInstance();
+    }
+    return GoalController.reviewService;
   }
 
   /**
@@ -436,7 +463,7 @@ export class GoalController {
         return GoalController.responseBuilder.sendError(res, error);
       }
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getKeyResultService();
       const goal = await service.addKeyResult(uuid, req.body);
 
       logger.info('Key result added successfully', { goalUuid: uuid, accountUuid });
@@ -482,7 +509,7 @@ export class GoalController {
         return GoalController.responseBuilder.sendError(res, error);
       }
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getKeyResultService();
       const goal = await service.updateKeyResultProgress(uuid, keyResultUuid, currentValue, note);
 
       logger.info('Key result progress updated', { goalUuid: uuid, keyResultUuid, accountUuid });
@@ -526,7 +553,7 @@ export class GoalController {
         return GoalController.responseBuilder.sendError(res, error);
       }
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getKeyResultService();
       const goal = await service.deleteKeyResult(uuid, keyResultUuid);
 
       logger.info('Key result deleted', { goalUuid: uuid, keyResultUuid, accountUuid });
@@ -556,7 +583,7 @@ export class GoalController {
     try {
       const { uuid } = req.params;
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getReviewService();
       const goal = await service.addReview(uuid, req.body);
 
       logger.info('Goal review added successfully', { goalUuid: uuid });
@@ -668,7 +695,7 @@ export class GoalController {
         return GoalController.responseBuilder.sendError(res, error);
       }
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getRecordService();
       const breakdown = await service.getGoalProgressBreakdown(uuid);
 
       return GoalController.responseBuilder.sendSuccess(
@@ -718,7 +745,7 @@ export class GoalController {
         return GoalController.responseBuilder.sendError(res, error);
       }
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getRecordService();
       const record = await service.createGoalRecord(goalUuid, keyResultUuid, req.body);
 
       logger.info('Goal record created successfully', { goalUuid, keyResultUuid, accountUuid });
@@ -765,7 +792,7 @@ export class GoalController {
       const startDate = req.query.startDate as string | undefined;
       const endDate = req.query.endDate as string | undefined;
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getRecordService();
       const result = await service.getGoalRecordsByKeyResult(goalUuid, keyResultUuid, {
         page,
         limit,
@@ -817,7 +844,7 @@ export class GoalController {
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getRecordService();
       const result = await service.getGoalRecordsByGoal(goalUuid, { page, limit });
 
       return GoalController.responseBuilder.sendSuccess(
@@ -862,7 +889,7 @@ export class GoalController {
         return GoalController.responseBuilder.sendError(res, error);
       }
 
-      const service = await GoalController.getGoalService();
+      const service = await GoalController.getRecordService();
       await service.deleteGoalRecord(goalUuid, keyResultUuid, recordUuid);
 
       logger.info('Goal record deleted successfully', { goalUuid, keyResultUuid, recordUuid, accountUuid });
