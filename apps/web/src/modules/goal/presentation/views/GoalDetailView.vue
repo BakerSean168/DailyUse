@@ -216,7 +216,7 @@
                 <div class="scrollable-content">
                   <v-row v-if="keyResults">
                     <v-col v-for="keyResult in keyResults" :key="keyResult.uuid" cols="12" lg="6">
-                      <KeyResultCard :keyResult="keyResult" :goal="goal as GoalClient" />
+                      <KeyResultCard :keyResult="keyResult" :goal="goal as Goal" />
                     </v-col>
                   </v-row>
                   <v-empty-state
@@ -292,7 +292,7 @@
         @close="showProgressBreakdown = false"
       />
     </v-dialog>
-    <GoalReviewListCard ref="goalReviewListCardRef" :goal="goal as GoalClient" />
+    <GoalReviewListCard ref="goalReviewListCardRef" :goal="(goal as Goal)" />
   </v-container>
 </template>
 
@@ -332,7 +332,7 @@ const goalReviewListCardRef = ref<InstanceType<typeof GoalReviewListCard> | null
 // state
 const showProgressBreakdown = ref(false);
 
-const goal: ComputedRef<GoalClient | null> = computed(() => {
+const goal: ComputedRef<Goal | null> = computed(() => {
   const goalUuid = route.params.id as string;
   if (!goalUuid) return null;
   return goalStore.getGoalByUuid(goalUuid);
@@ -443,7 +443,7 @@ const openGoalReviewListCard = () => {
 // 处理编辑目标
 const handleEditGoal = () => {
   if (goal.value) {
-    goalDialogRef.value?.openForEdit(goal.value as GoalClient);
+    goalDialogRef.value?.openForEdit(goal.value as Goal);
   }
 };
 

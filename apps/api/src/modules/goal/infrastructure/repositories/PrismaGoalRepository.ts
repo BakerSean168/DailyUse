@@ -52,6 +52,10 @@ export class PrismaGoalRepository implements IGoalRepository {
    * 注意：Prisma Client 自动将 @map 的字段转换为 camelCase
    */
   private mapToEntity(data: PrismaGoal & { keyResults?: any[]; keyResult?: any[] }): Goal {
+    console.log('[PrismaGoalRepository.mapToEntity] 开始映射, Goal UUID:', data.uuid);
+    console.log('[PrismaGoalRepository.mapToEntity] data.keyResults:', data.keyResults);
+    console.log('[PrismaGoalRepository.mapToEntity] data.keyResult:', data.keyResult);
+    
     const goal = Goal.fromPersistenceDTO({
       uuid: data.uuid,
       accountUuid: data.accountUuid, // Prisma camelCase
@@ -81,8 +85,12 @@ export class PrismaGoalRepository implements IGoalRepository {
     // 恢复 KeyResults（如果有）
     // ✅ 支持 keyResults 和 keyResult (单复数都支持)
     const keyResultsData = data.keyResults || data.keyResult || [];
+    console.log('[PrismaGoalRepository.mapToEntity] keyResultsData 长度:', keyResultsData.length);
+    
     if (keyResultsData.length > 0) {
+      console.log('[PrismaGoalRepository.mapToEntity] 开始恢复 KeyResults...');
       for (const krData of keyResultsData) {
+        console.log('[PrismaGoalRepository.mapToEntity] KeyResult 原始数据:', krData);
         const keyResult = KeyResult.fromPersistenceDTO({
           uuid: krData.uuid,
           goalUuid: krData.goalUuid,
@@ -103,9 +111,13 @@ export class PrismaGoalRepository implements IGoalRepository {
             krData.updatedAt instanceof Date ? krData.updatedAt.getTime() : krData.updatedAt,
         });
         goal.addKeyResult(keyResult);
+        console.log('[PrismaGoalRepository.mapToEntity] KeyResult 已添加到 Goal');
       }
+    } else {
+      console.log('[PrismaGoalRepository.mapToEntity] 没有 KeyResults 数据');
     }
 
+    console.log('[PrismaGoalRepository.mapToEntity] Goal 实体的 keyResults 数量:', goal.keyResults?.length || 0);
     return goal;
   }
 
@@ -213,6 +225,8 @@ export class PrismaGoalRepository implements IGoalRepository {
       folderUuid?: string;
     },
   ): Promise<Goal[]> {
+    console.log('[PrismaGoalRepository.findByAccountUuid] options:', options);
+    
     const where: any = { accountUuid: accountUuid, deletedAt: null }; // Prisma 自动转换为 camelCase
     if (options?.status) {
       where.status = options.status;
@@ -220,8 +234,30 @@ export class PrismaGoalRepository implements IGoalRepository {
     if (options?.folderUuid) {
       where.folderUuid = options.folderUuid; // Prisma 自动转换为 camelCase
     }
-    const data = await this.prisma.goal.findMany({ where });
-    return data.map((d) => this.mapToEntity(d));
+    
+    // 添加 include 选项以加载 KeyResults
+    const includeOptions = options?.includeChildren
+      ? {
+          keyResult: true,  // 使用 keyResult (单数) 匹配 Prisma schema
+        }
+      : undefined;
+    
+    console.log('[PrismaGoalRepository.findByAccountUuid] includeOptions:', includeOptions);
+    
+    const data = await this.prisma.goal.findMany({ 
+      where,
+      include: includeOptions as any,
+    });
+    
+    console.log('[PrismaGoalRepository.findByAccountUuid] Prisma返回数据数量:', data.length);
+    console.log('[PrismaGoalRepository.findByAccountUuid] 第一条原始数据:', data[0]);
+    console.log('[PrismaGoalRepository.findByAccountUuid] 第一条数据的keyResult:', (data[0] as any)?.keyResult);
+    
+    const entities = data.map((d) => this.mapToEntity(d));
+    console.log('[PrismaGoalRepository.findByAccountUuid] 转换后实体数量:', entities.length);
+    console.log('[PrismaGoalRepository.findByAccountUuid] 第一个实体的KeyResults数量:', entities[0]?.keyResults?.length || 0);
+    
+    return entities;
   }
 
   async findByFolderUuid(folderUuid: string): Promise<Goal[]> {

@@ -135,6 +135,7 @@ export class GoalDomainService {
       title: string;
       description?: string;
       valueType: string;
+      aggregationMethod?: string;
       targetValue: number;
       currentValue?: number;
       unit?: string;

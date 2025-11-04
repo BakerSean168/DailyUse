@@ -109,7 +109,7 @@ const { createGoalRecord, goals } = useGoal();
 const visible = ref(false);
 const propKeyResultUuid = ref<string>('');
 const propGoalUuid = ref<string>('');
-const propRecord = ref<GoalRecordClient | null>(null);
+const propRecord = ref<GoalRecord | null>(null);
 
 const quickValues = [1, 2, 5, 10];
 
@@ -175,7 +175,7 @@ const handleCancel = () => {
   closeDialog();
 };
 
-const openDialog = (goalUuid: string, keyResultUuid: string, record?: GoalRecordClient) => {
+const openDialog = (goalUuid: string, keyResultUuid: string, record?: GoalRecord) => {
   propGoalUuid.value = goalUuid;
   propKeyResultUuid.value = keyResultUuid;
   propRecord.value = record || null;

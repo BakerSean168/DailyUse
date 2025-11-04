@@ -56,20 +56,21 @@
 
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
-import type { GoalFolder } from '@dailyuse/domain-client';
-import { GoalFolder as GoalFolder } from '@dailyuse/domain-client';
+import { GoalFolder } from '@dailyuse/domain-client';
 // composables
 import { useGoalFolder } from '../../composables/useGoalFolder';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
-import { vi } from 'date-fns/locale';
 
 const goalFolderComposable = useGoalFolder();
 const { createFolder, updateFolder } = goalFolderComposable;
 const accountStore = useAccountStore();
 
 const visible = ref(false);
-const propGoalFolder = ref<GoalFolderClient | null>(null);
-const localGoalFolder = ref<GoalFolderClient>(GoalFolder.forCreate(''));
+const getDefaultAccountUuid = () => accountStore.currentAccountUuid ?? '';
+const createDraftGoalFolder = () => GoalFolder.forCreate(getDefaultAccountUuid());
+
+const propGoalFolder = ref<GoalFolder | null>(null);
+const localGoalFolder = ref<GoalFolder>(createDraftGoalFolder());
 
 const isEditing = computed(() => !!propGoalFolder.value);
 const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
@@ -91,16 +92,6 @@ const icon = computed({
   },
 });
 
-watch(
-  () => localGoalFolder.value.name,
-  (newName) => {
-    console.log('localGoalFolder name changed:', newName);
-    console.log('isFormValid', isFormValid.value);
-    console.log('formRef:', formRef.value);
-    console.log('formRef.value?.isValid:', formRef.value?.isValid);
-    console.log('isFormValid:', isFormValid.value);
-  },
-);
 const iconOptions = [
   { text: '文件夹', value: 'mdi-folder' },
   { text: '目标', value: 'mdi-target' },
@@ -155,7 +146,7 @@ const handleCancel = () => {
   closeDialog();
 };
 
-const openDialog = (goalFolder?: GoalFolderClient) => {
+const openDialog = (goalFolder?: GoalFolder) => {
   visible.value = true;
   propGoalFolder.value = goalFolder || null;
 };
@@ -164,7 +155,7 @@ const openForCreate = () => {
   openDialog();
 };
 
-const openForEdit = (goalFolder: GoalFolderClient) => {
+const openForEdit = (goalFolder: GoalFolder) => {
   openDialog(goalFolder);
 };
 
@@ -178,9 +169,9 @@ watch(
     if (show) {
       localGoalFolder.value = propGoalFolder.value
         ? propGoalFolder.value.clone()
-        : GoalFolder.forCreate('');
+        : createDraftGoalFolder();
     } else {
-      localGoalFolder.value = GoalFolder.forCreate('');
+      localGoalFolder.value = createDraftGoalFolder();
     }
   },
   { immediate: true },

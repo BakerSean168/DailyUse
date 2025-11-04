@@ -41,10 +41,10 @@ export class GoalFolderApplicationService {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
 
-      const folderData = await goalFolderApiClient.createGoalFolder(request);
+    const folderData = await goalFolderApiClient.createGoalFolder(request);
 
-      // 创建客户端实体并同步到 store
-      const folder = GoalFolderClient.fromClientDTO(folderData);
+    // 创建客户端实体并同步到 store
+    const folder = GoalFolder.fromClientDTO(folderData);
       this.goalStore.addOrUpdateGoalFolder(folder);
 
       this.snackbar.showSuccess('文件夹创建成功');
@@ -71,10 +71,10 @@ export class GoalFolderApplicationService {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
 
-      const response = await goalFolderApiClient.getGoalFolders(params);
+    const response = await goalFolderApiClient.getGoalFolders(params);
 
-      // 批量创建客户端实体并同步到 store
-      const folders = response.folders.map((folderData: any) => GoalFolderClient.fromClientDTO(folderData));
+    // 批量创建客户端实体并同步到 store
+    const folders = response.folders.map((folderData: any) => GoalFolder.fromClientDTO(folderData));
       this.goalStore.setGoalFolders(folders);
 
       return response;
@@ -99,10 +99,10 @@ export class GoalFolderApplicationService {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
 
-      const data = await goalFolderApiClient.updateGoalFolder(uuid, request);
+    const data = await goalFolderApiClient.updateGoalFolder(uuid, request);
 
-      // 更新客户端实体并同步到 store
-      const folder = GoalFolderClient.fromClientDTO(data);
+    // 更新客户端实体并同步到 store
+    const folder = GoalFolder.fromClientDTO(data);
       this.goalStore.addOrUpdateGoalFolder(folder);
 
       this.snackbar.showSuccess('文件夹更新成功');

@@ -74,7 +74,7 @@
                   复盘时间: {{ format(review.reviewDate, 'yyyy年MM月dd日 HH:mm') }}
                 </div>
                 <div class="text-body-2 text-medium-emphasis">
-                  目标: {{ goal?.name || '加载中...' }}
+                  目标: {{ goal?.title || '加载中...' }}
                 </div>
               </div>
             </v-card-title>
@@ -298,7 +298,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { GoalReviewClient, Goal } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 
 // 路由和状态
@@ -315,7 +315,7 @@ const { fetchGoalById } = useGoal();
 // 数据
 const goalUuid = route.params.goalUuid as string;
 const reviewUuid = route.params.reviewUuid as string;
-const goal = ref<GoalClient | null>(null);
+const goal = ref<Goal | null>(null);
 const review = ref<any | null>(null);
 
 // 工具方法

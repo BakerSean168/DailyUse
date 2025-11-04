@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderTemplate, ReminderGroup, ReminderStatistics } from '@dailyuse/domain-client';
 
-// 使用 DTO 类型替代领域实体
-type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
-type ReminderGroup = ReminderContracts.ReminderGroupClientDTO;
 type ReminderHistory = ReminderContracts.ReminderHistoryClientDTO;
+
+const ControlMode = ReminderContracts.ControlMode;
 
 /**
  * Reminder Store - 状态管理
@@ -24,7 +24,7 @@ export const useReminderStore = defineStore('reminder', () => {
   const reminderHistories = ref<ReminderHistory[]>([]);
 
   // 提醒统计数据 (DTO 数据)
-  const statistics = ref<ReminderContracts.ReminderStatsClientDTO | null>(null);
+  const statistics = ref<ReminderStatistics | null>(null);
 
   // 当前选中的模板 (DTO 数据)
   const selectedTemplate = ref<ReminderTemplate | null>(null);
@@ -55,6 +55,28 @@ export const useReminderStore = defineStore('reminder', () => {
   const upcomingReminders = ref<any>(null);
   const upcomingRemindersLastUpdate = ref<Date | null>(null);
 
+  const toReminderTemplateEntity = (
+    template: ReminderTemplate | ReminderContracts.ReminderTemplateClientDTO,
+  ): ReminderTemplate => {
+    return template instanceof ReminderTemplate
+      ? template
+      : ReminderTemplate.fromClientDTO(template);
+  };
+
+  const toReminderGroupEntity = (
+    group: ReminderGroup | ReminderContracts.ReminderGroupClientDTO,
+  ): ReminderGroup => {
+    return group instanceof ReminderGroup ? group : ReminderGroup.fromClientDTO(group);
+  };
+
+  const toReminderStatisticsEntity = (
+    stats: ReminderStatistics | ReminderContracts.ReminderStatisticsClientDTO,
+  ): ReminderStatistics => {
+    return stats instanceof ReminderStatistics
+      ? stats
+      : ReminderStatistics.fromClientDTO(stats);
+  };
+
   // ===== 计算属性 =====
 
   /**
@@ -66,7 +88,9 @@ export const useReminderStore = defineStore('reminder', () => {
    * 获取启用的提醒模板
    */
   const getEnabledReminderTemplates = computed(() =>
-    reminderTemplates.value.filter((template) => template.selfEnabled && template.effectiveEnabled),
+     reminderTemplates.value
+      .filter((template) => template.selfEnabled && template.effectiveEnabled)
+      .map((template) => (template instanceof ReminderTemplate ? template : toReminderTemplateEntity(template))),
   );
 
   /**
@@ -125,7 +149,11 @@ export const useReminderStore = defineStore('reminder', () => {
       filtered = filtered.filter((template) => template.effectiveEnabled === filters.value.enabled);
     }
 
-    return filtered;
+    return filtered.map((template) =>
+      template instanceof ReminderTemplate
+        ? template
+        : toReminderTemplateEntity(template as ReminderContracts.ReminderTemplateClientDTO),
+    );
   });
 
   // ===== 状态操作方法 =====
@@ -156,19 +184,24 @@ export const useReminderStore = defineStore('reminder', () => {
   /**
    * 设置提醒模板列表 (域实体对象)
    */
-  const setReminderTemplates = (templates: ReminderTemplate[]) => {
-    reminderTemplates.value = templates;
+  const setReminderTemplates = (
+    templates: Array<ReminderTemplate | ReminderContracts.ReminderTemplateClientDTO>,
+  ) => {
+    reminderTemplates.value = templates.map((template) => toReminderTemplateEntity(template));
   };
 
   /**
    * 添加或更新提醒模板 (域实体对象)
    */
-  const addOrUpdateReminderTemplate = (template: ReminderTemplate) => {
-    const index = reminderTemplates.value.findIndex((t) => t.uuid === template.uuid);
+  const addOrUpdateReminderTemplate = (
+    template: ReminderTemplate | ReminderContracts.ReminderTemplateClientDTO,
+  ) => {
+    const entity = toReminderTemplateEntity(template);
+    const index = reminderTemplates.value.findIndex((t) => t.uuid === entity.uuid);
     if (index >= 0) {
-      reminderTemplates.value[index] = template;
+      reminderTemplates.value[index] = entity;
     } else {
-      reminderTemplates.value.push(template);
+      reminderTemplates.value.push(entity);
     }
   };
 
@@ -186,14 +219,20 @@ export const useReminderStore = defineStore('reminder', () => {
    * 根据UUID获取提醒模板 (返回域实体对象)
    */
   const getReminderTemplateByUuid = (uuid: string): ReminderTemplate | null => {
-    return reminderTemplates.value.find((t) => t.uuid === uuid) || null;
+    const template = reminderTemplates.value.find((t) => t.uuid === uuid);
+    if (!template) return null;
+    return template instanceof ReminderTemplate
+      ? template
+      : toReminderTemplateEntity(template as ReminderContracts.ReminderTemplateClientDTO);
   };
 
   /**
    * 设置选中的模板 (域实体对象)
    */
-  const setSelectedTemplate = (template: ReminderTemplate | null) => {
-    selectedTemplate.value = template;
+  const setSelectedTemplate = (
+    template: ReminderTemplate | ReminderContracts.ReminderTemplateClientDTO | null,
+  ) => {
+    selectedTemplate.value = template ? toReminderTemplateEntity(template) : null;
   };
 
   // ===== 提醒分组管理 =====
@@ -201,38 +240,48 @@ export const useReminderStore = defineStore('reminder', () => {
   /**
    * 设置提醒分组列表 (DTO 数据)
    */
-  const setReminderGroups = (groups: ReminderGroup[]) => {
-    reminderGroups.value = groups;
+  const setReminderGroups = (
+    groups: Array<ReminderGroup | ReminderContracts.ReminderGroupClientDTO>,
+  ) => {
+    reminderGroups.value = groups.map((group) => toReminderGroupEntity(group));
   };
 
   /**
    * 设置提醒模板分组列表 (别名方法，兼容ReminderWebApplicationService) (DTO 数据)
    */
-  const setReminderTemplateGroups = (groups: ReminderGroup[]) => {
-    reminderGroups.value = groups;
+  const setReminderTemplateGroups = (
+    groups: Array<ReminderGroup | ReminderContracts.ReminderGroupClientDTO>,
+  ) => {
+    reminderGroups.value = groups.map((group) => toReminderGroupEntity(group));
   };
 
   /**
    * 添加或更新提醒分组 (DTO 数据)
    */
-  const addOrUpdateReminderGroup = (group: ReminderGroup) => {
-    const index = reminderGroups.value.findIndex((g) => g.uuid === group.uuid);
+  const addOrUpdateReminderGroup = (
+    group: ReminderGroup | ReminderContracts.ReminderGroupClientDTO,
+  ) => {
+    const entity = toReminderGroupEntity(group);
+    const index = reminderGroups.value.findIndex((g) => g.uuid === entity.uuid);
     if (index >= 0) {
-      reminderGroups.value[index] = group;
+      reminderGroups.value[index] = entity;
     } else {
-      reminderGroups.value.push(group);
+      reminderGroups.value.push(entity);
     }
   };
 
   /**
    * 添加或更新提醒模板分组 (别名方法，兼容ReminderWebApplicationService) (DTO 数据)
    */
-  const addOrUpdateReminderTemplateGroup = (group: ReminderGroup) => {
-    const index = reminderGroups.value.findIndex((g) => g.uuid === group.uuid);
+  const addOrUpdateReminderTemplateGroup = (
+    group: ReminderGroup | ReminderContracts.ReminderGroupClientDTO,
+  ) => {
+    const entity = toReminderGroupEntity(group);
+    const index = reminderGroups.value.findIndex((g) => g.uuid === entity.uuid);
     if (index >= 0) {
-      reminderGroups.value[index] = group;
+      reminderGroups.value[index] = entity;
     } else {
-      reminderGroups.value.push(group);
+      reminderGroups.value.push(entity);
     }
   };
 
@@ -260,21 +309,31 @@ export const useReminderStore = defineStore('reminder', () => {
    * 根据UUID获取提醒分组 (返回 DTO 数据)
    */
   const getReminderGroupByUuid = (uuid: string): ReminderGroup | null => {
-    return reminderGroups.value.find((g) => g.uuid === uuid) || null;
+    const group = reminderGroups.value.find((g) => g.uuid === uuid);
+    if (!group) return null;
+    return group instanceof ReminderGroup
+      ? group
+      : toReminderGroupEntity(group as ReminderContracts.ReminderGroupClientDTO);
   };
 
   /**
    * 根据UUID获取提醒模板分组 (别名方法，兼容ReminderWebApplicationService) (返回 DTO 数据)
    */
   const getReminderTemplateGroupByUuid = (uuid: string): ReminderGroup | null => {
-    return reminderGroups.value.find((g) => g.uuid === uuid) || null;
+    const group = reminderGroups.value.find((g) => g.uuid === uuid);
+    if (!group) return null;
+    return group instanceof ReminderGroup
+      ? group
+      : toReminderGroupEntity(group as ReminderContracts.ReminderGroupClientDTO);
   };
 
   /**
    * 设置选中的分组 (DTO 数据)
    */
-  const setSelectedGroup = (group: ReminderGroup | null) => {
-    selectedGroup.value = group;
+  const setSelectedGroup = (
+    group: ReminderGroup | ReminderContracts.ReminderGroupClientDTO | null,
+  ) => {
+    selectedGroup.value = group ? toReminderGroupEntity(group) : null;
   };
 
   // ===== 提醒历史记录管理 =====
@@ -527,9 +586,7 @@ export const useReminderStore = defineStore('reminder', () => {
   const setTemplateEnabled = (templateUuid: string, enabled: boolean) => {
     const template = getReminderTemplateByUuid(templateUuid);
     if (template) {
-      // 这里需要根据实际的 domain model 来更新状态
-      // 假设 ReminderTemplate 有一个 setEnabled 方法
-      (template as any).enabled = enabled;
+      template.setEnabled(enabled);
       addOrUpdateReminderTemplate(template);
     }
   };
@@ -540,8 +597,7 @@ export const useReminderStore = defineStore('reminder', () => {
   const setGroupEnabled = (groupUuid: string, enabled: boolean) => {
     const group = getReminderGroupByUuid(groupUuid);
     if (group) {
-      // 这里需要根据实际的 domain model 来更新状态
-      (group as any).enabled = enabled;
+      group.setEnabled(enabled);
       addOrUpdateReminderGroup(group);
     }
   };
@@ -552,8 +608,8 @@ export const useReminderStore = defineStore('reminder', () => {
   const setGroupEnableMode = (groupUuid: string, mode: 'group' | 'individual') => {
     const group = getReminderGroupByUuid(groupUuid);
     if (group) {
-      // 这里需要根据实际的 domain model 来更新状态
-      (group as any).enableMode = mode;
+      const controlMode = mode === 'group' ? ControlMode.GROUP : ControlMode.INDIVIDUAL;
+      group.setEnableMode(controlMode);
       addOrUpdateReminderGroup(group);
     }
   };
@@ -561,8 +617,10 @@ export const useReminderStore = defineStore('reminder', () => {
   /**
    * 设置统计数据
    */
-  const setStatistics = (stats: ReminderContracts.ReminderStatisticsClientDTO | ReminderContracts.ReminderStatsClientDTO) => {
-    statistics.value = stats as any;
+  const setStatistics = (
+    stats: ReminderStatistics | ReminderContracts.ReminderStatisticsClientDTO,
+  ) => {
+    statistics.value = toReminderStatisticsEntity(stats);
   };
 
   /**

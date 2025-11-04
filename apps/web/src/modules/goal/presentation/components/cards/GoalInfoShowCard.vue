@@ -95,7 +95,7 @@ import type { Goal } from '@dailyuse/domain-client';
 import KeyResultCard from './KeyResultCard.vue';
 
 const props = defineProps<{
-  goal: GoalClient;
+  goal: Goal;
 }>();
 
 const router = useRouter();

@@ -33,6 +33,10 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       open: false,
+      middlewareMode: false,
+      fs: {
+        allow: ['..', '../../'],
+      },
     },
     preview: {
       port: 5173,

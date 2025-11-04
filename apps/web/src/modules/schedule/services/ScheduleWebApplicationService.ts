@@ -5,6 +5,7 @@
 
 import { scheduleApiClient } from '../infrastructure/api';
 import { ScheduleContracts } from '@dailyuse/contracts';
+import { ScheduleTask } from '@dailyuse/domain-client';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ScheduleWebApplicationService');
@@ -14,6 +15,24 @@ const logger = createLogger('ScheduleWebApplicationService');
  * 封装所有与 Schedule 相关的业务操作
  */
 export class ScheduleWebApplicationService {
+  /**
+   * 将服务端 DTO 转换为领域聚合
+   */
+  private toScheduleTaskAggregate(
+    task: ScheduleContracts.ScheduleTaskServerDTO,
+  ): ScheduleTask {
+    return ScheduleTask.fromServerDTO(task);
+  }
+
+  /**
+   * 将服务端 DTO 列表转换为领域聚合列表
+   */
+  private toScheduleTaskAggregateList(
+    tasks: ScheduleContracts.ScheduleTaskServerDTO[],
+  ): ScheduleTask[] {
+    return tasks.map((task) => this.toScheduleTaskAggregate(task));
+  }
+
   // ============ 任务管理方法 ============
 
   /**
@@ -21,12 +40,12 @@ export class ScheduleWebApplicationService {
    */
   async createTask(
     request: ScheduleContracts.CreateScheduleTaskRequestDTO,
-  ): Promise<ScheduleContracts.ScheduleTaskServerDTO> {
+  ): Promise<ScheduleTask> {
     try {
       logger.info('Creating schedule task', { name: request.name });
       const task = await scheduleApiClient.createTask(request);
       logger.info('Schedule task created successfully', { taskUuid: task.uuid });
-      return task;
+      return this.toScheduleTaskAggregate(task);
     } catch (error) {
       logger.error('Failed to create schedule task', { error });
       throw error;
@@ -38,12 +57,12 @@ export class ScheduleWebApplicationService {
    */
   async createTasksBatch(
     tasks: ScheduleContracts.CreateScheduleTaskRequestDTO[],
-  ): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  ): Promise<ScheduleTask[]> {
     try {
       logger.info('Creating schedule tasks batch', { count: tasks.length });
       const createdTasks = await scheduleApiClient.createTasksBatch(tasks);
       logger.info('Schedule tasks batch created successfully', { count: createdTasks.length });
-      return createdTasks;
+      return this.toScheduleTaskAggregateList(createdTasks);
     } catch (error) {
       logger.error('Failed to create schedule tasks batch', { error });
       throw error;
@@ -53,12 +72,12 @@ export class ScheduleWebApplicationService {
   /**
    * 获取所有调度任务
    */
-  async getAllTasks(): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  async getAllTasks(): Promise<ScheduleTask[]> {
     try {
       logger.info('Fetching all schedule tasks');
       const tasks = await scheduleApiClient.getTasks();
       logger.info('Schedule tasks fetched successfully', { count: tasks.length });
-      return tasks;
+      return this.toScheduleTaskAggregateList(tasks);
     } catch (error) {
       logger.error('Failed to fetch schedule tasks', { error });
       throw error;
@@ -70,13 +89,13 @@ export class ScheduleWebApplicationService {
    */
   async getTasksByModule(
     module: ScheduleContracts.SourceModule,
-  ): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  ): Promise<ScheduleTask[]> {
     try {
       logger.info('Fetching tasks by module', { module });
       const allTasks = await scheduleApiClient.getTasks();
       const filteredTasks = allTasks.filter((task) => task.sourceModule === module);
       logger.info('Tasks filtered by module', { module, count: filteredTasks.length });
-      return filteredTasks;
+      return this.toScheduleTaskAggregateList(filteredTasks);
     } catch (error) {
       logger.error('Failed to fetch tasks by module', { error, module });
       throw error;
@@ -86,12 +105,12 @@ export class ScheduleWebApplicationService {
   /**
    * 获取任务详情
    */
-  async getTaskById(taskUuid: string): Promise<ScheduleContracts.ScheduleTaskServerDTO> {
+  async getTaskById(taskUuid: string): Promise<ScheduleTask> {
     try {
       logger.info('Fetching task by ID', { taskUuid });
       const task = await scheduleApiClient.getTaskById(taskUuid);
       logger.info('Task fetched successfully', { taskUuid });
-      return task;
+      return this.toScheduleTaskAggregate(task);
     } catch (error) {
       logger.error('Failed to fetch task', { error, taskUuid });
       throw error;
@@ -104,12 +123,12 @@ export class ScheduleWebApplicationService {
   async getDueTasks(params?: {
     beforeTime?: string;
     limit?: number;
-  }): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  }): Promise<ScheduleTask[]> {
     try {
       logger.info('Fetching due tasks', { params });
       const tasks = await scheduleApiClient.getDueTasks(params);
       logger.info('Due tasks fetched successfully', { count: tasks.length });
-      return tasks;
+      return this.toScheduleTaskAggregateList(tasks);
     } catch (error) {
       logger.error('Failed to fetch due tasks', { error });
       throw error;
@@ -122,12 +141,12 @@ export class ScheduleWebApplicationService {
   async getTaskBySource(
     sourceModule: ScheduleContracts.SourceModule,
     sourceEntityId: string,
-  ): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  ): Promise<ScheduleTask[]> {
     try {
       logger.info('Fetching task by source', { sourceModule, sourceEntityId });
       const tasks = await scheduleApiClient.getTaskBySource(sourceModule, sourceEntityId);
       logger.info('Tasks fetched by source', { count: tasks.length });
-      return tasks;
+      return this.toScheduleTaskAggregateList(tasks);
     } catch (error) {
       logger.error('Failed to fetch task by source', { error, sourceModule, sourceEntityId });
       throw error;

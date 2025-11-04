@@ -50,7 +50,7 @@ export class GoalManagementApplicationService {
       const goalData = await goalApiClient.createGoal(request);
 
       // 创建客户端实体并同步到 store
-      const goal = GoalClient.fromClientDTO(goalData);
+      const goal = Goal.fromClientDTO(goalData);
       this.goalStore.addOrUpdateGoal(goal);
 
       this.snackbar.showSuccess('目标创建成功');
@@ -83,7 +83,7 @@ export class GoalManagementApplicationService {
       const goalsData = await goalApiClient.getGoals(params);
 
       // 批量创建客户端实体并同步到 store
-      const goals = (goalsData.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
+      const goals = (goalsData.goals || []).map((goalData: any) => Goal.fromClientDTO(goalData));
       this.goalStore.setGoals(goals);
 
       // 更新分页信息
@@ -115,7 +115,7 @@ export class GoalManagementApplicationService {
       const data = await goalApiClient.getGoalById(uuid);
 
       // 创建客户端实体并同步到 store
-      const goal = GoalClient.fromClientDTO(data);
+      const goal = Goal.fromClientDTO(data);
       this.goalStore.addOrUpdateGoal(goal);
 
       return data;
@@ -143,7 +143,7 @@ export class GoalManagementApplicationService {
       const data = await goalApiClient.updateGoal(uuid, request);
 
       // 更新客户端实体并同步到 store
-      const goal = GoalClient.fromClientDTO(data);
+      const goal = Goal.fromClientDTO(data);
       this.goalStore.addOrUpdateGoal(goal);
 
       this.snackbar.showSuccess('目标更新成功');
@@ -195,7 +195,7 @@ export class GoalManagementApplicationService {
       const data = await goalApiClient.activateGoal(uuid);
 
       // 更新客户端实体并同步到 store
-      const goal = GoalClient.fromClientDTO(data);
+      const goal = Goal.fromClientDTO(data);
       this.goalStore.addOrUpdateGoal(goal);
 
       this.snackbar.showSuccess('目标已激活');
@@ -221,7 +221,7 @@ export class GoalManagementApplicationService {
       const data = await goalApiClient.pauseGoal(uuid);
 
       // 更新客户端实体并同步到 store
-      const goal = GoalClient.fromClientDTO(data);
+      const goal = Goal.fromClientDTO(data);
       this.goalStore.addOrUpdateGoal(goal);
 
       this.snackbar.showSuccess('目标已暂停');
@@ -247,7 +247,7 @@ export class GoalManagementApplicationService {
       const data = await goalApiClient.completeGoal(uuid);
 
       // 更新客户端实体并同步到 store
-      const goal = GoalClient.fromClientDTO(data);
+      const goal = Goal.fromClientDTO(data);
       this.goalStore.addOrUpdateGoal(goal);
 
       this.snackbar.showSuccess('目标已完成');
@@ -273,7 +273,7 @@ export class GoalManagementApplicationService {
       const data = await goalApiClient.archiveGoal(uuid);
 
       // 更新客户端实体并同步到 store
-      const goal = GoalClient.fromClientDTO(data);
+      const goal = Goal.fromClientDTO(data);
       this.goalStore.addOrUpdateGoal(goal);
 
       this.snackbar.showSuccess('目标已归档');
@@ -311,7 +311,7 @@ export class GoalManagementApplicationService {
       });
 
       // 批量创建客户端实体并同步到 store
-      const goals = (response.goals || []).map((goalData: any) => GoalClient.fromClientDTO(goalData));
+      const goals = (response.goals || []).map((goalData: any) => Goal.fromClientDTO(goalData));
       this.goalStore.setGoals(goals);
 
       // 更新分页信息

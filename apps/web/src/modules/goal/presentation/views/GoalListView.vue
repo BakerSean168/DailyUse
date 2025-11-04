@@ -179,7 +179,7 @@ import { useRouter } from 'vue-router';
 import { useGoalManagement } from '../composables/useGoalManagement';
 import { useGoalFolder } from '../composables/useGoalFolder';
 import { useGoalStore } from '../stores/goalStore';
-import type { GoalClient, GoalFolder } from '@dailyuse/domain-client';
+import type { Goal, GoalFolder } from '@dailyuse/domain-client';
 
 // 组件导入
 import GoalCard from '../components/cards/GoalCard.vue';
@@ -259,7 +259,7 @@ const filteredGoals = computed(() => {
   // 按状态过滤
   const currentStatus = statusTabs[selectedStatusIndex.value]?.value;
   if (currentStatus && currentStatus !== 'all') {
-    result = result.filter((goal: GoalClient) => goal.status === currentStatus.toUpperCase());
+  result = result.filter((goal: Goal) => goal.status === currentStatus.toUpperCase());
   }
 
   return result;
@@ -273,10 +273,10 @@ const filteredGoals = computed(() => {
 const goalCountByStatus = computed(() => {
   return {
     all: goals.value.length,
-    active: goals.value.filter((goal: GoalClient) => goal.status === 'ACTIVE').length,
-    paused: goals.value.filter((goal: GoalClient) => goal.status === 'DRAFT').length,
-    completed: goals.value.filter((goal: GoalClient) => goal.status === 'COMPLETED').length,
-    archived: goals.value.filter((goal: GoalClient) => goal.status === 'ARCHIVED').length,
+  active: goals.value.filter((goal: Goal) => goal.status === 'ACTIVE').length,
+  paused: goals.value.filter((goal: Goal) => goal.status === 'DRAFT').length,
+  completed: goals.value.filter((goal: Goal) => goal.status === 'COMPLETED').length,
+  archived: goals.value.filter((goal: Goal) => goal.status === 'ARCHIVED').length,
   };
 });
 
@@ -304,7 +304,7 @@ const goToComparison = () => {
 /**
  * 处理编辑目标
  */
-const handleEditGoal = (goal: GoalClient) => {
+const handleEditGoal = (goal: Goal) => {
   goalDialogRef.value?.openForEdit(goal);
 };
 
@@ -352,7 +352,7 @@ const openCreateDirDialog = () => {
 /**
  * 打开编辑目录对话框
  */
-const openEditDirDialog = (folder: GoalFolderClient) => {
+const openEditDirDialog = (folder: GoalFolder) => {
   // TODO: 实现编辑目录对话框
 };
 

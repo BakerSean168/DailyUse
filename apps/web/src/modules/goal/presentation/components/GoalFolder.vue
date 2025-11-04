@@ -152,13 +152,13 @@ import type { GoalFolder } from '@dailyuse/domain-client';
 import { useGoalStore } from '../stores/goalStore';
 
 interface Props {
-  goalFolders: GoalFolderClient[];
+  goalFolders: GoalFolder[];
 }
 
 interface Emits {
   (e: 'selected-goal-folder', folderUuid: string): void;
   (e: 'create-goal-folder'): void;
-  (e: 'edit-goal-folder', goalFolder: GoalFolderClient): void;
+  (e: 'edit-goal-folder', goalFolder: GoalFolder): void;
 }
 
 const props = defineProps<Props>();

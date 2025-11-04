@@ -682,6 +682,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
     title: string;
     description?: string;
     valueType: string;
+    aggregationMethod?: string;
     targetValue: number;
     currentValue?: number;
     unit?: string;
@@ -695,7 +696,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
         currentValue: params.currentValue ?? 0,
         targetValue: params.targetValue,
         valueType: params.valueType as any,
-        aggregationMethod: 'LAST' as any,
+        aggregationMethod: (params.aggregationMethod || 'LAST') as any,
         unit: params.unit,
       },
       weight: params.weight, // ✅ 传递weight参数

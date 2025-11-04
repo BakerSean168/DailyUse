@@ -198,10 +198,9 @@ import { useTaskStore } from '../stores/taskStore';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import { format, startOfDay, isToday, isSameDay } from 'date-fns';
 // types
-import type { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
-import { TaskInstanceClient, TaskTemplateClient } from '@dailyuse/domain-client';
+import { TaskInstance, TaskTemplate } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
-import { GoalClient, KeyResult } from '@dailyuse/domain-client';
+import { Goal, KeyResult } from '@dailyuse/domain-client';
 
 // composables
 import { useTaskInstance } from '../composables/useTaskInstance';
@@ -232,7 +231,7 @@ const dayTasks = computed(() => {
 
 const completedTasks = computed(() =>
   dayTasks.value.filter(
-    (task) => task.isCompleted && task instanceof TaskInstanceClient,
+    (task) => task.isCompleted && task instanceof TaskInstance,
   ),
 );
 
@@ -240,7 +239,7 @@ const incompleteTasks = computed(() =>
   dayTasks.value.filter(
     (task) =>
       !task.isCompleted &&
-      task instanceof TaskInstanceClient,
+      task instanceof TaskInstance,
   ),
 );
 

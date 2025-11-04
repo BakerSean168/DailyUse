@@ -182,8 +182,8 @@
                         size="small"
                         @click="
                           goalModel && keyResultDialogRef?.openForUpdateKeyResultInGoalEditing(
-                            goalModel as GoalClient,
-                            kr as KeyResultClient,
+                            goalModel as Goal,
+                            kr as KeyResult,
                           )
                         "
                       />
@@ -192,7 +192,7 @@
                         variant="text"
                         color="error"
                         size="small"
-                        @click="goalModel && startRemoveKeyResult(goalModel as GoalClient, kr.uuid)"
+                        @click="goalModel && startRemoveKeyResult(goalModel as Goal, kr.uuid)"
                       />
                     </template>
                   </v-list-item>
@@ -214,7 +214,7 @@
                     block
                     class="add-kr-btn"
                     @click="
-                      goalModel && keyResultDialogRef?.openForCreateKeyResultInGoalEditing(goalModel as GoalClient)
+                      goalModel && keyResultDialogRef?.openForCreateKeyResultInGoalEditing(goalModel as Goal)
                     "
                   >
                     {{
@@ -305,7 +305,7 @@
   <!-- AI 权重推荐面板 -->
   <WeightSuggestionPanel
     ref="weightSuggestionRef"
-    :key-results="(goalModel?.keyResults || []) as KeyResultClient[]"
+    :key-results="(goalModel?.keyResults || []) as KeyResult[]"
     @apply="handleApplyWeightStrategy"
   />
   <!-- 目标模板浏览器 -->
@@ -333,7 +333,7 @@ import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
 import DuConfirmDialog from '@dailyuse/ui/components/dialog/DuConfirmDialog.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
-import { GoalClient, KeyResult } from '@dailyuse/domain-client';
+import { Goal, KeyResult } from '@dailyuse/domain-client';
 import { GoalContracts } from '@dailyuse/contracts';
 import type { WeightStrategy } from '../../../application/services/WeightRecommendationService';
 import type { GoalTemplate } from '../../../application/templates/GoalTemplates';
@@ -352,16 +352,16 @@ const goalStore = useGoalStore();
 const accountStore = useAccountStore();
 
 const visible = ref(false);
-const propGoal = ref<GoalClient | null>(null);
+const propGoal = ref<Goal | null>(null);
 
 // 组件对象
 const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
 const weightSuggestionRef = ref<InstanceType<typeof WeightSuggestionPanel> | null>(null);
 const templateBrowserRef = ref<InstanceType<typeof TemplateBrowser> | null>(null);
 
-// 使用GoalClient管理完整goal（包括keyResults）
+// 使用Goal管理完整goal（包括keyResults）
 const loading = ref(false);
-const goalModel = ref<GoalClient | null>(null);
+const goalModel = ref<Goal | null>(null);
 
 const isEditing = computed(() => !!propGoal.value);
 
@@ -375,7 +375,7 @@ watch(
         goalModel.value = goal.clone();
       } else {
         // 创建模式：创建新 goal（accountUuid 在保存时注入）
-        goalModel.value = GoalClient.forCreate();
+        goalModel.value = Goal.forCreate();
       }
     }
   },
@@ -457,7 +457,7 @@ const handleApplyTemplate = (template: GoalTemplate) => {
   );
 };
 
-const startRemoveKeyResult = (goal: GoalClient, keyResultUuid: string) => {
+const startRemoveKeyResult = (goal: Goal, keyResultUuid: string) => {
   confirmDialog.value = {
     show: true,
     title: '确认删除',
@@ -496,7 +496,7 @@ watch(
         });
       } else {
         // 创建模式：创建新 goal（accountUuid 在保存时注入）
-        goalModel.value = GoalClient.forCreate();
+        goalModel.value = Goal.forCreate();
         
         // 设置默认日期：今天开始，3个月后结束
         const today = new Date();
@@ -791,7 +791,7 @@ const closeDialog = () => {
 /**
  * 通用的打开对话框方法（保留向后兼容）
  */
-const openDialog = (goal?: GoalClient) => {
+const openDialog = (goal?: Goal) => {
   propGoal.value = goal || null;
   visible.value = true;
 };
@@ -809,7 +809,7 @@ const openForCreate = () => {
  * 打开编辑目标对话框
  * @param goal 要编辑的目标对象
  */
-const openForEdit = (goal: GoalClient) => {
+const openForEdit = (goal: Goal) => {
   if (!goal) {
     console.error('[GoalDialog] openForEdit: goal is required');
     return;

@@ -5,6 +5,7 @@
 
 import { ref } from 'vue';
 import type { GoalContracts } from '@dailyuse/contracts';
+import { GoalContracts as GC } from '@dailyuse/contracts';
 import { goalWebApplicationService } from '../../application/services';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 
@@ -34,22 +35,35 @@ export function useKeyResult() {
 
   /**
    * 创建关键结果
+   * 接受用户友好的参数，内部转换为 AddKeyResultRequest
    */
   const createKeyResult = async (
     goalUuid: string,
     data: {
-      name: string;
+      title: string;
       description?: string;
-      startValue: number;
       targetValue: number;
       currentValue?: number;
-      unit: string;
+      unit?: string;
       weight: number;
-      calculationMethod?: 'sum' | 'average' | 'max' | 'min' | 'custom';
+      valueType?: GoalContracts.KeyResultValueType;
+      aggregationMethod?: GoalContracts.AggregationMethod;
     },
   ) => {
     try {
-      const response = await goalWebApplicationService.createKeyResultForGoal(goalUuid, data);
+      // 构建符合 AddKeyResultRequest 的请求
+      const request: Omit<GoalContracts.AddKeyResultRequest, 'goalUuid'> = {
+        title: data.title,
+        description: data.description,
+        valueType: data.valueType || GC.KeyResultValueType.INCREMENTAL,
+        aggregationMethod: data.aggregationMethod || GC.AggregationMethod.LAST,
+        targetValue: data.targetValue,
+        currentValue: data.currentValue,
+        unit: data.unit,
+        weight: data.weight,
+      };
+
+      const response = await goalWebApplicationService.createKeyResultForGoal(goalUuid, request);
       showCreateKeyResultDialog.value = false;
       snackbar.showSuccess('关键结果创建成功');
       return response;

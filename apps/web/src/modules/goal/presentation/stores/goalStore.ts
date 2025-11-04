@@ -185,9 +185,9 @@ export const useGoalStore = defineStore('goal', {
     getGoalFoldersByParent(): (parentUuid?: string) => any[] {
       return (parentUuid?: string) => {
         if (!parentUuid) {
-          return this.goalFolders.filter((d: any) => !d.parentUuid);
+          return this.goalFolders.filter((d: GoalFolder) => !d.parentFolderUuid);
         }
-        return this.goalFolders.filter((d: any) => d.parentUuid === parentUuid);
+        return this.goalFolders.filter((d: GoalFolder) => d.parentFolderUuid === parentUuid);
       };
     },
 
@@ -195,7 +195,7 @@ export const useGoalStore = defineStore('goal', {
      * 获取根目录
      */
     getRootGoalFolders(): any[] {
-      return this.goalFolders.filter((d: any) => !d.parentUuid);
+      return this.goalFolders.filter((d: GoalFolder) => !d.parentFolderUuid);
     },
 
     /**
@@ -298,7 +298,7 @@ export const useGoalStore = defineStore('goal', {
       // 构建目录树
       const buildTree = (parentUuid?: string): any[] => {
         return this.goalFolders
-          .filter((dir: any) => dir.parentUuid === parentUuid)
+          .filter((dir: GoalFolder) => dir.parentFolderUuid === parentUuid)
           .map((dir: any) => ({
             ...dir,
             children: buildTree(dir.uuid),

@@ -108,11 +108,11 @@
 </template>
 
 <script setup lang="ts">
-import { ScheduleContracts } from '@dailyuse/contracts';
+import type { ScheduleTask } from '@dailyuse/domain-client';
 
 // Props
 const props = defineProps<{
-  tasks: ScheduleContracts.ScheduleTaskServerDTO[];
+  tasks: ScheduleTask[];
   isLoading?: boolean;
   error?: string | null;
 }>();

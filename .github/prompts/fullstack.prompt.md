@@ -251,16 +251,16 @@ export { GoalClient as Goal } from './aggregates/GoalClient';
 export { GoalRecordClient as GoalRecord } from './entities/GoalRecordClient';
 
 // ✅ 正确示例（推荐）
-export { GoalClient } from './aggregates/GoalClient';
-export { GoalRecordClient } from './entities/GoalRecordClient';
-export { TaskDependencyClient } from './aggregates/TaskDependencyClient';
+export { Goal } from './aggregates/Goal';
+export { GoalRecord } from './entities/GoalRecord';
+export { TaskDependency } from './aggregates/TaskDependency';
 ```
 
 **理由**：
 
 1. **DDD 最佳实践**：客户端聚合根类名包含 `Client` 后缀已经足够区分，不需要再添加别名
 2. **TypeScript 友好**：类名和导入名一致，避免重复重命名
-3. **文件路径已足够清晰**：`domain-client/goal/aggregates/GoalClient.ts` 已明确表明是客户端聚合根
+3. **文件路径已足够清晰**：`domain-client/goal/aggregates/Goal.ts` 已明确表明是客户端聚合根
 4. **参考其他模块**：Task、Reminder 等模块的客户端聚合根都直接导出类名
 
 ### api 项目

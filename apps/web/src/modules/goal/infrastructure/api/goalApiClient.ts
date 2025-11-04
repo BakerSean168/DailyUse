@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api/instances';
-import { type GoalContracts } from '@dailyuse/contracts';
+import { type GoalContracts, GoalContracts as GC } from '@dailyuse/contracts';
 
 /**
  * Goal API 客户端
@@ -27,16 +27,26 @@ export class GoalApiClient {
     dirUuid?: string;
     startDate?: string;
     endDate?: string;
+    includeChildren?: boolean;
   }): Promise<GoalContracts.GoalsResponse> {
-    const data = await apiClient.get(this.baseUrl, { params });
+    // 默认包含子实体（KeyResults）
+    const requestParams = {
+      ...params,
+      includeChildren: params?.includeChildren !== false, // 默认为 true
+    };
+    console.log('[goalApiClient.getGoals] 请求参数:', requestParams);
+    const data = await apiClient.get(this.baseUrl, { params: requestParams });
+    console.log('[goalApiClient.getGoals] 响应数据:', data);
+    console.log('[goalApiClient.getGoals] Goals数量:', data.goals?.length || 0);
+    console.log('[goalApiClient.getGoals] 第一个Goal的KeyResults:', data.goals?.[0]?.keyResults);
     return data;
   }
 
   /**
    * 获取目标详情
    */
-  async getGoalById(uuid: string): Promise<GoalContracts.GoalClientDTO> {
-    const data = await apiClient.get(`${this.baseUrl}/${uuid}`);
+  async getGoalById(uuid: string, includeChildren = true): Promise<GoalContracts.GoalClientDTO> {
+    const data = await apiClient.get(`${this.baseUrl}/${uuid}?includeChildren=${includeChildren}`);
     return data;
   }
 
@@ -111,22 +121,19 @@ export class GoalApiClient {
   // ===== DDD聚合根控制：KeyResult管理 =====
 
   /**
-   * 通过Goal聚合根创建关键结果
+   * 为目标添加关键结果
    */
-  async createKeyResultForGoal(
+  async addKeyResultForGoal(
     goalUuid: string,
-    request: {
-      name: string;
-      description?: string;
-      startValue: number;
-      targetValue: number;
-      currentValue?: number;
-      unit: string;
-      weight: number;
-      calculationMethod?: 'sum' | 'average' | 'max' | 'min' | 'custom';
-    },
+    request: Omit<GoalContracts.AddKeyResultRequest, 'goalUuid'>,
   ): Promise<GoalContracts.KeyResultClientDTO> {
-    const data = await apiClient.post(`${this.baseUrl}/${goalUuid}/key-results`, request);
+    // 构建完整的 AddKeyResultRequest
+    const backendRequest: GoalContracts.AddKeyResultRequest = {
+      goalUuid,
+      ...request,
+    };
+    
+    const data = await apiClient.post(`${this.baseUrl}/${goalUuid}/key-results`, backendRequest);
     return data;
   }
 

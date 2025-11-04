@@ -7,6 +7,7 @@ import { ref, onMounted } from 'vue';
 import { scheduleWebApplicationService } from '../../services/ScheduleWebApplicationService';
 import { scheduleApiClient } from '../../infrastructure/api/scheduleApiClient';
 import { ScheduleContracts } from '@dailyuse/contracts';
+import { ScheduleTask } from '@dailyuse/domain-client';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('useSchedule');
@@ -17,7 +18,7 @@ const logger = createLogger('useSchedule');
  */
 export function useSchedule() {
   // ===== 状态 =====
-  const tasks = ref<ScheduleContracts.ScheduleTaskServerDTO[]>([]);
+  const tasks = ref<ScheduleTask[]>([]);
   const statistics = ref<ScheduleContracts.ScheduleStatisticsServerDTO | null>(null);
   const moduleStatistics = ref<Record<
     ScheduleContracts.SourceModule,
@@ -100,7 +101,9 @@ export function useSchedule() {
   /**
    * 创建任务
    */
-  async function createTask(request: ScheduleContracts.CreateScheduleTaskRequestDTO) {
+  async function createTask(
+    request: ScheduleContracts.CreateScheduleTaskRequestDTO,
+  ): Promise<ScheduleTask> {
     isLoading.value = true;
     error.value = null;
 
@@ -129,9 +132,10 @@ export function useSchedule() {
       await scheduleWebApplicationService.pauseTask(taskUuid);
 
       // 更新本地状态
-      const task = tasks.value.find((t) => t.uuid === taskUuid);
-      if (task) {
-        task.status = ScheduleContracts.ScheduleTaskStatus.PAUSED;
+      const index = tasks.value.findIndex((t) => t.uuid === taskUuid);
+      if (index > -1) {
+        const pausedTask = tasks.value[index].pause();
+        tasks.value.splice(index, 1, pausedTask);
       }
 
       logger.info('Task paused successfully', { taskUuid });
@@ -152,9 +156,10 @@ export function useSchedule() {
       await scheduleWebApplicationService.resumeTask(taskUuid);
 
       // 更新本地状态
-      const task = tasks.value.find((t) => t.uuid === taskUuid);
-      if (task) {
-        task.status = ScheduleContracts.ScheduleTaskStatus.ACTIVE;
+      const index = tasks.value.findIndex((t) => t.uuid === taskUuid);
+      if (index > -1) {
+        const resumedTask = tasks.value[index].resume();
+        tasks.value.splice(index, 1, resumedTask);
       }
 
       logger.info('Task resumed successfully', { taskUuid });

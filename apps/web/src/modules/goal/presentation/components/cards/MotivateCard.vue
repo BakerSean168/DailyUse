@@ -69,7 +69,7 @@ import type { Goal } from '@dailyuse/domain-client';
 const goalStore = useGoalStore();
 const isShowingMotive = ref(true);
 const currentContent = ref('');
-const currentGoal = ref<GoalClient | null>(null);
+const currentGoal = ref<Goal | null>(null);
 const isRefreshing = ref(false);
 
 const getRandomContent = async () => {

@@ -3,11 +3,7 @@
     <v-progress-circular indeterminate color="primary" />
     <span class="ml-4">加载中...</span>
   </div>
-  <div
-    v-else-if="!goal || !localGoalReview"
-    class="d-flex justify-center align-center"
-    style="height: 200px"
-  >
+  <div v-else-if="!goal || !localGoalReview" class="d-flex justify-center align-center" style="height: 200px">
     <v-alert type="error" variant="tonal">
       <template #title>加载失败</template>
       未获取到目标信息，请重试
@@ -23,21 +19,12 @@
         <span class="text-h4 font-weight-bold mb-2">创建目标复盘</span>
         <span class="text-h6 font-weight-medium">{{ goal.title }}</span>
         <span class="text-caption font-weight-light">
-          <template v-if="goal.startDate && goal.targetDate">
-            {{ format(new Date(goal.startDate), 'yyyy-MM-dd') }} 到
-            {{ format(new Date(goal.targetDate), 'yyyy-MM-dd') }}
-          </template>
+          {{ format(new Date(localGoalReview.reviewedAt), 'yyyy-MM-dd HH:mm') }}
         </span>
       </div>
       <div>
-        <v-btn
-          color="primary"
-          size="large"
-          prepend-icon="mdi-check"
-          @click="handleSaveReview"
-          :loading="saving"
-          :disabled="!canSave"
-        >
+        <v-btn color="primary" size="large" prepend-icon="mdi-check" @click="handleSaveReview" :loading="saving"
+          :disabled="!canSave">
           完成复盘
         </v-btn>
       </div>
@@ -47,67 +34,40 @@
       <!-- 目标基本相关信息 -->
       <section class="goal-analysis">
         <div class="goal-review-card-container d-flex flex-row gap-6 mb-8 justify-center">
-          <!-- 目标信息卡片 -->
+          <!-- 评分卡片 -->
           <div class="goal-review-card goal-info">
             <div class="card-header pa-4 d-flex flex-column align-start">
               <div class="d-flex align-baseline">
-                <span class="text-h3 font-weight-bold mr-1">{{
-                  localGoalReview.snapshot.weightedProgress
-                }}</span>
-                <span class="text-h6 font-weight-light">%</span>
+                <span class="text-h3 font-weight-bold mr-1">{{ localGoalReview.rating }}</span>
+                <span class="text-h6 font-weight-light">/ 5</span>
               </div>
               <div>
-                <span class="text-subtitle-1">{{ goal.title }}</span>
+                <span class="text-subtitle-1">复盘评分</span>
               </div>
             </div>
-            <div class="card-content d-flex flex-column pa-2">
-              <div
-                v-for="kr in localGoalReview.snapshot.keyResultsSnapshot || []"
-                :key="kr.uuid"
-                class="card-content-item d-flex justify-space-between align-center pa-3 mb-2"
-              >
-                <span class="item-name">{{ kr.name }}</span>
-                <span class="item-value">{{ kr.currentValue }}/{{ kr.targetValue }}</span>
-              </div>
-              <div
-                v-if="!localGoalReview.snapshot.keyResultsSnapshot?.length"
-                class="pa-4 text-center text-medium-emphasis"
-              >
-                暂无关键结果数据
+            <div class="card-content d-flex flex-column pa-4 justify-center">
+              <v-rating v-model="localGoalReview.rating" color="orange" hover half-increments class="mb-4" />
+              <div class="text-body-2 text-medium-emphasis">
+                复盘时间: {{ format(localGoalReview.reviewedAt, 'yyyy-MM-dd HH:mm') }}
               </div>
             </div>
           </div>
 
-          <!-- 统计信息卡片 -->
+          <!-- 复盘类型卡片 -->
           <div class="goal-review-card stats-info">
             <div class="card-header pa-4 d-flex flex-column align-start">
-              <div class="d-flex align-baseline">
-                <span class="text-h3 font-weight-bold mr-1">{{
-                  localGoalReview.snapshot.completedKeyResults
-                }}</span>
-                <span class="text-h6 font-weight-light"
-                  >/{{ localGoalReview.snapshot.totalKeyResults }}</span
-                >
+              <div>
+                <span class="text-h6">{{ localGoalReview.typeText }}</span>
               </div>
               <div>
-                <span class="text-subtitle-1">已完成关键结果</span>
+                <span class="text-subtitle-1">复盘类型</span>
               </div>
             </div>
-            <div class="card-content d-flex flex-column pa-4">
-              <div class="mb-3">
-                <div class="d-flex justify-space-between mb-1">
-                  <span class="text-body-2">整体进度</span>
-                  <span class="text-body-2">{{ localGoalReview.snapshot.overallProgress }}%</span>
-                </div>
-                <v-progress-linear
-                  :model-value="localGoalReview.snapshot.overallProgress"
-                  height="6"
-                  rounded
-                  color="white"
-                />
-              </div>
-              <div class="text-body-2 text-medium-emphasis">
-                复盘时间: {{ format(localGoalReview.reviewDate, 'yyyy-MM-dd HH:mm') }}
+            <div class="card-content d-flex flex-column pa-4 justify-center gap-3">
+              <div>
+                <div class="text-body-2 font-weight-medium mb-2">复盘摘要</div>
+                <v-textarea v-model="localGoalReview.summary" placeholder="输入复盘摘要..." variant="outlined" rows="3"
+                  hide-details density="compact" />
               </div>
             </div>
           </div>
@@ -123,13 +83,13 @@
           </v-card-title>
           <v-row>
             <v-col cols="12" md="6">
-              <GoalProgressChart :goal="goal as Goal" />
+              <GoalProgressChart :goal="(goal as Goal)" />
             </v-col>
             <v-col cols="12" md="6">
-              <KrProgressChart :goal="goal as Goal" />
+              <KrProgressChart :goal="(goal as Goal)" />
             </v-col>
             <v-col cols="12">
-              <PeriodBarChart :goal="goal as Goal" />
+              <PeriodBarChart :goal="(goal as Goal)" />
             </v-col>
           </v-row>
         </v-card>
@@ -140,7 +100,7 @@
         <div class="diagnosis-container pa-8">
           <h2 class="text-h5 text-center mb-8 font-weight-bold">
             <v-icon class="mr-2" color="primary">mdi-clipboard-text</v-icon>
-            自我诊断与总结
+            复盘反思
           </h2>
 
           <div class="diagnosis-grid">
@@ -150,14 +110,8 @@
                 <h3 class="text-h6">主要成就</h3>
               </div>
               <div class="diagnosis-card-content pa-4">
-                <v-textarea
-                  v-model="localGoalReview.content.achievements"
-                  placeholder="列出这段时间的主要成就和突破..."
-                  variant="outlined"
-                  rows="4"
-                  auto-grow
-                  hide-details
-                />
+                <v-textarea v-model="localGoalReview.achievements" placeholder="列出这段时间的主要成就和突破..." variant="outlined"
+                  rows="4" auto-grow hide-details />
               </div>
             </div>
 
@@ -167,105 +121,19 @@
                 <h3 class="text-h6">遇到的挑战</h3>
               </div>
               <div class="diagnosis-card-content pa-4">
-                <v-textarea
-                  v-model="localGoalReview.content.challenges"
-                  placeholder="记录遇到的主要挑战和困难..."
-                  variant="outlined"
-                  rows="4"
-                  auto-grow
-                  hide-details
-                />
+                <v-textarea v-model="localGoalReview.challenges" placeholder="记录遇到的主要挑战和困难..." variant="outlined"
+                  rows="4" auto-grow hide-details />
               </div>
             </div>
 
             <div class="diagnosis-card">
               <div class="diagnosis-card-header d-flex align-center gap-3 pa-4">
                 <v-icon class="diagnosis-icon" color="info" size="24">mdi-lightbulb</v-icon>
-                <h3 class="text-h6">经验总结</h3>
+                <h3 class="text-h6">改进方向</h3>
               </div>
               <div class="diagnosis-card-content pa-4">
-                <v-textarea
-                  v-model="localGoalReview.content.learnings"
-                  placeholder="总结经验教训和心得体会..."
-                  variant="outlined"
-                  rows="4"
-                  auto-grow
-                  hide-details
-                />
-              </div>
-            </div>
-
-            <div class="diagnosis-card">
-              <div class="diagnosis-card-header d-flex align-center gap-3 pa-4">
-                <v-icon class="diagnosis-icon" color="primary" size="24"
-                  >mdi-arrow-right-circle</v-icon
-                >
-                <h3 class="text-h6">下一步计划</h3>
-              </div>
-              <div class="diagnosis-card-content pa-4">
-                <v-textarea
-                  v-model="localGoalReview.content.nextSteps"
-                  placeholder="制定下一步行动计划..."
-                  variant="outlined"
-                  rows="4"
-                  auto-grow
-                  hide-details
-                />
-              </div>
-            </div>
-
-            <!-- 评分区域 -->
-            <div class="diagnosis-card rating-card">
-              <div class="diagnosis-card-header d-flex align-center gap-3 pa-4">
-                <v-icon class="diagnosis-icon" color="orange" size="24">mdi-star</v-icon>
-                <h3 class="text-h6">综合评分</h3>
-              </div>
-              <div class="diagnosis-card-content pa-4">
-                <div class="mb-4">
-                  <div class="text-body-2 mb-2">进度满意度</div>
-                  <v-rating
-                    v-model="localGoalReview.rating.progressSatisfaction"
-                    color="orange"
-                    half-increments
-                    hover
-                  />
-                </div>
-                <div class="mb-4">
-                  <div class="text-body-2 mb-2">执行效率</div>
-                  <v-rating
-                    v-model="localGoalReview.rating.executionEfficiency"
-                    color="orange"
-                    half-increments
-                    hover
-                  />
-                </div>
-                <div>
-                  <div class="text-body-2 mb-2">目标合理性</div>
-                  <v-rating
-                    v-model="localGoalReview.rating.goalReasonableness"
-                    color="orange"
-                    half-increments
-                    hover
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- 调整建议 -->
-            <div class="diagnosis-card">
-              <div class="diagnosis-card-header d-flex align-center gap-3 pa-4">
-                <v-icon class="diagnosis-icon" color="purple" size="24">mdi-tune</v-icon>
-                <h3 class="text-h6">调整建议</h3>
-              </div>
-              <div class="diagnosis-card-content pa-4">
-                <v-textarea
-                  v-model="localGoalReview.content.adjustments"
-                  placeholder="对目标或执行策略的调整建议..."
-                  variant="outlined"
-                  rows="4"
-                  auto-grow
-                  hide-details
-                />
+                <v-textarea v-model="localGoalReview.improvements" placeholder="总结改进方向和下步计划..." variant="outlined"
+                  rows="4" auto-grow hide-details />
               </div>
             </div>
           </div>
@@ -285,37 +153,17 @@
           <div class="mt-4 pa-3 rounded" style="background: rgba(var(--v-theme-primary), 0.1)">
             <div class="text-body-2 text-medium-emphasis">复盘摘要:</div>
             <div class="mt-2">
-              <v-chip
-                class="mr-2 mb-1"
-                size="small"
-                color="success"
-                v-if="localGoalReview.content.achievements"
-              >
+              <v-chip class="mr-2 mb-1" size="small" color="success" v-if="localGoalReview.achievements">
                 有成就记录
               </v-chip>
-              <v-chip
-                class="mr-2 mb-1"
-                size="small"
-                color="warning"
-                v-if="localGoalReview.content.challenges"
-              >
+              <v-chip class="mr-2 mb-1" size="small" color="warning" v-if="localGoalReview.challenges">
                 有挑战记录
               </v-chip>
-              <v-chip
-                class="mr-2 mb-1"
-                size="small"
-                color="info"
-                v-if="localGoalReview.content.learnings"
-              >
-                有经验总结
+              <v-chip class="mr-2 mb-1" size="small" color="info" v-if="localGoalReview.improvements">
+                有改进方向
               </v-chip>
-              <v-chip
-                class="mr-2 mb-1"
-                size="small"
-                color="primary"
-                v-if="localGoalReview.content.nextSteps"
-              >
-                有下步计划
+              <v-chip class="mr-2 mb-1" size="small" color="primary" v-if="localGoalReview.summary">
+                有复盘摘要
               </v-chip>
             </div>
           </div>
@@ -357,14 +205,18 @@ const { createGoalReview, getGoalAggregateView } = useGoal();
 
 // 获取目标信息
 const goalUuid = route.params.goalUuid as string;
-const goal = ref<GoalClient | null>(null);
-const localGoalReview = ref<GoalReviewClient | null>(null);
+const goal = ref<Goal | null>(null);
+const localGoalReview = ref<GoalReview | null>(null);
 
 // 计算属性
 const canSave = computed(() => {
   if (!localGoalReview.value) return false;
-  const content = localGoalReview.value.content;
-  return !!(content.achievements || content.challenges || content.learnings || content.nextSteps);
+  return !!(
+    localGoalReview.value.achievements ||
+    localGoalReview.value.challenges ||
+    localGoalReview.value.improvements ||
+    localGoalReview.value.summary
+  );
 });
 
 // 初始化数据
@@ -388,24 +240,8 @@ const initializeReview = async () => {
 
     // 创建复盘实例
     localGoalReview.value = GoalReview.forCreate(goalUuid);
-
-    // 填充快照数据（基于当前目标状态）
-    if (localGoalReview.value && goal.value) {
-      localGoalReview.value.snapshot = {
-        snapshotDate: new Date(),
-        overallProgress: goal.value.overallProgress || 0,
-        weightedProgress: goal.value.weightedProgress || 0,
-        completedKeyResults: goal.value.keyResults?.filter((kr) => kr.progress >= 100).length || 0,
-        totalKeyResults: goal.value.keyResults?.length || 0,
-        keyResultsSnapshot:
-          goal.value.keyResults?.map((kr) => ({
-            uuid: kr.uuid,
-            name: kr.name,
-            progress: kr.progress,
-            currentValue: kr.currentValue,
-            targetValue: kr.targetValue,
-          })) || [],
-      };
+    if (!localGoalReview.value) {
+      throw new Error('无法创建复盘实例');
     }
   } catch (error) {
     console.error('初始化复盘失败:', error);
@@ -430,25 +266,18 @@ const confirmSaveReview = async () => {
   try {
     saving.value = true;
 
-    // 准备请求数据
-    const reviewData = {
-      title: `${goal.value.name} - ${format(new Date(), 'yyyy-MM-dd')} 复盘`,
-      type: 'custom' as const,
-      reviewDate: localGoalReview.value.reviewDate.getTime(),
-      content: localGoalReview.value.content,
-      snapshot: {
-        snapshotDate: localGoalReview.value.snapshot.snapshotDate.getTime(),
-        overallProgress: localGoalReview.value.snapshot.overallProgress,
-        weightedProgress: localGoalReview.value.snapshot.weightedProgress,
-        completedKeyResults: localGoalReview.value.snapshot.completedKeyResults,
-        totalKeyResults: localGoalReview.value.snapshot.totalKeyResults,
-        keyResultsSnapshot: localGoalReview.value.snapshot.keyResultsSnapshot,
-      },
+    // 使用API请求格式调用
+    await createGoalReview(goalUuid, {
+      goalUuid: goalUuid,
+      title: `${goal.value.title} - ${format(new Date(), 'yyyy-MM-dd')} 复盘`,
+      content: localGoalReview.value.summary,
+      reviewType: localGoalReview.value.type,
       rating: localGoalReview.value.rating,
-    };
-
-    // 调用API创建复盘
-    await createGoalReview(goalUuid, reviewData);
+      achievements: localGoalReview.value.achievements ?? undefined,
+      challenges: localGoalReview.value.challenges ?? undefined,
+      nextActions: localGoalReview.value.improvements ?? undefined,
+      reviewedAt: localGoalReview.value.reviewedAt,
+    });
 
     snackbar.showSuccess('目标复盘创建成功');
     showConfirmDialog.value = false;
@@ -471,11 +300,9 @@ onMounted(() => {
 
 <style scoped>
 #goal-review {
-  background: linear-gradient(
-    120deg,
-    rgba(var(--v-theme-primary), 0.08) 0%,
-    rgba(var(--v-theme-background), 0.95) 100%
-  );
+  background: linear-gradient(120deg,
+      rgba(var(--v-theme-primary), 0.08) 0%,
+      rgba(var(--v-theme-background), 0.95) 100%);
   overflow: hidden;
 }
 
@@ -514,11 +341,9 @@ onMounted(() => {
 }
 
 .goal-info {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.8),
-    rgba(var(--v-theme-primary), 0.6)
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--v-theme-primary), 0.8),
+      rgba(var(--v-theme-primary), 0.6));
   color: white;
 }
 
@@ -527,11 +352,9 @@ onMounted(() => {
 }
 
 .stats-info {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-secondary), 0.8),
-    rgba(var(--v-theme-secondary), 0.6)
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--v-theme-secondary), 0.8),
+      rgba(var(--v-theme-secondary), 0.6));
   color: white;
 }
 
@@ -567,11 +390,9 @@ onMounted(() => {
 }
 
 .self-diagnosis {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-surface), 0.95),
-    rgba(var(--v-theme-background), 0.98)
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--v-theme-surface), 0.95),
+      rgba(var(--v-theme-background), 0.98));
   border-radius: 20px;
   margin: 2rem 0;
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.06);
@@ -612,11 +433,9 @@ onMounted(() => {
 }
 
 .diagnosis-card.rating-card {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-warning), 0.05),
-    rgba(var(--v-theme-surface), 1)
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--v-theme-warning), 0.05),
+      rgba(var(--v-theme-surface), 1));
 }
 
 .diagnosis-card-header {

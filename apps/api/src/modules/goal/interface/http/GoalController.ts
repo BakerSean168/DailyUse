@@ -169,11 +169,17 @@ export class GoalController {
       }
 
       const includeChildren = req.query.includeChildren === 'true';
+      console.log('[GoalController.getUserGoalsByToken] includeChildren:', includeChildren);
+      console.log('[GoalController.getUserGoalsByToken] query:', req.query);
+      
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
 
       const service = await GoalController.getGoalService();
       const goals = await service.getUserGoals(accountUuid, { includeChildren });
+      
+      console.log('[GoalController.getUserGoalsByToken] 返回Goals数量:', goals.length);
+      console.log('[GoalController.getUserGoalsByToken] 第一个Goal:', goals[0]);
 
       // 实现简单的分页
       const total = goals.length;

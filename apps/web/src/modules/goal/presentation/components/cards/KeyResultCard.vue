@@ -94,7 +94,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { format } from 'date-fns';
-import { KeyResultClient, Goal } from '@dailyuse/domain-client';
+import { KeyResult, Goal } from '@dailyuse/domain-client';
 // composables
 import { useGoal } from '../../composables/useGoal';
 // components
@@ -102,8 +102,8 @@ import GoalRecordDialog from '../dialogs/GoalRecordDialog.vue';
 
 const { archiveGoal } = useGoal();
 const props = defineProps<{
-  keyResult: KeyResultClient;
-  goal?: GoalClient;
+  keyResult: KeyResult;
+  goal?: Goal;
 }>();
 
 // components

@@ -1,4 +1,5 @@
 import type { GoalContracts } from '@dailyuse/contracts';
+import { GoalContracts as GC } from '@dailyuse/contracts';
 import { Goal, GoalFolder } from '@dailyuse/domain-client';
 import { goalApiClient, goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
@@ -435,22 +436,13 @@ export class GoalWebApplicationService {
    */
   async createKeyResultForGoal(
     goalUuid: string,
-    request: {
-      name: string;
-      description?: string;
-      startValue: number;
-      targetValue: number;
-      currentValue?: number;
-      unit: string;
-      weight: number;
-      calculationMethod?: 'sum' | 'average' | 'max' | 'min' | 'custom';
-    },
+    request: Omit<GoalContracts.AddKeyResultRequest, 'goalUuid'>,
   ): Promise<GoalContracts.KeyResultClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
 
-      const data = await goalApiClient.createKeyResultForGoal(goalUuid, request);
+      const data = await goalApiClient.addKeyResultForGoal(goalUuid, request);
 
       // 更新关联的Goal实体（重新获取以包含新的KeyResult）
       await this.refreshGoalWithKeyResults(goalUuid);
@@ -843,9 +835,15 @@ export class GoalWebApplicationService {
    */
   private async refreshGoalWithKeyResults(goalUuid: string): Promise<void> {
     try {
+      console.log('[GoalWebApplicationService] 开始刷新Goal及其KeyResults:', goalUuid);
       const goalResponse = await goalApiClient.getGoalById(goalUuid);
+      console.log('[GoalWebApplicationService] 获取到Goal数据:', goalResponse);
+      console.log('[GoalWebApplicationService] Goal包含的KeyResults:', goalResponse.keyResults?.length || 0);
+      
       const goal = Goal.fromClientDTO(goalResponse);
       this.goalStore.addOrUpdateGoal(goal);
+      
+      console.log('[GoalWebApplicationService] Goal已更新到store');
     } catch (error) {
       console.warn('刷新Goal和KeyResults失败:', error);
     }

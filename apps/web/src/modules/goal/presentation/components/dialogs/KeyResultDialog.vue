@@ -18,7 +18,7 @@
               <!-- 关键结果名称 -->
               <v-col cols="12">
                 <v-text-field
-                  v-model="keyResultName"
+                  v-model="keyResultTitle"
                   label="关键结果名称*"
                   placeholder="例如：新增活跃用户数量"
                   variant="outlined"
@@ -114,7 +114,7 @@
             <v-card variant="outlined" class="pa-4">
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-subtitle-1 font-weight-medium">{{
-                  keyResultName || '关键结果名称'
+                  keyResultTitle || '关键结果名称'
                 }}</span>
                 <span class="text-h6 font-weight-bold" :class="progressColor">
                   {{ progressPercentage.toFixed(1) }}%
@@ -159,8 +159,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { KeyResultClient, Goal } from '@dailyuse/domain-client';
-import { KeyResult as KeyResult } from '@dailyuse/domain-client';
+import { KeyResult, Goal } from '@dailyuse/domain-client';
 // composables
 import { useKeyResult } from '../../composables/useKeyResult';
 
@@ -168,15 +167,15 @@ const keyResultComposable = useKeyResult();
 const { createKeyResult, updateKeyResult } = keyResultComposable;
 
 const visible = ref(false);
-const propKeyResult = ref<KeyResultClient | null>(null);
+const propKeyResult = ref<KeyResult | null>(null);
 const propGoalUuid = ref<string | null>(null);
 //如果是在编辑 Goal 的情况下，编辑 Key Result，应该直接把 keyResult 的修改直接反映到 Goal 中（到时候调用 Goal 的接口），而不是直接掉用修改 Key Result 的接口
 // 规定传入 goal 对象，则表示是在编辑 Goal 的情况下编辑 Key Result
-const propGoal = ref<GoalClient | null>(null);
+const propGoal = ref<Goal | null>(null);
 const isInGoalEditing = computed(() => !!propGoal.value);
 // 表单状态
 const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
-const localKeyResult = ref<KeyResultClient>(
+const localKeyResult = ref<KeyResult>(
   KeyResult.forCreate(''), // 需要在打开时设置正确的 goalUuid
 );
 const loading = ref(false);
@@ -188,7 +187,7 @@ const progressPercentage = computed(() => {
 });
 
 // 表单字段的 getter/setter
-const keyResultName = computed({
+const keyResultTitle = computed({
   get: () => localKeyResult.value.title || '',
   set: (val: string) => {
     localKeyResult.value.updateTitle(val);
@@ -295,16 +294,16 @@ const handleSave = async () => {
   } else {
     if (isInGoalEditing.value) {
       // 如果在目标编辑页面，使用变更跟踪方法添加关键结果
-      propGoal.value?.addKeyResult(localKeyResult.value);
+      propGoal.value?.addKeyResult(localKeyResult.value as KeyResult);
       // 不调用创建接口，等保存目标时统一创建
       closeDialog();
       return;
     }
     // 转换为旧的 CreateKeyResultRequest 格式（兼容现有 API）
     const createRequest = {
-      name: localKeyResult.value.title, // title -> name
+      title: localKeyResult.value.title, // title -> name
       description: localKeyResult.value.description || undefined,
-      startValue: 0, // initialValue，当前实现中默认为0
+      startValue: localKeyResult.value.progress.currentValue, // initialValue，当前实现中默认为0
       targetValue: localKeyResult.value.progress.targetValue,
       currentValue: localKeyResult.value.progress.currentValue,
       unit: localKeyResult.value.progress.unit || '', // null -> ''
@@ -333,8 +332,8 @@ const openDialog = ({
   goal,
 }: {
   goalUuid?: string;
-  keyResult?: KeyResultClient;
-  goal?: GoalClient;
+  keyResult?: KeyResult;
+  goal?: Goal;
 }) => {
   propGoalUuid.value = goalUuid || null;
   propKeyResult.value = keyResult || null;
@@ -342,11 +341,11 @@ const openDialog = ({
   visible.value = true;
 };
 
-const openForCreateKeyResultInGoalEditing = (goal: GoalClient) => {
+const openForCreateKeyResultInGoalEditing = (goal: Goal) => {
   openDialog({ goal });
 };
 
-const openForUpdateKeyResultInGoalEditing = (goal: GoalClient, keyResult: KeyResultClient) => {
+const openForUpdateKeyResultInGoalEditing = (goal: Goal, keyResult: KeyResult) => {
   openDialog({ goal, keyResult });
 };
 
@@ -354,7 +353,7 @@ const openForCreateKeyResult = (goalUuid: string) => {
   openDialog({ goalUuid });
 };
 
-const openForUpdateKeyResult = (goalUuid: string, keyResult: KeyResultClient) => {
+const openForUpdateKeyResult = (goalUuid: string, keyResult: KeyResult) => {
   openDialog({ goalUuid, keyResult });
 };
 

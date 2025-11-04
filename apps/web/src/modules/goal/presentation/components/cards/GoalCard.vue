@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 import { computed, ref, defineExpose } from 'vue';
-import type { GoalClient, KeyResult } from '@dailyuse/domain-client';
+import type { Goal, KeyResult } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
 import { useRouter } from 'vue-router';
 import { useGoal } from '../../composables/useGoal';
@@ -137,12 +137,12 @@ const router = useRouter();
 const goalComposable = useGoal();
 
 const props = defineProps<{
-  goal: GoalClient;
+  goal: Goal;
 }>();
 
 // 定义 emits
 const emit = defineEmits<{
-  'edit-goal': [goal: GoalClient];
+  'edit-goal': [goal: Goal];
   'delete-goal': [goalUuid: string];
   'toggle-status': [goalUuid: string];
 }>();

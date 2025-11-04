@@ -12,6 +12,7 @@
 
 import { ref, computed, reactive } from 'vue';
 import type { GoalContracts } from '@dailyuse/contracts';
+import { GoalContracts as GC } from '@dailyuse/contracts';
 import { useGoalManagement } from './useGoalManagement';
 import { useGoalFolder } from './useGoalFolder';
 import { useKeyResult } from './useKeyResult';
@@ -440,23 +441,20 @@ export function useGoal() {
 
   /**
    * 通过Goal聚合根创建关键结果
-   * 后面得在 contract 中添加 dto 类型定义
+   * 直接使用 AddKeyResultRequest 类型（不包含 goalUuid）
    */
   const createKeyResultForGoal = async (
     goalUuid: string,
-    request: {
-      name: string;
-      description?: string;
-      startValue: number;
-      targetValue: number;
-      currentValue?: number;
-      unit: string;
-      weight: number;
-      calculationMethod?: 'sum' | 'average' | 'max' | 'min' | 'custom';
-    },
+    request: Omit<GoalContracts.AddKeyResultRequest, 'goalUuid'>,
   ) => {
     try {
       const response = await goalWebApplicationService.createKeyResultForGoal(goalUuid, request);
+      
+      // 手动触发重新加载当前目标的关键结果
+      if (currentGoal.value?.uuid === goalUuid) {
+        await loadCurrentGoalKeyResults(goalUuid);
+      }
+      
       snackbar.showSuccess('关键结果创建成功');
       return response;
     } catch (error) {

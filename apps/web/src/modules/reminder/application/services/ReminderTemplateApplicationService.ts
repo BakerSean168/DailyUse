@@ -14,12 +14,10 @@
  */
 
 import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderTemplate } from '@dailyuse/domain-client';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
-
-// 类型别名
-type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
 
 export class ReminderTemplateApplicationService {
   private static instance: ReminderTemplateApplicationService;
@@ -57,18 +55,18 @@ export class ReminderTemplateApplicationService {
    */
   async createReminderTemplate(
     request: ReminderContracts.CreateReminderTemplateRequestDTO,
-  ): Promise<ReminderContracts.ReminderTemplateClientDTO> {
+  ): Promise<ReminderTemplate> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
 
-      const templateData = await reminderApiClient.createReminderTemplate(request);
+  const templateData = await reminderApiClient.createReminderTemplate(request);
 
-      // 直接使用 DTO 数据同步到 store
-      this.reminderStore.addOrUpdateReminderTemplate(templateData);
+  const template = ReminderTemplate.fromClientDTO(templateData);
+  this.reminderStore.addOrUpdateReminderTemplate(template);
 
       this.snackbar.showSuccess('提醒模板创建成功');
-      return templateData;
+  return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '创建提醒模板失败';
       this.reminderStore.setError(errorMessage);
@@ -98,8 +96,9 @@ export class ReminderTemplateApplicationService {
 
       const templatesResponse = await reminderApiClient.getReminderTemplates(params);
 
-      // 直接使用 DTO 数据同步到 store
-      const templates = Array.isArray(templatesResponse) ? templatesResponse : [];
+      const templates = Array.isArray(templatesResponse)
+        ? templatesResponse.map((template) => ReminderTemplate.fromClientDTO(template))
+        : [];
       this.reminderStore.setReminderTemplates(templates);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒模板失败';
@@ -130,8 +129,9 @@ export class ReminderTemplateApplicationService {
 
       const templatesResponse = await reminderApiClient.getActiveTemplates(params);
 
-      // 直接使用 DTO 数据同步到 store
-      const templates = Array.isArray(templatesResponse) ? templatesResponse : [];
+      const templates = Array.isArray(templatesResponse)
+        ? templatesResponse.map((template) => ReminderTemplate.fromClientDTO(template))
+        : [];
       this.reminderStore.setReminderTemplates(templates);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取活跃模板失败';
@@ -151,12 +151,12 @@ export class ReminderTemplateApplicationService {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
 
-      const templateData = await reminderApiClient.getReminderTemplate(uuid);
+  const templateData = await reminderApiClient.getReminderTemplate(uuid);
 
-      // 直接使用 DTO 数据同步到 store
-      this.reminderStore.addOrUpdateReminderTemplate(templateData);
+  const template = ReminderTemplate.fromClientDTO(templateData);
+  this.reminderStore.addOrUpdateReminderTemplate(template);
 
-      return templateData;
+  return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒模板详情失败';
       this.reminderStore.setError(errorMessage);
@@ -178,13 +178,13 @@ export class ReminderTemplateApplicationService {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
 
-      const templateData = await reminderApiClient.updateReminderTemplate(uuid, request);
+  const templateData = await reminderApiClient.updateReminderTemplate(uuid, request);
 
-      // 直接使用 DTO 数据同步到 store
-      this.reminderStore.addOrUpdateReminderTemplate(templateData);
+  const template = ReminderTemplate.fromClientDTO(templateData);
+  this.reminderStore.addOrUpdateReminderTemplate(template);
 
       this.snackbar.showSuccess('提醒模板更新成功');
-      return templateData;
+  return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '更新提醒模板失败';
       this.reminderStore.setError(errorMessage);
@@ -203,10 +203,9 @@ export class ReminderTemplateApplicationService {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
 
-      await reminderApiClient.deleteReminderTemplate(uuid);
+  await reminderApiClient.deleteReminderTemplate(uuid);
 
-      // 从 store 中移除
-      this.reminderStore.removeReminderTemplate(uuid);
+  this.reminderStore.removeReminderTemplate(uuid);
 
       this.snackbar.showSuccess('提醒模板删除成功');
     } catch (error) {
@@ -225,17 +224,17 @@ export class ReminderTemplateApplicationService {
   async toggleTemplateEnabled(
     uuid: string,
     enabled: boolean,
-  ): Promise<ReminderContracts.ReminderTemplateClientDTO> {
+  ): Promise<ReminderTemplate> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
 
-      const templateData = await reminderApiClient.toggleTemplateEnabled(uuid, enabled);
+  const templateData = await reminderApiClient.toggleTemplateEnabled(uuid, enabled);
 
-      // 直接使用 DTO 数据同步到 store
-      this.reminderStore.addOrUpdateReminderTemplate(templateData);
+  const template = ReminderTemplate.fromClientDTO(templateData);
+  this.reminderStore.addOrUpdateReminderTemplate(template);
 
-      return templateData;
+  return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '切换模板状态失败';
       this.reminderStore.setError(errorMessage);
@@ -256,8 +255,8 @@ export class ReminderTemplateApplicationService {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
 
-      const templates = await reminderApiClient.searchReminderTemplates(accountUuid, query);
-      return templates;
+  const templates = await reminderApiClient.searchReminderTemplates(accountUuid, query);
+  return templates.map((template) => ReminderTemplate.fromClientDTO(template));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '搜索模板失败';
       this.reminderStore.setError(errorMessage);

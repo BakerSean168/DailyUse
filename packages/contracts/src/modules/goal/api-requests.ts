@@ -17,7 +17,7 @@ import type {
   GoalRecordServerDTO,
   GoalRecordClientDTO,
 } from './entities';
-import type { GoalStatus, ImportanceLevel, UrgencyLevel, FolderType } from './enums';
+import type { GoalStatus, ImportanceLevel, UrgencyLevel, FolderType, KeyResultValueType, AggregationMethod } from './enums';
 import type { BatchOperationResponseDTO } from '../../shared/dtos';
 
 // ============ Goal 请求/响应 ============
@@ -111,8 +111,10 @@ export interface AddKeyResultRequest {
   goalUuid: string;
   title: string;
   description?: string;
-  valueType: string;
+  valueType: KeyResultValueType;
+  aggregationMethod: AggregationMethod;
   targetValue: number;
+  currentValue?: number;
   unit?: string;
   weight: number;
 }
