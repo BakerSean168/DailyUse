@@ -136,7 +136,6 @@
                     @update:model-value="updateStartTime"
                     :min="minDate"
                     placeholder="默认：今天"
-                    placeholder="默认：今天"
                   />
                 </v-col>
                 <v-col cols="6">
@@ -147,7 +146,6 @@
                     :rules="endTimeRules"
                     :min="startTimeFormatted"
                     @update:model-value="updateEndTime"
-                    placeholder="默认：3个月后"
                     placeholder="默认：3个月后"
                   />
                 </v-col>
@@ -711,10 +709,7 @@ const handleSave = async () => {
       // 创建模式：注入 accountUuid（乐观更新）
       // 使用新 accountStore 的 currentAccountUuid computed property
       let accountUuid = accountStore.currentAccountUuid;
-      // 使用新 accountStore 的 currentAccountUuid computed property
-      let accountUuid = accountStore.currentAccountUuid;
       
-      // 如果还是失败，尝试从 localStorage 获取 token 并解析（兜底方案）
       // 如果还是失败，尝试从 localStorage 获取 token 并解析（兜底方案）
       if (!accountUuid) {
         const token = localStorage.getItem('token');
@@ -835,8 +830,6 @@ watch(visible, (newVal) => {
 
 defineExpose({
   openDialog,
-  openForCreate,
-  openForEdit,
   openForCreate,
   openForEdit,
 });

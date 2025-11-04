@@ -102,7 +102,6 @@
                   hint="该关键结果在目标中的重要程度 (1-10)"
                   persistent-hint
                   :rules="weightRules"
-                  :rules="weightRules"
                   required
                 />
               </v-col>
@@ -205,7 +204,6 @@ const keyResultStartValue = computed({
 
 const keyResultTargetValue = computed({
   get: () => localKeyResult.value.progress.targetValue || 100, // 默认目标值为 100
-  get: () => localKeyResult.value.progress.targetValue || 100, // 默认目标值为 100
   set: (val: number) => {
     localKeyResult.value.updateTargetValue(val);
   },
@@ -226,7 +224,6 @@ const keyResultCalculationMethod = computed({
 });
 
 const keyResultWeight = computed({
-  get: () => localKeyResult.value.weight || 5, // 默认值为 5（中等权重）
   get: () => localKeyResult.value.weight || 5, // 默认值为 5（中等权重）
   set: (val: number) => {
     localKeyResult.value.updateWeight(val);

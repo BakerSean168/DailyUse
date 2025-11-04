@@ -58,7 +58,6 @@ export class GoalApiClient {
     request: GoalContracts.UpdateGoalRequest,
   ): Promise<GoalContracts.GoalClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}`, request);
-    const data = await apiClient.patch(`${this.baseUrl}/${uuid}`, request);
     return data;
   }
 
