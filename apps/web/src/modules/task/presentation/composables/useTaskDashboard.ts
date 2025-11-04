@@ -10,7 +10,7 @@
 
 import { ref, computed, readonly, onMounted, onUnmounted } from 'vue';
 import type { TaskContracts } from '@dailyuse/contracts';
-import { oneTimeTaskQueryService } from '../../application/services';
+import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
 
 type TaskDashboardResponse = TaskContracts.TaskDashboardResponse;
 
@@ -127,8 +127,10 @@ export function useTaskDashboard() {
       isLoading.value = true;
       error.value = null;
 
-      const data = await oneTimeTaskQueryService.getTaskDashboard();
-      dashboardData.value = data;
+      // TODO: 实现仪表板数据加载
+      // 需要后端 API 支持 task dashboard endpoint
+      console.warn('仪表板数据加载功能待实现');
+      dashboardData.value = null;
       lastUpdated.value = Date.now();
     } catch (err) {
       const message = err instanceof Error ? err.message : '加载仪表板数据失败';

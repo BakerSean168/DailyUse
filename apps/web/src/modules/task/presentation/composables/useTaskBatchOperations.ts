@@ -10,7 +10,7 @@
 
 import { ref, computed, readonly } from 'vue';
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client';
-import { oneTimeTaskBatchOperationService } from '../../application/services';
+import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
 
 
 /**
@@ -170,23 +170,18 @@ export function useTaskBatchOperations() {
     }
 
     try {
-      const tasks = await executeBatchOperation(
-        () =>
-          oneTimeTaskBatchOperationService.batchUpdatePriority(
-            selectedUuids.value,
-            importance,
-            urgency,
-          ),
-        '批量更新优先级失败',
-      );
-
+      // TODO: 实现批量更新优先级功能
+      // 当前需要后端 API 支持批量操作
+      console.warn('批量更新优先级功能待实现');
+      
       // 操作成功后清除选择
       clearSelection();
 
       return {
-        success: true,
-        affectedCount: tasks.length,
-        tasks,
+        success: false,
+        affectedCount: 0,
+        tasks: [],
+        error: '批量更新优先级功能待实现',
       };
     } catch (error) {
       return {
@@ -212,22 +207,18 @@ export function useTaskBatchOperations() {
     }
 
     try {
-      const tasks = await executeBatchOperation(
-        () =>
-          oneTimeTaskBatchOperationService.batchCancelTasks(
-            selectedUuids.value,
-            reason,
-          ),
-        '批量取消任务失败',
-      );
+      // TODO: 实现批量取消任务功能
+      // 当前需要后端 API 支持批量操作
+      console.warn('批量取消任务功能待实现');
 
       // 操作成功后清除选择
       clearSelection();
 
       return {
-        success: true,
-        affectedCount: tasks.length,
-        tasks,
+        success: false,
+        affectedCount: 0,
+        tasks: [],
+        error: '批量取消任务功能待实现',
       };
     } catch (error) {
       return {

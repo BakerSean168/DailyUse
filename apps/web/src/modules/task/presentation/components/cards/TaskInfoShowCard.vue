@@ -18,11 +18,8 @@
             </div>
 
             <div class="task-status">
-              <v-icon
-                :icon="
-                  task.isCompleted ? 'mdi-check-circle' : 'mdi-clock-outline'
-                "
-              />
+              <v-icon :icon="task.isCompleted ? 'mdi-check-circle' : 'mdi-clock-outline'
+                " />
               <span>{{ task.statusText }}</span>
             </div>
 
@@ -39,7 +36,7 @@
 
 <script setup lang="ts">
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import type { TaskInstance, KeyResultClient, Goal } from '@dailyuse/domain-client';
+import type { TaskInstance, KeyResult, Goal } from '@dailyuse/domain-client';
 const props = defineProps<{
   visible: boolean;
   task: TaskInstance;

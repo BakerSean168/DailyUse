@@ -8,13 +8,7 @@
  * - 清晰的职责分离
  */
 
-// ===== ONE_TIME Task Services (细粒度服务) =====
-export * from './OneTimeTaskLifecycleService';
-export * from './OneTimeTaskQueryService';
-export * from './OneTimeTaskGoalLinkService';
-export * from './OneTimeTaskBatchOperationService';
-
-// ===== RECURRING Task Services =====
+// ===== Task Template & Instance Services =====
 export * from './TaskTemplateApplicationService';
 export * from './TaskInstanceApplicationService';
 
@@ -24,13 +18,7 @@ export * from './TaskStatisticsApplicationService';
 
 // ===== 便捷导入：导出所有单例实例 =====
 
-// ONE_TIME Task Service Instances
-export { oneTimeTaskLifecycleService } from './OneTimeTaskLifecycleService';
-export { oneTimeTaskQueryService } from './OneTimeTaskQueryService';
-export { oneTimeTaskGoalLinkService } from './OneTimeTaskGoalLinkService';
-export { oneTimeTaskBatchOperationService } from './OneTimeTaskBatchOperationService';
-
-// RECURRING Task Service Instances
+// Task Service Instances
 export { taskTemplateApplicationService } from './TaskTemplateApplicationService';
 export { taskInstanceApplicationService } from './TaskInstanceApplicationService';
 
