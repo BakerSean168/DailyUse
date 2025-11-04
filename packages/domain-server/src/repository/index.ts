@@ -19,19 +19,25 @@ export { RepositoryStatisticsDomainService } from './services/RepositoryStatisti
 
 // Re-export contracts types for convenience
 export type {
-  RepositoryServerDTO,
-  RepositoryPersistenceDTO,
-  RepositoryClientDTO,
-  RepositoryType,
-  RepositoryStatus,
-  RepositoryConfigServerDTO,
-  RepositoryStatsServerDTO,
-  SyncStatusServerDTO,
-  GitInfoServerDTO,
-  ResourceServerDTO,
-  ResourcePersistenceDTO,
-  ResourceClientDTO,
-  ResourceType,
-  ResourceStatus,
-  ResourceMetadata,
+  RepositoryContracts,
 } from '@dailyuse/contracts';
+
+// Type aliases for convenience
+import type { RepositoryContracts as RC } from '@dailyuse/contracts';
+export type RepositoryServerDTO = RC.RepositoryServerDTO;
+export type RepositoryPersistenceDTO = RC.RepositoryPersistenceDTO;
+export type RepositoryClientDTO = RC.RepositoryClientDTO;
+export type RepositoryType = RC.RepositoryType;
+export type RepositoryStatus = RC.RepositoryStatus;
+export type RepositoryConfigServerDTO = RC.RepositoryConfigServerDTO;
+export type RepositoryStatsServerDTO = RC.RepositoryStatsServerDTO;
+export type SyncStatusServerDTO = RC.SyncStatusServerDTO;
+export type GitInfoServerDTO = RC.GitInfoServerDTO;
+export type ResourceServerDTO = RC.ResourceServerDTO;
+export type ResourcePersistenceDTO = RC.ResourcePersistenceDTO;
+export type ResourceClientDTO = RC.ResourceClientDTO;
+export type ResourceType = RC.ResourceType;
+export type ResourceStatus = RC.ResourceStatus;
+export type ResourceMetadata = RC.ResourceMetadata;
+
+export { ResourceType as ResourceTypeEnum, ResourceStatus as ResourceStatusEnum } from '@dailyuse/contracts';

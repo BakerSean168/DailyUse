@@ -3,10 +3,25 @@
  * 兼容 AccountClient 接口
  */
 
-import { AccountContracts, AccountStatus, ThemeType, ProfileVisibility, StorageQuotaType } from '@dailyuse/contracts';
+import type { AccountContracts } from '@dailyuse/contracts';
+import {
+  AccountStatus,
+  Gender,
+  ThemeType,
+  ProfileVisibility,
+  SubscriptionPlan,
+  SubscriptionStatus,
+  BillingCycle,
+  StorageQuotaType,
+} from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 import { Subscription } from '../entities/Subscription';
 import { AccountHistory } from '../entities/AccountHistory';
+
+type IAccountClient = AccountContracts.AccountClient;
+type AccountClientDTO = AccountContracts.AccountClientDTO;
+type AccountServerDTO = AccountContracts.AccountServerDTO;
+
 import {
   EmailValidator,
   PhoneNumberValidator,
@@ -18,11 +33,6 @@ import {
   LanguageValidator,
   type ValidationResult,
 } from '../validators/AccountValidators';
-
-type IAccountClient = AccountContracts.AccountClient;
-type AccountClientDTO = AccountContracts.AccountClientDTO;
-type AccountServerDTO = AccountContracts.AccountServerDTO;
-type Gender = AccountContracts.Gender;
 
 /**
  * Account 聚合根 (Client)

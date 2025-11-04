@@ -13,13 +13,12 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { ScheduleContracts } from '@dailyuse/contracts';
-import type {
-  ScheduleServerDTO,
-  ConflictDetectionResult,
-  ConflictDetail,
-  ConflictSuggestion,
-} from '@dailyuse/contracts';
+import type { ScheduleContracts } from '@dailyuse/contracts';
+
+type ScheduleServerDTO = ScheduleContracts.ScheduleServerDTO;
+type ConflictDetectionResult = ScheduleContracts.ConflictDetectionResult;
+type ConflictDetail = ScheduleContracts.ConflictDetail;
+type ConflictSuggestion = ScheduleContracts.ConflictSuggestion;
 
 /**
  * Schedule 聚合根

@@ -94,5 +94,29 @@ export {
   ReminderTimeUnit,
 } from './modules/task/enums';
 
+// 导出 Account 枚举（新的 DDD 架构）
+export {
+  AccountStatus,
+  Gender,
+  ThemeType,
+  SubscriptionPlan,
+  SubscriptionStatus,
+  BillingCycle,
+  StorageQuotaType,
+} from './modules/account/enums';
+
+// 导出 Authentication 枚举（新的 DDD 架构）
+export {
+  CredentialType,
+  CredentialStatus,
+  TwoFactorMethod,
+  BiometricType,
+  SessionStatus,
+  ApiKeyStatus,
+  PasswordAlgorithm,
+  RememberMeTokenStatus,
+  DeviceType,
+} from './modules/authentication/enums';
+
 // 类型别名（向后兼容）
 export { TimeType as TaskTimeType } from './modules/task/enums';

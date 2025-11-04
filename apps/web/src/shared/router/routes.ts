@@ -342,20 +342,6 @@ export const appRoutes: RouteRecordRaw[] = [
         // 新版本使用内部标签导航，不需要子路由
       },
 
-      // 测试页面 (开发环境)
-      {
-        path: '/test',
-        name: 'test',
-        component: () => import('@/modules/account/presentation/views/TestView.vue'),
-        meta: {
-          title: '测试页面',
-          showInNav: import.meta.env.DEV,
-          icon: 'mdi-test-tube',
-          order: 999,
-          requiresAuth: true,
-        },
-      },
-
       // Assets 资源演示 (开发环境)
       {
         path: '/assets-demo',

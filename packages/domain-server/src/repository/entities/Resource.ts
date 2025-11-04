@@ -13,15 +13,16 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   ResourceType,
   ResourceStatus,
+  type RepositoryContracts,
 } from '@dailyuse/contracts';
-import type {
-  ResourceServerDTO,
-  ResourcePersistenceDTO,
-  ResourceClientDTO,
-  ResourceMetadata as IResourceMetadata,
-  ResourceReferenceServer,
-  LinkedContentServer,
-} from '@dailyuse/contracts';
+import type { RepositoryContracts as RC } from '@dailyuse/contracts';
+
+type ResourceServerDTO = RC.ResourceServerDTO;
+type ResourcePersistenceDTO = RC.ResourcePersistenceDTO;
+type ResourceClientDTO = RC.ResourceClientDTO;
+type IResourceMetadata = RC.ResourceMetadata;
+type ResourceReferenceServer = RC.ResourceReferenceServer;
+type LinkedContentServer = RC.LinkedContentServer;
 import { ResourceReference } from './ResourceReference';
 import { LinkedContent } from './LinkedContent';
 import { ResourceMetadata } from '../value-objects/ResourceMetadata';
