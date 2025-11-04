@@ -27,15 +27,6 @@ export {
   getRootGroupUuid,
   isOnDesktop,
 } from './modules/reminder/constants';
-export * as DocumentContracts from './document.contracts';
-
-// 导出 Reminder 模块的常量和工具函数（运行时值不能通过命名空间导出）
-export {
-  ROOT_GROUP_CONFIG,
-  isRootGroup,
-  getRootGroupUuid,
-  isOnDesktop,
-} from './modules/reminder/constants';
 
 export {
   ScheduleTaskStatus,
@@ -96,7 +87,6 @@ export {
   TaskInstanceStatus,
   TaskType,
   TimeType,
-  TaskScheduleMode,
   TaskScheduleMode,
   RecurrenceFrequency,
   DayOfWeek,

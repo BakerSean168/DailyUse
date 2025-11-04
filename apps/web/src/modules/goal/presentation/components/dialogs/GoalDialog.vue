@@ -337,13 +337,8 @@ import DuConfirmDialog from '@dailyuse/ui/components/dialog/DuConfirmDialog.vue'
 import { useGoalStore } from '../../stores/goalStore';
 import { Goal, KeyResult } from '@dailyuse/domain-client';
 import { GoalContracts } from '@dailyuse/contracts';
-import type { WeightStrategy } from '../../../application/services/WeightRecommendationService';
-import type { GoalTemplate } from '../../../application/templates/GoalTemplates';
-import type { GoalTemplate } from '../../../application/templates/GoalTemplates';
-// composables
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
-import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 
 const goalManagement = useGoalManagement();
@@ -518,23 +513,11 @@ watch(
 // Tabs
 const activeTab = ref(0);
 const allTabs = [
-const allTabs = [
   { name: '基本信息', icon: 'mdi-information', color: 'primary' },
   { name: '关键结果', icon: 'mdi-target', color: 'success' },
   { name: '动机分析', icon: 'mdi-lightbulb', color: 'warning' },
   { name: '规则设置', icon: 'mdi-robot', color: 'info' },
 ];
-
-// 根据模式过滤标签：创建模式只显示"基本信息"、"动机分析"、"规则设置"
-const tabs = computed(() => {
-  if (isEditing.value) {
-    // 编辑模式：显示所有标签
-    return allTabs;
-  } else {
-    // 创建模式：隐藏"关键结果"标签
-    return allTabs.filter(tab => tab.name !== '关键结果');
-  }
-});
 
 // 根据模式过滤标签：创建模式只显示"基本信息"、"动机分析"、"规则设置"
 const tabs = computed(() => {

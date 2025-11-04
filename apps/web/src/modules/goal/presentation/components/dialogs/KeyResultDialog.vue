@@ -243,16 +243,6 @@ const weightRules = [
   },
 ];
 
-// 权重验证规则
-const weightRules = [
-  (value: number) => {
-    if (!value) return '权重不能为空';
-    if (value < 1 || value > 10) return '权重必须在 1-10 之间';
-    if (!Number.isInteger(value)) return '权重必须是整数';
-    return true;
-  },
-];
-
 // 计算方法选项
 const calculationMethods = [
   { title: '累加 - 适用于递增指标', value: 'sum' },
