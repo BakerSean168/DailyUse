@@ -15,7 +15,7 @@ export class ScheduleApiClient {
    */
   async createTask(
     request: ScheduleContracts.CreateScheduleTaskRequestDTO,
-  ): Promise<ScheduleContracts.ScheduleTaskServerDTO> {
+  ): Promise<ScheduleContracts.ScheduleTaskClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/tasks`, request);
     return data;
   }
@@ -25,7 +25,7 @@ export class ScheduleApiClient {
    */
   async createTasksBatch(
     tasks: ScheduleContracts.CreateScheduleTaskRequestDTO[],
-  ): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  ): Promise<ScheduleContracts.ScheduleTaskClientDTO[]> {
     const data = await apiClient.post(`${this.baseUrl}/tasks/batch`, { tasks });
     return data;
   }
@@ -33,7 +33,7 @@ export class ScheduleApiClient {
   /**
    * 获取调度任务列表
    */
-  async getTasks(): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  async getTasks(): Promise<ScheduleContracts.ScheduleTaskClientDTO[]> {
     const data = await apiClient.get(`${this.baseUrl}/tasks`);
     return data;
   }
@@ -41,7 +41,7 @@ export class ScheduleApiClient {
   /**
    * 获取调度任务详情
    */
-  async getTaskById(taskUuid: string): Promise<ScheduleContracts.ScheduleTaskServerDTO> {
+  async getTaskById(taskUuid: string): Promise<ScheduleContracts.ScheduleTaskClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/tasks/${taskUuid}`);
     return data;
   }
@@ -52,7 +52,7 @@ export class ScheduleApiClient {
   async getDueTasks(params?: {
     beforeTime?: string;
     limit?: number;
-  }): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  }): Promise<ScheduleContracts.ScheduleTaskClientDTO[]> {
     const data = await apiClient.get(`${this.baseUrl}/tasks/due`, { params });
     return data;
   }
@@ -63,7 +63,7 @@ export class ScheduleApiClient {
   async getTaskBySource(
     sourceModule: ScheduleContracts.SourceModule,
     sourceEntityId: string,
-  ): Promise<ScheduleContracts.ScheduleTaskServerDTO[]> {
+  ): Promise<ScheduleContracts.ScheduleTaskClientDTO[]> {
     const data = await apiClient.get(`${this.baseUrl}/tasks`, {
       params: { sourceModule, sourceEntityId },
     });
@@ -133,7 +133,7 @@ export class ScheduleApiClient {
   /**
    * 获取统计信息
    */
-  async getStatistics(): Promise<ScheduleContracts.ScheduleStatisticsServerDTO> {
+  async getStatistics(): Promise<ScheduleContracts.ScheduleStatisticsClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/statistics`);
     return data;
   }
@@ -143,7 +143,7 @@ export class ScheduleApiClient {
    */
   async getModuleStatistics(
     module: ScheduleContracts.SourceModule,
-  ): Promise<ScheduleContracts.ModuleStatisticsServerDTO> {
+  ): Promise<ScheduleContracts.ModuleStatisticsClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/statistics/module/${module}`);
     return data;
   }
@@ -152,7 +152,7 @@ export class ScheduleApiClient {
    * 获取所有模块统计
    */
   async getAllModuleStatistics(): Promise<
-    Record<ScheduleContracts.SourceModule, ScheduleContracts.ModuleStatisticsServerDTO>
+    Record<ScheduleContracts.SourceModule, ScheduleContracts.ModuleStatisticsClientDTO>
   > {
     const data = await apiClient.get(`${this.baseUrl}/statistics/modules`);
     return data;
@@ -161,7 +161,7 @@ export class ScheduleApiClient {
   /**
    * 重新计算统计信息
    */
-  async recalculateStatistics(): Promise<ScheduleContracts.ScheduleStatisticsServerDTO> {
+  async recalculateStatistics(): Promise<ScheduleContracts.ScheduleStatisticsClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/statistics/recalculate`);
     return data;
   }

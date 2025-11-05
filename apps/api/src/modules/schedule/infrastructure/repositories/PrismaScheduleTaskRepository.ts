@@ -1,11 +1,30 @@
-// @ts-nocheck
-import { PrismaClient } from '@prisma/client';
+/**
+ * Prisma Schedule Task Repository
+ * ScheduleTask 聚合根 Prisma 仓储实现
+ *
+ * 职责：
+ * - 实现 IScheduleTaskRepository 接口
+ * - 使用 toPersistenceDTO/fromPersistenceDTO 进行数据转换
+ * - 处理 ScheduleExecution 子实体的级联操作
+ * - 提供完整的查询和持久化功能
+ *
+ * @implements {IScheduleTaskRepository}
+ */
+
+import type { PrismaClient } from '@prisma/client';
 import type { IScheduleTaskRepository } from '@dailyuse/domain-server';
 import { ScheduleTask, ScheduleExecution } from '@dailyuse/domain-server';
-import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts';
+import { ScheduleContracts } from '@dailyuse/contracts';
+
+// 类型别名
+type ScheduleTaskStatus = ScheduleContracts.ScheduleTaskStatus;
+type SourceModule = ScheduleContracts.SourceModule;
+
+// 枚举值别名
+const ScheduleTaskStatus = ScheduleContracts.ScheduleTaskStatus;
 
 /**
- * ScheduleTask 查询选项（临时定义）
+ * ScheduleTask 查询选项
  */
 interface IScheduleTaskQueryOptions {
   accountUuid?: string;
@@ -18,60 +37,21 @@ interface IScheduleTaskQueryOptions {
 }
 
 /**
- * ScheduleTask 聚合根 Prisma 仓储实现
- * 负责 ScheduleTask 及其执行记录的完整持久化
- *
- * 参考 Repository 模块的实现模式
- *
- * ⚠️ 注意：当前适配现有的简化 schema，未来需要迁移到完整的 DDD schema
+ * PrismaScheduleTaskRepository
+ * 完整的 DDD 仓储实现，无临时适配代码
  */
 export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
   constructor(private prisma: PrismaClient) {}
 
-  // ===== 数据映射方法 =====
+  // ===== 数据转换方法 =====
 
   /**
-   * 将 Prisma 数据映射为 ScheduleTask 聚合根实体
+   * 从 Prisma 模型转换为 ScheduleTask 聚合根
+   * 使用聚合根的 fromPersistenceDTO 方法
    */
-  private mapToEntity(data: any): ScheduleTask {
-    // ========== 组装 ScheduleConfig 值对象 ==========
-    const schedule = {
-      cronExpression: data.cronExpression,
-      timezone: data.timezone,
-      startDate: data.startDate ? data.startDate.getTime() : undefined,
-      endDate: data.endDate ? data.endDate.getTime() : undefined,
-      maxExecutions: data.maxExecutions,
-    };
-
-    // ========== 组装 ExecutionInfo 值对象 ==========
-    const execution = {
-      nextRunAt: data.nextRunAt ? data.nextRunAt.getTime() : undefined,
-      lastRunAt: data.lastRunAt ? data.lastRunAt.getTime() : undefined,
-      executionCount: data.executionCount,
-      lastExecutionStatus: data.lastExecutionStatus,
-      lastExecutionDuration: data.lastExecutionDuration,
-      consecutiveFailures: data.consecutiveFailures,
-    };
-
-    // ========== 组装 RetryPolicy 值对象 ==========
-    const retryPolicy = {
-      maxRetries: data.maxRetries,
-      initialDelayMs: data.initialDelayMs,
-      maxDelayMs: data.maxDelayMs,
-      backoffMultiplier: data.backoffMultiplier,
-      retryableStatuses: JSON.parse(data.retryableStatuses || '[]'),
-    };
-
-    // ========== 组装 TaskMetadata 值对象 ==========
-    const metadata = {
-      payload: data.payload,
-      tags: JSON.parse(data.tags || '[]'),
-      priority: data.priority,
-      timeout: data.timeout,
-    };
-
-    // 使用领域实体的 fromPersistenceDTO 方法创建实体
-    const task = ScheduleTask.fromPersistenceDTO({
+  private toDomain(data: any): ScheduleTask {
+    // 构建 PersistenceDTO（所有字段都是扁平化的）
+    const persistenceDTO: ScheduleContracts.ScheduleTaskPersistenceDTO = {
       uuid: data.uuid,
       accountUuid: data.accountUuid,
       name: data.name,
@@ -80,42 +60,64 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       sourceEntityId: data.sourceEntityId,
       status: data.status,
       enabled: data.enabled,
-      // 值对象（已组装）
-      schedule,
-      execution,
-      retry_policy: retryPolicy,
-      metadata,
+      // ScheduleConfig 扁平化字段
+      cronExpression: data.cronExpression,
+      timezone: data.timezone,
+      startDate: data.startDate ? data.startDate.getTime() : null,
+      endDate: data.endDate ? data.endDate.getTime() : null,
+      maxExecutions: data.maxExecutions,
+      // ExecutionInfo 扁平化字段
+      nextRunAt: data.nextRunAt ? data.nextRunAt.getTime() : null,
+      lastRunAt: data.lastRunAt ? data.lastRunAt.getTime() : null,
+      executionCount: data.executionCount,
+      lastExecutionStatus: data.lastExecutionStatus,
+      lastExecutionDuration: data.lastExecutionDuration,
+      consecutiveFailures: data.consecutiveFailures,
+      // RetryPolicy 扁平化字段
+      maxRetries: data.maxRetries,
+      initialDelayMs: data.initialDelayMs,
+      maxDelayMs: data.maxDelayMs,
+      backoffMultiplier: data.backoffMultiplier,
+      retryableStatuses: data.retryableStatuses,
+      // TaskMetadata 扁平化字段
+      payload: data.payload,
+      tags: data.tags,
+      priority: data.priority,
+      timeout: data.timeout,
       // 时间戳
       createdAt: data.createdAt.getTime(),
       updatedAt: data.updatedAt.getTime(),
-    });
+    };
 
-    // 加载执行记录子实体
-    if (data.executions) {
-      data.executions.forEach((exec: any) => {
+    // 使用聚合根的 fromPersistenceDTO 方法创建实例
+    const task = ScheduleTask.fromPersistenceDTO(persistenceDTO);
+
+    // 恢复执行记录子实体
+    if (data.scheduleExecution && data.scheduleExecution.length > 0) {
+      for (const execData of data.scheduleExecution) {
         const execution = ScheduleExecution.fromPersistenceDTO({
-          uuid: exec.uuid,
-          taskUuid: exec.taskUuid,
-          executionTime: exec.executionTime?.getTime() || Date.now(),
-          status: exec.status,
-          duration: exec.duration,
-          result: exec.result || null,
-          error: exec.error,
-          retryCount: exec.retryCount || 0,
-          createdAt: exec.createdAt?.getTime() || Date.now(),
+          uuid: execData.uuid,
+          taskUuid: execData.taskUuid,
+          executionTime: execData.executionTime.getTime(),
+          status: execData.status,
+          duration: execData.duration ?? undefined,
+          result: execData.result ?? undefined,
+          error: execData.error ?? undefined,
+          retryCount: execData.retryCount,
+          createdAt: execData.createdAt.getTime(),
         });
         task.addExecution(execution);
-      });
+      }
     }
 
     return task;
   }
 
   /**
-   * 将 ScheduleTask 实体映射为 Prisma 数据
-   * 注意：PersistenceDTO 已经是扁平化的，直接使用字段
+   * 从 ScheduleTask 聚合根转换为 Prisma 持久化数据
+   * 使用聚合根的 toPersistenceDTO 方法
    */
-  private mapToPrisma(task: ScheduleTask): any {
+  private toPrisma(task: ScheduleTask): any {
     const dto = task.toPersistenceDTO();
 
     return {
@@ -127,30 +129,30 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       sourceEntityId: dto.sourceEntityId,
       status: dto.status,
       enabled: dto.enabled,
-      // ScheduleConfig 字段（已扁平化）
-      cronExpression: dto.cronExpression || null,
-      timezone: dto.timezone || 'UTC',
+      // ScheduleConfig 扁平化字段
+      cronExpression: dto.cronExpression,
+      timezone: dto.timezone,
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
-      maxExecutions: dto.maxExecutions || null,
-      // ExecutionInfo 字段（已扁平化）
+      maxExecutions: dto.maxExecutions,
+      // ExecutionInfo 扁平化字段
       nextRunAt: dto.nextRunAt ? new Date(dto.nextRunAt) : null,
       lastRunAt: dto.lastRunAt ? new Date(dto.lastRunAt) : null,
-      executionCount: dto.executionCount || 0,
-      lastExecutionStatus: dto.lastExecutionStatus || null,
-      lastExecutionDuration: dto.lastExecutionDuration || null,
-      consecutiveFailures: dto.consecutiveFailures || 0,
-      // RetryPolicy 字段（已扁平化）
-      maxRetries: dto.maxRetries || 3,
-      initialDelayMs: dto.initialDelayMs || 1000,
-      maxDelayMs: dto.maxDelayMs || 60000,
-      backoffMultiplier: dto.backoffMultiplier || 2.0,
-      retryableStatuses: dto.retryableStatuses || '[]',
-      // TaskMetadata 字段（已扁平化）
-      payload: dto.payload ? JSON.stringify(dto.payload) : null,
-      tags: dto.tags || '[]',
-      priority: dto.priority || 'NORMAL',
-      timeout: dto.timeout || 30000,
+      executionCount: dto.executionCount,
+      lastExecutionStatus: dto.lastExecutionStatus,
+      lastExecutionDuration: dto.lastExecutionDuration,
+      consecutiveFailures: dto.consecutiveFailures,
+      // RetryPolicy 扁平化字段
+      maxRetries: dto.maxRetries,
+      initialDelayMs: dto.initialDelayMs,
+      maxDelayMs: dto.maxDelayMs,
+      backoffMultiplier: dto.backoffMultiplier,
+      retryableStatuses: dto.retryableStatuses,
+      // TaskMetadata 扁平化字段
+      payload: dto.payload,
+      tags: dto.tags,
+      priority: dto.priority,
+      timeout: dto.timeout,
       // 时间戳
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
@@ -160,7 +162,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
   // ===== 基本 CRUD =====
 
   async save(task: ScheduleTask): Promise<void> {
-    const data = this.mapToPrisma(task);
+    const data = this.toPrisma(task);
 
     await this.prisma.scheduleTask.upsert({
       where: { uuid: data.uuid },
@@ -180,17 +182,17 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
             taskUuid: execDto.taskUuid,
             executionTime: new Date(execDto.executionTime),
             status: execDto.status,
-            duration: execDto.duration,
-            result: execDto.result || null,
-            error: execDto.error,
-            retryCount: execDto.retryCount || 0,
+            duration: execDto.duration ?? null,
+            result: execDto.result ?? null,
+            error: execDto.error ?? null,
+            retryCount: execDto.retryCount ?? 0,
           },
           update: {
             status: execDto.status,
-            duration: execDto.duration,
-            result: execDto.result || null,
-            error: execDto.error,
-            retryCount: execDto.retryCount || 0,
+            duration: execDto.duration ?? null,
+            result: execDto.result ?? null,
+            error: execDto.error ?? null,
+            retryCount: execDto.retryCount ?? 0,
           },
         });
       }
@@ -201,14 +203,14 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
     const data = await this.prisma.scheduleTask.findUnique({
       where: { uuid },
       include: {
-        executions: {
+        scheduleExecution: {
           orderBy: { createdAt: 'desc' },
           take: 10, // 最近 10 条执行记录
         },
       },
     });
 
-    return data ? this.mapToEntity(data) : null;
+    return data ? this.toDomain(data) : null;
   }
 
   async deleteByUuid(uuid: string): Promise<void> {
@@ -223,14 +225,14 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
     const tasks = await this.prisma.scheduleTask.findMany({
       where: { accountUuid },
       include: {
-        executions: {
+        scheduleExecution: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
       },
     });
 
-    return tasks.map((task) => this.mapToEntity(task));
+    return tasks.map((task) => this.toDomain(task));
   }
 
   async findBySourceModule(module: SourceModule, accountUuid?: string): Promise<ScheduleTask[]> {
@@ -240,14 +242,14 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
         ...(accountUuid && { accountUuid }),
       },
       include: {
-        executions: {
+        scheduleExecution: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
       },
     });
 
-    return tasks.map((task) => this.mapToEntity(task));
+    return tasks.map((task) => this.toDomain(task));
   }
 
   async findBySourceEntity(
@@ -262,14 +264,14 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
         ...(accountUuid && { accountUuid }),
       },
       include: {
-        executions: {
+        scheduleExecution: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
       },
     });
 
-    return tasks.map((task) => this.mapToEntity(task));
+    return tasks.map((task) => this.toDomain(task));
   }
 
   async findByStatus(status: ScheduleTaskStatus, accountUuid?: string): Promise<ScheduleTask[]> {
@@ -279,14 +281,14 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
         ...(accountUuid && { accountUuid }),
       },
       include: {
-        executions: {
+        scheduleExecution: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
       },
     });
 
-    return tasks.map((task) => this.mapToEntity(task));
+    return tasks.map((task) => this.toDomain(task));
   }
 
   async findEnabled(accountUuid?: string): Promise<ScheduleTask[]> {
@@ -296,14 +298,14 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
         ...(accountUuid && { accountUuid }),
       },
       include: {
-        executions: {
+        scheduleExecution: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
       },
     });
 
-    return tasks.map((task) => this.mapToEntity(task));
+    return tasks.map((task) => this.toDomain(task));
   }
 
   async findDueTasksForExecution(beforeTime: Date, limit?: number): Promise<ScheduleTask[]> {
@@ -321,14 +323,14 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       },
       take: limit,
       include: {
-        executions: {
+        scheduleExecution: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
       },
     });
 
-    return tasks.map((task) => this.mapToEntity(task));
+    return tasks.map((task) => this.toDomain(task));
   }
 
   async query(options: IScheduleTaskQueryOptions): Promise<ScheduleTask[]> {
@@ -343,7 +345,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
     const tasks = await this.prisma.scheduleTask.findMany({
       where,
       include: {
-        executions: {
+        scheduleExecution: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
@@ -352,7 +354,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       skip: options.offset,
     });
 
-    return tasks.map((task) => this.mapToEntity(task));
+    return tasks.map((task) => this.toDomain(task));
   }
 
   async count(options: IScheduleTaskQueryOptions): Promise<number> {

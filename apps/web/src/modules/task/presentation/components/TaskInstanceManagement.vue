@@ -427,12 +427,13 @@ onMounted(async () => {
 .header-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: rgb(var(--v-theme-on-surface));
   margin: 0 0 0.25rem 0;
   background: linear-gradient(45deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  /* 确保文字渐变效果在所有浏览器中正常显示 */
+  color: rgb(var(--v-theme-primary));
 }
 
 .header-subtitle {

@@ -1,0 +1,366 @@
+/**
+ * Task 调度策略
+ * 
+ * 职责：
+ * - 将 Task 的重复配置（RecurrenceRule + ReminderConfig）转换为调度配置
+ * - 处理每日、每周、每月重复
+ * - 支持提醒时间偏移
+ */
+
+import { SourceModule } from '@dailyuse/contracts';
+import type { TaskContracts } from '@dailyuse/contracts';
+import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
+import { TaskMetadata } from '../../value-objects/TaskMetadata';
+import type {
+  IScheduleStrategy,
+  ScheduleStrategyInput,
+  ScheduleStrategyOutput,
+} from './IScheduleStrategy';
+
+/**
+ * Task 调度策略实现
+ */
+export class TaskScheduleStrategy implements IScheduleStrategy {
+  /**
+   * 支持 TASK 源模块
+   */
+  supports(sourceModule: SourceModule): boolean {
+    return sourceModule === SourceModule.TASK;
+  }
+
+  /**
+   * 判断 Task 是否需要创建调度任务
+   * 条件：
+   * 1. 是 RECURRING 类型（循环任务）
+   * 2. 有 recurrenceRule
+   * 3. 有 reminderConfig 且已启用
+   */
+  shouldCreateSchedule(sourceEntity: TaskContracts.TaskTemplateServerDTO): boolean {
+    // 只有循环任务需要调度
+    if (sourceEntity.taskType !== 'RECURRING') {
+      return false;
+    }
+
+    // 必须有重复规则
+    if (!sourceEntity.recurrenceRule) {
+      return false;
+    }
+
+    // 必须有提醒配置且已启用
+    if (!sourceEntity.reminderConfig || !sourceEntity.reminderConfig.enabled) {
+      return false;
+    }
+
+    // 必须有至少一个提醒触发器
+    return sourceEntity.reminderConfig.triggers.length > 0;
+  }
+
+  /**
+   * 从 Task 创建调度配置
+   */
+  createSchedule(input: ScheduleStrategyInput): ScheduleStrategyOutput {
+    const task = input.sourceEntity as TaskContracts.TaskTemplateServerDTO;
+
+    if (!this.shouldCreateSchedule(task)) {
+      throw new Error(
+        `Task ${task.uuid} does not have valid configuration for scheduling`,
+      );
+    }
+
+    const { recurrenceRule, reminderConfig, timeConfig } = task;
+    if (!recurrenceRule || !reminderConfig) {
+      throw new Error(`Task ${task.uuid} missing recurrenceRule or reminderConfig`);
+    }
+
+    // 根据重复规则生成 cron 表达式
+    const cronExpression = this.generateCronExpression(recurrenceRule, reminderConfig, timeConfig);
+
+    // 创建调度配置
+    const scheduleConfig = new ScheduleConfig({
+      cronExpression,
+      timezone: 'Asia/Shanghai', // 默认时区，后续可以从用户设置获取
+      startDate: timeConfig?.startDate ?? Date.now(),
+      endDate: timeConfig?.endDate ?? recurrenceRule.endDate ?? null,
+      maxExecutions: recurrenceRule.occurrences ?? null,
+    });
+
+    // 创建元数据
+    const metadata = new TaskMetadata({
+      priority: this.calculatePriority(task),
+      tags: this.generateTags(task),
+      payload: {
+        taskUuid: task.uuid,
+        taskTitle: task.title,
+        taskType: task.taskType,
+        recurrenceFrequency: recurrenceRule.frequency,
+        reminderTriggers: reminderConfig.triggers,
+        importance: task.importance,
+        urgency: task.urgency,
+      },
+    });
+
+    // 生成任务名称和描述
+    const name = this.generateTaskName(task);
+    const description = this.generateTaskDescription(task, recurrenceRule);
+
+    return {
+      name,
+      description,
+      scheduleConfig,
+      metadata,
+      enabled: true, // Task 提醒默认启用
+    };
+  }
+
+  /**
+   * 生成 cron 表达式
+   * 
+   * 策略：
+   * - DAILY: 每天在指定时间触发
+   * - WEEKLY: 每周指定的几天触发
+   * - MONTHLY: 每月指定日期触发（简化版：每月1号）
+   * - YEARLY: 每年指定日期触发（简化版：每年1月1号）
+   * 
+   * 提醒时间：
+   * - 如果有 RELATIVE 类型触发器，根据相对时间计算
+   * - 如果有 ABSOLUTE 类型触发器，使用绝对时间
+   * - 默认：任务开始时间或 9:00
+   */
+  private generateCronExpression(
+    recurrenceRule: TaskContracts.RecurrenceRuleServerDTO,
+    reminderConfig: TaskContracts.TaskReminderConfigServerDTO,
+    timeConfig?: TaskContracts.TaskTimeConfigServerDTO | null,
+  ): string {
+    // 确定提醒时间（小时和分钟）
+    const { hour, minute } = this.calculateReminderTime(reminderConfig, timeConfig);
+
+    // 根据重复频率生成 cron
+    switch (recurrenceRule.frequency) {
+      case 'DAILY':
+        // 每 N 天，在指定时间
+        if (recurrenceRule.interval === 1) {
+          return `0 ${minute} ${hour} * * *`; // 每天
+        } else {
+          // 简化：每天检查，由执行器判断是否应该触发
+          return `0 ${minute} ${hour} * * *`;
+        }
+
+      case 'WEEKLY':
+        // 每周指定的几天
+        const daysOfWeek = this.convertDaysOfWeekToCron(recurrenceRule.daysOfWeek);
+        if (recurrenceRule.interval === 1) {
+          return `0 ${minute} ${hour} * * ${daysOfWeek}`;
+        } else {
+          // 简化：每周指定天检查，由执行器判断周间隔
+          return `0 ${minute} ${hour} * * ${daysOfWeek}`;
+        }
+
+      case 'MONTHLY':
+        // 每月 1 号（简化版）
+        return `0 ${minute} ${hour} 1 * *`;
+
+      case 'YEARLY':
+        // 每年 1 月 1 号（简化版）
+        return `0 ${minute} ${hour} 1 1 *`;
+
+      default:
+        // 默认每天
+        return `0 ${minute} ${hour} * * *`;
+    }
+  }
+
+  /**
+   * 计算提醒时间
+   */
+  private calculateReminderTime(
+    reminderConfig: TaskContracts.TaskReminderConfigServerDTO,
+    timeConfig?: TaskContracts.TaskTimeConfigServerDTO | null,
+  ): { hour: number; minute: number } {
+    // 查找第一个触发器
+    const firstTrigger = reminderConfig.triggers[0];
+
+    if (firstTrigger.type === 'ABSOLUTE' && firstTrigger.absoluteTime) {
+      // 使用绝对时间
+      const date = new Date(firstTrigger.absoluteTime);
+      return {
+        hour: date.getHours(),
+        minute: date.getMinutes(),
+      };
+    } else if (firstTrigger.type === 'RELATIVE') {
+      // 相对时间：使用任务的时间配置
+      if (timeConfig?.timePoint) {
+        const date = new Date(timeConfig.timePoint);
+        let hour = date.getHours();
+        let minute = date.getMinutes();
+
+        // 应用相对偏移
+        if (firstTrigger.relativeValue && firstTrigger.relativeUnit) {
+          const offsetMinutes = this.convertToMinutes(
+            firstTrigger.relativeValue,
+            firstTrigger.relativeUnit,
+          );
+          const totalMinutes = hour * 60 + minute - offsetMinutes;
+          hour = Math.floor(totalMinutes / 60) % 24;
+          minute = totalMinutes % 60;
+        }
+
+        return { hour: Math.max(0, hour), minute: Math.max(0, minute) };
+      } else if (timeConfig?.timeRange) {
+        // 使用时间段的开始时间
+        const date = new Date(timeConfig.timeRange.start);
+        return {
+          hour: date.getHours(),
+          minute: date.getMinutes(),
+        };
+      }
+    }
+
+    // 默认：早上 9:00
+    return { hour: 9, minute: 0 };
+  }
+
+  /**
+   * 转换时间单位到分钟
+   */
+  private convertToMinutes(value: number, unit: TaskContracts.ReminderTimeUnit): number {
+    switch (unit) {
+      case 'MINUTES':
+        return value;
+      case 'HOURS':
+        return value * 60;
+      case 'DAYS':
+        return value * 24 * 60;
+      default:
+        return 0;
+    }
+  }
+
+  /**
+   * 转换星期几到 cron 格式
+   * DayOfWeek: 0=周日, 1=周一, ..., 6=周六
+   * Cron: 0=周日, 1=周一, ..., 6=周六（相同）
+   */
+  private convertDaysOfWeekToCron(daysOfWeek: TaskContracts.DayOfWeek[]): string {
+    if (daysOfWeek.length === 0) {
+      return '*'; // 每天
+    }
+
+    // 直接使用枚举值
+    return daysOfWeek.join(',');
+  }
+
+  /**
+   * 计算任务优先级
+   * 基于 Task 的重要性和紧急程度
+   */
+  private calculatePriority(task: TaskContracts.TaskTemplateServerDTO): 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' {
+    const { importance, urgency } = task;
+
+    // Vital + Critical/High = URGENT
+    if (importance === 'vital' && (urgency === 'critical' || urgency === 'high')) {
+      return 'URGENT';
+    }
+
+    // Important + Critical/High = HIGH
+    // Vital + Medium = HIGH
+    if (
+      (importance === 'important' && (urgency === 'critical' || urgency === 'high')) ||
+      (importance === 'vital' && urgency === 'medium')
+    ) {
+      return 'HIGH';
+    }
+
+    // Moderate + High/Medium = NORMAL
+    // Important + Medium/Low = NORMAL
+    if (
+      (importance === 'moderate' && (urgency === 'high' || urgency === 'medium')) ||
+      (importance === 'important' && (urgency === 'medium' || urgency === 'low'))
+    ) {
+      return 'NORMAL';
+    }
+
+    // 其他情况 = LOW
+    return 'LOW';
+  }
+
+  /**
+   * 生成任务标签
+   */
+  private generateTags(task: TaskContracts.TaskTemplateServerDTO): string[] {
+    const tags: string[] = [
+      'task-reminder',
+      `importance:${task.importance}`,
+      `urgency:${task.urgency}`,
+      `frequency:${task.recurrenceRule?.frequency}`,
+    ];
+
+    // 添加用户自定义标签
+    if (task.tags && task.tags.length > 0) {
+      tags.push(...task.tags.map((tag) => `user:${tag}`));
+    }
+
+    // 添加文件夹标签
+    if (task.folderUuid) {
+      tags.push(`folder:${task.folderUuid}`);
+    }
+
+    return tags;
+  }
+
+  /**
+   * 生成任务名称
+   */
+  private generateTaskName(task: TaskContracts.TaskTemplateServerDTO): string {
+    return `Task Reminder: ${task.title}`;
+  }
+
+  /**
+   * 生成任务描述
+   */
+  private generateTaskDescription(
+    task: TaskContracts.TaskTemplateServerDTO,
+    recurrenceRule: TaskContracts.RecurrenceRuleServerDTO,
+  ): string {
+    const frequencyText = this.getFrequencyText(recurrenceRule);
+    const reminderCount = task.reminderConfig?.triggers.length ?? 0;
+
+    return `循环任务提醒\n重复规则: ${frequencyText}\n提醒触发器: ${reminderCount} 个`;
+  }
+
+  /**
+   * 获取频率文本
+   */
+  private getFrequencyText(recurrenceRule: TaskContracts.RecurrenceRuleServerDTO): string {
+    const interval = recurrenceRule.interval;
+    const frequency = recurrenceRule.frequency;
+
+    if (interval === 1) {
+      const map: Record<TaskContracts.RecurrenceFrequency, string> = {
+        DAILY: '每天',
+        WEEKLY: '每周',
+        MONTHLY: '每月',
+        YEARLY: '每年',
+      };
+      return map[frequency];
+    } else {
+      const map: Record<TaskContracts.RecurrenceFrequency, string> = {
+        DAILY: '天',
+        WEEKLY: '周',
+        MONTHLY: '月',
+        YEARLY: '年',
+      };
+      return `每 ${interval} ${map[frequency]}`;
+    }
+  }
+
+  /**
+   * 更新调度配置（当 Task 的配置变更时）
+   */
+  updateSchedule(
+    existingSchedule: ScheduleStrategyOutput,
+    input: ScheduleStrategyInput,
+  ): ScheduleStrategyOutput {
+    // 重新生成配置
+    return this.createSchedule(input);
+  }
+}

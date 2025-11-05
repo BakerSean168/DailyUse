@@ -557,6 +557,113 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
     return this._schedule.isExpired();
   }
 
+  // ===== UI 辅助方法 =====
+
+  /**
+   * 获取状态显示文本
+   */
+  public getStatusDisplay(): string {
+    const statusMap: Record<ScheduleTaskStatus, string> = {
+      [ScheduleTaskStatus.ACTIVE]: '活跃',
+      [ScheduleTaskStatus.PAUSED]: '暂停',
+      [ScheduleTaskStatus.COMPLETED]: '完成',
+      [ScheduleTaskStatus.CANCELLED]: '取消',
+      [ScheduleTaskStatus.FAILED]: '失败',
+    };
+    return statusMap[this._status] || this._status;
+  }
+
+  /**
+   * 获取状态颜色
+   */
+  public getStatusColor(): string {
+    const colorMap: Record<ScheduleTaskStatus, string> = {
+      [ScheduleTaskStatus.ACTIVE]: 'green',
+      [ScheduleTaskStatus.PAUSED]: 'gray',
+      [ScheduleTaskStatus.COMPLETED]: 'blue',
+      [ScheduleTaskStatus.CANCELLED]: 'red',
+      [ScheduleTaskStatus.FAILED]: 'orange',
+    };
+    return colorMap[this._status] || 'gray';
+  }
+
+  /**
+   * 获取来源模块显示文本
+   */
+  public getSourceModuleDisplay(): string {
+    const moduleMap: Record<SourceModule, string> = {
+      [SourceModule.REMINDER]: '提醒模块',
+      [SourceModule.TASK]: '任务模块',
+      [SourceModule.GOAL]: '目标模块',
+      [SourceModule.NOTIFICATION]: '通知模块',
+      [SourceModule.SYSTEM]: '系统模块',
+      [SourceModule.CUSTOM]: '自定义模块',
+    };
+    return moduleMap[this._sourceModule] || this._sourceModule;
+  }
+
+  /**
+   * 格式化下次运行时间
+   */
+  public getNextRunAtFormatted(): string {
+    if (!this._execution.nextRunAt) return '-';
+    const date = new Date(this._execution.nextRunAt);
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  }
+
+  /**
+   * 格式化上次运行时间
+   */
+  public getLastRunAtFormatted(): string {
+    if (!this._execution.lastRunAt) return '-';
+    const date = new Date(this._execution.lastRunAt);
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  }
+
+  /**
+   * 获取执行摘要
+   */
+  public getExecutionSummary(): string {
+    const count = this._execution.executionCount;
+    const failures = this._execution.consecutiveFailures;
+    const successCount = count - failures;
+    return `已执行 ${count} 次，成功 ${successCount} 次`;
+  }
+
+  /**
+   * 获取健康状态
+   */
+  public getHealthStatus(): string {
+    const failures = this._execution.consecutiveFailures;
+    if (failures === 0) return 'healthy';
+    if (failures < 3) return 'warning';
+    return 'critical';
+  }
+
+  /**
+   * 检查是否过期
+   */
+  public isOverdue(): boolean {
+    if (!this._execution.nextRunAt) return false;
+    return this._execution.nextRunAt < Date.now();
+  }
+
   // ===== 转换方法 =====
 
   /**
@@ -594,8 +701,22 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
    * 转换为 Client DTO (用于客户端)
    */
   public toClientDTO(includeChildren: boolean = false): ScheduleTaskClientDTO {
-    // ClientDTO 和 DTO 结构相同
-    return this.toDTO(includeChildren) as unknown as ScheduleTaskClientDTO;
+    const baseDTO = this.toDTO(includeChildren);
+
+    // 添加 UI 辅助属性
+    return {
+      ...baseDTO,
+      // UI 辅助属性
+      statusDisplay: this.getStatusDisplay(),
+      statusColor: this.getStatusColor(),
+      sourceModuleDisplay: this.getSourceModuleDisplay(),
+      enabledDisplay: this.enabled ? '启用' : '禁用',
+      nextRunAtFormatted: this.getNextRunAtFormatted(),
+      lastRunAtFormatted: this.getLastRunAtFormatted(),
+      executionSummary: this.getExecutionSummary(),
+      healthStatus: this.getHealthStatus(),
+      isOverdue: this.isOverdue(),
+    };
   }
 
   /**

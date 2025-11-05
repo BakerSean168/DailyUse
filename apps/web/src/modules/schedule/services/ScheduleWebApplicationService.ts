@@ -1,6 +1,6 @@
 /**
  * Schedule Web Application Service
- * 调度Web应用服务 - 严格参考 Repository 模块实现
+ * 调度Web应用服务 - 参考 Goal 模块实现
  */
 
 import { scheduleApiClient } from '../infrastructure/api';
@@ -16,19 +16,19 @@ const logger = createLogger('ScheduleWebApplicationService');
  */
 export class ScheduleWebApplicationService {
   /**
-   * 将服务端 DTO 转换为领域聚合
+   * 将客户端 DTO 转换为领域聚合
    */
   private toScheduleTaskAggregate(
-    task: ScheduleContracts.ScheduleTaskServerDTO,
+    task: ScheduleContracts.ScheduleTaskClientDTO,
   ): ScheduleTask {
-    return ScheduleTask.fromServerDTO(task);
+    return ScheduleTask.fromClientDTO(task);
   }
 
   /**
-   * 将服务端 DTO 列表转换为领域聚合列表
+   * 将客户端 DTO 列表转换为领域聚合列表
    */
   private toScheduleTaskAggregateList(
-    tasks: ScheduleContracts.ScheduleTaskServerDTO[],
+    tasks: ScheduleContracts.ScheduleTaskClientDTO[],
   ): ScheduleTask[] {
     return tasks.map((task) => this.toScheduleTaskAggregate(task));
   }
@@ -265,7 +265,7 @@ export class ScheduleWebApplicationService {
   /**
    * 获取统计信息
    */
-  async getStatistics(): Promise<ScheduleContracts.ScheduleStatisticsServerDTO> {
+  async getStatistics(): Promise<ScheduleContracts.ScheduleStatisticsClientDTO> {
     try {
       logger.info('Fetching schedule statistics');
       const statistics = await scheduleApiClient.getStatistics();
@@ -282,7 +282,7 @@ export class ScheduleWebApplicationService {
    */
   async getModuleStatistics(
     module: ScheduleContracts.SourceModule,
-  ): Promise<ScheduleContracts.ModuleStatisticsServerDTO> {
+  ): Promise<ScheduleContracts.ModuleStatisticsClientDTO> {
     try {
       logger.info('Fetching module statistics', { module });
       const statistics = await scheduleApiClient.getModuleStatistics(module);
@@ -298,7 +298,7 @@ export class ScheduleWebApplicationService {
    * 获取所有模块统计
    */
   async getAllModuleStatistics(): Promise<
-    Record<ScheduleContracts.SourceModule, ScheduleContracts.ModuleStatisticsServerDTO>
+    Record<ScheduleContracts.SourceModule, ScheduleContracts.ModuleStatisticsClientDTO>
   > {
     try {
       logger.info('Fetching all module statistics');
@@ -314,7 +314,7 @@ export class ScheduleWebApplicationService {
   /**
    * 重新计算统计信息
    */
-  async recalculateStatistics(): Promise<ScheduleContracts.ScheduleStatisticsServerDTO> {
+  async recalculateStatistics(): Promise<ScheduleContracts.ScheduleStatisticsClientDTO> {
     try {
       logger.info('Recalculating statistics');
       const statistics = await scheduleApiClient.recalculateStatistics();

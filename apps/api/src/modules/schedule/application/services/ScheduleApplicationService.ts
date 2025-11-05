@@ -298,11 +298,45 @@ export class ScheduleApplicationService {
     await this.domainService.pauseScheduleTasksBatch(taskUuids);
   }
 
+  // ===== 跨模块集成 =====
+
   /**
-   * 批量恢复任务
+   * 根据源模块和实体删除关联的调度任务
+   * 用于当源实体（Goal/Task/Reminder）被删除时，清理对应的调度任务
    */
-  async resumeScheduleTasksBatch(taskUuids: string[]): Promise<void> {
-    // 委托给领域服务处理
-    await this.domainService.resumeScheduleTasksBatch(taskUuids);
+  async deleteScheduleTasksBySource(
+    sourceModule: SourceModule,
+    sourceEntityId: string,
+    accountUuid: string,
+  ): Promise<void> {
+    console.log(
+      `🗑️  [ScheduleApplicationService] Deleting schedule tasks for ${sourceModule}:${sourceEntityId}`,
+    );
+
+    // 查找所有关联的调度任务
+    const tasks = await this.getScheduleTaskBySource(sourceModule, sourceEntityId);
+
+    if (tasks.length === 0) {
+      console.log(`ℹ️  [ScheduleApplicationService] No schedule tasks found to delete`);
+      return;
+    }
+
+    // 验证账户匹配（安全检查）
+    const mismatchedTasks = tasks.filter((task) => task.accountUuid !== accountUuid);
+    if (mismatchedTasks.length > 0) {
+      console.error(
+        `❌ [ScheduleApplicationService] Account mismatch for tasks:`,
+        mismatchedTasks.map((t) => t.uuid),
+      );
+      throw new Error('Account UUID mismatch when deleting schedule tasks');
+    }
+
+    // 批量删除
+    const taskUuids = tasks.map((task) => task.uuid);
+    await this.deleteScheduleTasksBatch(taskUuids);
+
+    console.log(
+      `✅ [ScheduleApplicationService] Deleted ${taskUuids.length} schedule task(s) for ${sourceModule}:${sourceEntityId}`,
+    );
   }
 }
