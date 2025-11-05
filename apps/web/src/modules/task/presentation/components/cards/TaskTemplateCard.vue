@@ -225,11 +225,10 @@ import { UrgencyLevel } from '@dailyuse/contracts';
 // types
 import type { TaskContracts } from '@dailyuse/contracts';
 import type { TaskTemplate } from '@dailyuse/domain-client';
-import { GoalClient, KeyResult } from '@dailyuse/domain-client';
+import type { Goal, KeyResult } from '@dailyuse/domain-client';
 
 // composables
 import { useTaskTemplate } from '../../composables/useTaskTemplate';
-import { de } from 'date-fns/locale';
 const { deleteTaskTemplate, pauseTaskTemplate, activateTaskTemplate } = useTaskTemplate();
 
 interface Props {

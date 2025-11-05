@@ -136,13 +136,13 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
     });
   }
 
-  async findById(
+  async findByUuid(
     uuid: string,
     options?: { includeHistory?: boolean },
   ): Promise<ReminderTemplate | null> {
     const data = await this.prisma.reminderTemplate.findUnique({
       where: { uuid },
-      include: { history: options?.includeHistory ?? false },
+      include: { reminderHistory: options?.includeHistory ?? false },
     });
     return data ? this.mapToEntity(data, options?.includeHistory) : null;
   }
@@ -156,7 +156,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
         accountUuid: accountUuid,
         deletedAt: options?.includeDeleted ? undefined : null,
       },
-      include: { history: options?.includeHistory ?? false },
+      include: { reminderHistory: options?.includeHistory ?? false },
     });
     return data.map((d) => this.mapToEntity(d, options?.includeHistory));
   }
@@ -170,7 +170,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
         groupUuid: groupUuid,
         deletedAt: options?.includeDeleted ? undefined : null,
       },
-      include: { history: options?.includeHistory ?? false },
+      include: { reminderHistory: options?.includeHistory ?? false },
     });
     return data.map((d) => this.mapToEntity(d, options?.includeHistory));
   }
@@ -207,7 +207,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
   ): Promise<ReminderTemplate[]> {
     const data = await this.prisma.reminderTemplate.findMany({
       where: { uuid: { in: uuids } },
-      include: { history: options?.includeHistory ?? false },
+      include: { reminderHistory: options?.includeHistory ?? false },
     });
     return data.map((d) => this.mapToEntity(d, options?.includeHistory));
   }

@@ -101,16 +101,6 @@ export const appRoutes: RouteRecordRaw[] = [
               requiresAuth: true,
             },
           },
-          // TODO: OneTimeTaskListView 已废弃，需要重写或使用 TaskManagementView
-          // {
-          //   path: 'one-time',
-          //   name: 'task-one-time-list',
-          //   component: () => import('@/modules/task/presentation/views/OneTimeTaskListView.vue'),
-          //   meta: {
-          //     title: '一次性任务',
-          //     requiresAuth: true,
-          //   },
-          // },
           {
             path: 'dependency-validation-demo',
             name: 'task-dependency-demo',

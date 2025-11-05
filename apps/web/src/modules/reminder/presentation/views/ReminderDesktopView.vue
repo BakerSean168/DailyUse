@@ -1,11 +1,10 @@
 <template>
   <v-container fluid class="pa-0 h-100">
-    <div class="d-flex h-100">
-      <!-- 左侧主要内容区域 -->
-      <div class="flex-grow-1" style="position: relative;">
-        <!-- 手机桌面风格的网格布局 -->
-        <div class="phone-desktop">
-          <!-- 网格容器 -->
+    <!-- 主要内容区域（全屏） -->
+    <div class="h-100" style="position: relative;">
+      <!-- 手机桌面风格的网格布局 -->
+      <div class="phone-desktop">
+        <!-- 网格容器 -->
           <div class="desktop-grid" @contextmenu.prevent="handleDesktopContextMenu">
             <!-- 模板项（应用图标风格） -->
             <div
@@ -142,7 +141,6 @@
         <!-- GroupDesktopCard 组件 -->
         <GroupDesktopCard ref="groupDesktopCardRef" />
       </div>
-    </div>
 
     <!-- 右侧可折叠的侧边栏 -->
     <v-navigation-drawer
@@ -589,9 +587,9 @@ const confirmDelete = async () => {
 /**
  * 处理模板创建事件
  */
-const handleTemplateCreated = async (template: ReminderTemplate) => {
-  console.log('模板已创建:', template);
-  await refresh();
+const handleTemplateCreated = async () => {
+  console.log('模板创建成功，刷新列表');
+  await refreshAll();
 };
 
 /**
@@ -606,9 +604,9 @@ const handleEditTemplate = (template: ReminderTemplate) => {
 /**
  * 处理模板更新事件
  */
-const handleTemplateUpdated = async (template: ReminderTemplate) => {
-  console.log('模板已更新:', template);
-  await refresh();
+const handleTemplateUpdated = async () => {
+  console.log('模板更新成功，刷新列表');
+  await refreshAll();
 };
 
 /**
