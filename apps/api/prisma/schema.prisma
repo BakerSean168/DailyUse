@@ -33,7 +33,7 @@ model account {
   editorWorkspaceSessionGroup    editorWorkspaceSessionGroup[]
   editorWorkspaceSession         editorWorkspaceSession[]
   editorWorkspace                editorWorkspace[]
-  focusMode                      FocusMode[]
+  focusMode                      focusMode[]
   focusSession                   focusSession[]
   goalFolder                     goalFolder[]
   goalStatistic                  goalStatistic?
@@ -293,7 +293,7 @@ model focusSession {
   @@map("focus_sessions")
 }
 
-model FocusMode {
+model focusMode {
   uuid             String   @id
   accountUuid      String   @map("account_uuid")
   focusedGoalUuids String[] @map("focused_goal_uuids")

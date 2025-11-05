@@ -113,7 +113,7 @@ export class ScheduleDomainService {
 
     // 更新统计
     const statistics = await this.scheduleStatisticsRepository.getOrCreate(params.accountUuid);
-    statistics.incrementTaskCount(params.sourceModule);
+    statistics.incrementTaskCount(task.status);
     await this.scheduleStatisticsRepository.save(statistics);
 
     return task;
@@ -167,7 +167,7 @@ export class ScheduleDomainService {
         statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
         accountStatistics.set(task.accountUuid, statistics);
       }
-      statistics.incrementTaskCount(task.sourceModule);
+      statistics.incrementTaskCount(task.status);
     }
 
     // 保存所有统计
@@ -232,7 +232,7 @@ export class ScheduleDomainService {
 
     // 更新统计
     const statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-    statistics.recordExecution(task.sourceModule, result.status);
+    statistics.recordExecution(result.status, result.duration, task.sourceModule);
     await this.scheduleStatisticsRepository.save(statistics);
 
     return {
@@ -352,12 +352,10 @@ export class ScheduleDomainService {
       throw new Error(`ScheduleTask not found: ${taskUuid}`);
     }
 
-    const wasActive = task.status === 'active';
-
     await this.scheduleTaskRepository.deleteByUuid(taskUuid);
 
     const statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
-    statistics.decrementTaskCount(task.sourceModule, wasActive);
+    statistics.decrementTaskCount(task.status);
     await this.scheduleStatisticsRepository.save(statistics);
   }
 
@@ -435,8 +433,7 @@ export class ScheduleDomainService {
         statistics = await this.scheduleStatisticsRepository.getOrCreate(task.accountUuid);
         accountStatistics.set(task.accountUuid, statistics);
       }
-      const wasActive = task.status === 'active';
-      statistics.decrementTaskCount(task.sourceModule, wasActive);
+      statistics.decrementTaskCount(task.status);
     }
 
     // 保存所有统计

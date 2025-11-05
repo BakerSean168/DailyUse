@@ -68,7 +68,7 @@ export class ScheduleStatisticsDomainService {
     // 重新计算
     for (const task of tasks) {
       // 任务计数
-      statistics.incrementTaskCount(task.sourceModule);
+      statistics.incrementTaskCount(task.status);
 
       // 状态计数
       switch (task.status) {
@@ -87,7 +87,7 @@ export class ScheduleStatisticsDomainService {
       const executions = task.executions;
       if (executions) {
         for (const execution of executions) {
-          statistics.recordExecution(task.sourceModule, execution.status);
+          statistics.recordExecution(execution.status, execution.duration || 0, task.sourceModule);
         }
       }
     }
@@ -120,9 +120,24 @@ export class ScheduleStatisticsDomainService {
     }
 
     const moduleStats = statistics.getModuleStats(module);
+    if (!moduleStats) {
+      return null;
+    }
+
+    // 计算成功率
+    const successRate =
+      moduleStats.totalExecutions > 0
+        ? moduleStats.successfulExecutions / moduleStats.totalExecutions
+        : 0;
+
     return {
       module,
-      ...moduleStats,
+      totalTasks: moduleStats.totalTasks ?? 0,
+      activeTasks: moduleStats.activeTasks ?? 0,
+      totalExecutions: moduleStats.totalExecutions ?? 0,
+      successfulExecutions: moduleStats.successfulExecutions ?? 0,
+      failedExecutions: moduleStats.failedExecutions ?? 0,
+      successRate,
     };
   }
 
@@ -145,10 +160,23 @@ export class ScheduleStatisticsDomainService {
 
     for (const module of modules) {
       const moduleStats = statistics.getModuleStats(module);
-      results.push({
-        module,
-        ...moduleStats,
-      });
+      if (moduleStats) {
+        // 计算成功率
+        const successRate =
+          (moduleStats.totalExecutions ?? 0) > 0
+            ? (moduleStats.successfulExecutions ?? 0) / (moduleStats.totalExecutions ?? 0)
+            : 0;
+
+        results.push({
+          module,
+          totalTasks: moduleStats.totalTasks ?? 0,
+          activeTasks: moduleStats.activeTasks ?? 0,
+          totalExecutions: moduleStats.totalExecutions ?? 0,
+          successfulExecutions: moduleStats.successfulExecutions ?? 0,
+          failedExecutions: moduleStats.failedExecutions ?? 0,
+          successRate,
+        });
+      }
     }
 
     return results;
