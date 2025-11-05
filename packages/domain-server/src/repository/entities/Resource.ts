@@ -55,35 +55,76 @@ export interface CreateResourceDTO {
  * Repository 才是聚合根，Resource 作为子实体由 Repository 管理
  */
 export class Resource extends Entity implements IResourceServer {
+  // ===== 私有字段 =====
+  private _repositoryUuid: string;
+  private _name: string;
+  private _type: ResourceType;
+  private _path: string;
+  private _size: number;
+  private _description: string | null;
+  private _author: string | null;
+  private _version: string | null;
+  private _tags: string[];
+  private _category: string | null;
+  private _status: ResourceStatus;
+  private _metadata: ResourceMetadata;
+  private _createdAt: number;
+  private _updatedAt: number;
+  private _modifiedAt: number | null;
+
   // ===== 子实体集合 =====
   private _references: ResourceReference[] = [];
   private _linkedContents: LinkedContent[] = [];
 
-  private constructor(
-    uuid: string,
-    public readonly repositoryUuid: string,
-    private _name: string,
-    public readonly type: ResourceType,
-    private _path: string,
-    private _size: number,
-    private _description: string | null,
-    private _author: string | null,
-    private _version: string | null,
-    private _tags: string[],
-    private _category: string | null,
-    private _status: ResourceStatus,
-    private _metadata: ResourceMetadata,
-    public readonly createdAt: number,
-    private _updatedAt: number,
-    private _modifiedAt: number | null,
-  ) {
-    super(uuid);
+  // ===== 构造函数（私有） =====
+  private constructor(params: {
+    uuid?: string;
+    repositoryUuid: string;
+    name: string;
+    type: ResourceType;
+    path: string;
+    size: number;
+    description?: string | null;
+    author?: string | null;
+    version?: string | null;
+    tags: string[];
+    category?: string | null;
+    status: ResourceStatus;
+    metadata: ResourceMetadata;
+    createdAt: number;
+    updatedAt: number;
+    modifiedAt?: number | null;
+  }) {
+    super(params.uuid ?? Entity.generateUUID());
+    this._repositoryUuid = params.repositoryUuid;
+    this._name = params.name;
+    this._type = params.type;
+    this._path = params.path;
+    this._size = params.size;
+    this._description = params.description ?? null;
+    this._author = params.author ?? null;
+    this._version = params.version ?? null;
+    this._tags = params.tags;
+    this._category = params.category ?? null;
+    this._status = params.status;
+    this._metadata = params.metadata;
+    this._createdAt = params.createdAt;
+    this._updatedAt = params.updatedAt;
+    this._modifiedAt = params.modifiedAt ?? null;
   }
 
   // ==================== Getters ====================
 
+  get repositoryUuid(): string {
+    return this._repositoryUuid;
+  }
+
   get name(): string {
     return this._name;
+  }
+
+  get type(): ResourceType {
+    return this._type;
   }
 
   get path(): string {
@@ -122,6 +163,10 @@ export class Resource extends Entity implements IResourceServer {
     return this._metadata.toPlainObject();
   }
 
+  get createdAt(): number {
+    return this._createdAt;
+  }
+
   get updatedAt(): number {
     return this._updatedAt;
   }
@@ -150,24 +195,24 @@ export class Resource extends Entity implements IResourceServer {
       ...dto.metadata,
     });
 
-    return new Resource(
+    return new Resource({
       uuid,
-      dto.repositoryUuid,
-      dto.name,
-      dto.type,
-      dto.path,
-      dto.size,
-      dto.description || null,
-      dto.author || null,
-      dto.version || null,
-      dto.tags || [],
-      dto.category || null,
-      ResourceStatus.DRAFT,
-      defaultMetadata,
-      now,
-      now,
-      now,
-    );
+      repositoryUuid: dto.repositoryUuid,
+      name: dto.name,
+      type: dto.type,
+      path: dto.path,
+      size: dto.size,
+      description: dto.description ?? null,
+      author: dto.author ?? null,
+      version: dto.version ?? null,
+      tags: dto.tags ?? [],
+      category: dto.category ?? null,
+      status: ResourceStatus.DRAFT,
+      metadata: defaultMetadata,
+      createdAt: now,
+      updatedAt: now,
+      modifiedAt: now,
+    });
   }
 
   /**
@@ -177,24 +222,24 @@ export class Resource extends Entity implements IResourceServer {
     const metadataDTO = JSON.parse(data.metadata) as IResourceMetadata;
     const metadata = ResourceMetadata.fromPlainObject(metadataDTO);
 
-    return new Resource(
-      data.uuid,
-      data.repositoryUuid,
-      data.name,
-      data.type,
-      data.path,
-      data.size,
-      data.description || null,
-      data.author || null,
-      data.version || null,
-      JSON.parse(data.tags),
-      data.category || null,
-      data.status,
+    return new Resource({
+      uuid: data.uuid,
+      repositoryUuid: data.repositoryUuid,
+      name: data.name,
+      type: data.type,
+      path: data.path,
+      size: data.size,
+      description: data.description || null,
+      author: data.author || null,
+      version: data.version || null,
+      tags: JSON.parse(data.tags),
+      category: data.category || null,
+      status: data.status,
       metadata,
-      data.createdAt,
-      data.updatedAt,
-      data.modifiedAt || null,
-    );
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      modifiedAt: data.modifiedAt || null,
+    });
   }
 
   // ==================== 通用业务方法 ====================
