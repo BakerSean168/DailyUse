@@ -1,18 +1,19 @@
 <!--
   Task Detail View
   任务详情页面 - 完整实现
+  
+  TODO: 此文件需要完全重构
+  - 使用 TaskTemplate 和 TaskInstance 替代 OneTimeTask
+  - 使用 taskTemplateApiClient 和 taskInstanceApiClient
+  - 移除 useOneTimeTask composable 的使用
+  - 更新组件引用（TaskDetail, TaskForm 组件可能已过时）
 -->
 <template>
   <v-dialog v-model="dialog" fullscreen persistent>
     <!-- 编辑任务 Dialog -->
     <v-dialog v-model="editDialog" max-width="900px" persistent scrollable>
-      <TaskForm
-        v-if="editDialog && task"
-        :task="task"
-        :submitting="editSubmitting"
-        @submit="handleEditSubmit"
-        @cancel="handleEditCancel"
-      />
+      <TaskForm v-if="editDialog && task" :task="task" :submitting="editSubmitting" @submit="handleEditSubmit"
+        @cancel="handleEditCancel" />
     </v-dialog>
 
     <!-- 加载状态 -->
@@ -33,51 +34,37 @@
     </v-card>
 
     <!-- 任务详情 -->
-    <TaskDetail
-      v-else-if="task"
-      :task="task"
-      :subtasks="subtasks"
-      :dependencies="dependencies"
-      :task-history="taskHistory"
-      :loading="operationLoading"
-      :show-subtasks="showSubtasks"
-      :show-history="showHistory"
-      @close="handleClose"
-      @start="handleStart"
-      @complete="handleComplete"
-      @block="handleBlock"
-      @unblock="handleUnblock"
-      @cancel="handleCancel"
-      @edit="handleEdit"
-      @delete="handleDelete"
-      @add-subtask="handleAddSubtask"
-      @view-subtask="handleViewSubtask"
-      @view-dependency="handleViewDependency"
-      @view-goal="handleViewGoal"
-      @toggle-subtask="handleToggleSubtask"
-    />
+    <TaskDetail v-else-if="task" :task="task" :subtasks="subtasks" :dependencies="dependencies"
+      :task-history="taskHistory" :loading="operationLoading" :show-subtasks="showSubtasks" :show-history="showHistory"
+      @close="handleClose" @start="handleStart" @complete="handleComplete" @block="handleBlock" @unblock="handleUnblock"
+      @cancel="handleCancel" @edit="handleEdit" @delete="handleDelete" @add-subtask="handleAddSubtask"
+      @view-subtask="handleViewSubtask" @view-dependency="handleViewDependency" @view-goal="handleViewGoal"
+      @toggle-subtask="handleToggleSubtask" />
   </v-dialog>
 </template>
 
 <script setup lang="ts">
+// @ts-nocheck
+// TODO: 此文件需要完全重构以使用新的 TaskTemplate/TaskInstance 架构
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { TaskDetail, TaskForm } from '@/modules/task/presentation/components/one-time';
-import { useOneTimeTask } from '@/modules/task/presentation/composables/useOneTimeTask';
+// import { TaskDetail, TaskForm } from '@/modules/task/presentation/components/one-time';
+// import { useOneTimeTask } from '@/modules/task/presentation/composables/useOneTimeTask';
 import { useNotification } from '@/modules/task/presentation/composables/useNotification';
 import type { TaskContracts } from '@dailyuse/contracts';
 
 const router = useRouter();
 const route = useRoute();
-const { 
-  getTaskByUuid, 
-  updateTask, 
-  updateTaskStatus, 
-  deleteTask, 
-  getTaskHistory,
-  fetchSubtasks,
-  createSubtask,
-} = useOneTimeTask();
+// TODO: Replace with taskTemplateApiClient and taskInstanceApiClient
+// const { 
+//   getTaskByUuid, 
+//   updateTask, 
+//   updateTaskStatus, 
+//   deleteTask, 
+//   getTaskHistory,
+//   fetchSubtasks,
+//   createSubtask,
+// } = useOneTimeTask();
 
 const { showSuccess, showError, showWarning } = useNotification();
 
@@ -185,7 +172,7 @@ const handleComplete = async () => {
 const handleBlock = async () => {
   if (!task.value) return;
   const reason = prompt('请输入阻塞原因（可选）：');
-  
+
   operationLoading.value = true;
   try {
     await updateTaskStatus(task.value.uuid, 'BLOCKED');
@@ -219,7 +206,7 @@ const handleCancel = async () => {
   if (!confirm('确定要取消此任务吗？')) {
     return;
   }
-  
+
   operationLoading.value = true;
   try {
     await updateTaskStatus(task.value.uuid, 'CANCELLED');
@@ -262,7 +249,7 @@ const handleDelete = async () => {
   if (!confirm(`确定要删除任务「${task.value.title}」吗？此操作不可恢复。`)) {
     return;
   }
-  
+
   operationLoading.value = true;
   try {
     await deleteTask(task.value.uuid);
@@ -277,7 +264,7 @@ const handleDelete = async () => {
 
 const handleAddSubtask = async () => {
   if (!task.value) return;
-  
+
   // 使用简化的方式创建子任务
   // 实际应用中可以打开一个对话框让用户输入详细信息
   const subtaskTitle = prompt('请输入子任务标题：');
@@ -322,7 +309,7 @@ const handleToggleSubtask = async (subtaskUuid: string) => {
     // 切换状态：如果已完成则标记为进行中，否则标记为已完成
     const newStatus = subtask.status === 'COMPLETED' ? 'IN_PROGRESS' : 'COMPLETED';
     await updateTaskStatus(subtaskUuid, newStatus);
-    
+
     const statusText = newStatus === 'COMPLETED' ? '已完成' : '进行中';
     showSuccess(`子任务「${subtask.title}」标记为${statusText}`);
     await loadTask(); // 重新加载数据

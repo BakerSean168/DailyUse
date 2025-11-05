@@ -4,20 +4,24 @@
 -->
 <template>
   <v-dialog v-model="dialog" max-width="900px" persistent scrollable>
-    <TaskForm
-      v-if="task"
-      :is-edit="true"
-      :initial-data="task"
-      :loading="loading"
-      @submit="handleUpdate"
-      @cancel="handleCancel"
-    />
+    <v-card v-if="template">
+      <v-card-title>编辑任务模板</v-card-title>
+      <v-card-text>
+        <TaskTemplateForm :model-value="(template as any)" :is-edit-mode="true"
+          @update:model-value="handleTemplateUpdate" />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="handleCancel">取消</v-btn>
+        <v-btn color="primary" :loading="loading" @click="handleUpdate">保存</v-btn>
+      </v-card-actions>
+    </v-card>
 
     <!-- 加载状态 -->
     <v-card v-else>
       <v-card-text class="text-center py-8">
         <v-progress-circular indeterminate color="primary" />
-        <p class="text-medium-emphasis mt-4">加载任务信息...</p>
+        <p class="text-medium-emphasis mt-4">加载任务模板...</p>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -26,24 +30,27 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { TaskForm } from '@/modules/task/presentation/components/one-time';
-import { useOneTimeTask } from '@/modules/task/presentation/composables/useOneTimeTask';
+import { TaskTemplate } from '@dailyuse/domain-client';
+import { type TaskContracts } from '@dailyuse/contracts';
+import TaskTemplateForm from '@/modules/task/presentation/components/TaskTemplateForm/TaskTemplateForm.vue';
+import { taskTemplateApiClient } from '@/modules/task/infrastructure/api';
 
 const router = useRouter();
 const route = useRoute();
-const { getTaskByUuid, updateTask } = useOneTimeTask();
 
 const dialog = ref(false);
 const loading = ref(false);
-const task = ref<any>(null);
+const template = ref<TaskTemplate | null>(null);
 
-// 加载任务数据
-const loadTask = async () => {
-  const taskUuid = route.params.id as string;
+// 加载任务模板数据
+const loadTemplate = async () => {
+  const templateUuid = route.params.id as string;
   try {
-    task.value = await getTaskByUuid(taskUuid);
+    // TODO: 需要实现 taskTemplateApiClient.getByUuid() 方法
+    const templateDTO = await taskTemplateApiClient.getByUuid(templateUuid);
+    template.value = TaskTemplate.fromServerDTO(templateDTO);
   } catch (error) {
-    console.error('Failed to load task:', error);
+    console.error('Failed to load task template:', error);
     // 加载失败，返回上一页
     router.back();
   }
@@ -51,19 +58,39 @@ const loadTask = async () => {
 
 // 组件挂载时加载数据并打开对话框
 onMounted(async () => {
-  await loadTask();
+  await loadTemplate();
   dialog.value = true;
 });
 
-const handleUpdate = async (taskData: any) => {
+const handleTemplateUpdate = (updatedTemplate: TaskTemplate) => {
+  template.value = updatedTemplate;
+};
+
+const handleUpdate = async () => {
+  if (!template.value) return;
+
   loading.value = true;
   try {
-    const taskUuid = route.params.id as string;
-    await updateTask(taskUuid, taskData);
+    const dto = template.value.toServerDTO();
+    // 过滤掉 null 值，转换为 UpdateTaskTemplateRequest
+    const request: TaskContracts.UpdateTaskTemplateRequest = {
+      title: dto.title,
+      description: dto.description ?? undefined,
+      timeConfig: dto.timeConfig ?? undefined,
+      recurrenceRule: dto.recurrenceRule ?? undefined,
+      reminderConfig: dto.reminderConfig ?? undefined,
+      importance: dto.importance,
+      urgency: dto.urgency,
+      folderUuid: dto.folderUuid ?? undefined,
+      tags: dto.tags ?? undefined,
+      color: dto.color ?? undefined,
+      generateAheadDays: dto.generateAheadDays ?? undefined,
+    };
+    await taskTemplateApiClient.update(template.value.uuid, request);
     // 更新成功后跳转到详情页
-    router.push(`/tasks/${taskUuid}`);
+    router.push(`/tasks/templates/${template.value.uuid}`);
   } catch (error) {
-    console.error('Failed to update task:', error);
+    console.error('Failed to update task template:', error);
     loading.value = false;
   }
 };

@@ -4,28 +4,12 @@
     <div class="template-controls">
       <!-- 状态筛选器 -->
       <div class="template-filters">
-        <v-btn-toggle
-          v-model="currentStatus"
-          mandatory
-          variant="outlined"
-          divided
-          class="filter-group"
-        >
-          <v-btn
-            v-for="status in statusFilters"
-            :key="status.value"
-            :value="status.value"
-            class="filter-button"
-            size="large"
-          >
+        <v-btn-toggle v-model="currentStatus" mandatory variant="outlined" divided class="filter-group">
+          <v-btn v-for="status in statusFilters" :key="status.value" :value="status.value" class="filter-button"
+            size="large">
             <v-icon :icon="status.icon" start />
             {{ status.label }}
-            <v-chip
-              size="small"
-              :color="getStatusChipColor(status.value)"
-              variant="elevated"
-              class="ml-2"
-            >
+            <v-chip size="small" :color="getStatusChipColor(status.value)" variant="elevated" class="ml-2">
               {{ getTemplateCountByStatus(status.value) }}
             </v-chip>
           </v-btn>
@@ -35,43 +19,22 @@
       <!-- 操作按钮组 -->
       <div class="action-buttons">
         <!-- 查看依赖关系图按钮 -->
-        <v-btn
-          v-if="taskStore.getAllTaskTemplates.length > 0"
-          data-testid="view-dependency-graph-button"
-          color="info"
-          variant="outlined"
-          size="large"
-          prepend-icon="mdi-graph-outline"
-          @click="showDependencyDialog = true"
-          class="view-dag-button"
-        >
+        <v-btn v-if="taskStore.getAllTaskTemplates.length > 0" data-testid="view-dependency-graph-button" color="info"
+          variant="outlined" size="large" prepend-icon="mdi-graph-outline" @click="showDependencyDialog = true"
+          class="view-dag-button">
           查看依赖关系图
         </v-btn>
 
         <!-- 删除所有模板按钮 -->
-        <v-btn
-          v-if="taskStore.getAllTaskTemplates.length > 0"
-          data-testid="delete-all-templates-button"
-          color="error"
-          variant="outlined"
-          size="large"
-          prepend-icon="mdi-delete-sweep"
-          @click="showDeleteAllDialog = true"
-          class="delete-all-button"
-        >
+        <v-btn v-if="taskStore.getAllTaskTemplates.length > 0" data-testid="delete-all-templates-button" color="error"
+          variant="outlined" size="large" prepend-icon="mdi-delete-sweep" @click="showDeleteAllDialog = true"
+          class="delete-all-button">
           删除所有模板
         </v-btn>
 
         <!-- 创建按钮 -->
-        <v-btn
-          data-testid="create-task-template-button"
-          color="primary"
-          variant="elevated"
-          size="large"
-          prepend-icon="mdi-plus"
-          @click="taskTemplateDialogRef?.openForCreation()"
-          class="create-button"
-        >
+        <v-btn data-testid="create-task-template-button" color="primary" variant="elevated" size="large"
+          prepend-icon="mdi-plus" @click="taskTemplateDialogRef?.openForCreation()" class="create-button">
           创建新模板
         </v-btn>
       </div>
@@ -91,28 +54,16 @@
           <p class="text-body-1 text-medium-emphasis">
             {{ getEmptyStateDescription() }}
           </p>
-          <v-btn
-            v-if="currentStatus === 'active'"
-            data-testid="create-first-task-template-button"
-            color="primary"
-            variant="tonal"
-            prepend-icon="mdi-plus"
-            @click="taskTemplateDialogRef?.openForCreation()"
-            class="mt-4"
-          >
+          <v-btn v-if="currentStatus === 'active'" data-testid="create-first-task-template-button" color="primary"
+            variant="tonal" prepend-icon="mdi-plus" @click="taskTemplateDialogRef?.openForCreation()" class="mt-4">
             创建第一个模板
           </v-btn>
         </v-card-text>
       </v-card>
 
       <!-- 使用 DraggableTaskCard 组件 (支持拖放创建依赖关系) -->
-      <DraggableTaskCard
-        v-for="template in filteredTemplates"
-        :key="template.uuid"
-        :template="template"
-        :enable-drag="true"
-        @dependency-created="handleDependencyCreated"
-      />
+      <DraggableTaskCard v-for="template in filteredTemplates" :key="template.uuid" :template="template"
+        :enable-drag="true" @dependency-created="handleDependencyCreated" />
     </div>
 
     <!-- 删除所有模板确认对话框 -->
@@ -127,40 +78,37 @@
                         <template v-slot:prepend>
                             <v-icon>mdi-alert-circle</v-icon>
                         </template>
-                        <strong>警告：此操作将永久删除所有任务模板！</strong>
-                    </v-alert>
+<strong>警告：此操作将永久删除所有任务模板！</strong>
+</v-alert>
 
-                    <p class="mb-2">
-                        您即将删除 <strong>{{ taskStore.getAllTaskTemplates.length }}</strong> 个任务模板，包括：
-                    </p>
+<p class="mb-2">
+  您即将删除 <strong>{{ taskStore.getAllTaskTemplates.length }}</strong> 个任务模板，包括：
+</p>
 
-                    <ul class="mb-3">
-                        <li v-for="status in statusFilters" :key="status.value" class="mb-1">
-                            <v-chip :color="getStatusChipColor(status.value)" size="small" variant="flat" class="mr-2">
-                                {{ getTemplateCountByStatus(status.value) }}
-                            </v-chip>
-                            {{ status.label }}模板
-                        </li>
-                    </ul>
+<ul class="mb-3">
+  <li v-for="status in statusFilters" :key="status.value" class="mb-1">
+    <v-chip :color="getStatusChipColor(status.value)" size="small" variant="flat" class="mr-2">
+      {{ getTemplateCountByStatus(status.value) }}
+    </v-chip>
+    {{ status.label }}模板
+  </li>
+</ul>
 
-                    <v-alert color="warning" variant="tonal" density="compact">
-                        所有相关的任务实例和提醒也会被删除，此操作不可恢复。
-                    </v-alert>
-                </v-card-text>
-                <v-card-actions>
-                    <v-spacer />
-                    <v-btn variant="text" @click="showDeleteAllDialog = false">
-                        取消
-                    </v-btn>
-                    <v-btn color="error" variant="elevated" @click="confirmDeleteAll">
-                        确认删除所有
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog> -->
-
-    <!-- 模板选择对话框 -->
-    <TemplateSelectionDialog ref="templateSelectionDialogRef" />
+<v-alert color="warning" variant="tonal" density="compact">
+  所有相关的任务实例和提醒也会被删除，此操作不可恢复。
+</v-alert>
+</v-card-text>
+<v-card-actions>
+  <v-spacer />
+  <v-btn variant="text" @click="showDeleteAllDialog = false">
+    取消
+  </v-btn>
+  <v-btn color="error" variant="elevated" @click="confirmDeleteAll">
+    确认删除所有
+  </v-btn>
+</v-card-actions>
+</v-card>
+</v-dialog> -->
 
     <!-- 任务模板编辑对话框 -->
     <TaskTemplateDialog ref="taskTemplateDialogRef" />
@@ -178,12 +126,8 @@
           </v-btn>
         </v-card-title>
         <v-card-text style="height: 600px">
-          <TaskDAGVisualization
-            v-if="showDependencyDialog"
-            :tasks="taskStore.getAllTaskTemplates"
-            :dependencies="allDependencies"
-            :compact="false"
-          />
+          <TaskDAGVisualization v-if="showDependencyDialog" :tasks="taskStore.getAllTaskTemplates"
+            :dependencies="allDependencies" :compact="false" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -200,7 +144,6 @@ import { useTaskStore } from '../stores/taskStore';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import TaskDAGVisualization from './dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from './dialogs/TaskTemplateDialog.vue';
-import TemplateSelectionDialog from './dialogs/TemplateSelectionDialog.vue';
 import type { TaskContracts } from '@dailyuse/contracts';
 // composables
 import { taskDependencyApiClient } from '../../infrastructure/api/taskApiClient';
@@ -218,7 +161,6 @@ const allDependencies = ref<TaskDependencyClientDTO[]>([]);
 
 // component refs
 const taskTemplateDialogRef = ref<InstanceType<typeof TaskTemplateDialog> | null>(null);
-const templateSelectionDialogRef = ref<InstanceType<typeof TemplateSelectionDialog> | null>(null);
 
 // 状态筛选器配置
 const statusFilters = [
@@ -477,11 +419,9 @@ loadAllDependencies();
 .empty-state-card {
   grid-column: 1 / -1;
   border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-surface), 0.8),
-    rgba(var(--v-theme-background), 0.95)
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--v-theme-surface), 0.8),
+      rgba(var(--v-theme-background), 0.95));
 }
 
 /* 响应式设计 */

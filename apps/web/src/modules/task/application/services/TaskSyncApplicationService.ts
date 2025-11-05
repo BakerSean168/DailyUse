@@ -61,7 +61,7 @@ export class TaskSyncApplicationService {
       // 转换模板为领域实体对象
       console.log('[TaskSync] Converting templates to entities:', templates.length);
       const entityTemplates = templates.map((templateDTO: TaskContracts.TaskTemplateClientDTO) =>
-        TaskTemplateClient.fromClientDTO(templateDTO),
+        TaskTemplate.fromClientDTO(templateDTO),
       );
 
       // 从模板的实例数组中提取所有实例

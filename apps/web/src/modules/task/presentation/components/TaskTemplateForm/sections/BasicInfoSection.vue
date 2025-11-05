@@ -14,28 +14,13 @@
       </v-alert>
       <v-row>
         <v-col cols="12">
-          <v-text-field
-            v-model="title"
-            data-testid="task-template-title-input"
-            label="任务标题"
-            placeholder="请输入任务标题"
-            variant="outlined"
-            required
-            counter="100"
-          />
+          <v-text-field v-model="title" data-testid="task-template-title-input" label="任务标题" placeholder="请输入任务标题"
+            variant="outlined" required counter="100" />
         </v-col>
 
         <v-col cols="12">
-          <v-textarea
-            v-model="description"
-            data-testid="task-template-description-input"
-            label="任务描述"
-            placeholder="请输入任务描述（可选）"
-            variant="outlined"
-            rows="3"
-            counter="1000"
-            no-resize
-          />
+          <v-textarea v-model="description" data-testid="task-template-description-input" label="任务描述"
+            placeholder="请输入任务描述（可选）" variant="outlined" rows="3" counter="1000" no-resize />
         </v-col>
       </v-row>
     </v-card-text>
@@ -70,8 +55,7 @@ const title = computed({
   get: () => props.modelValue.title,
   set: (value: string) => {
     updateTemplate((template) => {
-      // 直接设置属性，因为TaskTemplate没有updateTitle方法
-      (template as any)._title = value;
+      template.updateTitle(value);
     });
   },
 });
@@ -80,8 +64,7 @@ const description = computed({
   get: () => props.modelValue.description,
   set: (value: string) => {
     updateTemplate((template) => {
-      // 直接设置属性，因为TaskTemplate没有updateDescription方法
-      (template as any)._description = value;
+      template.updateDescription(value || null);
     });
   },
 });

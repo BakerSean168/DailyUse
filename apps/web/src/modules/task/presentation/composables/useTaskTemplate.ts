@@ -95,26 +95,6 @@ export function useTaskTemplate() {
   }
 
   /**
-   * 通过元模板创建任务模板
-   */
-  async function createTaskTemplateByMetaTemplate(metaTemplateUuid: string): Promise<TaskTemplate> {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result =
-        await taskTemplateApplicationService.createTaskTemplateByMetaTemplate(metaTemplateUuid);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '通过元模板创建任务模板失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
-  }
-
-  /**
    * 获取任务模板列表
    */
   async function fetchTaskTemplates(params?: {
@@ -308,7 +288,6 @@ export function useTaskTemplate() {
 
     // CRUD 操作
     createTaskTemplate,
-    createTaskTemplateByMetaTemplate,
     fetchTaskTemplates,
     fetchTaskTemplate,
     updateTaskTemplate,

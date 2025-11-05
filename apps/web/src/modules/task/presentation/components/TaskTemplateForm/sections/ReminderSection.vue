@@ -22,27 +22,13 @@
 
         <template v-if="reminderEnabled">
           <v-col cols="12" md="6">
-            <v-text-field
-              v-model.number="minutesBefore"
-              label="提前提醒时间（分钟）"
-              type="number"
-              variant="outlined"
-              min="1"
-              max="1440"
-              hint="在任务开始前多少分钟提醒"
-            />
+            <v-text-field v-model.number="minutesBefore" label="提前提醒时间（分钟）" type="number" variant="outlined" min="1"
+              max="1440" hint="在任务开始前多少分钟提醒" />
           </v-col>
 
           <v-col cols="12" md="6">
-            <v-select
-              v-model="selectedMethods"
-              label="提醒方式"
-              :items="reminderMethods"
-              variant="outlined"
-              multiple
-              chips
-              closable-chips
-            />
+            <v-select v-model="selectedMethods" label="提醒方式" :items="reminderMethods" variant="outlined" multiple chips
+              closable-chips />
           </v-col>
         </template>
       </v-row>
@@ -71,9 +57,10 @@ const updateTemplate = (updater: (template: TaskTemplate) => void) => {
   emit('update:modelValue', updatedTemplate);
 };
 
-// 提醒配置字段
+// TODO: 提醒配置字段需要重构以匹配新的 TaskReminderConfig 结构（使用 triggers 数组）
+// 当前代码使用旧的 enabled/minutesBefore/methods 结构，需要更新为 triggers 数组
 const reminderEnabled = computed({
-  get: () => props.modelValue.reminderConfig.enabled,
+  get: () => (props.modelValue.reminderConfig as any)?.enabled ?? false,
   set: (value: boolean) => {
     updateTemplate((template) => {
       (template as any)._reminderConfig = {
@@ -85,7 +72,7 @@ const reminderEnabled = computed({
 });
 
 const minutesBefore = computed({
-  get: () => props.modelValue.reminderConfig.minutesBefore,
+  get: () => (props.modelValue.reminderConfig as any)?.minutesBefore ?? 15,
   set: (value: number) => {
     updateTemplate((template) => {
       (template as any)._reminderConfig = {
@@ -97,7 +84,7 @@ const minutesBefore = computed({
 });
 
 const selectedMethods = computed({
-  get: () => props.modelValue.reminderConfig.methods,
+  get: () => (props.modelValue.reminderConfig as any)?.methods ?? [],
   set: (value: ('notification' | 'sound')[]) => {
     updateTemplate((template) => {
       (template as any)._reminderConfig = {
