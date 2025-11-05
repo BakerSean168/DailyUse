@@ -59,21 +59,14 @@ export const reminderApiClient = {
     );
   },
 
-  // 别名方法（兼容应用服务）
+  /**
+   * 获取当前用户的所有提醒模板（从认证 token 获取用户）
+   */
   async getReminderTemplates(params?: {
     page?: number;
     limit?: number;
-  }): Promise<ReminderTemplateClientDTO[]> {
-    // 目前不需要传递 accountUuid，后端通过 session 获取
-    return apiClient.get<ReminderTemplateClientDTO[]>('/reminders/templates', { params });
-  },
-
-  // 别名方法（兼容应用服务）
-  async getActiveTemplates(params?: {
-    page?: number;
-    limit?: number;
-  }): Promise<ReminderTemplateClientDTO[]> {
-    return apiClient.get<ReminderTemplateClientDTO[]>('/reminders/templates/active', { params });
+  }): Promise<{ templates: ReminderTemplateClientDTO[]; total: number; page: number; pageSize: number; hasMore: boolean }> {
+    return apiClient.get<{ templates: ReminderTemplateClientDTO[]; total: number; page: number; pageSize: number; hasMore: boolean }>('/reminders/templates', { params });
   },
 
   /**

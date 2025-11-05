@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { ReminderApplicationService } from '../../application/services/ReminderApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
 import { createLogger } from '@dailyuse/utils';
+import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 
 const logger = createLogger('ReminderController');
 
@@ -120,6 +121,66 @@ export class ReminderController {
     } catch (error) {
       if (error instanceof Error) {
         logger.error('Error retrieving user reminder templates', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取当前用户的所有提醒模板（从 token 中提取 accountUuid）
+   * @route GET /api/reminders/templates
+   */
+  static async getUserReminderTemplatesByToken(req: Request, res: Response): Promise<Response> {
+    try {
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'User not authenticated',
+        });
+      }
+
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+
+      const service = await ReminderController.getReminderService();
+      const templates = await service.getUserReminderTemplates(accountUuid);
+
+      logger.info('Retrieved reminder templates for user', {
+        accountUuid,
+        count: templates.length,
+      });
+
+      // 实现简单的分页
+      const total = templates.length;
+      const paginatedTemplates = limit
+        ? templates.slice((page - 1) * limit, page * limit)
+        : templates;
+
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        {
+          templates: paginatedTemplates,
+          total,
+          page,
+          pageSize: limit || total,
+          hasMore: limit ? page * limit < total : false,
+        },
+        'Reminder templates retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error retrieving user reminder templates by token', {
+          error: error.message,
+        });
         return ReminderController.responseBuilder.sendError(res, {
           code: ResponseCode.INTERNAL_ERROR,
           message: error.message,

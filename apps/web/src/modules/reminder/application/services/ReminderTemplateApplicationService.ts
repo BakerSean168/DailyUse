@@ -94,47 +94,15 @@ export class ReminderTemplateApplicationService {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
 
-      const templatesResponse = await reminderApiClient.getReminderTemplates(params);
+      const response = await reminderApiClient.getReminderTemplates(params);
 
-      const templates = Array.isArray(templatesResponse)
-        ? templatesResponse.map((template) => ReminderTemplate.fromClientDTO(template))
-        : [];
+      // 处理新的响应格式：{ templates, total, page, pageSize, hasMore }
+      const templates = response.templates.map((template) =>
+        ReminderTemplate.fromClientDTO(template),
+      );
       this.reminderStore.setReminderTemplates(templates);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒模板失败';
-      this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
-      throw error;
-    } finally {
-      this.reminderStore.setLoading(false);
-    }
-  }
-
-  /**
-   * 获取活跃的提醒模板
-   */
-  async getActiveTemplates(params?: {
-    page?: number;
-    limit?: number;
-    forceRefresh?: boolean;
-  }): Promise<void> {
-    try {
-      // 缓存优先策略：如果已有数据且不强制刷新，直接返回
-      if (!params?.forceRefresh && this.reminderStore.reminderTemplates.length > 0) {
-        return;
-      }
-
-      this.reminderStore.setLoading(true);
-      this.reminderStore.setError(null);
-
-      const templatesResponse = await reminderApiClient.getActiveTemplates(params);
-
-      const templates = Array.isArray(templatesResponse)
-        ? templatesResponse.map((template) => ReminderTemplate.fromClientDTO(template))
-        : [];
-      this.reminderStore.setReminderTemplates(templates);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取活跃模板失败';
       this.reminderStore.setError(errorMessage);
       this.snackbar.showError(errorMessage);
       throw error;

@@ -19,6 +19,33 @@ const router: ExpressRouter = Router();
 /**
  * @swagger
  * /api/reminders/templates:
+ *   get:
+ *     tags: [Reminder]
+ *     summary: 获取当前用户的所有提醒模板
+ *     description: 从认证 token 中提取用户信息，返回该用户的所有提醒模板
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *           default: 1
+ *         description: 页码
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *         description: 每页数量
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *       401:
+ *         description: 未授权
+ */
+router.get('/templates', ReminderController.getUserReminderTemplatesByToken);
+
+/**
+ * @swagger
+ * /api/reminders/templates:
  *   post:
  *     tags: [Reminder]
  *     summary: 创建提醒模板
