@@ -16,7 +16,7 @@ export { scheduleWebApplicationService as getScheduleWebService } from './servic
 export * from './infrastructure/api/index';
 
 // 导出路由
-export { scheduleRoutes } from './router';
+export { scheduleRoutes } from './presentation/router';
 
 // 导出组件
 export * from './presentation/components';

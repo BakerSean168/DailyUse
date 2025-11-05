@@ -18,6 +18,7 @@ import goalFolderRouter from './modules/goal/interface/http/goalFolderRoutes';
 import focusSessionRouter from './modules/goal/interface/http/focusSessionRoutes';
 import weightSnapshotRouter from './modules/goal/interface/http/weightSnapshotRoutes';
 import reminderRouter from './modules/reminder/interface/http/reminderRoutes';
+import reminderGroupRouter from './modules/reminder/interface/http/reminderGroupRoutes';
 import scheduleRouter from './modules/schedule/interface/http/routes/scheduleRoutes';
 import notificationRouter from './modules/notification/interface/http/notificationRoutes';
 import notificationSSERouter from './modules/notification/interface/http/sseRoutes';
@@ -112,6 +113,9 @@ api.use('', authMiddleware, weightSnapshotRouter);
  */
 // 挂载提醒管理路由 - 需要认证
 api.use('/reminders', authMiddleware, reminderRouter);
+
+// 挂载提醒分组路由 - 需要认证
+api.use('/reminder-groups', authMiddleware, reminderGroupRouter);
 
 /**
  * schedule 调度模块

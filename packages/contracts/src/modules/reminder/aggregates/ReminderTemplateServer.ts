@@ -93,9 +93,23 @@ export interface ReminderTemplatePersistenceDTO {
   nextTriggerAt?: number | null;
   stats: string; // JSON string
   
-  // Smart Frequency fields
-  responseMetrics?: string | null; // JSON string of ResponseMetricsServer
-  frequencyAdjustment?: string | null; // JSON string of FrequencyAdjustmentServer
+  // Smart Frequency: Response Metrics（扁平化字段）
+  clickRate?: number | null;
+  ignoreRate?: number | null;
+  avgResponseTime?: number | null;
+  snoozeCount?: number;
+  effectivenessScore?: number | null;
+  sampleSize?: number;
+  lastAnalysisTime?: number | null;
+  
+  // Smart Frequency: Frequency Adjustment（扁平化字段）
+  originalInterval?: number | null;
+  adjustedInterval?: number | null;
+  adjustmentReason?: string | null;
+  adjustmentTime?: number | null;
+  isAutoAdjusted?: boolean;
+  userConfirmed?: boolean;
+  
   smartFrequencyEnabled?: boolean;
   
   createdAt: number;

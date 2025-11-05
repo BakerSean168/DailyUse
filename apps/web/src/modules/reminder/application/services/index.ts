@@ -9,12 +9,18 @@
  *
  * 服务列表：
  * - ReminderTemplateApplicationService: 模板 CRUD 和状态管理
+ * - ReminderGroupApplicationService: 分组 CRUD 和状态管理
  * - ReminderStatisticsApplicationService: 统计数据查询
+ * - ReminderSyncApplicationService: 数据同步服务（事件驱动）
  */
 
 export * from './ReminderTemplateApplicationService';
+export * from './ReminderGroupApplicationService';
 export * from './ReminderStatisticsApplicationService';
+export * from './ReminderSyncApplicationService';
 
 // 便捷导入：导出所有单例实例
 export { reminderTemplateApplicationService } from './ReminderTemplateApplicationService';
+export { reminderGroupApplicationService } from './ReminderGroupApplicationService';
 export { reminderStatisticsApplicationService } from './ReminderStatisticsApplicationService';
+export { reminderSyncApplicationService, ReminderEvents } from './ReminderSyncApplicationService';

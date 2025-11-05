@@ -362,13 +362,37 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     const stats = ReminderStats.fromServerDTO(JSON.parse(dto.stats));
     const tags = JSON.parse(dto.tags);
     
-    // Smart Frequency fields
-    const responseMetrics = dto.responseMetrics
-      ? ResponseMetrics.fromServerDTO(JSON.parse(dto.responseMetrics))
-      : null;
-    const frequencyAdjustment = dto.frequencyAdjustment
-      ? FrequencyAdjustment.fromServerDTO(JSON.parse(dto.frequencyAdjustment))
-      : null;
+    // Smart Frequency: Reconstruct ResponseMetrics from flat fields
+    const responseMetrics = (
+      dto.clickRate !== null &&
+      dto.clickRate !== undefined &&
+      dto.ignoreRate !== null &&
+      dto.ignoreRate !== undefined
+    ) ? ResponseMetrics.fromServerDTO({
+      clickRate: dto.clickRate,
+      ignoreRate: dto.ignoreRate,
+      avgResponseTime: dto.avgResponseTime ?? 0,
+      snoozeCount: dto.snoozeCount ?? 0,
+      effectivenessScore: dto.effectivenessScore ?? 0,
+      sampleSize: dto.sampleSize ?? 0,
+      lastAnalysisTime: dto.lastAnalysisTime ?? Date.now(),
+    }) : null;
+    
+    // Smart Frequency: Reconstruct FrequencyAdjustment from flat fields
+    const frequencyAdjustment = (
+      dto.originalInterval !== null &&
+      dto.originalInterval !== undefined &&
+      dto.adjustedInterval !== null &&
+      dto.adjustedInterval !== undefined
+    ) ? FrequencyAdjustment.fromServerDTO({
+      originalInterval: dto.originalInterval,
+      adjustedInterval: dto.adjustedInterval,
+      adjustmentReason: dto.adjustmentReason ?? '',
+      adjustmentTime: dto.adjustmentTime ?? Date.now(),
+      isAutoAdjusted: dto.isAutoAdjusted ?? false,
+      userConfirmed: dto.userConfirmed ?? false,
+      rejectionReason: null,
+    }) : null;
 
     return new ReminderTemplate({
       uuid: dto.uuid,
@@ -927,6 +951,10 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
    * 转换为 Persistence DTO
    */
   public toPersistenceDTO(): ReminderTemplatePersistenceDTO {
+    // 展开 ResponseMetrics 和 FrequencyAdjustment 的扁平字段
+    const responseMetricsFlat = this._responseMetrics?.toPersistenceDTO();
+    const frequencyAdjustmentFlat = this._frequencyAdjustment?.toPersistenceDTO();
+
     return {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
@@ -948,9 +976,23 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       nextTriggerAt: this.nextTriggerAt,
       stats: JSON.stringify(this._stats.toServerDTO()),
       
-      // Smart Frequency fields
-      responseMetrics: this._responseMetrics ? JSON.stringify(this._responseMetrics.toServerDTO()) : null,
-      frequencyAdjustment: this._frequencyAdjustment ? JSON.stringify(this._frequencyAdjustment.toServerDTO()) : null,
+      // Smart Frequency: Response Metrics（扁平化）
+      clickRate: responseMetricsFlat?.clickRate ?? null,
+      ignoreRate: responseMetricsFlat?.ignoreRate ?? null,
+      avgResponseTime: responseMetricsFlat?.avgResponseTime ?? null,
+      snoozeCount: responseMetricsFlat?.snoozeCount ?? 0,
+      effectivenessScore: responseMetricsFlat?.effectivenessScore ?? null,
+      sampleSize: responseMetricsFlat?.sampleSize ?? 0,
+      lastAnalysisTime: responseMetricsFlat?.lastAnalysisTime ?? null,
+      
+      // Smart Frequency: Frequency Adjustment（扁平化）
+      originalInterval: frequencyAdjustmentFlat?.originalInterval ?? null,
+      adjustedInterval: frequencyAdjustmentFlat?.adjustedInterval ?? null,
+      adjustmentReason: frequencyAdjustmentFlat?.adjustmentReason ?? null,
+      adjustmentTime: frequencyAdjustmentFlat?.adjustmentTime ?? null,
+      isAutoAdjusted: frequencyAdjustmentFlat?.isAutoAdjusted ?? false,
+      userConfirmed: frequencyAdjustmentFlat?.userConfirmed ?? false,
+      
       smartFrequencyEnabled: this._smartFrequencyEnabled ?? true,
       
       createdAt: this.createdAt,

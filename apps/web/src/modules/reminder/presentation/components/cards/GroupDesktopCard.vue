@@ -1,203 +1,170 @@
 <template>
-  <v-dialog v-model="visible" max-width="900px" fullscreen transition="dialog-bottom-transition">
-    <v-card v-if="group">
-      <!-- 顶部应用栏 -->
-      <v-app-bar color="primary" dark flat>
-        <v-btn icon @click="close">
-          <v-icon>mdi-arrow-left</v-icon>
-        </v-btn>
-        <v-toolbar-title>
-          <v-icon class="mr-2">mdi-folder</v-icon>
-          {{ group.name }}
-        </v-toolbar-title>
-        <v-spacer />
-        <!-- 启用/禁用开关 -->
-        <v-switch
-          v-model="localEnabled"
-          :loading="isTogglingStatus"
-          color="white"
-          hide-details
-          density="compact"
-          @update:model-value="handleToggleStatus"
-        >
-          <template #label>
-            <span class="text-white text-caption">{{ localEnabled ? '已启用' : '已禁用' }}</span>
-          </template>
-        </v-switch>
-        <v-btn icon @click="handleEditGroup">
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
-      </v-app-bar>
-
-      <!-- 分组信息摘要 -->
-      <v-card class="ma-4" variant="tonal">
-        <v-card-text>
-          <v-row>
-            <v-col cols="12" md="8">
-              <div class="text-h6 mb-2">{{ group.name }}</div>
-              <div class="text-body-2 text-grey-darken-1">
-                {{ group.description || '暂无描述' }}
-              </div>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-row>
-                <v-col cols="6">
-                  <div class="text-center">
-                    <div class="text-h5 text-primary">{{ templates.length }}</div>
-                    <div class="text-caption">模板数量</div>
-                  </div>
-                </v-col>
-                <v-col cols="6">
-                  <div class="text-center">
-                    <div class="text-h5 text-success">{{ enabledCount }}</div>
-                    <div class="text-caption">已启用</div>
-                  </div>
-                </v-col>
-              </v-row>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-
-      <!-- 工具栏 -->
-      <v-toolbar flat color="transparent">
-        <v-text-field
-          v-model="searchQuery"
-          prepend-inner-icon="mdi-magnify"
-          label="搜索模板"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          class="mr-4"
-          style="max-width: 300px;"
-        />
-        <v-spacer />
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-plus"
-          @click="handleCreateTemplate"
-        >
-          添加模板
-        </v-btn>
-      </v-toolbar>
-
-      <!-- 模板网格 -->
-      <v-card-text>
-        <!-- 空状态 -->
-        <div v-if="filteredTemplates.length === 0" class="text-center py-12">
-          <v-icon size="64" color="grey-lighten-2">mdi-folder-open</v-icon>
-          <div class="text-h6 text-grey mt-4">
-            {{ templates.length === 0 ? '该分组暂无模板' : '没有匹配的模板' }}
-          </div>
+  <!-- 透明背景遮罩 -->
+  <v-overlay
+    v-model="visible"
+    class="align-center justify-center"
+    :scrim="true"
+    opacity="0.3"
+    @click:outside="close"
+  >
+    <!-- 文件夹展开容器 -->
+    <div
+      v-if="group"
+      class="folder-popup"
+      @click.stop
+    >
+      <!-- 顶部标题栏 -->
+      <div class="folder-header">
+        <div class="folder-title">
+          <v-icon class="mr-2" color="primary">{{ group.icon || 'mdi-folder' }}</v-icon>
+          <span>{{ group.name }}</span>
+        </div>
+        <div class="folder-actions">
           <v-btn
-            v-if="templates.length === 0"
+            icon
+            size="small"
+            variant="text"
+            @click="handleEditGroup"
+          >
+            <v-icon size="20">mdi-pencil</v-icon>
+          </v-btn>
+        </div>
+      </div>
+
+      <!-- 控制选项栏 -->
+      <div class="folder-controls">
+        <!-- 控制模式 -->
+        <div class="control-item">
+          <div class="control-label">
+            <v-icon size="16" class="mr-1">mdi-tune</v-icon>
+            <span>控制模式</span>
+          </div>
+          <v-switch
+            v-model="isGroupControl"
+            :loading="isTogglingMode"
             color="primary"
-            class="mt-4"
+            hide-details
+            density="compact"
+            inset
+            @update:model-value="handleToggleControlMode"
+          >
+            <template #label>
+              <span class="control-value">{{ isGroupControl ? '组控制' : '个体控制' }}</span>
+            </template>
+          </v-switch>
+        </div>
+
+        <!-- 当前状态 -->
+        <div class="control-item">
+          <div class="control-label">
+            <v-icon size="16" class="mr-1">mdi-power</v-icon>
+            <span>当前状态</span>
+          </div>
+          <v-switch
+            v-model="localEnabled"
+            :loading="isTogglingStatus"
+            color="primary"
+            hide-details
+            density="compact"
+            inset
+            @update:model-value="handleToggleStatus"
+          >
+            <template #label>
+              <span class="control-value">{{ localEnabled ? '已启用' : '已禁用' }}</span>
+            </template>
+          </v-switch>
+        </div>
+      </div>
+
+      <!-- 九宫格容器 -->
+      <div class="folder-grid">
+        <!-- 空状态 -->
+        <!-- 空状态 -->
+        <div v-if="templates.length === 0" class="empty-state">
+          <v-icon size="48" color="primary" class="mb-2">mdi-folder-open-outline</v-icon>
+          <div class="text-body-2 mb-3">该分组暂无提醒</div>
+          <v-btn
+            size="small"
+            variant="tonal"
+            color="primary"
             prepend-icon="mdi-plus"
             @click="handleCreateTemplate"
           >
-            创建第一个模板
+            添加提醒
           </v-btn>
         </div>
-
-        <!-- 模板网格布局 -->
-        <div v-else class="templates-grid">
-          <v-card
-            v-for="template in filteredTemplates"
-            :key="template.uuid"
-            class="template-card"
-            :class="{ disabled: !template.effectiveEnabled }"
-            hover
-            @click="handleTemplateClick(template)"
-            @contextmenu.prevent="handleTemplateContextMenu(template, $event)"
-          >
-            <v-card-text class="d-flex flex-column align-center pa-4">
-              <!-- 图标 -->
-              <v-avatar
-                :color="template.effectiveEnabled ? 'primary' : 'grey'"
-                size="56"
-                class="mb-3"
-              >
-                <v-icon size="32" color="white">mdi-bell</v-icon>
-              </v-avatar>
-
-              <!-- 标题 -->
-              <div class="text-subtitle-1 text-center mb-2 template-title">
-                {{ template.title }}
-              </div>
-
-              <!-- 触发器 -->
-              <v-chip size="small" variant="outlined" class="mb-2">
-                {{ template.triggerText }}
-              </v-chip>
-
-              <!-- 状态 -->
-              <v-chip
-                :color="template.effectiveEnabled ? 'success' : 'grey'"
-                size="small"
-                variant="flat"
-              >
-                {{ template.effectiveEnabled ? '运行中' : '已停用' }}
-              </v-chip>
-            </v-card-text>
-
-            <!-- 快捷操作 -->
-            <v-card-actions class="template-actions">
-              <v-btn
-                icon
-                size="small"
-                variant="text"
-                @click.stop="handleEditTemplate(template)"
-              >
-                <v-icon size="20">mdi-pencil</v-icon>
-              </v-btn>
-              <v-spacer />
-              <v-btn
-                icon
-                size="small"
-                variant="text"
-                :color="template.effectiveEnabled ? 'grey' : 'success'"
-                @click.stop="handleToggleTemplate(template)"
-              >
-                <v-icon size="20">
-                  {{ template.effectiveEnabled ? 'mdi-pause' : 'mdi-play' }}
-                </v-icon>
-              </v-btn>
-            </v-card-actions>
-          </v-card>
+        <!-- 模板图标（九宫格） -->
+        <div
+          v-for="template in displayTemplates"
+          :key="template.uuid"
+          class="app-icon"
+          :class="{ disabled: !template.effectiveEnabled }"
+          @click="handleTemplateClick(template)"
+          @contextmenu.prevent="handleTemplateContextMenu(template, $event)"
+        >
+          <div class="icon-circle">
+            <v-icon :color="template.effectiveEnabled ? '#2196F3' : '#999'" size="28">
+              mdi-bell
+            </v-icon>
+          </div>
+          <div class="app-name">{{ template.title }}</div>
         </div>
-      </v-card-text>
 
-      <!-- 右键菜单 -->
-      <v-menu
-        v-model="contextMenu.show"
-        :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
-        location="bottom"
-        absolute
+        <!-- 更多按钮（如果超过9个） -->
+        <!-- 更多按钮（如果超过9个） -->
+        <div
+          v-if="templates.length > maxDisplayCount"
+          class="app-icon more-icon"
+          @click="handleShowAll"
+        >
+          <div class="icon-circle">
+            <v-icon color="secondary" size="28">mdi-dots-horizontal</v-icon>
+          </div>
+          <div class="app-name">更多 ({{ templates.length - maxDisplayCount }})</div>
+        </div>
+      </div>
+      <!-- 关闭按钮 -->
+      <div class="folder-close">
+        <v-btn
+          icon
+          size="small"
+          variant="text"
+          @click="close"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </div>
+    </div>
+  </v-overlay>
+
+  <!-- 右键菜单 -->
+  <div
+    v-if="contextMenu.show"
+    class="context-menu-overlay"
+    @click="contextMenu.show = false"
+    @contextmenu.prevent="contextMenu.show = false"
+  >
+    <div
+      class="context-menu"
+      :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
+    >
+      <div
+        v-for="(item, index) in contextMenu.items"
+        :key="index"
+        class="context-menu-item"
+        @click="item.action"
       >
-        <v-list density="compact">
-          <v-list-item
-            v-for="item in contextMenu.items"
-            :key="item.text"
-            @click="item.action"
-          >
-            <template #prepend>
-              <v-icon size="small">{{ item.icon }}</v-icon>
-            </template>
-            <v-list-item-title>{{ item.text }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+        <v-icon class="mr-2" size="18">{{ item.icon }}</v-icon>
+        {{ item.text }}
+      </div>
+    </div>
+  </div>
 
-      <!-- 模板详情卡片 -->
-      <TemplateDesktopCard
-        ref="templateCardRef"
-        @edit-template="handleEditTemplate"
-        @status-changed="handleTemplateStatusChanged"
-      />
-    </v-card>
-  </v-dialog>
+  <!-- 模板详情卡片 -->
+  <TemplateDesktopCard
+    ref="templateCardRef"
+    @edit-template="handleEditTemplate"
+  />
 </template>
 
 <script setup lang="ts">
@@ -205,6 +172,7 @@ import { ref, computed, watch } from 'vue';
 import type { ReminderContracts } from '@dailyuse/contracts';
 import { useReminder } from '../../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { reminderGroupApplicationService } from '../../../application/services';
 import TemplateDesktopCard from './TemplateDesktopCard.vue';
 
 type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
@@ -219,16 +187,17 @@ const emit = defineEmits<{
   'edit-group': [group: ReminderTemplateGroup];
   'edit-template': [template: ReminderTemplate];
   'create-template': [groupUuid: string];
-  'status-changed': [group: ReminderTemplateGroup, enabled: boolean];
 }>();
 
 // 响应式状态
 const visible = ref(false);
 const group = ref<ReminderTemplateGroup | null>(null);
 const localEnabled = ref(false);
+const isGroupControl = ref(false);
 const isTogglingStatus = ref(false);
-const searchQuery = ref('');
+const isTogglingMode = ref(false);
 const templateCardRef = ref<InstanceType<typeof TemplateDesktopCard>>();
+const maxDisplayCount = 9; // 最多显示9个，超过显示"更多"
 
 // 右键菜单状态
 const contextMenu = ref<{
@@ -254,29 +223,22 @@ const templates = computed(() => {
 });
 
 /**
- * 过滤后的模板
+ * 显示的模板（最多9个）
  */
-const filteredTemplates = computed(() => {
-  if (!searchQuery.value) return templates.value;
-  const query = searchQuery.value.toLowerCase();
-  return templates.value.filter(t =>
-    t.title.toLowerCase().includes(query) ||
-    t.description?.toLowerCase().includes(query) ||
-    t.triggerText.toLowerCase().includes(query)
-  );
+const displayTemplates = computed(() => {
+  return templates.value.slice(0, maxDisplayCount);
 });
 
-/**
- * 已启用的模板数量
- */
-const enabledCount = computed(() => {
-  return templates.value.filter(t => t.effectiveEnabled).length;
-});
-
-// 监听 group 变化，同步 localEnabled
+// 监听 group 变化，同步 localEnabled 和 isGroupControl
 watch(() => group.value?.enabled, (newValue) => {
   if (newValue !== undefined) {
     localEnabled.value = newValue;
+  }
+}, { immediate: true });
+
+watch(() => group.value?.controlMode, (newValue) => {
+  if (newValue !== undefined) {
+    isGroupControl.value = newValue === 'GROUP';
   }
 }, { immediate: true });
 
@@ -288,9 +250,8 @@ watch(() => group.value?.enabled, (newValue) => {
 const open = async (groupData: ReminderTemplateGroup) => {
   group.value = groupData;
   localEnabled.value = groupData.enabled;
+  isGroupControl.value = groupData.controlMode === 'GROUP';
   visible.value = true;
-  // 刷新模板列表以确保数据最新
-  await refreshAll();
 };
 
 /**
@@ -298,7 +259,6 @@ const open = async (groupData: ReminderTemplateGroup) => {
  */
 const close = () => {
   visible.value = false;
-  searchQuery.value = '';
   setTimeout(() => {
     group.value = null;
   }, 300);
@@ -312,11 +272,8 @@ const handleToggleStatus = async (enabled: boolean | null) => {
 
   isTogglingStatus.value = true;
   try {
-    // TODO: 实现分组启用/禁用 API
-    // await toggleGroupStatus(group.value.uuid, enabled);
-    console.log('切换分组状态:', group.value.uuid, enabled);
-    group.value = { ...group.value, enabled };
-    emit('status-changed', group.value, enabled);
+    await reminderGroupApplicationService.toggleReminderGroupStatus(group.value.uuid);
+    await refreshAll();
     snackbar.showSuccess(enabled ? '已启用分组' : '已禁用分组');
   } catch (error) {
     console.error('切换分组状态失败:', error);
@@ -324,6 +281,26 @@ const handleToggleStatus = async (enabled: boolean | null) => {
     snackbar.showError('切换状态失败');
   } finally {
     isTogglingStatus.value = false;
+  }
+};
+
+/**
+ * 处理控制模式切换
+ */
+const handleToggleControlMode = async (isGroup: boolean | null) => {
+  if (!group.value || isGroup === null) return;
+
+  isTogglingMode.value = true;
+  try {
+    await reminderGroupApplicationService.toggleReminderGroupControlMode(group.value.uuid);
+    await refreshAll();
+    snackbar.showSuccess(isGroup ? '已切换到组控制' : '已切换到个体控制');
+  } catch (error) {
+    console.error('切换控制模式失败:', error);
+    isGroupControl.value = !isGroup; // 回滚
+    snackbar.showError('切换控制模式失败');
+  } finally {
+    isTogglingMode.value = false;
   }
 };
 
@@ -342,6 +319,7 @@ const handleEditGroup = () => {
 const handleCreateTemplate = () => {
   if (!group.value) return;
   emit('create-template', group.value.uuid);
+  close();
 };
 
 /**
@@ -356,27 +334,16 @@ const handleTemplateClick = (template: ReminderTemplate) => {
  */
 const handleEditTemplate = (template: ReminderTemplate) => {
   emit('edit-template', template);
+  close();
 };
 
 /**
- * 处理切换模板状态
+ * 处理显示所有模板
  */
-const handleToggleTemplate = async (template: ReminderTemplate) => {
-  try {
-    await toggleTemplateStatus(template.uuid, !template.effectiveEnabled);
-    await refreshAll();
-    snackbar.showSuccess(template.effectiveEnabled ? '已禁用模板' : '已启用模板');
-  } catch (error) {
-    console.error('切换模板状态失败:', error);
-    snackbar.showError('操作失败');
-  }
-};
-
-/**
- * 处理模板状态变更（来自 TemplateDesktopCard）
- */
-const handleTemplateStatusChanged = async () => {
-  await refreshAll();
+const handleShowAll = () => {
+  // TODO: 打开完整列表视图或滚动查看
+  console.log('显示所有模板');
+  snackbar.showInfo('该功能正在开发中');
 };
 
 /**
@@ -407,8 +374,15 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
       {
         text: template.effectiveEnabled ? '禁用' : '启用',
         icon: template.effectiveEnabled ? 'mdi-pause' : 'mdi-play',
-        action: () => {
-          handleToggleTemplate(template);
+        action: async () => {
+          try {
+            await toggleTemplateStatus(template.uuid, !template.effectiveEnabled);
+            await refreshAll();
+            snackbar.showSuccess(template.effectiveEnabled ? '已禁用模板' : '已启用模板');
+          } catch (error) {
+            console.error('切换模板状态失败:', error);
+            snackbar.showError('操作失败');
+          }
           contextMenu.value.show = false;
         },
       },
@@ -419,15 +393,7 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
           // TODO: 实现移出分组功能
           console.log('移出分组:', template.uuid);
           contextMenu.value.show = false;
-        },
-      },
-      {
-        text: '删除',
-        icon: 'mdi-delete',
-        action: () => {
-          // TODO: 实现删除功能
-          console.log('删除模板:', template.uuid);
-          contextMenu.value.show = false;
+          snackbar.showInfo('该功能正在开发中');
         },
       },
     ],
@@ -441,46 +407,237 @@ defineExpose({
 </script>
 
 <style scoped>
-.templates-grid {
+/* 文件夹弹窗容器 */
+.folder-popup {
+  background: rgba(var(--v-theme-surface), 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 24px;
+  min-width: 400px;
+  max-width: 500px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  animation: folder-open 0.3s ease-out;
+}
+
+@keyframes folder-open {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 顶部标题栏 */
+.folder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+
+.folder-title {
+  display: flex;
+  align-items: center;
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.folder-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 控制选项栏 */
+.folder-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(var(--v-theme-primary), 0.05);
+  border-radius: 12px;
+}
+
+.control-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.control-label {
+  display: flex;
+  align-items: center;
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.control-value {
+  font-size: 12px;
+  color: rgb(var(--v-theme-on-surface-variant));
+  margin-left: 8px;
+}
+
+/* 九宫格布局 */
+.folder-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  padding: 16px 0;
+  min-height: 300px;
 }
 
-.template-card {
-  transition: all 0.3s ease;
+/* 空状态 */
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+
+/* 应用图标样式 */
+.app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
-  position: relative;
+  transition: transform 0.2s ease;
+  user-select: none;
 }
 
-.template-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+.app-icon:hover {
+  transform: scale(1.05);
 }
 
-.template-card.disabled {
-  opacity: 0.6;
+.app-icon.disabled {
+  opacity: 0.5;
 }
 
-.template-title {
-  max-width: 100%;
+.icon-circle {
+  width: 64px;
+  height: 64px;
+  background: rgba(var(--v-theme-primary), 0.12);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+  transition: all 0.2s ease;
+}
+
+.app-icon:hover .icon-circle {
+  background: rgba(var(--v-theme-primary), 0.18);
+  border-color: rgba(var(--v-theme-primary), 0.4);
+}
+
+.app-name {
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 12px;
+  text-align: center;
+  max-width: 80px;
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  line-height: 1.4;
-  height: 2.8em;
 }
 
-.template-actions {
-  opacity: 0;
-  transition: opacity 0.2s ease;
+/* 更多图标 */
+.more-icon .icon-circle {
+  background: rgba(var(--v-theme-secondary), 0.12);
+  border-color: rgba(var(--v-theme-secondary), 0.2);
 }
 
-.template-card:hover .template-actions {
-  opacity: 1;
+/* 关闭按钮 */
+.folder-close {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+
+/* 右键菜单 */
+.context-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: transparent;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 10000;
+  background: rgb(var(--v-theme-surface));
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  min-width: 180px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  animation: menuFadeIn 0.15s ease-out;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.context-menu-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  transition: all 0.15s ease;
+  color: rgb(var(--v-theme-on-surface));
+  user-select: none;
+}
+
+.context-menu-item:hover {
+  background-color: rgba(var(--v-theme-primary), 0.08);
+}
+
+.context-menu-item:active {
+  background-color: rgba(var(--v-theme-primary), 0.12);
+}
+
+/* 响应式 */
+@media (max-width: 600px) {
+  .folder-popup {
+    min-width: 90vw;
+    max-width: 90vw;
+  }
+
+  .folder-grid {
+    gap: 12px;
+  }
+
+  .icon-circle {
+    width: 56px;
+    height: 56px;
+  }
 }
 </style>

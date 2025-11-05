@@ -36,10 +36,23 @@ export class ReminderController {
    */
   static async createReminderTemplate(req: Request, res: Response): Promise<Response> {
     try {
-      const service = await ReminderController.getReminderService();
-      logger.info('Creating reminder template', { accountUuid: req.body.accountUuid });
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
 
-      const template = await service.createReminderTemplate(req.body);
+      if (!accountUuid) {
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'User not authenticated',
+        });
+      }
+
+      const service = await ReminderController.getReminderService();
+      logger.info('Creating reminder template', { accountUuid });
+
+      // 合并 accountUuid 到请求体
+      const template = await service.createReminderTemplate({
+        ...req.body,
+        accountUuid,
+      });
 
       logger.info('Reminder template created successfully', { templateUuid: template.uuid });
       return ReminderController.responseBuilder.sendSuccess(
@@ -417,6 +430,217 @@ export class ReminderController {
     } catch (error) {
       if (error instanceof Error) {
         logger.error('Error retrieving template schedule status', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  // ===== Reminder Group 管理 =====
+
+  /**
+   * 创建提醒分组
+   * @route POST /api/reminders/groups
+   */
+  static async createReminderGroup(req: Request, res: Response): Promise<Response> {
+    try {
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'User not authenticated',
+        });
+      }
+
+      const service = await ReminderController.getReminderService();
+      const group = await service.createReminderGroup({
+        ...req.body,
+        accountUuid,
+      });
+
+      logger.info('Reminder group created successfully', { groupUuid: group.uuid });
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        group,
+        'Reminder group created successfully',
+        201,
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error creating reminder group', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取分组详情
+   * @route GET /api/reminders/groups/:uuid
+   */
+  static async getReminderGroup(req: Request, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+      const service = await ReminderController.getReminderService();
+      const group = await service.getReminderGroup(uuid);
+
+      if (!group) {
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.NOT_FOUND,
+          message: 'Reminder group not found',
+        });
+      }
+
+      return ReminderController.responseBuilder.sendSuccess(res, group, 'Reminder group retrieved successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error retrieving reminder group', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取用户的所有分组
+   * @route GET /api/reminders/groups/user/:accountUuid
+   */
+  static async getUserReminderGroups(req: Request, res: Response): Promise<Response> {
+    try {
+      const { accountUuid } = req.params;
+      const service = await ReminderController.getReminderService();
+      const groups = await service.getUserReminderGroups(accountUuid);
+
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        groups,
+        'Reminder groups retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error retrieving user reminder groups', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 获取当前用户的所有分组（从 token 获取）
+   * @route GET /api/reminders/groups
+   */
+  static async getUserReminderGroupsByToken(req: Request, res: Response): Promise<Response> {
+    try {
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'User not authenticated',
+        });
+      }
+
+      const service = await ReminderController.getReminderService();
+      const groups = await service.getUserReminderGroups(accountUuid);
+
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        {
+          groups,
+          total: groups.length,
+        },
+        'Reminder groups retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error retrieving user reminder groups by token', {
+          error: error.message,
+        });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 更新分组
+   * @route PATCH /api/reminders/groups/:uuid
+   */
+  static async updateReminderGroup(req: Request, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+      const service = await ReminderController.getReminderService();
+      const group = await service.updateReminderGroup(uuid, req.body);
+
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        group,
+        'Reminder group updated successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error updating reminder group', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 删除分组
+   * @route DELETE /api/reminders/groups/:uuid
+   */
+  static async deleteReminderGroup(req: Request, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+      const service = await ReminderController.getReminderService();
+      await service.deleteReminderGroup(uuid);
+
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        null,
+        'Reminder group deleted successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error deleting reminder group', { error: error.message });
         return ReminderController.responseBuilder.sendError(res, {
           code: ResponseCode.INTERNAL_ERROR,
           message: error.message,

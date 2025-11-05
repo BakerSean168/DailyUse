@@ -1,169 +1,146 @@
 <template>
-  <v-container fluid class="pa-0 h-100">
-    <!-- 主要内容区域（全屏） -->
-    <div class="h-100" style="position: relative;">
+  <div class="reminder-desktop-container">
+    <!-- 左侧主要内容区域 -->
+    <div class="reminder-content-area">
       <!-- 手机桌面风格的网格布局 -->
       <div class="phone-desktop">
         <!-- 网格容器 -->
-          <div class="desktop-grid" @contextmenu.prevent="handleDesktopContextMenu">
-            <!-- 模板项（应用图标风格） -->
-            <div
-              v-for="template in reminderTemplates"
-              :key="template.uuid"
-              class="app-icon"
-              :class="{ disabled: !template.effectiveEnabled }"
-              @click="handleTemplateClick(template)"
-              @contextmenu.prevent="handleTemplateContextMenu(template, $event)"
-            >
-              <div class="icon-circle">
-                <v-icon :color="template.effectiveEnabled ? '#2196F3' : '#999'" size="32"> mdi-bell </v-icon>
-              </div>
-              <div class="app-name">{{ template.title }}</div>
-            </div>
-
-            <!-- 分组项（文件夹风格） -->
-            <div
-              v-for="group in templateGroups"
-              :key="group.uuid"
-              class="folder-icon"
-              :class="{ disabled: !group.enabled }"
-              @click="handleGroupClick(group)"
-              @contextmenu.prevent="handleGroupContextMenu(group, $event)"
-            >
-              <div class="folder-circle">
-                <v-icon :color="group.enabled ? '#4CAF50' : '#999'" size="32"> mdi-folder </v-icon>
-                <div class="folder-badge" v-if="getGroupTemplateCount(group) > 0">
-                  {{ getGroupTemplateCount(group) }}
-                </div>
-              </div>
-              <div class="folder-name">{{ group.name }}</div>
-            </div>
-          </div>
-
-          <!-- 底部工具栏 -->
-          <div class="bottom-dock">
-            <v-btn icon size="large" @click="templateDialogRef?.openForCreate()" class="dock-btn" data-testid="create-reminder-template-button">
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
-            <v-btn icon size="large" @click="groupDialogRef?.open()" class="dock-btn" data-testid="create-reminder-group-button">
-              <v-icon>mdi-folder-plus</v-icon>
-            </v-btn>
-            <v-btn icon size="large" @click="refresh" :loading="isLoading" class="dock-btn" data-testid="refresh-reminders-button">
-              <v-icon>mdi-refresh</v-icon>
-            </v-btn>
-          </div>
-        </div>
-
-        <!-- 右键菜单 -->
-        <div
-          v-if="contextMenu.show"
-          class="context-menu-overlay"
-          @click="contextMenu.show = false"
-          @contextmenu.prevent="contextMenu.show = false"
-        >
+        <div class="desktop-grid" @contextmenu.prevent="handleDesktopContextMenu">
+          <!-- 模板项（应用图标风格） -->
           <div
-            class="context-menu"
-            :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
+            v-for="template in reminderTemplates"
+            :key="template.uuid"
+            class="app-icon"
+            :class="{ disabled: !template.effectiveEnabled }"
+            @click="handleTemplateClick(template)"
+            @contextmenu.prevent="handleTemplateContextMenu(template, $event)"
           >
-            <template v-for="(item, index) in contextMenu.items" :key="index">
-              <div v-if="item.divider" class="context-menu-divider" />
-              <div
-                v-else
-                class="context-menu-item"
-                :class="{
-                  'context-menu-item-danger': item.danger,
-                  'context-menu-item-disabled': item.disabled,
-                }"
-                @click="!item.disabled && item.action && item.action()"
-              >
-                <v-icon 
-                  class="mr-2" 
-                  size="18" 
-                  :color="item.iconColor"
-                >
-                  {{ item.icon }}
-                </v-icon>
-                {{ item.title }}
+            <div class="icon-circle">
+              <v-icon :color="template.effectiveEnabled ? '#2196F3' : '#999'" size="32"> mdi-bell </v-icon>
+            </div>
+            <div class="app-name">{{ template.title }}</div>
+          </div>
+
+          <!-- 分组项（文件夹风格） -->
+          <div
+            v-for="group in templateGroups"
+            :key="group.uuid"
+            class="folder-icon"
+            :class="{ disabled: !group.enabled }"
+            @click="handleGroupClick(group)"
+            @contextmenu.prevent="handleGroupContextMenu(group, $event)"
+          >
+            <div class="folder-circle">
+              <v-icon :color="group.enabled ? '#4CAF50' : '#999'" size="32"> mdi-folder </v-icon>
+              <div class="folder-badge" v-if="getGroupTemplateCount(group) > 0">
+                {{ getGroupTemplateCount(group) }}
               </div>
-            </template>
+            </div>
+            <div class="folder-name">{{ group.name }}</div>
           </div>
         </div>
 
-        <!-- 确认删除对话框 -->
-        <v-dialog v-model="deleteDialog.show" max-width="400">
-          <v-card>
-            <v-card-title>确认删除</v-card-title>
-            <v-card-text>
-              确定要删除{{ deleteDialog.type === 'template' ? '模板' : '分组' }} "{{
-                deleteDialog.name
-              }}" 吗？
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer />
-              <v-btn @click="deleteDialog.show = false">取消</v-btn>
-              <v-btn color="error" @click="confirmDelete">删除</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-
-        <!-- 加载状态 -->
-        <v-overlay v-model="isLoading" class="align-center justify-center">
-          <v-progress-circular size="64" indeterminate color="primary" />
-        </v-overlay>
-
-        <!-- 错误提示 -->
-        <v-snackbar v-model="showError" color="error" timeout="5000" location="top">
-          {{ error }}
-        </v-snackbar>
-
-        <!-- 对话框组件 -->
-        <TemplateDialog
-          ref="templateDialogRef"
-          @template-created="handleTemplateCreated"
-          @template-updated="handleTemplateUpdated"
-        />
-        <GroupDialog
-          ref="groupDialogRef"
-          @group-created="handleGroupCreated"
-          @group-updated="handleGroupUpdated"
-        />
-        <TemplateMoveDialog
-          v-model="moveDialog.show"
-          :template="moveDialog.template"
-          @moved="handleTemplateMoved"
-          @closed="moveDialog.show = false"
-        />
-
-        <!-- 模板用于展示item的信息和状态切换的卡片组件 -->
-        <!-- TemplateCard 组件 -->
-        <TemplateDesktopCard ref="templateDesktopCardRef" @edit-template="handleEditTemplate" />
-
-        <!-- GroupDesktopCard 组件 -->
-        <GroupDesktopCard ref="groupDesktopCardRef" />
+        <!-- 底部工具栏 -->
+        <div class="bottom-dock">
+          <v-btn icon size="large" @click="templateDialogRef?.openForCreate()" class="dock-btn" data-testid="create-reminder-template-button">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+          <v-btn icon size="large" @click="groupDialogRef?.open()" class="dock-btn" data-testid="create-reminder-group-button">
+            <v-icon>mdi-folder-plus</v-icon>
+          </v-btn>
+          <v-btn icon size="large" @click="refresh" :loading="isLoading" class="dock-btn" data-testid="refresh-reminders-button">
+            <v-icon>mdi-refresh</v-icon>
+          </v-btn>
+        </div>
       </div>
 
-    <!-- 右侧可折叠的侧边栏 -->
-    <v-navigation-drawer
-      v-model="sidebarVisible"
-      location="right"
-      temporary
-      width="400"
-      class="reminder-sidebar"
-    >
-      <ReminderInstanceSidebar />
-    </v-navigation-drawer>
+      <!-- 右键菜单 -->
+      <div
+        v-if="contextMenu.show"
+        class="context-menu-overlay"
+        @click="contextMenu.show = false"
+        @contextmenu.prevent="contextMenu.show = false"
+      >
+        <div
+          class="context-menu"
+          :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
+        >
+          <template v-for="(item, index) in contextMenu.items" :key="index">
+            <div v-if="item.divider" class="context-menu-divider" />
+            <div
+              v-else
+              class="context-menu-item"
+              :class="{
+                'context-menu-item-danger': item.danger,
+                'context-menu-item-disabled': item.disabled,
+              }"
+              @click="!item.disabled && item.action && item.action()"
+            >
+              <v-icon 
+                class="mr-2" 
+                size="18" 
+                :color="item.iconColor"
+              >
+                {{ item.icon }}
+              </v-icon>
+              {{ item.title }}
+            </div>
+          </template>
+        </div>
+      </div>
 
-    <!-- 侧边栏切换按钮 -->
-    <v-btn
-      icon
-      class="sidebar-toggle-btn"
-      color="primary"
-      @click="sidebarVisible = !sidebarVisible"
-      elevation="2"
-    >
-      <v-icon>{{ sidebarVisible ? 'mdi-chevron-right' : 'mdi-chart-box-outline' }}</v-icon>
-    </v-btn>
-  </v-container>
+      <!-- 确认删除对话框 -->
+      <v-dialog v-model="deleteDialog.show" max-width="400">
+        <v-card>
+          <v-card-title>确认删除</v-card-title>
+          <v-card-text>
+            确定要删除{{ deleteDialog.type === 'template' ? '模板' : '分组' }} "{{
+              deleteDialog.name
+            }}" 吗？
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn @click="deleteDialog.show = false">取消</v-btn>
+            <v-btn color="error" @click="confirmDelete">删除</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- 加载状态 -->
+      <v-overlay v-model="isLoading" class="align-center justify-center">
+        <v-progress-circular size="64" indeterminate color="primary" />
+      </v-overlay>
+
+      <!-- 错误提示 -->
+      <v-snackbar v-model="showError" color="error" timeout="5000" location="top">
+        {{ error }}
+      </v-snackbar>
+
+      <!-- 对话框组件 -->
+      <TemplateDialog
+        ref="templateDialogRef"
+      />
+      <GroupDialog
+        ref="groupDialogRef"
+      />
+      <TemplateMoveDialog
+        v-model="moveDialog.show"
+        :template="moveDialog.template"
+      />
+
+      <!-- 模板用于展示item的信息和状态切换的卡片组件 -->
+      <!-- TemplateCard 组件 -->
+      <TemplateDesktopCard ref="templateDesktopCardRef" @edit-template="handleEditTemplate" />
+
+      <!-- GroupDesktopCard 组件 -->
+      <GroupDesktopCard ref="groupDesktopCardRef" />
+    </div>
+
+    <!-- 右侧固定的提醒实例显示区域 -->
+    <div class="reminder-instance-area">
+      <ReminderInstanceSidebar />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -180,6 +157,7 @@ import ReminderInstanceSidebar from '../components/ReminderInstanceSidebar.vue';
 // Composables
 import { useReminder } from '../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { reminderGroupApplicationService } from '../../application/services';
 
 // 类型导入 - 使用 Contracts DTO
 import type { ReminderContracts } from '@dailyuse/contracts';
@@ -190,25 +168,23 @@ type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
 type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
 
 // 使用 composables
-const { isLoading, error, reminderTemplates, initialize, refreshAll, deleteTemplate, updateTemplate, toggleTemplateStatus } =
+const { isLoading, error, reminderTemplates, reminderGroups, initialize, refreshAll, deleteTemplate, updateTemplate, toggleTemplateStatus } =
   useReminder();
 
 const snackbar = useSnackbar();
 
-// 分组数据（暂时为空，等待实现）
-const reminderTemplateGroups = ref<ReminderTemplateGroup[]>([]);
-
 // 别名以保持兼容性
 const templates = computed(() => reminderTemplates.value);
-const groups = computed(() => reminderTemplateGroups.value);
-const templateGroups = computed(() => reminderTemplateGroups.value);
+const groups = computed(() => reminderGroups.value);
+const templateGroups = computed(() => reminderGroups.value);
 const refresh = refreshAll;
 
-// 加载分组数据（暂时为空实现）
+// 加载分组数据（数据已通过 reminderSyncApplicationService 自动加载）
 const loadGroups = async () => {
   try {
-    // TODO: 实现分组加载逻辑
-    console.log('加载分组数据...');
+    // 分组数据已经通过 sync service 在 initialize() 时加载
+    // 这里可以手动触发刷新
+    console.log('分组数据已加载:', reminderGroups.value.length, '个分组');
   } catch (error: any) {
     console.error('加载分组失败:', error);
   }
@@ -216,10 +192,11 @@ const loadGroups = async () => {
 
 const deleteGroup = async (uuid: string) => {
   try {
-    // TODO: 实现分组删除逻辑
-    console.log('删除分组:', uuid);
+    await reminderGroupApplicationService.deleteReminderGroup(uuid);
+    snackbar.showSuccess('分组删除成功');
   } catch (error: any) {
     console.error('删除分组失败:', error);
+    snackbar.showError('删除分组失败');
   }
 };
 
@@ -231,7 +208,6 @@ const groupDesktopCardRef = ref<InstanceType<typeof GroupDesktopCard> | null>(nu
 
 // 响应式数据
 const showError = ref(false);
-const sidebarVisible = ref(false); // 右侧侧边栏可见状态
 
 // 右键菜单状态
 interface ContextMenuItem {
@@ -459,15 +435,6 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
         contextMenu.show = false;
       },
     },
-    { divider: true },
-    {
-      title: '侧边栏',
-      icon: sidebarVisible.value ? 'mdi-chevron-right' : 'mdi-chart-box-outline',
-      action: () => {
-        sidebarVisible.value = !sidebarVisible.value;
-        contextMenu.show = false;
-      },
-    },
   ];
   contextMenu.show = true;
 };
@@ -585,14 +552,6 @@ const confirmDelete = async () => {
 // ===== 对话框事件处理 =====
 
 /**
- * 处理模板创建事件
- */
-const handleTemplateCreated = async () => {
-  console.log('模板创建成功，刷新列表');
-  await refreshAll();
-};
-
-/**
  * 处理模板编辑事件（从 TemplateDesktopCard 触发）
  */
 const handleEditTemplate = (template: ReminderTemplate) => {
@@ -601,38 +560,7 @@ const handleEditTemplate = (template: ReminderTemplate) => {
   templateDialogRef.value?.openForEdit(entity);
 };
 
-/**
- * 处理模板更新事件
- */
-const handleTemplateUpdated = async () => {
-  console.log('模板更新成功，刷新列表');
-  await refreshAll();
-};
-
-/**
- * 处理模板移动事件
- */
-const handleTemplateMoved = async (templateUuid: string, targetGroupUuid: string) => {
-  console.log('模板已移动:', templateUuid, '到分组:', targetGroupUuid);
-  await refresh();
-  moveDialog.show = false;
-};
-
-/**
- * 处理分组创建事件
- */
-const handleGroupCreated = async (group: ReminderTemplateGroup) => {
-  console.log('分组已创建:', group);
-  await refresh();
-};
-
-/**
- * 处理分组更新事件
- */
-const handleGroupUpdated = async (group: ReminderTemplateGroup) => {
-  console.log('分组已更新:', group);
-  await refresh();
-}; // ===== 生命周期 =====
+// ===== 生命周期 =====
 
 onMounted(async () => {
   try {
@@ -646,13 +574,42 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.phone-desktop {
+/* 主容器 - 两栏布局 */
+.reminder-desktop-container {
+  width: 100vw;
   height: 100vh;
+  display: flex;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+/* 左侧内容区域 - 桌面网格 */
+.reminder-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 右侧提醒实例区域 - 固定宽度 */
+.reminder-instance-area {
+  width: 400px;
+  height: 100vh;
+  background: white;
+  border-left: 1px solid #e0e0e0;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.phone-desktop {
+  flex: 1;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   position: relative;
   padding: 20px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .desktop-grid {
@@ -662,6 +619,7 @@ onMounted(async () => {
   gap: 16px;
   padding: 20px;
   align-content: start;
+  overflow-y: auto;
 }
 
 .app-icon,
@@ -737,6 +695,7 @@ onMounted(async () => {
   gap: 20px;
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
 }
 
 .dock-btn {
@@ -750,7 +709,28 @@ onMounted(async () => {
 }
 
 /* 响应式设计 */
+@media (max-width: 1200px) {
+  .reminder-instance-area {
+    width: 350px;
+  }
+}
+
 @media (max-width: 768px) {
+  .reminder-desktop-container {
+    flex-direction: column;
+  }
+
+  .reminder-content-area {
+    flex: 1;
+  }
+
+  .reminder-instance-area {
+    width: 100%;
+    height: 300px;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+  }
+
   .desktop-grid {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 12px;
@@ -848,18 +828,5 @@ onMounted(async () => {
 
 .context-menu-item:last-child {
   border-radius: 0 0 8px 8px;
-}
-/* 右侧侧边栏切换按钮 */
-.sidebar-toggle-btn {
-  position: fixed;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 100;
-}
-
-/* 侧边栏样式 */
-.reminder-sidebar {
-  z-index: 200;
 }
 </style>

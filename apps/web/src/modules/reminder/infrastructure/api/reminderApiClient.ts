@@ -169,4 +169,99 @@ export const reminderApiClient = {
       { params },
     );
   },
+
+  // ===== Reminder Group 管理 =====
+
+  /**
+   * 创建提醒分组
+   */
+  async createReminderGroup(
+    data: ReminderContracts.CreateReminderGroupRequestDTO,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    return apiClient.post<ReminderContracts.ReminderGroupClientDTO>('/reminder-groups', data);
+  },
+
+  /**
+   * 获取分组详情
+   */
+  async getReminderGroup(uuid: string): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    return apiClient.get<ReminderContracts.ReminderGroupClientDTO>(`/reminder-groups/${uuid}`);
+  },
+
+  /**
+   * 获取当前用户的所有分组（从认证 token 获取用户）
+   */
+  async getReminderGroups(params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    groups: ReminderContracts.ReminderGroupClientDTO[];
+    total: number;
+    page: number;
+    pageSize: number;
+    hasMore: boolean;
+  }> {
+    return apiClient.get<{
+      groups: ReminderContracts.ReminderGroupClientDTO[];
+      total: number;
+      page: number;
+      pageSize: number;
+      hasMore: boolean;
+    }>('/reminder-groups', { params });
+  },
+
+  /**
+   * 获取指定用户的所有分组
+   */
+  async getUserReminderGroups(
+    accountUuid: string,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO[]> {
+    return apiClient.get<ReminderContracts.ReminderGroupClientDTO[]>(
+      `/reminder-groups/user/${accountUuid}`,
+    );
+  },
+
+  /**
+   * 更新分组
+   */
+  async updateReminderGroup(
+    uuid: string,
+    data: ReminderContracts.UpdateReminderGroupRequestDTO,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    return apiClient.patch<ReminderContracts.ReminderGroupClientDTO>(
+      `/reminder-groups/${uuid}`,
+      data,
+    );
+  },
+
+  /**
+   * 删除分组
+   */
+  async deleteReminderGroup(uuid: string): Promise<void> {
+    await apiClient.delete<void>(`/reminder-groups/${uuid}`);
+  },
+
+  /**
+   * 切换分组启用状态
+   */
+  async toggleReminderGroupStatus(
+    uuid: string,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    return apiClient.post<ReminderContracts.ReminderGroupClientDTO>(
+      `/reminder-groups/${uuid}/toggle-status`,
+      {},
+    );
+  },
+
+  /**
+   * 切换分组控制模式
+   */
+  async toggleReminderGroupControlMode(
+    uuid: string,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    return apiClient.post<ReminderContracts.ReminderGroupClientDTO>(
+      `/reminder-groups/${uuid}/toggle-control-mode`,
+      {},
+    );
+  },
 };

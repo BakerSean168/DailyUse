@@ -265,4 +265,28 @@ export class ResponseMetrics extends ValueObject implements ResponseMetricsServe
       lastAnalysisTime: dto.lastAnalysisTime,
     });
   }
+
+  /**
+   * 转换为 Persistence DTO（扁平化字段对象）
+   * 用于直接传给 Prisma，无需JSON序列化
+   */
+  public toPersistenceDTO(): {
+    clickRate: number | null;
+    ignoreRate: number | null;
+    avgResponseTime: number | null;
+    snoozeCount: number;
+    effectivenessScore: number | null;
+    sampleSize: number;
+    lastAnalysisTime: number | null;
+  } {
+    return {
+      clickRate: this.clickRate || null,
+      ignoreRate: this.ignoreRate || null,
+      avgResponseTime: this.avgResponseTime || null,
+      snoozeCount: this.snoozeCount,
+      effectivenessScore: this.effectivenessScore || null,
+      sampleSize: this.sampleSize,
+      lastAnalysisTime: this.lastAnalysisTime || null,
+    };
+  }
 }

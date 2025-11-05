@@ -69,6 +69,8 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
 
   async save(template: ReminderTemplate): Promise<void> {
     const persistence = template.toPersistenceDTO();
+    
+    // 数据对象直接对应 Prisma Schema（无需JSON解析和字段拆分）
     const data = {
       uuid: persistence.uuid,
       accountUuid: persistence.accountUuid,
@@ -77,22 +79,36 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
       type: persistence.type,
       trigger: persistence.trigger,
       recurrence: persistence.recurrence,
-      activeTime: persistence.activeTime, // database field: active_time
-      activeHours: persistence.activeHours, // database field: active_hours
-      notificationConfig: persistence.notificationConfig, // database field: notification_config
-      selfEnabled: persistence.selfEnabled, // database field: self_enabled
+      activeTime: persistence.activeTime,
+      activeHours: persistence.activeHours,
+      notificationConfig: persistence.notificationConfig,
+      selfEnabled: persistence.selfEnabled,
       status: persistence.status,
       groupUuid: persistence.groupUuid,
-      importanceLevel: persistence.importanceLevel, // database field: importance_level
+      importanceLevel: persistence.importanceLevel,
       tags: persistence.tags,
       color: persistence.color,
       icon: persistence.icon,
-      nextTriggerAt: persistence.nextTriggerAt ? new Date(persistence.nextTriggerAt) : null, // database field: next_trigger_at
+      nextTriggerAt: persistence.nextTriggerAt ? new Date(persistence.nextTriggerAt) : null,
       stats: persistence.stats,
       
-      // Smart Frequency fields
-      responseMetrics: persistence.responseMetrics || null,
-      frequencyAdjustment: persistence.frequencyAdjustment || null,
+      // Smart Frequency: Response Metrics（扁平化字段，直接来自 persistence DTO）
+      clickRate: persistence.clickRate ?? null,
+      ignoreRate: persistence.ignoreRate ?? null,
+      avgResponseTime: persistence.avgResponseTime ?? null,
+      snoozeCount: persistence.snoozeCount ?? 0,
+      effectivenessScore: persistence.effectivenessScore ?? null,
+      sampleSize: persistence.sampleSize ?? 0,
+      lastAnalysisTime: persistence.lastAnalysisTime ?? null,
+      
+      // Smart Frequency: Frequency Adjustment（扁平化字段，直接来自 persistence DTO）
+      originalInterval: persistence.originalInterval ?? null,
+      adjustedInterval: persistence.adjustedInterval ?? null,
+      adjustmentReason: persistence.adjustmentReason ?? null,
+      adjustmentTime: persistence.adjustmentTime ?? null,
+      isAutoAdjusted: persistence.isAutoAdjusted ?? false,
+      userConfirmed: persistence.userConfirmed ?? false,
+      
       smartFrequencyEnabled: persistence.smartFrequencyEnabled ?? true,
       
       createdAt: new Date(persistence.createdAt),
@@ -106,7 +122,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
         return {
           uuid: histPersistence.uuid,
           templateUuid: histPersistence.templateUuid,
-          triggeredAt: new Date(histPersistence.triggeredAt), // database field: triggered_at
+          triggeredAt: new Date(histPersistence.triggeredAt),
           result: histPersistence.result,
           error: histPersistence.error,
           notificationSent: histPersistence.notificationSent,
@@ -145,6 +161,14 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
       include: { reminderHistory: options?.includeHistory ?? false },
     });
     return data ? this.mapToEntity(data, options?.includeHistory) : null;
+  }
+
+  // 别名方法，与接口保持一致
+  async findById(
+    uuid: string,
+    options?: { includeHistory?: boolean },
+  ): Promise<ReminderTemplate | null> {
+    return this.findByUuid(uuid, options);
   }
 
   async findByAccountUuid(

@@ -3,6 +3,7 @@ import { useReminderStore } from '../stores/reminderStore';
 import {
   reminderTemplateApplicationService,
   reminderStatisticsApplicationService,
+  reminderSyncApplicationService,
 } from '../../application/services';
 import type { ReminderContracts } from '@dailyuse/contracts';
 
@@ -12,6 +13,7 @@ export function useReminder() {
   const isLoading = computed(() => reminderStore.isLoading);
   const error = computed(() => reminderStore.error);
   const reminderTemplates = computed(() => reminderStore.reminderTemplates);
+  const reminderGroups = computed(() => reminderStore.reminderGroups);
   const statistics = computed(() => reminderStore.statistics);
 
   /**
@@ -19,15 +21,17 @@ export function useReminder() {
    */
   async function initialize() {
     reminderStore.initialize();
-    await refreshAll();
+    // 使用同步服务初始化数据
+    reminderSyncApplicationService.initializeEventListeners();
+    await reminderSyncApplicationService.syncAllTemplatesAndGroups();
   }
 
   /**
    * 刷新所有数据
    */
   async function refreshAll() {
-    // 只刷新模板列表，统计数据需要 accountUuid（暂时不刷新）
-    await getReminderTemplates({ forceRefresh: true });
+    // 使用同步服务刷新所有数据
+    await reminderSyncApplicationService.refreshAll();
   }
 
   async function createReminderTemplate(request: ReminderContracts.CreateReminderTemplateRequestDTO) {
@@ -79,6 +83,7 @@ export function useReminder() {
     isLoading,
     error,
     reminderTemplates,
+    reminderGroups,
     statistics,
     initialize,
     refreshAll,

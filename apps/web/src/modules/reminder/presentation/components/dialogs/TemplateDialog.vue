@@ -55,6 +55,24 @@
             </v-col>
           </v-row>
 
+          <!-- 分组选择 -->
+          <v-row>
+            <v-col cols="12">
+              <v-select
+                v-model="formData.groupUuid"
+                label="所属分组"
+                :items="groupOptions"
+                item-title="name"
+                item-value="uuid"
+                variant="outlined"
+                density="comfortable"
+                clearable
+                hint="可选：将模板添加到分组"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
+
           <!-- 触发配置 -->
           <v-row>
             <v-col cols="12">
@@ -183,9 +201,13 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
 import { ReminderTemplate } from '@dailyuse/domain-client';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderContracts } from '@dailyuse/contracts';
+import { ImportanceLevel } from '@dailyuse/contracts';
 import { useReminder } from '../../composables/useReminder';
+import { useReminderGroup } from '../../composables/useReminderGroup';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
+
+
 
 const visible = ref(false);
 const formRef = ref();
@@ -194,16 +216,20 @@ const saving = ref(false);
 const currentTemplate = ref<ReminderTemplate | null>(null);
 const isEditMode = computed(() => !!currentTemplate.value?.uuid);
 
-const { createReminderTemplate, updateTemplate } = useReminder();
+const { createReminderTemplate, updateTemplate, refreshAll } = useReminder();
+const { groups } = useReminderGroup();
 const snackbar = useSnackbar();
+
+// 分组选项
+const groupOptions = computed(() => groups.value || []);
 
 // 表单数据
 const formData = reactive({
   title: '',
   description: '',
-  type: 'TASK' as ReminderContracts.ReminderType,
-  importanceLevel: 'NORMAL' as ReminderContracts.ImportanceLevel,
-  triggerType: 'FIXED_TIME' as ReminderContracts.TriggerType,
+  type: ReminderContracts.ReminderType.ONE_TIME,
+  importanceLevel: ImportanceLevel.Moderate,
+  triggerType: ReminderContracts.TriggerType.FIXED_TIME,
   fixedTime: '09:00',
   intervalMinutes: 60,
   notificationTitle: '',
@@ -211,26 +237,26 @@ const formData = reactive({
   color: '#2196F3',
   icon: 'mdi-bell',
   tags: [] as string[],
+  groupUuid: undefined as string | undefined,
 });
 
 // 选项列表
 const reminderTypes = [
-  { label: '任务提醒', value: 'TASK' },
-  { label: '事件提醒', value: 'EVENT' },
-  { label: '目标提醒', value: 'GOAL' },
-  { label: '习惯提醒', value: 'HABIT' },
-  { label: '自定义提醒', value: 'CUSTOM' },
+  { label: '一次性提醒', value: ReminderContracts.ReminderType.ONE_TIME },
+  { label: '循环提醒', value: ReminderContracts.ReminderType.RECURRING },
 ];
 
 const importanceLevels = [
-  { label: '普通', value: 'NORMAL' },
-  { label: '重要', value: 'HIGH' },
-  { label: '紧急', value: 'CRITICAL' },
+  { label: '极其重要', value: ImportanceLevel.Vital },
+  { label: '非常重要', value: ImportanceLevel.Important },
+  { label: '普通', value: ImportanceLevel.Moderate },
+  { label: '不太重要', value: ImportanceLevel.Minor },
+  { label: '无关紧要', value: ImportanceLevel.Trivial },
 ];
 
 const triggerTypes = [
-  { label: '固定时间', value: 'FIXED_TIME' },
-  { label: '间隔触发', value: 'INTERVAL' },
+  { label: '固定时间', value: ReminderContracts.TriggerType.FIXED_TIME },
+  { label: '间隔触发', value: ReminderContracts.TriggerType.INTERVAL },
 ];
 
 // 验证规则
@@ -243,11 +269,6 @@ const rules = {
     return timeRegex.test(v) || '请输入正确的时间格式 (HH:MM)';
   },
 };
-
-const emit = defineEmits<{
-  templateCreated: [];
-  templateUpdated: [];
-}>();
 
 const open = () => {
   visible.value = true;
@@ -274,9 +295,9 @@ const close = () => {
 const resetForm = () => {
   formData.title = '';
   formData.description = '';
-  formData.type = 'TASK';
-  formData.importanceLevel = 'NORMAL';
-  formData.triggerType = 'FIXED_TIME';
+  formData.type = ReminderContracts.ReminderType.ONE_TIME;
+  formData.importanceLevel = ImportanceLevel.Moderate;
+  formData.triggerType = ReminderContracts.TriggerType.FIXED_TIME;
   formData.fixedTime = '09:00';
   formData.intervalMinutes = 60;
   formData.notificationTitle = '';
@@ -284,6 +305,7 @@ const resetForm = () => {
   formData.color = '#2196F3';
   formData.icon = 'mdi-bell';
   formData.tags = [];
+  formData.groupUuid = undefined;
   formRef.value?.resetValidation();
 };
 
@@ -322,7 +344,6 @@ const handleSave = async () => {
       
       await updateTemplate(currentTemplate.value.uuid, updateRequest);
       snackbar.showSuccess('提醒模板已更新');
-      emit('templateUpdated');
     } else {
       // 创建模式
       const createRequest: ReminderContracts.CreateReminderTemplateRequestDTO = {
@@ -336,13 +357,15 @@ const handleSave = async () => {
         tags: formData.tags.length > 0 ? formData.tags : undefined,
         color: formData.color || undefined,
         icon: formData.icon || undefined,
+        groupUuid: formData.groupUuid,
       };
       
       await createReminderTemplate(createRequest);
       snackbar.showSuccess('提醒模板已创建');
-      emit('templateCreated');
     }
 
+    // 保存后自动刷新数据
+    await refreshAll();
     close();
   } catch (error) {
     console.error('保存提醒模板失败:', error);
@@ -353,35 +376,52 @@ const handleSave = async () => {
 };
 
 const buildTriggerConfig = (): ReminderContracts.TriggerConfigServerDTO => {
-  if (formData.triggerType === 'FIXED_TIME') {
-    const [hours, minutes] = formData.fixedTime.split(':').map(Number);
+  if (formData.triggerType === ReminderContracts.TriggerType.FIXED_TIME) {
     return {
-      type: 'FIXED_TIME',
-      time: { hours, minutes },
+      type: ReminderContracts.TriggerType.FIXED_TIME,
+      fixedTime: {
+        time: formData.fixedTime,
+        timezone: null,
+      },
+      interval: null,
     };
   } else {
     return {
-      type: 'INTERVAL',
-      intervalMinutes: formData.intervalMinutes,
+      type: ReminderContracts.TriggerType.INTERVAL,
+      fixedTime: null,
+      interval: {
+        minutes: formData.intervalMinutes,
+        startTime: null,
+      },
     };
   }
 };
 
 const buildActiveTimeConfig = (): ReminderContracts.ActiveTimeConfigServerDTO => {
-  // 默认全天有效
+  // 默认从现在开始，一年后结束
   return {
-    startTime: Date.now(),
-    endTime: Date.now() + 365 * 24 * 60 * 60 * 1000, // 一年后
+    startDate: Date.now(),
+    endDate: Date.now() + 365 * 24 * 60 * 60 * 1000,
   };
 };
 
 const buildNotificationConfig = (): ReminderContracts.NotificationConfigServerDTO => {
   return {
+    channels: [
+      ReminderContracts.NotificationChannel.PUSH,
+      ReminderContracts.NotificationChannel.IN_APP,
+    ],
     title: formData.notificationTitle || formData.title,
     body: formData.notificationBody || formData.description || '提醒',
-    sound: true,
-    vibrate: true,
-    priority: formData.importanceLevel === 'CRITICAL' ? 'HIGH' : 'NORMAL',
+    sound: {
+      enabled: true,
+      soundName: 'default',
+    },
+    vibration: {
+      enabled: true,
+      pattern: null,
+    },
+    actions: null,
   };
 };
 

@@ -263,4 +263,26 @@ export class FrequencyAdjustment extends ValueObject implements FrequencyAdjustm
       rejectionReason: dto.rejectionReason,
     });
   }
+
+  /**
+   * 转换为 Persistence DTO（扁平化字段对象）
+   * 用于直接传给 Prisma，无需JSON序列化
+   */
+  public toPersistenceDTO(): {
+    originalInterval: number | null;
+    adjustedInterval: number | null;
+    adjustmentReason: string | null;
+    adjustmentTime: number | null;
+    isAutoAdjusted: boolean;
+    userConfirmed: boolean;
+  } {
+    return {
+      originalInterval: this.originalInterval || null,
+      adjustedInterval: this.adjustedInterval || null,
+      adjustmentReason: this.adjustmentReason || null,
+      adjustmentTime: this.adjustmentTime || null,
+      isAutoAdjusted: this.isAutoAdjusted,
+      userConfirmed: this.userConfirmed,
+    };
+  }
 }

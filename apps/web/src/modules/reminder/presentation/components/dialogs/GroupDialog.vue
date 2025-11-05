@@ -58,40 +58,43 @@
           </v-select>
 
           <!-- 分组颜色 -->
-          <v-select
+          <v-text-field
             v-model="formData.color"
             label="分组颜色"
-            :items="colorOptions"
+            type="color"
             variant="outlined"
             prepend-inner-icon="mdi-palette"
             class="mt-4"
+          />
+
+          <!-- 控制模式 -->
+          <v-select
+            v-model="formData.controlMode"
+            label="控制模式"
+            :items="controlModeOptions"
+            item-title="title"
+            item-value="value"
+            variant="outlined"
+            prepend-inner-icon="mdi-cog"
+            class="mt-4"
           >
             <template #selection="{ item }">
-              <v-chip :color="item.value" size="small" class="mr-2" />
-              {{ item.title }}
+              <div>
+                <div class="font-weight-medium">{{ item.raw.title }}</div>
+                <div class="text-caption text-grey">{{ item.raw.description }}</div>
+              </div>
             </template>
             <template #item="{ props, item }">
               <v-list-item v-bind="props">
-                <template #prepend>
-                  <v-chip :color="item.value" size="small" />
-                </template>
+                <template #title>{{ item.raw.title }}</template>
+                <template #subtitle>{{ item.raw.description }}</template>
               </v-list-item>
             </template>
           </v-select>
 
-          <!-- 启用状态 -->
-          <v-switch
-            v-model="formData.enabled"
-            label="启用分组"
-            color="primary"
-            hint="禁用后，该分组内的所有模板也会被禁用"
-            persistent-hint
-            class="mt-4"
-          />
-
           <!-- 排序权重 -->
           <v-text-field
-            v-model.number="formData.sortOrder"
+            v-model.number="formData.order"
             label="排序权重"
             type="number"
             variant="outlined"
@@ -131,19 +134,15 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderContracts } from '@dailyuse/contracts';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useReminderGroup } from '../../composables/useReminderGroup';
 
 type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
 
 // Composables
 const snackbar = useSnackbar();
-
-// Emits
-const emit = defineEmits<{
-  'group-created': [group: ReminderTemplateGroup];
-  'group-updated': [group: ReminderTemplateGroup];
-}>();
+const { createGroup, updateGroup, fetchGroups } = useReminderGroup();
 
 // 响应式状态
 const visible = ref(false);
@@ -157,9 +156,9 @@ const formData = reactive({
   name: '',
   description: '',
   icon: 'mdi-folder',
-  color: 'primary',
-  enabled: true,
-  sortOrder: 0,
+  color: '#2196F3',
+  controlMode: ReminderContracts.ControlMode.INDIVIDUAL, // 默认个体控制
+  order: 0,
 });
 
 // 计算属性
@@ -181,14 +180,28 @@ const iconOptions = [
 
 // 颜色选项
 const colorOptions = [
-  { title: '蓝色', value: 'primary' },
-  { title: '绿色', value: 'success' },
-  { title: '橙色', value: 'warning' },
-  { title: '红色', value: 'error' },
-  { title: '紫色', value: 'purple' },
-  { title: '粉色', value: 'pink' },
-  { title: '青色', value: 'cyan' },
-  { title: '灰色', value: 'grey' },
+  { title: '蓝色', value: '#2196F3' },
+  { title: '绿色', value: '#4CAF50' },
+  { title: '橙色', value: '#FF9800' },
+  { title: '红色', value: '#F44336' },
+  { title: '紫色', value: '#9C27B0' },
+  { title: '粉色', value: '#E91E63' },
+  { title: '青色', value: '#00BCD4' },
+  { title: '灰色', value: '#9E9E9E' },
+];
+
+// 控制模式选项
+const controlModeOptions = [
+  {
+    title: '个体控制',
+    value: ReminderContracts.ControlMode.INDIVIDUAL,
+    description: '每个提醒模板可以独立启用/暂停',
+  },
+  {
+    title: '组控制',
+    value: ReminderContracts.ControlMode.GROUP,
+    description: '所有提醒模板统一启用/暂停',
+  },
 ];
 
 // 验证规则
@@ -203,9 +216,9 @@ const resetForm = () => {
   formData.name = '';
   formData.description = '';
   formData.icon = 'mdi-folder';
-  formData.color = 'primary';
-  formData.enabled = true;
-  formData.sortOrder = 0;
+  formData.color = '#2196F3';
+  formData.controlMode = ReminderContracts.ControlMode.INDIVIDUAL;
+  formData.order = 0;
   formRef.value?.resetValidation();
 };
 
@@ -213,10 +226,10 @@ const resetForm = () => {
 const fillForm = (group: ReminderTemplateGroup) => {
   formData.name = group.name;
   formData.description = group.description || '';
-  formData.icon = (group as any).icon || 'mdi-folder';
-  formData.color = (group as any).color || 'primary';
-  formData.enabled = group.enabled;
-  formData.sortOrder = (group as any).sortOrder || 0;
+  formData.icon = group.icon || 'mdi-folder';
+  formData.color = group.color || '#2196F3';
+  formData.controlMode = group.controlMode;
+  formData.order = group.order || 0;
 };
 
 // 打开对话框（创建模式）
@@ -255,45 +268,27 @@ const handleSave = async () => {
 
   try {
     // 构建分组数据
-    const groupData = {
+    const groupData: ReminderContracts.CreateReminderGroupRequestDTO = {
       name: formData.name.trim(),
-      description: formData.description?.trim() || null,
-      enabled: formData.enabled,
-      // 扩展字段（当前 DTO 可能不支持，但预留）
-      icon: formData.icon,
+      description: formData.description?.trim() || undefined,
       color: formData.color,
-      sortOrder: formData.sortOrder,
+      icon: formData.icon,
+      controlMode: formData.controlMode,
+      order: formData.order,
     };
 
     if (isEditMode.value && currentGroup.value) {
-      // 编辑模式
-      const updatedGroup: ReminderTemplateGroup = {
-        ...currentGroup.value,
-        ...groupData,
-      };
-      
-      // TODO: 调用 API 更新分组
-      console.log('更新分组:', updatedGroup);
-      
-      emit('group-updated', updatedGroup);
-      snackbar.showSuccess('分组更新成功');
+      // 编辑模式 - 调用 API 更新分组
+      await updateGroup(currentGroup.value.uuid, groupData);
+      snackbar.showSuccess('分组已更新');
     } else {
-      // 创建模式
-      const newGroup: Partial<ReminderTemplateGroup> = {
-        uuid: `temp-${Date.now()}`, // 临时 UUID，实际应该由后端生成
-        accountUuid: '', // 应该从用户上下文获取
-        ...groupData,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-
-      // TODO: 调用 API 创建分组
-      console.log('创建分组:', newGroup);
-
-      emit('group-created', newGroup as ReminderTemplateGroup);
-      snackbar.showSuccess('分组创建成功');
+      // 创建模式 - 调用 API 创建分组
+      await createGroup(groupData);
+      snackbar.showSuccess('分组已创建');
     }
 
+    // 保存后自动刷新数据
+    await fetchGroups(true);
     close();
   } catch (error) {
     console.error('保存分组失败:', error);

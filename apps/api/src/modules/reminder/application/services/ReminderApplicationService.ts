@@ -1,4 +1,4 @@
-import { ReminderDomainService } from '@dailyuse/domain-server';
+import { ReminderDomainService, ReminderGroup } from '@dailyuse/domain-server';
 import type {
   IReminderTemplateRepository,
   IReminderGroupRepository,
@@ -273,5 +273,115 @@ export class ReminderApplicationService {
       errorMessage: null,
       updatedAt: now,
     };
+  }
+
+  // ===== Reminder Group 管理 =====
+
+  /**
+   * 创建提醒分组
+   */
+  async createReminderGroup(params: {
+    accountUuid: string;
+    name: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+  }): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    const group = await this.domainService.createReminderGroup(params);
+    return group.toClientDTO();
+  }
+
+  /**
+   * 获取分组详情
+   */
+  async getReminderGroup(uuid: string): Promise<ReminderContracts.ReminderGroupClientDTO | null> {
+    const group = await this.reminderGroupRepository.findById(uuid);
+    return group ? group.toClientDTO() : null;
+  }
+
+  /**
+   * 获取用户的所有分组
+   */
+  async getUserReminderGroups(
+    accountUuid: string,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO[]> {
+    const groups = await this.reminderGroupRepository.findByAccountUuid(accountUuid);
+    return groups.map((g) => g.toClientDTO());
+  }
+
+  /**
+   * 更新分组
+   */
+  async updateReminderGroup(
+    uuid: string,
+    updates: {
+      name?: string;
+      description?: string;
+      enabled?: boolean;
+    },
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    const group = await this.reminderGroupRepository.findById(uuid);
+    if (!group) {
+      throw new Error(`ReminderGroup not found: ${uuid}`);
+    }
+
+    // 用 ServerDTO 重建对象以更新字段
+    const serverDTO = group.toServerDTO();
+    const updatedGroup = ReminderGroup.fromServerDTO({
+      ...serverDTO,
+      name: updates.name ?? serverDTO.name,
+      description: updates.description ?? serverDTO.description,
+    });
+
+    // 单独处理 enabled 状态
+    if (updates.enabled !== undefined) {
+      if (updates.enabled && !updatedGroup.enabled) {
+        updatedGroup.enable();
+      } else if (!updates.enabled && updatedGroup.enabled) {
+        updatedGroup.pause();
+      }
+    }
+
+    await this.reminderGroupRepository.save(updatedGroup);
+    return updatedGroup.toClientDTO();
+  }
+
+  /**
+   * 删除分组
+   */
+  async deleteReminderGroup(uuid: string): Promise<void> {
+    await this.domainService.deleteGroup(uuid);
+  }
+
+  /**
+   * 切换分组启用状态
+   */
+  async toggleReminderGroupStatus(
+    uuid: string,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    const group = await this.reminderGroupRepository.findById(uuid);
+    if (!group) {
+      throw new Error(`ReminderGroup not found: ${uuid}`);
+    }
+
+    group.toggle();
+    await this.reminderGroupRepository.save(group);
+    return group.toClientDTO();
+  }
+
+  /**
+   * 切换分组控制模式
+   */
+  async toggleReminderGroupControlMode(
+    uuid: string,
+  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    const group = await this.reminderGroupRepository.findById(uuid);
+    if (!group) {
+      throw new Error(`ReminderGroup not found: ${uuid}`);
+    }
+
+    group.toggleControlMode();
+    await this.reminderGroupRepository.save(group);
+    return group.toClientDTO();
   }
 }

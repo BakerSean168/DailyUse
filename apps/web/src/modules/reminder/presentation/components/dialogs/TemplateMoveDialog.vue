@@ -177,7 +177,7 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const { reminderTemplates } = useReminder();
+const { reminderTemplates, refreshAll } = useReminder();
 const snackbar = useSnackbar();
 
 // 响应式状态
@@ -322,14 +322,14 @@ const handleMove = async () => {
     // 模拟 API 调用
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    emit('moved', props.template.uuid, targetGroupUuid);
-
     if (moveToRoot.value) {
       snackbar.showSuccess('模板已移动到桌面');
     } else {
       snackbar.showSuccess(`模板已移动到 "${getGroupName(targetGroupUuid)}"`);
     }
 
+    // 保存后自动刷新数据
+    await refreshAll();
     close();
   } catch (error) {
     console.error('移动模板失败:', error);
