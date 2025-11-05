@@ -5,7 +5,15 @@
 
 import type { RouteRecordRaw } from 'vue-router';
 import MainLayout from '@/modules/app/MainLayout.vue';
-import { scheduleRoutes } from '@/modules/schedule';
+
+// 导入各模块路由
+import { taskRoutes } from '@/modules/task/presentation/router';
+import { goalRoutes } from '@/modules/goal/presentation/router';
+import { reminderRoutes } from '@/modules/reminder/presentation/router';
+import { scheduleRoutes } from '@/modules/schedule/presentation/router';
+import { repositoryRoutes } from '@/modules/repository/presentation/router';
+import { accountRoutes } from '@/modules/account/presentation/router';
+import { settingRoutes } from '@/modules/setting/presentation/router';
 
 /**
  * 认证相关路由
@@ -80,159 +88,10 @@ export const appRoutes: RouteRecordRaw[] = [
         },
       },
 
-      // 任务管理
-      {
-        path: '/tasks',
-        name: 'tasks',
-        meta: {
-          title: '任务管理',
-          showInNav: true,
-          icon: 'mdi-check-circle',
-          order: 2,
-          requiresAuth: true,
-        },
-        children: [
-          {
-            path: '',
-            name: 'task-list',
-            component: () => import('@/modules/task/presentation/views/TaskManagementView.vue'),
-            meta: {
-              title: '任务管理',
-              requiresAuth: true,
-            },
-          },
-          {
-            path: 'dependency-validation-demo',
-            name: 'task-dependency-demo',
-            component: () =>
-              import('@/modules/task/presentation/views/DependencyValidationDemoView.vue'),
-            meta: {
-              title: '依赖验证演示 (STORY-024)',
-              requiresAuth: true,
-              showInNav: import.meta.env.DEV, // 仅开发环境显示
-            },
-          },
-          {
-            path: ':id',
-            name: 'task-detail',
-            component: () => import('@/modules/task/presentation/views/TaskDetailView.vue'),
-            meta: {
-              title: '任务详情',
-              requiresAuth: true,
-            },
-            props: true,
-          },
-        ],
-      },
-
-      // 目标管理
-      {
-        path: '/goals',
-        name: 'goals',
-        meta: {
-          title: '目标管理',
-          showInNav: true,
-          icon: 'mdi-target',
-          order: 3,
-          requiresAuth: true,
-        },
-        children: [
-          {
-            path: '',
-            name: 'goal-list',
-            component: () => import('@/modules/goal/presentation/views/GoalListView.vue'),
-            meta: {
-              title: '目标列表',
-              requiresAuth: true,
-            },
-          },
-          {
-            path: 'compare',
-            name: 'goal-comparison',
-            component: () =>
-              import('@/modules/goal/presentation/views/MultiGoalComparisonView.vue'),
-            meta: {
-              title: '多目标对比',
-              requiresAuth: true,
-            },
-          },
-          {
-            path: 'rules-demo',
-            name: 'goal-rules-demo',
-            component: () => import('@/modules/goal/presentation/views/StatusRulesDemoView.vue'),
-            meta: {
-              title: '规则测试器',
-              requiresAuth: true,
-            },
-          },
-          {
-            path: ':id',
-            name: 'goal-detail',
-            component: () => import('@/modules/goal/presentation/views/GoalDetailView.vue'),
-            meta: {
-              title: '目标详情',
-              requiresAuth: true,
-            },
-            props: true,
-          },
-          {
-            path: ':goalUuid/review/create',
-            name: 'goal-review-create',
-            component: () => import('@/modules/goal/presentation/views/GoalReviewCreationView.vue'),
-            meta: {
-              title: '创建目标复盘',
-              requiresAuth: true,
-            },
-            props: true,
-          },
-          {
-            path: ':goalUuid/review/:reviewUuid',
-            name: 'goal-review-detail',
-            component: () => import('@/modules/goal/presentation/views/GoalReviewDetailView.vue'),
-            meta: {
-              title: '目标复盘记录',
-              requiresAuth: true,
-            },
-            props: true,
-          },
-          {
-            path: ':goalUuid/key-results/:keyResultUuid',
-            name: 'key-result-detail',
-            component: () => import('@/modules/goal/presentation/views/KeyResultDetailView.vue'),
-            meta: {
-              title: '关键结果详情',
-              requiresAuth: true,
-            },
-            props: true,
-          },
-        ],
-      },
-
-      // 提醒管理
-      {
-        path: '/reminders',
-        name: 'reminders',
-        meta: {
-          title: '提醒管理',
-          showInNav: true,
-          icon: 'mdi-bell',
-          order: 4,
-          requiresAuth: true,
-        },
-        children: [
-          {
-            path: '',
-            name: 'reminder-desktop',
-            component: () =>
-              import('@/modules/reminder/presentation/views/ReminderDesktopView.vue'),
-            meta: {
-              title: '提醒列表',
-              requiresAuth: true,
-            },
-          },
-        ],
-      },
-
+      // 各模块路由（从模块内部导入）
+      ...taskRoutes,
+      ...goalRoutes,
+      ...reminderRoutes,
       ...scheduleRoutes,
 
       // 知识仓库 (Knowledge Repository - Document Management)
@@ -249,99 +108,14 @@ export const appRoutes: RouteRecordRaw[] = [
         },
       },
 
-      // 仓储管理 (Legacy)
-      {
-        path: '/repositories',
-        name: 'repositories',
-        meta: {
-          title: '仓储管理',
-          showInNav: false, // 隐藏旧的仓储管理，使用新的知识仓库
-          icon: 'mdi-source-repository',
-          order: 7,
-          requiresAuth: true,
-        },
-        children: [
-          {
-            path: '',
-            name: 'repository-list',
-            component: () =>
-              import('@/modules/repository/presentation/views/RepositoryListView.vue'),
-            meta: {
-              title: '仓储列表',
-              requiresAuth: true,
-            },
-          },
-          {
-            path: ':id',
-            name: 'repository-detail',
-            component: () =>
-              import('@/modules/repository/presentation/views/RepositoryDetailView.vue'),
-            meta: {
-              title: '仓储详情',
-              requiresAuth: true,
-            },
-            props: true,
-          },
-        ],
-      },
+      // 仓储管理路由（从模块内部导入）
+      ...repositoryRoutes,
 
-      // 账户设置
-      {
-        path: '/account',
-        name: 'account',
-        meta: {
-          title: '账户设置',
-          showInNav: true,
-          icon: 'mdi-account-cog',
-          order: 8,
-          requiresAuth: true,
-        },
-        children: [
-          {
-            path: '',
-            name: 'account-profile',
-            component: () => import('@/modules/account/presentation/views/ProfileView.vue'),
-            meta: {
-              title: '个人资料',
-              requiresAuth: true,
-            },
-          },
-          {
-            path: 'settings',
-            name: 'account-settings',
-            component: () => import('@/modules/account/presentation/views/SettingsView.vue'),
-            meta: {
-              title: '账户设置',
-              requiresAuth: true,
-            },
-          },
-          {
-            path: 'security',
-            name: 'account-security',
-            component: () => import('@/modules/account/presentation/views/SecurityView.vue'),
-            meta: {
-              title: '安全设置',
-              requiresAuth: true,
-              permissions: ['account:security'],
-            },
-          },
-        ],
-      },
+      // 账户设置路由（从模块内部导入）
+      ...accountRoutes,
 
-      // 应用设置 - 使用新的 Vuetify 组件系统
-      {
-        path: '/settings',
-        name: 'settings',
-        component: () => import('@/modules/setting/presentation/views/UserSettingsView.vue'),
-        meta: {
-          title: '应用设置',
-          showInNav: true,
-          icon: 'mdi-cog',
-          order: 9,
-          requiresAuth: true,
-        },
-        // 新版本使用内部标签导航，不需要子路由
-      },
+      // 应用设置路由（从模块内部导入）
+      ...settingRoutes,
 
       // Assets 资源演示 (开发环境)
       {

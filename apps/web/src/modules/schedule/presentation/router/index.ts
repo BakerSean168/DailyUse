@@ -20,7 +20,7 @@ export const scheduleRoutes: RouteRecordRaw[] = [
       {
         path: 'dashboard',
         name: 'ScheduleDashboard',
-        component: () => import('../presentation/views/ScheduleDashboardView.vue'),
+        component: () => import('../views/ScheduleDashboardView.vue'),
         meta: {
           title: '调度控制台',
           requiresAuth: true,
@@ -29,7 +29,7 @@ export const scheduleRoutes: RouteRecordRaw[] = [
       {
         path: 'week',
         name: 'ScheduleWeekView',
-        component: () => import('../presentation/views/ScheduleWeekView.vue'),
+        component: () => import('../views/ScheduleWeekView.vue'),
         meta: {
           title: '周视图',
           requiresAuth: true,
