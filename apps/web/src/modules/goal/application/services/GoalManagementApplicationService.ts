@@ -98,9 +98,28 @@ export class GoalManagementApplicationService {
         includeChildren: true,
       });
 
+      console.log('[GoalManagementApplicationService] ✅ API 响应:', {
+        goalsCount: goalsData.goals?.length || 0,
+        firstGoal: goalsData.goals?.[0],
+        firstGoalKeyResults: goalsData.goals?.[0]?.keyResults,
+      });
+
       // 批量创建客户端实体并同步到 store
-      const goals = (goalsData.goals || []).map((goalData: any) => Goal.fromClientDTO(goalData));
-      console.log("🔍 [API Response] Goals to be stored:", goals);
+      const goals = (goalsData.goals || []).map((goalData: any) => {
+        const goal = Goal.fromClientDTO(goalData);
+        console.log(`[GoalManagementApplicationService] Goal转换后 ${goal.title}:`, {
+          uuid: goal.uuid,
+          keyResultsCount: goal.keyResults?.length || 0,
+          keyResults: goal.keyResults,
+        });
+        return goal;
+      });
+      
+      console.log('[GoalManagementApplicationService] 📦 准备存储到 store:', {
+        goalsCount: goals.length,
+        firstGoalKeyResultsCount: goals[0]?.keyResults?.length || 0,
+      });
+      
       this.goalStore.setGoals(goals);
 
       // 更新分页信息

@@ -81,8 +81,8 @@
                   <div class="mb-4">
                     <div class="text-body-2 text-medium-emphasis mb-2">当前进度</div>
                     <div class="text-h4 font-weight-bold">
-                      {{ keyResult.currentValue ?? 0 }} / {{ keyResult.targetValue }}
-                      <span v-if="keyResult.unit" class="text-body-1">{{ keyResult.unit }}</span>
+                      {{ keyResult.progress.currentValue }} / {{ keyResult.progress.targetValue }}
+                      <span v-if="keyResult.progress.unit" class="text-body-1">{{ keyResult.progress.unit }}</span>
                     </div>
                   </div>
 
@@ -276,6 +276,10 @@ import { GoalContracts } from '@dailyuse/contracts';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
+// 引入 snackbar 和 message
+import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
+import type { KeyResult, Goal } from '@dailyuse/domain-client';
 
 const router = useRouter();
 const route = useRoute();
@@ -292,14 +296,16 @@ const keyResultUuid = computed(() => route.params.keyResultUuid as string);
 
 // 找到对应的 Goal
 const goal = computed(() => {
-  return goals.value.find((g: any) => g.uuid === goalUuid.value);
+  return goals.value.find((g: Goal) => g.uuid === goalUuid.value);
 });
 
 // 找到对应的 KeyResult
-const keyResult = computed(() => {
+const keyResult = computed((): KeyResult | null => {
   const goalData = goal.value;
   if (!goalData) return null;
-  return goalData.keyResults?.find((kr: any) => kr.uuid === keyResultUuid.value);
+  const kr = goalData.keyResults?.find((kr: KeyResult) => kr.uuid === keyResultUuid.value);
+  console.log("keyResult ======= ", kr);
+  return kr ?? null;
 });
 
 // Goal 颜色
@@ -308,8 +314,8 @@ const goalColor = computed(() => goal.value?.color || 'primary');
 // 计算进度百分比
 const progressPercentage = computed(() => {
   if (!keyResult.value) return 0;
-  const current = keyResult.value.currentValue ?? 0;
-  const target = keyResult.value.targetValue;
+  const current = keyResult.value.progress.currentValue ?? 0;
+  const target = keyResult.value.progress.targetValue;
   if (target === 0) return 0;
   return Math.min(100, Math.round((current / target) * 100));
 });
@@ -474,9 +480,7 @@ const handleDeleteRecord = async (recordUuid: string) => {
   }
 };
 
-// 引入 snackbar 和 message
-import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { useMessage } from '@dailyuse/ui';
+
 const snackbar = useSnackbar();
 const message = useMessage();
 

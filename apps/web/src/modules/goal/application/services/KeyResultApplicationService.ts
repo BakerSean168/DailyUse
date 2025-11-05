@@ -2,10 +2,17 @@ import type { GoalContracts } from '@dailyuse/contracts';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { eventBus, GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/utils';
 
 /**
  * Key Result Application Service
  * 关键结果应用服务 - 负责 KeyResult 的 CRUD 和管理
+ * 
+ * 架构设计：
+ * 1. 不再直接调用 refreshGoalWithKeyResults()
+ * 2. 代之以发布 GoalAggregateRefreshEvent 事件
+ * 3. GoalSyncApplicationService 监听此事件并自动刷新
+ * 4. 完全解耦，便于维护和扩展
  */
 export class KeyResultApplicationService {
   private static instance: KeyResultApplicationService;
@@ -46,8 +53,10 @@ export class KeyResultApplicationService {
 
       const data = await goalApiClient.addKeyResultForGoal(goalUuid, request);
 
-      // 更新关联的Goal实体（重新获取以包含新的KeyResult）
-      await this.refreshGoalWithKeyResults(goalUuid);
+      // 发布事件通知 Goal 需要刷新
+      this.publishGoalRefreshEvent(goalUuid, 'key-result-created', {
+        keyResultUuid: data.uuid,
+      });
 
       this.snackbar.showSuccess('关键结果创建成功');
       return data;
@@ -96,8 +105,10 @@ export class KeyResultApplicationService {
 
       const data = await goalApiClient.updateKeyResultForGoal(goalUuid, keyResultUuid, request);
 
-      // 更新关联的Goal实体
-      await this.refreshGoalWithKeyResults(goalUuid);
+      // 发布事件通知 Goal 需要刷新
+      this.publishGoalRefreshEvent(goalUuid, 'key-result-updated', {
+        keyResultUuid: keyResultUuid,
+      });
 
       this.snackbar.showSuccess('关键结果更新成功');
       return data;
@@ -121,8 +132,10 @@ export class KeyResultApplicationService {
 
       await goalApiClient.deleteKeyResultForGoal(goalUuid, keyResultUuid);
 
-      // 更新关联的Goal实体
-      await this.refreshGoalWithKeyResults(goalUuid);
+      // 发布事件通知 Goal 需要刷新
+      this.publishGoalRefreshEvent(goalUuid, 'key-result-deleted', {
+        keyResultUuid: keyResultUuid,
+      });
 
       this.snackbar.showSuccess('关键结果删除成功');
     } catch (error) {
@@ -153,8 +166,8 @@ export class KeyResultApplicationService {
 
       const data = await goalApiClient.batchUpdateKeyResultWeights(goalUuid, request);
 
-      // 更新关联的Goal实体
-      await this.refreshGoalWithKeyResults(goalUuid);
+      // 发布事件通知 Goal 需要刷新
+      this.publishGoalRefreshEvent(goalUuid, 'key-result-updated', {});
 
       this.snackbar.showSuccess('关键结果权重更新成功');
       return data;
@@ -192,23 +205,25 @@ export class KeyResultApplicationService {
   // ===== 辅助方法 =====
 
   /**
-   * 刷新Goal及其KeyResults
+   * 发布 Goal 刷新事件
+   * @param goalUuid Goal UUID
+   * @param reason 刷新原因
+   * @param metadata 事件元数据
    */
-  private async refreshGoalWithKeyResults(goalUuid: string): Promise<void> {
-    try {
-      console.log('[KeyResultApplicationService] 开始刷新Goal及其KeyResults:', goalUuid);
-      const { Goal } = await import('@dailyuse/domain-client');
-      const goalResponse = await goalApiClient.getGoalById(goalUuid, true);
-      console.log('[KeyResultApplicationService] 获取到Goal数据:', goalResponse);
-      console.log('[KeyResultApplicationService] Goal包含的KeyResults:', goalResponse.keyResults?.length || 0);
-      
-      const goal = Goal.fromClientDTO(goalResponse);
-      this.goalStore.addOrUpdateGoal(goal);
-      
-      console.log('[KeyResultApplicationService] Goal已更新到store');
-    } catch (error) {
-      console.warn('❌ 刷新Goal和KeyResults失败:', error);
-    }
+  private publishGoalRefreshEvent(
+    goalUuid: string,
+    reason: 'key-result-created' | 'key-result-updated' | 'key-result-deleted',
+    metadata?: any,
+  ): void {
+    const event: GoalAggregateRefreshEvent = {
+      goalUuid,
+      reason,
+      timestamp: Date.now(),
+      metadata,
+    };
+
+    console.log('[KeyResultApplicationService] 发布 Goal 刷新事件:', event);
+    eventBus.emit(GoalEvents.AGGREGATE_REFRESH, event);
   }
 }
 

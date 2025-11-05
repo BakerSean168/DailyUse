@@ -5,7 +5,7 @@
 
 import { userSettingApiClient } from '../../infrastructure/api/userSettingApiClient';
 import { useUserSettingStore } from '../../presentation/stores/userSettingStore';
-import { SettingDomain } from '@dailyuse/domain-client';
+import { UserSetting } from '@dailyuse/domain-client';
 import { type SettingContracts } from '@dailyuse/contracts';
 import { CrossPlatformEventBus } from '@dailyuse/utils';
 
@@ -49,8 +49,6 @@ export interface UserSettingEventData {
 export type UserSettingEventHandler<T extends UserSettingEventType> = (
   data: UserSettingEventData[T],
 ) => void;
-
-const { UserSetting } = SettingDomain;
 
 /**
  * UserSetting Web 应用服务

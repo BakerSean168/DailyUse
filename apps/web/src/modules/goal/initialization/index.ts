@@ -13,6 +13,7 @@ import {
   getGoalFolderService,
 } from '../index';
 import { useGoalStore } from '../presentation/stores/goalStore';
+import { goalSyncApplicationService } from '../application/services/GoalSyncApplicationService';
 
 /**
  * 注册 Goal 模块的初始化任务
@@ -64,6 +65,10 @@ export function registerGoalInitializationTasks(): void {
         // 初始化模块（如果需要）
         await initializeGoalModule();
 
+        // ✨ 初始化事件总线监听（应该在获取数据之前）
+        console.log('🎧 [Goal] 初始化 Goal 事件监听...');
+        goalSyncApplicationService.initializeEventListeners();
+
         const store = useGoalStore();
 
         // 检查是否需要从 API 同步数据
@@ -108,6 +113,11 @@ export function registerGoalInitializationTasks(): void {
 
         // 清空用户相关的目标数据
         (store as any).clearAll();
+
+        // 清理事件监听
+        console.log('🧹 [Goal] 清理 Goal 事件监听...');
+        goalSyncApplicationService.cleanup();
+
         console.log('✅ [Goal] 用户 Goal 数据清理完成');
       } catch (error) {
         console.error('❌ [Goal] 用户 Goal 数据清理失败:', error);

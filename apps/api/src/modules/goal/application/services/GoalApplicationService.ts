@@ -107,7 +107,7 @@ export class GoalApplicationService {
     options?: { includeChildren?: boolean },
   ): Promise<GoalContracts.GoalClientDTO | null> {
     const goal = await this.goalRepository.findById(uuid, options);
-    return goal ? goal.toClientDTO() : null;
+    return goal ? goal.toClientDTO(true) : null;
   }
 
   /**

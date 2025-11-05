@@ -47,7 +47,7 @@
       >
         <v-window v-model="activeTab" class="h-100 w-90">
           <!-- 基本信息 -->
-          <v-window-item :value="0">
+          <v-window-item :value="tabs.findIndex(t => t.name === '基本信息')">
             <v-form @submit.prevent class="px-4 py-2">
               <!-- 使用模板按钮 -->
               <v-alert v-if="!isEditing" type="info" variant="tonal" density="compact" class="mb-4">
@@ -155,98 +155,8 @@
             </v-form>
           </v-window-item>
 
-          <!-- Key Results Tab -->
-          <v-window-item :value="1">
-            <div class="key-results-overview">
-              <div v-if="goalModel && goalModel.keyResults && goalModel.keyResults.length > 0" class="mb-4">
-                <h4 class="text-h6 mb-3">已添加的关键结果 ({{ goalModel.keyResults.length }})</h4>
-                <v-list>
-                  <v-list-item
-                    v-for="(kr, index) in goalModel.keyResults"
-                    :key="`kr-${index}`"
-                    class="mb-2"
-                  >
-                    <template v-slot:prepend>
-                      <v-icon :color="goalColor">mdi-target</v-icon>
-                    </template>
-                    <v-list-item-title>{{ kr.title || '未命名关键结果' }}</v-list-item-title>
-                    <v-list-item-subtitle>
-                      当前值: {{ kr.progress.currentValue || 0 }} / 目标值: {{ kr.progress.targetValue || 0 }}
-                      <span v-if="kr.weight">(权重: {{ kr.weight }})</span>
-                    </v-list-item-subtitle>
-                    <template v-slot:append>
-                      <v-btn
-                        icon="mdi-pencil"
-                        variant="text"
-                        :color="goalColor"
-                        size="small"
-                        @click="
-                          goalModel && keyResultDialogRef?.openForUpdateKeyResultInGoalEditing(
-                            goalModel as Goal,
-                            kr as KeyResult,
-                          )
-                        "
-                      />
-                      <v-btn
-                        icon="mdi-delete"
-                        variant="text"
-                        color="error"
-                        size="small"
-                        @click="goalModel && startRemoveKeyResult(goalModel as Goal, kr.uuid)"
-                      />
-                    </template>
-                  </v-list-item>
-                </v-list>
-              </div>
-              <div v-else class="text-center py-8">
-                <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-target-variant</v-icon>
-                <h4 class="text-h6 text-medium-emphasis mb-2">还没有关键结果</h4>
-                <p class="text-body-2 text-medium-emphasis mb-4">
-                  关键结果是衡量目标达成的具体指标
-                </p>
-              </div>
-              <v-row class="mt-2">
-                <v-col cols="12" md="8">
-                  <v-btn
-                    :color="goalColor"
-                    variant="elevated"
-                    prepend-icon="mdi-plus"
-                    block
-                    class="add-kr-btn"
-                    @click="
-                      goalModel && keyResultDialogRef?.openForCreateKeyResultInGoalEditing(goalModel as Goal)
-                    "
-                  >
-                    {{
-                      (goalModel?.keyResults?.length || 0) === 0 ? '添加第一个关键结果' : '添加更多关键结果'
-                    }}
-                  </v-btn>
-                </v-col>
-                <v-col cols="12" md="4">
-                  <v-btn
-                    color="secondary"
-                    variant="tonal"
-                    prepend-icon="mdi-robot"
-                    block
-                    :disabled="(goalModel?.keyResults?.length || 0) < 2"
-                    @click="weightSuggestionRef?.open()"
-                  >
-                    AI 权重推荐
-                  </v-btn>
-                </v-col>
-              </v-row>
-              <v-alert type="info" variant="tonal" class="mt-4" density="compact">
-                <template v-slot:prepend>
-                  <v-icon>mdi-lightbulb-outline</v-icon>
-                </template>
-                建议为每个目标设置 2-4 个关键结果，确保目标的可衡量性。 添加 2 个以上 KR 后可使用 AI
-                权重推荐功能。
-              </v-alert>
-            </div>
-          </v-window-item>
-
           <!-- Motivation & Feasibility Tab -->
-          <v-window-item :value="2">
+          <v-window-item :value="tabs.findIndex(t => t.name === '动机分析')">
             <div class="motivation-section">
               <v-row>
                 <v-col cols="12" md="6">
@@ -290,7 +200,7 @@
           </v-window-item>
 
           <!-- Auto Status Rules Tab -->
-          <v-window-item :value="3">
+          <v-window-item :value="tabs.findIndex(t => t.name === '规则设置')">
             <div class="rules-section px-4 py-2">
               <StatusRuleEditor />
             </div>
@@ -513,21 +423,12 @@ const activeTab = ref(0);
 
 const allTabs = [
   { name: '基本信息', icon: 'mdi-information', color: 'primary' },
-  { name: '关键结果', icon: 'mdi-target', color: 'success' },
   { name: '动机分析', icon: 'mdi-lightbulb', color: 'warning' },
   { name: '规则设置', icon: 'mdi-robot', color: 'info' },
 ];
 
-// 根据模式过滤标签：创建模式只显示"基本信息"、"动机分析"、"规则设置"
-const tabs = computed(() => {
-  if (isEditing.value) {
-    // 编辑模式：显示所有标签
-    return allTabs;
-  } else {
-    // 创建模式：隐藏"关键结果"标签
-    return allTabs.filter(tab => tab.name !== '关键结果');
-  }
-});
+// Tabs 无需过滤，创建和编辑都使用相同的 tabs
+const tabs = computed(() => allTabs);
 
 // 预定义颜色
 const predefinedColors = [

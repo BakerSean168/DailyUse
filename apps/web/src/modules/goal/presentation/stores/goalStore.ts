@@ -327,8 +327,17 @@ export const useGoalStore = defineStore('goal', {
      * 设置所有目标
      */
     setGoals(goals: any[]): void {
+      console.log('[GoalStore.setGoals] 📥 接收到的 goals:', {
+        count: goals.length,
+        firstGoal: goals[0],
+        firstGoalKeyResults: goals[0]?.keyResults,
+      });
       this.goals = goals;
       this.lastSyncTime = new Date();
+      console.log('[GoalStore.setGoals] ✅ goals 已设置到 store:', {
+        storeGoalsCount: this.goals.length,
+        firstStoreGoalKeyResults: this.goals[0]?.keyResults,
+      });
     },
 
     /**
@@ -543,29 +552,85 @@ export const useGoalStore = defineStore('goal', {
     // 自定义序列化器，确保实体类的正确序列化
     serializer: {
       serialize: (state: any) => {
-        return JSON.stringify({
+        console.log('📦 [GoalStore] 开始序列化 Store 数据', {
+          goalsCount: state.goals?.length || 0,
+          foldersCount: state.goalFolders?.length || 0,
+          firstGoalKeyResults: state.goals?.[0]?.keyResults?.length || 0,
+        });
+        
+        const serialized = {
           ...state,
-          goals: state.goals.map((goal: any) =>
-            goal && typeof goal.toClientDTO === 'function' ? goal.toClientDTO() : goal,
-          ),
+          goals: state.goals.map((goal: any) => {
+            // ✅ 关键修复：传入 includeChildren=true 确保序列化 KeyResults
+            const dto = goal && typeof goal.toClientDTO === 'function' 
+              ? goal.toClientDTO(true)  // 🔥 includeChildren=true
+              : goal;
+            
+            console.log('📦 [GoalStore] 序列化 Goal:', {
+              uuid: dto.uuid,
+              title: dto.title,
+              keyResultsCount: dto.keyResults?.length || 0,
+            });
+            
+            return dto;
+          }),
           goalFolders: state.goalFolders.map((folder: any) =>
             folder && typeof folder.toClientDTO === 'function' ? folder.toClientDTO() : folder,
           ),
           lastSyncTime: state.lastSyncTime?.getTime
             ? state.lastSyncTime.getTime()
             : state.lastSyncTime,
+        };
+        
+        console.log('📦 [GoalStore] 序列化完成:', {
+          goalsCount: serialized.goals.length,
+          firstGoalKeyResultsCount: serialized.goals[0]?.keyResults?.length || 0,
         });
+        
+        return JSON.stringify(serialized);
       },
       deserialize: (serialized: string) => {
         const state = JSON.parse(serialized);
-        return {
+        console.log('📦 [GoalStore] 开始反序列化 Store 数据', {
+          goalsCount: state.goals?.length || 0,
+          foldersCount: state.goalFolders?.length || 0,
+          isInitialized: state.isInitialized,
+          firstGoalKeyResultsCount: state.goals?.[0]?.keyResults?.length || 0,
+        });
+        
+        const deserialized = {
           ...state,
-          goals: (state.goals || []).map((goalData: any) => Goal.fromClientDTO(goalData)),
-          goalFolders: (state.goalFolders || []).map((folderData: any) =>
-            GoalFolder.fromClientDTO(folderData),
-          ),
+          goals: (state.goals || []).map((goalData: any) => {
+            try {
+              const goal = Goal.fromClientDTO(goalData);
+              console.log('📦 [GoalStore] 反序列化 Goal:', {
+                uuid: goal.uuid,
+                title: goal.title,
+                keyResultsCount: goal.keyResults?.length || 0,
+              });
+              return goal;
+            } catch (e) {
+              console.warn('Failed to deserialize goal:', goalData, e);
+              return goalData; // 保持原始数据
+            }
+          }),
+          goalFolders: (state.goalFolders || []).map((folderData: any) => {
+            try {
+              return GoalFolder.fromClientDTO(folderData);
+            } catch (e) {
+              console.warn('Failed to deserialize folder:', folderData, e);
+              return folderData; // 保持原始数据
+            }
+          }),
           lastSyncTime: state.lastSyncTime ? new Date(state.lastSyncTime) : null,
         };
+        
+        console.log('📦 [GoalStore] 反序列化完成:', {
+          goalsCount: deserialized.goals.length,
+          firstGoalKeyResultsCount: deserialized.goals[0]?.keyResults?.length || 0,
+        });
+        
+        return deserialized;
       },
     },
   },

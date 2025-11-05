@@ -90,7 +90,12 @@ export class PrismaGoalRepository implements IGoalRepository {
     if (keyResultsData.length > 0) {
       console.log('[PrismaGoalRepository.mapToEntity] 开始恢复 KeyResults...');
       for (const krData of keyResultsData) {
-        console.log('[PrismaGoalRepository.mapToEntity] KeyResult 原始数据:', krData);
+        console.log('[PrismaGoalRepository.mapToEntity] KeyResult 原始数据:', {
+          uuid: krData.uuid,
+          title: krData.title,
+          goalRecordCount: krData.goalRecord?.length || 0,
+        });
+        
         const keyResult = KeyResult.fromPersistenceDTO({
           uuid: krData.uuid,
           goalUuid: krData.goalUuid,
@@ -103,13 +108,37 @@ export class PrismaGoalRepository implements IGoalRepository {
             current_value: krData.currentValue,
             unit: krData.unit,
           }),
-          weight: krData.weight, // 添加 weight 属性
+          weight: krData.weight,
           order: krData.order,
           createdAt:
             krData.createdAt instanceof Date ? krData.createdAt.getTime() : krData.createdAt,
           updatedAt:
             krData.updatedAt instanceof Date ? krData.updatedAt.getTime() : krData.updatedAt,
         });
+        
+        // ✅ 恢复 GoalRecords（如果有）
+        if (krData.goalRecord && krData.goalRecord.length > 0) {
+          console.log(`[PrismaGoalRepository.mapToEntity] 恢复 ${krData.goalRecord.length} 条 GoalRecords...`);
+          for (const recordData of krData.goalRecord) {
+            keyResult.addRecord({
+              uuid: recordData.uuid,
+              keyResultUuid: krData.uuid,
+              goalUuid: data.uuid,
+              previousValue: recordData.previousValue || 0,
+              newValue: recordData.value,
+              changeAmount: recordData.value - (recordData.previousValue || 0),
+              note: recordData.note,
+              recordedAt: recordData.recordedAt instanceof Date 
+                ? recordData.recordedAt.getTime() 
+                : recordData.recordedAt,
+              createdAt: recordData.createdAt instanceof Date 
+                ? recordData.createdAt.getTime() 
+                : recordData.createdAt,
+            });
+          }
+          console.log(`[PrismaGoalRepository.mapToEntity] ✅ GoalRecords 已恢复`);
+        }
+        
         goal.addKeyResult(keyResult);
         console.log('[PrismaGoalRepository.mapToEntity] KeyResult 已添加到 Goal');
       }
@@ -216,6 +245,7 @@ export class PrismaGoalRepository implements IGoalRepository {
               where: { uuid: record.uuid },
               create: {
                 uuid: record.uuid,
+                previousValue: record.previousValue ?? 0, // ✅ 保存 previousValue
                 value: record.newValue ?? 0, // ✅ 默认值 0 如果为 null
                 note: record.note || null,
                 recordedAt: new Date(record.recordedAt),
@@ -225,6 +255,7 @@ export class PrismaGoalRepository implements IGoalRepository {
                 },
               },
               update: {
+                previousValue: record.previousValue ?? 0, // ✅ 保存 previousValue
                 value: record.newValue ?? 0, // ✅ 默认值 0 如果为 null
                 note: record.note || null,
                 recordedAt: new Date(record.recordedAt),
@@ -239,14 +270,29 @@ export class PrismaGoalRepository implements IGoalRepository {
   async findById(uuid: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
     const includeOptions = options?.includeChildren
       ? {
-          keyResult: true,  // 修复: 使用 keyResult (单数) 匹配 Prisma schema
+          keyResult: {
+            include: {
+              goalRecord: true, // ✅ 包含 KeyResult 的所有 GoalRecords
+            },
+          },
         }
       : undefined;
 
+    console.log('[PrismaGoalRepository.findById] includeOptions:', JSON.stringify(includeOptions, null, 2));
+
     const data = await this.prisma.goal.findUnique({
       where: { uuid },
-      include: includeOptions as any, // 使用 any 绕过类型检查（因为 keyResult 关系还未在 Prisma Client 中生成）
+      include: includeOptions as any,
     });
+    
+    if (data) {
+      console.log('[PrismaGoalRepository.findById] Prisma返回数据:', {
+        uuid: data.uuid,
+        title: data.title,
+        keyResultCount: (data as any).keyResult?.length || 0,
+      });
+    }
+    
     return data ? this.mapToEntity(data) : null;
   }
 
@@ -260,22 +306,26 @@ export class PrismaGoalRepository implements IGoalRepository {
   ): Promise<Goal[]> {
     console.log('[PrismaGoalRepository.findByAccountUuid] options:', options);
     
-    const where: any = { accountUuid: accountUuid, deletedAt: null }; // Prisma 自动转换为 camelCase
+    const where: any = { accountUuid: accountUuid, deletedAt: null };
     if (options?.status) {
       where.status = options.status;
     }
     if (options?.folderUuid) {
-      where.folderUuid = options.folderUuid; // Prisma 自动转换为 camelCase
+      where.folderUuid = options.folderUuid;
     }
     
-    // 添加 include 选项以加载 KeyResults
+    // ✅ 添加 include 选项以加载 KeyResults 和 GoalRecords
     const includeOptions = options?.includeChildren
       ? {
-          keyResult: true,  // 使用 keyResult (单数) 匹配 Prisma schema
+          keyResult: {
+            include: {
+              goalRecord: true, // ✅ 包含 KeyResult 的所有 GoalRecords
+            },
+          },
         }
       : undefined;
     
-    console.log('[PrismaGoalRepository.findByAccountUuid] includeOptions:', includeOptions);
+    console.log('[PrismaGoalRepository.findByAccountUuid] includeOptions:', JSON.stringify(includeOptions, null, 2));
     
     const data = await this.prisma.goal.findMany({ 
       where,
@@ -283,8 +333,13 @@ export class PrismaGoalRepository implements IGoalRepository {
     });
     
     console.log('[PrismaGoalRepository.findByAccountUuid] Prisma返回数据数量:', data.length);
-    console.log('[PrismaGoalRepository.findByAccountUuid] 第一条原始数据:', data[0]);
-    console.log('[PrismaGoalRepository.findByAccountUuid] 第一条数据的keyResult:', (data[0] as any)?.keyResult);
+    if (data.length > 0) {
+      console.log('[PrismaGoalRepository.findByAccountUuid] 第一条数据的keyResult数量:', (data[0] as any)?.keyResult?.length || 0);
+      if ((data[0] as any)?.keyResult?.length > 0) {
+        const firstKr = (data[0] as any).keyResult[0];
+        console.log('[PrismaGoalRepository.findByAccountUuid] 第一个KeyResult的goalRecord数量:', firstKr?.goalRecord?.length || 0);
+      }
+    }
     
     const entities = data.map((d) => this.mapToEntity(d));
     console.log('[PrismaGoalRepository.findByAccountUuid] 转换后实体数量:', entities.length);

@@ -121,17 +121,6 @@
                 >
                   查看进度详情
                 </v-btn>
-                <!-- 查看进度详情按钮 -->
-                <v-btn
-                  v-if="keyResults && keyResults.length > 0"
-                  size="small"
-                  variant="outlined"
-                  :color="goalColor"
-                  prepend-icon="mdi-chart-pie"
-                  @click="showProgressBreakdown = true"
-                >
-                  查看进度详情
-                </v-btn>
               </v-col>
 
               <!-- 时间信息 -->
