@@ -2,7 +2,8 @@ import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import type { ScheduleTask } from '@dailyuse/domain-server';
 import { ScheduleTaskFactory } from '@dailyuse/domain-server';
 import { ScheduleApplicationService } from './ScheduleApplicationService';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalContracts, TaskContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts';
 
 /**
  * Schedule 领域事件发布器
@@ -67,7 +68,42 @@ export class ScheduleEventPublisher {
       }
     });
 
+    /**
+     * 监听 Goal 的计划时间或提醒配置变更事件
+     */
+    const handleGoalUpdate = async (event: DomainEvent) => {
+      try {
+        if (!event.accountUuid) {
+          console.error(`❌ [ScheduleEventPublisher] Missing accountUuid in ${event.eventType} event`);
+          return;
+        }
+        const { goal } = event.payload as { goal: GoalContracts.GoalServerDTO };
+        await this.handleGoalScheduleChanged(event.accountUuid, goal);
+      } catch (error) {
+        console.error(`❌ [ScheduleEventPublisher] Error handling ${event.eventType}:`, error);
+      }
+    };
+
+    eventBus.on('goal.schedule_time_changed', handleGoalUpdate);
+    eventBus.on('goal.reminder_config_changed', handleGoalUpdate);
+
     // ============ 监听 Task 模块事件 ============
+
+    const handleTaskTemplateUpdate = async (event: DomainEvent) => {
+      try {
+        if (!event.accountUuid) {
+          console.error(`❌ [ScheduleEventPublisher] Missing accountUuid in ${event.eventType} event`);
+          return;
+        }
+        const { taskTemplate } = event.payload as { taskTemplate: TaskContracts.TaskTemplateServerDTO };
+        await this.handleTaskTemplateScheduleChanged(event.accountUuid, taskTemplate);
+      } catch (error) {
+        console.error(`❌ [ScheduleEventPublisher] Error handling ${event.eventType}:`, error);
+      }
+    };
+
+    eventBus.on('task_template.schedule_time_changed', handleTaskTemplateUpdate);
+    eventBus.on('task_template.recurrence_changed', handleTaskTemplateUpdate);
 
     /**
      * 监听 Task 创建事件
@@ -291,19 +327,67 @@ export class ScheduleEventPublisher {
   /**
    * 处理 Goal 删除事件
    */
-  private static async handleGoalDeleted(
+  private static async handleGoalDeleted(accountUuid: string, goalUuid:string): Promise<void> {
+    console.log(`🗑️ [ScheduleEventPublisher] Handling goal deletion for: ${goalUuid}`);
+    await this.deleteTasksBySource(accountUuid, SourceModule.GOAL, goalUuid);
+  }
+
+  /**
+   * 处理 Goal 计划变更事件
+   * (删除旧的调度，并根据新配置创建新的调度)
+   */
+  private static async handleGoalScheduleChanged(
     accountUuid: string,
-    goalUuid: string,
+    goal: GoalContracts.GoalServerDTO,
+  ): Promise<void> {
+    console.log(`🔄 [ScheduleEventPublisher] Handling goal schedule change for: ${goal.uuid}`);
+
+    // 1. 删除此目标的所有现有调度任务
+    await this.handleGoalDeleted(accountUuid, goal.uuid);
+
+    // 2. 根据更新后的目标信息重新创建调度任务
+    await this.handleGoalCreated(accountUuid, goal);
+
+    console.log(`✅ [ScheduleEventPublisher] Successfully handled goal schedule change for: ${goal.uuid}`);
+  }
+
+  /**
+   * 处理 TaskTemplate 计划变更事件
+   */
+  private static async handleTaskTemplateScheduleChanged(
+    accountUuid: string,
+    taskTemplate: TaskContracts.TaskTemplateServerDTO,
+  ): Promise<void> {
+    console.log(`🔄 [ScheduleEventPublisher] Handling task template schedule change for: ${taskTemplate.uuid}`);
+
+    // 1. 删除此模板的所有现有调度任务
+    await this.deleteTasksBySource(accountUuid, SourceModule.TASK, taskTemplate.uuid);
+
+    // 2. 根据更新后的模板信息重新创建调度任务
+    await this.handleTaskCreated(accountUuid, taskTemplate);
+
+    console.log(`✅ [ScheduleEventPublisher] Successfully handled task template schedule change for: ${taskTemplate.uuid}`);
+  }
+
+  /**
+   * Helper to delete schedule tasks for a given source.
+   */
+  private static async deleteTasksBySource(
+    accountUuid: string,
+    sourceType: SourceModule,
+    sourceId: string,
   ): Promise<void> {
     try {
       const scheduleService = await ScheduleApplicationService.getInstance();
-      await scheduleService.deleteScheduleTasksBySource('GOAL' as any, goalUuid, accountUuid);
-      
+      await scheduleService.deleteScheduleTasksBySource(sourceType, sourceId, accountUuid);
       console.log(
-        `✅ [ScheduleEventPublisher] Deleted schedule tasks for Goal ${goalUuid}`,
+        `✅ [ScheduleEventPublisher] Triggered deletion for tasks related to ${sourceType} ${sourceId}`,
       );
     } catch (error) {
-      console.error(`❌ [ScheduleEventPublisher] Failed to delete schedules for Goal ${goalUuid}:`, error);
+      console.error(
+        `❌ [ScheduleEventPublisher] Error deleting tasks for ${sourceType} ${sourceId}:`,
+        error,
+      );
     }
   }
 
@@ -359,16 +443,8 @@ export class ScheduleEventPublisher {
     accountUuid: string,
     taskUuid: string,
   ): Promise<void> {
-    try {
-      const scheduleService = await ScheduleApplicationService.getInstance();
-      await scheduleService.deleteScheduleTasksBySource('TASK' as any, taskUuid, accountUuid);
-      
-      console.log(
-        `✅ [ScheduleEventPublisher] Deleted schedule tasks for Task ${taskUuid}`,
-      );
-    } catch (error) {
-      console.error(`❌ [ScheduleEventPublisher] Failed to delete schedules for Task ${taskUuid}:`, error);
-    }
+    console.log(`🗑️ [ScheduleEventPublisher] Handling task deletion for: ${taskUuid}`);
+    await this.deleteTasksBySource(accountUuid, SourceModule.TASK, taskUuid);
   }
 
   /**
@@ -378,16 +454,8 @@ export class ScheduleEventPublisher {
     accountUuid: string,
     reminderUuid: string,
   ): Promise<void> {
-    try {
-      const scheduleService = await ScheduleApplicationService.getInstance();
-      await scheduleService.deleteScheduleTasksBySource('REMINDER' as any, reminderUuid, accountUuid);
-      
-      console.log(
-        `✅ [ScheduleEventPublisher] Deleted schedule tasks for Reminder ${reminderUuid}`,
-      );
-    } catch (error) {
-      console.error(`❌ [ScheduleEventPublisher] Failed to delete schedules for Reminder ${reminderUuid}:`, error);
-    }
+    console.log(`🗑️ [ScheduleEventPublisher] Handling reminder deletion for: ${reminderUuid}`);
+    await this.deleteTasksBySource(accountUuid, SourceModule.REMINDER, reminderUuid);
   }
 
   /**

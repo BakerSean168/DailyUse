@@ -16,7 +16,10 @@ import {
   type IScheduleExecutionEngine,
   type TaskExecutionContext,
   ScheduleTask,
+  type IScheduleExecutionRepository,
+  ScheduleExecution,
 } from '@dailyuse/domain-server';
+import { ExecutionStatus } from '@dailyuse/contracts';
 
 /**
  * Bree 执行引擎配置
@@ -51,9 +54,20 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
   private config: BreeExecutionEngineConfig;
   private isRunning = false;
   private activeTasks = new Map<string, ScheduleTask>();
+  private executionRepository: IScheduleExecutionRepository;
+  private taskStartTimes = new Map<string, number>();
 
-  constructor(config: BreeExecutionEngineConfig) {
+  constructor(
+    config: BreeExecutionEngineConfig,
+    executionRepository: IScheduleExecutionRepository,
+  ) {
     this.config = config;
+    this.executionRepository = executionRepository;
+
+    // Bind 'this' to handlers
+    this.handleWorkerMessage = this.handleWorkerMessage.bind(this);
+    this.handleError = this.handleError.bind(this);
+    this.handleTaskStart = this.handleTaskStart.bind(this);
   }
 
   /**
@@ -76,8 +90,8 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
       jobs,
       defaultExtension: 'js', // Worker 会被编译为 JS
       timezone: this.config.timezone ?? 'Asia/Shanghai',
-      errorHandler: this.handleError.bind(this),
-      workerMessageHandler: this.handleWorkerMessage.bind(this),
+      errorHandler: this.handleError,
+      workerMessageHandler: this.handleWorkerMessage,
       logger: this.config.verbose
         ? console
         : {
@@ -87,6 +101,9 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
           },
       outputWorkerMetadata: true,
     });
+
+    // 绑定 'worker created' 事件
+    this.bree.on('worker created', this.handleTaskStart);
 
     // 记录活跃任务
     tasks.forEach((task) => this.activeTasks.set(task.uuid, task));
@@ -108,6 +125,11 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     }
 
     console.log('⏹️  Stopping BreeExecutionEngine...');
+
+    // 解绑事件
+    if (this.bree) {
+      this.bree.off('worker created', this.handleTaskStart);
+    }
 
     await this.bree.stop();
     this.bree = null;
@@ -214,25 +236,25 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
    */
   private toJobOptions(task: ScheduleTask): JobOptions {
     const scheduleConfig = task.schedule;
-    const metadata = task.metadata.toDTO();
+    const retryPolicy = task.retryPolicy;
+
+    // 从 task 中获取 job name
+    const jobName = task.metadata.toDTO().name || task.sourceModule;
 
     // 构建执行上下文
-    const context: TaskExecutionContext = {
-      taskId: task.uuid,
-      accountUuid: task.accountUuid,
-      sourceModule: task.sourceModule,
-      sourceEntityId: task.sourceEntityId,
-      metadata: {
-        priority: metadata.priority,
-        tags: metadata.tags,
-        customData: metadata.customData,
+    const context = {
+      job: {
+        name: jobName,
+        data: {
+          [`${task.sourceModule}Id`]: task.sourceEntityId,
+          accountUuid: task.accountUuid,
+        },
       },
-      executedAt: Date.now(),
     };
 
     // 基础配置
     const jobOptions: JobOptions = {
-      name: task.uuid,
+      name: task.uuid, // 使用 task.uuid 作为 bree 的 job name
       path: path.join(this.config.workerPath, 'schedule-worker.js'),
       worker: {
         workerData: context,
@@ -263,26 +285,151 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
   }
 
   /**
+   * 处理任务启动
+   */
+  private handleTaskStart(workerName: string): void {
+    this.taskStartTimes.set(workerName, Date.now());
+    console.log(`🚀 Worker for task ${workerName} created.`);
+  }
+
+  /**
    * 处理 Worker 错误
    */
-  private handleError(error: Error, workerMetadata?: any): void {
-    console.error('❌ Worker error:', error);
-    if (workerMetadata) {
-      console.error('   Task:', workerMetadata.name);
+  private async handleError(error: Error, workerMetadata?: any): Promise<void> {
+    const taskId = workerMetadata?.name;
+    if (!taskId) {
+      console.error('❌ Worker error with unknown task:', error);
+      return;
     }
 
-    // TODO: 记录到执行历史，触发重试逻辑
+    console.error(`❌ Worker error for task ${taskId}:`, error);
+
+    const task = this.activeTasks.get(taskId);
+    if (!task) {
+      console.error(`Task ${taskId} not found in active tasks.`);
+      return;
+    }
+
+    const startTime = this.taskStartTimes.get(taskId) ?? Date.now();
+    const duration = Date.now() - startTime;
+
+    // 获取上一次的执行记录
+    const previousExecutions = await this.executionRepository.findByTaskUuid(taskId);
+    const lastExecution = previousExecutions.sort((a, b) => b.executionTime - a.executionTime)[0];
+    const currentRetryCount = lastExecution ? lastExecution.retryCount : 0;
+
+    let execution: ScheduleExecution;
+
+    // 检查是否可以重试
+    if (task.retryPolicy.shouldRetry(currentRetryCount)) {
+      const nextRetryCount = currentRetryCount + 1;
+      const delay = task.retryPolicy.calculateNextRetryDelay(nextRetryCount);
+      
+      console.log(`🔁 Task ${taskId} failed. Retrying in ${delay}ms (attempt ${nextRetryCount}).`);
+
+      execution = ScheduleExecution.create({
+        taskUuid: taskId,
+        executionTime: startTime,
+        status: ExecutionStatus.RETRYING,
+      });
+      execution.incrementRetry(); // This will set retryCount to 1 on first retry
+      
+      // 创建一个一次性的重试任务
+      const retryJobName = `${taskId}-retry-${nextRetryCount}-${Date.now()}`;
+      const jobOptions = this.toJobOptions(task);
+      
+      if (jobOptions.worker) {
+        const retryJob: JobOptions = {
+          ...jobOptions,
+          name: retryJobName,
+          date: new Date(Date.now() + delay),
+          // 清除 cron 和 interval，确保只执行一次
+          cron: undefined, 
+          interval: undefined,
+          worker: {
+            ...jobOptions.worker,
+            workerData: {
+              ...jobOptions.worker.workerData,
+              __retryCount: nextRetryCount, // 传递重试次数
+            }
+          }
+        };
+
+        if (this.bree) {
+          await this.bree.add(retryJob);
+          await this.bree.start(retryJobName);
+        }
+      } else {
+         console.error(`❌ Cannot retry task ${taskId} because jobOptions.worker is not defined.`);
+      }
+
+    } else {
+      console.log(`🚫 Max retries reached for task ${taskId}. Marking as FAILED.`);
+      execution = ScheduleExecution.create({
+        taskUuid: taskId,
+        executionTime: startTime,
+        status: ExecutionStatus.FAILED,
+      });
+      task.fail(error.message);
+      // TODO: 保存 task 状态
+    }
+    
+    execution.markFailed(error.message, duration);
+
+    try {
+      await this.executionRepository.save(execution);
+      console.log(`💾 Saved ${execution.status} execution record for task ${taskId}`);
+    } catch (repoError) {
+      console.error(`❌ Failed to save execution record for task ${taskId}:`, repoError);
+    }
+
+    this.taskStartTimes.delete(taskId);
   }
 
   /**
    * 处理 Worker 消息
    */
-  private handleWorkerMessage(message: any, workerMetadata?: any): void {
-    console.log('📨 Worker message:', message);
-    if (workerMetadata) {
-      console.log('   Task:', workerMetadata.name);
+  private async handleWorkerMessage(message: any, workerMetadata?: any): Promise<void> {
+    const taskId = workerMetadata?.name;
+    if (!taskId) {
+      console.error('📨 Worker message from unknown task:', message);
+      return;
     }
 
-    // TODO: 处理执行结果，更新统计信息
+    const task = this.activeTasks.get(taskId);
+    if (!task) {
+      console.error(`Task ${taskId} not found in active tasks.`);
+      return;
+    }
+
+    console.log(`📨 Worker message for task ${taskId}:`, message);
+
+    const startTime = this.taskStartTimes.get(taskId) ?? Date.now();
+    const duration = Date.now() - startTime;
+
+    const execution = ScheduleExecution.create({
+      taskUuid: taskId,
+      executionTime: startTime,
+    });
+
+    if (message === 'done') {
+      execution.markSuccess(duration, { result: 'done' });
+      task.recordExecution(ExecutionStatus.SUCCESS, duration, { result: 'done' });
+    } else {
+      // 如果是其他错误消息
+      const errorMessage = message instanceof Error ? message.message : JSON.stringify(message);
+      execution.markFailed(errorMessage, duration);
+      task.recordExecution(ExecutionStatus.FAILED, duration, undefined, errorMessage);
+    }
+
+    try {
+      await this.executionRepository.save(execution);
+      console.log(`💾 Saved execution record for task ${taskId}`);
+      // TODO: 保存 task 状态
+    } catch (repoError) {
+      console.error(`❌ Failed to save execution record for task ${taskId}:`, repoError);
+    }
+
+    this.taskStartTimes.delete(taskId);
   }
 }

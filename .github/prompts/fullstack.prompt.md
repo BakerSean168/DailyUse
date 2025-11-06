@@ -206,6 +206,7 @@ const UrgencyLevel = goalContracts.UrgencyLevel;
 - 每个聚合根、实体、值对象应该继承领域基类，并且实现 contracts 包中的接口
 - 构造函数中 uuid 不一定要传入，可以通过基类的 `generateUUID()` 方法生成
 - 类型要严格对应 contracts 包中的定义
+- 领域层服务负责业务逻辑，不负责持久化，不能调用仓储接口
 
 **导出规范（重要）**：
 

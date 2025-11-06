@@ -25,13 +25,17 @@ export class ScheduleExecutionService {
   private isInitialized = false;
 
   private constructor() {
+    const executionRepository = this.container.getScheduleExecutionRepository();
     // 初始化执行引擎
-    this.executionEngine = new BreeExecutionEngine({
-      workerPath: path.join(__dirname, '../../infrastructure/workers'),
-      verbose: process.env.NODE_ENV === 'development',
-      timezone: 'Asia/Shanghai',
-      workerTimeout: 60000, // 60 秒
-    });
+    this.executionEngine = new BreeExecutionEngine(
+      {
+        workerPath: path.join(__dirname, '../../infrastructure/workers'),
+        verbose: process.env.NODE_ENV === 'development',
+        timezone: 'Asia/Shanghai',
+        workerTimeout: 60000, // 60 秒
+      },
+      executionRepository,
+    );
   }
 
   /**

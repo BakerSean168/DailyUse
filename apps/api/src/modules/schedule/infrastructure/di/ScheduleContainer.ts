@@ -1,11 +1,12 @@
 import type {
   IScheduleTaskRepository,
   IScheduleStatisticsRepository,
-  IScheduleRepository,
+  IScheduleExecutionRepository,
 } from '@dailyuse/domain-server';
 import { PrismaScheduleTaskRepository } from '../repositories/PrismaScheduleTaskRepository';
 import { PrismaScheduleStatisticsRepository } from '../repositories/PrismaScheduleStatisticsRepository';
 import { PrismaScheduleRepository } from '../repositories/PrismaScheduleRepository';
+import { PrismaScheduleExecutionRepository } from '../repositories/PrismaScheduleExecutionRepository';
 import { prisma } from '@/config/prisma';
 
 /**
@@ -16,7 +17,8 @@ export class ScheduleContainer {
   private static instance: ScheduleContainer;
   private scheduleTaskRepository: IScheduleTaskRepository | null = null;
   private scheduleStatisticsRepository: IScheduleStatisticsRepository | null = null;
-  private scheduleRepository: IScheduleRepository | null = null;
+  private scheduleRepository: any | null = null;
+  private scheduleExecutionRepository: IScheduleExecutionRepository | null = null;
 
   private constructor() {}
 
@@ -70,7 +72,7 @@ export class ScheduleContainer {
    * 获取用户日程（calendar schedule）仓储
    * 使用懒加载，第一次访问时创建实例
    */
-  getScheduleRepository(): IScheduleRepository {
+  getScheduleRepository(): any {
     if (!this.scheduleRepository) {
       this.scheduleRepository = new PrismaScheduleRepository(prisma);
     }
@@ -80,7 +82,24 @@ export class ScheduleContainer {
   /**
    * 设置 Schedule 仓储（用于测试或运行时注入）
    */
-  setScheduleRepository(repository: IScheduleRepository): void {
+  setScheduleRepository(repository: any): void {
     this.scheduleRepository = repository;
+  }
+
+  /**
+   * 获取 ScheduleExecution 仓储
+   */
+  getScheduleExecutionRepository(): IScheduleExecutionRepository {
+    if (!this.scheduleExecutionRepository) {
+      this.scheduleExecutionRepository = new PrismaScheduleExecutionRepository(prisma);
+    }
+    return this.scheduleExecutionRepository;
+  }
+
+  /**
+   * 设置 ScheduleExecution 仓储（用于测试）
+   */
+  setScheduleExecutionRepository(repository: IScheduleExecutionRepository): void {
+    this.scheduleExecutionRepository = repository;
   }
 }

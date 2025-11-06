@@ -604,6 +604,20 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     this._startDate = newStartDate;
     this._updatedAt = Date.now();
     this.addHistory('start_date_updated', { oldStartDate, newStartDate });
+
+    this.addDomainEvent({
+      eventType: 'task_template.schedule_time_changed',
+      aggregateId: this.uuid,
+      occurredOn: new Date(this._updatedAt),
+      accountUuid: this._accountUuid,
+      payload: {
+        taskTemplate: this.toServerDTO(),
+        oldStartDate: oldStartDate,
+        oldDueDate: this._dueDate,
+        newStartDate: newStartDate,
+        newDueDate: this._dueDate,
+      },
+    });
   }
 
   /**
@@ -623,6 +637,49 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     this._dueDate = newDueDate;
     this._updatedAt = Date.now();
     this.addHistory('due_date_updated', { oldDueDate, newDueDate });
+
+    this.addDomainEvent({
+      eventType: 'task_template.schedule_time_changed',
+      aggregateId: this.uuid,
+      occurredOn: new Date(this._updatedAt),
+      accountUuid: this._accountUuid,
+      payload: {
+        taskTemplate: this.toServerDTO(),
+        oldStartDate: this._startDate,
+        oldDueDate: oldDueDate,
+        newStartDate: this._startDate,
+        newDueDate: newDueDate,
+      },
+    });
+  }
+
+  /**
+   * 更新重复规则 (RECURRING)
+   */
+  public updateRecurrenceRule(newRule: RecurrenceRule): void {
+    if (this._taskType !== 'RECURRING') {
+      throw new InvalidTaskTemplateStateError('Only RECURRING tasks have recurrence rules.', {
+        templateUuid: this.uuid,
+        currentStatus: this._status,
+        attemptedAction: 'updateRecurrenceRule',
+      });
+    }
+    const oldRuleDTO = this._recurrenceRule?.toServerDTO() ?? null;
+    this._recurrenceRule = newRule;
+    this._updatedAt = Date.now();
+    this.addHistory('recurrence_rule_updated', { oldRule: oldRuleDTO, newRule: newRule.toServerDTO() });
+
+    this.addDomainEvent({
+      eventType: 'task_template.recurrence_changed',
+      aggregateId: this.uuid,
+      occurredOn: new Date(this._updatedAt),
+      accountUuid: this._accountUuid,
+      payload: {
+        taskTemplate: this.toServerDTO(),
+        oldRecurrenceRule: oldRuleDTO,
+        newRecurrenceRule: newRule.toServerDTO(),
+      },
+    });
   }
 
   /**

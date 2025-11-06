@@ -448,13 +448,75 @@ export class Goal extends AggregateRoot implements IGoalServer {
    * 更新时间范围
    */
   public updateTimeRange(params: { startDate?: number | null; targetDate?: number | null }): void {
-    if (params.startDate !== undefined) {
+    const oldStartDate = this._startDate;
+    const oldTargetDate = this._targetDate;
+    let hasChanges = false;
+
+    if (params.startDate !== undefined && params.startDate !== this._startDate) {
       this._startDate = params.startDate;
+      hasChanges = true;
     }
-    if (params.targetDate !== undefined) {
+    if (params.targetDate !== undefined && params.targetDate !== this._targetDate) {
       this._targetDate = params.targetDate;
+      hasChanges = true;
     }
-    this._updatedAt = Date.now();
+
+    if (hasChanges) {
+      this._updatedAt = Date.now();
+      this.addDomainEvent({
+        eventType: 'goal.schedule_time_changed',
+        aggregateId: this.uuid,
+        occurredOn: new Date(this._updatedAt),
+        accountUuid: this._accountUuid,
+        payload: {
+          goal: this.toServerDTO(),
+          oldStartDate,
+          oldTargetDate,
+          newStartDate: this._startDate,
+          newTargetDate: this._targetDate,
+        },
+      });
+    }
+  }
+
+  /**
+   * 延长目标时间
+   * 
+   * @param extensionDays 延长的天数
+   */
+  extendTargetDate(extensionDays: number): void {
+    if (extensionDays <= 0) {
+      throw new Error('Extension days must be positive');
+    }
+    if (!this._targetDate) {
+      throw new Error('Target date is not set');
+    }
+    
+    const newTargetDate = this._targetDate + extensionDays * 24 * 60 * 60 * 1000;
+    this.updateTimeRange({ targetDate: newTargetDate });
+  }
+  
+  /**
+   * 缩短目标时间
+   * 
+   * @param shortenDays 缩短的天数
+   */
+  shortenTargetDate(shortenDays: number): void {
+    if (shortenDays <= 0) {
+      throw new Error('Shorten days must be positive');
+    }
+    if (!this._targetDate || !this._startDate) {
+      throw new Error('Start or target date is not set');
+    }
+    
+    const newTargetDate = this._targetDate - shortenDays * 24 * 60 * 60 * 1000;
+    
+    // 确保新的目标时间仍然晚于开始时间
+    if (newTargetDate <= this._startDate) {
+      throw new Error('Target date cannot be earlier than or equal to start date');
+    }
+    
+    this.updateTimeRange({ targetDate: newTargetDate });
   }
 
   /**
@@ -626,9 +688,24 @@ export class Goal extends AggregateRoot implements IGoalServer {
   /**
    * 更新提醒配置
    */
-  public updateReminderConfig(config: GoalReminderConfig): void {
-    this._reminderConfig = config;
+  public updateReminderConfig(config: GoalReminderConfigServerDTO): void {
+    const oldConfigDTO = this._reminderConfig?.toServerDTO() ?? null;
+    
+    this._reminderConfig = config ? GoalReminderConfig.fromServerDTO(config) : null;
     this._updatedAt = Date.now();
+
+    this.addDomainEvent({
+      eventType: 'goal.reminder_config_changed',
+      aggregateId: this.uuid,
+      occurredOn: new Date(this._updatedAt),
+      accountUuid: this._accountUuid,
+      payload: {
+        goal: this.toServerDTO(),
+        oldConfig: oldConfigDTO,
+        newConfig: config,
+        isEnabled: config?.enabled ?? false,
+      },
+    });
   }
 
   /**
