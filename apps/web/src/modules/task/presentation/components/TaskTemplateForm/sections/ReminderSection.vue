@@ -1,3 +1,8 @@
+<!--
+  ReminderSection.vue
+  任务模板提醒配置部分
+  使用 TaskReminderConfig.triggers 数组结构
+-->
 <template>
   <v-card class="mb-4" elevation="0" variant="outlined">
     <v-card-title class="section-title">
@@ -21,14 +26,48 @@
         </v-col>
 
         <template v-if="reminderEnabled">
-          <v-col cols="12" md="6">
-            <v-text-field v-model.number="minutesBefore" label="提前提醒时间（分钟）" type="number" variant="outlined" min="1"
-              max="1440" hint="在任务开始前多少分钟提醒" />
-          </v-col>
+          <!-- 提醒触发器列表 -->
+          <v-col cols="12">
+            <div class="text-subtitle-2 mb-2">提醒触发器</div>
+            <v-card v-for="(trigger, index) in triggers" :key="index" class="mb-3" variant="outlined">
+              <v-card-text>
+                <v-row>
+                  <v-col cols="12" md="4">
+                    <v-select v-model="trigger.type" label="提醒类型" :items="reminderTypeOptions" variant="outlined"
+                      density="comfortable" @update:model-value="updateTriggers" />
+                  </v-col>
 
-          <v-col cols="12" md="6">
-            <v-select v-model="selectedMethods" label="提醒方式" :items="reminderMethods" variant="outlined" multiple chips
-              closable-chips />
+                  <!-- 相对时间提醒 -->
+                  <template v-if="trigger.type === ReminderType.RELATIVE">
+                    <v-col cols="12" md="3">
+                      <v-text-field v-model.number="trigger.relativeValue" label="提前时间" type="number" variant="outlined"
+                        density="comfortable" min="1" @update:model-value="updateTriggers" />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-select v-model="trigger.relativeUnit" label="时间单位" :items="timeUnitOptions" variant="outlined"
+                        density="comfortable" @update:model-value="updateTriggers" />
+                    </v-col>
+                  </template>
+
+                  <!-- 绝对时间提醒 -->
+                  <template v-if="trigger.type === ReminderType.ABSOLUTE">
+                    <v-col cols="12" md="4">
+                      <v-text-field :model-value="formatAbsoluteTime(trigger.absoluteTime)" label="提醒时间"
+                        type="datetime-local" variant="outlined" density="comfortable"
+                        @update:model-value="(val) => updateAbsoluteTime(index, val)" />
+                    </v-col>
+                  </template>
+
+                  <v-col cols="12" md="2" class="d-flex align-center">
+                    <v-btn color="error" variant="text" icon="mdi-delete" @click="removeTrigger(index)" />
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+
+            <v-btn color="primary" variant="outlined" prepend-icon="mdi-plus" @click="addTrigger">
+              添加提醒触发器
+            </v-btn>
           </v-col>
         </template>
       </v-row>
@@ -38,18 +77,23 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useReminderValidation } from '../../../composables/useReminderValidation';
-import type { TaskTemplate } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskReminderConfig } from '@dailyuse/domain-client';
+import { TaskContracts } from '@dailyuse/contracts';
+
+const ReminderType = TaskContracts.ReminderType;
+const ReminderTimeUnit = TaskContracts.ReminderTimeUnit;
 
 interface Props {
   modelValue: TaskTemplate;
 }
 
+interface Emits {
+  (e: 'update:modelValue', value: TaskTemplate): void;
+  (e: 'update:validation', isValid: boolean): void;
+}
+
 const props = defineProps<Props>();
-const emit = defineEmits<{
-  'update:modelValue': [value: TaskTemplate];
-  'update:validation': [isValid: boolean];
-}>();
+const emit = defineEmits<Emits>();
 
 const updateTemplate = (updater: (template: TaskTemplate) => void) => {
   const updatedTemplate = props.modelValue.clone();
@@ -57,68 +101,150 @@ const updateTemplate = (updater: (template: TaskTemplate) => void) => {
   emit('update:modelValue', updatedTemplate);
 };
 
-// TODO: 提醒配置字段需要重构以匹配新的 TaskReminderConfig 结构（使用 triggers 数组）
-// 当前代码使用旧的 enabled/minutesBefore/methods 结构，需要更新为 triggers 数组
-const reminderEnabled = computed({
-  get: () => (props.modelValue.reminderConfig as any)?.enabled ?? false,
-  set: (value: boolean) => {
-    updateTemplate((template) => {
-      (template as any)._reminderConfig = {
-        ...template.reminderConfig,
-        enabled: value,
-      };
-    });
-  },
-});
-
-const minutesBefore = computed({
-  get: () => (props.modelValue.reminderConfig as any)?.minutesBefore ?? 15,
-  set: (value: number) => {
-    updateTemplate((template) => {
-      (template as any)._reminderConfig = {
-        ...template.reminderConfig,
-        minutesBefore: value,
-      };
-    });
-  },
-});
-
-const selectedMethods = computed({
-  get: () => (props.modelValue.reminderConfig as any)?.methods ?? [],
-  set: (value: ('notification' | 'sound')[]) => {
-    updateTemplate((template) => {
-      (template as any)._reminderConfig = {
-        ...template.reminderConfig,
-        methods: value,
-      };
-    });
-  },
-});
-
-// 提醒方式选项
-const reminderMethods = [
-  { title: '通知', value: 'notification' },
-  { title: '声音', value: 'sound' },
+// 提醒类型选项
+const reminderTypeOptions = [
+  { title: '相对时间', value: ReminderType.RELATIVE },
+  { title: '绝对时间', value: ReminderType.ABSOLUTE },
 ];
 
-// 简单的验证
+// 时间单位选项
+const timeUnitOptions = [
+  { title: '分钟', value: ReminderTimeUnit.MINUTES },
+  { title: '小时', value: ReminderTimeUnit.HOURS },
+  { title: '天', value: ReminderTimeUnit.DAYS },
+];
+
+// 提醒启用状态
+const reminderEnabled = computed({
+  get: () => props.modelValue.reminderConfig?.enabled ?? false,
+  set: (value: boolean) => {
+    updateTemplate((template) => {
+      const currentConfig = template.reminderConfig;
+      const newConfigDTO: TaskContracts.TaskReminderConfigClientDTO = {
+        enabled: value,
+        triggers: currentConfig?.triggers ?? [],
+        hasTriggers: (currentConfig?.triggers ?? []).length > 0,
+        triggerCount: (currentConfig?.triggers ?? []).length,
+        reminderSummary: currentConfig?.reminderSummary ?? '',
+        triggerDescriptions: currentConfig?.triggerDescriptions ?? [],
+      };
+      const newConfig = TaskReminderConfig.fromClientDTO(newConfigDTO);
+      template.updateReminderConfig(newConfig);
+    });
+  },
+});
+
+// 触发器列表
+const triggers = ref<
+  Array<{
+    type: TaskContracts.ReminderType;
+    absoluteTime?: number | null;
+    relativeValue?: number | null;
+    relativeUnit?: TaskContracts.ReminderTimeUnit | null;
+  }>
+>([]);
+
+// 初始化触发器
+const initializeTriggers = () => {
+  const config = props.modelValue.reminderConfig;
+  if (config?.triggers && config.triggers.length > 0) {
+    triggers.value = config.triggers.map((t) => ({ ...t }));
+  } else if (reminderEnabled.value && triggers.value.length === 0) {
+    // 默认添加一个相对时间触发器
+    triggers.value = [
+      {
+        type: ReminderType.RELATIVE,
+        relativeValue: 15,
+        relativeUnit: ReminderTimeUnit.MINUTES,
+      },
+    ];
+  }
+};
+
+// 添加触发器
+const addTrigger = () => {
+  triggers.value.push({
+    type: ReminderType.RELATIVE,
+    relativeValue: 15,
+    relativeUnit: ReminderTimeUnit.MINUTES,
+  });
+  updateTriggers();
+};
+
+// 删除触发器
+const removeTrigger = (index: number) => {
+  triggers.value.splice(index, 1);
+  updateTriggers();
+};
+
+// 更新绝对时间
+const updateAbsoluteTime = (index: number, value: string) => {
+  if (value) {
+    triggers.value[index].absoluteTime = new Date(value).getTime();
+  } else {
+    triggers.value[index].absoluteTime = null;
+  }
+  updateTriggers();
+};
+
+// 格式化绝对时间为 datetime-local 格式
+const formatAbsoluteTime = (timestamp?: number | null): string => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+// 更新触发器到模板
+const updateTriggers = () => {
+  updateTemplate((template) => {
+    const newConfigDTO: TaskContracts.TaskReminderConfigClientDTO = {
+      enabled: reminderEnabled.value,
+      triggers: triggers.value.map((t) => ({ ...t })),
+      hasTriggers: triggers.value.length > 0,
+      triggerCount: triggers.value.length,
+      reminderSummary: '',
+      triggerDescriptions: [],
+    };
+    const newConfig = TaskReminderConfig.fromClientDTO(newConfigDTO);
+    template.updateReminderConfig(newConfig);
+  });
+};
+
+// 验证
 const errors = ref<string[]>([]);
 
 const validateReminderConfig = () => {
   errors.value = [];
 
   if (reminderEnabled.value) {
-    if (minutesBefore.value < 1 || minutesBefore.value > 1440) {
-      errors.value.push('提前提醒时间必须在1-1440分钟之间');
+    if (triggers.value.length === 0) {
+      errors.value.push('启用提醒时，请至少添加一个提醒触发器');
     }
 
-    if (!selectedMethods.value || selectedMethods.value.length === 0) {
-      errors.value.push('请至少选择一种提醒方式');
-    }
+    triggers.value.forEach((trigger, index) => {
+      if (trigger.type === ReminderType.RELATIVE) {
+        if (!trigger.relativeValue || trigger.relativeValue < 1) {
+          errors.value.push(`触发器 ${index + 1}: 提前时间必须大于 0`);
+        }
+        if (!trigger.relativeUnit) {
+          errors.value.push(`触发器 ${index + 1}: 请选择时间单位`);
+        }
+      } else if (trigger.type === ReminderType.ABSOLUTE) {
+        if (!trigger.absoluteTime) {
+          errors.value.push(`触发器 ${index + 1}: 请设置提醒时间`);
+        }
+      }
+    });
   }
 };
 
 const isValid = computed(() => {
+  validateReminderConfig();
   return errors.value.length === 0;
 });
 
@@ -131,12 +257,21 @@ watch(
   { immediate: true },
 );
 
-// 监听提醒配置变化
-watch(
-  () => props.modelValue.reminderConfig,
-  () => {
-    validateReminderConfig();
-  },
-  { deep: true, immediate: true },
-);
+// 监听启用状态变化
+watch(reminderEnabled, (newValue) => {
+  if (newValue && triggers.value.length === 0) {
+    initializeTriggers();
+    updateTriggers();
+  }
+});
+
+// 初始化
+initializeTriggers();
 </script>
+
+<style scoped>
+.section-title {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 600;
+}
+</style>
