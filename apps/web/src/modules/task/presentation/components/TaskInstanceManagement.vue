@@ -428,7 +428,7 @@ onMounted(async () => {
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0 0 0.25rem 0;
-  background: linear-gradient(45deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
+  background: linear-gradient(45deg, rgba(var(--v-theme-primary), 0.1), rgba(var(--v-theme-secondary), 0.2));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

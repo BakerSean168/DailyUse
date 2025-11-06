@@ -14,7 +14,7 @@ import {
   userPreferencesApi,
   type UserPreferencesDTO,
   type UpdateUserPreferencesRequestDTO,
-} from '../../api/userPreferencesApi';
+} from '../../infrastructure/api/userPreferencesApi';
 
 /**
  * 用户偏好设置 Store

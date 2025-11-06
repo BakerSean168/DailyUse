@@ -101,7 +101,8 @@
 
         <v-divider class="my-2" />
 
-        <!-- 起始页 -->
+        <!-- 起始页 - TODO: 字段尚未在后端实现 -->
+        <!--
         <v-col cols="12" md="6">
           <v-select
             v-model="startPage"
@@ -118,7 +119,9 @@
           </p>
         </v-col>
 
-        <!-- 侧边栏折叠 -->
+        -->
+        <!-- 侧边栏折叠 - TODO: 字段尚未在后端实现 -->
+        <!--
         <v-col cols="12" md="6">
           <v-switch
             v-model="sidebarCollapsed"
@@ -135,6 +138,7 @@
             启动时侧边栏处于折叠状态
           </p>
         </v-col>
+        -->
       </v-row>
     </v-card-text>
   </v-card>
@@ -157,9 +161,9 @@ const defaultGoalView = ref(workflow.value.defaultGoalView);
 const defaultScheduleView = ref(workflow.value.defaultScheduleView);
 const defaultTaskView = ref(workflow.value.defaultTaskView);
 
-// TODO: startPage and sidebarCollapsed are not in workflow group yet
-const startPage = ref(settingStore.settings?.startPage ?? 'dashboard');
-const sidebarCollapsed = ref(settingStore.settings?.sidebarCollapsed ?? false);
+// TODO: startPage and sidebarCollapsed are not in workflow group yet - commented out
+// const startPage = ref(settingStore.settings?.startPage ?? 'dashboard');
+// const sidebarCollapsed = ref(settingStore.settings?.sidebarCollapsed ?? false);
 
 // Options
 const goalViewOptions = [
@@ -205,7 +209,8 @@ watch(
   { deep: true },
 );
 
-// Watch other settings
+// Watch other settings - commented out fields not yet in DTO
+/*
 watch(
   () => settingStore.settings,
   (newSettings) => {
@@ -216,18 +221,23 @@ watch(
   },
   { deep: true },
 );
+*/
 
 // Handlers - using convenience method
-async function handleAutoSaveChange(value: boolean) {
-  await settingStore.updateWorkflow({ autoSave: value });
+async function handleAutoSaveChange(value: boolean | null) {
+  if (value !== null) {
+    await settingStore.updateWorkflow({ autoSave: value });
+  }
 }
 
 async function handleAutoSaveIntervalChange(value: number) {
   await settingStore.updateWorkflowDebounced({ autoSaveInterval: value * 1000 }, 300);
 }
 
-async function handleConfirmDeleteChange(value: boolean) {
-  await settingStore.updateWorkflow({ confirmBeforeDelete: value });
+async function handleConfirmDeleteChange(value: boolean | null) {
+  if (value !== null) {
+    await settingStore.updateWorkflow({ confirmBeforeDelete: value });
+  }
 }
 
 async function handleGoalViewChange(value: string) {
@@ -242,6 +252,8 @@ async function handleTaskViewChange(value: string) {
   await settingStore.updateWorkflow({ defaultTaskView: value as any });
 }
 
+// Commented out - fields not yet in DTO
+/*
 async function handleStartPageChange(value: string) {
   await settingStore.updateSettings({ startPage: value });
 }
@@ -249,4 +261,5 @@ async function handleStartPageChange(value: string) {
 async function handleSidebarCollapsedChange(value: boolean) {
   await settingStore.updateSettings({ sidebarCollapsed: value });
 }
+*/
 </script>

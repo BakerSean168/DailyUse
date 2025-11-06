@@ -1,10 +1,16 @@
 /**
  * 设置导入/导出 Composable
  * 支持设置的备份、导出和导入功能
+ * 
+ * 更新：集成新的 Store 导入/导出功能
  */
 
 import { ref } from 'vue';
-import type { UserSettingClientDTO } from '@dailyuse/contracts';
+import type { SettingContracts } from '@dailyuse/contracts';
+import { useUserSettingStore } from '../stores/userSettingStore';
+
+// 类型别名
+type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
 
 export interface SettingExportData {
   version: string;
@@ -14,35 +20,19 @@ export interface SettingExportData {
 }
 
 export function useSettingImportExport() {
+  const settingStore = useUserSettingStore();
   const isExporting = ref(false);
   const isImporting = ref(false);
   const importError = ref<string | null>(null);
 
   /**
-   * 导出设置为 JSON 文件
+   * 导出设置为 JSON 文件（使用新的 API）
    */
-  const exportSettings = async (settings: UserSettingClientDTO, filename?: string) => {
+  const exportSettings = async (settings?: UserSettingClientDTO, filename?: string) => {
     isExporting.value = true;
     try {
-      const exportData: SettingExportData = {
-        version: '1.0.0',
-        exportTime: Date.now(),
-        exportedBy: 'DailyUse Settings',
-        settings,
-      };
-
-      const dataStr = JSON.stringify(exportData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename || `dailyuse-settings-${Date.now()}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
+      // 使用 store 的导出方法
+      await settingStore.exportSettings();
       return true;
     } catch (error) {
       console.error('Failed to export settings:', error);
@@ -53,9 +43,9 @@ export function useSettingImportExport() {
   };
 
   /**
-   * 导入设置从 JSON 文件
+   * 导入设置从 JSON 文件（使用新的 API）
    */
-  const importSettings = async (file: File): Promise<UserSettingClientDTO | null> => {
+  const importSettings = async (file: File, merge = false): Promise<UserSettingClientDTO | null> => {
     isImporting.value = true;
     importError.value = null;
 
@@ -65,20 +55,9 @@ export function useSettingImportExport() {
         throw new Error('请选择有效的 JSON 文件');
       }
 
-      // 读取文件内容
-      const fileContent = await file.text();
-      const importedData = JSON.parse(fileContent) as SettingExportData;
-
-      // 验证数据结构
-      if (!importedData.settings) {
-        throw new Error('无效的设置文件格式');
-      }
-
-      if (!importedData.settings.appearance) {
-        throw new Error('设置文件缺少必要的字段');
-      }
-
-      return importedData.settings;
+      // 使用 store 的导入方法
+      await settingStore.importSettingsFromFile(file, merge);
+      return settingStore.settings;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '导入失败';
       importError.value = errorMessage;
@@ -87,6 +66,26 @@ export function useSettingImportExport() {
     } finally {
       isImporting.value = false;
     }
+  };
+
+  /**
+   * 触发文件选择对话框并导入
+   */
+  const selectAndImportFile = (merge = false): void => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    
+    input.onchange = async (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      
+      if (file) {
+        await importSettings(file, merge);
+      }
+    };
+
+    input.click();
   };
 
   /**
@@ -199,6 +198,7 @@ export function useSettingImportExport() {
     importError,
     exportSettings,
     importSettings,
+    selectAndImportFile, // 新增
     exportAsCSV,
     createLocalBackup,
     restoreFromLocalBackup,

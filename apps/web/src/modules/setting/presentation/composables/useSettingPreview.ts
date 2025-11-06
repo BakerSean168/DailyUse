@@ -4,7 +4,9 @@
  */
 
 import { ref, watch, computed } from 'vue';
-import type { UserSettingClientDTO } from '@dailyuse/contracts';
+import type { SettingContracts } from '@dailyuse/contracts';
+
+type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
 
 export interface PreviewSettings {
   theme: string;

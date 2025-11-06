@@ -207,6 +207,8 @@ const UrgencyLevel = goalContracts.UrgencyLevel;
 - 构造函数中 uuid 不一定要传入，可以通过基类的 `generateUUID()` 方法生成
 - 类型要严格对应 contracts 包中的定义
 - 领域层服务负责业务逻辑，不负责持久化，不能调用仓储接口
+- 模块下的实体文件夹名称和类名称都**不需要保留Server后缀或者Aggregate后缀**，**文件路径已足够清晰**：`domain-server/goal/aggregates/Goal.ts` 已明确表明是聚合根
+- 导出时也不需要加后缀
 
 **导出规范（重要）**：
 
@@ -228,8 +230,7 @@ export { FocusSession } from './aggregates/FocusSession';
 
 1. **DDD 最佳实践**：领域对象类名本身就是领域概念，不应该加技术后缀
 2. **TypeScript 友好**：类名和导入名一致，避免重复重命名（如 `import { GoalAggregate as Goal }`）
-3. **文件路径已足够清晰**：`domain-server/goal/aggregates/Goal.ts` 已明确表明是聚合根
-4. **参考其他模块**：Task、Reminder、Setting 等模块都没有使用别名后缀
+
 
 ### domain-client 包
 
@@ -237,9 +238,11 @@ export { FocusSession } from './aggregates/FocusSession';
 
 - 每个模块放在 `modules/模块名/` 目录下
 - 每个模块有 `aggregates/`（聚合根实现）、`entities/`（实体实现）、`value-objects/`（值对象实现）、`index.ts` 文件，只有客户端领域层内容
-- 每个聚合根、实体、值对象应该继承领域基类，并且实现 contracts 包中的接口
+- 每个聚合根、实体、值对象**应该继承领域基类**，并且**实现 contracts 包中的接口**
 - 构造函数中 uuid 不一定要传入，可以通过基类的 `generateUUID()` 方法生成
 - 类型要严格对应 contracts 包中的定义
+- 模块下的实体文件夹名称和类名称都**不需要保留Client后缀或者Aggregate后缀**，**文件路径已足够清晰**：`domain-client/goal/aggregates/Goal.ts` 已明确表明是聚合根
+- 导出时也不需要加后缀
 
 **导出规范（重要）**：
 

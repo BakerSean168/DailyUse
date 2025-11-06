@@ -160,6 +160,86 @@ export class SettingController {
   }
 
   /**
+   * 导出用户设置为 JSON
+   * @route GET /api/settings/export
+   */
+  static async exportSettings(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const service = await SettingController.getSettingService();
+
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      logger.info('Exporting user settings', { accountUuid });
+
+      const exportData = await service.exportSettings(accountUuid);
+
+      logger.info('User settings exported successfully', { accountUuid });
+
+      // 设置响应头，提示浏览器下载文件
+      const filename = `dailyuse-settings-${new Date().toISOString().split('T')[0]}.json`;
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+      return res.status(200).json(exportData);
+    } catch (error: any) {
+      logger.error('Failed to export user settings', { error: error.message });
+      return SettingController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: error.message || 'Failed to export user settings',
+      });
+    }
+  }
+
+  /**
+   * 导入用户设置
+   * @route POST /api/settings/import
+   */
+  static async importSettings(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const service = await SettingController.getSettingService();
+
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      const { data, options } = req.body;
+
+      if (!data) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.BAD_REQUEST,
+          message: 'Import data is required',
+        });
+      }
+
+      logger.info('Importing user settings', { accountUuid, merge: options?.merge });
+
+      const settings = await service.importSettings(accountUuid, data, options);
+
+      logger.info('User settings imported successfully', { accountUuid });
+      return SettingController.responseBuilder.sendSuccess(res, settings);
+    } catch (error: any) {
+      logger.error('Failed to import user settings', { 
+        accountUuid: req.user?.accountUuid,
+        error: error.message 
+      });
+      return SettingController.responseBuilder.sendError(res, {
+        code: ResponseCode.BAD_REQUEST,
+        message: error.message || 'Failed to import user settings',
+      });
+    }
+  }
+
+  /**
    * 保存设置版本快照
    * @route POST /api/settings/sync/save-version
    */

@@ -1,8 +1,19 @@
-// @ts-nocheck
 import type { PrismaClient } from '@prisma/client';
 import type { IUserSettingRepository } from '@dailyuse/domain-server';
-import { UserSettingServer as UserSetting } from '@dailyuse/domain-server';
+import { UserSetting } from '@dailyuse/domain-server';
+import type { Prisma } from '@prisma/client';
 
+/**
+ * Prisma UserSetting Repository
+ * 
+ * 使用 DDD 最佳实践：将整个 UserSetting 聚合序列化为 JSON 存储在 account.settings 字段
+ * 
+ * 优势：
+ * 1. 灵活的 Schema：无需数据库迁移即可添加新设置
+ * 2. 原子性：整个聚合作为单一事务边界
+ * 3. 版本控制：可以在 JSON 中包含版本号
+ * 4. 简化查询：一次查询获取所有设置
+ */
 export class PrismaUserSettingRepository implements IUserSettingRepository {
   constructor(private prisma: PrismaClient) {}
 
@@ -10,162 +21,57 @@ export class PrismaUserSettingRepository implements IUserSettingRepository {
    * 根据账户UUID查找用户设置
    */
   async findByAccountUuid(accountUuid: string): Promise<UserSetting | null> {
-    const record = await this.prisma.userSetting.findUnique({
-      where: { accountUuid },
+    const account = await this.prisma.account.findUnique({
+      where: { uuid: accountUuid },
+      select: { settings: true },
     });
 
-    if (!record) {
-      return null;
+    if (!account || !account.settings) {
+      // 如果没有设置，返回默认设置
+      return UserSetting.create({ accountUuid });
     }
 
-    return UserSetting.fromPersistenceDTO({
-      uuid: record.uuid,
-      accountUuid: record.accountUuid,
-      appearanceTheme: record.appearanceTheme,
-      appearanceFontSize: record.appearanceFontSize,
-      appearanceCompactMode: record.appearanceCompactMode,
-      appearanceAccentColor: record.appearanceAccentColor,
-      appearanceFontFamily: record.appearanceFontFamily,
-      localeLanguage: record.localeLanguage,
-      localeTimezone: record.localeTimezone,
-      localeDateFormat: record.localeDateFormat,
-      localeTimeFormat: record.localeTimeFormat,
-      localeWeekStartsOn: record.localeWeekStartsOn,
-      localeCurrency: record.localeCurrency,
-      notificationEmail: record.notificationEmail,
-      notificationPush: record.notificationPush,
-      notificationInApp: record.notificationInApp,
-      notificationSound: record.notificationSound,
-      editorTheme: record.editorTheme,
-      editorFontSize: record.editorFontSize,
-      editorTabSize: record.editorTabSize,
-      editorWordWrap: record.editorWordWrap,
-      editorLineNumbers: record.editorLineNumbers,
-      editorMinimap: record.editorMinimap,
-      shortcutsEnabled: record.shortcutsEnabled,
-      shortcutsCustom: (record.shortcutsCustom as Record<string, string>) || {},
-      workflowAutoSave: record.workflowAutoSave,
-      workflowAutoSaveInterval: record.workflowAutoSaveInterval,
-      workflowConfirmBeforeDelete: record.workflowConfirmBeforeDelete,
-      workflowDefaultGoalView: record.workflowDefaultGoalView,
-      workflowDefaultScheduleView: record.workflowDefaultScheduleView,
-      workflowDefaultTaskView: record.workflowDefaultTaskView,
-      privacyProfileVisibility: record.privacyProfileVisibility,
-      privacyShowOnlineStatus: record.privacyShowOnlineStatus,
-      privacyAllowSearchByEmail: record.privacyAllowSearchByEmail,
-      privacyAllowSearchByPhone: record.privacyAllowSearchByPhone,
-      privacyShareUsageData: record.privacyShareUsageData,
-      experimentalEnabled: record.experimentalEnabled,
-      experimentalFeatures: (record.experimentalFeatures as string[]) || [],
-      startPage: record.startPage,
-      sidebarCollapsed: record.sidebarCollapsed,
-      createdAt: record.createdAt.getTime(),
-      updatedAt: record.updatedAt.getTime(),
-    });
+    try {
+      // 从 JSON 对象反序列化为 UserSetting 聚合
+      const settingsData = account.settings as Prisma.JsonObject;
+      return UserSetting.fromServerDTO(settingsData as any);
+    } catch (error) {
+      console.error('Failed to parse settings from JSON:', error);
+      // 如果解析失败，返回默认设置
+      return UserSetting.create({ accountUuid });
+    }
   }
 
   /**
    * 保存用户设置
+   * 将整个 UserSetting 聚合序列化为 JSON 并存储
    */
   async save(setting: UserSetting): Promise<void> {
-    const dto = setting.toPersistenceDTO();
+    const serverDTO = setting.toServerDTO();
+    
+    // 将 ServerDTO 转换为 Prisma 的 JsonValue 类型
+    const settingsJson: Prisma.JsonObject = serverDTO as any;
 
-    await this.prisma.userSetting.upsert({
-      where: { accountUuid: dto.accountUuid },
-      create: {
-        uuid: dto.uuid,
-        accountUuid: dto.accountUuid,
-        appearanceTheme: dto.appearanceTheme,
-        appearanceFontSize: dto.appearanceFontSize,
-        appearanceCompactMode: dto.appearanceCompactMode,
-        appearanceAccentColor: dto.appearanceAccentColor,
-        appearanceFontFamily: dto.appearanceFontFamily,
-        localeLanguage: dto.localeLanguage,
-        localeTimezone: dto.localeTimezone,
-        localeDateFormat: dto.localeDateFormat,
-        localeTimeFormat: dto.localeTimeFormat,
-        localeWeekStartsOn: dto.localeWeekStartsOn,
-        localeCurrency: dto.localeCurrency,
-        notificationEmail: dto.notificationEmail,
-        notificationPush: dto.notificationPush,
-        notificationInApp: dto.notificationInApp,
-        notificationSound: dto.notificationSound,
-        editorTheme: dto.editorTheme,
-        editorFontSize: dto.editorFontSize,
-        editorTabSize: dto.editorTabSize,
-        editorWordWrap: dto.editorWordWrap,
-        editorLineNumbers: dto.editorLineNumbers,
-        editorMinimap: dto.editorMinimap,
-        shortcutsEnabled: dto.shortcutsEnabled,
-        shortcutsCustom: dto.shortcutsCustom,
-        workflowAutoSave: dto.workflowAutoSave,
-        workflowAutoSaveInterval: dto.workflowAutoSaveInterval,
-        workflowConfirmBeforeDelete: dto.workflowConfirmBeforeDelete,
-        workflowDefaultGoalView: dto.workflowDefaultGoalView,
-        workflowDefaultScheduleView: dto.workflowDefaultScheduleView,
-        workflowDefaultTaskView: dto.workflowDefaultTaskView,
-        privacyProfileVisibility: dto.privacyProfileVisibility,
-        privacyShowOnlineStatus: dto.privacyShowOnlineStatus,
-        privacyAllowSearchByEmail: dto.privacyAllowSearchByEmail,
-        privacyAllowSearchByPhone: dto.privacyAllowSearchByPhone,
-        privacyShareUsageData: dto.privacyShareUsageData,
-        experimentalEnabled: dto.experimentalEnabled,
-        experimentalFeatures: dto.experimentalFeatures,
-        startPage: dto.startPage,
-        sidebarCollapsed: dto.sidebarCollapsed,
-        createdAt: new Date(dto.createdAt),
-        updatedAt: new Date(dto.updatedAt),
-      },
-      update: {
-        appearanceTheme: dto.appearanceTheme,
-        appearanceFontSize: dto.appearanceFontSize,
-        appearanceCompactMode: dto.appearanceCompactMode,
-        appearanceAccentColor: dto.appearanceAccentColor,
-        appearanceFontFamily: dto.appearanceFontFamily,
-        localeLanguage: dto.localeLanguage,
-        localeTimezone: dto.localeTimezone,
-        localeDateFormat: dto.localeDateFormat,
-        localeTimeFormat: dto.localeTimeFormat,
-        localeWeekStartsOn: dto.localeWeekStartsOn,
-        localeCurrency: dto.localeCurrency,
-        notificationEmail: dto.notificationEmail,
-        notificationPush: dto.notificationPush,
-        notificationInApp: dto.notificationInApp,
-        notificationSound: dto.notificationSound,
-        editorTheme: dto.editorTheme,
-        editorFontSize: dto.editorFontSize,
-        editorTabSize: dto.editorTabSize,
-        editorWordWrap: dto.editorWordWrap,
-        editorLineNumbers: dto.editorLineNumbers,
-        editorMinimap: dto.editorMinimap,
-        shortcutsEnabled: dto.shortcutsEnabled,
-        shortcutsCustom: dto.shortcutsCustom,
-        workflowAutoSave: dto.workflowAutoSave,
-        workflowAutoSaveInterval: dto.workflowAutoSaveInterval,
-        workflowConfirmBeforeDelete: dto.workflowConfirmBeforeDelete,
-        workflowDefaultGoalView: dto.workflowDefaultGoalView,
-        workflowDefaultScheduleView: dto.workflowDefaultScheduleView,
-        workflowDefaultTaskView: dto.workflowDefaultTaskView,
-        privacyProfileVisibility: dto.privacyProfileVisibility,
-        privacyShowOnlineStatus: dto.privacyShowOnlineStatus,
-        privacyAllowSearchByEmail: dto.privacyAllowSearchByEmail,
-        privacyAllowSearchByPhone: dto.privacyAllowSearchByPhone,
-        privacyShareUsageData: dto.privacyShareUsageData,
-        experimentalEnabled: dto.experimentalEnabled,
-        experimentalFeatures: dto.experimentalFeatures,
-        startPage: dto.startPage,
-        sidebarCollapsed: dto.sidebarCollapsed,
-        updatedAt: new Date(dto.updatedAt),
+    await this.prisma.account.update({
+      where: { uuid: setting.accountUuid },
+      data: {
+        settings: settingsJson,
+        updatedAt: new Date(),
       },
     });
   }
 
   /**
    * 删除用户设置
+   * 将 settings 字段设置为空对象
    */
   async delete(accountUuid: string): Promise<void> {
-    await this.prisma.userSetting.delete({
-      where: { accountUuid },
+    await this.prisma.account.update({
+      where: { uuid: accountUuid },
+      data: {
+        settings: {},
+        updatedAt: new Date(),
+      },
     });
   }
 }

@@ -83,6 +83,7 @@ export function useUserSetting() {
 
   /**
    * 加载用户设置（通过 UUID）
+   * @deprecated 后端不再支持通过 UUID 获取，请使用 getOrCreateUserSetting
    */
   const loadUserSetting = async (uuid: string): Promise<void> => {
     loading.value = true;
@@ -90,7 +91,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.getUserSetting(uuid);
+      await service.getCurrentUserSettings();
       snackbar.showSuccess('用户设置加载成功');
     } catch (err: any) {
       const errorMsg = err.message || '加载用户设置失败';
@@ -104,6 +105,7 @@ export function useUserSetting() {
 
   /**
    * 根据账户加载用户设置
+   * @deprecated 后端不再支持通过 accountUuid 获取，请使用 getOrCreateUserSetting
    */
   const loadUserSettingByAccount = async (accountUuid: string): Promise<void> => {
     loading.value = true;
@@ -111,7 +113,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.getUserSettingByAccount(accountUuid);
+      await service.getOrCreateUserSetting(accountUuid);
       snackbar.showSuccess('用户设置加载成功');
     } catch (err: any) {
       error.value = err.message || '加载用户设置失败';
@@ -143,6 +145,7 @@ export function useUserSetting() {
 
   /**
    * 创建用户设置
+   * @deprecated 后端不支持直接创建，请使用 getOrCreateUserSetting
    */
   const createUserSetting = async (
     request: SettingContracts.CreateUserSettingRequest,
@@ -152,7 +155,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.createUserSetting(request);
+      await service.getOrCreateUserSetting(request.accountUuid);
       snackbar.showSuccess('用户设置创建成功');
     } catch (err: any) {
       error.value = err.message || '创建用户设置失败';
@@ -175,7 +178,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updateUserSetting(uuid, request);
+      await service.updateUserSettings(request);
       snackbar.showSuccess('用户设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新用户设置失败';
@@ -204,7 +207,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updateAppearance(userSetting.value.uuid, appearance);
+      await service.updateAppearance(appearance);
       snackbar.showSuccess('外观设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新外观设置失败';
@@ -229,7 +232,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updateLocale(userSetting.value.uuid, locale);
+      await service.updateLocale(locale);
       snackbar.showSuccess('本地化设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新本地化设置失败';
@@ -256,7 +259,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updateWorkflow(userSetting.value.uuid, workflow);
+      await service.updateWorkflow(workflow);
       snackbar.showSuccess('工作流设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新工作流设置失败';
@@ -281,7 +284,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updatePrivacy(userSetting.value.uuid, privacy);
+      await service.updatePrivacy(privacy);
       snackbar.showSuccess('隐私设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新隐私设置失败';
@@ -308,7 +311,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updateExperimental(userSetting.value.uuid, experimental);
+      await service.updateExperimental(experimental);
       snackbar.showSuccess('实验性功能设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新实验性功能设置失败';
@@ -322,7 +325,7 @@ export function useUserSetting() {
   /**
    * 快速切换主题
    */
-  const switchTheme = async (theme: string): Promise<void> => {
+  const switchTheme = async (theme: 'LIGHT' | 'DARK' | 'AUTO'): Promise<void> => {
     if (!userSetting.value) {
       snackbar.showError('未找到用户设置');
       return;
@@ -333,7 +336,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updateTheme(userSetting.value.uuid, theme);
+      await service.updateTheme(theme);
       snackbar.showSuccess(`主题已切换为：${theme}`);
     } catch (err: any) {
       error.value = err.message || '切换主题失败';
@@ -358,7 +361,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updateLanguage(userSetting.value.uuid, language);
+      await service.updateLanguage(language);
       snackbar.showSuccess(`语言已切换为：${language}`);
     } catch (err: any) {
       error.value = err.message || '切换语言失败';
@@ -383,7 +386,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.updateShortcut(userSetting.value.uuid, action, shortcut);
+      await service.updateShortcut(action, shortcut);
       snackbar.showSuccess(`快捷键 ${action} 已设置为：${shortcut}`);
     } catch (err: any) {
       error.value = err.message || '设置快捷键失败';
@@ -408,7 +411,7 @@ export function useUserSetting() {
 
     try {
       const service = await UserSettingWebApplicationService.getInstance();
-      await service.deleteShortcut(userSetting.value.uuid, action);
+      await service.deleteShortcut(action);
       snackbar.showSuccess(`快捷键 ${action} 已删除`);
     } catch (err: any) {
       error.value = err.message || '删除快捷键失败';

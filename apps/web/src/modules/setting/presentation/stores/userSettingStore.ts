@@ -11,15 +11,21 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts';
+import type { SettingContracts } from '@dailyuse/contracts';
 import {
   getCurrentUserSettings,
   updateUserSettings,
   resetUserSettings,
   getDefaultSettings,
-} from '../../api/userSettingApi';
+  exportUserSettings,
+  importUserSettings,
+} from '../../infrastructure/api/userSettingApi';
 
 // ==================== 类型定义 ====================
+
+// 类型别名
+type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
+type UpdateUserSettingRequest = SettingContracts.UpdateUserSettingRequest;
 
 /** 外观设置 */
 type AppearanceSettings = NonNullable<UpdateUserSettingRequest['appearance']>;
@@ -293,6 +299,102 @@ export const useUserSettingStore = defineStore(
       }, delay);
     }
 
+    // ==================== 导入/导出功能 ====================
+
+    /**
+     * 导出设置为 JSON 文件
+     */
+    async function exportSettings(): Promise<void> {
+      loading.value = true;
+      error.value = null;
+
+      try {
+        const exportData = await exportUserSettings();
+        
+        // 创建 Blob 并下载
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+          type: 'application/json',
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `dailyuse-settings-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        console.log('设置已导出');
+      } catch (err: any) {
+        error.value = err.message || '导出设置失败';
+        console.error('Failed to export settings:', err);
+        throw err;
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    /**
+     * 从文件导入设置
+     * @param file JSON 文件
+     * @param merge 是否合并现有设置
+     */
+    async function importSettingsFromFile(
+      file: File,
+      merge = false,
+    ): Promise<void> {
+      loading.value = true;
+      error.value = null;
+
+      try {
+        // 读取文件内容
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        // 调用 API 导入
+        settings.value = await importUserSettings(data, {
+          merge,
+          validate: true,
+        });
+
+        console.log(`设置已${merge ? '合并' : '导入'}`);
+      } catch (err: any) {
+        error.value = err.message || '导入设置失败';
+        console.error('Failed to import settings:', err);
+        throw err;
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    /**
+     * 直接导入设置数据
+     * @param data 导出的设置数据对象
+     * @param merge 是否合并现有设置
+     */
+    async function importSettingsFromData(
+      data: Record<string, any>,
+      merge = false,
+    ): Promise<void> {
+      loading.value = true;
+      error.value = null;
+
+      try {
+        settings.value = await importUserSettings(data, {
+          merge,
+          validate: true,
+        });
+
+        console.log(`设置已${merge ? '合并' : '导入'}`);
+      } catch (err: any) {
+        error.value = err.message || '导入设置失败';
+        console.error('Failed to import settings:', err);
+        throw err;
+      } finally {
+        loading.value = false;
+      }
+    }
+
     return {
       // ========== State ==========
       settings,
@@ -327,6 +429,11 @@ export const useUserSettingStore = defineStore(
       updateAppearanceDebounced,
       updateLocaleDebounced,
       updateWorkflowDebounced,
+
+      // ========== Import/Export ==========
+      exportSettings,
+      importSettingsFromFile,
+      importSettingsFromData,
     };
   },
   {

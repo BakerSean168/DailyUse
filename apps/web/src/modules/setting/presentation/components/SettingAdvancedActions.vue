@@ -223,7 +223,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useSettingImportExport } from '../composables/useSettingImportExport';
-import type { UserSettingClientDTO } from '@/modules/setting/domain';
+import type { SettingContracts } from '@dailyuse/contracts';
+
+type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
 
 interface SyncStatus {
   lastSyncedAt: number;
@@ -337,7 +339,9 @@ const handleImport = async (event: Event) => {
     if (!file) return;
 
     const imported = await importSettings(file);
-    emit('update', imported);
+    if (imported) {
+      emit('update', imported);
+    }
     snackbar.value = {
       show: true,
       message: '✅ 设置已成功导入',

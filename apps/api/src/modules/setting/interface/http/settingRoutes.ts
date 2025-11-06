@@ -87,6 +87,89 @@ router.put('/me', authMiddleware, SettingController.updateSettings);
  */
 router.post('/reset', authMiddleware, SettingController.resetSettings);
 
+// ===== 导入/导出路由 =====
+
+/**
+ * @swagger
+ * /api/v1/settings/export:
+ *   get:
+ *     tags: [Setting]
+ *     summary: 导出用户设置为 JSON 文件
+ *     description: 将当前用户的所有设置导出为 JSON 格式的文件，用于备份或迁移
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 导出成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 version:
+ *                   type: string
+ *                   example: "1.0.0"
+ *                 exportedAt:
+ *                   type: string
+ *                   format: date-time
+ *                 accountUuid:
+ *                   type: string
+ *                 settings:
+ *                   type: object
+ *       401:
+ *         description: 未授权
+ */
+router.get('/export', authMiddleware, SettingController.exportSettings);
+
+/**
+ * @swagger
+ * /api/v1/settings/import:
+ *   post:
+ *     tags: [Setting]
+ *     summary: 导入用户设置
+ *     description: 从导出的 JSON 文件导入设置，可选择合并或完全替换现有设置
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - data
+ *             properties:
+ *               data:
+ *                 type: object
+ *                 description: 导出的设置数据
+ *                 properties:
+ *                   version:
+ *                     type: string
+ *                   exportedAt:
+ *                     type: string
+ *                   settings:
+ *                     type: object
+ *               options:
+ *                 type: object
+ *                 properties:
+ *                   merge:
+ *                     type: boolean
+ *                     description: 是否合并现有设置（false=完全替换，true=合并）
+ *                     default: false
+ *                   validate:
+ *                     type: boolean
+ *                     description: 是否验证导入数据
+ *                     default: true
+ *     responses:
+ *       200:
+ *         description: 导入成功
+ *       400:
+ *         description: 导入数据无效
+ *       401:
+ *         description: 未授权
+ */
+router.post('/import', authMiddleware, SettingController.importSettings);
+
 // ===== 云同步路由 =====
 
 /**

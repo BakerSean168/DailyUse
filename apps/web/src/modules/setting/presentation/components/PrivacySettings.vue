@@ -78,7 +78,8 @@
 
         <v-divider class="my-2" />
 
-        <!-- 活动可见性 -->
+        <!-- 活动可见性 - TODO: 字段尚未在后端实现 -->
+        <!--
         <v-col cols="12">
           <p class="text-subtitle-2 mb-3">
             <v-icon>mdi-chart-timeline</v-icon>
@@ -98,6 +99,7 @@
         </v-col>
 
         <v-divider class="my-2" />
+        -->
 
         <!-- 数据共享 -->
         <v-col cols="12">
@@ -117,6 +119,8 @@
             帮助我们改进产品，您的数据将被匿名化处理
           </p>
           
+          <!-- TODO: shareCrashReports 字段尚未在后端实现 -->
+          <!--
           <v-switch
             v-model="shareCrashReports"
             label="共享崩溃报告"
@@ -127,6 +131,7 @@
           <p class="text-caption text-medium-emphasis mt-2">
             自动发送崩溃报告以帮助我们修复问题
           </p>
+          -->
         </v-col>
 
         <v-divider class="my-2" />
@@ -203,9 +208,9 @@ const allowSearchByEmail = ref(privacy.value.allowSearchByEmail);
 const allowSearchByPhone = ref(privacy.value.allowSearchByPhone);
 const shareUsageData = ref(privacy.value.shareUsageData);
 
-// TODO: These fields are not in privacy DTO yet
-const showActivityStatus = ref(settingStore.settings?.privacyShowActivityStatus ?? true);
-const shareCrashReports = ref(settingStore.settings?.privacyShareCrashReports ?? true);
+// TODO: These fields are not in privacy DTO yet - commented out for now
+// const showActivityStatus = ref(settingStore.settings?.privacyShowActivityStatus ?? true);
+// const shareCrashReports = ref(settingStore.settings?.privacyShareCrashReports ?? true);
 
 // Options
 const visibilityOptions = [
@@ -242,7 +247,8 @@ watch(
   { deep: true },
 );
 
-// Watch other settings
+// Watch other settings - commented out fields not yet in DTO
+/*
 watch(
   () => settingStore.settings,
   (newSettings) => {
@@ -253,33 +259,48 @@ watch(
   },
   { deep: true },
 );
+*/
 
 // Handlers - using convenience method
 async function handleProfileVisibilityChange(value: string) {
   await settingStore.updatePrivacy({ profileVisibility: value as any });
 }
 
-async function handleOnlineStatusChange(value: boolean) {
-  await settingStore.updatePrivacy({ showOnlineStatus: value });
+async function handleOnlineStatusChange(value: boolean | null) {
+  if (value !== null) {
+    await settingStore.updatePrivacy({ showOnlineStatus: value });
+  }
 }
 
-async function handleSearchByEmailChange(value: boolean) {
-  await settingStore.updatePrivacy({ allowSearchByEmail: value });
+async function handleSearchByEmailChange(value: boolean | null) {
+  if (value !== null) {
+    await settingStore.updatePrivacy({ allowSearchByEmail: value });
+  }
 }
 
-async function handleSearchByPhoneChange(value: boolean) {
-  await settingStore.updatePrivacy({ allowSearchByPhone: value });
+async function handleSearchByPhoneChange(value: boolean | null) {
+  if (value !== null) {
+    await settingStore.updatePrivacy({ allowSearchByPhone: value });
+  }
 }
 
+// Commented out - fields not yet in DTO
+/*
 async function handleActivityStatusChange(value: boolean) {
   await settingStore.updateSettings({ privacyShowActivityStatus: value });
 }
+*/
 
-async function handleUsageDataChange(value: boolean) {
-  await settingStore.updatePrivacy({ shareUsageData: value });
+async function handleUsageDataChange(value: boolean | null) {
+  if (value !== null) {
+    await settingStore.updatePrivacy({ shareUsageData: value });
+  }
 }
 
+// Commented out - field not yet in DTO
+/*
 async function handleCrashReportsChange(value: boolean) {
   await settingStore.updateSettings({ privacyShareCrashReports: value });
 }
+*/
 </script>

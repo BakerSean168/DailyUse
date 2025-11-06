@@ -49,17 +49,24 @@ case "$1" in
     docker exec -it dailyuse-dev-db psql -U dailyuse -d dailyuse
     ;;
   
+  grant-createdb)
+    echo "🔑 给 dailyuse 用户添加 CREATEDB 权限..."
+    docker exec -it dailyuse-dev-db psql -U postgres -c "ALTER USER dailyuse CREATEDB;"
+    echo "✅ 权限已添加"
+    ;;
+  
   *)
-    echo "用法: $0 {start|stop|restart|status|logs|reset|shell}"
+    echo "用法: $0 {start|stop|restart|status|logs|reset|shell|grant-createdb}"
     echo ""
     echo "命令说明:"
-    echo "  start   - 启动 Docker 数据库"
-    echo "  stop    - 停止 Docker 数据库"
-    echo "  restart - 重启 Docker 数据库"
-    echo "  status  - 查看数据库状态"
-    echo "  logs    - 查看数据库日志"
-    echo "  reset   - 重置数据库（删除所有数据并重新迁移）"
-    echo "  shell   - 进入数据库 shell"
+    echo "  start        - 启动 Docker 数据库"
+    echo "  stop         - 停止 Docker 数据库"
+    echo "  restart      - 重启 Docker 数据库"
+    echo "  status       - 查看数据库状态"
+    echo "  logs         - 查看数据库日志"
+    echo "  reset        - 重置数据库（删除所有数据并重新迁移）"
+    echo "  shell        - 进入数据库 shell"
+    echo "  grant-createdb - 给 dailyuse 用户添加创建数据库权限"
     exit 1
     ;;
 esac

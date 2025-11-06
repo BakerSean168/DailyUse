@@ -133,8 +133,10 @@ async function handleFontSizeChange(value: string) {
   await settingStore.updateAppearance({ fontSize: value as any });
 }
 
-async function handleCompactModeChange(value: boolean) {
-  await settingStore.updateAppearance({ compactMode: value });
+async function handleCompactModeChange(value: boolean | null) {
+  if (value !== null) {
+    await settingStore.updateAppearance({ compactMode: value });
+  }
 }
 
 async function handleAccentColorChange() {

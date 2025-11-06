@@ -13,7 +13,7 @@ const AppEnvironment = SettingContracts.AppEnvironment;
 /**
  * 应用配置聚合根服务端实现
  */
-export class AppConfigServer extends AggregateRoot implements IAppConfigServer {
+export class AppConfig extends AggregateRoot implements IAppConfigServer {
   private _version: string;
   private _app: {
     name: string;
@@ -77,12 +77,12 @@ export class AppConfigServer extends AggregateRoot implements IAppConfigServer {
   private constructor(
     uuid: string,
     version: string,
-    app: AppConfigServer['_app'],
-    features: AppConfigServer['_features'],
-    limits: AppConfigServer['_limits'],
-    api: AppConfigServer['_api'],
-    security: AppConfigServer['_security'],
-    notifications: AppConfigServer['_notifications'],
+    app: AppConfig['_app'],
+    features: AppConfig['_features'],
+    limits: AppConfig['_limits'],
+    api: AppConfig['_api'],
+    security: AppConfig['_security'],
+    notifications: AppConfig['_notifications'],
     createdAt: number,
     updatedAt: number,
   ) {
@@ -104,27 +104,27 @@ export class AppConfigServer extends AggregateRoot implements IAppConfigServer {
     return this._version;
   }
 
-  get app(): AppConfigServer['_app'] {
+  get app(): AppConfig['_app'] {
     return { ...this._app };
   }
 
-  get features(): AppConfigServer['_features'] {
+  get features(): AppConfig['_features'] {
     return { ...this._features };
   }
 
-  get limits(): AppConfigServer['_limits'] {
+  get limits(): AppConfig['_limits'] {
     return { ...this._limits };
   }
 
-  get api(): AppConfigServer['_api'] {
+  get api(): AppConfig['_api'] {
     return { ...this._api };
   }
 
-  get security(): AppConfigServer['_security'] {
+  get security(): AppConfig['_security'] {
     return { ...this._security };
   }
 
-  get notifications(): AppConfigServer['_notifications'] {
+  get notifications(): AppConfig['_notifications'] {
     return {
       ...this._notifications,
       channels: { ...this._notifications.channels },
@@ -172,22 +172,22 @@ export class AppConfigServer extends AggregateRoot implements IAppConfigServer {
 
   // ========== 配置更新 ==========
 
-  updateAppInfo(info: Partial<AppConfigServer['_app']>): void {
+  updateAppInfo(info: Partial<AppConfig['_app']>): void {
     this._app = { ...this._app, ...info };
     this._updatedAt = Date.now();
   }
 
-  updateLimits(limits: Partial<AppConfigServer['_limits']>): void {
+  updateLimits(limits: Partial<AppConfig['_limits']>): void {
     this._limits = { ...this._limits, ...limits };
     this._updatedAt = Date.now();
   }
 
-  updateApiConfig(config: Partial<AppConfigServer['_api']>): void {
+  updateApiConfig(config: Partial<AppConfig['_api']>): void {
     this._api = { ...this._api, ...config };
     this._updatedAt = Date.now();
   }
 
-  updateSecurityConfig(config: Partial<AppConfigServer['_security']>): void {
+  updateSecurityConfig(config: Partial<AppConfig['_security']>): void {
     this._security = { ...this._security, ...config };
     this._updatedAt = Date.now();
   }
@@ -242,7 +242,7 @@ export class AppConfigServer extends AggregateRoot implements IAppConfigServer {
 
   // ========== 静态工厂方法 ==========
 
-  static create(params?: Partial<SettingContracts.AppConfigServer>): AppConfigServer {
+  static create(params?: Partial<SettingContracts.AppConfigServer>): AppConfig {
     const now = Date.now();
 
     // 默认配置
@@ -319,7 +319,7 @@ export class AppConfigServer extends AggregateRoot implements IAppConfigServer {
       environment: (params?.app?.environment as AppEnvironment) || defaultApp.environment,
     };
 
-    return new AppConfigServer(
+    return new AppConfig(
       params?.uuid || AggregateRoot.generateUUID(),
       params?.version || '1.0.0',
       app,
@@ -344,8 +344,8 @@ export class AppConfigServer extends AggregateRoot implements IAppConfigServer {
     );
   }
 
-  static fromServerDTO(dto: SettingContracts.AppConfigServerDTO): AppConfigServer {
-    return new AppConfigServer(
+  static fromServerDTO(dto: SettingContracts.AppConfigServerDTO): AppConfig {
+    return new AppConfig(
       dto.uuid,
       dto.version,
       {
@@ -362,8 +362,8 @@ export class AppConfigServer extends AggregateRoot implements IAppConfigServer {
     );
   }
 
-  static fromPersistenceDTO(dto: SettingContracts.AppConfigPersistenceDTO): AppConfigServer {
-    return new AppConfigServer(
+  static fromPersistenceDTO(dto: SettingContracts.AppConfigPersistenceDTO): AppConfig {
+    return new AppConfig(
       dto.uuid,
       dto.version,
       JSON.parse(dto.app),
