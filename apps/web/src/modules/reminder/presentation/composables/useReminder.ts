@@ -17,6 +17,22 @@ export function useReminder() {
   const statistics = computed(() => reminderStore.statistics);
 
   /**
+   * 按 UUID 获取提醒模板
+   * 返回响应式计算属性，确保组件始终获取最新数据
+   */
+  function getReminderTemplateByUuid(uuid: string) {
+    return computed(() => reminderStore.getReminderTemplateByUuid(uuid));
+  }
+
+  /**
+   * 按 UUID 获取提醒分组
+   * 返回响应式计算属性，确保组件始终获取最新数据
+   */
+  function getReminderGroupByUuid(uuid: string) {
+    return computed(() => reminderStore.getReminderGroupByUuid(uuid));
+  }
+
+  /**
    * 初始化 Reminder 模块
    */
   async function initialize() {
@@ -85,6 +101,8 @@ export function useReminder() {
     reminderTemplates,
     reminderGroups,
     statistics,
+    getReminderTemplateByUuid,
+    getReminderGroupByUuid,
     initialize,
     refreshAll,
     createReminderTemplate,

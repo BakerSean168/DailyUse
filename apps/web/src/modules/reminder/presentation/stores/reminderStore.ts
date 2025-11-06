@@ -281,14 +281,18 @@ export const useReminderStore = defineStore('reminder', {
      * 添加或更新提醒模板
      */
     addOrUpdateReminderTemplate(template: ReminderTemplate | ReminderContracts.ReminderTemplateClientDTO) {
-      const entity = template instanceof ReminderTemplate ? template : ReminderTemplate.fromClientDTO(template);
-      const index = this.reminderTemplates.findIndex((t) => t.uuid === entity.uuid);
-      if (index >= 0) {
-        this.reminderTemplates[index] = entity;
+      const newEntity = template instanceof ReminderTemplate ? template : ReminderTemplate.fromClientDTO(template);
+      const existing = this.reminderTemplates.find((t) => t.uuid === newEntity.uuid);
+
+      if (existing) {
+        // 使用 updateFromEntity 方法进行原地更新，保持对象引用不变
+        // 这样所有持有该对象引用的组件都能正确响应变化
+        existing.updateFromEntity(newEntity);
+        console.log('📦 [ReminderStore] 已更新模板 (原地更新):', existing.uuid);
       } else {
-        this.reminderTemplates.push(entity);
+        this.reminderTemplates.push(newEntity);
+        console.log('📦 [ReminderStore] 已添加新模板:', newEntity.uuid);
       }
-      console.log('📦 [ReminderStore] 已添加/更新模板:', entity.uuid);
     },
 
     /**

@@ -168,32 +168,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import type { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderGroup } from '@dailyuse/domain-client';
 import { useReminder } from '../../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { reminderGroupApplicationService } from '../../../application/services';
 import TemplateDesktopCard from './TemplateDesktopCard.vue';
 
-type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
+type ReminderGroupDTO = ReminderContracts.ReminderGroupClientDTO;
 type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
 
 // Composables
-const { reminderTemplates, toggleTemplateStatus, refreshAll } = useReminder();
+const { reminderTemplates, toggleTemplateStatus, getReminderGroupByUuid } = useReminder();
 const snackbar = useSnackbar();
 
 // Emits
 const emit = defineEmits<{
-  'edit-group': [group: ReminderTemplateGroup];
+  'edit-group': [group: ReminderGroup];
   'edit-template': [template: ReminderTemplate];
   'create-template': [groupUuid: string];
 }>();
 
 // 响应式状态
 const visible = ref(false);
-const group = ref<ReminderTemplateGroup | null>(null);
-const localEnabled = ref(false);
-const isGroupControl = ref(false);
+const groupUuid = ref<string | null>(null);
 const isTogglingStatus = ref(false);
 const isTogglingMode = ref(false);
 const templateCardRef = ref<InstanceType<typeof TemplateDesktopCard>>();
@@ -212,7 +211,38 @@ const contextMenu = ref<{
   items: [],
 });
 
-// 计算属性
+/**
+ * 直接从 useReminder composable 获取最新的分组对象
+ * 这确保了组件始终持有对 Store 中对象的引用
+ */
+const group = computed(() => {
+  if (!groupUuid.value) return null;
+  return getReminderGroupByUuid(groupUuid.value).value;
+});
+
+/**
+ * 从分组的 enabled 属性计算本地启用状态
+ */
+const localEnabled = computed({
+  get() {
+    return group.value?.enabled ?? false;
+  },
+  set(value: boolean) {
+    // setter 仅为支持 v-model，实际更新由 handleToggleStatus 执行
+  },
+});
+
+/**
+ * 从分组的 controlMode 属性计算本地控制模式
+ */
+const isGroupControl = computed({
+  get() {
+    return group.value?.controlMode === 'GROUP';
+  },
+  set(value: boolean) {
+    // setter 仅为支持 v-model，实际更新由 handleToggleControlMode 执行
+  },
+});
 
 /**
  * 该分组下的所有模板
@@ -229,28 +259,20 @@ const displayTemplates = computed(() => {
   return templates.value.slice(0, maxDisplayCount);
 });
 
-// 监听 group 变化，同步 localEnabled 和 isGroupControl
-watch(() => group.value?.enabled, (newValue) => {
-  if (newValue !== undefined) {
-    localEnabled.value = newValue;
-  }
-}, { immediate: true });
-
-watch(() => group.value?.controlMode, (newValue) => {
-  if (newValue !== undefined) {
-    isGroupControl.value = newValue === 'GROUP';
-  }
-}, { immediate: true });
-
 // ===== 方法 =====
 
 /**
  * 打开对话框
+ * 关键改变：只保存 groupUuid，而不是保存整个对象
+ * 这样组件会通过 computed 属性从 Store 中实时获取最新数据
  */
-const open = async (groupData: ReminderTemplateGroup) => {
-  group.value = groupData;
-  localEnabled.value = groupData.enabled;
-  isGroupControl.value = groupData.controlMode === 'GROUP';
+const open = async (groupData: ReminderGroup | ReminderGroupDTO) => {
+  const uuid = (groupData as any).uuid;
+  if (!uuid) {
+    console.error('Group data missing uuid');
+    return;
+  }
+  groupUuid.value = uuid;
   visible.value = true;
 };
 
@@ -260,12 +282,13 @@ const open = async (groupData: ReminderTemplateGroup) => {
 const close = () => {
   visible.value = false;
   setTimeout(() => {
-    group.value = null;
+    groupUuid.value = null;
   }, 300);
 };
 
 /**
  * 处理分组状态切换
+ * 关键改变：不再手动更新 group，而是依赖 Store 的更新和 computed 属性的自动响应
  */
 const handleToggleStatus = async (enabled: boolean | null) => {
   if (!group.value || enabled === null) return;
@@ -273,11 +296,9 @@ const handleToggleStatus = async (enabled: boolean | null) => {
   isTogglingStatus.value = true;
   try {
     await reminderGroupApplicationService.toggleReminderGroupStatus(group.value.uuid);
-    await refreshAll();
     snackbar.showSuccess(enabled ? '已启用分组' : '已禁用分组');
   } catch (error) {
     console.error('切换分组状态失败:', error);
-    localEnabled.value = !enabled; // 回滚
     snackbar.showError('切换状态失败');
   } finally {
     isTogglingStatus.value = false;
@@ -286,6 +307,7 @@ const handleToggleStatus = async (enabled: boolean | null) => {
 
 /**
  * 处理控制模式切换
+ * 关键改变：不再手动更新 group，而是依赖 Store 的更新和 computed 属性的自动响应
  */
 const handleToggleControlMode = async (isGroup: boolean | null) => {
   if (!group.value || isGroup === null) return;
@@ -293,11 +315,9 @@ const handleToggleControlMode = async (isGroup: boolean | null) => {
   isTogglingMode.value = true;
   try {
     await reminderGroupApplicationService.toggleReminderGroupControlMode(group.value.uuid);
-    await refreshAll();
     snackbar.showSuccess(isGroup ? '已切换到组控制' : '已切换到个体控制');
   } catch (error) {
     console.error('切换控制模式失败:', error);
-    isGroupControl.value = !isGroup; // 回滚
     snackbar.showError('切换控制模式失败');
   } finally {
     isTogglingMode.value = false;
@@ -377,7 +397,6 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
         action: async () => {
           try {
             await toggleTemplateStatus(template.uuid, !template.effectiveEnabled);
-            await refreshAll();
             snackbar.showSuccess(template.effectiveEnabled ? '已禁用模板' : '已启用模板');
           } catch (error) {
             console.error('切换模板状态失败:', error);

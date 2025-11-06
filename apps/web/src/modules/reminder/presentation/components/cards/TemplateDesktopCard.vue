@@ -203,17 +203,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import type { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
+import { ReminderTemplate } from '@dailyuse/domain-client';
 import { useReminder } from '../../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
-type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
+type ReminderTemplateDTO = ReminderContracts.ReminderTemplateClientDTO;
 
 // Composables
-const { toggleTemplateStatus } = useReminder();
+const { toggleTemplateStatus, getReminderTemplateByUuid } = useReminder();
 const snackbar = useSnackbar();
 
 // Emits
@@ -225,9 +226,29 @@ const emit = defineEmits<{
 
 // 响应式状态
 const visible = ref(false);
-const template = ref<ReminderTemplate | null>(null);
-const localEnabled = ref(false);
+const templateUuid = ref<string | null>(null);
 const isTogglingStatus = ref(false);
+
+/**
+ * 直接从 useReminder composable 获取最新的模板对象
+ * 这确保了组件始终持有对 Store 中对象的引用
+ */
+const template = computed(() => {
+  if (!templateUuid.value) return null;
+  return getReminderTemplateByUuid(templateUuid.value).value;
+});
+
+/**
+ * 从模板的 effectiveEnabled 属性计算本地启用状态
+ */
+const localEnabled = computed({
+  get() {
+    return template.value?.effectiveEnabled ?? false;
+  },
+  set(value: boolean) {
+    // 这个 setter 是为了支持 v-model，但实际更新由 handleToggleStatus 来执行
+  },
+});
 
 // 统计数据（模拟，实际应该从API获取）
 const stats = computed(() => ({
@@ -236,21 +257,20 @@ const stats = computed(() => ({
   pending: 0,
 }));
 
-// 监听 template 变化，同步 localEnabled
-watch(() => template.value?.effectiveEnabled, (newValue) => {
-  if (newValue !== undefined) {
-    localEnabled.value = newValue;
-  }
-}, { immediate: true });
-
 // ===== 方法 =====
 
 /**
  * 打开对话框
+ * 关键改变：只保存 templateUuid，而不是保存整个对象
+ * 这样组件会通过 computed 属性从 Store 中实时获取最新数据
  */
-const open = (templateData: ReminderTemplate) => {
-  template.value = templateData;
-  localEnabled.value = templateData.effectiveEnabled;
+const open = (templateData: ReminderTemplate | ReminderTemplateDTO) => {
+  const uuid = (templateData as any).uuid;
+  if (!uuid) {
+    console.error('Template data missing uuid');
+    return;
+  }
+  templateUuid.value = uuid;
   visible.value = true;
 };
 
@@ -260,12 +280,13 @@ const open = (templateData: ReminderTemplate) => {
 const close = () => {
   visible.value = false;
   setTimeout(() => {
-    template.value = null;
+    templateUuid.value = null;
   }, 300);
 };
 
 /**
  * 处理状态切换
+ * 关键改变：不再手动更新 template，而是依赖 Store 的更新和 computed 属性的自动响应
  */
 const handleToggleStatus = async (enabled: boolean | null) => {
   if (!template.value || enabled === null) return;
@@ -273,12 +294,10 @@ const handleToggleStatus = async (enabled: boolean | null) => {
   isTogglingStatus.value = true;
   try {
     await toggleTemplateStatus(template.value.uuid, enabled);
-    template.value = { ...template.value, effectiveEnabled: enabled };
     emit('status-changed', template.value, enabled);
     snackbar.showSuccess(enabled ? '已启用模板' : '已禁用模板');
   } catch (error) {
     console.error('切换状态失败:', error);
-    localEnabled.value = !enabled; // 回滚
     snackbar.showError('切换状态失败');
   } finally {
     isTogglingStatus.value = false;

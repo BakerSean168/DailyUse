@@ -363,6 +363,35 @@ export class ReminderTemplate extends AggregateRoot
     this._updatedAt = Date.now();
   }
 
+  /**
+   * 从另一个 ReminderTemplate 实体更新当前实例的所有属性（除 uuid 外）
+   * 用于 Store 中的原地更新，保持对象引用不变，确保响应式系统正常工作
+   */
+  public updateFromEntity(other: ReminderTemplate): void {
+    this._accountUuid = other._accountUuid;
+    this._title = other._title;
+    this._description = other._description;
+    this._type = other._type;
+    this._trigger = other._trigger;
+    this._recurrence = other._recurrence;
+    this._activeTime = other._activeTime;
+    this._activeHours = other._activeHours;
+    this._notificationConfig = other._notificationConfig;
+    this._selfEnabled = other._selfEnabled;
+    this._status = other._status;
+    this._groupUuid = other._groupUuid;
+    this._importanceLevel = other._importanceLevel;
+    this._tags = [...other._tags];
+    this._color = other._color;
+    this._icon = other._icon;
+    this._nextTriggerAt = other._nextTriggerAt;
+    this._stats = other._stats;
+    this._smartFrequencyEnabled = other._smartFrequencyEnabled;
+    this._createdAt = other._createdAt;
+    this._updatedAt = other._updatedAt;
+    this._deletedAt = other._deletedAt;
+  }
+
   // ===== 转换方法 =====
   
   public toClientDTO(): ReminderTemplateDTO {
