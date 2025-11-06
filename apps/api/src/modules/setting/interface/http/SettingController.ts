@@ -1,6 +1,7 @@
 // @ts-nocheck
 import type { Request, Response } from 'express';
 import { SettingApplicationService } from '../../application/services/SettingApplicationService';
+import { SettingCloudSyncService } from '../../application/services/SettingCloudSyncService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
@@ -19,6 +20,7 @@ const logger = createLogger('SettingController');
  */
 export class SettingController {
   private static settingService: SettingApplicationService | null = null;
+  private static syncService: SettingCloudSyncService | null = null;
   private static responseBuilder = createResponseBuilder();
 
   /**
@@ -29,6 +31,16 @@ export class SettingController {
       SettingController.settingService = await SettingApplicationService.getInstance();
     }
     return SettingController.settingService;
+  }
+
+  /**
+   * 初始化云同步服务（延迟加载）
+   */
+  private static getSyncService(): SettingCloudSyncService {
+    if (!SettingController.syncService) {
+      SettingController.syncService = new SettingCloudSyncService();
+    }
+    return SettingController.syncService;
   }
 
   /**
@@ -143,6 +155,206 @@ export class SettingController {
       return SettingController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,
         message: error.message || 'Failed to get default settings',
+      });
+    }
+  }
+
+  /**
+   * 保存设置版本快照
+   * @route POST /api/settings/sync/save-version
+   */
+  static async saveSettingVersion(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const syncService = SettingController.getSyncService();
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      const { deviceId, deviceName, snapshot } = req.body;
+      logger.info('Saving setting version', { accountUuid, deviceId });
+
+      const version = await syncService.saveSettingVersion(
+        accountUuid,
+        deviceId,
+        deviceName,
+        snapshot
+      );
+
+      logger.info('Setting version saved successfully', { accountUuid });
+      return SettingController.responseBuilder.sendSuccess(res, version);
+    } catch (error: any) {
+      logger.error('Failed to save setting version', { error: error.message });
+      return SettingController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: error.message || 'Failed to save setting version',
+      });
+    }
+  }
+
+  /**
+   * 获取设置版本历史
+   * @route GET /api/settings/sync/history
+   */
+  static async getSettingHistory(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const syncService = SettingController.getSyncService();
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      const limit = parseInt(req.query.limit as string) || 10;
+      logger.info('Getting setting history', { accountUuid, limit });
+
+      const history = await syncService.getSettingHistory(accountUuid, limit);
+
+      logger.info('Setting history retrieved successfully', { accountUuid });
+      return SettingController.responseBuilder.sendSuccess(res, history);
+    } catch (error: any) {
+      logger.error('Failed to get setting history', { error: error.message });
+      return SettingController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: error.message || 'Failed to get setting history',
+      });
+    }
+  }
+
+  /**
+   * 恢复设置版本
+   * @route POST /api/settings/sync/restore
+   */
+  static async restoreSettingVersion(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const syncService = SettingController.getSyncService();
+      const service = await SettingController.getSettingService();
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      const { versionUuid } = req.body;
+      logger.info('Restoring setting version', { accountUuid, versionUuid });
+
+      const restored = await syncService.restoreSettingVersion(accountUuid, versionUuid);
+      // Also update the current settings
+      if (restored) {
+        await service.updateUserSetting(accountUuid, restored.settingSnapshot);
+      }
+
+      logger.info('Setting version restored successfully', { accountUuid });
+      return SettingController.responseBuilder.sendSuccess(res, restored);
+    } catch (error: any) {
+      logger.error('Failed to restore setting version', { error: error.message });
+      return SettingController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: error.message || 'Failed to restore setting version',
+      });
+    }
+  }
+
+  /**
+   * 解决设置冲突
+   * @route POST /api/settings/sync/resolve-conflict
+   */
+  static async resolveConflict(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const syncService = SettingController.getSyncService();
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      const { local, remote, strategy } = req.body;
+      logger.info('Resolving setting conflict', { accountUuid, strategy });
+
+      const resolved = await syncService.resolveConflict(
+        accountUuid,
+        local,
+        remote,
+        strategy
+      );
+
+      logger.info('Setting conflict resolved successfully', { accountUuid });
+      return SettingController.responseBuilder.sendSuccess(res, resolved);
+    } catch (error: any) {
+      logger.error('Failed to resolve conflict', { error: error.message });
+      return SettingController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: error.message || 'Failed to resolve conflict',
+      });
+    }
+  }
+
+  /**
+   * 获取同步状态
+   * @route GET /api/settings/sync/status
+   */
+  static async getSyncStatus(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const syncService = SettingController.getSyncService();
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      logger.info('Getting sync status', { accountUuid });
+
+      const status = await syncService.getSyncStatus(accountUuid);
+
+      logger.info('Sync status retrieved successfully', { accountUuid });
+      return SettingController.responseBuilder.sendSuccess(res, status);
+    } catch (error: any) {
+      logger.error('Failed to get sync status', { error: error.message });
+      return SettingController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: error.message || 'Failed to get sync status',
+      });
+    }
+  }
+
+  /**
+   * 清理旧版本
+   * @route DELETE /api/settings/sync/cleanup
+   */
+  static async cleanupVersions(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const syncService = SettingController.getSyncService();
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        return SettingController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      const keepCount = parseInt(req.query.keepCount as string) || 10;
+      logger.info('Cleaning up versions', { accountUuid, keepCount });
+
+      const result = await syncService.cleanupOldVersions(accountUuid, keepCount);
+
+      logger.info('Versions cleaned up successfully', { accountUuid });
+      return SettingController.responseBuilder.sendSuccess(res, result);
+    } catch (error: any) {
+      logger.error('Failed to cleanup versions', { error: error.message });
+      return SettingController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: error.message || 'Failed to cleanup versions',
       });
     }
   }

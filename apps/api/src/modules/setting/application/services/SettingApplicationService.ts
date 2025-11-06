@@ -58,7 +58,7 @@ export class SettingApplicationService {
 
     if (!setting) {
       // 首次访问，创建默认设置
-      setting = UserSetting.createDefault(accountUuid);
+      setting = UserSetting.create({ accountUuid });
       await this.userSettingRepository.save(setting);
     }
 
@@ -76,13 +76,40 @@ export class SettingApplicationService {
 
     if (!setting) {
       // 如果设置不存在，先创建默认设置
-      setting = UserSetting.createDefault(accountUuid);
+      setting = UserSetting.create({ accountUuid });
     }
 
-    // 更新设置
-    setting.update(updates);
-    await this.userSettingRepository.save(setting);
+    // 更新各个设置分类
+    if (updates.appearance) {
+      setting.updateAppearance(updates.appearance);
+    }
+    if (updates.locale) {
+      setting.updateLocale(updates.locale);
+    }
+    if (updates.workflow) {
+      setting.updateWorkflow(updates.workflow);
+    }
+    if (updates.privacy) {
+      setting.updatePrivacy(updates.privacy);
+    }
+    if (updates.shortcuts) {
+      // shortcuts 需要特殊处理
+      if (updates.shortcuts.custom) {
+        for (const [action, shortcut] of Object.entries(updates.shortcuts.custom)) {
+          setting.updateShortcut(action, shortcut as string);
+        }
+      }
+    }
+    if (updates.experimental) {
+      // experimental 需要特殊处理
+      if (updates.experimental.features) {
+        for (const feature of updates.experimental.features) {
+          setting.enableExperimentalFeature(feature);
+        }
+      }
+    }
 
+    await this.userSettingRepository.save(setting);
     return setting.toClientDTO();
   }
 
@@ -96,17 +123,20 @@ export class SettingApplicationService {
       throw new Error('User setting not found');
     }
 
-    setting.resetToDefaults();
-    await this.userSettingRepository.save(setting);
-
-    return setting.toClientDTO();
+    // 删除现有设置，创建新的默认设置
+    const newSetting = UserSetting.create({ accountUuid });
+    // 保留原 UUID
+    (newSetting as any)._uuid = setting.uuid;
+    
+    await this.userSettingRepository.save(newSetting);
+    return newSetting.toClientDTO();
   }
 
   /**
    * 获取默认设置
    */
-  async getDefaultSettings(): Promise<SettingContracts.DefaultSettingsDTO> {
-    const defaultSetting = UserSetting.createDefault('temp-uuid');
-    return defaultSetting.toDefaultDTO();
+  async getDefaultSettings(): Promise<SettingContracts.UserSettingClientDTO> {
+    const defaultSetting = UserSetting.create({ accountUuid: 'temp-uuid' });
+    return defaultSetting.toClientDTO();
   }
 }

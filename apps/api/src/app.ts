@@ -22,7 +22,7 @@ import reminderGroupRouter from './modules/reminder/interface/http/reminderGroup
 import scheduleRouter from './modules/schedule/interface/http/routes/scheduleRoutes';
 import notificationRouter from './modules/notification/interface/http/notificationRoutes';
 import notificationSSERouter from './modules/notification/interface/http/sseRoutes';
-// import settingRouter from './modules/setting/interface/http/settingRoutes'; // TEMPORARILY DISABLED
+import settingRouter from './modules/setting/interface/http/settingRoutes';
 // import themeRoutes from './modules/theme/interface/http/themeRoutes';
 import editorRouter from './modules/editor/interface/http/routes/editorRoutes';
 import repositoryRouter from './modules/repository/interface/http/routes/repositoryRoutes';
@@ -147,8 +147,7 @@ api.use('', resourceNewRouter);
  * setting 设置模块
  */
 // 挂载用户设置路由 - 需要认证
-// TEMPORARILY DISABLED due to UserSetting compilation issues
-// api.use('/settings', authMiddleware, settingRouter);
+api.use('/settings', authMiddleware, settingRouter);
 
 /**
  * metrics 性能指标模块

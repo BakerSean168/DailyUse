@@ -86,6 +86,10 @@ export class TaskTemplateApplicationService {
     tags?: string[];
     color?: string;
   }): Promise<TaskContracts.TaskTemplateServerDTO> {
+    // Note: Account existence is implicitly validated by the database foreign key constraint.
+    // If account doesn't exist, Prisma will throw a foreign key constraint error.
+    // For more explicit validation, check account in a separate repository if needed.
+    
     // 转换值对象
     const timeConfig = TaskTimeConfig.fromServerDTO(params.timeConfig);
     const recurrenceRule = params.recurrenceRule

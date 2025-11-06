@@ -12,11 +12,20 @@ github/prompts 文件夹下的 prompt 文件
 - dailyuse.migration.prompt.md: 迁移指南
 - dailyuse.overview.prompt.md: 项目概述
 
+## 项目环境
+
+### api
+
+- 运行在 3888 端口
+- 接口样例`http://localhost:3888/api/v1/auth/register`, **有 api/v1 前缀**
+
+### web
+
+- 运行在 5173 端口
+
 ## 当前阶段
 
-- 目前处于重构阶段，Schedule 模块的核心逻辑需要重新设计和实现
-- 其他模块（如 Goal、Task、Reminder、Notification）需要调整以适应新的 Schedule 模型
-- 打包优化
+
 
 ## 开发规范
 

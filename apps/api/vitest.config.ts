@@ -14,7 +14,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./src/test/setup-database.ts'], // ✅ 使用真实数据库
+    setupFiles: ['./src/test/setup-database.ts'], // ✅ 使用真实数据库（Docker 已启动）
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}'],
     exclude: [
       'node_modules',
