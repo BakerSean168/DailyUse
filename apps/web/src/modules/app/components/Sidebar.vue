@@ -23,11 +23,6 @@
     <div class="sidebar-divider"></div>
 
     <div class="sidebar-bottom">
-      <!-- Theme Switcher -->
-      <div class="theme-switcher-wrapper">
-        <ThemeSwitcher />
-      </div>
-
       <button
         class="sidebar-btn bottom-button"
         v-for="item in bottomItems"
@@ -49,7 +44,6 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import ProfileAvatar from '@/modules/account/presentation/components/ProfileAvatar.vue';
 import SidebarMoreMenu from './SidebarMoreMenu.vue';
-import ThemeSwitcher from '@/shared/components/ThemeSwitcher.vue';
 import { getNavigationRoutes } from '@/shared/router/routes';
 
 const router = useRouter();
@@ -161,12 +155,6 @@ const isActiveRoute = (path: string) => {
   flex-direction: column;
   flex: 1;
   justify-content: flex-end;
-}
-
-.theme-switcher-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 8px;
 }
 
 .bottom-button {
