@@ -19,6 +19,8 @@ import { registerNotificationInitializationTasks } from '../../modules/notificat
 import { registerSSEInitializationTasks } from '../../modules/notification/initialization/sseInitialization';
 import { registerScheduleInitializationTasks } from '../../modules/schedule';
 import { registerDataInitializationTasks } from './dataInitialization';
+import { registerSettingInitializationTasks } from '../../modules/setting/initialization/settingInitialization';
+import { registerThemeInitializationTasks } from '../../modules/theme/initialization';
 
 /**
  * 注册基础设施的初始化任务
@@ -69,14 +71,17 @@ function registerAllInitializationTasks(): void {
   // 1. 注册基础设施初始化任务
   registerInfrastructureInitializationTasks();
 
-  // 2. 注册各个模块的初始化任务
+  // 2. 注册主题模块初始化任务（最高优先级）
+  registerThemeInitializationTasks();
+
+  // 3. 注册各个模块的初始化任务
   registerAuthenticationInitializationTasks();
   registerAccountInitializationTasks();
   registerNotificationInitializationTasks(); // 在用户模块之前初始化通知系统
   registerSSEInitializationTasks(); // 初始化 SSE 连接
   registerScheduleInitializationTasks(); // 初始化调度模块
+  registerSettingInitializationTasks(); // 初始化设置模块（在用户登录后加载设置）
   registerDataInitializationTasks(); // 初始化数据加载
-  // Theme module has been removed - theme management is now integrated into Setting module
   registerGoalInitializationTasks();
   registerTaskInitializationTasks();
   registerReminderInitializationTasks();

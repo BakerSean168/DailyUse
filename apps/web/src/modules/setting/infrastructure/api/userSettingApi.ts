@@ -1,6 +1,11 @@
 /**
  * User Setting API Client
  * 用户设置 API 客户端
+ *
+ * 最佳实践：
+ * 1. 只发送变化的字段（减少网络传输）
+ * 2. 支持部分更新语义
+ * 3. 前端乐观更新（先更新 UI，再调用 API）
  */
 
 import { apiClient } from '@/shared/api';
@@ -10,6 +15,19 @@ import type { SettingContracts } from '@dailyuse/contracts';
 type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
 type UpdateUserSettingRequest = SettingContracts.UpdateUserSettingRequest;
 
+/** 
+ * 设置更新响应（轻量级）
+ * 最佳实践：只返回必要信息，减少网络传输
+ */
+export interface SettingUpdateResponse {
+  success: boolean;
+  updatedAt: number;
+  /** 可选：只包含被更新的字段，用于前端验证 */
+  updated?: Partial<UpdateUserSettingRequest>;
+  /** 可选：错误信息 */
+  error?: string;
+}
+
 /**
  * 获取当前用户设置
  */
@@ -18,12 +36,17 @@ export async function getCurrentUserSettings(): Promise<UserSettingClientDTO> {
 }
 
 /**
- * 更新当前用户设置
+ * 更新当前用户设置（通用方法）
+ * 
+ * 📝 最佳实践：
+ * - 前端只发送变化的字段（例如只改主题时，只发送 { appearance: { theme: 'DARK' } }）
+ * - 后端只返回轻量级响应（success + updatedAt），不返回完整对象
+ * - 前端使用乐观更新（先更新 UI，API 成功后更新 updatedAt，失败则回滚）
  */
 export async function updateUserSettings(
   updates: UpdateUserSettingRequest,
-): Promise<UserSettingClientDTO> {
-  return await apiClient.put<UserSettingClientDTO>('/settings/me', updates);
+): Promise<SettingUpdateResponse> {
+  return await apiClient.put<SettingUpdateResponse>('/settings/me', updates);
 }
 
 /**

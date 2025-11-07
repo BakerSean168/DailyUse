@@ -28,6 +28,7 @@ import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
 import CommandPalette from '@/shared/components/command-palette/CommandPalette.vue';
 import { searchDataProvider } from '@/shared/services/SearchDataProvider';
 import { logo128 as logo } from '@dailyuse/assets';
+import { getThemeService } from '@/modules/setting/application/services/ThemeService';
 
 const isLoading = ref(true);
 const showCommandPalette = ref(false);
@@ -37,6 +38,10 @@ const settingStore = useSettingStore();
 const goals = computed(() => searchDataProvider.getGoals());
 const tasks = computed(() => searchDataProvider.getTasks());
 const reminders = computed(() => searchDataProvider.getReminders());
+
+// ⚠️ 重要：在 Vue 组件的 setup 中初始化 ThemeService
+const themeService = getThemeService();
+themeService.initialize();
 
 onMounted(async () => {
   try {

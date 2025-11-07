@@ -77,6 +77,10 @@ export class SettingController {
   /**
    * 更新当前用户设置
    * @route PUT /api/settings/me
+   * 
+   * 📝 最佳实践：返回轻量级响应（只返回 success + updatedAt）
+   * - 减少网络传输
+   * - 前端使用乐观更新，只需要知道成功/失败
    */
   static async updateSettings(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -90,12 +94,21 @@ export class SettingController {
         });
       }
 
-      logger.info('Updating user settings', { accountUuid });
+      logger.info('Updating user settings', { accountUuid, updates: req.body });
 
       const settings = await service.updateUserSetting(accountUuid, req.body);
 
       logger.info('User settings updated successfully', { accountUuid });
-      return SettingController.responseBuilder.sendSuccess(res, settings);
+
+      // 【轻量级响应】只返回必要信息
+      const lightweightResponse = {
+        success: true,
+        updatedAt: settings.updatedAt,
+        // 可选：返回被更新的字段，用于前端验证
+        updated: req.body,
+      };
+
+      return SettingController.responseBuilder.sendSuccess(res, lightweightResponse);
     } catch (error: any) {
       logger.error('Failed to update user settings', { error: error.message });
       return SettingController.responseBuilder.sendError(res, {

@@ -413,39 +413,84 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
   }
 
   static fromServerDTO(dto: SettingContracts.UserSettingServerDTO): UserSetting {
-    // 确保 experimental.features 是一个数组
+    // 如果 DTO 是空对象或缺少必需字段，抛出错误
+    if (!dto.accountUuid) {
+      throw new Error('fromServerDTO requires accountUuid in dto');
+    }
+    
+    // 安全地处理可能缺失的字段，使用默认值
     const experimental = {
       enabled: dto.experimental?.enabled ?? false,
       features: Array.isArray(dto.experimental?.features) ? dto.experimental.features : [],
     };
 
+    const appearance = dto.appearance ? {
+      ...dto.appearance,
+      theme: (dto.appearance.theme as ThemeMode) || ThemeMode.LIGHT,
+      fontSize: (dto.appearance.fontSize as FontSize) || FontSizeEnum.MEDIUM,
+      fontFamily: dto.appearance.fontFamily ?? null,
+    } : {
+      theme: ThemeMode.LIGHT,
+      accentColor: '#1976d2',
+      fontSize: FontSizeEnum.MEDIUM,
+      fontFamily: null,
+      compactMode: false,
+    };
+
+    const locale = dto.locale ? {
+      ...dto.locale,
+      dateFormat: (dto.locale.dateFormat as DateFormat) || DateFormatEnum.YYYY_MM_DD,
+      timeFormat: (dto.locale.timeFormat as TimeFormat) || TimeFormatEnum.H24,
+    } : {
+      language: 'zh-CN',
+      timezone: 'Asia/Shanghai',
+      dateFormat: DateFormatEnum.YYYY_MM_DD,
+      timeFormat: TimeFormatEnum.H24,
+      weekStartsOn: 1 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
+      currency: 'CNY',
+    };
+
+    const workflow = dto.workflow ? {
+      ...dto.workflow,
+      defaultTaskView: (dto.workflow.defaultTaskView as TaskViewType) || TaskViewTypeEnum.LIST,
+      defaultGoalView: (dto.workflow.defaultGoalView as GoalViewType) || GoalViewTypeEnum.LIST,
+      defaultScheduleView: (dto.workflow.defaultScheduleView as ScheduleViewType) || ScheduleViewTypeEnum.WEEK,
+    } : {
+      defaultTaskView: TaskViewTypeEnum.LIST,
+      defaultGoalView: GoalViewTypeEnum.LIST,
+      defaultScheduleView: ScheduleViewTypeEnum.WEEK,
+      autoSave: true,
+      autoSaveInterval: 30000,
+      confirmBeforeDelete: true,
+    };
+
+    const shortcuts = dto.shortcuts || {
+      enabled: true,
+      custom: {},
+    };
+
+    const privacy = dto.privacy ? {
+      ...dto.privacy,
+      profileVisibility: (dto.privacy.profileVisibility as ProfileVisibility) || ProfileVisibilityEnum.PUBLIC,
+    } : {
+      profileVisibility: ProfileVisibilityEnum.PUBLIC,
+      showOnlineStatus: true,
+      allowSearchByEmail: false,
+      allowSearchByPhone: false,
+      shareUsageData: true,
+    };
+
     return new UserSetting({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
-      appearance: {
-        ...dto.appearance,
-        theme: dto.appearance.theme as ThemeMode,
-        fontSize: dto.appearance.fontSize as FontSize,
-      },
-      locale: {
-        ...dto.locale,
-        dateFormat: dto.locale.dateFormat as DateFormat,
-        timeFormat: dto.locale.timeFormat as TimeFormat,
-      },
-      workflow: {
-        ...dto.workflow,
-        defaultTaskView: dto.workflow.defaultTaskView as TaskViewType,
-        defaultGoalView: dto.workflow.defaultGoalView as GoalViewType,
-        defaultScheduleView: dto.workflow.defaultScheduleView as ScheduleViewType,
-      },
-      shortcuts: dto.shortcuts,
-      privacy: {
-        ...dto.privacy,
-        profileVisibility: dto.privacy.profileVisibility as ProfileVisibility,
-      },
+      appearance,
+      locale,
+      workflow,
+      shortcuts,
+      privacy,
       experimental,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: dto.createdAt || Date.now(),
+      updatedAt: dto.updatedAt || Date.now(),
     });
   }
 

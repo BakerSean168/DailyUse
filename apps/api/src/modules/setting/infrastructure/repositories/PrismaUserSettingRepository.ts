@@ -21,24 +21,31 @@ export class PrismaUserSettingRepository implements IUserSettingRepository {
    * 根据账户UUID查找用户设置
    */
   async findByAccountUuid(accountUuid: string): Promise<UserSetting | null> {
-    const account = await this.prisma.account.findUnique({
-      where: { uuid: accountUuid },
-      select: { settings: true },
-    });
-
-    if (!account || !account.settings) {
-      // 如果没有设置，返回默认设置
-      return UserSetting.create({ accountUuid });
-    }
-
     try {
+      const account = await this.prisma.account.findUnique({
+        where: { uuid: accountUuid },
+        select: { settings: true },
+      });
+
+      if (!account) {
+        return null;
+      }
+
+      // 如果是空对象或没有设置，返回 null，让上层创建默认设置
+      if (!account.settings || Object.keys(account.settings).length === 0) {
+        return null;
+      }
+
       // 从 JSON 对象反序列化为 UserSetting 聚合
       const settingsData = account.settings as Prisma.JsonObject;
       return UserSetting.fromServerDTO(settingsData as any);
     } catch (error) {
-      console.error('Failed to parse settings from JSON:', error);
-      // 如果解析失败，返回默认设置
-      return UserSetting.create({ accountUuid });
+      console.error('[PrismaUserSettingRepository] Error in findByAccountUuid:', {
+        accountUuid,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // 如果解析失败，返回 null 让上层创建默认设置
+      return null;
     }
   }
 
