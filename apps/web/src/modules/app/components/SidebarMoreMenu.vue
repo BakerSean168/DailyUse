@@ -20,7 +20,7 @@
             退出
           </v-list-item-title>
         </v-list-item>
-        <v-list-item @click="go('/setting')">
+        <v-list-item @click="go('/settings')">
           <v-list-item-title>
             <v-icon start>mdi-cog</v-icon>
             设置

@@ -61,15 +61,8 @@ const navigationItems = computed(() => {
   }));
 });
 
-// 底部导航项
-const bottomItems = [
-  {
-    name: 'account',
-    path: '/account',
-    title: '账户设置',
-    icon: 'mdi-account-cog',
-  },
-];
+// 底部导航项（移除账户设置，统一在头像菜单中访问）
+const bottomItems: any[] = [];
 
 // 切换收缩/展开
 const toggleRail = () => {

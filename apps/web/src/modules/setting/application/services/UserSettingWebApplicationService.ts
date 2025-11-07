@@ -79,14 +79,22 @@ export class UserSettingWebApplicationService {
 
   /**
    * 更新用户设置
+   * 最佳实践：API 返回轻量级响应，更新后重新加载完整设置
    */
   public async updateUserSettings(
     request: SettingContracts.UpdateUserSettingRequest,
   ): Promise<ReturnType<typeof UserSetting.fromClientDTO>> {
     try {
-      const dto = await userSettingApi.updateUserSettings(request);
-      const entity = UserSetting.fromClientDTO(dto);
+      // 1. 调用 API 更新设置（返回轻量级响应）
+      await userSettingApi.updateUserSettings(request);
+      
+      // 2. 重新加载完整的用户设置
+      const fullDto = await userSettingApi.getCurrentUserSettings();
+      const entity = UserSetting.fromClientDTO(fullDto);
+      
+      // 3. 更新 store
       this.userSettingStore.settings = entity.toClientDTO();
+      
       return entity;
     } catch (error) {
       console.error('[UserSettingWebApplicationService] 更新用户设置失败:', error);
@@ -96,6 +104,7 @@ export class UserSettingWebApplicationService {
 
   /**
    * 重置用户设置
+   * 注意：reset API 返回完整的 UserSettingClientDTO
    */
   public async resetUserSettings(): Promise<ReturnType<typeof UserSetting.fromClientDTO>> {
     try {

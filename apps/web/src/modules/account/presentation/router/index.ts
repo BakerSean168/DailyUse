@@ -9,15 +9,13 @@ export const accountRoutes: RouteRecordRaw[] = [
     path: '/account',
     name: 'account',
     meta: {
-      title: '账户设置',
-      showInNav: true,
-      icon: 'mdi-account-cog',
-      order: 8,
+      title: '账户',
+      showInNav: false, // 不在侧边栏显示，通过头像菜单访问
       requiresAuth: true,
     },
     children: [
       {
-        path: '',
+        path: 'profile',
         name: 'account-profile',
         component: () => import('../views/ProfileView.vue'),
         meta: {

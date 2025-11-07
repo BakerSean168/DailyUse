@@ -42,63 +42,31 @@
           <div>邮箱：{{ localAccount?.email || '未绑定' }}</div>
           <div>手机号：{{ localAccount?.phoneNumber || '未绑定' }}</div>
         </div>
-        <v-btn color="primary" variant="tonal" class="mt-3" @click="startEditProfile">
-          编辑信息
+        <v-btn color="primary" variant="tonal" block class="mt-3" @click="goToProfile">
+          <v-icon start>mdi-account-circle</v-icon>
+          个人资料
         </v-btn>
       </div>
     </v-menu>
-    <!-- 用户信息编辑框 -->
-    <profile-dialog
-      :model-value="profileDialog.show"
-      :account="profileDialog.account"
-      @update:model-value="profileDialog.show = $event"
-      @handle-update-profile="handleUpdateUserProfile"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { AccountContracts } from '@dailyuse/contracts';
+import { useRouter } from 'vue-router';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 
-// components
-import ProfileDialog from './ProfileDialog.vue';
-// composables
-import { useAccount } from '@/modules/account/presentation/composables/useAccount';
-
+const router = useRouter();
 const accountStore = useAccountStore();
-const { updateProfile } = useAccount();
 
 defineProps<{ avatarUrl?: string; size: string }>();
 
 const localAccount = computed(() => accountStore.currentAccount);
 
-const profileDialog = ref<{
-  show: boolean;
-  account: AccountContracts.AccountDTO | null;
-}>({
-  show: false,
-  account: null,
-});
-
-const startEditProfile = () => {
-  profileDialog.value.show = true;
-  profileDialog.value.account = localAccount.value;
-};
-
-const handleUpdateUserProfile = async (profileData: AccountContracts.UpdateAccountProfileRequestDTO) => {
-  if (!localAccount.value?.uuid) {
-    console.error('未找到当前用户');
-    return;
-  }
-  
-  try {
-    await updateProfile(localAccount.value.uuid, profileData);
-    console.log('用户资料更新成功');
-  } catch (error) {
-    console.error('更新用户资料失败:', error);
-  }
+// 跳转到个人资料页面
+const goToProfile = () => {
+  showInfo.value = false;
+  router.push('/account/profile');
 };
 
 const showInfo = ref(false);

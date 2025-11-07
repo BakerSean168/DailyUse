@@ -1,238 +1,298 @@
 <!-- Profile View -->
 <template>
-  <v-container fluid class="profile-view">
-    <v-row>
-      <v-col cols="12" md="8" offset-md="2">
-        <!-- 页面标题 -->
-        <div class="d-flex align-center mb-6">
-          <v-icon size="32" class="mr-3">mdi-account-circle</v-icon>
-          <h1 class="text-h4">个人资料</h1>
-          <v-spacer></v-spacer>
+  <v-container fluid class="profile-view pa-6">
+    <v-row justify="center">
+      <v-col cols="12" lg="10" xl="8">
+        <!-- 页面头部 -->
+        <div class="d-flex align-center mb-8">
+          <div class="d-flex align-center flex-grow-1">
+            <v-avatar size="48" color="primary" class="mr-4">
+              <v-icon size="32">mdi-account-circle</v-icon>
+            </v-avatar>
+            <div>
+              <h1 class="text-h4 mb-1">个人资料</h1>
+              <p class="text-body-2 text-medium-emphasis ma-0">
+                管理您的个人信息和偏好设置
+              </p>
+            </div>
+          </div>
           <v-btn
             v-if="!isEditing"
             color="primary"
+            size="large"
             @click="enableEditMode"
             prepend-icon="mdi-pencil"
           >
             编辑资料
           </v-btn>
+          <div v-else class="d-flex gap-2">
+            <v-btn
+              color="primary"
+              size="large"
+              @click="handleSubmit"
+              :loading="loading"
+              :disabled="!valid || loading"
+              prepend-icon="mdi-content-save"
+            >
+              保存
+            </v-btn>
+            <v-btn
+              size="large"
+              variant="outlined"
+              @click="cancelEdit"
+              :disabled="loading"
+              prepend-icon="mdi-close"
+            >
+              取消
+            </v-btn>
+          </div>
         </div>
 
         <!-- 加载状态 -->
-        <v-progress-linear v-if="loading" indeterminate color="primary"></v-progress-linear>
+        <v-progress-linear
+          v-if="loading && !profile"
+          indeterminate
+          color="primary"
+          class="mb-4"
+        ></v-progress-linear>
 
         <!-- 错误提示 -->
-        <v-alert v-if="error" type="error" dismissible @click:close="error = null" class="mb-4">
+        <v-alert
+          v-if="error"
+          type="error"
+          variant="tonal"
+          closable
+          @click:close="error = null"
+          class="mb-4"
+        >
           {{ error }}
         </v-alert>
 
-        <!-- 资料卡片 -->
-        <v-card v-if="profile">
-          <v-card-text>
-            <v-form ref="formRef" v-model="valid" @submit.prevent="handleSubmit">
+        <!-- 资料内容 -->
+        <v-card v-if="profile" class="elevation-2">
+          <v-card-text class="pa-6">
+            <v-form ref="formRef" v-model="valid">
               <!-- 查看模式 -->
               <template v-if="!isEditing">
                 <!-- 基本信息 -->
-                <v-row>
-                  <v-col cols="12">
-                    <h3 class="text-h6 mb-3">基本信息</h3>
-                  </v-col>
-
-                  <v-col cols="12" sm="6">
-                    <div class="profile-field">
-                      <div class="profile-field-label">用户名</div>
-                      <div class="profile-field-value">{{ profile.username }}</div>
-                    </div>
-                  </v-col>
-
-                  <v-col cols="12" sm="6">
-                    <div class="profile-field">
-                      <div class="profile-field-label">显示名称</div>
-                      <div class="profile-field-value">
-                        {{ profile.profile?.displayName || '未设置' }}
+                <div class="mb-6">
+                  <div class="d-flex align-center mb-4">
+                    <v-icon class="mr-2" color="primary">mdi-account</v-icon>
+                    <h3 class="text-h6">基本信息</h3>
+                  </div>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <div class="info-item">
+                        <div class="info-label">用户名</div>
+                        <div class="info-value">{{ profile.username }}</div>
                       </div>
-                    </div>
-                  </v-col>
+                    </v-col>
 
-                  <v-col cols="12" sm="6">
-                    <div class="profile-field">
-                      <div class="profile-field-label">邮箱</div>
-                      <div class="profile-field-value">
-                        {{ profile.email }}
-                        <v-chip
-                          v-if="profile.emailVerified"
-                          size="small"
-                          color="success"
-                          class="ml-2"
-                        >
-                          已验证
-                        </v-chip>
-                        <v-chip v-else size="small" color="warning" class="ml-2"> 未验证 </v-chip>
+                    <v-col cols="12" md="6">
+                      <div class="info-item">
+                        <div class="info-label">显示名称</div>
+                        <div class="info-value">
+                          {{ profile.profile?.displayName || '未设置' }}
+                        </div>
                       </div>
-                    </div>
-                  </v-col>
+                    </v-col>
 
-                  <v-col cols="12" sm="6">
-                    <div class="profile-field">
-                      <div class="profile-field-label">手机号</div>
-                      <div class="profile-field-value">
-                        {{ profile.phoneNumber || '未设置' }}
+                    <v-col cols="12" md="6">
+                      <div class="info-item">
+                        <div class="info-label">邮箱</div>
+                        <div class="info-value d-flex align-center">
+                          {{ profile.email }}
+                          <v-chip
+                            v-if="profile.emailVerified"
+                            size="x-small"
+                            color="success"
+                            variant="flat"
+                            class="ml-2"
+                          >
+                            <v-icon start size="x-small">mdi-check-circle</v-icon>
+                            已验证
+                          </v-chip>
+                          <v-chip
+                            v-else
+                            size="x-small"
+                            color="warning"
+                            variant="flat"
+                            class="ml-2"
+                          >
+                            <v-icon start size="x-small">mdi-alert-circle</v-icon>
+                            未验证
+                          </v-chip>
+                        </div>
                       </div>
-                    </div>
-                  </v-col>
+                    </v-col>
 
-                  <v-col cols="12">
-                    <div class="profile-field">
-                      <div class="profile-field-label">个人简介</div>
-                      <div class="profile-field-value">
-                        {{ profile.profile?.bio || '这个人很懒，还没有写简介...' }}
+                    <v-col cols="12" md="6">
+                      <div class="info-item">
+                        <div class="info-label">手机号</div>
+                        <div class="info-value">
+                          {{ profile.phoneNumber || '未设置' }}
+                        </div>
                       </div>
-                    </div>
-                  </v-col>
-                </v-row>
+                    </v-col>
 
-                <v-divider class="my-4"></v-divider>
+                    <v-col cols="12">
+                      <div class="info-item">
+                        <div class="info-label">个人简介</div>
+                        <div class="info-value text-medium-emphasis">
+                          {{ profile.profile?.bio || '这个人很懒，还没有写简介...' }}
+                        </div>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <v-divider class="my-6"></v-divider>
 
                 <!-- 偏好设置 -->
-                <v-row>
-                  <v-col cols="12">
-                    <h3 class="text-h6 mb-3">偏好设置</h3>
-                  </v-col>
-
-                  <v-col cols="12" sm="6">
-                    <div class="profile-field">
-                      <div class="profile-field-label">时区</div>
-                      <div class="profile-field-value">{{ profile.profile?.timezone || 'UTC' }}</div>
-                    </div>
-                  </v-col>
-
-                  <v-col cols="12" sm="6">
-                    <div class="profile-field">
-                      <div class="profile-field-label">语言</div>
-                      <div class="profile-field-value">
-                        {{ getLanguageDisplay(profile.profile?.language) }}
+                <div class="mb-6">
+                  <div class="d-flex align-center mb-4">
+                    <v-icon class="mr-2" color="primary">mdi-cog</v-icon>
+                    <h3 class="text-h6">偏好设置</h3>
+                  </div>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <div class="info-item">
+                        <div class="info-label">时区</div>
+                        <div class="info-value">{{ profile.profile?.timezone || 'UTC' }}</div>
                       </div>
-                    </div>
-                  </v-col>
-                </v-row>
+                    </v-col>
 
-                <v-divider class="my-4"></v-divider>
+                    <v-col cols="12" md="6">
+                      <div class="info-item">
+                        <div class="info-label">语言</div>
+                        <div class="info-value">
+                          {{ getLanguageDisplay(profile.profile?.language) }}
+                        </div>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <v-divider class="my-6"></v-divider>
 
                 <!-- 账户信息 -->
-                <v-row>
-                  <v-col cols="12">
-                    <h3 class="text-h6 mb-3">账户信息</h3>
-                  </v-col>
-
-                  <v-col cols="12" sm="6">
-                    <div class="profile-field">
-                      <div class="profile-field-label">账户状态</div>
-                      <div class="profile-field-value">
-                        <v-chip size="small" :color="getStatusColor(profile.status)">
-                          {{ profile.status }}
-                        </v-chip>
+                <div>
+                  <div class="d-flex align-center mb-4">
+                    <v-icon class="mr-2" color="primary">mdi-shield-account</v-icon>
+                    <h3 class="text-h6">账户信息</h3>
+                  </div>
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <div class="info-item">
+                        <div class="info-label">账户状态</div>
+                        <div class="info-value">
+                          <v-chip size="small" :color="getStatusColor(profile.status)" variant="flat">
+                            {{ profile.status }}
+                          </v-chip>
+                        </div>
                       </div>
-                    </div>
-                  </v-col>
+                    </v-col>
 
-                  <v-col cols="12" sm="6">
-                    <div class="profile-field">
-                      <div class="profile-field-label">注册时间</div>
-                      <div class="profile-field-value">{{ formatDate(profile.createdAt) }}</div>
-                    </div>
-                  </v-col>
-                </v-row>
+                    <v-col cols="12" md="6">
+                      <div class="info-item">
+                        <div class="info-label">注册时间</div>
+                        <div class="info-value">{{ formatDate(profile.createdAt) }}</div>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
               </template>
 
               <!-- 编辑模式 -->
               <template v-else>
-                <v-row>
-                  <v-col cols="12">
-                    <h3 class="text-h6 mb-3">编辑资料</h3>
-                  </v-col>
+                <div class="edit-form">
+                  <div class="d-flex align-center mb-4">
+                    <v-icon class="mr-2" color="primary">mdi-pencil</v-icon>
+                    <h3 class="text-h6">编辑资料</h3>
+                  </div>
+                  
+                  <v-row>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="editForm.displayName"
+                        label="显示名称"
+                        :rules="displayNameRules"
+                        prepend-inner-icon="mdi-account"
+                        variant="outlined"
+                        counter="50"
+                        hint="这是其他用户看到的您的名称"
+                        persistent-hint
+                      ></v-text-field>
+                    </v-col>
 
-                  <v-col cols="12">
-                    <v-text-field
-                      v-model="editForm.displayName"
-                      label="显示名称"
-                      :rules="displayNameRules"
-                      prepend-inner-icon="mdi-account"
-                      counter="50"
-                      required
-                    ></v-text-field>
-                  </v-col>
+                    <v-col cols="12">
+                      <v-textarea
+                        v-model="editForm.bio"
+                        label="个人简介"
+                        :rules="bioRules"
+                        prepend-inner-icon="mdi-text"
+                        variant="outlined"
+                        counter="500"
+                        rows="4"
+                        auto-grow
+                        hint="简单介绍一下您自己"
+                        persistent-hint
+                      ></v-textarea>
+                    </v-col>
 
-                  <v-col cols="12">
-                    <v-textarea
-                      v-model="editForm.bio"
-                      label="个人简介"
-                      :rules="bioRules"
-                      prepend-inner-icon="mdi-text"
-                      counter="500"
-                      rows="3"
-                      auto-grow
-                    ></v-textarea>
-                  </v-col>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="editForm.timezone"
+                        :items="timezones"
+                        label="时区"
+                        prepend-inner-icon="mdi-clock-outline"
+                        variant="outlined"
+                      ></v-select>
+                    </v-col>
 
-                  <v-col cols="12" sm="6">
-                    <v-select
-                      v-model="editForm.timezone"
-                      :items="timezones"
-                      label="时区"
-                      prepend-inner-icon="mdi-clock"
-                    ></v-select>
-                  </v-col>
-
-                  <v-col cols="12" sm="6">
-                    <v-select
-                      v-model="editForm.language"
-                      :items="languages"
-                      label="语言"
-                      prepend-inner-icon="mdi-translate"
-                    ></v-select>
-                  </v-col>
-                </v-row>
-
-                <!-- 编辑模式按钮 -->
-                <v-row class="mt-4">
-                  <v-col cols="12">
-                    <v-btn
-                      type="submit"
-                      color="primary"
-                      :loading="loading"
-                      :disabled="!valid || loading"
-                      class="mr-2"
-                    >
-                      <v-icon start>mdi-content-save</v-icon>
-                      保存
-                    </v-btn>
-                    <v-btn @click="cancelEdit" :disabled="loading">
-                      <v-icon start>mdi-close</v-icon>
-                      取消
-                    </v-btn>
-                  </v-col>
-                </v-row>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="editForm.language"
+                        :items="languages"
+                        label="语言"
+                        prepend-inner-icon="mdi-translate"
+                        variant="outlined"
+                      ></v-select>
+                    </v-col>
+                  </v-row>
+                </div>
               </template>
             </v-form>
           </v-card-text>
         </v-card>
 
         <!-- 空状态 -->
-        <v-card v-else-if="!loading">
-          <v-card-text>
-            <v-empty-state
-              icon="mdi-account-off"
-              text="无法加载个人资料"
-              title="加载失败"
-            ></v-empty-state>
+        <v-card v-else-if="!loading" class="elevation-2">
+          <v-card-text class="pa-8 text-center">
+            <v-icon size="80" color="grey-lighten-1" class="mb-4">mdi-account-off</v-icon>
+            <h3 class="text-h6 mb-2">无法加载个人资料</h3>
+            <p class="text-body-2 text-medium-emphasis mb-4">请检查网络连接后重试</p>
+            <v-btn color="primary" @click="loadProfile" prepend-icon="mdi-refresh">
+              重新加载
+            </v-btn>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
 
     <!-- 成功提示 -->
-    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000" location="top">
-      {{ snackbar.message }}
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
+      <div class="d-flex align-center">
+        <v-icon start>
+          {{ snackbar.color === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle' }}
+        </v-icon>
+        {{ snackbar.message }}
+      </div>
     </v-snackbar>
   </v-container>
 </template>
@@ -384,24 +444,57 @@ onMounted(() => {
 
 <style scoped>
 .profile-view {
-  max-width: 1200px;
-  margin: 0 auto;
+  background-color: rgb(var(--v-theme-background));
+  min-height: 100vh;
 }
 
-.profile-field {
-  margin-bottom: 16px;
+/* 信息项样式 */
+.info-item {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: rgba(var(--v-theme-surface-variant), 0.3);
+  transition: background-color 0.2s;
 }
 
-.profile-field-label {
-  font-size: 0.875rem;
-  color: rgba(0, 0, 0, 0.6);
-  margin-bottom: 4px;
+.info-item:hover {
+  background-color: rgba(var(--v-theme-surface-variant), 0.5);
 }
 
-.profile-field-value {
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgb(var(--v-theme-on-surface-variant));
+  margin-bottom: 8px;
+}
+
+.info-value {
   font-size: 1rem;
-  color: rgba(0, 0, 0, 0.87);
-  display: flex;
-  align-items: center;
+  font-weight: 400;
+  color: rgb(var(--v-theme-on-surface));
+  word-break: break-word;
+}
+
+/* 编辑表单样式 */
+.edit-form {
+  background-color: rgba(var(--v-theme-surface-variant), 0.1);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* 响应式调整 */
+@media (max-width: 960px) {
+  .profile-view {
+    padding: 16px !important;
+  }
+  
+  .info-item {
+    padding: 12px;
+  }
+  
+  .edit-form {
+    padding: 16px;
+  }
 }
 </style>
