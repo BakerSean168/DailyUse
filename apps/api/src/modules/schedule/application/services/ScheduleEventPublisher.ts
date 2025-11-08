@@ -1,6 +1,11 @@
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import type { ScheduleTask } from '@dailyuse/domain-server';
-import { ScheduleTaskFactory } from '@dailyuse/domain-server';
+import { 
+  ScheduleTaskFactory,
+  ScheduleStrategyNotFoundError,
+  SourceEntityNoScheduleRequiredError,
+  ScheduleTaskCreationError,
+} from '@dailyuse/domain-server';
 import { ScheduleApplicationService } from './ScheduleApplicationService';
 import type { GoalContracts, TaskContracts } from '@dailyuse/contracts';
 import { SourceModule } from '@dailyuse/contracts';
@@ -146,11 +151,18 @@ export class ScheduleEventPublisher {
     /**
      * 监听 Reminder 创建事件
      */
-    eventBus.on('reminder.created', async (event: DomainEvent) => {
+    eventBus.on('reminder.template.created', async (event: DomainEvent) => {
+      console.log('🎯 [ScheduleEventPublisher] Received reminder.template.created event:', {
+        accountUuid: event.accountUuid,
+        aggregateId: event.aggregateId,
+        hasPayload: !!event.payload,
+        hasReminder: !!(event.payload as any)?.reminder,
+      });
+      
       try {
         if (!event.accountUuid) {
           console.error(
-            '❌ [ScheduleEventPublisher] Missing accountUuid in reminder.created event',
+            '❌ [ScheduleEventPublisher] Missing accountUuid in reminder.template.created event',
           );
           return;
         }
@@ -159,27 +171,93 @@ export class ScheduleEventPublisher {
           reminder: any; // ReminderServerDTO
         };
 
+        if (!reminder) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing reminder in event payload',
+            event.payload,
+          );
+          return;
+        }
+
         await this.handleReminderCreated(event.accountUuid, reminder);
       } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling reminder.created:', error);
+        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.created:', error);
+      }
+    });
+
+    /**
+     * 监听 Reminder 更新事件（触发器配置变更时需要重新创建调度）
+     */
+    eventBus.on('reminder.template.updated', async (event: DomainEvent) => {
+      try {
+        if (!event.accountUuid) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing accountUuid in reminder.template.updated event',
+          );
+          return;
+        }
+
+        // 获取更新后的完整 reminder 数据
+        // 注意：这里需要重新查询，因为事件payload只包含更新的字段
+        await this.handleReminderUpdated(event.accountUuid, event.aggregateId);
+      } catch (error) {
+        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.updated:', error);
+      }
+    });
+
+    /**
+     * 监听 Reminder 启用事件
+     */
+    eventBus.on('reminder.template.enabled', async (event: DomainEvent) => {
+      try {
+        if (!event.accountUuid) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing accountUuid in reminder.template.enabled event',
+          );
+          return;
+        }
+
+        // 启用时：确保有调度任务
+        await this.handleReminderUpdated(event.accountUuid, event.aggregateId);
+      } catch (error) {
+        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.enabled:', error);
+      }
+    });
+
+    /**
+     * 监听 Reminder 禁用事件
+     */
+    eventBus.on('reminder.template.paused', async (event: DomainEvent) => {
+      try {
+        if (!event.accountUuid) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing accountUuid in reminder.template.paused event',
+          );
+          return;
+        }
+
+        // 禁用时：删除调度任务
+        await this.handleReminderDeleted(event.accountUuid, event.aggregateId);
+      } catch (error) {
+        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.paused:', error);
       }
     });
 
     /**
      * 监听 Reminder 删除事件
      */
-    eventBus.on('reminder.deleted', async (event: DomainEvent) => {
+    eventBus.on('reminder.template.deleted', async (event: DomainEvent) => {
       try {
         if (!event.accountUuid) {
           console.error(
-            '❌ [ScheduleEventPublisher] Missing accountUuid in reminder.deleted event',
+            '❌ [ScheduleEventPublisher] Missing accountUuid in reminder.template.deleted event',
           );
           return;
         }
 
         await this.handleReminderDeleted(event.accountUuid, event.aggregateId);
       } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling reminder.deleted:', error);
+        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.deleted:', error);
       }
     });
 
@@ -290,14 +368,14 @@ export class ScheduleEventPublisher {
       // 使用工厂创建调度任务
       const scheduleTask = this.taskFactory.createFromSourceEntity({
         accountUuid,
-        sourceModule: 'GOAL' as any,
+        sourceModule: SourceModule.GOAL,
         sourceEntityId: goal.uuid,
         sourceEntity: goal,
       });
 
       // 保存调度任务
-      const scheduleService = await ScheduleApplicationService.getInstance();
-      const metadataDTO = scheduleTask.metadata.toDTO();
+  const scheduleService = await ScheduleApplicationService.getInstance();
+  const metadataDTO = scheduleTask.metadata;
       
       await scheduleService.createScheduleTask({
         accountUuid,
@@ -307,8 +385,8 @@ export class ScheduleEventPublisher {
         sourceEntityId: scheduleTask.sourceEntityId,
         schedule: scheduleTask.schedule,
         retryConfig: scheduleTask.retryPolicy,
-        payload: metadataDTO.payload,
-        tags: metadataDTO.tags,
+  payload: metadataDTO.payload,
+  tags: metadataDTO.tags,
       });
 
       console.log(
@@ -402,14 +480,14 @@ export class ScheduleEventPublisher {
       // 使用工厂创建调度任务
       const scheduleTask = this.taskFactory.createFromSourceEntity({
         accountUuid,
-        sourceModule: 'TASK' as any,
+        sourceModule: SourceModule.TASK,
         sourceEntityId: task.uuid,
         sourceEntity: task,
       });
 
       // 保存调度任务
       const scheduleService = await ScheduleApplicationService.getInstance();
-      const metadataDTO = scheduleTask.metadata.toDTO();
+  const metadataDTO = scheduleTask.metadata;
       
       await scheduleService.createScheduleTask({
         accountUuid,
@@ -465,18 +543,20 @@ export class ScheduleEventPublisher {
     accountUuid: string,
     reminder: any, // ReminderServerDTO
   ): Promise<void> {
+    const operationId = `handle-reminder-created-${reminder.uuid}-${Date.now()}`;
+    
     try {
       // 使用工厂创建调度任务
       const scheduleTask = this.taskFactory.createFromSourceEntity({
         accountUuid,
-        sourceModule: 'REMINDER' as any,
+        sourceModule: SourceModule.REMINDER,
         sourceEntityId: reminder.uuid,
         sourceEntity: reminder,
       });
 
       // 保存调度任务
       const scheduleService = await ScheduleApplicationService.getInstance();
-      const metadataDTO = scheduleTask.metadata.toDTO();
+  const metadataDTO = scheduleTask.metadata;
       
       await scheduleService.createScheduleTask({
         accountUuid,
@@ -495,11 +575,90 @@ export class ScheduleEventPublisher {
       );
     } catch (error: any) {
       // 如果 Reminder 不需要调度（未启用或配置无效），这是正常情况
-      if (error.message?.includes('does not have valid')) {
-        console.log(`ℹ️  [ScheduleEventPublisher] Reminder ${reminder.uuid} does not require scheduling`);
-      } else {
-        console.error(`❌ [ScheduleEventPublisher] Failed to create schedule for Reminder ${reminder.uuid}:`, error);
+      if (error instanceof SourceEntityNoScheduleRequiredError) {
+        console.log(
+          `ℹ️  [ScheduleEventPublisher] Reminder ${reminder.uuid} does not require scheduling: ${error.message}`,
+          {
+            operationId,
+            context: error.context,
+          },
+        );
+        return;
       }
+
+      // 策略未找到是配置错误
+      if (error instanceof ScheduleStrategyNotFoundError) {
+        console.error(
+          `❌ [ScheduleEventPublisher] Strategy not found for Reminder ${reminder.uuid}:`,
+          {
+            operationId,
+            error: error.toLogString(),
+            availableModules: error.context?.availableModules,
+          },
+        );
+        return;
+      }
+
+      // 其他错误需要记录详细信息
+      if (error instanceof ScheduleTaskCreationError) {
+        console.error(
+          `❌ [ScheduleEventPublisher] Failed to create schedule for Reminder ${reminder.uuid}:`,
+          {
+            operationId,
+            error: error.toLogString(),
+            errorChain: error.getErrorChain(),
+          },
+        );
+      } else {
+        console.error(
+          `❌ [ScheduleEventPublisher] Unexpected error creating schedule for Reminder ${reminder.uuid}:`,
+          {
+            operationId,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        );
+      }
+    }
+  }
+
+  /**
+   * 处理 Reminder 更新事件
+   * 删除旧的调度任务并根据新配置创建新的调度任务
+   */
+  private static async handleReminderUpdated(
+    accountUuid: string,
+    reminderUuid: string,
+  ): Promise<void> {
+    console.log(`🔄 [ScheduleEventPublisher] Handling reminder update for: ${reminderUuid}`);
+
+    try {
+      // 1. 删除此提醒的所有现有调度任务
+      await this.handleReminderDeleted(accountUuid, reminderUuid);
+
+      // 2. 重新获取提醒数据并创建新的调度任务
+      // 注意：这里需要从数据库重新查询完整的 reminder 数据
+      // 因为事件 payload 只包含更新的字段
+      const { ReminderContainer } = await import('../../../reminder/infrastructure/di/ReminderContainer');
+      const container = ReminderContainer.getInstance();
+      const reminderRepo = container.getReminderTemplateRepository();
+      
+      const templates = await reminderRepo.findByAccountUuid(accountUuid, { includeHistory: false });
+      const template = templates.find(t => t.uuid === reminderUuid);
+      if (!template) {
+        console.warn(`⚠️ [ScheduleEventPublisher] Reminder ${reminderUuid} not found, skip schedule update`);
+        return;
+      }
+
+      // 转换为 ServerDTO
+      const reminderDTO = template.toServerDTO();
+      
+      // 3. 根据更新后的提醒信息重新创建调度任务
+      await this.handleReminderCreated(accountUuid, reminderDTO);
+
+      console.log(`✅ [ScheduleEventPublisher] Successfully handled reminder update for: ${reminderUuid}`);
+    } catch (error) {
+      console.error(`❌ [ScheduleEventPublisher] Error handling reminder update for ${reminderUuid}:`, error);
     }
   }
 
@@ -536,12 +695,19 @@ export class ScheduleEventPublisher {
       // Goal 模块事件
       'goal.created',
       'goal.deleted',
+      'goal.schedule_time_changed',
+      'goal.reminder_config_changed',
       // Task 模块事件
       'task.created',
       'task.deleted',
+      'task_template.schedule_time_changed',
+      'task_template.recurrence_changed',
       // Reminder 模块事件
-      'reminder.created',
-      'reminder.deleted',
+      'reminder.template.created',
+      'reminder.template.updated',
+      'reminder.template.enabled',
+      'reminder.template.paused',
+      'reminder.template.deleted',
       // ScheduleTask 自身事件
       'schedule.task.created',
       'schedule.task.execution_succeeded',

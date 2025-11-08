@@ -67,6 +67,13 @@ export class ScheduleStrategyFactory {
   }
 
   /**
+   * 获取所有支持的模块列表
+   */
+  public getSupportedModules(): SourceModule[] {
+    return Array.from(this.strategies.keys());
+  }
+
+  /**
    * 注册自定义策略（用于测试或扩展）
    */
   public registerStrategy(sourceModule: SourceModule, strategy: IScheduleStrategy): void {

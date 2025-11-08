@@ -277,7 +277,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
     // 发布创建事件
     template.addDomainEvent({
-      eventType: 'ReminderTemplateCreated',
+      eventType: 'reminder.template.created',
       aggregateId: uuid,
       occurredOn: new Date(),
       accountUuid: params.accountUuid,
@@ -473,6 +473,82 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   // ===== 业务方法 =====
 
   /**
+   * 更新提醒模板
+   */
+  public update(updates: {
+    title?: string;
+    description?: string;
+    trigger?: ReminderContracts.TriggerConfigServerDTO;
+    activeTime?: ReminderContracts.ActiveTimeConfigServerDTO;
+    notificationConfig?: ReminderContracts.NotificationConfigServerDTO;
+    recurrence?: ReminderContracts.RecurrenceConfigServerDTO | null;
+    activeHours?: ReminderContracts.ActiveHoursConfigServerDTO | null;
+    importanceLevel?: ImportanceLevel;
+    tags?: string[];
+    color?: string | null;
+    icon?: string | null;
+  }): void {
+    const now = Date.now();
+
+    // 更新基础字段
+    if (updates.title !== undefined) {
+      this._title = updates.title;
+    }
+    if (updates.description !== undefined) {
+      this._description = updates.description;
+    }
+    if (updates.importanceLevel !== undefined) {
+      this._importanceLevel = updates.importanceLevel;
+    }
+    if (updates.tags !== undefined) {
+      this._tags = [...updates.tags];
+    }
+    if (updates.color !== undefined) {
+      this._color = updates.color;
+    }
+    if (updates.icon !== undefined) {
+      this._icon = updates.icon;
+    }
+
+    // 更新值对象
+    if (updates.trigger !== undefined) {
+      this._trigger = TriggerConfig.fromServerDTO(updates.trigger);
+    }
+    if (updates.activeTime !== undefined) {
+      this._activeTime = ActiveTimeConfig.fromServerDTO(updates.activeTime);
+    }
+    if (updates.notificationConfig !== undefined) {
+      this._notificationConfig = NotificationConfig.fromServerDTO(updates.notificationConfig);
+    }
+    if (updates.recurrence !== undefined) {
+      this._recurrence = updates.recurrence 
+        ? RecurrenceConfig.fromServerDTO(updates.recurrence) 
+        : null;
+    }
+    if (updates.activeHours !== undefined) {
+      this._activeHours = updates.activeHours 
+        ? ActiveHoursConfig.fromServerDTO(updates.activeHours) 
+        : null;
+    }
+
+    // 重新计算下次触发时间
+    this._nextTriggerAt = this.calculateNextTrigger();
+    this._updatedAt = now;
+
+    // 发布更新事件
+    this.addDomainEvent({
+      eventType: 'reminder.template.updated',
+      aggregateId: this.uuid,
+      occurredOn: new Date(),
+      accountUuid: this._accountUuid,
+      payload: {
+        templateUuid: this.uuid,
+        updates: Object.keys(updates),
+      },
+    });
+  }
+
+  /**
    * 启用模板
    */
   public enable(): void {
@@ -482,7 +558,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
     // 发布启用事件
     this.addDomainEvent({
-      eventType: 'ReminderTemplateEnabled',
+      eventType: 'reminder.template.enabled',
       aggregateId: this.uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -502,7 +578,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
     // 发布暂停事件
     this.addDomainEvent({
-      eventType: 'ReminderTemplatePaused',
+      eventType: 'reminder.template.paused',
       aggregateId: this.uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -622,7 +698,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
     // 发布触发事件
     this.addDomainEvent({
-      eventType: 'ReminderTemplateTriggered',
+      eventType: 'reminder.template.triggered',
       aggregateId: this.uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -671,7 +747,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
     // 发布删除事件
     this.addDomainEvent({
-      eventType: 'ReminderTemplateDeleted',
+      eventType: 'reminder.template.deleted',
       aggregateId: this.uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,

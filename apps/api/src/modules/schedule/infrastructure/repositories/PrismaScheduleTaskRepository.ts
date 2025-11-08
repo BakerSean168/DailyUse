@@ -149,7 +149,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       backoffMultiplier: dto.backoffMultiplier,
       retryableStatuses: dto.retryableStatuses,
       // TaskMetadata 扁平化字段
-      payload: dto.payload,
+      payload: typeof dto.payload === 'string' ? dto.payload : JSON.stringify(dto.payload),
       tags: dto.tags,
       priority: dto.priority,
       timeout: dto.timeout,

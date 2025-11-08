@@ -3,12 +3,14 @@ import type {
   IReminderTemplateRepository,
   IReminderGroupRepository,
   IReminderStatisticsRepository,
+  ReminderTemplateControlService,
 } from '@dailyuse/domain-server';
 import {
   PrismaReminderTemplateRepository,
   PrismaReminderGroupRepository,
   PrismaReminderStatisticsRepository,
 } from '../repositories';
+import { ReminderTemplateControlService as ControlServiceImpl } from '@dailyuse/domain-server';
 
 /**
  * Reminder 模块依赖注入容器
@@ -26,6 +28,7 @@ export class ReminderContainer {
   private reminderTemplateRepository?: IReminderTemplateRepository;
   private reminderGroupRepository?: IReminderGroupRepository;
   private reminderStatisticsRepository?: IReminderStatisticsRepository;
+  private controlService?: ReminderTemplateControlService;
 
   private constructor() {}
 
@@ -67,6 +70,19 @@ export class ReminderContainer {
   }
 
   /**
+   * 获取提醒模板控制服务实例（懒加载）
+   */
+  getControlService(): ReminderTemplateControlService {
+    if (!this.controlService) {
+      this.controlService = new ControlServiceImpl(
+        this.getReminderTemplateRepository(),
+        this.getReminderGroupRepository(),
+      );
+    }
+    return this.controlService;
+  }
+
+  /**
    * 设置提醒模板仓储实例（用于测试）
    */
   setReminderTemplateRepository(repository: IReminderTemplateRepository): void {
@@ -101,5 +117,6 @@ export class ReminderContainer {
     this.reminderTemplateRepository = undefined;
     this.reminderGroupRepository = undefined;
     this.reminderStatisticsRepository = undefined;
+    this.controlService = undefined;
   }
 }

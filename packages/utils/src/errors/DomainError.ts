@@ -37,11 +37,33 @@ export abstract class DomainError extends Error {
    */
   public readonly timestamp: number;
 
+  /**
+   * 操作ID（用于追踪完整的操作流程）
+   * @example 'update-template-uuid-1234567890'
+   */
+  public readonly operationId?: string;
+
+  /**
+   * 操作步骤（用于定位错误发生在哪一步）
+   * @example 'validate_instance', 'save_to_database'
+   */
+  public readonly step?: string;
+
+  /**
+   * 原始错误（错误链，用于追踪根本原因）
+   */
+  public readonly originalError?: Error;
+
   constructor(
     code: string,
     message: string,
     context?: Record<string, any>,
     httpStatus: number = 400,
+    options?: {
+      operationId?: string;
+      step?: string;
+      originalError?: Error;
+    },
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -49,6 +71,9 @@ export abstract class DomainError extends Error {
     this.context = context;
     this.httpStatus = httpStatus;
     this.timestamp = Date.now();
+    this.operationId = options?.operationId;
+    this.step = options?.step;
+    this.originalError = options?.originalError;
 
     // 保留正确的堆栈跟踪（对于调试至关重要）
     Error.captureStackTrace(this, this.constructor);
@@ -63,12 +88,16 @@ export abstract class DomainError extends Error {
     message: string;
     timestamp: number;
     context?: Record<string, any>;
+    operationId?: string;
+    step?: string;
   } {
     return {
       code: this.code,
       message: this.message,
       timestamp: this.timestamp,
       ...(this.context && { context: this.context }),
+      ...(this.operationId && { operationId: this.operationId }),
+      ...(this.step && { step: this.step }),
     };
   }
 
@@ -77,8 +106,52 @@ export abstract class DomainError extends Error {
    * @returns Formatted string for logging
    */
   toLogString(): string {
-    const contextStr = this.context ? ` | Context: ${JSON.stringify(this.context)}` : '';
-    return `[${this.code}] ${this.message}${contextStr} | Stack: ${this.stack}`;
+    const parts = [`[${this.code}] ${this.message}`];
+    
+    if (this.operationId) {
+      parts.push(`Operation: ${this.operationId}`);
+    }
+    
+    if (this.step) {
+      parts.push(`Step: ${this.step}`);
+    }
+    
+    if (this.context) {
+      parts.push(`Context: ${JSON.stringify(this.context)}`);
+    }
+    
+    if (this.originalError) {
+      parts.push(`Original: ${this.originalError.message}`);
+    }
+    
+    parts.push(`Stack: ${this.stack}`);
+    
+    return parts.join(' | ');
+  }
+
+  /**
+   * 获取完整的错误链信息（用于深度调试）
+   */
+  getErrorChain(): Array<{ name: string; message: string; stack?: string }> {
+    const chain: Array<{ name: string; message: string; stack?: string }> = [
+      {
+        name: this.name,
+        message: this.message,
+        stack: this.stack,
+      },
+    ];
+
+    let current = this.originalError;
+    while (current) {
+      chain.push({
+        name: current.name,
+        message: current.message,
+        stack: current.stack,
+      });
+      current = (current as any).originalError;
+    }
+
+    return chain;
   }
 }
 

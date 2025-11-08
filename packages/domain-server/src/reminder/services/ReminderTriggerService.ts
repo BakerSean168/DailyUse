@@ -209,9 +209,19 @@ export class ReminderTriggerService {
     // 过滤出真正启用的模板
     const effectivelyEnabled: ReminderTemplate[] = [];
     for (const template of templates) {
-      const isEnabled = await this.controlService.isTemplateEffectivelyEnabled(template);
-      if (isEnabled) {
-        effectivelyEnabled.push(template);
+      // 防护检查：跳过 null/undefined 模板
+      if (!template) {
+        continue;
+      }
+      
+      try {
+        const isEnabled = await this.controlService.isTemplateEffectivelyEnabled(template);
+        if (isEnabled) {
+          effectivelyEnabled.push(template);
+        }
+      } catch (error) {
+        // 如果检查失败，记录错误但继续处理其他模板
+        console.error(`Error checking template ${template.uuid} enabled status:`, error);
       }
     }
 

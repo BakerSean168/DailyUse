@@ -13,6 +13,12 @@ import { ScheduleStrategyFactory } from './strategies/ScheduleStrategyFactory';
 import type { ScheduleStrategyInput } from './strategies/IScheduleStrategy';
 import { ExecutionInfo } from '../value-objects/ExecutionInfo';
 import { RetryPolicy } from '../value-objects/RetryPolicy';
+import {
+  ScheduleStrategyNotFoundError,
+  SourceEntityNoScheduleRequiredError,
+  ScheduleTaskCreationError,
+  ScheduleTaskUpdateError,
+} from '../errors/ScheduleErrors';
 
 /**
  * ScheduleTaskFactory 领域服务
@@ -29,40 +35,76 @@ export class ScheduleTaskFactory {
    * 
    * @param input 策略输入数据
    * @returns ScheduleTask 聚合根实例
-   * @throws Error 如果源模块不支持或源实体不需要调度
+   * @throws ScheduleStrategyNotFoundError 如果源模块不支持
+   * @throws SourceEntityNoScheduleRequiredError 如果源实体不需要调度
+   * @throws ScheduleTaskCreationError 如果创建过程失败
    */
   public createFromSourceEntity(input: ScheduleStrategyInput): ScheduleTask {
     const { accountUuid, sourceModule, sourceEntityId, sourceEntity } = input;
+    const operationId = `create-schedule-task-${sourceModule}-${sourceEntityId}-${Date.now()}`;
 
-    // 获取对应的策略
-    const strategy = this.strategyFactory.getStrategy(sourceModule);
-    if (!strategy) {
-      throw new Error(`No schedule strategy found for source module: ${sourceModule}`);
-    }
+    try {
+      // 获取对应的策略
+      const strategy = this.strategyFactory.getStrategy(sourceModule);
+      if (!strategy) {
+        const availableModules = this.strategyFactory.getSupportedModules();
+        throw new ScheduleStrategyNotFoundError(sourceModule, {
+          availableModules,
+          operationId,
+        });
+      }
 
-    // 检查是否需要创建调度任务
-    if (!strategy.shouldCreateSchedule(sourceEntity)) {
-      throw new Error(
-        `Source entity ${sourceEntityId} does not require schedule creation`,
+      // 检查是否需要创建调度任务
+      if (!strategy.shouldCreateSchedule(sourceEntity)) {
+        throw new SourceEntityNoScheduleRequiredError(
+          sourceModule,
+          sourceEntityId,
+          'Source entity does not meet scheduling requirements',
+          {
+            entityData: sourceEntity,
+            operationId,
+          },
+        );
+      }
+
+      // 使用策略生成调度配置
+      const strategyOutput = strategy.createSchedule(input);
+
+      // 创建 ScheduleTask 聚合根
+      const scheduleTask = ScheduleTask.create({
+        accountUuid,
+        name: strategyOutput.name,
+        description: strategyOutput.description ?? undefined,
+        sourceModule,
+        sourceEntityId,
+        schedule: strategyOutput.scheduleConfig,
+        retryPolicy: RetryPolicy.createDefault(),
+        metadata: strategyOutput.metadata,
+      });
+
+      return scheduleTask;
+    } catch (error) {
+      // 如果已经是我们的错误类型，直接重新抛出
+      if (
+        error instanceof ScheduleStrategyNotFoundError ||
+        error instanceof SourceEntityNoScheduleRequiredError
+      ) {
+        throw error;
+      }
+
+      // 其他错误包装为 ScheduleTaskCreationError
+      throw new ScheduleTaskCreationError(
+        sourceModule,
+        sourceEntityId,
+        error instanceof Error ? error.message : 'Unknown error',
+        {
+          sourceEntity,
+          operationId,
+          step: 'create_schedule_task',
+          originalError: error instanceof Error ? error : undefined,
+        },
       );
     }
-
-    // 使用策略生成调度配置
-    const strategyOutput = strategy.createSchedule(input);
-
-    // 创建 ScheduleTask 聚合根
-    const scheduleTask = ScheduleTask.create({
-      accountUuid,
-      name: strategyOutput.name,
-      description: strategyOutput.description ?? undefined,
-      sourceModule,
-      sourceEntityId,
-      schedule: strategyOutput.scheduleConfig,
-      retryPolicy: RetryPolicy.createDefault(),
-      metadata: strategyOutput.metadata,
-    });
-
-    return scheduleTask;
   }
 
   /**

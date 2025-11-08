@@ -238,8 +238,10 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     const scheduleConfig = task.schedule;
     const retryPolicy = task.retryPolicy;
 
-    // 从 task 中获取 job name
-    const jobName = task.metadata.toDTO().name || task.sourceModule;
+    // 从 task 中获取 job name（优先使用 metadata payload 的名称，其次任务名称）
+    const metadata = task.metadata;
+    const jobName =
+      (metadata.payload && metadata.payload.name) || task.name || task.sourceModule;
 
     // 构建执行上下文
     const context = {

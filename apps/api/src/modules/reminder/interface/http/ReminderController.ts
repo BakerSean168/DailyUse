@@ -1,7 +1,14 @@
 import type { Request, Response } from 'express';
 import { ReminderApplicationService } from '../../application/services/ReminderApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
-import { createLogger } from '@dailyuse/utils';
+import { 
+  createLogger,
+  DomainError,
+  ReminderTemplateNotFoundError,
+  ReminderTemplateMethodMissingError,
+  ReminderTemplateUpdateError,
+  isDomainError,
+} from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 
 const logger = createLogger('ReminderController');
@@ -225,16 +232,30 @@ export class ReminderController {
         'Reminder template updated successfully',
       );
     } catch (error) {
-      if (error instanceof Error) {
-        logger.error('Error updating reminder template', { error: error.message });
-        return ReminderController.responseBuilder.sendError(res, {
-          code: ResponseCode.INTERNAL_ERROR,
+      // 处理已知的领域错误
+      if (isDomainError(error)) {
+        logger.error('Domain error occurred', error.toLogString());
+        
+        // 使用统一的错误响应格式
+        return res.status(error.httpStatus).json({
+          success: false,
+          code: error.code,
           message: error.message,
+          timestamp: error.timestamp,
+          ...(error.context && { context: error.context }),
+          ...(error.operationId && { operationId: error.operationId }),
         });
       }
+      
+      // 未知错误
+      logger.error('Unknown error updating reminder template', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      
       return ReminderController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,
-        message: 'Unknown error occurred',
+        message: error instanceof Error ? error.message : 'Unknown error occurred',
       });
     }
   }

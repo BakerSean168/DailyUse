@@ -264,6 +264,7 @@ const handleGroupClick = (group: ReminderTemplateGroup) => {
  * 处理模板右键菜单
  */
 const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent) => {
+  event.stopPropagation(); // 阻止事件冒泡到桌面
   contextMenu.x = event.clientX;
   contextMenu.y = event.clientY;
   contextMenu.items = [
@@ -338,6 +339,7 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
  * 处理分组右键菜单
  */
 const handleGroupContextMenu = (group: ReminderTemplateGroup, event: MouseEvent) => {
+  event.stopPropagation(); // 阻止事件冒泡到桌面
   contextMenu.x = event.clientX;
   contextMenu.y = event.clientY;
   contextMenu.items = [
@@ -354,27 +356,47 @@ const handleGroupContextMenu = (group: ReminderTemplateGroup, event: MouseEvent)
       title: '编辑分组',
       icon: 'mdi-pencil',
       action: () => {
-        groupDialogRef.value?.open();
+        // 正确调用 openForEdit 并传入分组对象
+        groupDialogRef.value?.openForEdit(group);
         contextMenu.show = false;
       },
     },
     { divider: true },
     {
-      title: '添加模板',
+      title: '添加模板到分组',
       icon: 'mdi-plus',
       iconColor: 'success',
       action: () => {
+        // 创建模板时预设分组
         templateDialogRef.value?.openForCreate();
+        // TODO: 可以在打开对话框后自动选中该分组
         contextMenu.show = false;
       },
     },
     {
       title: '复制分组',
       icon: 'mdi-content-copy',
+      disabled: true, // 功能待实现
       action: () => {
         duplicateGroup(group);
         contextMenu.show = false;
       },
+    },
+    { divider: true },
+    {
+      title: group.enabled ? '禁用分组' : '启用分组',
+      icon: group.enabled ? 'mdi-pause' : 'mdi-play',
+      iconColor: group.enabled ? 'orange' : 'success',
+      action: () => {
+        toggleGroupEnabled(group);
+        contextMenu.show = false;
+      },
+    },
+    {
+      title: `${getGroupTemplateCount(group)} 个模板`,
+      icon: 'mdi-bell-outline',
+      iconColor: 'info',
+      disabled: true, // 仅显示信息
     },
     { divider: true },
     {
@@ -454,6 +476,21 @@ const toggleTemplateEnabled = async (template: ReminderTemplate) => {
   } catch (error) {
     console.error('切换模板状态失败:', error);
     snackbar.showError('切换状态失败');
+  }
+};
+
+/**
+ * 切换分组启用状态
+ */
+const toggleGroupEnabled = async (group: ReminderTemplateGroup) => {
+  try {
+    // 调用 API 切换分组启用状态（该方法内部已包含 snackbar 提示）
+    await reminderGroupApplicationService.toggleReminderGroupStatus(group.uuid);
+    // 刷新列表
+    await refreshAll();
+  } catch (error) {
+    console.error('切换分组状态失败:', error);
+    // 错误提示已在 service 中处理
   }
 };
 

@@ -5,6 +5,9 @@
  * @package @dailyuse/domain-server/schedule
  */
 
+// ============ 错误类 ============
+export * from './errors/ScheduleErrors';
+
 // ============ 值对象 ============
 export * from './value-objects';
 

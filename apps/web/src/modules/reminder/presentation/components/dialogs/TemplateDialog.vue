@@ -298,12 +298,12 @@ const resetForm = () => {
   formData.type = ReminderContracts.ReminderType.ONE_TIME;
   formData.importanceLevel = ImportanceLevel.Moderate;
   formData.triggerType = ReminderContracts.TriggerType.FIXED_TIME;
-  formData.fixedTime = '09:00';
-  formData.intervalMinutes = 60;
+  formData.fixedTime = '09:00'; // 创建模式的合理默认值
+  formData.intervalMinutes = 60; // 创建模式的合理默认值
   formData.notificationTitle = '';
   formData.notificationBody = '';
-  formData.color = '#2196F3';
-  formData.icon = 'mdi-bell';
+  formData.color = '#2196F3'; // 创建模式的合理默认值
+  formData.icon = 'mdi-bell'; // 创建模式的合理默认值
   formData.tags = [];
   formData.groupUuid = undefined;
   formRef.value?.resetValidation();
@@ -314,12 +314,39 @@ const loadTemplateData = (template: ReminderTemplate) => {
   formData.description = template.description || '';
   formData.type = template.type;
   formData.importanceLevel = template.importanceLevel;
-  // TODO: 从 template.trigger 解析触发配置
+  
+  // 解析触发器配置
+  if (template.trigger) {
+    formData.triggerType = template.trigger.type;
+    
+    if (template.trigger.type === ReminderContracts.TriggerType.FIXED_TIME) {
+      // 解析固定时间
+      if (template.trigger.fixedTime?.time) {
+        formData.fixedTime = template.trigger.fixedTime.time;
+      } else {
+        console.warn('⚠️ 固定时间触发器缺少 time 配置', template.uuid);
+        formData.fixedTime = ''; // 不使用默认值，让用户知道数据缺失
+      }
+    } else if (template.trigger.type === ReminderContracts.TriggerType.INTERVAL) {
+      // 解析间隔时间
+      if (template.trigger.interval?.minutes) {
+        formData.intervalMinutes = template.trigger.interval.minutes;
+      } else {
+        console.warn('⚠️ 间隔触发器缺少 minutes 配置', template.uuid);
+        formData.intervalMinutes = 0; // 不使用默认值，让表单验证失败
+      }
+    }
+  } else {
+    console.error('❌ 提醒模板缺少触发器配置！', template.uuid);
+    // 不设置默认值，让问题暴露出来
+  }
+  
   formData.notificationTitle = template.notificationConfig?.title || '';
   formData.notificationBody = template.notificationConfig?.body || '';
-  formData.color = template.color || '#2196F3';
-  formData.icon = template.icon || 'mdi-bell';
+  formData.color = template.color || '';
+  formData.icon = template.icon || '';
   formData.tags = template.tags || [];
+  formData.groupUuid = template.groupUuid || undefined;
 };
 
 const handleSave = async () => {
@@ -332,14 +359,18 @@ const handleSave = async () => {
     saving.value = true;
 
     if (isEditMode.value && currentTemplate.value) {
-      // 更新模式
+      // 更新模式 - 包含完整的更新数据
       const updateRequest: ReminderContracts.UpdateReminderTemplateRequestDTO = {
         title: formData.title,
         description: formData.description || undefined,
+        trigger: buildTriggerConfig(),
+        activeTime: buildActiveTimeConfig(),
+        notificationConfig: buildNotificationConfig(),
         importanceLevel: formData.importanceLevel,
         tags: formData.tags.length > 0 ? formData.tags : undefined,
         color: formData.color || undefined,
         icon: formData.icon || undefined,
+        groupUuid: formData.groupUuid,
       };
       
       await updateTemplate(currentTemplate.value.uuid, updateRequest);

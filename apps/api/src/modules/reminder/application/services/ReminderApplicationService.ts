@@ -7,6 +7,16 @@ import type {
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 import type { ReminderContracts } from '@dailyuse/contracts';
 import { ImportanceLevel } from '@dailyuse/contracts';
+import { 
+  createLogger,
+  eventBus,
+  ReminderTemplateNotFoundError,
+  ReminderTemplateUpdateError,
+  ReminderTemplateMethodMissingError,
+  ReminderTemplateSaveError,
+} from '@dailyuse/utils';
+
+const logger = createLogger('ReminderApplicationService');
 
 // 类型别名导出（统一在顶部）
 type ReminderTemplateClientDTO = ReminderContracts.ReminderTemplateClientDTO;
@@ -101,6 +111,39 @@ export class ReminderApplicationService {
     groupUuid?: string;
   }): Promise<ReminderTemplateClientDTO> {
     const template = await this.domainService.createReminderTemplate(params);
+    
+    // 发布领域事件到事件总线（触发调度任务创建）
+    const events = template.getDomainEvents();
+    console.log('🔥 [ReminderApplicationService] Publishing domain events:', {
+      templateUuid: template.uuid,
+      eventsCount: events.length,
+      eventTypes: events.map(e => e.eventType),
+    });
+    
+    for (const event of events) {
+      // 增强事件 payload，包含完整的 reminder 数据用于调度系统
+      const enhancedEvent = {
+        ...event,
+        payload: {
+          ...(typeof event.payload === 'object' && event.payload !== null ? event.payload : {}),
+          reminder: template.toServerDTO(), // 添加完整的 ServerDTO
+        },
+      };
+      console.log('📤 [ReminderApplicationService] Publishing event:', {
+        eventType: enhancedEvent.eventType,
+        accountUuid: enhancedEvent.accountUuid,
+        aggregateId: enhancedEvent.aggregateId,
+        hasReminder: !!enhancedEvent.payload.reminder,
+      });
+      await eventBus.publish(enhancedEvent);
+    }
+    template.clearDomainEvents();
+    
+    logger.info('Reminder template created and events published', { 
+      uuid: template.uuid,
+      eventsCount: events.length 
+    });
+    
     return template.toClientDTO();
   }
 
@@ -128,37 +171,133 @@ export class ReminderApplicationService {
    */
   async updateReminderTemplate(
     uuid: string,
-    updates: Partial<{
-      title: string;
-      description: string;
-      trigger: ReminderContracts.TriggerConfigServerDTO;
-      activeTime: ReminderContracts.ActiveTimeConfigServerDTO;
-      notificationConfig: ReminderContracts.NotificationConfigServerDTO;
-      recurrence?: ReminderContracts.RecurrenceConfigServerDTO;
-      activeHours?: ReminderContracts.ActiveHoursConfigServerDTO;
-      importanceLevel?: ImportanceLevel;
-      tags?: string[];
-      color?: string;
-      icon?: string;
-    }>,
+    updates: ReminderContracts.UpdateReminderTemplateRequestDTO,
   ): Promise<ReminderTemplateClientDTO> {
-    const template = await this.domainService.getTemplate(uuid);
-    if (!template) {
-      throw new Error(`ReminderTemplate not found: ${uuid}`);
-    }
-
-    // 更新属性（简化版本，实际应该有单独的update方法）
-    Object.assign(template, updates);
-    await this.reminderTemplateRepository.save(template);
+    const operationId = `update-template-${uuid}-${Date.now()}`;
     
-    return template.toClientDTO();
+    try {
+      logger.info('Starting template update', { operationId, uuid, updates: Object.keys(updates) });
+
+      // Step 1: 获取模板
+      const template = await this.domainService.getTemplate(uuid);
+      if (!template) {
+        throw new ReminderTemplateNotFoundError(uuid, operationId);
+      }
+
+      logger.debug('Template loaded', {
+        operationId,
+        uuid,
+        templateType: template.constructor.name,
+      });
+
+      // Step 2: 验证模板实例有效性
+      const availableMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(template))
+        .filter(m => typeof (template as any)[m] === 'function');
+
+      if (typeof template.update !== 'function') {
+        logger.error('Template instance invalid: missing update method', {
+          operationId,
+          uuid,
+          templateType: template.constructor.name,
+          availableMethods,
+        });
+        
+        throw new ReminderTemplateMethodMissingError('update', {
+          uuid,
+          templateType: template.constructor.name,
+          availableMethods,
+          operationId,
+          step: 'validate_instance',
+        });
+      }
+
+      logger.debug('Template validation passed', { operationId, uuid });
+
+      // Step 3: 执行更新
+      template.update(updates);
+      logger.debug('Template updated in memory', { operationId, uuid });
+
+      // Step 4: 持久化
+      await this.reminderTemplateRepository.save(template);
+      logger.info('Template saved to database', { operationId, uuid });
+
+      // Step 5: 发布领域事件到事件总线（触发调度任务更新）
+      const events = template.getDomainEvents();
+      for (const event of events) {
+        await eventBus.publish(event);
+      }
+      template.clearDomainEvents();
+      
+      logger.info('Reminder template updated and events published', { 
+        uuid,
+        operationId,
+        eventsCount: events.length 
+      });
+
+      // Step 6: 返回结果
+      const result = template.toClientDTO();
+      logger.info('Template update completed', {
+        operationId,
+        uuid,
+        title: result.title,
+      });
+
+      return result;
+      
+    } catch (error) {
+      // 如果是已知的领域错误，直接抛出
+      if (error instanceof ReminderTemplateNotFoundError ||
+          error instanceof ReminderTemplateMethodMissingError) {
+        throw error;
+      }
+
+      // 未知错误，包装后抛出
+      logger.error('Template update failed with unexpected error', {
+        operationId,
+        uuid,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
+      throw new ReminderTemplateUpdateError(
+        uuid,
+        error instanceof Error ? error.message : 'Unknown error',
+        { operationId, step: 'unknown' },
+        error instanceof Error ? error : undefined,
+      );
+    }
   }
 
   /**
    * 删除提醒模板
    */
   async deleteReminderTemplate(uuid: string): Promise<void> {
-    await this.domainService.deleteTemplate(uuid, true); // 软删除
+    const template = await this.domainService.getTemplate(uuid);
+    if (!template) {
+      throw new Error(`ReminderTemplate not found: ${uuid}`);
+    }
+
+    // 执行软删除
+    await this.domainService.deleteTemplate(uuid, true);
+
+    // 发布删除事件到事件总线（触发调度任务删除）
+    const events = template.getDomainEvents();
+    for (const event of events) {
+      const enhancedEvent = {
+        ...event,
+        payload: {
+          ...(typeof event.payload === 'object' && event.payload !== null ? event.payload : {}),
+          reminder: template.toServerDTO(),
+        },
+      };
+      await eventBus.publish(enhancedEvent);
+    }
+    template.clearDomainEvents();
+
+    logger.info('Reminder template deleted and events published', {
+      uuid,
+      eventsCount: events.length,
+    });
   }
 
   /**
@@ -176,8 +315,29 @@ export class ReminderApplicationService {
     } else {
       template.enable();
     }
-    
+
     await this.reminderTemplateRepository.save(template);
+
+    // 发布启用/禁用事件到事件总线（触发调度任务启用/禁用）
+    const events = template.getDomainEvents();
+    for (const event of events) {
+      const enhancedEvent = {
+        ...event,
+        payload: {
+          ...(typeof event.payload === 'object' && event.payload !== null ? event.payload : {}),
+          reminder: template.toServerDTO(),
+        },
+      };
+      await eventBus.publish(enhancedEvent);
+    }
+    template.clearDomainEvents();
+
+    logger.info('Reminder template status toggled and events published', {
+      uuid,
+      enabled: template.selfEnabled,
+      eventsCount: events.length,
+    });
+
     return template.toClientDTO();
   }
 

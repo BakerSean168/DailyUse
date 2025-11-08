@@ -58,7 +58,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
             result: hist.result,
             error: hist.error,
             notificationSent: hist.notificationSent,
-            notificationChannels: hist.notificationChannels,
+            notificationChannels: hist.notificationChannel,
             createdAt: Number(hist.createdAt),
           }),
         );
@@ -126,7 +126,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
           result: histPersistence.result,
           error: histPersistence.error,
           notificationSent: histPersistence.notificationSent,
-          notificationChannels: histPersistence.notificationChannels,
+          notificationChannel: histPersistence.notificationChannels,
           createdAt: new Date(histPersistence.createdAt),
         };
       }) ?? [];

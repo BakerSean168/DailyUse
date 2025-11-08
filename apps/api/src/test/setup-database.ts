@@ -112,5 +112,9 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
+  // 允许某些测试跳过清理（通过环境变量控制）
+  if (process.env.SKIP_DB_CLEAN === 'true') {
+    return;
+  }
   await cleanDatabase();
 });
