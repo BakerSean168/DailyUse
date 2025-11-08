@@ -37,7 +37,21 @@ export class TaskMetadata extends ValueObject implements ITaskMetadataDTO {
   }) {
     super();
 
-    this.payload = params.payload ? { ...params.payload } : {};
+    // 安全地复制 payload，避免枚举过多属性
+    const safePayload: Record<string, any> = {};
+    if (params.payload) {
+      try {
+        // 只复制可枚举的自有属性，限制数量
+        const keys = Object.keys(params.payload).slice(0, 100); // 限制最多100个属性
+        for (const key of keys) {
+          safePayload[key] = params.payload[key];
+        }
+      } catch (error) {
+        console.warn('Failed to copy payload, using empty object:', error);
+      }
+    }
+
+    this.payload = safePayload;
     this.tags = params.tags ? [...params.tags] : [];
     this.priority = params.priority || 'NORMAL';
     this.timeout = params.timeout ?? null;

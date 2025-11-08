@@ -87,6 +87,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     const metadata = new TaskMetadata({
       priority: this.calculatePriority(reminder),
       tags: this.generateTags(reminder),
+      timeout: null, // 默认无超时限制
       payload: {
         reminderUuid: reminder.uuid,
         reminderTitle: reminder.title,

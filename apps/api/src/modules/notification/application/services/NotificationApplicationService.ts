@@ -315,8 +315,56 @@ export class NotificationApplicationService {
     relatedEntityUuid?: string;
     channels?: NotificationChannelType[];
   }): Promise<NotificationClientDTO> {
+    logger.info('📬 [应用服务] 接收创建通知请求', {
+      accountUuid: params.accountUuid,
+      title: params.title,
+      type: params.type,
+      category: params.category,
+      relatedEntityType: params.relatedEntityType,
+      relatedEntityUuid: params.relatedEntityUuid,
+      channels: params.channels,
+    });
+
     const notification = await this.domainService.createAndSendNotification(params);
-    return toNotificationClientDTO(notification.toServerDTO());
+    const clientDTO = toNotificationClientDTO(notification.toServerDTO());
+
+    logger.info('✅✅✅ [应用服务] 通知创建完成，返回给调用方', {
+      notificationUuid: clientDTO.uuid,
+      accountUuid: clientDTO.accountUuid,
+      title: clientDTO.title,
+      status: clientDTO.status,
+      statusText: clientDTO.statusText,
+    });
+
+    // 通过 SSE 推送通知给前端
+    try {
+      const { SSEConnectionManager } = await import('../../interface/http/sseRoutes');
+      const sseManager = SSEConnectionManager.getInstance();
+      
+      const sent = sseManager.sendMessage(params.accountUuid, 'notification:created', {
+        notification: clientDTO,
+        timestamp: new Date().toISOString(),
+      });
+
+      if (sent) {
+        logger.info('📡 [SSE推送] 通知已推送给前端', {
+          accountUuid: params.accountUuid,
+          notificationUuid: clientDTO.uuid,
+        });
+      } else {
+        logger.warn('⚠️ [SSE推送] 用户未连接SSE，推送失败', {
+          accountUuid: params.accountUuid,
+          notificationUuid: clientDTO.uuid,
+        });
+      }
+    } catch (error) {
+      logger.error('❌ [SSE推送] SSE 推送失败', {
+        error: error instanceof Error ? error.message : String(error),
+        accountUuid: params.accountUuid,
+      });
+    }
+
+    return clientDTO;
   }
 
   async createNotificationFromTemplate(params: {

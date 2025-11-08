@@ -13,6 +13,9 @@ import type { INotificationTemplateRepository } from '../repositories/INotificat
 import type { INotificationPreferenceRepository } from '../repositories/INotificationPreferenceRepository';
 import { Notification } from '../aggregates/Notification';
 import type { NotificationContracts } from '@dailyuse/contracts';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('NotificationDomainService');
 
 type NotificationType = NotificationContracts.NotificationType;
 type NotificationCategory = NotificationContracts.NotificationCategory;
@@ -57,10 +60,25 @@ export class NotificationDomainService {
     expiresAt?: number;
     channels?: string[]; // 指定发送渠道
   }): Promise<Notification> {
+    logger.info('🔔 [领域服务] 开始创建通知', {
+      accountUuid: params.accountUuid,
+      title: params.title,
+      type: params.type,
+      category: params.category,
+      relatedEntityType: params.relatedEntityType,
+      relatedEntityUuid: params.relatedEntityUuid,
+      channels: params.channels,
+    });
+
     // 1. 检查用户偏好设置
     const preference = await this.preferenceRepo.findByAccountUuid(params.accountUuid);
 
     if (preference) {
+      logger.debug('📋 检查用户偏好设置', {
+        accountUuid: params.accountUuid,
+        hasPreference: true,
+      });
+
       // 检查是否应该发送通知
       const shouldSend = preference.shouldSendNotification(
         params.category,
@@ -69,37 +87,79 @@ export class NotificationDomainService {
       );
 
       if (!shouldSend) {
+        logger.warn('⛔ 用户偏好阻止发送通知', {
+          accountUuid: params.accountUuid,
+          category: params.category,
+          type: params.type,
+        });
         throw new Error('User preferences block this notification');
       }
+
+      logger.debug('✅ 用户偏好允许发送通知');
+    } else {
+      logger.debug('📋 用户无偏好设置，使用默认设置');
     }
 
     // 2. 创建通知聚合根
+    logger.debug('🏗️ 创建通知聚合根');
     const notification = Notification.create(params);
+
+    logger.info('✅ 通知聚合根已创建', {
+      notificationUuid: notification.uuid,
+      title: notification.title,
+      type: notification.type,
+      category: notification.category,
+    });
 
     // 3. 添加渠道
     const channels = params.channels ?? ['inApp']; // 默认只发送应用内通知
+    logger.debug('📡 添加通知渠道', { channels });
+    
     for (const channelType of channels) {
       notification.createChannel({
         channelType,
         recipient: params.accountUuid,
       });
+      logger.debug(`  ➕ 已添加渠道: ${channelType}`);
     }
 
     // 4. 发送通知
+    logger.debug('📤 标记通知为已发送');
     await notification.send();
 
+    logger.info('✅ 通知已标记为已发送', {
+      notificationUuid: notification.uuid,
+      status: notification.status,
+      sentAt: notification.sentAt,
+    });
+
     // 5. 持久化
+    logger.debug('💾 持久化通知到数据库');
     await this.notificationRepo.save(notification);
 
-    // 6. 触发领域事件
-    // await this.eventBus.publish({
-    //   type: 'notification.sent',
-    //   aggregateId: notification.uuid,
-    //   timestamp: Date.now(),
-    //   payload: {
-    //     notification: notification.toServerDTO(),
-    //   },
-    // });
+    logger.info('✅✅✅ [领域服务] 通知创建完成', {
+      notificationUuid: notification.uuid,
+      accountUuid: notification.accountUuid,
+      title: notification.title,
+      type: notification.type,
+      category: notification.category,
+      status: notification.status,
+      relatedEntityType: notification.relatedEntityType,
+      relatedEntityUuid: notification.relatedEntityUuid,
+      channelCount: channels.length,
+      isRead: notification.isRead,
+      createdAt: new Date(notification.createdAt).toISOString(),
+    });
+
+    // 6. 触发领域事件 - 用于 SSE 推送
+    const notificationDTO = notification.toServerDTO();
+    logger.info('📡 [领域服务] 发布 NotificationCreated 领域事件', {
+      notificationUuid: notification.uuid,
+      accountUuid: notification.accountUuid,
+    });
+
+    // 这里需要通过事件总线发布，让 SSE 管理器接收并推送
+    // 我们在应用服务层处理这个逻辑
 
     return notification;
   }

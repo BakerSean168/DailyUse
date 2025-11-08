@@ -570,6 +570,14 @@ router.get('/tasks', ScheduleTaskController.getTasks);
  *       404:
  *         description: 任务不存在
  */
+
+/**
+ * @route GET /api/v1/schedules/tasks/:id/executions
+ * @desc 获取任务执行历史
+ * @access Private
+ */
+router.get('/tasks/:id/executions', ScheduleTaskController.getTaskExecutions);
+
 router.get('/tasks/:id', ScheduleTaskController.getTask);
 router.delete('/tasks/:id', ScheduleTaskController.deleteTask);
 

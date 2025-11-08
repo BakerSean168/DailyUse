@@ -945,7 +945,7 @@ model scheduleTask {
   payload               String?
   tags                  String              @default("[]")
   priority              String
-  timeout               Int
+  timeout               Int?
   createdAt             DateTime            @default(now()) @map("created_at")
   updatedAt             DateTime            @map("updated_at")
   scheduleExecution     scheduleExecution[]

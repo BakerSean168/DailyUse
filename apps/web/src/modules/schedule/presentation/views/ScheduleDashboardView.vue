@@ -48,6 +48,7 @@
               @pause-task="handlePauseTask"
               @resume-task="handleResumeTask"
               @delete-task="handleDeleteTask"
+              @view-detail="handleViewDetail"
             />
 
             <!-- 任务模块任务 -->
@@ -58,6 +59,7 @@
               @pause-task="handlePauseTask"
               @resume-task="handleResumeTask"
               @delete-task="handleDeleteTask"
+              @view-detail="handleViewDetail"
             />
 
             <!-- 目标模块任务 -->
@@ -68,6 +70,7 @@
               @pause-task="handlePauseTask"
               @resume-task="handleResumeTask"
               @delete-task="handleDeleteTask"
+              @view-detail="handleViewDetail"
             />
           </v-col>
 
@@ -105,6 +108,12 @@
       </v-card>
     </v-dialog>
 
+    <!-- 任务详情对话框 -->
+    <schedule-task-detail-dialog
+      v-model:show="detailDialog.show"
+      :task-uuid="detailDialog.taskUuid"
+    />
+
     <!-- Snackbar 通知 -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.message }}
@@ -125,6 +134,7 @@ import ReminderTasksCard from '../components/cards/ReminderTasksCard.vue';
 import TaskModuleTasksCard from '../components/cards/TaskModuleTasksCard.vue';
 import GoalTasksCard from '../components/cards/GoalTasksCard.vue';
 import StatisticsCard from '../components/cards/StatisticsCard.vue';
+import ScheduleTaskDetailDialog from '../components/ScheduleTaskDetailDialog.vue';
 
 // Composables
 import { useSchedule } from '../composables/useSchedule';
@@ -162,6 +172,11 @@ const confirmDialog = reactive({
   message: '',
   onConfirm: () => {},
   loading: false,
+});
+
+const detailDialog = reactive({
+  show: false,
+  taskUuid: null as string | null,
 });
 
 // ===== 计算属性 - 按模块分组任务 =====
@@ -268,6 +283,15 @@ async function handleDeleteTask(taskUuid: string) {
       confirmDialog.loading = false;
     }
   };
+}
+
+/**
+ * 查看任务详情
+ */
+function handleViewDetail(taskUuid: string) {
+  logger.info('Opening task detail', { taskUuid });
+  detailDialog.taskUuid = taskUuid;
+  detailDialog.show = true;
 }
 
 /**

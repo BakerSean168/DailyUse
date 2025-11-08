@@ -90,7 +90,7 @@ export interface ScheduleTaskPersistenceDTO {
   payload: any | null; // JSON (复杂数据保留)
   tags: string; // JSON array string
   priority: string;
-  timeout: number;
+  timeout: number | null;
 
   // 时间戳
   createdAt: number;

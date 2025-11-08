@@ -12,16 +12,36 @@ import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMi
 const logger = createLogger('SSERoutes');
 const router: ExpressRouter = Router();
 
+// 调试：确认路由器被访问
+router.use((req, res, next) => {
+  console.log('🎯 [SSE Router] 路由器被访问!', {
+    method: req.method,
+    path: req.path,
+    url: req.url,
+    baseUrl: req.baseUrl,
+    query: req.query,
+  });
+  next();
+});
+
 /**
  * SSE Token 验证中间件
  * 从 URL 参数中提取 token 并验证
  */
 const sseAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  logger.info('[SSE Auth] 开始验证', {
+    method: req.method,
+    url: req.url,
+    query: req.query,
+    hasToken: !!req.query.token,
+  });
+
   try {
     // 从 URL 参数中获取 token
     const token = req.query.token as string;
 
     if (!token) {
+      logger.warn('[SSE Auth] 缺少token参数');
       return res.status(401).json({
         success: false,
         message: '缺少认证令牌，请在URL参数中提供 token',
@@ -30,12 +50,19 @@ const sseAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
 
     // 验证 JWT token
     const secret = process.env.JWT_SECRET || 'default-secret';
+    logger.debug('[SSE Auth] 使用secret长度:', secret.length);
 
     try {
       const decoded = jwt.verify(token, secret) as any;
+      logger.info('[SSE Auth] Token解码成功', {
+        accountUuid: decoded.accountUuid,
+        type: decoded.type,
+        exp: decoded.exp,
+      });
 
       // 验证必要字段
       if (!decoded.accountUuid) {
+        logger.warn('[SSE Auth] Token缺少accountUuid');
         return res.status(401).json({
           success: false,
           message: '无效的认证令牌：缺少用户信息',
@@ -44,6 +71,10 @@ const sseAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
 
       // 检查token是否过期
       if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
+        logger.warn('[SSE Auth] Token已过期', {
+          exp: decoded.exp,
+          now: Math.floor(Date.now() / 1000),
+        });
         return res.status(401).json({
           success: false,
           message: '认证令牌已过期，请重新登录',
@@ -59,7 +90,7 @@ const sseAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
 
       (req as AuthenticatedRequest).accountUuid = decoded.accountUuid;
 
-      logger.debug('[SSE Auth] Token验证成功', {
+      logger.info('[SSE Auth] Token验证成功', {
         accountUuid: decoded.accountUuid,
       });
 
@@ -176,7 +207,7 @@ class SSEConnectionManager {
 
 /**
  * @swagger
- * /api/notifications/sse/events:
+ * /api/sse/notifications/events:
  *   get:
  *     summary: SSE 通知推送连接
  *     tags: [Notifications]
@@ -197,7 +228,7 @@ class SSEConnectionManager {
  *       401:
  *         description: 认证失败
  */
-router.get('/events', sseAuthMiddleware, (req: Request, res: Response) => {
+router.get('/notifications/events', sseAuthMiddleware, (req: Request, res: Response) => {
   const accountUuid = (req as AuthenticatedRequest).accountUuid!;
 
   logger.info('[SSE] 新的SSE连接请求', { accountUuid });

@@ -3,12 +3,14 @@ import jwt from 'jsonwebtoken';
 import { ScheduleApplicationService } from '../../../application/services/ScheduleApplicationService';
 import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts';
 import { createLogger } from '@dailyuse/utils';
+import { ScheduleMonitor } from '../../../infrastructure/monitoring/ScheduleMonitor';
 
 // 创建 logger 实例
 const logger = createLogger('ScheduleTaskController');
 
 export class ScheduleTaskController {
   private static scheduleService: ScheduleApplicationService | null = null;
+  private static scheduleMonitor: ScheduleMonitor | null = null;
   private static responseBuilder = createResponseBuilder();
 
   /**
@@ -19,6 +21,16 @@ export class ScheduleTaskController {
       ScheduleTaskController.scheduleService = await ScheduleApplicationService.getInstance();
     }
     return ScheduleTaskController.scheduleService;
+  }
+
+  /**
+   * 获取监控服务实例（懒加载）
+   */
+  private static getScheduleMonitor(): ScheduleMonitor {
+    if (!ScheduleTaskController.scheduleMonitor) {
+      ScheduleTaskController.scheduleMonitor = ScheduleMonitor.getInstance();
+    }
+    return ScheduleTaskController.scheduleMonitor;
   }
 
   /**
@@ -763,6 +775,94 @@ export class ScheduleTaskController {
       return ScheduleTaskController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,
         message: 'Failed to update schedule task metadata',
+      });
+    }
+  }
+
+  /**
+   * 获取任务执行历史记录
+   * GET /api/v1/schedules/tasks/:id/executions
+   */
+  static async getTaskExecutions(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      logger.info('Getting task execution history', { taskUuid: id, limit });
+
+      // 验证认证
+      const accountUuid = ScheduleTaskController.extractAccountUuid(req);
+      const service = await ScheduleTaskController.getScheduleService();
+
+      // 验证任务所有权
+      const task = await service.getScheduleTask(id);
+
+      if (!task) {
+        logger.warn('Schedule task not found for executions', { taskUuid: id });
+        return ScheduleTaskController.responseBuilder.sendError(res, {
+          code: ResponseCode.NOT_FOUND,
+          message: 'Schedule task not found',
+        });
+      }
+
+      if (task.accountUuid !== accountUuid) {
+        logger.warn('Unauthorized schedule task executions access attempt', {
+          accountUuid,
+          taskUuid: id,
+        });
+        return ScheduleTaskController.responseBuilder.sendError(res, {
+          code: ResponseCode.FORBIDDEN,
+          message: 'You do not have permission to view this schedule task executions',
+        });
+      }
+
+      // 获取执行历史
+      const monitor = ScheduleTaskController.getScheduleMonitor();
+      const allHistory = monitor.getExecutionHistory(1000); // 获取更多历史记录
+      
+      // 过滤当前任务的执行记录
+      const taskHistory = allHistory
+        .filter((record) => record.taskUuid === id)
+        .slice(0, limit)
+        .map((record) => ({
+          uuid: `${record.taskUuid}-${record.startTime.getTime()}`,
+          executionTime: record.startTime.getTime(),
+          status: record.endTime 
+            ? record.error 
+              ? 'failed' 
+              : 'success'
+            : 'running',
+          duration: record.endTime 
+            ? record.endTime.getTime() - record.startTime.getTime()
+            : null,
+          errorMessage: record.error?.message || null,
+        }));
+
+      logger.info('Task execution history retrieved successfully', {
+        taskUuid: id,
+        count: taskHistory.length,
+      });
+
+      return ScheduleTaskController.responseBuilder.sendSuccess(
+        res,
+        taskHistory,
+        'Task execution history retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('Authentication')) {
+          logger.warn('Authentication error getting task executions');
+          return ScheduleTaskController.responseBuilder.sendError(res, {
+            code: ResponseCode.UNAUTHORIZED,
+            message: error.message,
+          });
+        }
+      }
+
+      logger.error('Error getting task executions', { error });
+      return ScheduleTaskController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Failed to get task executions',
       });
     }
   }

@@ -27,8 +27,7 @@ export * from './aggregates/ScheduleClient'; // Story 9.1 - Client-side schedule
 // Story 9.1 (EPIC-SCHEDULE-001)
 export * from './ConflictDetectionResult';
 
-// ============ DTOs (Story 9.4) ============
-export * from './dto';
-
 // ============ API 请求/响应 ============
+// 所有 DTO 已合并到 api-requests.ts
 export * from './api-requests';
+

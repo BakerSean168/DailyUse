@@ -61,6 +61,13 @@
                 </v-chip>
 
                 <!-- 操作按钮 -->
+                <v-btn
+                  icon="mdi-eye-outline"
+                  variant="text"
+                  size="small"
+                  color="info"
+                  @click="$emit('view-detail', task.uuid)"
+                />
                 <v-menu>
                   <template v-slot:activator="{ props }">
                     <v-btn icon="mdi-dots-vertical" variant="text" size="small" v-bind="props" />
@@ -122,6 +129,7 @@ defineEmits<{
   'pause-task': [taskUuid: string];
   'resume-task': [taskUuid: string];
   'delete-task': [taskUuid: string];
+  'view-detail': [taskUuid: string];
 }>();
 
 // 方法

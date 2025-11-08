@@ -73,8 +73,36 @@ app.use(compression());
 // Performance monitoring middleware
 app.use(performanceMiddleware);
 
+// 临时调试：记录所有请求
+app.use((req, res, next) => {
+  if (req.path.includes('sse') || req.path.includes('notifications')) {
+    console.log('🔍 [DEBUG] 收到请求:', {
+      method: req.method,
+      path: req.path,
+      url: req.url,
+      query: req.query,
+      headers: {
+        authorization: req.headers.authorization?.substring(0, 20) + '...',
+      },
+    });
+  }
+  next();
+});
+
 // API v1 router
 const api = Router();
+
+// 临时调试：记录所有进入 api router 的请求
+api.use((req, res, next) => {
+  console.log('📍 [API Router] 进入 API Router:', {
+    method: req.method,
+    path: req.path,
+    url: req.url,
+    baseUrl: req.baseUrl,
+  });
+  next();
+});
+
 api.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
 });
@@ -102,11 +130,8 @@ api.use('/goals', authMiddleware, goalRouter);
 // 挂载目标文件夹管理路由 - 需要认证
 api.use('/goal-folders', authMiddleware, goalFolderRouter);
 
-// 挂载专注周期管理路由 - 需要认证（路由内部已有 authMiddleware）
-api.use('', focusSessionRouter);
-
 // 挂载权重快照管理路由 - 需要认证
-api.use('', authMiddleware, weightSnapshotRouter);
+api.use('/weight-snapshots', authMiddleware, weightSnapshotRouter);
 
 /**
  * 提醒模块
@@ -139,9 +164,11 @@ api.use('/repositories', authMiddleware, repositoryRouter);
  * repository-new 仓储模块 (Epic 7 重构版本 - MVP)
  * DDD 架构 - Repository 聚合根 + Resource 实体
  */
-// 挂载新版仓储路由 - 内置简单认证中间件（TODO: 升级为 JWT）
-api.use('', repositoryNewRouter);
-api.use('', resourceNewRouter);
+// （已移到文件末尾，避免空路径拦截其他路由）
+
+/**
+ * setting 设置模块
+ */
 
 /**
  * setting 设置模块
@@ -164,14 +191,29 @@ api.use('/metrics', authMiddleware, metricsRouter);
 /**
  * notification 通知模块
  */
-// 挂载通知 SSE 路由 - 必须在 /notifications 之前！（避免被 authMiddleware 拦截）
+// 挂载通知 SSE 路由 - 使用独立路径避免被 /notifications 路由拦截
 // token 通过 URL 参数传递，路由内部自行验证
-api.use('/notifications/sse', notificationSSERouter);
+console.log('🚀 [App Init] 注册 SSE 路由到 /sse');
+api.use('/sse', notificationSSERouter);
 
 // 挂载通知管理路由 - 需要认证
+console.log('🚀 [App Init] 注册通知路由到 /notifications');
 api.use('/notifications', authMiddleware, notificationRouter);
 // api.use('/notification-preferences', authMiddleware, notificationPreferenceRouter);
 // api.use('/notification-templates', authMiddleware, notificationTemplateRouter);
+
+// 挂载专注周期管理路由 - 需要认证（路由内部已有 authMiddleware）
+// 注意：这个路由使用空路径''，会匹配所有路径，放在最后避免拦截其他路由
+api.use('', focusSessionRouter);
+
+/**
+ * repository-new 仓储模块 (Epic 7 重构版本 - MVP)
+ * DDD 架构 - Repository 聚合根 + Resource 实体
+ */
+// 挂载新版仓储路由 - 内置简单认证中间件（TODO: 升级为 JWT）
+// 注意：这些路由使用空路径''，会匹配所有路径，放在最后避免拦截其他路由
+api.use('', repositoryNewRouter);
+api.use('', resourceNewRouter);
 
 // 注意：所有模块的初始化都通过 shared/initialization/initializer.ts 统一管理
 // NotificationApplicationService, UserPreferencesApplicationService, ThemeApplicationService
@@ -182,6 +224,18 @@ logger.info('Notification and event system initialized successfully');
 
 // Setup Swagger documentation
 setupSwagger(app);
+
+// 临时调试：在挂载到 /api/v1 之前，记录 api router 中的所有路由
+console.log('🔍 [Debug] API Router 的路由栈:');
+api.stack.forEach((layer: any, index: number) => {
+  if (layer.route) {
+    console.log(`  ${index}: Route ${layer.route.path} [${Object.keys(layer.route.methods).join(', ')}]`);
+  } else if (layer.name === 'router') {
+    console.log(`  ${index}: Router mounted at ${layer.regexp}`);
+  } else {
+    console.log(`  ${index}: Middleware ${layer.name}`);
+  }
+});
 
 app.use('/api/v1', api);
 

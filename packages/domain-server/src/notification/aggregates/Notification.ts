@@ -12,11 +12,13 @@ import {
   ImportanceLevel,
   UrgencyLevel,
 } from '@dailyuse/contracts';
-import { AggregateRoot } from '@dailyuse/utils';
+import { AggregateRoot, createLogger } from '@dailyuse/utils';
 import { NotificationAction } from '../value-objects/NotificationAction';
 import { NotificationMetadata } from '../value-objects/NotificationMetadata';
 import { NotificationChannel } from '../entities/NotificationChannel';
 import { NotificationHistory } from '../entities/NotificationHistory';
+
+const logger = createLogger('Notification');
 
 type INotificationServer = NotificationContracts.NotificationServer;
 type NotificationServerDTO = NotificationContracts.NotificationServerDTO;
@@ -234,13 +236,31 @@ export class Notification extends AggregateRoot implements INotificationServer {
   // ===== 业务方法 =====
 
   public async send(): Promise<void> {
+    logger.info('📨 [聚合根] 发送通知', {
+      uuid: this._uuid,
+      title: this._title,
+      status: this._status,
+      accountUuid: this._accountUuid,
+    });
+
     if (this._status !== NotificationStatus.PENDING) {
+      logger.error('❌ [聚合根] 通知状态不允许发送', {
+        uuid: this._uuid,
+        currentStatus: this._status,
+        expectedStatus: NotificationStatus.PENDING,
+      });
       throw new Error('只能发送待发送状态的通知');
     }
 
     this._status = NotificationStatus.SENT;
     this._sentAt = Date.now();
     this.addHistory('SENT', { sentAt: this._sentAt });
+
+    logger.info('✅ [聚合根] 通知已标记为已发送', {
+      uuid: this._uuid,
+      status: this._status,
+      sentAt: new Date(this._sentAt).toISOString(),
+    });
   }
 
   public markAsRead(): void {
@@ -391,6 +411,15 @@ export class Notification extends AggregateRoot implements INotificationServer {
     metadata?: NotificationMetadataDTO;
     expiresAt?: number;
   }): Notification {
+    logger.info('🔨 [聚合根] 创建 Notification 实例', {
+      accountUuid: params.accountUuid,
+      title: params.title,
+      type: params.type,
+      category: params.category,
+      relatedEntityType: params.relatedEntityType,
+      relatedEntityUuid: params.relatedEntityUuid,
+    });
+
     const now = Date.now();
     const notification = new Notification({
       accountUuid: params.accountUuid,
@@ -412,6 +441,13 @@ export class Notification extends AggregateRoot implements INotificationServer {
     });
 
     notification.addHistory('CREATED', { createdAt: now });
+    
+    logger.info('✅ [聚合根] Notification 实例已创建', {
+      uuid: notification.uuid,
+      status: notification.status,
+      createdAt: new Date(notification.createdAt).toISOString(),
+    });
+
     return notification;
   }
 

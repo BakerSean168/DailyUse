@@ -62,9 +62,9 @@ export class SSEClient {
 
     this.isConnecting = true;
     // 将 token 作为 URL 参数传递（因为 EventSource 不支持自定义请求头）
-    const url = `${this.baseUrl}/api/v1/notifications/sse/events?token=${encodeURIComponent(token)}`;
+    const url = `${this.baseUrl}/api/v1/sse/notifications/events?token=${encodeURIComponent(token)}`;
 
-    console.log('[SSE Client] 连接到:', this.baseUrl + '/api/v1/notifications/sse/events');
+    console.log('[SSE Client] 连接到:', this.baseUrl + '/api/v1/sse/notifications/events');
 
     try {
       this.eventSource = new EventSource(url);

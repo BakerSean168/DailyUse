@@ -8,31 +8,6 @@ import { apiClient } from '@/shared/api/instances';
  * Story 4-1: Schedule Event CRUD
  */
 
-export interface CreateScheduleEventRequest {
-  title: string;
-  description?: string;
-  startTime: number;
-  endTime: number;
-  priority?: number;
-  location?: string;
-  attendees?: string[];
-}
-
-export interface UpdateScheduleEventRequest {
-  title?: string;
-  description?: string;
-  startTime?: number;
-  endTime?: number;
-  priority?: number;
-  location?: string;
-  attendees?: string[];
-}
-
-export interface GetSchedulesByTimeRangeRequest {
-  startTime: number;
-  endTime: number;
-}
-
 /**
  * Schedule Event API Client Class
  */
@@ -42,7 +17,7 @@ class ScheduleEventApiClient {
   /**
    * 创建日程事件
    */
-  async createSchedule(data: CreateScheduleEventRequest): Promise<ScheduleContracts.ScheduleClientDTO> {
+  async createSchedule(data: ScheduleContracts.CreateScheduleRequestDTO): Promise<ScheduleContracts.ScheduleClientDTO> {
     const response = await apiClient.post<ScheduleContracts.ScheduleClientDTO>(this.baseUrl, data);
     return response;
   }
@@ -66,7 +41,7 @@ class ScheduleEventApiClient {
   /**
    * 获取指定时间范围内的日程事件
    */
-  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<ScheduleContracts.ScheduleClientDTO[]> {
+  async getSchedulesByTimeRange(params: ScheduleContracts.GetSchedulesByTimeRangeRequestDTO): Promise<ScheduleContracts.ScheduleClientDTO[]> {
     const response = await apiClient.get<ScheduleContracts.ScheduleClientDTO[]>(this.baseUrl, {
       params: {
         startTime: params.startTime.toString(),
@@ -79,7 +54,7 @@ class ScheduleEventApiClient {
   /**
    * 更新日程事件
    */
-  async updateSchedule(uuid: string, data: UpdateScheduleEventRequest): Promise<ScheduleContracts.ScheduleClientDTO> {
+  async updateSchedule(uuid: string, data: ScheduleContracts.UpdateScheduleRequestDTO): Promise<ScheduleContracts.ScheduleClientDTO> {
     const response = await apiClient.patch<ScheduleContracts.ScheduleClientDTO>(`${this.baseUrl}/${uuid}`, data);
     return response;
   }

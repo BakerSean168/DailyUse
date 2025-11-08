@@ -375,7 +375,7 @@ export class ScheduleEventPublisher {
 
       // 保存调度任务
   const scheduleService = await ScheduleApplicationService.getInstance();
-  const metadataDTO = scheduleTask.metadata;
+  const metadataDTO = scheduleTask.metadata.toServerDTO();
       
       await scheduleService.createScheduleTask({
         accountUuid,
@@ -487,7 +487,7 @@ export class ScheduleEventPublisher {
 
       // 保存调度任务
       const scheduleService = await ScheduleApplicationService.getInstance();
-  const metadataDTO = scheduleTask.metadata;
+  const metadataDTO = scheduleTask.metadata.toServerDTO();
       
       await scheduleService.createScheduleTask({
         accountUuid,
@@ -556,7 +556,7 @@ export class ScheduleEventPublisher {
 
       // 保存调度任务
       const scheduleService = await ScheduleApplicationService.getInstance();
-  const metadataDTO = scheduleTask.metadata;
+  const metadataDTO = scheduleTask.metadata.toServerDTO();
       
       await scheduleService.createScheduleTask({
         accountUuid,

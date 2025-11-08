@@ -143,11 +143,11 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
       lastExecutionDuration: dto.lastExecutionDuration,
       consecutiveFailures: dto.consecutiveFailures,
       // RetryPolicy 扁平化字段
-      maxRetries: dto.maxRetries,
-      initialDelayMs: dto.initialDelayMs,
-      maxDelayMs: dto.maxDelayMs,
-      backoffMultiplier: dto.backoffMultiplier,
-      retryableStatuses: dto.retryableStatuses,
+      maxRetries: dto.maxRetries ?? 3,
+      initialDelayMs: dto.initialDelayMs ?? 1000,
+      maxDelayMs: dto.maxDelayMs ?? 30000,
+      backoffMultiplier: dto.backoffMultiplier ?? 2,
+      retryableStatuses: dto.retryableStatuses ?? '[]',
       // TaskMetadata 扁平化字段
       payload: typeof dto.payload === 'string' ? dto.payload : JSON.stringify(dto.payload),
       tags: dto.tags,

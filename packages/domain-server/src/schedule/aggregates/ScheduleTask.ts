@@ -149,6 +149,65 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
     return this._executions.length > 0 ? [...this._executions] : null;
   }
 
+  // ===== 便捷访问器方法 =====
+  
+  /**
+   * 获取任务名称（便捷访问器）
+   */
+  public get taskName(): string {
+    return this._name;
+  }
+
+  /**
+   * 获取下次执行时间（便捷访问器）
+   * @returns Date 对象或 null
+   */
+  public get nextRunAt(): Date | null {
+    return this._execution.nextRunAt ? new Date(this._execution.nextRunAt) : null;
+  }
+
+  /**
+   * 获取执行次数（便捷访问器）
+   */
+  public get executionCount(): number {
+    return this._execution.executionCount;
+  }
+
+  /**
+   * 获取最大执行次数（便捷访问器）
+   */
+  public get maxExecutions(): number | null {
+    return this._schedule.maxExecutions;
+  }
+
+  /**
+   * 获取执行信息值对象
+   */
+  public getExecutionInfo(): ExecutionInfo {
+    return this._execution;
+  }
+
+  /**
+   * 获取调度配置值对象
+   */
+  public getScheduleConfig(): ScheduleConfig {
+    return this._schedule;
+  }
+
+  /**
+   * 获取重试策略值对象
+   */
+  public getRetryPolicyVO(): RetryPolicy {
+    return this._retryPolicy;
+  }
+
+  /**
+   * 获取任务元数据值对象
+   */
+  public getTaskMetadata(): TaskMetadata {
+    return this._metadata;
+  }
+
   // ===== 工厂方法（创建子实体） =====
 
   /**
@@ -379,6 +438,73 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
   }
 
   // ===== 执行信息管理 =====
+
+  /**
+   * 执行任务
+   * 
+   * @description
+   * 1. 验证任务是否可执行（状态、启用、到期）
+   * 2. 发布 schedule.task.triggered 领域事件
+   * 3. 更新 nextRunAt（由外部 recordExecution 记录结果）
+   * 
+   * @returns 是否成功触发执行
+   */
+  public execute(): boolean {
+    // 1. 检查任务是否可执行
+    if (!this.canExecute()) {
+      return false;
+    }
+
+    // 2. 发布领域事件（通知其他模块任务被触发）
+    // 完整序列化 metadata DTO 以确保正确传递
+    const metadataDTO = this._metadata.toDTO();
+    this.addDomainEvent({
+      eventType: 'ScheduleTaskTriggered',
+      aggregateId: this._uuid,
+      occurredOn: new Date(),
+      accountUuid: this._accountUuid,
+      payload: {
+        taskUuid: this._uuid,
+        taskName: this._name,
+        sourceModule: this._sourceModule,
+        sourceEntityId: this._sourceEntityId,
+        executionTime: Date.now(),
+        metadata: metadataDTO, // 完整的 DTO 对象，包含 payload, tags, priority, timeout
+      },
+    });
+
+    return true;
+  }
+
+  /**
+   * 检查任务是否可执行
+   */
+  public canExecute(): boolean {
+    // 任务必须是活跃状态
+    if (this._status !== ScheduleTaskStatus.ACTIVE) {
+      return false;
+    }
+
+    // 任务必须启用
+    if (!this._enabled) {
+      return false;
+    }
+
+    // 检查是否到期
+    const now = Date.now();
+    const nextRun = this._execution.nextRunAt;
+    if (!nextRun || nextRun > now) {
+      return false;
+    }
+
+    // 检查是否达到最大执行次数
+    const maxExecutions = this._schedule.maxExecutions;
+    if (maxExecutions !== null && this._execution.executionCount >= maxExecutions) {
+      return false;
+    }
+
+    return true;
+  }
 
   /**
    * 记录执行
@@ -755,7 +881,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
       payload: this._metadata.payload ?? null,
       tags: JSON.stringify(this._metadata.tags),
       priority: this._metadata.priority,
-      timeout: this._metadata.timeout ?? 0,
+      timeout: this._metadata.timeout ?? null,
       // Timestamps
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
@@ -881,7 +1007,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
         maxRetryDelay: dto.max_retry_delay,
       }),
       metadata: new TaskMetadata({
-        payload: dto.payload ?? null,
+        payload: dto.payload ?? {},
         tags: dto.tags ? JSON.parse(dto.tags) : [],
         priority: dto.priority,
         timeout: dto.timeout,

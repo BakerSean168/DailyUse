@@ -6,6 +6,8 @@
 import type { ScheduleTaskClientDTO } from './aggregates/ScheduleTaskClient';
 import type { ScheduleStatisticsClientDTO } from './aggregates/ScheduleStatisticsClient';
 import type { ScheduleExecutionClientDTO } from './entities/ScheduleExecutionClient';
+import type { ScheduleClientDTO } from './aggregates/ScheduleClient';
+import type { ConflictDetectionResult } from './ConflictDetectionResult';
 import type {
   ScheduleTaskStatus,
   ExecutionStatus,
@@ -18,6 +20,111 @@ import type {
   RetryPolicyServerDTO,
   TaskMetadataServerDTO,
 } from './value-objects';
+
+// ============ Schedule (Old) 请求/响应 ============
+
+/**
+ * Request DTO for creating a new schedule with automatic conflict detection
+ */
+export interface CreateScheduleRequestDTO {
+  accountUuid: string;
+  title: string;
+  description?: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  priority?: number;
+  location?: string;
+  attendees?: string[];
+  autoDetectConflicts?: boolean;
+}
+
+/**
+ * Response DTO for creating a schedule
+ */
+export interface CreateScheduleResponseDTO {
+  schedule: ScheduleClientDTO;
+  conflicts?: ConflictDetectionResult;
+}
+
+/**
+ * Request DTO for updating a schedule
+ */
+export interface UpdateScheduleRequestDTO {
+  title?: string;
+  description?: string;
+  startTime?: number;
+  endTime?: number;
+  duration?: number;
+  priority?: number;
+  location?: string;
+  attendees?: string[];
+}
+
+/**
+ * Request DTO for detecting schedule conflicts for a given time range
+ */
+export interface DetectConflictsRequestDTO {
+  userId: string;
+  startTime: number;
+  endTime: number;
+  excludeUuid?: string;
+}
+
+/**
+ * Response DTO for conflict detection endpoint
+ */
+export interface DetectConflictsResponseDTO {
+  result: ConflictDetectionResult;
+}
+
+/**
+ * Request DTO for getting schedules within a time range
+ */
+export interface GetSchedulesByTimeRangeRequestDTO {
+  startTime: number;
+  endTime: number;
+  accountUuid?: string;
+}
+
+/**
+ * Resolution strategies for schedule conflicts
+ */
+export enum ResolutionStrategy {
+  RESCHEDULE = 'RESCHEDULE',
+  CANCEL = 'CANCEL',
+  ADJUST_DURATION = 'ADJUST_DURATION',
+  IGNORE = 'IGNORE',
+}
+
+/**
+ * Request DTO for resolving a schedule conflict
+ */
+export interface ResolveConflictRequestDTO {
+  resolution: ResolutionStrategy;
+  newStartTime?: number;
+  newEndTime?: number;
+  newDuration?: number;
+}
+
+/**
+ * Information about the applied resolution
+ */
+export interface AppliedResolution {
+  strategy: ResolutionStrategy;
+  previousStartTime?: number;
+  previousEndTime?: number;
+  changes: string[];
+}
+
+/**
+ * Response DTO for resolving a schedule conflict
+ */
+export interface ResolveConflictResponseDTO {
+  schedule: ScheduleClientDTO;
+  conflicts: ConflictDetectionResult;
+  applied: AppliedResolution;
+}
 
 // ============ ScheduleTask 请求 ============
 

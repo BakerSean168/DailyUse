@@ -14,6 +14,7 @@ import { scheduleRoutes } from '@/modules/schedule/presentation/router';
 import { repositoryRoutes } from '@/modules/repository/presentation/router';
 import { accountRoutes } from '@/modules/account/presentation/router';
 import { settingRoutes } from '@/modules/setting/presentation/router';
+import { notificationRoutes } from '@/modules/notification/presentation/router';
 
 /**
  * 认证相关路由
@@ -116,6 +117,9 @@ export const appRoutes: RouteRecordRaw[] = [
 
       // 应用设置路由（从模块内部导入）
       ...settingRoutes,
+
+      // 通知中心路由（从模块内部导入）
+      ...notificationRoutes,
 
       // Assets 资源演示 (开发环境)
       {
