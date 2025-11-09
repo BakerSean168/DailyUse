@@ -1,179 +1,85 @@
 /**
- * RepositoryConfig 值对象
- * 仓库配置 - 不可变值对象
+ * Repository Config Value Object - Server Implementation
+ * 仓储配置值对象 - 服务端实现
  */
+import { RepositoryContracts } from '@dailyuse/contracts';
 
-import type { RepositoryContracts } from '@dailyuse/contracts';
-import { ValueObject } from '@dailyuse/utils';
+type RepositoryConfigServer = RepositoryContracts.RepositoryConfigServer;
+type RepositoryConfigServerDTO = RepositoryContracts.RepositoryConfigServerDTO;
 
-type IRepositoryConfig = RepositoryContracts.RepositoryConfigServerDTO;
-type RepositoryConfigPersistenceDTO = RepositoryContracts.RepositoryConfigPersistenceDTO;
-type RepositoryConfigClientDTO = RepositoryContracts.RepositoryConfigClientDTO;
-type ResourceType = RepositoryContracts.ResourceType;
+export class RepositoryConfig implements RepositoryConfigServer {
+  // ===== 私有字段 =====
+  private _searchEngine: 'postgres' | 'meilisearch' | 'elasticsearch';
+  private _enableGit: boolean;
+  private _autoSync?: boolean;
+  private _syncInterval?: number;
+  private _extensible: Record<string, unknown>;
 
-/**
- * RepositoryConfig 值对象
- *
- * DDD 值对象特点：
- * - 不可变（Immutable）
- * - 基于值的相等性
- * - 无标识符
- * - 可以自由复制和替换
- */
-export class RepositoryConfig extends ValueObject implements IRepositoryConfig {
-  public readonly enableGit: boolean;
-  public readonly autoSync: boolean;
-  public readonly syncInterval: number | null;
-  public readonly defaultLinkedDocName: string;
-  public readonly supportedFileTypes: ResourceType[];
-  public readonly maxFileSize: number;
-  public readonly enableVersionControl: boolean;
-
-  constructor(params: {
-    enableGit: boolean;
-    autoSync: boolean;
-    syncInterval?: number | null;
-    defaultLinkedDocName: string;
-    supportedFileTypes: ResourceType[];
-    maxFileSize: number;
-    enableVersionControl: boolean;
-  }) {
-    super(); // 调用基类构造函数
-
-    this.enableGit = params.enableGit;
-    this.autoSync = params.autoSync;
-    this.syncInterval = params.syncInterval ?? null;
-    this.defaultLinkedDocName = params.defaultLinkedDocName;
-    this.supportedFileTypes = [...params.supportedFileTypes]; // 复制数组
-    this.maxFileSize = params.maxFileSize;
-    this.enableVersionControl = params.enableVersionControl;
-
-    // 确保不可变
-    Object.freeze(this);
-    Object.freeze(this.supportedFileTypes);
+  // ===== 私有构造函数 =====
+  private constructor(
+    searchEngine: 'postgres' | 'meilisearch' | 'elasticsearch',
+    enableGit: boolean,
+    autoSync?: boolean,
+    syncInterval?: number,
+    extensible?: Record<string, unknown>,
+  ) {
+    this._searchEngine = searchEngine;
+    this._enableGit = enableGit;
+    this._autoSync = autoSync;
+    this._syncInterval = syncInterval;
+    this._extensible = extensible || {};
   }
 
-  /**
-   * 创建修改后的新实例（值对象不可变，修改时创建新实例）
-   */
-  public with(
-    changes: Partial<{
-      enableGit: boolean;
-      autoSync: boolean;
-      syncInterval: number | null;
-      defaultLinkedDocName: string;
-      supportedFileTypes: ResourceType[];
-      maxFileSize: number;
-      enableVersionControl: boolean;
-    }>,
-  ): RepositoryConfig {
-    return new RepositoryConfig({
-      enableGit: changes.enableGit ?? this.enableGit,
-      autoSync: changes.autoSync ?? this.autoSync,
-      syncInterval: changes.syncInterval ?? this.syncInterval,
-      defaultLinkedDocName: changes.defaultLinkedDocName ?? this.defaultLinkedDocName,
-      supportedFileTypes: changes.supportedFileTypes ?? this.supportedFileTypes,
-      maxFileSize: changes.maxFileSize ?? this.maxFileSize,
-      enableVersionControl: changes.enableVersionControl ?? this.enableVersionControl,
-    });
+  // ===== Getters =====
+  get searchEngine(): 'postgres' | 'meilisearch' | 'elasticsearch' {
+    return this._searchEngine;
   }
 
-  /**
-   * 值相等性比较
-   */
-  public equals(other: ValueObject): boolean {
-    if (!(other instanceof RepositoryConfig)) {
-      return false;
-    }
-
-    return (
-      this.enableGit === other.enableGit &&
-      this.autoSync === other.autoSync &&
-      this.syncInterval === other.syncInterval &&
-      this.defaultLinkedDocName === other.defaultLinkedDocName &&
-      this.maxFileSize === other.maxFileSize &&
-      this.enableVersionControl === other.enableVersionControl &&
-      this.supportedFileTypes.length === other.supportedFileTypes.length &&
-      this.supportedFileTypes.every((type, index) => type === other.supportedFileTypes[index])
-    );
+  get enableGit(): boolean {
+    return this._enableGit;
   }
 
-  /**
-   * 转换为 Server DTO
-   */
-  public toServerDTO(): IRepositoryConfig {
+  get autoSync(): boolean | undefined {
+    return this._autoSync;
+  }
+
+  get syncInterval(): number | undefined {
+    return this._syncInterval;
+  }
+
+  // ===== 扩展属性访问 =====
+  [key: string]: unknown;
+
+  // ===== DTO 转换 =====
+  toServerDTO(): RepositoryConfigServerDTO {
     return {
-      enableGit: this.enableGit,
-      autoSync: this.autoSync,
-      syncInterval: this.syncInterval,
-      defaultLinkedDocName: this.defaultLinkedDocName,
-      supportedFileTypes: [...this.supportedFileTypes],
-      maxFileSize: this.maxFileSize,
-      enableVersionControl: this.enableVersionControl,
+      searchEngine: this._searchEngine,
+      enableGit: this._enableGit,
+      autoSync: this._autoSync,
+      syncInterval: this._syncInterval,
+      ...this._extensible,
     };
   }
 
-  /**
-   * 转换为 Client DTO
-   */
-  public toClientDTO(): RepositoryConfigClientDTO {
-    return {
-      enableGit: this.enableGit,
-      autoSync: this.autoSync,
-      supportedFileTypes: [...this.supportedFileTypes],
-      syncIntervalFormatted: this.syncInterval ? `${this.syncInterval}分钟` : null,
-      maxFileSizeFormatted: `${Math.round(this.maxFileSize / 1024 / 1024)}MB`,
-    };
+  // ===== 静态工厂方法 =====
+  static fromServerDTO(dto: RepositoryConfigServerDTO): RepositoryConfig {
+    const { searchEngine, enableGit, autoSync, syncInterval, ...rest } = dto;
+    return new RepositoryConfig(searchEngine, enableGit, autoSync, syncInterval, rest);
   }
 
-  /**
-   * 转换为 Persistence DTO
-   */
-  public toPersistenceDTO(): RepositoryConfigPersistenceDTO {
-    return {
-      enable_git: this.enableGit,
-      auto_sync: this.autoSync,
-      sync_interval: this.syncInterval,
-      default_linked_doc_name: this.defaultLinkedDocName,
-      supported_file_types: JSON.stringify(this.supportedFileTypes),
-      max_file_size: this.maxFileSize,
-      enable_version_control: this.enableVersionControl,
-    };
-  }
-
-  /**
-   * 转换为 Contract 接口 (兼容旧代码)
-   */
-  public toContract(): IRepositoryConfig {
-    return this.toServerDTO();
-  }
-
-  /**
-   * 从 Server DTO 创建值对象
-   */
-  public static fromServerDTO(dto: IRepositoryConfig): RepositoryConfig {
-    return new RepositoryConfig(dto);
-  }
-
-  /**
-   * 从 Contract 接口创建值对象 (兼容旧代码)
-   */
-  public static fromContract(config: IRepositoryConfig): RepositoryConfig {
-    return RepositoryConfig.fromServerDTO(config);
-  }
-
-  /**
-   * 创建默认配置
-   */
-  public static createDefault(): RepositoryConfig {
-    return new RepositoryConfig({
+  static create(params?: Partial<RepositoryConfigServerDTO>): RepositoryConfig {
+    const defaults = {
+      searchEngine: 'postgres' as const,
       enableGit: false,
       autoSync: false,
-      syncInterval: null,
-      defaultLinkedDocName: 'index.md',
-      supportedFileTypes: [],
-      maxFileSize: 100 * 1024 * 1024, // 100MB
-      enableVersionControl: true,
-    });
+      syncInterval: 300,
+    };
+    return new RepositoryConfig(
+      params?.searchEngine || defaults.searchEngine,
+      params?.enableGit ?? defaults.enableGit,
+      params?.autoSync ?? defaults.autoSync,
+      params?.syncInterval || defaults.syncInterval,
+      {},
+    );
   }
 }

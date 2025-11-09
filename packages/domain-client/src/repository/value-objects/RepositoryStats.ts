@@ -1,168 +1,106 @@
 /**
- * RepositoryStatsClient 值对象
- * 仓库统计信息 - 客户端值对象
- * 实现 IRepositoryStatsClient 接口
+ * Repository Stats Value Object - Client Implementation
+ * 仓储统计值对象 - 客户端实现
  */
+import { RepositoryContracts } from '@dailyuse/contracts';
 
-import type { RepositoryContracts } from '@dailyuse/contracts';
-import { ValueObject } from '@dailyuse/utils';
-
-type IRepositoryStatsClient = RepositoryContracts.IRepositoryStatsClient;
-type RepositoryStatsServerDTO = RepositoryContracts.RepositoryStatsServerDTO;
+type RepositoryStatsClient = RepositoryContracts.RepositoryStatsClient;
 type RepositoryStatsClientDTO = RepositoryContracts.RepositoryStatsClientDTO;
-type ResourceType = RepositoryContracts.ResourceType;
+type RepositoryStatsServerDTO = RepositoryContracts.RepositoryStatsServerDTO;
 
-/**
- * RepositoryStatsClient 值对象
- */
-export class RepositoryStats extends ValueObject implements IRepositoryStatsClient {
-  public readonly totalResources: number;
-  public readonly totalSize: number;
-  public readonly favoriteCount: number;
-  public readonly recentCount: number;
-  public readonly resourcesByType: Record<ResourceType, number>;
+export class RepositoryStats implements RepositoryStatsClient {
+  // ===== 私有字段 =====
+  private _resourceCount: number;
+  private _folderCount: number;
+  private _totalSize: number;
+  private _extensible: Record<string, unknown>;
 
-  constructor(params: {
-    totalResources: number;
-    totalSize: number;
-    favoriteCount: number;
-    recentCount: number;
-    resourcesByType: Record<ResourceType, number>;
-  }) {
-    super();
-    this.totalResources = params.totalResources;
-    this.totalSize = params.totalSize;
-    this.favoriteCount = params.favoriteCount;
-    this.recentCount = params.recentCount;
-    this.resourcesByType = { ...params.resourcesByType };
-    Object.freeze(this);
-    Object.freeze(this.resourcesByType);
+  // ===== 私有构造函数 =====
+  private constructor(
+    resourceCount: number,
+    folderCount: number,
+    totalSize: number,
+    extensible?: Record<string, unknown>,
+  ) {
+    this._resourceCount = resourceCount;
+    this._folderCount = folderCount;
+    this._totalSize = totalSize;
+    this._extensible = extensible || {};
   }
 
-  // UI 辅助属性
-  public get totalSizeFormatted(): string {
-    return this.formatBytes(this.totalSize);
+  // ===== Getters =====
+  get resourceCount(): number {
+    return this._resourceCount;
   }
 
-  private formatBytes(bytes: number): string {
+  get folderCount(): number {
+    return this._folderCount;
+  }
+
+  get totalSize(): number {
+    return this._totalSize;
+  }
+
+  // ===== UI 计算属性 =====
+  get formattedSize(): string {
+    const bytes = this._totalSize;
     if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 
-  /**
-   * UI 辅助方法：获取某个类型的资源百分比
-   */
-  public getTypePercentage(type: ResourceType): number {
-    if (this.totalResources === 0) return 0;
-    const count = this.resourcesByType[type] || 0;
-    return Math.round((count / this.totalResources) * 100);
+  get hasResources(): boolean {
+    return this._resourceCount > 0;
   }
 
-  /**
-   * UI 辅助方法：获取数量最多的资源类型
-   */
-  public getMostUsedType(): ResourceType | null {
-    const entries = Object.entries(this.resourcesByType) as [ResourceType, number][];
-    if (entries.length === 0) return null;
-
-    const [mostUsedType] = entries.reduce((max, current) => (current[1] > max[1] ? current : max));
-    return mostUsedType;
+  get hasFolders(): boolean {
+    return this._folderCount > 0;
   }
 
-  /**
-   * 值相等性比较
-   */
-  public equals(other: ValueObject): boolean {
-    if (!(other instanceof RepositoryStats)) {
-      return false;
-    }
+  // ===== 扩展属性访问 =====
+  [key: string]: unknown;
 
-    const thisTypes = Object.keys(this.resourcesByType).sort();
-    const otherTypes = Object.keys(other.resourcesByType).sort();
+  // ===== DTO 转换 =====
+  toClientDTO(): RepositoryStatsClientDTO {
+    return {
+      resourceCount: this._resourceCount,
+      folderCount: this._folderCount,
+      totalSize: this._totalSize,
+      ...this._extensible,
+      formattedSize: this.formattedSize,
+      hasResources: this.hasResources,
+      hasFolders: this.hasFolders,
+    };
+  }
 
-    return (
-      this.totalResources === other.totalResources &&
-      this.totalSize === other.totalSize &&
-      this.favoriteCount === other.favoriteCount &&
-      this.recentCount === other.recentCount &&
-      thisTypes.length === otherTypes.length &&
-      thisTypes.every(
-        (type, index) =>
-          type === otherTypes[index] &&
-          this.resourcesByType[type as ResourceType] ===
-            other.resourcesByType[type as ResourceType],
-      )
+  toServerDTO(): RepositoryStatsServerDTO {
+    return {
+      resourceCount: this._resourceCount,
+      folderCount: this._folderCount,
+      totalSize: this._totalSize,
+      ...this._extensible,
+    };
+  }
+
+  // ===== 静态工厂方法 =====
+  static fromServerDTO(dto: RepositoryStatsServerDTO): RepositoryStats {
+    const { resourceCount, folderCount, totalSize, ...rest } = dto;
+    return new RepositoryStats(resourceCount, folderCount, totalSize, rest);
+  }
+
+  static fromClientDTO(dto: RepositoryStatsClientDTO): RepositoryStats {
+    const { resourceCount, folderCount, totalSize, formattedSize, hasResources, hasFolders, ...rest } = dto;
+    return new RepositoryStats(resourceCount, folderCount, totalSize, rest);
+  }
+
+  static create(params?: Partial<RepositoryStatsServerDTO>): RepositoryStats {
+    return new RepositoryStats(
+      params?.resourceCount || 0,
+      params?.folderCount || 0,
+      params?.totalSize || 0,
+      {},
     );
-  }
-
-  /**
-   * 转换为 Server DTO
-   */
-  public toServerDTO(): RepositoryStatsServerDTO {
-    return {
-      totalResources: this.totalResources,
-      resourcesByType: { ...this.resourcesByType },
-      resourcesByStatus: {} as any, // 客户端不需要这个字段
-      totalSize: this.totalSize,
-      recentActiveResources: this.recentCount,
-      favoriteResources: this.favoriteCount,
-      lastUpdated: Date.now(),
-    };
-  }
-
-  /**
-   * 从 Server DTO 创建值对象
-   */
-  public static fromServerDTO(dto: RepositoryStatsServerDTO): RepositoryStats {
-    return new RepositoryStats({
-      totalResources: dto.totalResources,
-      totalSize: dto.totalSize,
-      favoriteCount: dto.favoriteResources,
-      recentCount: dto.recentActiveResources,
-      resourcesByType: { ...dto.resourcesByType },
-    });
-  }
-
-  /**
-   * 从 Client DTO 创建值对象
-   */
-  public static fromClientDTO(dto: RepositoryStatsClientDTO): RepositoryStats {
-    return new RepositoryStats({
-      totalResources: dto.totalResources,
-      totalSize: dto.totalSize,
-      favoriteCount: dto.favoriteCount,
-      recentCount: dto.recentCount,
-      resourcesByType: { ...dto.resourcesByType },
-    });
-  }
-
-  /**
-   * 转换为 Client DTO
-   */
-  public toClientDTO(): RepositoryStatsClientDTO {
-    return {
-      totalResources: this.totalResources,
-      totalSize: this.totalSize,
-      totalSizeFormatted: this.totalSizeFormatted,
-      favoriteCount: this.favoriteCount,
-      recentCount: this.recentCount,
-      resourcesByType: { ...this.resourcesByType },
-    };
-  }
-
-  /**
-   * 创建默认统计信息
-   */
-  public static createDefault(): RepositoryStats {
-    return new RepositoryStats({
-      totalResources: 0,
-      totalSize: 0,
-      favoriteCount: 0,
-      recentCount: 0,
-      resourcesByType: {} as Record<ResourceType, number>,
-    });
   }
 }

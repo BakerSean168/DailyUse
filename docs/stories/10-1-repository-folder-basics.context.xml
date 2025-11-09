@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context version="2.0">
+  <metadata>
+    <story-id>10.1</story-id>
+    <story-key>10-1-repository-folder-basics</story-key>
+    <epic>Epic 10 - Repository Module (Obsidian 风格知识管理系统)</epic>
+    <title>Repository & Folder 基础管理</title>
+    <priority>P0</priority>
+    <story-points>8</story-points>
+    <created>2025-11-09</created>
+    <context-generated>2025-11-09</context-generated>
+  </metadata>
+
+  <user-story>
+    <as-a>用户</as-a>
+    <i-want>创建知识仓储并组织文件夹层级结构</i-want>
+    <so-that>我可以系统化地管理我的笔记和文档</so-that>
+  </user-story>
+
+  <acceptance-criteria>
+    <criterion id="AC1">
+      <title>创建仓储</title>
+      <description>用户可以创建新仓储，系统生成UUID，初始化默认配置和统计信息</description>
+      <given>用户已登录</given>
+      <when>用户创建仓储 "我的知识库"，类型MARKDOWN，路径/vault/knowledge-base</when>
+      <then>系统创建仓储，生成UUID，初始化配置(searchEngine=postgres, enableGit=false)，初始化统计(resourceCount=0, folderCount=0)，状态=ACTIVE</then>
+    </criterion>
+    <criterion id="AC2">
+      <title>查询仓储列表</title>
+      <description>用户可以查询自己的仓储列表，支持筛选和分页</description>
+      <given>用户拥有3个仓储</given>
+      <when>用户请求仓储列表，筛选状态=ACTIVE，按创建时间倒序</when>
+      <then>系统返回3个仓储，包含uuid/name/type/stats，支持分页(page=1, pageSize=20)</then>
+    </criterion>
+    <criterion id="AC3">
+      <title>更新仓储配置</title>
+      <description>用户可以更新仓储配置，系统合并并保存</description>
+      <given>仓储配置{searchEngine: "postgres"}</given>
+      <when>用户更新配置{searchEngine: "meilisearch", autoSync: true}</when>
+      <then>系统合并配置，保存，更新updatedAt</then>
+    </criterion>
+    <criterion id="AC4">
+      <title>创建根文件夹</title>
+      <description>用户可以在仓储中创建根文件夹</description>
+      <given>仓储UUID=repo-123</given>
+      <when>用户创建根文件夹"前端笔记"，parentUuid=null</when>
+      <then>系统生成path=/前端笔记，order=0，isExpanded=true，初始化空metadata</then>
+    </criterion>
+    <criterion id="AC5">
+      <title>创建嵌套文件夹</title>
+      <description>用户可以创建嵌套文件夹，系统自动生成完整路径</description>
+      <given>父文件夹"前端笔记"(uuid=folder-1, path=/前端笔记)</given>
+      <when>用户在其下创建子文件夹"Vue3"</when>
+      <then>系统生成path=/前端笔记/Vue3，parentUuid=folder-1，验证无循环引用</then>
+    </criterion>
+    <criterion id="AC6">
+      <title>文件夹树形查询</title>
+      <description>用户可以查询完整文件夹树形结构</description>
+      <given>仓储包含文件夹层级：/前端笔记(/Vue3, /React), /后端笔记</given>
+      <when>用户查询文件夹树</when>
+      <then>系统返回嵌套结构，包含子文件夹列表和资源计数</then>
+    </criterion>
+    <criterion id="AC7">
+      <title>重命名文件夹</title>
+      <description>重命名文件夹时自动更新路径，并级联更新子文件夹</description>
+      <given>文件夹"Vue3"(path=/前端笔记/Vue3)</given>
+      <when>用户重命名为"Vue3进阶"</when>
+      <then>系统更新name=Vue3进阶，path=/前端笔记/Vue3进阶，updatedAt，触发子文件夹path级联更新</then>
+    </criterion>
+    <criterion id="AC8">
+      <title>移动文件夹</title>
+      <description>移动文件夹时检测循环引用，更新路径，级联更新子文件夹</description>
+      <given>文件夹"Vue3"(parentUuid=folder-1)</given>
+      <when>用户移动到"后端笔记"(newParentUuid=folder-2)，验证无循环引用</when>
+      <then>系统更新parentUuid=folder-2，path=/后端笔记/Vue3，触发子文件夹path级联更新</then>
+    </criterion>
+    <criterion id="AC9">
+      <title>删除文件夹（级联）</title>
+      <description>删除文件夹时级联删除所有子文件夹和资源</description>
+      <given>文件夹"前端笔记"包含2个子文件夹和5个资源</given>
+      <when>用户删除"前端笔记"并确认</when>
+      <then>系统级联删除所有子文件夹和资源，更新仓储统计</then>
+    </criterion>
+    <criterion id="AC10">
+      <title>循环引用检测</title>
+      <description>移动文件夹时检测循环引用，防止无限嵌套</description>
+      <given>文件夹层级：folder-1→folder-2→folder-3</given>
+      <when>用户尝试移动folder-1到folder-3下</when>
+      <then>系统检测到循环引用，返回409 Conflict，错误消息"检测到循环引用"</then>
+    </criterion>
+  </acceptance-criteria>
+
+  <tasks>
+    <backend priority="high">
+      <task id="BE-1">
+        <title>Contracts定义</title>
+        <subtasks>
+          <subtask>创建Repository接口和DTO (CreateRepositoryDto, UpdateRepositoryDto, RepositoryResponseDto, QueryRepositoriesDto)</subtask>
+          <subtask>创建Folder接口和DTO (CreateFolderDto, UpdateFolderDto, FolderResponseDto, FolderTreeDto)</subtask>
+          <subtask>创建值对象 (RepositoryConfig, RepositoryStats, FolderMetadata)</subtask>
+          <subtask>创建枚举 (RepositoryType, RepositoryStatus)</subtask>
+        </subtasks>
+        <estimate>1小时</estimate>
+      </task>
+      <task id="BE-2">
+        <title>Domain层实现</title>
+        <subtasks>
+          <subtask>实现RepositoryServer聚合根（创建、更新配置、归档、激活方法）</subtask>
+          <subtask>实现FolderServer实体（创建、重命名、移动、更新元数据方法）</subtask>
+          <subtask>实现FolderHierarchyService领域服务（循环检测、路径生成、级联更新）</subtask>
+          <subtask>实现IRepositoryRepository和IFolderRepository接口</subtask>
+        </subtasks>
+        <estimate>2小时</estimate>
+      </task>
+      <task id="BE-3">
+        <title>Infrastructure层实现</title>
+        <subtasks>
+          <subtask>数据库迁移脚本：CREATE TABLE folders（uuid, repository_uuid, parent_uuid, name, path, order, is_expanded, metadata, created_at, updated_at）</subtask>
+          <subtask>数据库迁移脚本：ALTER TABLE repositories ADD COLUMN (config JSONB, stats JSONB, git_info JSONB, last_accessed_at TIMESTAMP)</subtask>
+          <subtask>创建索引：idx_folders_repository, idx_folders_parent, idx_folders_path</subtask>
+          <subtask>实现RepositoryRepositoryImpl（TypeORM Repository）</subtask>
+          <subtask>实现FolderRepositoryImpl（TypeORM Repository）</subtask>
+          <subtask>TypeORM实体映射（RepositoryEntity, FolderEntity）</subtask>
+        </subtasks>
+        <estimate>1小时</estimate>
+      </task>
+      <task id="BE-4">
+        <title>Application层实现</title>
+        <subtasks>
+          <subtask>实现RepositoryApplicationService（createRepository, listRepositories, getRepository, updateRepository, archiveRepository, deleteRepository）</subtask>
+          <subtask>实现FolderApplicationService（createFolder, getFolderTree, renameFolder, moveFolder, deleteFolder）</subtask>
+          <subtask>实现验证逻辑（名称唯一性、循环引用检测、权限验证）</subtask>
+        </subtasks>
+        <estimate>2小时</estimate>
+      </task>
+      <task id="BE-5">
+        <title>Presentation层实现</title>
+        <subtasks>
+          <subtask>实现RepositoryController (POST /, GET /, GET /:uuid, PATCH /:uuid, POST /:uuid/archive, DELETE /:uuid)</subtask>
+          <subtask>实现FolderController (POST /repositories/:repoUuid/folders, GET /repositories/:repoUuid/folders/tree, PATCH /folders/:uuid/rename, PATCH /folders/:uuid/move, DELETE /folders/:uuid)</subtask>
+          <subtask>实现DI容器配置（RepositoryModule）</subtask>
+        </subtasks>
+        <estimate>1小时</estimate>
+      </task>
+      <task id="BE-6">
+        <title>后端测试</title>
+        <subtasks>
+          <subtask>Repository单元测试（创建、配置更新、状态转换）</subtask>
+          <subtask>Folder单元测试（创建、重命名、移动、路径生成）</subtask>
+          <subtask>FolderHierarchyService测试（循环检测、路径级联更新）</subtask>
+          <subtask>API集成测试（所有端点）</subtask>
+        </subtasks>
+        <estimate>1小时</estimate>
+      </task>
+    </backend>
+
+    <frontend priority="high">
+      <task id="FE-1">
+        <title>Infrastructure层实现</title>
+        <subtasks>
+          <subtask>创建RepositoryApiClient（create, list, getOne, update, archive, delete）</subtask>
+          <subtask>创建FolderApiClient（create, getTree, rename, move, delete）</subtask>
+          <subtask>创建repositoryStore（Pinia）</subtask>
+        </subtasks>
+        <estimate>1小时</estimate>
+      </task>
+      <task id="FE-2">
+        <title>UI组件实现</title>
+        <subtasks>
+          <subtask>创建RepositoryView主视图（三栏布局：左侧FileExplorer + 中央占位 + 右侧占位）</subtask>
+          <subtask>创建FileExplorer组件（VTreeView + 右键菜单）</subtask>
+          <subtask>创建CreateRepositoryDialog组件</subtask>
+          <subtask>创建CreateFolderDialog组件</subtask>
+          <subtask>创建RenameFolderDialog组件</subtask>
+        </subtasks>
+        <estimate>2小时</estimate>
+      </task>
+      <task id="FE-3">
+        <title>功能实现</title>
+        <subtasks>
+          <subtask>实现仓储切换功能</subtask>
+          <subtask>实现文件夹CRUD功能（创建、重命名、移动、删除）</subtask>
+          <subtask>实现拖拽移动文件夹（@vueuse/core）</subtask>
+          <subtask>实现循环引用检测提示</subtask>
+          <subtask>实现右键菜单交互</subtask>
+        </subtasks>
+        <estimate>1小时</estimate>
+      </task>
+    </frontend>
+
+    <testing priority="medium">
+      <task id="TEST-1">
+        <title>E2E测试</title>
+        <subtasks>
+          <subtask>E2E: 创建仓储流程</subtask>
+          <subtask>E2E: 创建文件夹层级</subtask>
+          <subtask>E2E: 重命名文件夹并验证路径更新</subtask>
+          <subtask>E2E: 移动文件夹并验证循环引用检测</subtask>
+          <subtask>E2E: 删除文件夹并验证级联删除</subtask>
+        </subtasks>
+        <estimate>1小时</estimate>
+      </task>
+    </testing>
+  </tasks>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epic-10-repository-obsidian.md</path>
+        <title>Epic 10 规划文档</title>
+        <section>Story 10.1详细规划</section>
+        <snippet>作为Epic 10的基础Story，实现Repository聚合根和Folder实体的完整CRUD功能。包括10个验收标准，涵盖仓储管理和文件夹树形层级结构管理。</snippet>
+      </doc>
+      <doc>
+        <path>docs/epic-10-context.md</path>
+        <title>Epic 10技术上下文</title>
+        <section>架构设计 + 数据库设计</section>
+        <snippet>完整5层DDD架构，包括Repository聚合根、Folder实体、FolderHierarchyService领域服务。数据库新增folders表，扩展repositories表支持JSONB配置和统计。</snippet>
+      </doc>
+      <doc>
+        <path>docs/modules/repository/requirements/01-DATABASE_SCHEMA_DESIGN.md</path>
+        <title>数据库架构设计</title>
+        <section>folders表结构 + repositories表扩展</section>
+        <snippet>folders表支持树形结构（parent_uuid自引用），path字段自动生成，唯一约束(repository_uuid, parent_uuid, name)，级联删除。repositories表扩展config/stats/git_info JSONB字段。</snippet>
+      </doc>
+      <doc>
+        <path>docs/modules/repository/requirements/02-DOMAIN_MODEL_DESIGN.md</path>
+        <title>领域模型设计</title>
+        <section>Repository聚合根 + Folder实体 + 领域服务</section>
+        <snippet>RepositoryServer聚合根包含配置管理、统计维护、状态转换方法。FolderServer实体支持重命名、移动、路径生成。FolderHierarchyService提供循环检测和路径级联更新算法。</snippet>
+      </doc>
+      <doc>
+        <path>docs/modules/repository/requirements/04-API_ENDPOINT_DESIGN.md</path>
+        <title>REST API设计</title>
+        <section>Repository API + Folder API</section>
+        <snippet>Repository API: POST /repositories, GET /repositories, PATCH /repositories/:uuid, POST /repositories/:uuid/archive. Folder API: POST /repositories/:repoUuid/folders, GET /folders/tree, PATCH /folders/:uuid/rename, PATCH /folders/:uuid/move, DELETE /folders/:uuid.</snippet>
+      </doc>
+      <doc>
+        <path>docs/modules/repository/requirements/05-FRONTEND_UX_DESIGN.md</path>
+        <title>前端UX设计</title>
+        <section>FileExplorer组件 + Obsidian风格三栏布局</section>
+        <snippet>使用Vuetify VTreeView组件实现文件树，支持拖拽、右键菜单、展开折叠状态记忆。三栏布局：左侧FileExplorer(250px) + 中央编辑区 + 右侧辅助面板(300px)。</snippet>
+      </doc>
+      <doc>
+        <path>docs/modules/repository/IMPLEMENTATION_GUIDE.md</path>
+        <title>实施指南</title>
+        <section>数据库迁移脚本 + 开发顺序</section>
+        <snippet>提供完整SQL迁移脚本（CREATE TABLE folders, ALTER TABLE repositories）。开发顺序：Contracts → Domain → Infrastructure → Application → Controller → Frontend。</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>packages/contracts/src/modules/repository</path>
+        <kind>contracts-package</kind>
+        <symbol>Repository + Folder contracts</symbol>
+        <lines>待创建</lines>
+        <reason>需要定义Repository和Folder的接口、DTO、值对象、枚举</reason>
+      </artifact>
+      <artifact>
+        <path>packages/domain-server/src/repository</path>
+        <kind>domain-package</kind>
+        <symbol>RepositoryServer + FolderServer</symbol>
+        <lines>待创建</lines>
+        <reason>需要实现聚合根、实体、领域服务、Repository接口</reason>
+      </artifact>
+      <artifact>
+        <path>apps/api/src/modules/repository</path>
+        <kind>api-module</kind>
+        <symbol>RepositoryModule + Controllers + Services</symbol>
+        <lines>待创建</lines>
+        <reason>需要实现Application Service、Controller、Infrastructure Repository</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/modules/repository</path>
+        <kind>web-module</kind>
+        <symbol>RepositoryView + FileExplorer</symbol>
+        <lines>待创建</lines>
+        <reason>需要实现前端视图、组件、Store、API Client</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <node>
+        <package name="@nestjs/core" version="^10.x">NestJS核心框架</package>
+        <package name="@nestjs/typeorm" version="^10.x">TypeORM集成</package>
+        <package name="typeorm" version="^0.3.x">ORM框架</package>
+        <package name="class-validator" version="^0.14.x">DTO验证</package>
+        <package name="class-transformer" version="^0.5.x">DTO转换</package>
+        <package name="pg" version="^8.x">PostgreSQL驱动</package>
+        <package name="vue" version="^3.x">Vue 3核心</package>
+        <package name="vuetify" version="^3.x">UI组件库（VTreeView）</package>
+        <package name="pinia" version="^2.x">状态管理</package>
+        <package name="@vueuse/core" version="^10.x">工具库（拖拽功能）</package>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <interfaces>
+    <interface>
+      <name>RepositoryServer</name>
+      <kind>DDD AggregateRoot</kind>
+      <signature>
+class RepositoryServer extends AggregateRoot {
+  uuid: string;
+  accountUuid: string;
+  name: string;
+  type: RepositoryType;
+  path: string;
+  description?: string;
+  config: RepositoryConfig;
+  stats: RepositoryStats;
+  status: RepositoryStatus;
+  
+  static create(params): RepositoryServer;
+  updateConfig(config: Partial&lt;RepositoryConfig&gt;): void;
+  archive(): void;
+  activate(): void;
+}
+      </signature>
+      <path>packages/domain-server/src/repository/aggregates/Repository.ts</path>
+    </interface>
+    <interface>
+      <name>FolderServer</name>
+      <kind>DDD Entity</kind>
+      <signature>
+class FolderServer extends Entity {
+  uuid: string;
+  repositoryUuid: string;
+  parentUuid?: string;
+  name: string;
+  path: string;
+  order: number;
+  isExpanded: boolean;
+  metadata: FolderMetadata;
+  
+  static create(params): FolderServer;
+  rename(newName: string): void;
+  moveTo(newParentUuid: string | null, newParentPath?: string): void;
+}
+      </signature>
+      <path>packages/domain-server/src/repository/entities/Folder.ts</path>
+    </interface>
+    <interface>
+      <name>FolderHierarchyService</name>
+      <kind>Domain Service</kind>
+      <signature>
+class FolderHierarchyService {
+  async detectCycle(folderUuid: string, newParentUuid: string, folderRepository: IFolderRepository): Promise&lt;boolean&gt;;
+  async getFullPath(folderUuid: string, folderRepository: IFolderRepository): Promise&lt;string&gt;;
+  async updateChildrenPaths(folderUuid: string, newPath: string, folderRepository: IFolderRepository): Promise&lt;void&gt;;
+}
+      </signature>
+      <path>packages/domain-server/src/repository/domain-services/FolderHierarchyService.ts</path>
+    </interface>
+    <interface>
+      <name>POST /repositories</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /repositories - 创建仓储
+Request: CreateRepositoryDto {name, type, path, description?, config?}
+Response: RepositoryResponseDto {uuid, accountUuid, name, type, status, path, createdAt}
+Status: 201 Created | 400 Bad Request | 409 Conflict
+      </signature>
+      <path>apps/api/src/modules/repository/presentation/controllers/RepositoryController.ts</path>
+    </interface>
+    <interface>
+      <name>GET /repositories/:repoUuid/folders/tree</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /repositories/:repoUuid/folders/tree - 查询文件夹树
+Response: FolderTreeNode[] {folder, children, resourceCount}
+Status: 200 OK | 404 Not Found | 403 Forbidden
+      </signature>
+      <path>apps/api/src/modules/repository/presentation/controllers/FolderController.ts</path>
+    </interface>
+  </interfaces>
+
+  <constraints>
+    <constraint>
+      <category>架构</category>
+      <rule>严格遵循DDD五层架构：Contracts → Domain → Infrastructure → Application → Presentation</rule>
+    </constraint>
+    <constraint>
+      <category>数据库</category>
+      <rule>使用PostgreSQL JSONB存储配置和统计，使用CASCADE删除确保数据完整性，使用UNIQUE约束防止重名</rule>
+    </constraint>
+    <constraint>
+      <category>领域规则</category>
+      <rule>文件夹名称在同一父级下必须唯一，移动文件夹时必须检测循环引用，重命名/移动文件夹时必须级联更新子文件夹路径</rule>
+    </constraint>
+    <constraint>
+      <category>前端组件</category>
+      <rule>使用Vuetify 3 VTreeView组件实现文件树，支持@vueuse/core拖拽功能，使用Pinia进行状态管理</rule>
+    </constraint>
+    <constraint>
+      <category>测试要求</category>
+      <rule>单元测试覆盖Domain层业务逻辑，集成测试覆盖API端点，E2E测试覆盖核心用户流程</rule>
+    </constraint>
+    <constraint>
+      <category>性能优化</category>
+      <rule>文件夹树使用单次查询+内存构建，路径更新使用批量操作，考虑递归深度限制防止性能问题</rule>
+    </constraint>
+  </constraints>
+
+  <tests>
+    <standards>
+      单元测试使用Vitest框架，位于__tests__目录。集成测试使用Supertest测试API端点。E2E测试使用Playwright覆盖完整用户流程。测试文件命名：*.spec.ts（单元测试）、*.integration.spec.ts（集成测试）、*.e2e.spec.ts（E2E测试）。
+    </standards>
+    <locations>
+      <location>packages/domain-server/src/repository/__tests__</location>
+      <location>apps/api/src/modules/repository/__tests__</location>
+      <location>apps/web/e2e/repository</location>
+    </locations>
+    <ideas>
+      <idea ac-ref="AC1">测试创建仓储流程：验证UUID生成、默认配置初始化、统计信息初始化、状态设置</idea>
+      <idea ac-ref="AC2">测试查询仓储列表：验证筛选、排序、分页功能</idea>
+      <idea ac-ref="AC3">测试更新仓储配置：验证配置合并逻辑、时间戳更新</idea>
+      <idea ac-ref="AC4">测试创建根文件夹：验证path生成（/folder-name）、默认值设置</idea>
+      <idea ac-ref="AC5">测试创建嵌套文件夹：验证path生成（/parent/child）、parentUuid设置</idea>
+      <idea ac-ref="AC6">测试文件夹树查询：验证树形结构构建、资源计数统计</idea>
+      <idea ac-ref="AC7">测试重命名文件夹：验证path更新、子文件夹path级联更新</idea>
+      <idea ac-ref="AC8">测试移动文件夹：验证循环引用检测、path更新、子文件夹path级联更新</idea>
+      <idea ac-ref="AC9">测试删除文件夹：验证级联删除子文件夹和资源、统计信息更新</idea>
+      <idea ac-ref="AC10">测试循环引用检测：验证各种循环场景（直接循环、间接循环）</idea>
+    </ideas>
+  </tests>
+
+  <development-notes>
+    <note priority="critical">
+      <title>严格遵循 Goal 模块的架构模式（方案 A）</title>
+      <content>必须严格参考 Goal 模块的实现：1) Contracts 层定义接口+DTO（RepositoryServer.ts, RepositoryClient.ts, FolderServer.ts, FolderClient.ts），包含 ServerDTO/ClientDTO/PersistenceDTO；2) Domain-Server 层实现 Server 接口（聚合根、实体），提供 toServerDTO()/toPersistenceDTO()/fromServerDTO()/fromPersistenceDTO() 方法；3) Domain-Client 层实现 Client 接口，ClientDTO 包含 UI 计算字段（statusText, isDeleted 等），提供 toClientDTO()/fromClientDTO()/fromServerDTO() 方法；4) API 层使用 Prisma 直接操作 PersistenceDTO（不使用 TypeORM Entity）；5) PersistenceDTO 扁平化，直接映射数据库字段（JSONB 字段序列化为 string）。</content>
+    </note>
+    <note priority="critical">
+      <title>PersistenceDTO 设计规范</title>
+      <content>PersistenceDTO 必须与数据库结构完全一致：1) 扁平化结构（无嵌套对象）；2) JSONB 字段使用 string 类型（config/stats/metadata 序列化为 JSON string）；3) 时间字段使用 number (epoch ms)；4) 数组字段序列化为 string（如 tags: string）；5) camelCase 命名（Prisma 会自动映射到 snake_case）；6) 子实体不包含在 PersistenceDTO 中（通过外键关联的独立表）。</content>
+    </note>
+    <note priority="high">
+      <title>循环引用检测算法</title>
+      <content>FolderHierarchyService.detectCycle方法通过向上遍历父级链检测循环：从newParentUuid开始，沿parentUuid向上查找，如果遇到当前folderUuid则存在循环。注意：深层嵌套时性能可能较差，建议添加递归深度限制（如最大层级20）。</content>
+    </note>
+    <note priority="high">
+      <title>路径级联更新</title>
+      <content>重命名或移动文件夹时，必须递归更新所有子文件夹的path字段。使用FolderHierarchyService.updateChildrenPaths方法，递归查找所有子文件夹并更新。大量子文件夹时考虑使用批量更新或异步任务队列优化性能。</content>
+    </note>
+    <note priority="medium">
+      <title>数据库迁移注意事项</title>
+      <content>1) folders表的parent_uuid自引用外键设置ON DELETE CASCADE确保级联删除；2) 唯一约束(repository_uuid, parent_uuid, name)防止同一父级下文件夹重名；3) repositories表的config/stats使用JSONB类型，初始化时设置默认值避免NULL；4) 创建必要索引提升查询性能。</content>
+    </note>
+    <note priority="medium">
+      <title>前端拖拽实现</title>
+      <content>使用@vueuse/core的useDraggable和useDropzone实现文件夹拖拽。拖拽时显示半透明ghost效果，拖拽到目标文件夹时高亮显示可放置区域。移动前调用moveFolder API，如果返回409 Conflict（循环引用）则显示错误提示并回滚UI状态。</content>
+    </note>
+    <note priority="low">
+      <title>潜在性能风险</title>
+      <content>1) 循环引用检测：深层嵌套时需遍历整条链，考虑缓存或限制最大深度；2) 路径更新：大量子文件夹时批量更新可能耗时，考虑异步任务；3) 并发更新：多用户同时移动文件夹可能冲突，需要乐观锁或悲观锁机制。</content>
+    </note>
+  </development-notes>
+</story-context>

@@ -107,3 +107,22 @@ development_status:
   epic-9: in-progress  # 🚧 进行中 (2025-10-31)
   9-1-user-preference-settings: done  # ✅ COMPLETED (2025-10-31) - 类型修复 ✅ Store重构 ✅ 组件迁移 ✅ (5/5) 主题服务 ✅ 文档 ✅ (~1,200 lines total)
   epic-9-retrospective: optional
+
+  # Epic 10: Repository Module - Obsidian 风格知识管理系统
+  epic-10: contexted  # ✅ 技术上下文已完成 (2025-11-09) - 全新 Obsidian 风格知识管理系统，基于 BA 需求文档
+  stories:
+    10-1-repository-folder-basics:
+      status: in-progress  # Repository & Folder 基础管理 (8 SP) - 开发中 (2025-11-09)
+      progress: 60  # 60% - API layers complete, Web + Testing deferred
+      story_points: 8
+      notes: "🔄 60% Complete: Contracts ✅ Domain-Server ✅ Domain-Client ✅ Infrastructure ✅ Application ✅ Presentation ✅ | Web Layer ⏸️ Testing ⏸️ | 59 files created"
+  10-2-resource-crud-markdown-editor: backlog  # Resource CRUD + Milkdown 编辑器 (13 SP)
+  10-3-bidirectional-links: backlog  # 双向链接解析与自动补全 (8 SP)
+  10-4-backlinks-panel: backlog  # 反向链接面板 (5 SP)
+  10-5-version-history: backlog  # 版本历史管理 (8 SP)
+  10-6-knowledge-graph: backlog  # 知识图谱可视化 (8 SP)
+  10-7-fulltext-search: backlog  # 全文搜索 + 高亮 (5 SP)
+  10-8-outline-view: backlog  # 大纲视图 (3 SP)
+  10-9-data-migration: backlog  # 数据迁移与清理 (5 SP)
+  10-10-git-integration: backlog  # Git 集成（可选，Phase 2）
+  epic-10-retrospective: optional

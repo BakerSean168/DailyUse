@@ -6,6 +6,46 @@ mode: agent
 
 ## 架构设计
 
+### 架构总结 (基于 Goal 模块)
+方案 A 架构：
+
+关键点：
+
+```bash
+packages/
+  contracts/                 # 共享契约（定义接口和 DTO）
+    src/modules/goal/
+      aggregates/
+        GoalServer.ts        # GoalServer 接口 + GoalServerDTO + GoalPersistenceDTO
+        GoalClient.ts        # GoalClient 接口 + GoalClientDTO
+      entities/
+        KeyResultServer.ts   # KeyResultServer 接口 + DTO
+        KeyResultClient.ts   # KeyResultClient 接口 + DTO
+      value-objects/         # 值对象接口
+      
+  domain-server/             # 服务端领域模型（实现）
+    src/goal/
+      aggregates/
+        Goal.ts              # 实现 GoalServer 接口
+      entities/
+        KeyResult.ts         # 实现 KeyResultServer 接口
+        
+  domain-client/             # 客户端领域模型（实现）
+    src/goal/
+      aggregates/
+        Goal.ts              # 实现 GoalClient 接口
+        
+  apps/api/infrastructure/   # Prisma 仓储（不使用 TypeORM Entity）
+    repositories/
+      PrismaGoalRepository.ts  # 使用 toPersistenceDTO() 直接存储
+```
+
+PersistenceDTO: 扁平化结构，直接映射数据库字段（snake_case 在 Prisma schema，camelCase 在代码）
+ServerDTO vs ClientDTO:
+ServerDTO: 后端使用，包含子实体数组
+ClientDTO: 前端使用，额外包含 UI 计算字段（overallProgress, isDeleted, statusText 等）
+不需要 TypeORM Entity: Prisma 直接使用 PersistenceDTO
+
 ### Contracts-First 架构
 
 #### packages/contracts - 核心契约包

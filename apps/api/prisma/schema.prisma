@@ -739,23 +739,51 @@ model repository {
   type               String
   path               String
   description        String?
-  config             String
+  // ===== Epic 10 扩展字段 (JSONB存储) =====
+  config             Json                 @default("{}") // RepositoryConfig JSONB
+  stats              Json                 @default("{}") // RepositoryStats JSONB
+  // ===== 遗留字段（向后兼容） =====
   relatedGoals       String?              @map("related_goals")
-  status             String               @default("active")
+  status             String               @default("ACTIVE") // ACTIVE | ARCHIVED | DELETED
   git                String?
   syncStatus         String?              @map("sync_status")
-  stats              String
   lastAccessedAt     DateTime?            @map("last_accessed_at")
-  createdAt          DateTime             @default(now()) @map("created_at")
-  updatedAt          DateTime             @map("updated_at")
+  createdAt          BigInt               @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
+  updatedAt          BigInt               @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
   account            account              @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
   repositoryExplorer repositoryExplorer[]
   repositoryResource repositoryResource[]
   resource           resource[] // New Epic 7 resource relation
+  folder             folder[] // Epic 10 folder relation
 
   @@unique([accountUuid, path])
   @@index([type])
+  @@index([status])
   @@map("repositories")
+}
+
+// Epic 10: Folder Tree Structure (Obsidian-style)
+model folder {
+  uuid           String    @id
+  repositoryUuid String    @map("repository_uuid")
+  parentUuid     String?   @map("parent_uuid")
+  name           String
+  path           String // Auto-generated: /parent/name
+  order          Int       @default(0)
+  isExpanded     Boolean   @default(true) @map("is_expanded")
+  metadata       Json      @default("{}") // FolderMetadata JSONB: {icon, color, ...}
+  createdAt      BigInt    @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
+  updatedAt      BigInt    @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
+
+  repository repository @relation(fields: [repositoryUuid], references: [uuid], onDelete: Cascade)
+  parent     folder?    @relation("FolderHierarchy", fields: [parentUuid], references: [uuid], onDelete: Cascade)
+  children   folder[]   @relation("FolderHierarchy")
+
+  @@unique([repositoryUuid, parentUuid, name]) // 同级文件夹名称唯一
+  @@index([repositoryUuid])
+  @@index([parentUuid])
+  @@index([path])
+  @@map("folders")
 }
 
 // New Epic 7 Resource model (aligned with Contracts architecture)

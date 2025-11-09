@@ -1,326 +1,262 @@
 import type { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { RepositoryApplicationService } from '../../../application/services/RepositoryApplicationService';
-import {
-  type ApiResponse,
-  type SuccessResponse,
-  type ErrorResponse,
-  ResponseCode,
-  createResponseBuilder,
-  getHttpStatusCode,
-} from '@dailyuse/contracts';
+import { RepositoryApplicationService } from '../../../application/services';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
 import { createLogger } from '@dailyuse/utils';
+import type { AuthenticatedRequest } from '../../../../../shared/middlewares/authMiddleware';
 
-// 创建 logger 实例
 const logger = createLogger('RepositoryController');
 
+/**
+ * Repository 控制器
+ */
 export class RepositoryController {
   private static repositoryService: RepositoryApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
-  /**
-   * 获取应用服务实例（懒加载）
-   */
-  private static async getRepositoryService(): Promise<RepositoryApplicationService> {
+  private static getRepositoryService(): RepositoryApplicationService {
     if (!RepositoryController.repositoryService) {
-      RepositoryController.repositoryService = await RepositoryApplicationService.getInstance();
+      RepositoryController.repositoryService = new RepositoryApplicationService();
     }
     return RepositoryController.repositoryService;
   }
 
   /**
-   * 从请求中提取用户账户UUID
-   */
-  private static extractAccountUuid(req: Request): string {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-      logger.warn('Authentication attempt without Bearer token');
-      throw new Error('Authentication required');
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = jwt.decode(token) as any;
-
-    if (!decoded?.accountUuid) {
-      logger.warn('Invalid token: missing accountUuid');
-      throw new Error('Invalid token: missing accountUuid');
-    }
-
-    return decoded.accountUuid;
-  }
-
-  /**
-   * 创建仓库
+   * 创建仓储
    * @route POST /api/repositories
    */
-  static async createRepository(req: Request, res: Response): Promise<Response> {
+  static async createRepository(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
-      const accountUuid = RepositoryController.extractAccountUuid(req);
-      const service = await RepositoryController.getRepositoryService();
+      const service = RepositoryController.getRepositoryService();
+      const accountUuid = req.user?.accountUuid;
 
-      logger.info('Creating repository', { accountUuid, name: req.body.name });
+      if (!accountUuid) {
+        return RepositoryController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      logger.info('Creating repository', { accountUuid });
 
       const repository = await service.createRepository({
-        accountUuid,
-        name: req.body.name,
-        type: req.body.type,
-        path: req.body.path,
-        description: req.body.description,
-        config: req.body.config,
-        initializeGit: req.body.initializeGit,
-      });
-
-      logger.info('Repository created successfully', {
-        repositoryUuid: repository.uuid,
+        ...req.body,
         accountUuid,
       });
 
+      logger.info('Repository created successfully', { repositoryUuid: repository.uuid });
       return RepositoryController.responseBuilder.sendSuccess(
         res,
-        repository, // ApplicationService 已经返回 DTO
+        repository,
         'Repository created successfully',
         201,
       );
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes('Invalid UUID')) {
-          logger.error('Validation error creating repository');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.VALIDATION_ERROR,
-            message: error.message,
-          });
-        }
-        if (error.message.includes('Authentication')) {
-          logger.warn('Authentication error creating repository');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.UNAUTHORIZED,
-            message: error.message,
-          });
-        }
-        if (error.message.includes('already in use')) {
-          logger.error('Repository path conflict');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.CONFLICT,
-            message: error.message,
-          });
-        }
+        logger.error('Error creating repository', { error: error.message });
+        return RepositoryController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
       }
-
-      logger.error('Error creating repository', { error });
       return RepositoryController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,
-        message: 'Failed to create repository',
+        message: 'Unknown error occurred',
       });
     }
   }
 
   /**
-   * 获取仓库列表
+   * 获取仓储列表
    * @route GET /api/repositories
    */
-  static async getRepositories(req: Request, res: Response): Promise<Response> {
+  static async listRepositories(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
-      const accountUuid = RepositoryController.extractAccountUuid(req);
-      const service = await RepositoryController.getRepositoryService();
+      const service = RepositoryController.getRepositoryService();
+      const accountUuid = req.user?.accountUuid;
 
-      logger.info('Fetching repositories', { accountUuid });
+      if (!accountUuid) {
+        return RepositoryController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
 
-      const includeChildren = req.query.includeChildren === 'true';
-      const repositories = await service.getRepositoriesByAccount(accountUuid, {
-        includeChildren,
-      });
+      const status = req.query.status as string | undefined;
+      logger.info('Listing repositories', { accountUuid, status });
 
-      logger.info('Repositories fetched successfully', {
-        accountUuid,
-        count: repositories.length,
-      });
+      const repositories = await service.listRepositories(accountUuid, status as any);
 
       return RepositoryController.responseBuilder.sendSuccess(
         res,
-        repositories, // ApplicationService 已经返回 DTO 数组
+        repositories,
         'Repositories retrieved successfully',
       );
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Authentication')) {
-        logger.warn('Authentication error fetching repositories');
+      if (error instanceof Error) {
+        logger.error('Error listing repositories', { error: error.message });
         return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.UNAUTHORIZED,
+          code: ResponseCode.INTERNAL_ERROR,
           message: error.message,
         });
       }
-
-      logger.error('Error fetching repositories', { error });
       return RepositoryController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,
-        message: 'Failed to fetch repositories',
+        message: 'Unknown error occurred',
       });
     }
   }
 
   /**
-   * 获取仓库详情
-   * @route GET /api/repositories/:id
+   * 获取仓储详情
+   * @route GET /api/repositories/:uuid
    */
   static async getRepository(req: Request, res: Response): Promise<Response> {
     try {
-      const accountUuid = RepositoryController.extractAccountUuid(req);
-      const service = await RepositoryController.getRepositoryService();
-      const { id } = req.params;
+      const service = RepositoryController.getRepositoryService();
+      const { uuid } = req.params;
 
-      logger.info('Fetching repository', { accountUuid, repositoryUuid: id });
+      logger.info('Getting repository', { uuid });
 
-      const includeChildren = req.query.includeChildren === 'true';
-      const repository = await service.getRepository(id, { includeChildren });
+      const repository = await service.getRepository(uuid);
 
       if (!repository) {
-        logger.warn('Repository not found', { repositoryUuid: id });
         return RepositoryController.responseBuilder.sendError(res, {
           code: ResponseCode.NOT_FOUND,
           message: 'Repository not found',
         });
       }
 
-      // 验证仓库所有权
-      if (repository.accountUuid !== accountUuid) {
-        logger.warn('Unauthorized repository access attempt', {
-          accountUuid,
-          repositoryUuid: id,
-        });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.FORBIDDEN,
-          message: 'You do not have permission to access this repository',
-        });
-      }
-
-      logger.info('Repository fetched successfully', { repositoryUuid: id });
-
       return RepositoryController.responseBuilder.sendSuccess(
         res,
-        repository, // ApplicationService 已经返回 DTO
+        repository,
         'Repository retrieved successfully',
       );
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Authentication')) {
-        logger.warn('Authentication error fetching repository');
+      if (error instanceof Error) {
+        logger.error('Error getting repository', { error: error.message });
         return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.UNAUTHORIZED,
+          code: ResponseCode.INTERNAL_ERROR,
           message: error.message,
         });
       }
-
-      logger.error('Error fetching repository', { error });
       return RepositoryController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,
-        message: 'Failed to fetch repository',
+        message: 'Unknown error occurred',
       });
     }
   }
 
   /**
-   * 更新仓库配置
-   * @route PUT /api/repositories/:id
+   * 更新仓储配置
+   * @route PATCH /api/repositories/:uuid/config
    */
-  static async updateRepository(req: Request, res: Response): Promise<Response> {
+  static async updateConfig(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
-      const accountUuid = RepositoryController.extractAccountUuid(req);
-      const service = await RepositoryController.getRepositoryService();
-      const { id } = req.params;
+      const service = RepositoryController.getRepositoryService();
+      const { uuid } = req.params;
 
-      logger.info('Updating repository', { accountUuid, repositoryUuid: id });
+      logger.info('Updating repository config', { uuid });
 
-      // 先获取仓库验证权限
-      const repository = await service.getRepository(id);
-      if (!repository) {
-        logger.warn('Repository not found for update', { repositoryUuid: id });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.NOT_FOUND,
-          message: 'Repository not found',
-        });
-      }
-
-      if (repository.accountUuid !== accountUuid) {
-        logger.warn('Unauthorized repository update attempt', {
-          accountUuid,
-          repositoryUuid: id,
-        });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.FORBIDDEN,
-          message: 'You do not have permission to update this repository',
-        });
-      }
-
-      const updated = await service.updateRepositoryConfig(id, req.body);
-
-      logger.info('Repository updated successfully', { repositoryUuid: id });
+      const repository = await service.updateRepositoryConfig(uuid, req.body);
 
       return RepositoryController.responseBuilder.sendSuccess(
         res,
-        updated, // ApplicationService 已经返回 DTO
-        'Repository updated successfully',
+        repository,
+        'Repository config updated successfully',
       );
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes('Authentication')) {
-          logger.warn('Authentication error updating repository');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.UNAUTHORIZED,
-            message: error.message,
-          });
-        }
-        if (error.message.includes('not found')) {
-          logger.warn('Repository not found during update');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.NOT_FOUND,
-            message: error.message,
-          });
-        }
+        logger.error('Error updating repository config', { error: error.message });
+        return RepositoryController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
       }
-
-      logger.error('Error updating repository', { error });
       return RepositoryController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,
-        message: 'Failed to update repository',
+        message: 'Unknown error occurred',
       });
     }
   }
 
   /**
-   * 删除仓库
-   * @route DELETE /api/repositories/:id
+   * 归档仓储
+   * @route POST /api/repositories/:uuid/archive
+   */
+  static async archiveRepository(req: Request, res: Response): Promise<Response> {
+    try {
+      const service = RepositoryController.getRepositoryService();
+      const { uuid } = req.params;
+
+      logger.info('Archiving repository', { uuid });
+
+      const repository = await service.archiveRepository(uuid);
+
+      return RepositoryController.responseBuilder.sendSuccess(
+        res,
+        repository,
+        'Repository archived successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error archiving repository', { error: error.message });
+        return RepositoryController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return RepositoryController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 激活仓储
+   * @route POST /api/repositories/:uuid/activate
+   */
+  static async activateRepository(req: Request, res: Response): Promise<Response> {
+    try {
+      const service = RepositoryController.getRepositoryService();
+      const { uuid } = req.params;
+
+      logger.info('Activating repository', { uuid });
+
+      const repository = await service.activateRepository(uuid);
+
+      return RepositoryController.responseBuilder.sendSuccess(
+        res,
+        repository,
+        'Repository activated successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error activating repository', { error: error.message });
+        return RepositoryController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return RepositoryController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 删除仓储
+   * @route DELETE /api/repositories/:uuid
    */
   static async deleteRepository(req: Request, res: Response): Promise<Response> {
     try {
-      const accountUuid = RepositoryController.extractAccountUuid(req);
-      const service = await RepositoryController.getRepositoryService();
-      const { id } = req.params;
+      const service = RepositoryController.getRepositoryService();
+      const { uuid } = req.params;
 
-      logger.info('Deleting repository', { accountUuid, repositoryUuid: id });
+      logger.info('Deleting repository', { uuid });
 
-      // 先获取仓库验证权限
-      const repository = await service.getRepository(id);
-      if (!repository) {
-        logger.warn('Repository not found for deletion', { repositoryUuid: id });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.NOT_FOUND,
-          message: 'Repository not found',
-        });
-      }
-
-      if (repository.accountUuid !== accountUuid) {
-        logger.warn('Unauthorized repository deletion attempt', {
-          accountUuid,
-          repositoryUuid: id,
-        });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.FORBIDDEN,
-          message: 'You do not have permission to delete this repository',
-        });
-      }
-
-      const deleteFiles = req.body.deleteFiles === true;
-      await service.deleteRepository(id, { deleteFiles });
-
-      logger.info('Repository deleted successfully', { repositoryUuid: id });
+      await service.deleteRepository(uuid);
 
       return RepositoryController.responseBuilder.sendSuccess(
         res,
@@ -329,166 +265,15 @@ export class RepositoryController {
       );
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message.includes('Authentication')) {
-          logger.warn('Authentication error deleting repository');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.UNAUTHORIZED,
-            message: error.message,
-          });
-        }
-        if (error.message.includes('not found')) {
-          logger.warn('Repository not found during deletion');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.NOT_FOUND,
-            message: error.message,
-          });
-        }
+        logger.error('Error deleting repository', { error: error.message });
+        return RepositoryController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
       }
-
-      logger.error('Error deleting repository', { error });
       return RepositoryController.responseBuilder.sendError(res, {
         code: ResponseCode.INTERNAL_ERROR,
-        message: 'Failed to delete repository',
-      });
-    }
-  }
-
-  /**
-   * 同步仓库（从远程拉取更新）
-   * @route POST /api/repositories/:id/sync
-   */
-  static async syncRepository(req: Request, res: Response): Promise<Response> {
-    try {
-      const accountUuid = RepositoryController.extractAccountUuid(req);
-      const service = await RepositoryController.getRepositoryService();
-      const { id } = req.params;
-
-      logger.info('Syncing repository', { accountUuid, repositoryUuid: id });
-
-      // 验证仓库所有权
-      const repository = await service.getRepository(id);
-      if (!repository) {
-        logger.warn('Repository not found for sync', { repositoryUuid: id });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.NOT_FOUND,
-          message: 'Repository not found',
-        });
-      }
-
-      if (repository.accountUuid !== accountUuid) {
-        logger.warn('Unauthorized repository sync attempt', {
-          accountUuid,
-          repositoryUuid: id,
-        });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.FORBIDDEN,
-          message: 'You do not have permission to sync this repository',
-        });
-      }
-
-      const result = await service.syncRepository(id, req.body);
-
-      logger.info('Repository synced successfully', { repositoryUuid: id });
-
-      return RepositoryController.responseBuilder.sendSuccess(
-        res,
-        result,
-        'Repository synced successfully',
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes('Authentication')) {
-          logger.warn('Authentication error syncing repository');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.UNAUTHORIZED,
-            message: error.message,
-          });
-        }
-        if (error.message.includes('not found')) {
-          logger.warn('Repository not found during sync');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.NOT_FOUND,
-            message: error.message,
-          });
-        }
-      }
-
-      logger.error('Error syncing repository', { error });
-      return RepositoryController.responseBuilder.sendError(res, {
-        code: ResponseCode.INTERNAL_ERROR,
-        message: 'Failed to sync repository',
-      });
-    }
-  }
-
-  /**
-   * 扫描仓库（扫描文件系统并更新资源）
-   * @route POST /api/repositories/:id/scan
-   * 注意：DomainService 目前只有 syncRepository 方法，暂时使用它代替
-   */
-  static async scanRepository(req: Request, res: Response): Promise<Response> {
-    try {
-      const accountUuid = RepositoryController.extractAccountUuid(req);
-      const service = await RepositoryController.getRepositoryService();
-      const { id } = req.params;
-
-      logger.info('Scanning repository', { accountUuid, repositoryUuid: id });
-
-      // 验证仓库所有权
-      const repository = await service.getRepository(id);
-      if (!repository) {
-        logger.warn('Repository not found for scan', { repositoryUuid: id });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.NOT_FOUND,
-          message: 'Repository not found',
-        });
-      }
-
-      if (repository.accountUuid !== accountUuid) {
-        logger.warn('Unauthorized repository scan attempt', {
-          accountUuid,
-          repositoryUuid: id,
-        });
-        return RepositoryController.responseBuilder.sendError(res, {
-          code: ResponseCode.FORBIDDEN,
-          message: 'You do not have permission to scan this repository',
-        });
-      }
-
-      // TODO: 等待 DomainService 实现 scanRepository 方法
-      // 目前使用 syncRepository 作为临时实现
-      // syncRepository 参数: 'pull' | 'push' | 'both'
-      await service.syncRepository(id, 'pull'); // 使用 pull 作为扫描的临时替代
-
-      logger.info('Repository scanned successfully', { repositoryUuid: id });
-
-      return RepositoryController.responseBuilder.sendSuccess(
-        res,
-        null, // scanRepository 暂无返回值
-        'Repository scanned successfully',
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes('Authentication')) {
-          logger.warn('Authentication error scanning repository');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.UNAUTHORIZED,
-            message: error.message,
-          });
-        }
-        if (error.message.includes('not found')) {
-          logger.warn('Repository not found during scan');
-          return RepositoryController.responseBuilder.sendError(res, {
-            code: ResponseCode.NOT_FOUND,
-            message: error.message,
-          });
-        }
-      }
-
-      logger.error('Error scanning repository', { error });
-      return RepositoryController.responseBuilder.sendError(res, {
-        code: ResponseCode.INTERNAL_ERROR,
-        message: 'Failed to scan repository',
+        message: 'Unknown error occurred',
       });
     }
   }
