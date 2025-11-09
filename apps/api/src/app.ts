@@ -68,7 +68,18 @@ app.use(
     maxAge: 86400,
   }),
 );
-app.use(compression());
+
+// 压缩中间件 - 但排除 SSE 路由
+app.use(compression({
+  filter: (req, res) => {
+    // SSE 路由不应该压缩，因为它是流式传输
+    if (req.path.includes('/sse/')) {
+      return false;
+    }
+    // 其他请求使用默认的压缩过滤器
+    return compression.filter(req, res);
+  }
+}));
 
 // Performance monitoring middleware
 app.use(performanceMiddleware);

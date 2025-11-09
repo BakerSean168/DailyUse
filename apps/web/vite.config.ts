@@ -37,6 +37,42 @@ export default defineConfig(({ mode }) => {
       fs: {
         allow: ['..', '../../'],
       },
+      // 添加代理配置，解决 EventSource 跨域问题
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3888',
+          changeOrigin: true,
+          secure: false,
+          ws: true, // 支持 WebSocket
+          // 禁用压缩，否则会破坏 SSE 流
+          compress: false,
+          // SSE 特定配置
+          onProxyRes: (proxyRes: any, req: any, res: any) => {
+            // 确保 SSE 流不被缓冲和压缩
+            if (req.url?.includes('/sse/')) {
+              // 删除可能存在的压缩相关头
+              delete proxyRes.headers['content-encoding'];
+              // 防止下游再次压缩
+              proxyRes.headers['x-no-compression'] = 'true';
+            }
+          },
+          configure: (proxy, _options) => {
+            proxy.on('error', (err, _req, _res) => {
+              console.log('代理错误', err);
+            });
+            proxy.on('proxyReq', (proxyReq, req, _res) => {
+              console.log('发送请求到目标:', req.method, req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, _res) => {
+              console.log('接收响应:', proxyRes.statusCode, req.url);
+              // SSE 请求特殊处理
+              if (req.url?.includes('/sse/')) {
+                console.log('SSE 响应头:', proxyRes.headers);
+              }
+            });
+          },
+        },
+      },
     },
     preview: {
       port: 5173,

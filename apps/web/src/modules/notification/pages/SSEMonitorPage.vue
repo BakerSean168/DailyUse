@@ -20,10 +20,14 @@
         <span class="status-text">{{ isConnected ? '已连接' : '未连接' }}</span>
       </div>
       <div class="status-info">
-        <span>ReadyState: {{ readyState }}</span>
+        <span>ReadyState: {{ getReadyStateText(readyState) }}</span>
         <span>重连次数: {{ reconnectAttempts }}</span>
         <span>接收事件: {{ events.length }}</span>
       </div>
+      <button @click="manualReconnect" class="btn-reconnect">
+        <span class="icon">🔄</span>
+        重新连接
+      </button>
     </div>
 
     <div class="filter-bar">
@@ -83,7 +87,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { eventBus } from '@dailyuse/utils';
-import { sseClient } from '../../infrastructure/sse/SSEClient';
+import { sseClient } from '@/modules/notification/infrastructure/sse/SSEClient';
 
 interface SSEEvent {
   id: string;
@@ -182,13 +186,14 @@ function getEventIcon(type: string): string {
 
 function formatTime(timestamp: number): string {
   const date = new Date(timestamp);
-  return date.toLocaleTimeString('zh-CN', {
+  const timeStr = date.toLocaleTimeString('zh-CN', {
     hour12: false,
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    fractionalSecondDigits: 3,
   });
+  const ms = String(date.getMilliseconds()).padStart(3, '0');
+  return `${timeStr}.${ms}`;
 }
 
 function formatEventData(data: any): string {
@@ -219,9 +224,31 @@ function updateConnectionStatus() {
   reconnectAttempts.value = status.reconnectAttempts;
 }
 
-// 设置事件监听
-let unsubscribers: (() => void)[] = [];
+function getReadyStateText(state: number | null): string {
+  if (state === null) return 'Unknown';
+  switch (state) {
+    case 0:
+      return 'CONNECTING';
+    case 1:
+      return 'OPEN';
+    case 2:
+      return 'CLOSED';
+    default:
+      return `Unknown(${state})`;
+  }
+}
 
+async function manualReconnect() {
+  console.log('[SSE Monitor] 手动触发强制重连');
+  try {
+    await sseClient.connect(true); // 传入 force = true 强制重连
+    updateConnectionStatus();
+  } catch (error) {
+    console.error('[SSE Monitor] 手动重连失败:', error);
+  }
+}
+
+// 设置事件监听
 onMounted(() => {
   console.log('[SSE Monitor] 页面挂载，开始监听 SSE 事件');
 
@@ -243,11 +270,15 @@ onMounted(() => {
     'schedule:task-executed',
   ];
 
+  // 创建事件处理器映射，用于取消订阅
+  const eventHandlers = new Map<string, (data: any) => void>();
+  
   eventTypes.forEach((eventType) => {
-    const unsubscribe = eventBus.on(eventType, (data) => {
+    const handler = (data: any) => {
       addEvent(eventType, data);
-    });
-    unsubscribers.push(unsubscribe);
+    };
+    eventHandlers.set(eventType, handler);
+    eventBus.on(eventType, handler);
   });
 
   // 定期更新连接状态
@@ -257,7 +288,9 @@ onMounted(() => {
   // 清理函数
   onUnmounted(() => {
     console.log('[SSE Monitor] 页面卸载，清理事件监听');
-    unsubscribers.forEach((unsub) => unsub());
+    eventHandlers.forEach((handler, eventType) => {
+      eventBus.off(eventType, handler);
+    });
     clearInterval(statusInterval);
   });
 });

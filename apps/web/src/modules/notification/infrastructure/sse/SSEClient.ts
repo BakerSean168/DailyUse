@@ -19,22 +19,83 @@ export interface SSEEvent {
 export class SSEClient {
   private eventSource: EventSource | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private maxReconnectAttempts = 10; // 增加重连次数
   private reconnectDelay = 1000; // 1秒
   private isConnecting = false;
   private isDestroyed = false;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private connectTimeout: ReturnType<typeof setTimeout> | null = null; // 连接超时定时器
+  private readonly connectionTimeout = 10000; // 10秒连接超时
 
-  constructor(private baseUrl: string = 'http://localhost:3888') {}
+  constructor(private baseUrl: string = '') {
+    // 开发环境使用空字符串（通过 Vite 代理）
+    // 生产环境可以从环境变量读取
+    if (!baseUrl && typeof window !== 'undefined') {
+      // 使用相对路径，通过 Vite 代理访问 API
+      this.baseUrl = import.meta.env.VITE_API_URL || '';
+    }
+    
+    // 监听页面可见性变化，页面重新可见时检查连接
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && !this.isDestroyed) {
+          console.log('[SSE Client] 页面重新可见，检查连接状态');
+          this.checkAndReconnect();
+        }
+      });
+    }
+  }
 
   /**
    * 连接到 SSE 端点
    * @description 后端将从 URL 参数中的 token 提取用户信息
    * @description 此方法会立即返回，连接在后台异步建立，不会阻塞应用初始化
+   * @param force 是否强制重新连接（关闭现有连接）
    */
-  connect(): Promise<void> {
-    // 不阻塞初始化，立即返回，连接在后台进行
-    if (this.eventSource || this.isConnecting) {
-      console.log('[SSE Client] 连接已存在或正在连接中');
+  connect(force: boolean = false): Promise<void> {
+    console.log('[SSE Client] connect() 被调用，当前状态:', {
+      hasEventSource: !!this.eventSource,
+      isConnecting: this.isConnecting,
+      isDestroyed: this.isDestroyed,
+      readyState: this.eventSource?.readyState,
+      force,
+    });
+
+    // 如果已销毁，重置状态以允许重新连接
+    if (this.isDestroyed) {
+      console.log('[SSE Client] 重置销毁状态，允许重新连接');
+      this.isDestroyed = false;
+      this.reconnectAttempts = 0;
+    }
+
+    // 如果强制重连，先关闭现有连接
+    if (force) {
+      console.log('[SSE Client] 强制重连，关闭现有连接');
+      if (this.eventSource) {
+        this.eventSource.close();
+        this.eventSource = null;
+      }
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+      if (this.connectTimeout) {
+        clearTimeout(this.connectTimeout);
+        this.connectTimeout = null;
+      }
+      this.isConnecting = false;
+      this.reconnectAttempts = 0;
+    }
+
+    // 如果已经有活跃连接，直接返回
+    if (this.eventSource?.readyState === EventSource.OPEN) {
+      console.log('[SSE Client] 连接已存在且活跃');
+      return Promise.resolve();
+    }
+
+    // 如果正在连接中，直接返回（除非是强制重连）
+    if (this.isConnecting && !force) {
+      console.log('[SSE Client] 正在连接中，等待完成');
       return Promise.resolve();
     }
 
@@ -44,11 +105,39 @@ export class SSEClient {
   }
 
   /**
+   * 检查连接状态并在需要时重连
+   */
+  private checkAndReconnect(): void {
+    const status = this.getStatus();
+    console.log('[SSE Client] 检查连接状态:', status);
+
+    if (!status.connected && !this.isDestroyed && !this.isConnecting) {
+      console.log('[SSE Client] 连接已断开，尝试重新连接');
+      this.connect();
+    }
+  }
+
+  /**
    * 在后台建立 SSE 连接
    */
   private connectInBackground(): void {
-    if (this.eventSource || this.isConnecting) {
+    console.log('[SSE Client] connectInBackground() 被调用');
+
+    if (this.eventSource?.readyState === EventSource.OPEN) {
+      console.log('[SSE Client] 已有活跃连接，跳过');
       return;
+    }
+
+    if (this.isConnecting) {
+      console.log('[SSE Client] 正在连接中，跳过');
+      return;
+    }
+
+    // 如果已有连接但状态不是 OPEN，先关闭它
+    if (this.eventSource) {
+      console.log('[SSE Client] 关闭现有连接，readyState:', this.eventSource.readyState);
+      this.eventSource.close();
+      this.eventSource = null;
     }
 
     // 获取认证 token
@@ -56,19 +145,54 @@ export class SSEClient {
     if (!token) {
       console.error('[SSE Client] 缺少认证 token，无法建立 SSE 连接');
       // 1秒后重试
-      setTimeout(() => this.connectInBackground(), 1000);
+      if (!this.isDestroyed) {
+        this.reconnectTimer = setTimeout(() => this.connectInBackground(), 1000);
+      }
       return;
     }
 
     this.isConnecting = true;
+    
+    // 设置连接超时：如果 10 秒内没有成功连接，强制重置
+    this.connectTimeout = setTimeout(() => {
+      console.warn('[SSE Client] ⏱️ 连接超时（10秒），强制重置');
+      if (this.eventSource && this.eventSource.readyState !== EventSource.OPEN) {
+        this.eventSource.close();
+        this.eventSource = null;
+      }
+      this.isConnecting = false;
+      
+      // 尝试重连
+      if (!this.isDestroyed && this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.attemptReconnect();
+      }
+    }, this.connectionTimeout);
+    
     // 将 token 作为 URL 参数传递（因为 EventSource 不支持自定义请求头）
     const url = `${this.baseUrl}/api/v1/sse/notifications/events?token=${encodeURIComponent(token)}`;
 
-    console.log('[SSE Client] 连接到:', this.baseUrl + '/api/v1/sse/notifications/events');
+    console.log('[SSE Client] 🚀 正在建立连接到:', url);
+    console.log('[SSE Client] 📋 完整 URL（可复制测试）:', url);
+    console.log('[SSE Client] 🔑 Token (前20字符):', token.substring(0, 20) + '...');
 
     try {
       this.eventSource = new EventSource(url);
       console.log('[SSE Client] EventSource 已创建, readyState:', this.eventSource.readyState);
+      console.log('[SSE Client] 📊 EventSource 详细信息:', {
+        url: this.eventSource.url,
+        readyState: this.eventSource.readyState,
+        withCredentials: this.eventSource.withCredentials,
+      });
+
+      // 添加通用事件监听器（调试用）
+      const originalAddEventListener = this.eventSource.addEventListener.bind(this.eventSource);
+      (this.eventSource as any).addEventListener = (type: string, listener: any, options?: any) => {
+        console.log('[SSE Client] 📝 注册事件监听器:', type);
+        return originalAddEventListener(type, (event: any) => {
+          console.log(`[SSE Client] 🔔 事件触发: ${type}`, event);
+          return listener(event);
+        }, options);
+      };
 
       // 连接成功
       this.eventSource.onopen = () => {
@@ -78,6 +202,12 @@ export class SSEClient {
         );
         this.reconnectAttempts = 0;
         this.isConnecting = false;
+        
+        // 清除连接超时定时器
+        if (this.connectTimeout) {
+          clearTimeout(this.connectTimeout);
+          this.connectTimeout = null;
+        }
       };
 
       // 接收消息
@@ -90,6 +220,18 @@ export class SSEClient {
       this.eventSource.addEventListener('connected', (event) => {
         console.log('[SSE Client] 🔗 连接建立事件触发:', event.data);
         this.handleMessage('connected', event.data);
+        
+        // 如果 onopen 没有触发，connected 事件也应该清除超时
+        if (this.connectTimeout) {
+          console.log('[SSE Client] 💡 通过 connected 事件清除连接超时');
+          clearTimeout(this.connectTimeout);
+          this.connectTimeout = null;
+        }
+        if (this.isConnecting) {
+          console.log('[SSE Client] 💡 通过 connected 事件重置连接状态');
+          this.isConnecting = false;
+          this.reconnectAttempts = 0;
+        }
       });
 
       // 心跳事件
@@ -138,22 +280,34 @@ export class SSEClient {
         console.error('[SSE Client] ❌ onerror 触发, readyState:', this.eventSource?.readyState);
         console.error('[SSE Client] Error event:', error);
         this.isConnecting = false;
+        
+        // 清除连接超时定时器
+        if (this.connectTimeout) {
+          clearTimeout(this.connectTimeout);
+          this.connectTimeout = null;
+        }
 
         // EventSource 会在连接过程中触发 error，但会自动重试
         // 只有在 CLOSED 状态时才是真正失败了
         if (this.eventSource?.readyState === EventSource.CLOSED) {
           console.log('[SSE Client] 连接已彻底关闭，尝试重连');
+          this.eventSource.close(); // 确保关闭
           this.eventSource = null;
           // 延迟后自动重连，不阻塞应用
-          this.attemptReconnect();
+          if (!this.isDestroyed) {
+            this.attemptReconnect();
+          }
+        } else if (this.eventSource?.readyState === EventSource.CONNECTING) {
+          console.log('[SSE Client] 连接中遇到错误，EventSource 会自动重试');
         }
-        // 如果是 CONNECTING 状态，说明正在重试，不做处理
       };
     } catch (error) {
       console.error('[SSE Client] 创建连接失败:', error);
       this.isConnecting = false;
       // 尝试重连，不抛出错误阻塞应用
-      setTimeout(() => this.connectInBackground(), 2000);
+      if (!this.isDestroyed) {
+        this.reconnectTimer = setTimeout(() => this.connectInBackground(), 2000);
+      }
     }
   }
 
@@ -224,16 +378,27 @@ export class SSEClient {
    */
   private attemptReconnect(): void {
     if (this.isDestroyed || this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log('[SSE Client] 停止重连');
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        console.error(
+          `[SSE Client] 已达到最大重连次数 (${this.maxReconnectAttempts})，停止重连`,
+        );
+      }
       return;
     }
 
     this.reconnectAttempts++;
     const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), 30000); // 最大30秒
 
-    console.log(`[SSE Client] 第 ${this.reconnectAttempts} 次重连尝试，延迟 ${delay}ms`);
+    console.log(
+      `[SSE Client] 🔄 第 ${this.reconnectAttempts}/${this.maxReconnectAttempts} 次重连尝试，延迟 ${delay}ms`,
+    );
 
-    setTimeout(() => {
+    // 清除之前的定时器
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+    }
+
+    this.reconnectTimer = setTimeout(() => {
       if (!this.isDestroyed) {
         this.disconnect();
         this.connect()
@@ -251,8 +416,22 @@ export class SSEClient {
    * 断开连接
    */
   disconnect(): void {
+    console.log('[SSE Client] 🔌 断开连接');
+
+    // 清除重连定时器
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    
+    // 清除连接超时定时器
+    if (this.connectTimeout) {
+      clearTimeout(this.connectTimeout);
+      this.connectTimeout = null;
+    }
+
     if (this.eventSource) {
-      console.log('[SSE Client] 断开连接');
+      console.log('[SSE Client] 关闭 EventSource, readyState:', this.eventSource.readyState);
       this.eventSource.close();
       this.eventSource = null;
     }
@@ -263,7 +442,7 @@ export class SSEClient {
    * 销毁客户端
    */
   destroy(): void {
-    console.log('[SSE Client] 销毁客户端');
+    console.log('[SSE Client] 🗑️ 销毁客户端');
     this.isDestroyed = true;
     this.disconnect();
   }

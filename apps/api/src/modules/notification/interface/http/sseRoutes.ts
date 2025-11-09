@@ -168,6 +168,12 @@ class SSEConnectionManager {
     try {
       connection.write(`event: ${event}\n`);
       connection.write(`data: ${JSON.stringify(data)}\n\n`);
+      
+      // 强制刷新，确保消息立即发送
+      if (typeof (connection as any).flush === 'function') {
+        (connection as any).flush();
+      }
+      
       logger.debug('[SSE Manager] 消息已发送', { accountUuid, event });
       return true;
     } catch (error) {
@@ -190,6 +196,11 @@ class SSEConnectionManager {
       try {
         connection.write(`event: ${event}\n`);
         connection.write(`data: ${JSON.stringify(data)}\n\n`);
+        
+        // 强制刷新
+        if (typeof (connection as any).flush === 'function') {
+          (connection as any).flush();
+        }
       } catch (error) {
         logger.error('[SSE Manager] 广播失败', { accountUuid, error });
         this.removeConnection(accountUuid);
@@ -238,10 +249,29 @@ router.get('/notifications/events', sseAuthMiddleware, (req: Request, res: Respo
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no'); // 禁用 nginx 缓冲
+  
+  // 禁用压缩（SSE 必须是未压缩的流）
+  res.setHeader('Content-Encoding', 'identity');
+  (res as any).removeHeader?.('Content-Encoding'); // 确保没有压缩
+  
+  // 添加 CORS 头（确保浏览器允许 EventSource 跨域）
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
+  // 关键：立即发送响应头，不要等待缓冲
+  res.flushHeaders();
 
   // 发送初始连接消息
   res.write(`event: connected\n`);
   res.write(`data: ${JSON.stringify({ message: '连接成功', accountUuid })}\n\n`);
+  
+  // 强制刷新，确保数据立即发送到客户端
+  if (typeof (res as any).flush === 'function') {
+    (res as any).flush();
+  }
 
   // 添加到连接管理器
   const manager = SSEConnectionManager.getInstance();
@@ -251,6 +281,10 @@ router.get('/notifications/events', sseAuthMiddleware, (req: Request, res: Respo
   const heartbeatInterval = setInterval(() => {
     try {
       res.write(`: heartbeat\n\n`);
+      // 强制刷新心跳数据
+      if (typeof (res as any).flush === 'function') {
+        (res as any).flush();
+      }
     } catch (error) {
       logger.error('[SSE] 心跳发送失败', { accountUuid, error });
       clearInterval(heartbeatInterval);

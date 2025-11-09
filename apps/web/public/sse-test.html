@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE 连接测试</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .log {
+            background: #252526;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #007acc;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success { border-color: #4ec9b0; }
+        .error { border-color: #f48771; }
+        .warning { border-color: #ce9178; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        #status {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 SSE 连接测试工具</h1>
+    
+    <div id="status">状态: 未连接</div>
+    
+    <div>
+        <button onclick="connect()">连接</button>
+        <button onclick="disconnect()">断开</button>
+        <button onclick="clearLogs()">清空日志</button>
+    </div>
+    
+    <div id="logs"></div>
+
+    <script>
+        let eventSource = null;
+        
+        function log(message, type = 'log') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            document.getElementById('logs').appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function updateStatus(text, color) {
+            const status = document.getElementById('status');
+            status.textContent = `状态: ${text}`;
+            status.style.color = color;
+        }
+        
+        function connect() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                log('❌ 未找到 access_token，请先登录', 'error');
+                return;
+            }
+            
+            log('📋 Token: ' + token.substring(0, 50) + '...', 'log');
+            
+            const url = `/api/v1/sse/notifications/events?token=${encodeURIComponent(token)}`;
+            log('🚀 正在连接到: ' + url, 'log');
+            
+            try {
+                eventSource = new EventSource(url);
+                log('✅ EventSource 已创建', 'success');
+                log('   readyState: ' + eventSource.readyState + ' (0=CONNECTING, 1=OPEN, 2=CLOSED)', 'log');
+                
+                eventSource.onopen = (e) => {
+                    log('✅✅✅ onopen 触发 - 连接成功!', 'success');
+                    log('   readyState: ' + eventSource.readyState, 'success');
+                    updateStatus('已连接', '#4ec9b0');
+                };
+                
+                eventSource.onmessage = (e) => {
+                    log('📨 收到默认消息: ' + e.data, 'log');
+                };
+                
+                eventSource.onerror = (e) => {
+                    log('❌ onerror 触发', 'error');
+                    log('   readyState: ' + eventSource.readyState, 'error');
+                    log('   Error: ' + JSON.stringify(e), 'error');
+                    updateStatus('错误', '#f48771');
+                };
+                
+                // 监听所有可能的自定义事件
+                const events = ['connected', 'heartbeat', 'notification:created', 'notification:sent'];
+                events.forEach(eventType => {
+                    eventSource.addEventListener(eventType, (e) => {
+                        log(`🔔 ${eventType}: ${e.data}`, 'success');
+                        if (eventType === 'connected') {
+                            updateStatus('已连接 (connected 事件)', '#4ec9b0');
+                        }
+                    });
+                });
+                
+                // 定期检查状态
+                const statusCheck = setInterval(() => {
+                    if (!eventSource) {
+                        clearInterval(statusCheck);
+                        return;
+                    }
+                    const state = eventSource.readyState;
+                    const stateText = ['CONNECTING', 'OPEN', 'CLOSED'][state];
+                    log(`📊 状态检查: ${stateText} (${state})`, state === 1 ? 'success' : 'warning');
+                }, 5000);
+                
+            } catch (error) {
+                log('❌ 创建连接失败: ' + error, 'error');
+                updateStatus('创建失败', '#f48771');
+            }
+        }
+        
+        function disconnect() {
+            if (eventSource) {
+                eventSource.close();
+                log('🔌 连接已关闭', 'warning');
+                updateStatus('已断开', '#ce9178');
+                eventSource = null;
+            } else {
+                log('⚠️ 没有活跃连接', 'warning');
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        // 页面加载时的提示
+        log('💡 提示: 请先登录应用，然后点击"连接"按钮', 'log');
+        log('💡 Token 从 localStorage 读取', 'log');
+    </script>
+</body>
+</html>

@@ -76,6 +76,11 @@ export const metricsStore = new MetricsStore();
  * Logs request duration and tracks metrics per endpoint
  */
 export function performanceMiddleware(req: Request, res: Response, next: NextFunction): void {
+  // 跳过 SSE 路由 - SSE 是长连接，不适合用常规性能监控
+  if (req.path.includes('/sse/')) {
+    return next();
+  }
+  
   const start = Date.now();
   const endpoint = `${req.method} ${req.route?.path || req.path}`;
 
@@ -99,7 +104,7 @@ export function performanceMiddleware(req: Request, res: Response, next: NextFun
 
   // Handle response end for non-JSON responses
   res.on('finish', () => {
-    if (!res.headersSent || res.getHeader('X-Response-Time')) {
+    if (res.getHeader('X-Response-Time')) {
       return; // Already logged via json override
     }
 
@@ -108,7 +113,11 @@ export function performanceMiddleware(req: Request, res: Response, next: NextFun
     logger[logLevel](`[PERF] ${endpoint} - ${duration}ms - ${res.statusCode}`);
 
     metricsStore.recordRequest(endpoint, duration);
-    res.setHeader('X-Response-Time', `${duration}ms`);
+    
+    // 只在响应头未发送时设置
+    if (!res.headersSent) {
+      res.setHeader('X-Response-Time', `${duration}ms`);
+    }
   });
 
   next();

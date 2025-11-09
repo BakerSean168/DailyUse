@@ -121,15 +121,8 @@ export class GoalApplicationService {
       folderUuid?: string;
     },
   ): Promise<GoalContracts.GoalClientDTO[]> {
-    console.log('[GoalApplicationService.getUserGoals] options:', options);
     const goals = await this.goalRepository.findByAccountUuid(accountUuid, options);
-    console.log('[GoalApplicationService.getUserGoals] 从Repository获取Goals数量:', goals.length);
-    console.log('[GoalApplicationService.getUserGoals] 第一个Goal实体:', goals[0]);
-    console.log('[GoalApplicationService.getUserGoals] 第一个Goal的KeyResults数量:', goals[0]?.keyResults?.length || 0);
-    
     const dtos = goals.map((g: Goal) => g.toClientDTO(true));
-    console.log('[GoalApplicationService.getUserGoals] 转换后DTO数量:', dtos.length);
-    console.log('[GoalApplicationService.getUserGoals] 第一个DTO的KeyResults:', dtos[0]?.keyResults);
     
     return dtos;
   }
