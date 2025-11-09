@@ -34,10 +34,12 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       open: false,
       middlewareMode: false,
+      // 完全禁用 Vite 的压缩中间件，避免破坏 SSE 流
+      compress: false,
       fs: {
         allow: ['..', '../../'],
       },
-      // 添加代理配置，解决 EventSource 跨域问题
+      // 添加代理配置,解决 EventSource 跨域问题
       proxy: {
         '/api': {
           target: 'http://localhost:3888',

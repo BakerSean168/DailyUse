@@ -17,6 +17,8 @@ export function registerSSEInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
 
   // SSE 连接初始化任务 - 在用户登录后建立连接
+  // ⚠️ 已禁用：SSE 连接由 NotificationInitializationManager 统一管理，避免重复连接
+  /*
   const sseConnectionTask: InitializationTask = {
     name: 'sse-connection',
     phase: InitializationPhase.USER_LOGIN,
@@ -49,6 +51,7 @@ export function registerSSEInitializationTasks(): void {
       }
     },
   };
+  */
 
   // SSE 事件监听器注册任务
   const sseEventHandlersTask: InitializationTask = {
@@ -79,6 +82,8 @@ export function registerSSEInitializationTasks(): void {
   };
 
   // SSE 连接健康检查任务
+  // ⚠️ 已禁用：SSE 连接由 NotificationInitializationManager 统一管理
+  /*
   const sseHealthCheckTask: InitializationTask = {
     name: 'sse-health-check',
     phase: InitializationPhase.USER_LOGIN,
@@ -106,11 +111,14 @@ export function registerSSEInitializationTasks(): void {
       // 健康检查任务无需特殊清理
     },
   };
+  */
 
-  // 注册所有任务
-  manager.registerTask(sseConnectionTask);
+  // 注册事件监听器任务（保留）
   manager.registerTask(sseEventHandlersTask);
-  manager.registerTask(sseHealthCheckTask);
+  
+  // ⚠️ 以下任务已禁用，由 NotificationInitializationManager 统一管理
+  // manager.registerTask(sseConnectionTask);
+  // manager.registerTask(sseHealthCheckTask);
 
-  console.log('📝 [SSE] SSE 模块初始化任务已注册');
+  console.log('📝 [SSE] SSE 模块初始化任务已注册（仅事件监听器）');
 }

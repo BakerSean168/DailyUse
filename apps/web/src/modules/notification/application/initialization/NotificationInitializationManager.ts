@@ -245,14 +245,20 @@ export class NotificationInitializationManager {
       // SSE 连接失败不应该阻止通知模块初始化
 
       // 在后台重试连接
-      this.retrySSEConnectionInBackground();
+      // ⚠️ 已禁用：SSEClient 内部已有重连机制，无需外部重试
+      // this.retrySSEConnectionInBackground();
     }
   }
 
   /**
    * 在后台重试 SSE 连接
+   * ⚠️ 已禁用：SSEClient 内部已有重连机制（指数退避，最多10次）
    */
   private retrySSEConnectionInBackground(): void {
+    console.log('[NotificationInit] ⚠️ SSEClient 有内部重连机制，跳过外部重试');
+    return;
+    
+    /*
     console.log('[NotificationInit] 将在后台重试 SSE 连接...');
 
     setTimeout(async () => {
@@ -273,6 +279,7 @@ export class NotificationInitializationManager {
         }
       }
     }, 10000); // 10秒后重试
+    */
   }
 
   /**
