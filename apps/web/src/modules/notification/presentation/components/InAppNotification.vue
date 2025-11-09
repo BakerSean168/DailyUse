@@ -8,7 +8,7 @@
         @click="handleNotificationClick(notification)"
       >
         <div class="notification-icon">
-          <component :is="getIconComponent(notification.type)" />
+          {{ getIconComponent(notification.type) }}
         </div>
         <div class="notification-content">
           <div class="notification-title">{{ notification.title }}</div>
@@ -27,16 +27,27 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { eventBus } from '@dailyuse/utils';
 
 interface InAppNotificationData {
+  notification: {
+    uuid: string;
+    title: string;
+    content?: string;
+    type?: string;
+    importance?: string;
+  };
+  timestamp: string;
+}
+
+interface NotificationItem {
   id: string;
   title: string;
   message: string;
-  type: 'GENERAL_REMINDER' | 'TASK_REMINDER' | 'GOAL_REMINDER';
-  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
-  duration?: number; // 显示时长（毫秒），0 表示不自动关闭
+  type: string;
+  priority: string;
+  duration?: number;
   onClick?: () => void;
 }
 
-const visibleNotifications = ref<InAppNotificationData[]>([]);
+const visibleNotifications = ref<NotificationItem[]>([]);
 const maxNotifications = 5; // 最多同时显示的通知数量
 
 /**
@@ -45,18 +56,28 @@ const maxNotifications = 5; // 最多同时显示的通知数量
 function showNotification(data: InAppNotificationData) {
   console.log('[InAppNotification] 显示应用内通知:', data);
 
+  // 转换数据格式
+  const notificationItem: NotificationItem = {
+    id: data.notification.uuid,
+    title: data.notification.title,
+    message: data.notification.content || data.notification.title,
+    type: data.notification.type || 'REMINDER',
+    priority: data.notification.importance?.toUpperCase() || 'NORMAL',
+    duration: 5000, // 5秒后自动关闭
+  };
+
   // 限制同时显示的通知数量
   if (visibleNotifications.value.length >= maxNotifications) {
     visibleNotifications.value.shift(); // 移除最旧的通知
   }
 
-  visibleNotifications.value.push(data);
+  visibleNotifications.value.push(notificationItem);
 
   // 自动关闭
-  const duration = data.duration ?? 5000; // 默认 5 秒
+  const duration = notificationItem.duration ?? 5000;
   if (duration > 0) {
     setTimeout(() => {
-      closeNotification(data.id);
+      closeNotification(notificationItem.id);
     }, duration);
   }
 }
@@ -74,7 +95,7 @@ function closeNotification(id: string) {
 /**
  * 处理通知点击
  */
-function handleNotificationClick(notification: InAppNotificationData) {
+function handleNotificationClick(notification: NotificationItem) {
   if (notification.onClick) {
     notification.onClick();
   }
@@ -84,12 +105,15 @@ function handleNotificationClick(notification: InAppNotificationData) {
 /**
  * 获取图标组件
  */
-function getIconComponent(type: InAppNotificationData['type']) {
-  // 这里可以根据类型返回不同的图标组件
-  // 暂时返回简单的 HTML
-  return {
-    template: '<div class="icon-placeholder">🔔</div>',
+function getIconComponent(type: string) {
+  // 简单的图标显示
+  const icons: Record<string, string> = {
+    REMINDER: '🔔',
+    TASK: '✅',
+    GOAL: '🎯',
+    SYSTEM: '⚙️',
   };
+  return icons[type] || '🔔';
 }
 
 // 监听事件

@@ -334,32 +334,35 @@ export class SSEClient {
       // 根据事件类型转发到前端事件总线
       switch (eventType) {
         case 'created':
-          eventBus.emit('notification:created', parsedData.data);
+          eventBus.emit('notification:created', parsedData);
           break;
 
         case 'sent':
-          eventBus.emit('notification:sent', parsedData.data);
+          eventBus.emit('notification:sent', parsedData);
           break;
 
         case 'popup-reminder':
           // 转发为前端通知事件
-          eventBus.emit('ui:show-popup-reminder', parsedData.data);
+          console.log('[SSE Client] 🔔 转发 popup-reminder 事件到 ui:show-popup-reminder');
+          eventBus.emit('ui:show-popup-reminder', parsedData);
           break;
 
         case 'sound-reminder':
-          eventBus.emit('ui:play-reminder-sound', parsedData.data);
+          console.log('[SSE Client] 🔊 转发 sound-reminder 事件到 ui:play-reminder-sound');
+          eventBus.emit('ui:play-reminder-sound', parsedData);
           break;
 
         case 'system-notification':
-          eventBus.emit('system:show-notification', parsedData.data);
+          console.log('[SSE Client] 📢 转发 system-notification 事件到 system:show-notification');
+          eventBus.emit('system:show-notification', parsedData);
           break;
 
         case 'reminder-triggered':
-          eventBus.emit('reminder-triggered', parsedData.data);
+          eventBus.emit('reminder-triggered', parsedData);
           break;
 
         case 'task-executed':
-          eventBus.emit('schedule:task-executed', parsedData.data);
+          eventBus.emit('schedule:task-executed', parsedData);
           break;
 
         default:

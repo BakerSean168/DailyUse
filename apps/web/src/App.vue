@@ -11,6 +11,9 @@
     <!-- 全局 Snackbar 组件 -->
     <GlobalSnackbar />
 
+    <!-- 应用内通知组件 -->
+    <InAppNotification />
+
     <!-- 命令面板 (Cmd/Ctrl + K) -->
     <CommandPalette
       v-model="showCommandPalette"
@@ -25,6 +28,7 @@
 import { onMounted, ref, computed } from 'vue';
 import { useSettingStore } from '@/modules/setting/presentation/stores/settingStore';
 import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
+import InAppNotification from '@/modules/notification/presentation/components/InAppNotification.vue';
 import CommandPalette from '@/shared/components/command-palette/CommandPalette.vue';
 import { searchDataProvider } from '@/shared/services/SearchDataProvider';
 import { logo128 as logo } from '@dailyuse/assets';

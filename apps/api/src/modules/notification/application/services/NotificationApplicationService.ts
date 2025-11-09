@@ -43,6 +43,9 @@ type NotificationCategory = NotificationContracts.NotificationCategory;
 type NotificationType = NotificationContracts.NotificationType;
 type RelatedEntityType = NotificationContracts.RelatedEntityType;
 
+// 导入枚举用于比较
+const { NotificationChannelType: ChannelTypeEnum } = NotificationContracts;
+
 // =================================================================
 // TEMPORARY DTO CONVERTERS
 // TODO: Move this logic to a dedicated NotificationClient entity in the domain-client package.
@@ -341,17 +344,96 @@ export class NotificationApplicationService {
       const { SSEConnectionManager } = await import('../../interface/http/sseRoutes');
       const sseManager = SSEConnectionManager.getInstance();
       
-      const sent = sseManager.sendMessage(params.accountUuid, 'notification:created', {
+      // 1. 始终发送 notification:created 事件（用于更新通知列表）
+      const createdSent = sseManager.sendMessage(params.accountUuid, 'notification:created', {
         notification: clientDTO,
         timestamp: new Date().toISOString(),
       });
 
-      if (sent) {
-        logger.info('📡 [SSE推送] 通知已推送给前端', {
+      if (createdSent) {
+        logger.info('📡 [SSE推送] notification:created 事件已发送', {
           accountUuid: params.accountUuid,
           notificationUuid: clientDTO.uuid,
         });
+      }
+
+      // 2. 根据 channels 发送特定的 UI 触发事件
+      if (params.channels && params.channels.length > 0) {
+        const notificationData = {
+          notification: clientDTO,
+          timestamp: new Date().toISOString(),
+        };
+
+        // IN_APP 渠道 - 触发应用内弹窗和系统通知
+        if (params.channels.includes(ChannelTypeEnum.IN_APP)) {
+          // 发送应用内弹窗事件
+          const popupSent = sseManager.sendMessage(
+            params.accountUuid,
+            'notification:popup-reminder',
+            notificationData
+          );
+          if (popupSent) {
+            logger.info('🔔 [SSE推送] popup-reminder 事件已发送', {
+              accountUuid: params.accountUuid,
+              notificationUuid: clientDTO.uuid,
+            });
+          }
+
+          // 同时发送系统通知事件
+          const systemSent = sseManager.sendMessage(
+            params.accountUuid,
+            'notification:system-notification',
+            notificationData
+          );
+          if (systemSent) {
+            logger.info('📢 [SSE推送] system-notification 事件已发送（IN_APP）', {
+              accountUuid: params.accountUuid,
+              notificationUuid: clientDTO.uuid,
+            });
+          }
+        }
+
+        // PUSH 渠道 - 额外触发系统通知（如果需要的话）
+        if (params.channels.includes(ChannelTypeEnum.PUSH)) {
+          const systemSent = sseManager.sendMessage(
+            params.accountUuid,
+            'notification:system-notification',
+            notificationData
+          );
+          if (systemSent) {
+            logger.info('📢 [SSE推送] system-notification 事件已发送（PUSH）', {
+              accountUuid: params.accountUuid,
+              notificationUuid: clientDTO.uuid,
+            });
+          }
+        }
+
+        // 如果通知元数据包含声音配置，发送声音提醒事件
+        if (clientDTO.metadata?.sound) {
+          const soundSent = sseManager.sendMessage(
+            params.accountUuid,
+            'notification:sound-reminder',
+            {
+              ...notificationData,
+              sound: clientDTO.metadata.sound,
+            }
+          );
+          if (soundSent) {
+            logger.info('🔊 [SSE推送] sound-reminder 事件已发送', {
+              accountUuid: params.accountUuid,
+              notificationUuid: clientDTO.uuid,
+              sound: clientDTO.metadata.sound,
+            });
+          }
+        }
       } else {
+        logger.warn('⚠️ [SSE推送] 通知没有配置 channels，仅发送 created 事件', {
+          accountUuid: params.accountUuid,
+          notificationUuid: clientDTO.uuid,
+        });
+      }
+
+      if (!createdSent) {
         logger.warn('⚠️ [SSE推送] 用户未连接SSE，推送失败', {
           accountUuid: params.accountUuid,
           notificationUuid: clientDTO.uuid,

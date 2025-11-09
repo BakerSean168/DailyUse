@@ -167,21 +167,36 @@ export class NotificationEventHandlers {
   private setupSystemEventListeners(): void {
     logger.debug('设置系统事件监听器');
 
-    // 🔊 监听 SSE 推送的提醒音效播放事件
+    // � 监听 SSE 推送的弹窗提醒事件
+    eventBus.on('ui:show-popup-reminder', (data: any) => {
+      logger.info('收到弹窗提醒事件', {
+        accountUuid: data?.notification?.accountUuid,
+        title: data?.notification?.title,
+        notificationUuid: data?.notification?.uuid,
+      });
+
+      // 显示应用内弹窗通知
+      eventBus.emit('notification:in-app', {
+        notification: data.notification,
+        timestamp: data.timestamp,
+      });
+    });
+
+    // �🔊 监听 SSE 推送的提醒音效播放事件
     eventBus.on('ui:play-reminder-sound', (data: any) => {
       logger.info('收到提醒音效播放事件', {
-        accountUuid: data?.accountUuid,
-        soundVolume: data?.soundVolume,
+        accountUuid: data?.notification?.accountUuid,
+        sound: data?.sound,
       });
 
       // 播放提醒音效
       const soundConfig: SoundConfig = {
         enabled: true,
         type: SoundType.REMINDER,
-        volume: (data?.soundVolume ?? 70) / 100, // 转换为 0-1 范围
+        volume: data?.sound?.volume || 0.7,
       };
 
-      const notificationId = `reminder-sound-${Date.now()}`;
+      const notificationId = `reminder-sound-${data.notification?.uuid || Date.now()}`;
 
       this.notificationService
         .getAudioService()
@@ -195,6 +210,42 @@ export class NotificationEventHandlers {
             error: error instanceof Error ? error.message : String(error),
           });
         });
+    });
+
+    // 📢 监听 SSE 推送的系统通知事件
+    eventBus.on('system:show-notification', (data: any) => {
+      logger.info('收到系统通知事件', {
+        accountUuid: data?.notification?.accountUuid,
+        title: data?.notification?.title,
+        notificationUuid: data?.notification?.uuid,
+      });
+
+      // 检查系统通知权限
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        const notification = new Notification(data.notification.title, {
+          body: data.notification.content || data.notification.title,
+          icon: '/favicon.ico',
+          tag: `notification-${data.notification.uuid}`,
+          requireInteraction: data.notification.importance === 'high' || data.notification.urgency === 'high',
+        });
+
+        notification.onclick = () => {
+          logger.info('系统通知被点击', {
+            notificationUuid: data.notification.uuid,
+          });
+          // 可以导航到相关页面
+          window.focus();
+          notification.close();
+        };
+
+        logger.info('系统通知已显示', {
+          notificationUuid: data.notification.uuid,
+        });
+      } else {
+        logger.warn('系统通知权限未授予，无法显示系统通知', {
+          permission: typeof Notification !== 'undefined' ? Notification.permission : 'not-supported',
+        });
+      }
     });
 
     // 监听用户登出事件

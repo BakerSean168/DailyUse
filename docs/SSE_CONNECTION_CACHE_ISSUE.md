@@ -590,10 +590,10 @@ location /api/v1/sse/ {
 
 ---
 
-**文档版本**：v2.0  
+**文档版本**：v2.1  
 **最后更新**：2025-11-09  
 **作者**：AI Assistant  
-**状态**：✅ 问题已完全解决
+**状态**：✅ 问题已完全解决，架构已优化
 
 ## 最终解决方案总结
 
@@ -608,6 +608,51 @@ location /api/v1/sse/ {
 2. ✅ 后端过滤：compression middleware 跳过 `/sse/` 路由
 3. ✅ 强制刷新：`res.flushHeaders()` + `res.flush()`
 4. ✅ 禁用重复连接：只保留一个初始化入口点
+5. ✅ 优化 SSE 事件架构：后端根据 channels 发送特定事件
+
+### SSE 事件架构（优化后）
+
+#### 后端推送策略
+```typescript
+// 1. 始终发送 notification:created（更新通知列表）
+sseManager.sendMessage(accountUuid, 'notification:created', { notification });
+
+// 2. 根据 channels 发送 UI 触发事件
+if (channels.includes('IN_APP')) {
+  // 触发应用内弹窗
+  sseManager.sendMessage(accountUuid, 'notification:popup-reminder', { notification });
+}
+
+if (channels.includes('PUSH')) {
+  // 触发系统通知
+  sseManager.sendMessage(accountUuid, 'notification:system-notification', { notification });
+}
+
+if (metadata?.sound) {
+  // 触发声音提醒
+  sseManager.sendMessage(accountUuid, 'notification:sound-reminder', { notification, sound });
+}
+```
+
+#### 前端事件处理流程
+```
+SSE Event                          Event Bus                    UI Action
+─────────────────────────────────────────────────────────────────────────────
+notification:created          →   notification:created      →   更新通知列表
+notification:popup-reminder   →   ui:show-popup-reminder   →   显示应用内弹窗
+notification:sound-reminder   →   ui:play-reminder-sound   →   播放提醒音效
+notification:system-notification → system:show-notification →   显示系统通知
+```
+
+#### 事件类型说明
+
+| SSE 事件 | 触发条件 | 前端行为 | 备注 |
+|---------|---------|---------|------|
+| `notification:created` | 通知创建 | 更新通知列表 | 始终发送 |
+| `notification:popup-reminder` | `IN_APP` channel | 显示应用内弹窗 | 根据配置 |
+| `notification:sound-reminder` | 有声音配置 | 播放提醒音效 | 根据配置 |
+| `notification:system-notification` | `PUSH` channel | 显示系统通知 | 需要权限 |
+| `heartbeat` | 定时发送 | 保持连接活跃 | 每 30 秒 |
 
 ### 验证方法
 ```bash
@@ -622,7 +667,27 @@ pnpm exec nx run web:vite:dev
 # 3. 检查后端日志
 # ✅ [SSE Manager] 新连接建立
 # ✅ [SSE Manager] 消息已发送（不再是"连接不存在"）
+# ✅ popup-reminder 事件已发送
+# ✅ sound-reminder 事件已发送
 
 # 4. 测试通知推送
 # ✅ 前端成功收到 notification:created 事件
+# ✅ 前端自动显示弹窗（如果配置了 IN_APP channel）
+# ✅ 前端自动播放声音（如果配置了声音）
+# ✅ 前端显示系统通知（如果配置了 PUSH channel 且有权限）
 ```
+
+### 架构优势
+
+#### ✅ 职责分离
+- **后端**：根据业务逻辑决定发送哪些事件
+- **前端**：响应式处理事件，触发对应 UI 行为
+
+#### ✅ 可扩展性
+- 新增通知渠道：只需添加新的事件类型
+- 自定义 UI 行为：监听对应事件并处理
+
+#### ✅ 调试友好
+- 每个事件独立，易于追踪
+- 后端日志清晰显示发送了哪些事件
+- 前端可独立测试每种 UI 行为
