@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "modules/repository/repository实现流程.md",
+                "file": "FINAL_SESSION_SUMMARY.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "repository实现流程"
+              "title": "FINAL_SESSION_SUMMARY"
             }
           }
         ]
@@ -41,7 +41,7 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": true
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "modules/repository/repository实现流程.md",
+                "file": "FINAL_SESSION_SUMMARY.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for repository实现流程"
+              "title": "Backlinks for FINAL_SESSION_SUMMARY"
             }
           },
           {
@@ -134,12 +134,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "modules/repository/repository实现流程.md",
+                "file": "FINAL_SESSION_SUMMARY.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from repository实现流程"
+              "title": "Outgoing links from FINAL_SESSION_SUMMARY"
             }
           }
         ]
@@ -182,41 +182,41 @@
   },
   "active": "leaf",
   "lastOpenFiles": [
-    "configs/TYPECHECK_FIX_SUMMARY.md",
-    "configs/NX_SCRIPTS_AND_TARGETS_GUIDE.md",
-    "TYPECHECK_FIX_SUMMARY.md",
-    "NX_SCRIPTS_AND_TARGETS_GUIDE.md",
-    "configs/PROJECT_JSON_GUIDE.md",
-    "configs/NX_USAGE_GUIDE.md",
-    "configs/NX_OPTIMIZATION_SUMMARY.md",
-    "configs/NX_CONFIGURATION_GUIDE.md",
-    "NX_OPTIMIZATION_SUMMARY.md",
-    "PROJECT_JSON_GUIDE.md",
-    "NX_USAGE_GUIDE.md",
-    "NX_CONFIGURATION_GUIDE.md",
-    "APP_ROUTER_REFACTORING_SUMMARY.md",
-    "configs/TSCONFIG_QUICK_REFERENCE.md",
-    "configs/TSCONFIG_OPTIMIZATION_SUMMARY.md",
-    "configs/TSCONFIG_MONOREPO_BEST_PRACTICES.md",
+    "FINAL_SESSION_SUMMARY.md",
+    "integration-architecture.md",
+    "stories/AI-001-generate-key-results.md",
+    "GOAL_E2E_COMPLETION_REPORT.md",
+    "GOAL_MODULE_COMPLETION_REPORT.md",
+    "GOAL_MODULE_TEST_RESULTS.md",
+    "OPTIMIZATION_QUICK_REFERENCE.md",
+    "KEYRESULT_CACHE_ROOT_CAUSE.md",
+    "KEYRESULT_DELETE_CACHE_FIX.md",
+    "KEYRESULT_DETAIL_VIEW_UPGRADE.md",
+    "KEYRESULT_TESTING_CHECKLIST.md",
+    "MIGRATION_STEPS.md",
+    "MODULE_OPTIMIZATION_SUMMARY.md",
+    "NEXT_STEPS_SUMMARY.md",
+    "OPTIMIZATION_COMPLETION_REPORT.md",
+    "OPTIMIZATION_EXECUTIVE_SUMMARY.md",
+    "packages-assets.md",
+    "epic-1-context.md",
+    "task-module-update-methods.md",
+    "TEST_COMPLETION_PLAN.md",
+    "TDD_REFACTOR_WORKFLOW.md",
+    "TEST_AND_OPTIMIZATION_REPORT.md",
+    "AI_FEATURE_DESIGN.md",
+    "modules/repository/features/01-link-recommendation.md",
+    "AI_FEATURE_USER_STORIES.md",
+    "AI_FEATURE_REQUIREMENTS.md",
+    "troubleshooting",
+    "frontend",
     "configs",
-    "MODULE_INITIALIZATION_REFACTORING.md",
-    "modules/editor/EDITOR_WORKSPACE_IMPLEMENTATION_SUMMARY.md",
-    "modules/editor/EDITOR_API_IMPLEMENTATION_COMPLETE.md",
-    "modules/editor/EDITOR_API_LAYER_IMPLEMENTATION_PROGRESS.md",
-    "EDITOR_MODULE_REFACTOR_COMPLETED.md",
-    "EDITOR_MODULE_DDD_REFACTOR_SUMMARY.md",
-    "EDITOR_MODULE_AGGREGATE_DESIGN.md",
-    "modules/editor/01-DOMAIN_SERVER_PROGRESS.md",
-    "modules/editor/00-EDITOR_CONTRACTS_SUMMARY.md",
     "modules/editor",
-    "modules/repository/00-MODULE_IMPLEMENTATION_SUMMARY.md",
     "packages/ui/composables",
     "packages/ui/components",
     "packages/utils/systems",
     "packages/ui",
     "packages/domains",
-    "packages/contracts",
-    "packages/utils",
-    "packages"
+    "packages/contracts"
   ]
 }

@@ -31,3 +31,6 @@ export * from './editor/index';
 
 // Schedule 模块
 export * from './schedule/index';
+
+// AI 模块
+export * from './ai/index';

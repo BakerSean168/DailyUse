@@ -56,6 +56,9 @@ model account {
   userSetting                    userSetting?
   document                       document[]
   document_version               document_version[]
+  aiConversation                 aiConversation[]
+  aiGenerationTask               aiGenerationTask[]
+  aiUsageQuota                   aiUsageQuota?
 
   @@index([createdAt])
   @@index([email])
@@ -1323,4 +1326,100 @@ model userSetting {
 
   @@index([accountUuid])
   @@map("user_settings")
+}
+
+// ============================================
+// AI Module Tables
+// AI 模块数据表
+// ============================================
+
+/// AI 对话聚合根
+model aiConversation {
+  uuid          String    @id
+  accountUuid   String    @map("account_uuid")
+  title         String
+  status        String // ACTIVE, CLOSED, ARCHIVED
+  messageCount  Int       @default(0) @map("message_count")
+  lastMessageAt DateTime? @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  // 关系
+  account  account     @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  messages aiMessage[]
+
+  // 索引
+  @@index([accountUuid])
+  @@index([status])
+  @@index([createdAt])
+  @@index([lastMessageAt])
+  @@map("ai_conversations")
+}
+
+/// AI 消息实体
+model aiMessage {
+  uuid             String   @id
+  conversationUuid String   @map("conversation_uuid")
+  role             String // USER, ASSISTANT, SYSTEM
+  content          String   @db.Text
+  tokenUsage       String?  @map("token_usage") // JSON: {promptTokens, completionTokens, totalTokens}
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  // 关系
+  conversation aiConversation @relation(fields: [conversationUuid], references: [uuid], onDelete: Cascade)
+
+  // 索引
+  @@index([conversationUuid])
+  @@index([createdAt])
+  @@map("ai_messages")
+}
+
+/// AI 生成任务聚合根
+model aiGenerationTask {
+  uuid         String    @id
+  accountUuid  String    @map("account_uuid")
+  taskType     String    @map("task_type") // GOAL_KEY_RESULTS, TASK_TEMPLATES, etc.
+  status       String // PENDING, PROCESSING, COMPLETED, FAILED
+  input        String    @db.Text // JSON string
+  result       String?   @db.Text // JSON string
+  error        String?   @db.Text
+  retryCount   Int       @default(0) @map("retry_count")
+  tokenUsage   String?   @map("token_usage") // JSON
+  processingMs Int?      @map("processing_ms")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  completedAt  DateTime? @map("completed_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  // 关系
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+
+  // 索引
+  @@index([accountUuid])
+  @@index([taskType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ai_generation_tasks")
+}
+
+/// AI 使用配额聚合根
+model aiUsageQuota {
+  uuid         String   @id
+  accountUuid  String   @unique @map("account_uuid")
+  quotaLimit   Int      @default(50) @map("quota_limit")
+  currentUsage Int      @default(0) @map("current_usage")
+  resetPeriod  String   @default("DAILY") @map("reset_period") // DAILY, WEEKLY, MONTHLY
+  lastResetAt  DateTime @default(now()) @map("last_reset_at")
+  nextResetAt  DateTime @map("next_reset_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // 关系
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+
+  // 索引
+  @@index([accountUuid])
+  @@index([nextResetAt])
+  @@map("ai_usage_quotas")
 }

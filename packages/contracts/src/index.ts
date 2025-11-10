@@ -19,6 +19,7 @@ export * as ScheduleContracts from './modules/schedule';
 export * as SettingContracts from './modules/setting';
 export * as NotificationContracts from './modules/notification';
 export * as DocumentContracts from './document.contracts';
+export * as AIContracts from './modules/ai';
 
 // 导出 Reminder 模块的常量和工具函数（运行时值不能通过命名空间导出）
 export {
@@ -42,6 +43,19 @@ export { TaskPriority as SchedulePriority } from './modules/schedule/enums';
 
 // 导出 Goal 枚举（新的 DDD 架构）
 export { GoalStatus, KeyResultValueType, ReviewType, FolderType } from './modules/goal/enums';
+
+// 导出 AI 枚举（新的 DDD 架构）
+export {
+  ConversationStatus,
+  MessageRole,
+  GenerationTaskType,
+  TaskStatus,
+  AIProvider,
+  AIModel,
+  MetricType,
+  QuotaResetPeriod,
+  KnowledgeDocumentTemplateType,
+} from './modules/ai/enums';
 
 // 导出 Notification 枚举（新的 DDD 架构）
 export {

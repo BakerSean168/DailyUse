@@ -30,6 +30,7 @@ import resourceRouter from './modules/repository/interface/http/routes/resourceR
 import repositoryNewRouter from './modules/repository-new/presentation/RepositoryController';
 import resourceNewRouter from './modules/repository-new/presentation/ResourceController';
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
+import aiGenerationRouter from './modules/ai/interface/http/aiGenerationRoutes';
 
 import { authMiddleware, optionalAuthMiddleware } from './shared/middlewares/index';
 import { setupSwagger } from './config/swagger';
@@ -195,6 +196,12 @@ api.use('/settings', authMiddleware, settingRouter);
  */
 // 挂载性能指标路由 - 需要认证
 api.use('/metrics', authMiddleware, metricsRouter);
+
+/**
+ * ai AI生成模块
+ */
+// 挂载 AI 生成路由 - 需要认证
+api.use('/ai', aiGenerationRouter); // authMiddleware 在路由文件内部应用
 
 /**
  * theme 主题模块
