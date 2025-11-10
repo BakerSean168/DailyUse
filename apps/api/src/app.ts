@@ -26,6 +26,7 @@ import settingRouter from './modules/setting/interface/http/settingRoutes';
 // import themeRoutes from './modules/theme/interface/http/themeRoutes';
 import editorRouter from './modules/editor/interface/http/routes/editorRoutes';
 import repositoryRouter from './modules/repository/interface/http/routes/repositoryRoutes';
+import resourceRouter from './modules/repository/interface/http/routes/resourceRoutes';
 import repositoryNewRouter from './modules/repository-new/presentation/RepositoryController';
 import resourceNewRouter from './modules/repository-new/presentation/ResourceController';
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
@@ -170,6 +171,8 @@ api.use('/editor', authMiddleware, editorRouter);
  */
 // 挂载仓储路由 - 需要认证
 api.use('/repositories', authMiddleware, repositoryRouter);
+// Epic 10 Story 10-2: Resource CRUD + Markdown 编辑
+api.use('/api', resourceRouter);
 
 /**
  * repository-new 仓储模块 (Epic 7 重构版本 - MVP)

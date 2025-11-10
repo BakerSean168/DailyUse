@@ -1,13 +1,8 @@
-// @ts-nocheck
-// Repository 模块组件导出
+export { default as FileExplorer } from './FileExplorer.vue';
+export { default as CreateRepositoryDialog } from './CreateRepositoryDialog.vue';
+export { default as CreateFolderDialog } from './CreateFolderDialog.vue';
 
-// Cards
-export { default as RepoCard } from './cards/RepoCard.vue';
-export { default as ResourceCard } from './cards/ResourceCard.vue';
-
-// Dialogs
-export { default as RepoDialog } from './dialogs/RepoDialog.vue';
-export { default as ResourceDialog } from './dialogs/ResourceDialog.vue';
-
-// Views
-export { default as RepoDetailView } from '../views/RepoDetailView.vue';
+// Epic 10 Story 10-2: Resource CRUD + Markdown 编辑器
+export { default as ResourceList } from './ResourceList.vue';
+export { default as ResourceEditor } from './ResourceEditor.vue';
+export { default as TabManager } from './TabManager.vue';

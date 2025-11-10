@@ -61,7 +61,6 @@ export {
   ResourceStatus,
   RepositoryStatus,
   RepositoryType,
-  ReferenceType,
 } from './modules/repository/enums';
 
 // 导出 Setting 枚举（新的 DDD 架构）

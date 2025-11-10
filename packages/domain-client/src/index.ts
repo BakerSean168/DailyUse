@@ -102,15 +102,19 @@ export * from './notification/value-objects';
 export { Repository } from './repository/aggregates/Repository';
 
 // 实体
+export { Folder } from './repository/entities/Folder';
 export { Resource } from './repository/entities/Resource';
-export { LinkedContent } from './repository/entities/LinkedContent';
-export { ResourceReference } from './repository/entities/ResourceReference';
-export { RepositoryExplorer } from './repository/entities/RepositoryExplorer';
+// export { LinkedContent } from './repository/entities/LinkedContent'; // Epic 7 - 待修复
+// export { ResourceReference } from './repository/entities/ResourceReference'; // Epic 7 - 待修复
+// export { RepositoryExplorer } from './repository/entities/RepositoryExplorer'; // Epic 7 - 待修复
 
 // 值对象
 export { RepositoryConfig } from './repository/value-objects/RepositoryConfig';
-export { GitInfo } from './repository/value-objects/GitInfo';
-export { SyncStatus } from './repository/value-objects/SyncStatus';
+export { FolderMetadata } from './repository/value-objects/FolderMetadata';
+export { ResourceMetadata } from './repository/value-objects/ResourceMetadata';
+export { ResourceStats } from './repository/value-objects/ResourceStats';
+// export { GitInfo } from './repository/value-objects/GitInfo'; // Epic 7 - 待修复
+// export { SyncStatus } from './repository/value-objects/SyncStatus'; // Epic 7 - 待修复
 export { RepositoryStats } from './repository/value-objects/RepositoryStats';
 
 // ==================== Account 模块 ====================

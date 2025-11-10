@@ -19,3 +19,27 @@ export enum RepositoryStatus {
   ARCHIVED = 'ARCHIVED',
   DELETED = 'DELETED',
 }
+
+/**
+ * 资源类型
+ */
+export enum ResourceType {
+  MARKDOWN = 'MARKDOWN',
+  IMAGE = 'IMAGE',
+  VIDEO = 'VIDEO',
+  AUDIO = 'AUDIO',
+  PDF = 'PDF',
+  LINK = 'LINK',
+  CODE = 'CODE',
+  OTHER = 'OTHER',
+}
+
+/**
+ * 资源状态
+ */
+export enum ResourceStatus {
+  ACTIVE = 'ACTIVE',
+  ARCHIVED = 'ARCHIVED',
+  DELETED = 'DELETED',
+  DRAFT = 'DRAFT',
+}

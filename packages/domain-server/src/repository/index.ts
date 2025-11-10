@@ -6,6 +6,7 @@ export * from './aggregates/Repository';
 
 // Entities
 export * from './entities/Folder';
+export * from './entities/Resource';
 
 // Domain Services
 export * from './domain-services/FolderHierarchyService';

@@ -83,7 +83,7 @@ export class Folder implements FolderServer {
     this._updatedAt = Date.now();
   }
 
-  moveTo(newParentUuid: string | null, newParentPath: string | null): void {
+  moveTo(newParentUuid: string | null, newParentPath?: string): void {
     this._parentUuid = newParentUuid;
 
     // 更新路径
@@ -186,7 +186,7 @@ export class Folder implements FolderServer {
     return new Folder(
       dto.uuid,
       dto.repositoryUuid,
-      dto.parentUuid,
+      dto.parentUuid ?? null,
       dto.name,
       dto.path,
       dto.order,
@@ -202,7 +202,7 @@ export class Folder implements FolderServer {
     return new Folder(
       dto.uuid,
       dto.repositoryUuid,
-      dto.parentUuid,
+      dto.parentUuid ?? null,
       dto.name,
       dto.path,
       dto.order,

@@ -1,472 +1,293 @@
 /**
- * ResourceClient 实体实现
- * 兼容 ResourceClient 接口
+ * Resource Entity - Client Implementation
+ * 资源实体 - 客户端实现
  */
+import { RepositoryContracts, ResourceType, ResourceStatus } from '@dailyuse/contracts';
+import { formatDistanceToNow } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
+import { ResourceMetadata } from '../value-objects/ResourceMetadata';
+import { ResourceStats } from '../value-objects/ResourceStats';
 
-import type { RepositoryContracts } from '@dailyuse/contracts';
-import { RepositoryContracts as RC } from '@dailyuse/contracts';
-import { Entity } from '@dailyuse/utils';
-import { LinkedContent } from './LinkedContent';
-import { ResourceReference } from './ResourceReference';
-
-type IResourceClient = RepositoryContracts.ResourceClient;
+type ResourceClient = RepositoryContracts.ResourceClient;
 type ResourceClientDTO = RepositoryContracts.ResourceClientDTO;
 type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
-type ResourceType = RepositoryContracts.ResourceType;
-type ResourceStatus = RepositoryContracts.ResourceStatus;
-type ResourceMetadata = RepositoryContracts.ResourceMetadata;
 
-/**
- * ResourceClient 实体
- */
-export class Resource extends Entity implements IResourceClient {
-  // ===== 私有字段 =====
-  private _repositoryUuid: string;
-  private _name: string;
-  private _type: ResourceType;
-  private _path: string;
-  private _size: number;
-  private _description: string | null;
-  private _author: string | null;
-  private _version: string | null;
-  private _tags: string[];
-  private _category: string | null;
-  private _status: ResourceStatus;
-  private _metadata: ResourceMetadata;
-  private _createdAt: number;
-  private _updatedAt: number;
-  private _modifiedAt: number | null;
+export class Resource implements ResourceClient {
+  private readonly _uuid: string;
+  private readonly _repositoryUuid: string;
+  private readonly _folderUuid?: string | null;
+  private readonly _name: string;
+  private readonly _type: ResourceType;
+  private readonly _path: string;
+  private readonly _size: number;
+  private readonly _content?: string | null;
+  private readonly _metadata: ResourceMetadata;
+  private readonly _stats: ResourceStats;
+  private readonly _status: ResourceStatus;
+  private readonly _createdAt: number;
+  private readonly _updatedAt: number;
 
-  // ===== 子实体集合 =====
-  private _references: ResourceReference[];
-  private _linkedContents: LinkedContent[];
-
-  // ===== 构造函数（私有） =====
   private constructor(params: {
-    uuid?: string;
+    uuid: string;
     repositoryUuid: string;
     name: string;
     type: ResourceType;
     path: string;
     size: number;
-    description?: string | null;
-    author?: string | null;
-    version?: string | null;
-    tags?: string[];
-    category?: string | null;
-    status: ResourceStatus;
+    folderUuid?: string | null;
+    content?: string | null;
     metadata: ResourceMetadata;
+    stats: ResourceStats;
+    status: ResourceStatus;
     createdAt: number;
     updatedAt: number;
-    modifiedAt?: number | null;
   }) {
-    super(params.uuid ?? Entity.generateUUID());
+    this._uuid = params.uuid;
     this._repositoryUuid = params.repositoryUuid;
+    this._folderUuid = params.folderUuid ?? null;
     this._name = params.name;
     this._type = params.type;
     this._path = params.path;
     this._size = params.size;
-    this._description = params.description ?? null;
-    this._author = params.author ?? null;
-    this._version = params.version ?? null;
-    this._tags = params.tags ?? [];
-    this._category = params.category ?? null;
-    this._status = params.status;
+    this._content = params.content ?? null;
     this._metadata = params.metadata;
+    this._stats = params.stats;
+    this._status = params.status;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
-    this._modifiedAt = params.modifiedAt ?? null;
-    this._references = [];
-    this._linkedContents = [];
   }
 
-  // ===== Getter 属性 =====
-  public override get uuid(): string {
+  // ===== Getters =====
+  get uuid(): string {
     return this._uuid;
   }
-  public get repositoryUuid(): string {
+
+  get repositoryUuid(): string {
     return this._repositoryUuid;
   }
-  public get name(): string {
+
+  get folderUuid(): string | null | undefined {
+    return this._folderUuid;
+  }
+
+  get name(): string {
     return this._name;
   }
-  public get type(): ResourceType {
+
+  get type(): ResourceType {
     return this._type;
   }
-  public get path(): string {
+
+  get path(): string {
     return this._path;
   }
-  public get size(): number {
+
+  get size(): number {
     return this._size;
   }
-  public get description(): string | null {
-    return this._description;
+
+  get content(): string | null | undefined {
+    return this._content;
   }
-  public get author(): string | null {
-    return this._author;
+
+  get metadata(): ResourceMetadata {
+    return this._metadata;
   }
-  public get version(): string | null {
-    return this._version;
+
+  get stats(): ResourceStats {
+    return this._stats;
   }
-  public get tags(): string[] {
-    return [...this._tags];
-  }
-  public get category(): string | null {
-    return this._category;
-  }
-  public get status(): ResourceStatus {
+
+  get status(): ResourceStatus {
     return this._status;
   }
-  public get metadata(): ResourceMetadata {
-    return { ...this._metadata };
-  }
-  public get createdAt(): number {
+
+  get createdAt(): number {
     return this._createdAt;
   }
-  public get updatedAt(): number {
+
+  get updatedAt(): number {
     return this._updatedAt;
   }
-  public get modifiedAt(): number | null {
-    return this._modifiedAt;
+
+  // ===== UI 计算属性 =====
+  get isDeleted(): boolean {
+    return this._status === ResourceStatus.DELETED;
   }
 
-  public get references(): ResourceReference[] | null {
-    return this._references.length > 0 ? [...this._references] : null;
+  get isArchived(): boolean {
+    return this._status === ResourceStatus.ARCHIVED;
   }
 
-  public get linkedContents(): LinkedContent[] | null {
-    return this._linkedContents.length > 0 ? [...this._linkedContents] : null;
+  get isActive(): boolean {
+    return this._status === ResourceStatus.ACTIVE;
   }
 
-  // UI 属性
-  public get formattedSize(): string {
-    return this.formatBytes(this._size);
+  get isDraft(): boolean {
+    return this._status === ResourceStatus.DRAFT;
   }
 
-  public get formattedCreatedAt(): string {
-    return this.formatDate(this._createdAt);
-  }
-
-  public get formattedUpdatedAt(): string {
-    return this.formatDate(this._updatedAt);
-  }
-
-  public get formattedModifiedAt(): string | undefined {
-    return this._modifiedAt ? this.formatDate(this._modifiedAt) : undefined;
-  }
-
-  public get fileExtension(): string {
-    const parts = this._name.split('.');
-    return parts.length > 1 ? `.${parts[parts.length - 1]}` : '';
-  }
-
-  public get typeLabel(): string {
-    const labels: Partial<Record<ResourceType, string>> = {
-      [RC.ResourceType.MARKDOWN]: 'Markdown',
-      [RC.ResourceType.CODE]: '代码',
-      [RC.ResourceType.IMAGE]: '图片',
-      [RC.ResourceType.VIDEO]: '视频',
-      [RC.ResourceType.AUDIO]: '音频',
-      [RC.ResourceType.PDF]: 'PDF',
-      [RC.ResourceType.LINK]: '链接',
-      [RC.ResourceType.OTHER]: '其他',
+  get statusText(): string {
+    const statusMap: Record<ResourceStatus, string> = {
+      [ResourceStatus.ACTIVE]: '活跃',
+      [ResourceStatus.ARCHIVED]: '已归档',
+      [ResourceStatus.DELETED]: '已删除',
+      [ResourceStatus.DRAFT]: '草稿',
     };
-    return labels[this._type] || '未知';
+    return statusMap[this._status] || '未知';
   }
 
-  public get statusLabel(): string {
-    const labels: Record<ResourceStatus, string> = {
-      [RC.ResourceStatus.ACTIVE]: '活跃',
-      [RC.ResourceStatus.ARCHIVED]: '归档',
-      [RC.ResourceStatus.DELETED]: '已删除',
-      [RC.ResourceStatus.DRAFT]: '草稿',
+  get typeText(): string {
+    const typeMap: Record<ResourceType, string> = {
+      [ResourceType.MARKDOWN]: 'Markdown 文档',
+      [ResourceType.IMAGE]: '图片',
+      [ResourceType.VIDEO]: '视频',
+      [ResourceType.AUDIO]: '音频',
+      [ResourceType.PDF]: 'PDF 文档',
+      [ResourceType.LINK]: '外部链接',
+      [ResourceType.CODE]: '代码文件',
+      [ResourceType.OTHER]: '其他文件',
     };
-    return labels[this._status] || '未知';
+    return typeMap[this._type] || '未知类型';
   }
 
-  public get isFavorite(): boolean {
-    return this._metadata.isFavorite ?? false;
+  get displayName(): string {
+    return this._name;
   }
 
-  private formatBytes(bytes: number): string {
+  get formattedSize(): string {
+    const bytes = this._size;
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 
-  private formatDate(timestamp: number): string {
-    return new Date(timestamp).toLocaleString('zh-CN');
-  }
-
-  // ===== 工厂方法 =====
-
-  /**
-   * 创建一个空的 Resource 实例（用于新建表单）
-   */
-  public static forCreate(repositoryUuid: string): Resource {
-    const uuid = Entity.generateUUID();
-    const now = Date.now();
-    return new Resource({
-      uuid,
-      repositoryUuid,
-      name: '',
-      type: RC.ResourceType.MARKDOWN,
-      path: '',
-      size: 0,
-      status: RC.ResourceStatus.DRAFT,
-      metadata: {
-        isFavorite: false,
-        isPinned: false,
-      },
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
-
-  /**
-   * 克隆当前对象（深拷贝）
-   * 用于表单编辑时避免直接修改原数据
-   */
-  public clone(): Resource {
-    return Resource.fromClientDTO(this.toClientDTO(true));
-  }
-
-  /**
-   * 创建新的 ResourceClient 实体
-   */
-  public static create(params: {
-    repositoryUuid: string;
-    name: string;
-    type: ResourceType;
-    path: string;
-    content?: string | Uint8Array;
-    description?: string;
-    tags?: string[];
-  }): Resource {
-    const uuid = Entity.generateUUID();
-    const now = Date.now();
-    const size = params.content
-      ? typeof params.content === 'string'
-        ? new Blob([params.content]).size
-        : params.content.length
-      : 0;
-
-    return new Resource({
-      uuid,
-      repositoryUuid: params.repositoryUuid,
-      name: params.name,
-      type: params.type,
-      path: params.path,
-      size,
-      description: params.description,
-      tags: params.tags,
-      status: RC.ResourceStatus.ACTIVE,
-      metadata: {
-        isFavorite: false,
-        isPinned: false,
-      },
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
-
-  /**
-   * 创建子实体：ResourceReference（通过实体创建）
-   */
-  public createReference(params: {
-    targetResourceUuid: string;
-    referenceType: RepositoryContracts.ReferenceType;
-    description?: string;
-  }): ResourceReference {
-    return ResourceReference.create({
-      sourceResourceUuid: this._uuid,
-      targetResourceUuid: params.targetResourceUuid,
-      referenceType: params.referenceType,
-      description: params.description,
-    });
-  }
-
-  /**
-   * 创建子实体：LinkedContent（通过实体创建）
-   */
-  public createLinkedContent(params: {
-    title: string;
-    url: string;
-    contentType: RepositoryContracts.ContentType;
-    description?: string;
-  }): LinkedContent {
-    return LinkedContent.create({
-      resourceUuid: this._uuid,
-      title: params.title,
-      url: params.url,
-      contentType: params.contentType,
-      description: params.description,
-    });
-  }
-
-  // ===== 子实体管理方法 =====
-
-  public addReference(reference: ResourceReference): void {
-    if (!(reference instanceof ResourceReference)) {
-      throw new Error('Reference must be an instance of ResourceReferenceClient');
+  get createdAtText(): string {
+    try {
+      return formatDistanceToNow(this._createdAt, {
+        addSuffix: true,
+        locale: zhCN,
+      });
+    } catch {
+      return new Date(this._createdAt).toLocaleDateString('zh-CN');
     }
-    this._references.push(reference);
-    this._updatedAt = Date.now();
   }
 
-  public removeReference(referenceUuid: string): ResourceReference | null {
-    const index = this._references.findIndex((r) => r.uuid === referenceUuid);
-    if (index === -1) return null;
-    const removed = this._references.splice(index, 1)[0];
-    this._updatedAt = Date.now();
-    return removed;
-  }
-
-  public getAllReferences(): ResourceReference[] {
-    return [...this._references];
-  }
-
-  public addLinkedContent(content: LinkedContent): void {
-    if (!(content instanceof LinkedContent)) {
-      throw new Error('Content must be an instance of LinkedContentClient');
+  get updatedAtText(): string {
+    try {
+      return formatDistanceToNow(this._updatedAt, {
+        addSuffix: true,
+        locale: zhCN,
+      });
+    } catch {
+      return new Date(this._updatedAt).toLocaleDateString('zh-CN');
     }
-    this._linkedContents.push(content);
-    this._updatedAt = Date.now();
   }
 
-  public removeLinkedContent(contentUuid: string): LinkedContent | null {
-    const index = this._linkedContents.findIndex((c) => c.uuid === contentUuid);
-    if (index === -1) return null;
-    const removed = this._linkedContents.splice(index, 1)[0];
-    this._updatedAt = Date.now();
-    return removed;
+  get extension(): string {
+    const ext = this._name.split('.').pop();
+    return ext ? `.${ext}` : '';
   }
 
-  public getAllLinkedContents(): LinkedContent[] {
-    return [...this._linkedContents];
-  }
-
-  // ===== 转换方法 =====
-
-  public toServerDTO(includeChildren: boolean = false): ResourceServerDTO {
-    return {
-      uuid: this._uuid,
-      repositoryUuid: this._repositoryUuid,
-      name: this._name,
-      type: this._type,
-      path: this._path,
-      size: this._size,
-      description: this._description,
-      author: this._author,
-      version: this._version,
-      tags: [...this._tags],
-      category: this._category,
-      status: this._status,
-      metadata: { ...this._metadata },
-      createdAt: this._createdAt,
-      updatedAt: this._updatedAt,
-      modifiedAt: this._modifiedAt,
-      references: includeChildren ? this._references.map((r) => r.toServerDTO()) : undefined,
-      linkedContents: includeChildren
-        ? this._linkedContents.map((c) => c.toServerDTO())
-        : undefined,
+  get icon(): string {
+    const iconMap: Record<ResourceType, string> = {
+      [ResourceType.MARKDOWN]: 'mdi-language-markdown',
+      [ResourceType.IMAGE]: 'mdi-image',
+      [ResourceType.VIDEO]: 'mdi-video',
+      [ResourceType.AUDIO]: 'mdi-music',
+      [ResourceType.PDF]: 'mdi-file-pdf-box',
+      [ResourceType.LINK]: 'mdi-link-variant',
+      [ResourceType.CODE]: 'mdi-code-braces',
+      [ResourceType.OTHER]: 'mdi-file',
     };
+    return iconMap[this._type] || 'mdi-file';
   }
 
-  public toClientDTO(includeChildren: boolean = false): ResourceClientDTO {
+  // ===== DTO 转换方法 =====
+  toClientDTO(): ResourceClientDTO {
     return {
       uuid: this._uuid,
       repositoryUuid: this._repositoryUuid,
+      folderUuid: this._folderUuid,
       name: this._name,
       type: this._type,
       path: this._path,
       size: this._size,
-      description: this._description,
-      author: this._author,
-      version: this._version,
-      tags: [...this._tags],
-      category: this._category,
+      content: this._content,
+      metadata: this._metadata.toClientDTO(),
+      stats: this._stats.toClientDTO(),
       status: this._status,
-      metadata: { ...this._metadata },
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
-      modifiedAt: this._modifiedAt,
+      isDeleted: this.isDeleted,
+      isArchived: this.isArchived,
+      isActive: this.isActive,
+      isDraft: this.isDraft,
+      statusText: this.statusText,
+      typeText: this.typeText,
+      displayName: this.displayName,
       formattedSize: this.formattedSize,
-      formattedCreatedAt: this.formattedCreatedAt,
-      formattedUpdatedAt: this.formattedUpdatedAt,
-      formattedModifiedAt: this.formattedModifiedAt,
-      fileExtension: this.fileExtension,
-      typeLabel: this.typeLabel,
-      statusLabel: this.statusLabel,
-      isFavorite: this.isFavorite,
-      references: includeChildren ? this._references.map((r) => r.toClientDTO()) : undefined,
-      linkedContents: includeChildren
-        ? this._linkedContents.map((c) => c.toClientDTO())
-        : undefined,
+      createdAtText: this.createdAtText,
+      updatedAtText: this.updatedAtText,
+      extension: this.extension,
+      icon: this.icon,
     };
   }
 
-  public static fromServerDTO(dto: ResourceServerDTO): Resource {
-    const resource = new Resource({
-      uuid: dto.uuid,
-      repositoryUuid: dto.repositoryUuid,
-      name: dto.name,
-      type: dto.type,
-      path: dto.path,
-      size: dto.size,
-      description: dto.description,
-      author: dto.author,
-      version: dto.version,
-      tags: dto.tags,
-      category: dto.category,
-      status: dto.status,
-      metadata: dto.metadata,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-      modifiedAt: dto.modifiedAt,
-    });
-
-    // 递归创建子实体
-    if (dto.references) {
-      resource._references = dto.references.map((r) => ResourceReference.fromServerDTO(r));
-    }
-    if (dto.linkedContents) {
-      resource._linkedContents = dto.linkedContents.map((c) => LinkedContent.fromServerDTO(c));
-    }
-
-    return resource;
+  toServerDTO(): ResourceServerDTO {
+    return {
+      uuid: this._uuid,
+      repositoryUuid: this._repositoryUuid,
+      folderUuid: this._folderUuid,
+      name: this._name,
+      type: this._type,
+      path: this._path,
+      size: this._size,
+      content: this._content,
+      metadata: this._metadata.toServerDTO(),
+      stats: this._stats.toServerDTO(),
+      status: this._status,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+    };
   }
 
-  public static fromClientDTO(dto: ResourceClientDTO): Resource {
-    const resource = new Resource({
+  // ===== 静态工厂方法 =====
+  static fromServerDTO(dto: ResourceServerDTO): Resource {
+    return new Resource({
       uuid: dto.uuid,
       repositoryUuid: dto.repositoryUuid,
+      folderUuid: dto.folderUuid,
       name: dto.name,
       type: dto.type,
       path: dto.path,
       size: dto.size,
-      description: dto.description,
-      author: dto.author,
-      version: dto.version,
-      tags: dto.tags,
-      category: dto.category,
+      content: dto.content,
+      metadata: ResourceMetadata.fromServerDTO(dto.metadata),
+      stats: ResourceStats.fromServerDTO(dto.stats),
       status: dto.status,
-      metadata: dto.metadata,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
-      modifiedAt: dto.modifiedAt,
     });
+  }
 
-    // 递归创建子实体
-    if (dto.references) {
-      resource._references = dto.references.map((r) => ResourceReference.fromClientDTO(r));
-    }
-    if (dto.linkedContents) {
-      resource._linkedContents = dto.linkedContents.map((c) => LinkedContent.fromClientDTO(c));
-    }
-
-    return resource;
+  static fromClientDTO(dto: ResourceClientDTO): Resource {
+    return new Resource({
+      uuid: dto.uuid,
+      repositoryUuid: dto.repositoryUuid,
+      folderUuid: dto.folderUuid,
+      name: dto.name,
+      type: dto.type,
+      path: dto.path,
+      size: dto.size,
+      content: dto.content,
+      metadata: ResourceMetadata.fromClientDTO(dto.metadata),
+      stats: ResourceStats.fromClientDTO(dto.stats),
+      status: dto.status,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+    });
   }
 }

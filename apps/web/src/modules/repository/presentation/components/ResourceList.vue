@@ -1,0 +1,199 @@
+<template>
+  <v-card class="resource-list" elevation="0">
+    <!-- 搜索框 -->
+    <v-text-field
+      v-model="searchQuery"
+      density="compact"
+      placeholder="搜索资源..."
+      prepend-inner-icon="mdi-magnify"
+      clearable
+      hide-details
+      class="ma-2"
+    />
+
+    <!-- 资源列表 -->
+    <v-list density="compact" class="resource-items">
+      <v-list-item
+        v-for="resource in filteredResources"
+        :key="resource.uuid"
+        :value="resource.uuid"
+        :active="resource.uuid === selectedResourceUuid"
+        @click="openResource(resource)"
+        @dblclick="openResourceInTab(resource)"
+      >
+        <!-- 资源图标 -->
+        <template #prepend>
+          <v-icon :icon="getResourceIcon(resource.type)" size="small" />
+        </template>
+
+        <!-- 资源名称 -->
+        <v-list-item-title>{{ resource.name }}</v-list-item-title>
+
+        <!-- 资源信息 -->
+        <v-list-item-subtitle v-if="resource.metadata?.wordCount">
+          {{ resource.metadata.wordCount }} 字
+        </v-list-item-subtitle>
+
+        <!-- 操作菜单 -->
+        <template #append>
+          <v-menu>
+            <template #activator="{ props }">
+              <v-btn
+                icon="mdi-dots-vertical"
+                size="x-small"
+                variant="text"
+                v-bind="props"
+                @click.stop
+              />
+            </template>
+            <v-list density="compact">
+              <v-list-item @click="openResourceInTab(resource)">
+                <template #prepend>
+                  <v-icon icon="mdi-open-in-new" />
+                </template>
+                <v-list-item-title>在新标签页打开</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item @click="renameResource(resource)">
+                <template #prepend>
+                  <v-icon icon="mdi-rename-box" />
+                </template>
+                <v-list-item-title>重命名</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item @click="moveResource(resource)">
+                <template #prepend>
+                  <v-icon icon="mdi-folder-move" />
+                </template>
+                <v-list-item-title>移动</v-list-item-title>
+              </v-list-item>
+
+              <v-divider />
+
+              <v-list-item @click="deleteResource(resource)" class="text-error">
+                <template #prepend>
+                  <v-icon icon="mdi-delete" color="error" />
+                </template>
+                <v-list-item-title>删除</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
+      </v-list-item>
+
+      <!-- 空状态 -->
+      <v-list-item v-if="filteredResources.length === 0">
+        <v-list-item-title class="text-center text-grey">
+          {{ searchQuery ? '未找到匹配的资源' : '暂无资源' }}
+        </v-list-item-title>
+      </v-list-item>
+    </v-list>
+  </v-card>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import type { ResourceClientDTO } from '@dailyuse/contracts';
+import { useResourceStore } from '../stores/resourceStore';
+
+const props = defineProps<{
+  repositoryUuid: string;
+}>();
+
+const resourceStore = useResourceStore();
+const searchQuery = ref('');
+
+const resources = computed(() => resourceStore.resources);
+const selectedResourceUuid = computed(() => resourceStore.selectedResource?.uuid);
+
+// 过滤资源
+const filteredResources = computed(() => {
+  if (!searchQuery.value) {
+    return resources.value;
+  }
+
+  const query = searchQuery.value.toLowerCase();
+  return resources.value.filter((resource) =>
+    resource.name.toLowerCase().includes(query)
+  );
+});
+
+/**
+ * 打开资源 (单击)
+ */
+function openResource(resource: ResourceClientDTO) {
+  // 选中但不打开编辑器
+  resourceStore.selectedResource = resource;
+}
+
+/**
+ * 在新标签页打开资源 (双击 / 菜单)
+ */
+async function openResourceInTab(resource: ResourceClientDTO) {
+  await resourceStore.openInTab(resource);
+}
+
+/**
+ * 获取资源图标
+ */
+function getResourceIcon(type: string): string {
+  const iconMap: Record<string, string> = {
+    MARKDOWN: 'mdi-language-markdown',
+    IMAGE: 'mdi-image',
+    VIDEO: 'mdi-video',
+    AUDIO: 'mdi-music',
+    PDF: 'mdi-file-pdf-box',
+    LINK: 'mdi-link',
+    CODE: 'mdi-code-braces',
+    OTHER: 'mdi-file',
+  };
+  return iconMap[type] || 'mdi-file';
+}
+
+/**
+ * 重命名资源
+ */
+function renameResource(resource: ResourceClientDTO) {
+  const newName = prompt('请输入新名称:', resource.name);
+  if (newName && newName !== resource.name) {
+    // TODO: 实现重命名 API
+    console.log('Rename resource:', resource.uuid, newName);
+  }
+}
+
+/**
+ * 移动资源
+ */
+function moveResource(resource: ResourceClientDTO) {
+  // TODO: 实现移动对话框
+  console.log('Move resource:', resource.uuid);
+}
+
+/**
+ * 删除资源
+ */
+async function deleteResource(resource: ResourceClientDTO) {
+  const confirmed = confirm(`确定要删除 "${resource.name}" 吗？`);
+  if (confirmed) {
+    try {
+      await resourceStore.deleteResource(resource.uuid);
+    } catch (error) {
+      console.error('Failed to delete resource:', error);
+      alert('删除失败，请稍后重试');
+    }
+  }
+}
+</script>
+
+<style scoped>
+.resource-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.resource-items {
+  flex: 1;
+  overflow-y: auto;
+}
+</style>

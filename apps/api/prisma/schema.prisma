@@ -786,28 +786,39 @@ model folder {
   @@map("folders")
 }
 
-// New Epic 7 Resource model (aligned with Contracts architecture)
+// New Epic 7 + Epic 10 Story 10-2: Resource model (aligned with Contracts architecture)
 model resource {
   uuid           String  @id
   repositoryUuid String  @map("repository_uuid")
+  folderUuid     String? @map("folder_uuid") // Epic 10: 所属文件夹
   name           String
   type           String // markdown | image | video | audio | pdf | link | code | other
   path           String
   size           Int     @default(0)
+  
+  // Epic 10 Story 10-2: Markdown 内容字段
+  content        String? @db.Text // Markdown 内容 (TEXT类型，支持大文本)
+  
+  // Epic 10 Story 10-2: 元数据和统计 (JSONB)
+  metadata       Json    @default("{}") // ResourceMetadata: {wordCount, readingTime, thumbnail, ...}
+  stats          Json    @default("{}") // ResourceStats: {viewCount, editCount, linkCount, lastViewedAt, lastEditedAt}
+  
+  // 遗留字段（向后兼容 Epic 7）
   description    String?
   author         String?
   version        String?
   tags           String  @default("[]") // JSON array
   category       String?
+  
   status         String  @default("ACTIVE") // ACTIVE | ARCHIVED | DELETED | DRAFT
-  metadata       String  @default("{}") // JSON (包含 content 字段用于 Markdown)
-  createdAt      BigInt  @map("created_at")
-  updatedAt      BigInt  @map("updated_at")
+  createdAt      BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
+  updatedAt      BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
   modifiedAt     BigInt? @map("modified_at")
 
   repository repository @relation(fields: [repositoryUuid], references: [uuid], onDelete: Cascade)
 
   @@index([repositoryUuid])
+  @@index([folderUuid]) // Epic 10: 文件夹索引
   @@index([type])
   @@index([status])
   @@index([category])

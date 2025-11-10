@@ -195,7 +195,7 @@ export class Folder implements FolderClient {
     return new Folder(
       dto.uuid,
       dto.repositoryUuid,
-      dto.parentUuid,
+      dto.parentUuid ?? null,
       dto.name,
       dto.path,
       dto.order,
@@ -211,7 +211,7 @@ export class Folder implements FolderClient {
     return new Folder(
       dto.uuid,
       dto.repositoryUuid,
-      dto.parentUuid,
+      dto.parentUuid ?? null,
       dto.name,
       dto.path,
       dto.order,

@@ -1,10 +1,10 @@
 // @ts-nocheck
 import { defineStore } from 'pinia';
-import { Repository, Resource } from '@dailyuse/domain-client';
+import { Repository, Resource, Folder } from '@dailyuse/domain-client';
 import { RepositoryContracts } from '@dailyuse/contracts';
 
 /**
- * Repository Store - 新架构
+ * Repository Store - 新架构（支持 Folder）
  * 纯缓存存储，不直接调用外部服务
  * 所有数据操作通过 ApplicationService 进行
  */
@@ -13,6 +13,7 @@ export const useRepositoryStore = defineStore('repository', {
     // ===== 核心数据 =====
     repositories: [] as Repository[],
     resources: [] as Resource[],
+    folders: [] as Folder[], // 新增：文件夹数据
 
     // ===== 状态管理 =====
     isLoading: false,
@@ -22,6 +23,7 @@ export const useRepositoryStore = defineStore('repository', {
     // ===== UI 状态 =====
     selectedRepository: null as string | null,
     selectedResource: null as string | null,
+    selectedFolder: null as string | null, // 新增：选中的文件夹
     repositoryBeingEdited: null as Repository | null,
 
     // ===== 分页信息 =====
