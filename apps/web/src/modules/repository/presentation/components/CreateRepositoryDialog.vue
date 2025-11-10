@@ -3,11 +3,19 @@
   <v-dialog 
     v-model="isOpen" 
     max-width="600" 
-    persistent
     :scrim="true"
     class="obsidian-welcome-dialog"
   >
     <v-card class="welcome-card">
+      <!-- 关闭按钮 -->
+      <v-btn
+        icon="mdi-close"
+        variant="text"
+        size="small"
+        class="close-btn"
+        @click="handleClose"
+      />
+
       <!-- Logo 和标题 -->
       <div class="welcome-header">
         <v-icon icon="mdi-book-open-variant" size="64" color="primary" class="mb-4" />
@@ -402,6 +410,15 @@ function handleClose() {
 /* Obsidian 风格欢迎卡片 */
 .welcome-card {
   padding: 32px 24px;
+  position: relative;
+}
+
+/* 关闭按钮 */
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
 }
 
 .welcome-header {

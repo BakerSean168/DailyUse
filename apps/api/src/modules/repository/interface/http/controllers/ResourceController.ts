@@ -29,7 +29,11 @@ export class ResourceController {
         content,
       });
 
-      res.status(201).json(resource);
+      res.status(201).json({
+        success: true,
+        data: resource,
+        message: 'Resource created successfully',
+      });
     } catch (error) {
       next(error);
     }
@@ -42,11 +46,17 @@ export class ResourceController {
       const resource = await service.getResourceById(uuid);
 
       if (!resource) {
-        res.status(404).json({ message: 'Resource not found' });
+        res.status(404).json({ 
+          success: false, 
+          message: 'Resource not found' 
+        });
         return;
       }
 
-      res.json(resource);
+      res.json({
+        success: true,
+        data: resource,
+      });
     } catch (error) {
       next(error);
     }
@@ -57,7 +67,11 @@ export class ResourceController {
       const service = ResourceController.getResourceService();
       const { repositoryUuid } = req.params;
       const resources = await service.getResourcesByRepository(repositoryUuid);
-      res.json(resources);
+      
+      res.json({
+        success: true,
+        data: resources,
+      });
     } catch (error) {
       next(error);
     }
@@ -70,7 +84,12 @@ export class ResourceController {
       const { content } = req.body;
 
       const resource = await service.updateMarkdownContent(uuid, content);
-      res.json(resource);
+      
+      res.json({
+        success: true,
+        data: resource,
+        message: 'Content updated successfully',
+      });
     } catch (error) {
       next(error);
     }

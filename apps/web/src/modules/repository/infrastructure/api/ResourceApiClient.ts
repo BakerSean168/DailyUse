@@ -2,8 +2,10 @@
  * Resource API Client
  * Epic 10 Story 10-2: Resource CRUD + Markdown 编辑器
  */
-import type { AxiosInstance } from 'axios';
-import type { ResourceClientDTO } from '@dailyuse/contracts';
+import type { IApiClient } from '@/shared/api/core/types';
+import type { RepositoryContracts } from '@dailyuse/contracts';
+
+type ResourceClientDTO = RepositoryContracts.ResourceClientDTO;
 
 export interface CreateResourceDTO {
   repositoryUuid: string;
@@ -19,32 +21,29 @@ export interface UpdateMarkdownContentDTO {
 }
 
 export class ResourceApiClient {
-  constructor(private readonly api: AxiosInstance) {}
+  constructor(private readonly api: IApiClient) {}
 
   /**
    * 创建资源
    */
   async createResource(dto: CreateResourceDTO): Promise<ResourceClientDTO> {
-    const response = await this.api.post<ResourceClientDTO>('/resources', dto);
-    return response.data;
+    return await this.api.post<ResourceClientDTO>('/resources', dto);
   }
 
   /**
    * 获取资源详情
    */
   async getResourceById(uuid: string): Promise<ResourceClientDTO> {
-    const response = await this.api.get<ResourceClientDTO>(`/resources/${uuid}`);
-    return response.data;
+    return await this.api.get<ResourceClientDTO>(`/resources/${uuid}`);
   }
 
   /**
    * 获取仓库下的所有资源
    */
   async getResourcesByRepository(repositoryUuid: string): Promise<ResourceClientDTO[]> {
-    const response = await this.api.get<ResourceClientDTO[]>(
+    return await this.api.get<ResourceClientDTO[]>(
       `/repositories/${repositoryUuid}/resources`
     );
-    return response.data;
   }
 
   /**

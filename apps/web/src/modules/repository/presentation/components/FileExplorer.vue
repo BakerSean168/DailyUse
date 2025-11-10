@@ -1,7 +1,14 @@
 <template>
   <div class="file-explorer">
-    <!-- 顶部工具栏 - 只有功能按钮 -->
+    <!-- 顶部工具栏 - 新建文件夹和笔记按钮 -->
     <div v-if="selectedRepository" class="explorer-toolbar">
+      <v-btn
+        icon="mdi-note-plus-outline"
+        size="small"
+        variant="text"
+        title="新建笔记"
+        @click="handleCreateResource"
+      />
       <v-btn
         icon="mdi-folder-plus-outline"
         size="small"
@@ -9,20 +16,7 @@
         title="新建文件夹"
         @click="handleCreateFolder"
       />
-      <v-btn
-        icon="mdi-file-plus-outline"
-        size="small"
-        variant="text"
-        title="新建资源"
-        @click="handleCreateResource"
-      />
       <v-spacer />
-      <v-btn
-        icon="mdi-dots-vertical"
-        size="small"
-        variant="text"
-        title="更多选项"
-      />
     </div>
 
     <div v-if="!selectedRepository" class="empty-prompt">
@@ -58,26 +52,42 @@
         </template>
 
         <template #append="{ item }">
-          <div class="folder-actions" @click.stop>
-            <v-btn
-              icon="mdi-folder-plus-outline"
-              size="x-small"
-              variant="text"
-              @click="handleCreateSubfolder(item.raw)"
-            />
-            <v-btn
-              icon="mdi-pencil-outline"
-              size="x-small"
-              variant="text"
-              @click="handleRenameFolder(item.raw)"
-            />
-            <v-btn
-              icon="mdi-delete-outline"
-              size="x-small"
-              variant="text"
-              @click="handleDeleteFolder(item.raw)"
-            />
-          </div>
+          <v-menu location="end">
+            <template #activator="{ props: menuProps }">
+              <v-btn
+                icon="mdi-dots-vertical"
+                size="x-small"
+                variant="text"
+                v-bind="menuProps"
+                @click.stop
+              />
+            </template>
+            
+            <v-list density="compact">
+              <v-list-item @click="handleCreateSubfolder(item.raw)">
+                <template #prepend>
+                  <v-icon icon="mdi-folder-plus-outline" size="small" />
+                </template>
+                <v-list-item-title>新建子文件夹</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item @click="handleRenameFolder(item.raw)">
+                <template #prepend>
+                  <v-icon icon="mdi-pencil-outline" size="small" />
+                </template>
+                <v-list-item-title>重命名</v-list-item-title>
+              </v-list-item>
+
+              <v-divider />
+
+              <v-list-item @click="handleDeleteFolder(item.raw)" class="text-error">
+                <template #prepend>
+                  <v-icon icon="mdi-delete-outline" size="small" color="error" />
+                </template>
+                <v-list-item-title>删除</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </template>
       </v-treeview>
 
@@ -111,6 +121,7 @@ const props = withDefaults(defineProps<Props>(), {
 // Emits
 const emit = defineEmits<{
   (e: 'create-folder', parentUuid?: string): void;
+  (e: 'create-resource'): void;
   (e: 'rename-folder', folder: Folder): void;
   (e: 'delete-folder', folder: Folder): void;
   (e: 'select-folder', folder: Folder | null): void;
@@ -200,8 +211,7 @@ function handleCreateFolder() {
 }
 
 function handleCreateResource() {
-  // TODO: 实现创建资源功能
-  console.log('Create resource');
+  emit('create-resource');
 }
 
 function handleCreateSubfolder(folder: Folder) {
@@ -294,23 +304,8 @@ defineExpose({
   padding: 8px;
 }
 
-.folder-actions {
-  display: flex;
-  gap: 2px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.v-treeview-node:hover .folder-actions {
-  opacity: 1;
-}
-
 .text-disabled {
   color: rgba(var(--v-theme-on-surface), 0.38);
-}
-
-.text-error {
-  color: rgb(var(--v-theme-error));
 }
 
 .text-error {

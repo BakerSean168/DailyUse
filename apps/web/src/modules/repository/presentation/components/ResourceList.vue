@@ -1,16 +1,5 @@
 <template>
   <v-card class="resource-list" elevation="0">
-    <!-- 搜索框 -->
-    <v-text-field
-      v-model="searchQuery"
-      density="compact"
-      placeholder="搜索资源..."
-      prepend-inner-icon="mdi-magnify"
-      clearable
-      hide-details
-      class="ma-2"
-    />
-
     <!-- 资源列表 -->
     <v-list density="compact" class="resource-items">
       <v-list-item
@@ -84,7 +73,7 @@
       <!-- 空状态 -->
       <v-list-item v-if="filteredResources.length === 0">
         <v-list-item-title class="text-center text-grey">
-          {{ searchQuery ? '未找到匹配的资源' : '暂无资源' }}
+          暂无资源
         </v-list-item-title>
       </v-list-item>
     </v-list>
@@ -101,22 +90,12 @@ const props = defineProps<{
 }>();
 
 const resourceStore = useResourceStore();
-const searchQuery = ref('');
 
 const resources = computed(() => resourceStore.resources);
 const selectedResourceUuid = computed(() => resourceStore.selectedResource?.uuid);
 
-// 过滤资源
-const filteredResources = computed(() => {
-  if (!searchQuery.value) {
-    return resources.value;
-  }
-
-  const query = searchQuery.value.toLowerCase();
-  return resources.value.filter((resource) =>
-    resource.name.toLowerCase().includes(query)
-  );
-});
+// 显示所有资源
+const filteredResources = computed(() => resources.value);
 
 /**
  * 打开资源 (单击)

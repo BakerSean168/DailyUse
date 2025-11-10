@@ -1,27 +1,74 @@
 <template>
   <div class="repository-view">
-    <!-- 左侧：文件夹 + 资源列表 + 仓储选择器 -->
-    <div class="sidebar">
+    <!-- 左侧边栏 -->
+    <aside class="sidebar">
+      <!-- 侧边栏顶部：视图切换标签 -->
+      <div class="sidebar-tabs">
+        <v-btn-toggle
+          v-model="activeTab"
+          mandatory
+          density="compact"
+          variant="text"
+          divided
+          class="tab-group"
+        >
+          <v-btn value="files" size="small">
+            <v-icon icon="mdi-folder-outline" />
+            <v-tooltip activator="parent" location="bottom">文件</v-tooltip>
+          </v-btn>
+          <v-btn value="search" size="small">
+            <v-icon icon="mdi-magnify" />
+            <v-tooltip activator="parent" location="bottom">搜索</v-tooltip>
+          </v-btn>
+          <v-btn value="bookmarks" size="small">
+            <v-icon icon="mdi-bookmark-outline" />
+            <v-tooltip activator="parent" location="bottom">书签</v-tooltip>
+          </v-btn>
+          <v-btn value="tags" size="small">
+            <v-icon icon="mdi-tag-outline" />
+            <v-tooltip activator="parent" location="bottom">标签</v-tooltip>
+          </v-btn>
+        </v-btn-toggle>
+      </div>
+
+      <!-- 侧边栏内容区域 -->
       <div class="sidebar-content">
-        <!-- 文件夹树 -->
-        <FileExplorer
-          ref="fileExplorerRef"
+        <!-- 文件树视图 -->
+        <FilesPanel
+          v-show="activeTab === 'files'"
+          ref="filesPanelRef"
           :selected-repository="selectedRepository"
           @create-folder="handleCreateFolder"
+          @create-resource="handleCreateResource"
           @rename-folder="handleRenameFolder"
           @delete-folder="handleDeleteFolder"
           @select-folder="handleSelectFolder"
         />
-        
-        <!-- 资源列表 -->
-        <ResourceList
-          v-if="selectedRepository"
-          :repository-uuid="selectedRepository"
-          class="resource-list-section"
+
+        <!-- 搜索视图 -->
+        <SearchPanel
+          v-show="activeTab === 'search'"
+          @select="handleSearchResultSelect"
+        />
+
+        <!-- 书签视图 -->
+        <BookmarksPanel
+          v-show="activeTab === 'bookmarks'"
+          @select="handleBookmarkSelect"
+          @add="handleAddBookmark"
+          @remove="handleRemoveBookmark"
+        />
+
+        <!-- 标签视图 -->
+        <TagsPanel
+          v-show="activeTab === 'tags'"
+          @select="handleTagSelect"
+          @add="handleAddTag"
+          @remove="handleRemoveTag"
         />
       </div>
 
-      <!-- 底部仓储选择器 (Obsidian 风格) - 始终显示 -->
+      <!-- 底部仓储选择器 (Obsidian 风格) -->
       <div class="repository-selector">
         <v-menu location="top" :close-on-content-click="false">
           <template #activator="{ props }">
@@ -121,7 +168,7 @@
           </v-card>
         </v-menu>
       </div>
-    </div>
+    </aside>
 
     <!-- 右侧：资源编辑器 + Tab 管理 (Epic 10 Story 10-2) -->
     <div class="resource-editor-panel">
@@ -155,6 +202,13 @@
       :repository-uuid="selectedRepository"
       :parent-uuid="folderParentUuid"
       @created="handleFolderCreated"
+    />
+
+    <CreateResourceDialog
+      v-if="selectedRepository"
+      v-model="showCreateResourceDialog"
+      :repository-uuid="selectedRepository"
+      @created="handleResourceCreated"
     />
 
     <v-dialog v-model="showRenameFolderDialog" max-width="500" persistent>
@@ -203,10 +257,13 @@ import { useRepositoryStore, useFolderStore } from '../stores';
 import { useResourceStore } from '../stores/resourceStore';
 import { RepositoryApiClient, FolderApiClient } from '../../api';
 import { Repository, Folder } from '@dailyuse/domain-client';
-import FileExplorer from '../components/FileExplorer.vue';
+import FilesPanel from '../components/FilesPanel.vue';
+import SearchPanel from '../components/SearchPanel.vue';
+import BookmarksPanel from '../components/BookmarksPanel.vue';
+import TagsPanel from '../components/TagsPanel.vue';
 import CreateRepositoryDialog from '../components/CreateRepositoryDialog.vue';
 import CreateFolderDialog from '../components/CreateFolderDialog.vue';
-import ResourceList from '../components/ResourceList.vue';
+import CreateResourceDialog from '../components/CreateResourceDialog.vue';
 import ResourceEditor from '../components/ResourceEditor.vue';
 import TabManager from '../components/TabManager.vue';
 
@@ -216,7 +273,7 @@ const folderStore = useFolderStore();
 const resourceStore = useResourceStore();
 
 // Refs
-const fileExplorerRef = ref<InstanceType<typeof FileExplorer> | null>(null);
+const filesPanelRef = ref<InstanceType<typeof FilesPanel> | null>(null);
 
 // Local state
 const isLoading = ref(false);
@@ -224,9 +281,13 @@ const error = ref<string | null>(null);
 const selectedRepository = ref<string | null>(null);
 const selectedFolder = ref<Folder | null>(null);
 
+// 侧边栏标签页状态
+const activeTab = ref<'files' | 'search' | 'bookmarks' | 'tags'>('files');
+
 // Dialogs
 const showCreateRepositoryDialog = ref(false);
 const showCreateFolderDialog = ref(false);
+const showCreateResourceDialog = ref(false);
 const showRenameFolderDialog = ref(false);
 const showDeleteFolderDialog = ref(false);
 
@@ -319,9 +380,24 @@ function handleCreateFolder(parentUuid?: string) {
   showCreateFolderDialog.value = true;
 }
 
+function handleCreateResource() {
+  showCreateResourceDialog.value = true;
+}
+
 function handleFolderCreated(folder: Folder) {
   console.log('文件夹已创建:', folder.name);
-  fileExplorerRef.value?.refresh();
+  filesPanelRef.value?.refresh();
+}
+
+async function handleResourceCreated(resourceUuid: string) {
+  console.log('笔记已创建:', resourceUuid);
+  // 刷新资源列表
+  await resourceStore.loadResources(selectedRepository.value!);
+  // 查找并打开新创建的笔记
+  const resource = resourceStore.resources.find(r => r.uuid === resourceUuid);
+  if (resource) {
+    await resourceStore.openInTab(resource);
+  }
 }
 
 function handleRenameFolder(folder: Folder) {
@@ -343,7 +419,7 @@ async function handleSubmitRename() {
     const updatedFolder = Folder.fromServerDTO(updatedFolderDTO);
     folderStore.updateFolder(updatedFolder.uuid, updatedFolder);
     showRenameFolderDialog.value = false;
-    fileExplorerRef.value?.refresh();
+    filesPanelRef.value?.refresh();
   } catch (err: any) {
     console.error('重命名文件夹失败:', err);
   } finally {
@@ -365,7 +441,7 @@ async function handleSubmitDelete() {
     await FolderApiClient.deleteFolder(folderToDelete.value.uuid);
     folderStore.removeFolder(folderToDelete.value.uuid);
     showDeleteFolderDialog.value = false;
-    fileExplorerRef.value?.refresh();
+    filesPanelRef.value?.refresh();
   } catch (err: any) {
     console.error('删除文件夹失败:', err);
   } finally {
@@ -375,6 +451,44 @@ async function handleSubmitDelete() {
 
 function handleSelectFolder(folder: Folder | null) {
   selectedFolder.value = folder;
+}
+
+// 搜索相关事件处理
+function handleSearchResultSelect(result: any) {
+  console.log('选中搜索结果:', result);
+  // TODO: 打开搜索结果对应的资源
+}
+
+// 书签相关事件处理
+function handleBookmarkSelect(bookmark: any) {
+  console.log('选中书签:', bookmark);
+  // TODO: 打开书签对应的资源
+}
+
+function handleAddBookmark() {
+  console.log('添加书签');
+  // TODO: 实现添加书签功能
+}
+
+function handleRemoveBookmark(bookmark: any) {
+  console.log('删除书签:', bookmark);
+  // TODO: 实现删除书签功能
+}
+
+// 标签相关事件处理
+function handleTagSelect(tag: any) {
+  console.log('选中标签:', tag);
+  // TODO: 显示标签下的所有资源
+}
+
+function handleAddTag() {
+  console.log('创建标签');
+  // TODO: 实现创建标签功能
+}
+
+function handleRemoveTag(tag: any) {
+  console.log('删除标签:', tag);
+  // TODO: 实现删除标签功能
 }
 
 // Resource 相关 (Epic 10 Story 10-2)
@@ -417,14 +531,25 @@ onMounted(async () => {
   background: rgb(var(--v-theme-surface));
 }
 
-.sidebar-content {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+/* 侧边栏顶部标签 */
+.sidebar-tabs {
+  padding: 8px;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-surface-variant));
 }
 
-.resource-list-section {
-  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+.tab-group {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+/* 侧边栏内容区域 */
+.sidebar-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
 }
 
 /* 底部仓储选择器 - Obsidian 风格 */

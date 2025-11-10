@@ -2,22 +2,24 @@
   <v-dialog v-model="isOpen" max-width="500" persistent>
     <v-card>
       <v-card-title class="d-flex align-center">
-        <v-icon icon="mdi-folder-plus-outline" class="mr-2" />
-        <span>{{ parentUuid ? '创建子文件夹' : '创建文件夹' }}</span>
+        <v-icon icon="mdi-note-plus-outline" class="mr-2" />
+        <span>创建笔记</span>
       </v-card-title>
 
       <v-card-text>
         <v-form ref="formRef" @submit.prevent="handleSubmit">
           <v-text-field
             v-model="formData.name"
-            label="文件夹名称"
-            placeholder="请输入文件夹名称"
+            label="笔记名称"
+            placeholder="请输入笔记名称"
             :rules="nameRules"
             :error-messages="errorMessages"
             autofocus
             required
             variant="outlined"
             density="comfortable"
+            hint="元数据可在笔记顶部使用 YAML frontmatter 格式添加"
+            persistent-hint
           />
         </v-form>
       </v-card-text>
@@ -40,30 +42,29 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { useFolderStore } from '../stores';
-import { FolderApiClient } from '../../api';
-import { Folder } from '@dailyuse/domain-client';
+import { useResourceStore } from '../stores/resourceStore';
+import { ResourceApiClient } from '../../infrastructure/api/ResourceApiClient';
+import { apiClient } from '@/shared/api/instances';
 
 // Props
 interface Props {
   modelValue: boolean;
   repositoryUuid: string;
-  parentUuid?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
-  parentUuid: null,
 });
 
 // Emits
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'created', folder: Folder): void;
+  (e: 'created', resourceUuid: string): void;
 }>();
 
 // Store
-const folderStore = useFolderStore();
+const resourceStore = useResourceStore();
+const resourceApiClient = new ResourceApiClient(apiClient);
 
 // Local state
 const formRef = ref<any>(null);
@@ -81,9 +82,9 @@ const isOpen = computed({
 });
 
 const nameRules = [
-  (v: string) => !!v || '文件夹名称不能为空',
-  (v: string) => v.length <= 255 || '文件夹名称不能超过255个字符',
-  (v: string) => /^[^/\\:*?"<>|]+$/.test(v) || '文件夹名称包含非法字符',
+  (v: string) => !!v || '笔记名称不能为空',
+  (v: string) => v.length <= 255 || '笔记名称不能超过255个字符',
+  (v: string) => /^[^/\\:*?"<>|]+$/.test(v) || '笔记名称包含非法字符',
 ];
 
 // Methods
@@ -96,18 +97,46 @@ async function handleSubmit() {
   isSubmitting.value = true;
 
   try {
-    const folderDTO = await FolderApiClient.createFolder(props.repositoryUuid, {
-      name: formData.value.name,
-      parentUuid: props.parentUuid || null,
+    // 创建带有默认 frontmatter 的 Markdown 内容
+    const now = new Date().toISOString();
+    const defaultContent = `---
+title: ${formData.value.name}
+created: ${now}
+updated: ${now}
+tags: []
+---
+
+# ${formData.value.name}
+
+`;
+
+    const resourceDTO = await resourceApiClient.createResource({
+      repositoryUuid: props.repositoryUuid,
+      name: formData.value.name.endsWith('.md') ? formData.value.name : `${formData.value.name}.md`,
+      type: 'MARKDOWN',
+      path: `/${formData.value.name}.md`,
+      folderUuid: undefined, // 根目录
+      content: defaultContent,
     });
 
-    const folder = Folder.fromClientDTO(folderDTO);
-    folderStore.addFolder(folder);
-    emit('created', folder);
-    handleClose();
+    console.log('创建的资源:', resourceDTO);
+
+    // 刷新资源列表
+    await resourceStore.loadResources(props.repositoryUuid);
+    
+    // 如果返回的是完整对象（有 uuid），直接使用
+    // 如果是空的，从刷新后的列表中查找
+    const resourceUuid = resourceDTO?.uuid || resourceStore.resources[resourceStore.resources.length - 1]?.uuid;
+    
+    if (resourceUuid) {
+      emit('created', resourceUuid);
+      handleClose();
+    } else {
+      throw new Error('无法获取创建的资源 UUID');
+    }
   } catch (err: any) {
-    errorMessages.value = [err.message || '创建文件夹失败'];
-    console.error('创建文件夹失败:', err);
+    errorMessages.value = [err.message || '创建笔记失败'];
+    console.error('创建笔记失败:', err);
   } finally {
     isSubmitting.value = false;
   }
