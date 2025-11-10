@@ -1,49 +1,49 @@
 /**
  * Repository Stats Value Object - Client Implementation
  * 仓储统计值对象 - 客户端实现
+ *
+ * DDD 值对象特点：
+ * - 不可变（Immutable）
+ * - 基于值的相等性
+ * - 无标识符
  */
 import { RepositoryContracts } from '@dailyuse/contracts';
+import { ValueObject } from '@dailyuse/utils';
 
-type RepositoryStatsClient = RepositoryContracts.RepositoryStatsClient;
 type RepositoryStatsClientDTO = RepositoryContracts.RepositoryStatsClientDTO;
 type RepositoryStatsServerDTO = RepositoryContracts.RepositoryStatsServerDTO;
 
-export class RepositoryStats implements RepositoryStatsClient {
-  // ===== 私有字段 =====
-  private _resourceCount: number;
-  private _folderCount: number;
-  private _totalSize: number;
-  private _extensible: Record<string, unknown>;
+export class RepositoryStats extends ValueObject {
+  // ===== 公开只读字段 =====
+  public readonly resourceCount: number;
+  public readonly folderCount: number;
+  public readonly totalSize: number;
+  private readonly _extensible: Record<string, unknown>;
+
+  // ===== 动态属性索引签名（兼容 RepositoryStatsClient 接口）=====
+  [key: string]: unknown;
 
   // ===== 私有构造函数 =====
-  private constructor(
-    resourceCount: number,
-    folderCount: number,
-    totalSize: number,
-    extensible?: Record<string, unknown>,
-  ) {
-    this._resourceCount = resourceCount;
-    this._folderCount = folderCount;
-    this._totalSize = totalSize;
-    this._extensible = extensible || {};
-  }
+  private constructor(params: {
+    resourceCount: number;
+    folderCount: number;
+    totalSize: number;
+    extensible?: Record<string, unknown>;
+  }) {
+    super();
+    this.resourceCount = params.resourceCount;
+    this.folderCount = params.folderCount;
+    this.totalSize = params.totalSize;
+    this._extensible = params.extensible || {};
 
-  // ===== Getters =====
-  get resourceCount(): number {
-    return this._resourceCount;
-  }
-
-  get folderCount(): number {
-    return this._folderCount;
-  }
-
-  get totalSize(): number {
-    return this._totalSize;
+    // 确保不可变
+    Object.freeze(this);
+    Object.freeze(this._extensible);
   }
 
   // ===== UI 计算属性 =====
-  get formattedSize(): string {
-    const bytes = this._totalSize;
+  public get formattedSize(): string {
+    const bytes = this.totalSize;
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -51,23 +51,49 @@ export class RepositoryStats implements RepositoryStatsClient {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 
-  get hasResources(): boolean {
-    return this._resourceCount > 0;
+  public get hasResources(): boolean {
+    return this.resourceCount > 0;
   }
 
-  get hasFolders(): boolean {
-    return this._folderCount > 0;
+  public get hasFolders(): boolean {
+    return this.folderCount > 0;
   }
 
-  // ===== 扩展属性访问 =====
-  [key: string]: unknown;
+  // ===== 值相等性比较 =====
+  public equals(other: ValueObject): boolean {
+    if (!(other instanceof RepositoryStats)) {
+      return false;
+    }
+
+    return (
+      this.resourceCount === other.resourceCount &&
+      this.folderCount === other.folderCount &&
+      this.totalSize === other.totalSize
+    );
+  }
+
+  // ===== 创建修改后的新实例 =====
+  public with(
+    changes: Partial<{
+      resourceCount: number;
+      folderCount: number;
+      totalSize: number;
+    }>,
+  ): RepositoryStats {
+    return new RepositoryStats({
+      resourceCount: changes.resourceCount ?? this.resourceCount,
+      folderCount: changes.folderCount ?? this.folderCount,
+      totalSize: changes.totalSize ?? this.totalSize,
+      extensible: this._extensible,
+    });
+  }
 
   // ===== DTO 转换 =====
-  toClientDTO(): RepositoryStatsClientDTO {
+  public toClientDTO(): RepositoryStatsClientDTO {
     return {
-      resourceCount: this._resourceCount,
-      folderCount: this._folderCount,
-      totalSize: this._totalSize,
+      resourceCount: this.resourceCount,
+      folderCount: this.folderCount,
+      totalSize: this.totalSize,
       ...this._extensible,
       formattedSize: this.formattedSize,
       hasResources: this.hasResources,
@@ -75,32 +101,41 @@ export class RepositoryStats implements RepositoryStatsClient {
     };
   }
 
-  toServerDTO(): RepositoryStatsServerDTO {
+  public toServerDTO(): RepositoryStatsServerDTO {
     return {
-      resourceCount: this._resourceCount,
-      folderCount: this._folderCount,
-      totalSize: this._totalSize,
+      resourceCount: this.resourceCount,
+      folderCount: this.folderCount,
+      totalSize: this.totalSize,
       ...this._extensible,
     };
   }
 
   // ===== 静态工厂方法 =====
-  static fromServerDTO(dto: RepositoryStatsServerDTO): RepositoryStats {
+  public static fromServerDTO(dto: RepositoryStatsServerDTO): RepositoryStats {
     const { resourceCount, folderCount, totalSize, ...rest } = dto;
-    return new RepositoryStats(resourceCount, folderCount, totalSize, rest);
+    return new RepositoryStats({
+      resourceCount,
+      folderCount,
+      totalSize,
+      extensible: rest,
+    });
   }
 
-  static fromClientDTO(dto: RepositoryStatsClientDTO): RepositoryStats {
+  public static fromClientDTO(dto: RepositoryStatsClientDTO): RepositoryStats {
     const { resourceCount, folderCount, totalSize, formattedSize, hasResources, hasFolders, ...rest } = dto;
-    return new RepositoryStats(resourceCount, folderCount, totalSize, rest);
+    return new RepositoryStats({
+      resourceCount,
+      folderCount,
+      totalSize,
+      extensible: rest,
+    });
   }
 
-  static create(params?: Partial<RepositoryStatsServerDTO>): RepositoryStats {
-    return new RepositoryStats(
-      params?.resourceCount || 0,
-      params?.folderCount || 0,
-      params?.totalSize || 0,
-      {},
-    );
+  public static create(params?: Partial<RepositoryStatsServerDTO>): RepositoryStats {
+    return new RepositoryStats({
+      resourceCount: params?.resourceCount || 0,
+      folderCount: params?.folderCount || 0,
+      totalSize: params?.totalSize || 0,
+    });
   }
 }

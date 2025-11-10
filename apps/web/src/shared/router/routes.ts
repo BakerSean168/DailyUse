@@ -95,11 +95,12 @@ export const appRoutes: RouteRecordRaw[] = [
       ...reminderRoutes,
       ...scheduleRoutes,
 
-      // 知识仓库 (Knowledge Repository - Document Management)
+      // 知识仓库 (Epic 10: Obsidian 风格知识管理系统)
+      // Story 10-2: Resource CRUD + Milkdown 编辑器 - 3列布局视图
       {
         path: '/repository',
         name: 'repository',
-        component: () => import('@/modules/document/views/RepositoryPage.vue'),
+        component: () => import('@/modules/repository/presentation/views/RepositoryView.vue'),
         meta: {
           title: '知识仓库',
           showInNav: true,

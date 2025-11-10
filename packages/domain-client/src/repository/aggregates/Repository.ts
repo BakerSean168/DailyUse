@@ -1,7 +1,14 @@
 /**
  * Repository 聚合根实现 (Client)
+ * 
+ * DDD 聚合根职责：
+ * - 管理仓储的元数据和配置
+ * - 管理文件夹树结构（子实体）
+ * - 执行仓储业务逻辑
+ * - 是事务边界
  */
 import { RepositoryContracts } from '@dailyuse/contracts';
+import { AggregateRoot } from '@dailyuse/utils';
 import { RepositoryConfig, RepositoryStats } from '../value-objects';
 import { Folder } from '../entities/Folder';
 
@@ -17,9 +24,8 @@ type FolderClient = RepositoryContracts.FolderClient;
 const RepositoryStatusEnum = RepositoryContracts.RepositoryStatus;
 const RepositoryTypeEnum = RepositoryContracts.RepositoryType;
 
-export class Repository implements RepositoryClient {
+export class Repository extends AggregateRoot implements RepositoryClient {
   // ===== 私有字段 =====
-  private _uuid: string;
   private _accountUuid: string;
   private _name: string;
   private _type: RepositoryType;
@@ -33,97 +39,97 @@ export class Repository implements RepositoryClient {
   private _folders: FolderClient[] | null;
 
   // ===== 私有构造函数 =====
-  private constructor(
-    uuid: string,
-    accountUuid: string,
-    name: string,
-    type: RepositoryType,
-    path: string,
-    description: string | null,
-    config: RepositoryConfig,
-    stats: RepositoryStats,
-    status: RepositoryStatus,
-    createdAt: number,
-    updatedAt: number,
-    folders: FolderClient[] | null = null,
-  ) {
-    this._uuid = uuid;
-    this._accountUuid = accountUuid;
-    this._name = name;
-    this._type = type;
-    this._path = path;
-    this._description = description;
-    this._config = config;
-    this._stats = stats;
-    this._status = status;
-    this._createdAt = createdAt;
-    this._updatedAt = updatedAt;
-    this._folders = folders;
+  private constructor(params: {
+    uuid?: string;
+    accountUuid: string;
+    name: string;
+    type: RepositoryType;
+    path: string;
+    description?: string | null;
+    config: RepositoryConfig;
+    stats: RepositoryStats;
+    status: RepositoryStatus;
+    createdAt: number;
+    updatedAt: number;
+    folders?: FolderClient[] | null;
+  }) {
+    super(params.uuid || AggregateRoot.generateUUID());
+    this._accountUuid = params.accountUuid;
+    this._name = params.name;
+    this._type = params.type;
+    this._path = params.path;
+    this._description = params.description ?? null;
+    this._config = params.config;
+    this._stats = params.stats;
+    this._status = params.status;
+    this._createdAt = params.createdAt;
+    this._updatedAt = params.updatedAt;
+    this._folders = params.folders ?? null;
   }
 
   // ===== Getters =====
-  get uuid(): string {
+  public override get uuid(): string {
     return this._uuid;
   }
 
-  get accountUuid(): string {
+  public get accountUuid(): string {
     return this._accountUuid;
   }
 
-  get name(): string {
+  public get name(): string {
     return this._name;
   }
 
-  get type(): RepositoryType {
+  public get type(): RepositoryType {
     return this._type;
   }
 
-  get path(): string {
+  public get path(): string {
     return this._path;
   }
 
-  get description(): string | null {
+  public get description(): string | null {
     return this._description;
   }
 
-  get config(): RepositoryConfig {
+  public get config(): RepositoryConfig {
     return this._config;
   }
 
-  get stats(): RepositoryStats {
+  public get stats(): RepositoryStats {
     return this._stats;
   }
 
-  get status(): RepositoryStatus {
+  public get status(): RepositoryStatus {
     return this._status;
   }
 
-  get createdAt(): number {
+  public get createdAt(): number {
     return this._createdAt;
   }
 
-  get updatedAt(): number {
+  public get updatedAt(): number {
     return this._updatedAt;
   }
 
-  get folders(): FolderClient[] | null {
+  public get folders(): FolderClient[] | null {
     return this._folders;
   }
 
   // ===== UI 计算属性 =====
-  get isDeleted(): boolean {
+  public get isDeleted(): boolean {
     return this._status === RepositoryStatusEnum.DELETED;
   }
 
-  get isArchived(): boolean {
+  public get isArchived(): boolean {
     return this._status === RepositoryStatusEnum.ARCHIVED;
   }
 
-  get isActive(): boolean {
+  public get isActive(): boolean {
     return this._status === RepositoryStatusEnum.ACTIVE;
   }
 
-  get statusText(): string {
+  public get statusText(): string {
     const map = {
       [RepositoryStatusEnum.ACTIVE]: 'Active',
       [RepositoryStatusEnum.ARCHIVED]: 'Archived',
@@ -132,7 +138,7 @@ export class Repository implements RepositoryClient {
     return map[this._status];
   }
 
-  get typeText(): string {
+  public get typeText(): string {
     const map = {
       [RepositoryTypeEnum.MARKDOWN]: 'Markdown',
       [RepositoryTypeEnum.CODE]: 'Code',
@@ -141,19 +147,19 @@ export class Repository implements RepositoryClient {
     return map[this._type];
   }
 
-  get folderCount(): number {
+  public get folderCount(): number {
     return this._stats.folderCount;
   }
 
-  get resourceCount(): number {
+  public get resourceCount(): number {
     return this._stats.resourceCount;
   }
 
-  get totalSize(): number {
+  public get totalSize(): number {
     return this._stats.totalSize;
   }
 
-  get formattedSize(): string {
+  public get formattedSize(): string {
     return this._stats.formattedSize;
   }
 
@@ -249,37 +255,37 @@ export class Repository implements RepositoryClient {
   }
 
   // ===== 静态工厂方法 =====
-  static fromServerDTO(dto: RepositoryServerDTO): Repository {
-    return new Repository(
-      dto.uuid,
-      dto.accountUuid,
-      dto.name,
-      dto.type,
-      dto.path,
-      dto.description ?? null,
-      RepositoryConfig.fromServerDTO(dto.config),
-      RepositoryStats.fromServerDTO(dto.stats),
-      dto.status,
-      dto.createdAt,
-      dto.updatedAt,
-      dto.folders?.map((f: any) => Folder.fromServerDTO(f)) || null,
-    );
+  public static fromServerDTO(dto: RepositoryServerDTO): Repository {
+    return new Repository({
+      uuid: dto.uuid,
+      accountUuid: dto.accountUuid,
+      name: dto.name,
+      type: dto.type,
+      path: dto.path,
+      description: dto.description ?? null,
+      config: RepositoryConfig.fromServerDTO(dto.config),
+      stats: RepositoryStats.fromServerDTO(dto.stats),
+      status: dto.status,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      folders: dto.folders?.map((f: any) => Folder.fromServerDTO(f)) || null,
+    });
   }
 
-  static fromClientDTO(dto: RepositoryClientDTO): Repository {
-    return new Repository(
-      dto.uuid,
-      dto.accountUuid,
-      dto.name,
-      dto.type,
-      dto.path,
-      dto.description ?? null,
-      RepositoryConfig.fromClientDTO(dto.config),
-      RepositoryStats.fromClientDTO(dto.stats),
-      dto.status,
-      dto.createdAt,
-      dto.updatedAt,
-      dto.folders?.map((f: any) => Folder.fromClientDTO(f)) || null,
-    );
+  public static fromClientDTO(dto: RepositoryClientDTO): Repository {
+    return new Repository({
+      uuid: dto.uuid,
+      accountUuid: dto.accountUuid,
+      name: dto.name,
+      type: dto.type,
+      path: dto.path,
+      description: dto.description ?? null,
+      config: RepositoryConfig.fromClientDTO(dto.config),
+      stats: RepositoryStats.fromClientDTO(dto.stats),
+      status: dto.status,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      folders: dto.folders?.map((f: any) => Folder.fromClientDTO(f)) || null,
+    });
   }
 }

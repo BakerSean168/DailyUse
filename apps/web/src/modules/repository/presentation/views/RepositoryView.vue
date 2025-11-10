@@ -1,104 +1,126 @@
 <template>
   <div class="repository-view">
-    <!-- 左侧：仓储列表 -->
-    <div class="repository-list">
-      <v-card flat class="h-100">
-        <v-card-title class="d-flex align-center">
-          <v-icon icon="mdi-database-outline" class="mr-2" />
-          <span>仓储列表</span>
-          <v-spacer />
-          <v-btn
-            icon="mdi-plus"
-            size="small"
-            variant="text"
-            @click="showCreateRepositoryDialog = true"
-          />
-        </v-card-title>
+    <!-- 左侧：文件夹 + 资源列表 + 仓储选择器 -->
+    <div class="sidebar">
+      <div class="sidebar-content">
+        <!-- 文件夹树 -->
+        <FileExplorer
+          ref="fileExplorerRef"
+          :selected-repository="selectedRepository"
+          @create-folder="handleCreateFolder"
+          @rename-folder="handleRenameFolder"
+          @delete-folder="handleDeleteFolder"
+          @select-folder="handleSelectFolder"
+        />
+        
+        <!-- 资源列表 -->
+        <ResourceList
+          v-if="selectedRepository"
+          :repository-uuid="selectedRepository"
+          class="resource-list-section"
+        />
+      </div>
 
-        <v-card-text v-if="isLoading" class="text-center">
-          <v-progress-circular indeterminate color="primary" />
-        </v-card-text>
-
-        <v-card-text v-else-if="error" class="text-center text-error">
-          <v-icon icon="mdi-alert-circle-outline" size="48" class="mb-2" />
-          <p>{{ error }}</p>
-          <v-btn color="primary" @click="loadRepositories">重试</v-btn>
-        </v-card-text>
-
-        <v-card-text v-else-if="repositories.length === 0" class="text-center text-disabled">
-          <v-icon icon="mdi-database-off-outline" size="64" class="mb-2" />
-          <p>暂无仓储</p>
-          <v-btn color="primary" variant="tonal" @click="showCreateRepositoryDialog = true">
-            <v-icon icon="mdi-plus" class="mr-1" />
-            创建仓储
-          </v-btn>
-        </v-card-text>
-
-        <v-card-text v-else class="pa-0">
-          <v-list density="compact">
-            <v-list-item
-              v-for="repo in repositories"
-              :key="repo.uuid"
-              :active="selectedRepository === repo.uuid"
-              @click="handleSelectRepository(repo.uuid)"
+      <!-- 底部仓储选择器 (Obsidian 风格) - 始终显示 -->
+      <div class="repository-selector">
+        <v-menu location="top" :close-on-content-click="false">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              block
+              variant="text"
+              class="repository-selector-btn"
             >
-              <template #prepend>
-                <v-icon :icon="getRepositoryIcon(repo.type)" />
-              </template>
+              <v-icon :icon="currentRepository ? getRepositoryIcon(currentRepository.type) : 'mdi-database-outline'" class="mr-2" />
+              <span class="flex-1 text-left">{{ currentRepository?.name || '选择仓储' }}</span>
+              <v-icon icon="mdi-chevron-up" size="small" />
+            </v-btn>
+          </template>
 
-              <v-list-item-title>{{ repo.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ repo.path }}</v-list-item-subtitle>
-
-              <template #append>
-                <v-menu>
-                  <template #activator="{ props: menuProps }">
-                    <v-btn
-                      icon="mdi-dots-vertical"
-                      size="x-small"
-                      variant="text"
-                      v-bind="menuProps"
-                      @click.stop
-                    />
+          <v-card min-width="280">
+            <v-card-title class="d-flex align-center py-2">
+              <span class="text-subtitle-2">切换仓储</span>
+              <v-spacer />
+              <v-btn
+                icon="mdi-plus"
+                size="x-small"
+                variant="text"
+                @click="showCreateRepositoryDialog = true"
+              />
+            </v-card-title>
+            <v-divider />
+            
+            <!-- 仓储列表 -->
+            <v-list v-if="repositories.length > 0" density="compact" max-height="300" class="overflow-y-auto">
+              <v-list-item
+                v-for="repo in repositories"
+                :key="repo.uuid"
+                :active="selectedRepository === repo.uuid"
+                @click="handleSelectRepository(repo.uuid)"
+              >
+                <template #prepend>
+                  <v-icon :icon="getRepositoryIcon(repo.type)" size="small" />
+                </template>
+                <v-list-item-title>{{ repo.name }}</v-list-item-title>
+                <template #append>
+                  <v-menu>
+                    <template #activator="{ props: menuProps }">
+                      <v-btn
+                        icon="mdi-dots-vertical"
+                        size="x-small"
+                        variant="text"
+                        v-bind="menuProps"
+                        @click.stop
+                      />
+                    </template>
+                    <v-list density="compact">
+                      <v-list-item @click="handleArchiveRepository(repo.uuid)">
+                        <template #prepend>
+                          <v-icon icon="mdi-archive-outline" size="small" />
+                        </template>
+                        <v-list-item-title>归档</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="handleDeleteRepository(repo.uuid)">
+                        <template #prepend>
+                          <v-icon icon="mdi-delete-outline" size="small" color="error" />
+                        </template>
+                        <v-list-item-title class="text-error">删除</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </template>
+              </v-list-item>
+            </v-list>
+            
+            <!-- 空状态或管理选项 -->
+            <div v-if="repositories.length === 0" class="pa-4 text-center">
+              <v-icon icon="mdi-database-off-outline" size="48" class="mb-2 text-disabled" />
+              <p class="text-caption text-disabled mb-3">暂无仓储</p>
+              <v-btn
+                color="primary"
+                variant="tonal"
+                size="small"
+                block
+                @click="showCreateRepositoryDialog = true"
+              >
+                <v-icon icon="mdi-plus" class="mr-1" />
+                创建仓储
+              </v-btn>
+            </div>
+            <template v-else>
+              <v-divider />
+              <v-list density="compact">
+                <v-list-item @click="showCreateRepositoryDialog = true">
+                  <template #prepend>
+                    <v-icon icon="mdi-cog-outline" size="small" />
                   </template>
-                  <v-list>
-                    <v-list-item @click="handleArchiveRepository(repo.uuid)">
-                      <template #prepend>
-                        <v-icon icon="mdi-archive-outline" />
-                      </template>
-                      <v-list-item-title>归档</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="handleDeleteRepository(repo.uuid)">
-                      <template #prepend>
-                        <v-icon icon="mdi-delete-outline" color="error" />
-                      </template>
-                      <v-list-item-title class="text-error">删除</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-      </v-card>
-    </div>
-
-    <!-- 中间：文件夹 + 资源列表 -->
-    <div class="folder-explorer">
-      <FileExplorer
-        ref="fileExplorerRef"
-        :selected-repository="selectedRepository"
-        @create-folder="handleCreateFolder"
-        @rename-folder="handleRenameFolder"
-        @delete-folder="handleDeleteFolder"
-        @select-folder="handleSelectFolder"
-      />
-      
-      <!-- 资源列表 (Epic 10 Story 10-2) -->
-      <ResourceList
-        v-if="selectedRepository"
-        :repository-uuid="selectedRepository"
-        class="mt-4"
-      />
+                  <v-list-item-title>管理仓储...</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </template>
+          </v-card>
+        </v-menu>
+      </div>
     </div>
 
     <!-- 右侧：资源编辑器 + Tab 管理 (Epic 10 Story 10-2) -->
@@ -218,6 +240,9 @@ const isDeleting = ref(false);
 
 // Computed
 const repositories = computed(() => repositoryStore.getAllRepositories);
+const currentRepository = computed(() => 
+  repositories.value.find(r => r.uuid === selectedRepository.value)
+);
 const hasOpenTabs = computed(() => resourceStore.openTabs.length > 0);
 const activeResourceUuid = computed(() => resourceStore.activeTabUuid);
 
@@ -227,18 +252,13 @@ async function loadRepositories() {
   error.value = null;
 
   try {
-    const response = await RepositoryApiClient.listRepositories();
-    
-    if (response.success && response.data) {
-      const repos = response.data.map((dto) => Repository.fromServerDTO(dto));
-      repositoryStore.setRepositories(repos);
+    const data = await RepositoryApiClient.listRepositories();
+    const repos = data.map((dto: any) => Repository.fromClientDTO(dto));
+    repositoryStore.setRepositories(repos);
 
-      // 如果有仓储，默认选中第一个
-      if (repos.length > 0 && !selectedRepository.value) {
-        selectedRepository.value = repos[0].uuid;
-      }
-    } else {
-      error.value = response.message || '加载仓储列表失败';
+    // 如果有仓储，默认选中第一个
+    if (repos.length > 0 && !selectedRepository.value) {
+      selectedRepository.value = repos[0].uuid;
     }
   } catch (err: any) {
     error.value = err.message || '加载仓储列表失败';
@@ -264,12 +284,9 @@ function handleSelectRepository(uuid: string) {
 
 async function handleArchiveRepository(uuid: string) {
   try {
-    const response = await RepositoryApiClient.archiveRepository(uuid);
-    
-    if (response.success) {
-      console.log('仓储已归档');
-      loadRepositories();
-    }
+    await RepositoryApiClient.archiveRepository(uuid);
+    console.log('仓储已归档');
+    loadRepositories();
   } catch (err: any) {
     console.error('归档仓储失败:', err);
   }
@@ -279,15 +296,12 @@ async function handleDeleteRepository(uuid: string) {
   if (!confirm('确定要删除此仓储吗？此操作不可撤销。')) return;
 
   try {
-    const response = await RepositoryApiClient.deleteRepository(uuid);
+    await RepositoryApiClient.deleteRepository(uuid);
+    repositoryStore.removeRepository(uuid);
+    folderStore.removeFoldersByRepositoryUuid(uuid);
     
-    if (response.success) {
-      repositoryStore.removeRepository(uuid);
-      folderStore.removeFoldersByRepositoryUuid(uuid);
-      
-      if (selectedRepository.value === uuid) {
-        selectedRepository.value = repositories.value[0]?.uuid || null;
-      }
+    if (selectedRepository.value === uuid) {
+      selectedRepository.value = repositories.value[0]?.uuid || null;
     }
   } catch (err: any) {
     console.error('删除仓储失败:', err);
@@ -322,16 +336,14 @@ async function handleSubmitRename() {
   isRenaming.value = true;
 
   try {
-    const response = await FolderApiClient.renameFolder(folderToRename.value.uuid, {
-      newName: newFolderName.value,
-    });
-
-    if (response.success && response.data) {
-      const updatedFolder = Folder.fromServerDTO(response.data);
-      folderStore.updateFolder(updatedFolder.uuid, updatedFolder);
-      showRenameFolderDialog.value = false;
-      fileExplorerRef.value?.refresh();
-    }
+    const updatedFolderDTO = await FolderApiClient.renameFolder(
+      folderToRename.value.uuid,
+      newFolderName.value
+    );
+    const updatedFolder = Folder.fromServerDTO(updatedFolderDTO);
+    folderStore.updateFolder(updatedFolder.uuid, updatedFolder);
+    showRenameFolderDialog.value = false;
+    fileExplorerRef.value?.refresh();
   } catch (err: any) {
     console.error('重命名文件夹失败:', err);
   } finally {
@@ -350,13 +362,10 @@ async function handleSubmitDelete() {
   isDeleting.value = true;
 
   try {
-    const response = await FolderApiClient.deleteFolder(folderToDelete.value.uuid);
-
-    if (response.success) {
-      folderStore.removeFolder(folderToDelete.value.uuid);
-      showDeleteFolderDialog.value = false;
-      fileExplorerRef.value?.refresh();
-    }
+    await FolderApiClient.deleteFolder(folderToDelete.value.uuid);
+    folderStore.removeFolder(folderToDelete.value.uuid);
+    showDeleteFolderDialog.value = false;
+    fileExplorerRef.value?.refresh();
   } catch (err: any) {
     console.error('删除文件夹失败:', err);
   } finally {
@@ -380,27 +389,64 @@ watch(selectedRepository, async (newRepoUuid) => {
 });
 
 // Lifecycle
-onMounted(() => {
-  loadRepositories();
+onMounted(async () => {
+  await loadRepositories();
+  
+  // 如果没有仓储，自动打开欢迎对话框
+  if (repositories.value.length === 0) {
+    showCreateRepositoryDialog.value = true;
+  }
 });
 </script>
 
 <style scoped>
 .repository-view {
   display: grid;
-  grid-template-columns: 250px 300px 1fr;
-  gap: 16px;
+  grid-template-columns: 300px 1fr;
+  gap: 0;
   height: 100vh;
-  padding: 16px;
+  overflow: hidden;
 }
 
-.repository-list,
-.folder-explorer,
+/* 左侧边栏 - Obsidian 风格 */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-surface));
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.resource-list-section {
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* 底部仓储选择器 - Obsidian 风格 */
+.repository-selector {
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  padding: 8px;
+  background: rgb(var(--v-theme-surface));
+}
+
+.repository-selector-btn {
+  justify-content: flex-start;
+  text-transform: none;
+  font-weight: 500;
+}
+
+/* 右侧编辑器面板 */
 .resource-editor-panel {
   height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: rgb(var(--v-theme-background));
 }
 
 .editor-wrapper {

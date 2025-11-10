@@ -1,5 +1,5 @@
 import type { RepositoryContracts } from '@dailyuse/contracts';
-import { apiClient } from '@/shared/utils/apiClient';
+import { apiClient } from '@/shared/api/instances';
 
 export class RepositoryApiClient {
   /**
@@ -12,8 +12,7 @@ export class RepositoryApiClient {
     description?: string;
     config?: Partial<RepositoryContracts.RepositoryConfigServerDTO>;
   }): Promise<RepositoryContracts.RepositoryClientDTO> {
-    const response = await apiClient.post('/repositories', data);
-    return response.data;
+    return await apiClient.post('/repositories', data);
   }
 
   /**
@@ -23,16 +22,14 @@ export class RepositoryApiClient {
     status?: RepositoryContracts.RepositoryStatus
   ): Promise<RepositoryContracts.RepositoryClientDTO[]> {
     const params = status ? { status } : {};
-    const response = await apiClient.get('/repositories', { params });
-    return response.data;
+    return await apiClient.get('/repositories', { params });
   }
 
   /**
    * 获取仓储详情
    */
   static async getRepository(uuid: string): Promise<RepositoryContracts.RepositoryClientDTO> {
-    const response = await apiClient.get(`/repositories/${uuid}`);
-    return response.data;
+    return await apiClient.get(`/repositories/${uuid}`);
   }
 
   /**
@@ -42,24 +39,21 @@ export class RepositoryApiClient {
     uuid: string,
     config: Partial<RepositoryContracts.RepositoryConfigServerDTO>
   ): Promise<RepositoryContracts.RepositoryClientDTO> {
-    const response = await apiClient.patch(`/repositories/${uuid}/config`, config);
-    return response.data;
+    return await apiClient.patch(`/repositories/${uuid}/config`, config);
   }
 
   /**
    * 归档仓储
    */
   static async archiveRepository(uuid: string): Promise<RepositoryContracts.RepositoryClientDTO> {
-    const response = await apiClient.post(`/repositories/${uuid}/archive`);
-    return response.data;
+    return await apiClient.post(`/repositories/${uuid}/archive`);
   }
 
   /**
    * 激活仓储
    */
   static async activateRepository(uuid: string): Promise<RepositoryContracts.RepositoryClientDTO> {
-    const response = await apiClient.post(`/repositories/${uuid}/activate`);
-    return response.data;
+    return await apiClient.post(`/repositories/${uuid}/activate`);
   }
 
   /**

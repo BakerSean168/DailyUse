@@ -1,34 +1,46 @@
 <template>
-  <v-card class="file-explorer" flat>
-    <v-card-title class="d-flex align-center">
-      <v-icon icon="mdi-folder-outline" class="mr-2" />
-      <span>文件夹</span>
-      <v-spacer />
+  <div class="file-explorer">
+    <!-- 顶部工具栏 - 只有功能按钮 -->
+    <div v-if="selectedRepository" class="explorer-toolbar">
       <v-btn
-        v-if="selectedRepository"
-        icon="mdi-plus"
+        icon="mdi-folder-plus-outline"
         size="small"
         variant="text"
+        title="新建文件夹"
         @click="handleCreateFolder"
       />
-    </v-card-title>
+      <v-btn
+        icon="mdi-file-plus-outline"
+        size="small"
+        variant="text"
+        title="新建资源"
+        @click="handleCreateResource"
+      />
+      <v-spacer />
+      <v-btn
+        icon="mdi-dots-vertical"
+        size="small"
+        variant="text"
+        title="更多选项"
+      />
+    </div>
 
-    <v-card-text v-if="!selectedRepository" class="text-center text-disabled">
-      <v-icon icon="mdi-folder-off-outline" size="64" class="mb-2" />
-      <p>请先选择一个仓储</p>
-    </v-card-text>
+    <div v-if="!selectedRepository" class="empty-prompt">
+      <v-icon icon="mdi-folder-off-outline" size="48" class="mb-2 text-disabled" />
+      <p class="text-disabled">请先选择一个仓储</p>
+    </div>
 
-    <v-card-text v-else-if="isLoading" class="text-center">
-      <v-progress-circular indeterminate color="primary" />
-    </v-card-text>
+    <div v-else-if="isLoading" class="loading-state">
+      <v-progress-circular indeterminate color="primary" size="32" />
+    </div>
 
-    <v-card-text v-else-if="error" class="text-center text-error">
-      <v-icon icon="mdi-alert-circle-outline" size="48" class="mb-2" />
-      <p>{{ error }}</p>
-      <v-btn color="primary" @click="loadFolderTree">重试</v-btn>
-    </v-card-text>
+    <div v-else-if="error" class="error-state">
+      <v-icon icon="mdi-alert-circle-outline" size="48" class="mb-2 text-error" />
+      <p class="text-error">{{ error }}</p>
+      <v-btn color="primary" size="small" @click="loadFolderTree">重试</v-btn>
+    </div>
 
-    <v-card-text v-else class="pa-0">
+    <div v-else class="folder-tree-container">
       <v-treeview
         v-if="treeItems.length > 0"
         v-model:opened="openedFolders"
@@ -69,23 +81,23 @@
         </template>
       </v-treeview>
 
-      <div v-else class="text-center text-disabled pa-4">
-        <v-icon icon="mdi-folder-off-outline" size="48" class="mb-2" />
-        <p>暂无文件夹</p>
-        <v-btn color="primary" variant="tonal" @click="handleCreateFolder">
+      <div v-else class="empty-folder-state">
+        <v-icon icon="mdi-folder-off-outline" size="48" class="mb-2 text-disabled" />
+        <p class="text-disabled">暂无文件夹</p>
+        <v-btn color="primary" variant="tonal" size="small" @click="handleCreateFolder">
           <v-icon icon="mdi-plus" class="mr-1" />
           创建文件夹
         </v-btn>
       </div>
-    </v-card-text>
-  </v-card>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFolderStore } from '../stores';
 import { FolderApiClient } from '../../api';
-import type { Folder } from '@dailyuse/domain-client';
+import { Folder } from '@dailyuse/domain-client';
 
 // Props
 interface Props {
@@ -129,14 +141,9 @@ async function loadFolderTree() {
   error.value = null;
 
   try {
-    const response = await FolderApiClient.getFolderTree(props.selectedRepository);
-    
-    if (response.success && response.data) {
-      const folders = response.data.map((dto) => Folder.fromServerDTO(dto));
-      folderStore.setFoldersForRepository(props.selectedRepository!, folders);
-    } else {
-      error.value = response.message || '加载文件夹树失败';
-    }
+    const data = await FolderApiClient.getFolderTree(props.selectedRepository);
+    const folders = data.map((dto: any) => Folder.fromServerDTO(dto));
+    folderStore.setFoldersForRepository(props.selectedRepository!, folders);
   } catch (err: any) {
     error.value = err.message || '加载文件夹树失败';
     console.error('加载文件夹树失败:', err);
@@ -192,6 +199,11 @@ function handleCreateFolder() {
   emit('create-folder');
 }
 
+function handleCreateResource() {
+  // TODO: 实现创建资源功能
+  console.log('Create resource');
+}
+
 function handleCreateSubfolder(folder: Folder) {
   emit('create-folder', folder.uuid);
 }
@@ -244,18 +256,47 @@ defineExpose({
 
 <style scoped>
 .file-explorer {
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
+
+/* 工具栏 - Obsidian 风格 */
+.explorer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* 状态区域 */
+.empty-prompt,
+.loading-state,
+.error-state,
+.empty-folder-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+/* 文件夹树容器 */
+.folder-tree-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .folder-tree {
-  overflow-y: auto;
+  padding: 8px;
 }
 
 .folder-actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -266,6 +307,10 @@ defineExpose({
 
 .text-disabled {
   color: rgba(var(--v-theme-on-surface), 0.38);
+}
+
+.text-error {
+  color: rgb(var(--v-theme-error));
 }
 
 .text-error {

@@ -8,16 +8,16 @@ const logger = createLogger('FolderController');
 
 /**
  * Folder 控制器
+ * 使用单例模式获取应用服务
  */
 export class FolderController {
-  private static folderService: FolderApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
+  /**
+   * 获取应用服务单例
+   */
   private static getFolderService(): FolderApplicationService {
-    if (!FolderController.folderService) {
-      FolderController.folderService = new FolderApplicationService();
-    }
-    return FolderController.folderService;
+    return FolderApplicationService.getInstance();
   }
 
   /**

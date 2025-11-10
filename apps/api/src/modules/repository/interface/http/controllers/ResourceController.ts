@@ -1,19 +1,26 @@
 /**
  * Resource Controller
  * Resource HTTP 控制器 - Story 10-2
+ * 使用单例模式获取应用服务
  */
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { ResourceApplicationService } from '../../../application/services/ResourceApplicationService';
 import { ResourceType } from '@dailyuse/contracts';
 
 export class ResourceController {
-  constructor(private resourceService: ResourceApplicationService) {}
+  /**
+   * 获取应用服务单例
+   */
+  private static getResourceService(): ResourceApplicationService {
+    return ResourceApplicationService.getInstance();
+  }
 
-  createResource = async (req: Request, res: Response, next: NextFunction) => {
+  static createResource = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const service = ResourceController.getResourceService();
       const { repositoryUuid, folderUuid, name, type, path, content } = req.body;
 
-      const resource = await this.resourceService.createResource({
+      const resource = await service.createResource({
         repositoryUuid,
         folderUuid,
         name,
@@ -28,13 +35,15 @@ export class ResourceController {
     }
   };
 
-  getResourceById = async (req: Request, res: Response, next: NextFunction) => {
+  static getResourceById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const service = ResourceController.getResourceService();
       const { uuid } = req.params;
-      const resource = await this.resourceService.getResourceById(uuid);
+      const resource = await service.getResourceById(uuid);
 
       if (!resource) {
-        return res.status(404).json({ message: 'Resource not found' });
+        res.status(404).json({ message: 'Resource not found' });
+        return;
       }
 
       res.json(resource);
@@ -43,32 +52,35 @@ export class ResourceController {
     }
   };
 
-  getResourcesByRepository = async (req: Request, res: Response, next: NextFunction) => {
+  static getResourcesByRepository = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const service = ResourceController.getResourceService();
       const { repositoryUuid } = req.params;
-      const resources = await this.resourceService.getResourcesByRepository(repositoryUuid);
+      const resources = await service.getResourcesByRepository(repositoryUuid);
       res.json(resources);
     } catch (error) {
       next(error);
     }
   };
 
-  updateMarkdownContent = async (req: Request, res: Response, next: NextFunction) => {
+  static updateMarkdownContent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const service = ResourceController.getResourceService();
       const { uuid } = req.params;
       const { content } = req.body;
 
-      const resource = await this.resourceService.updateMarkdownContent(uuid, content);
+      const resource = await service.updateMarkdownContent(uuid, content);
       res.json(resource);
     } catch (error) {
       next(error);
     }
   };
 
-  deleteResource = async (req: Request, res: Response, next: NextFunction) => {
+  static deleteResource = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const service = ResourceController.getResourceService();
       const { uuid } = req.params;
-      await this.resourceService.deleteResource(uuid);
+      await service.deleteResource(uuid);
       res.status(204).send();
     } catch (error) {
       next(error);

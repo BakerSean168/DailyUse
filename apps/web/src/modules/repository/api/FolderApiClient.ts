@@ -1,5 +1,5 @@
 import type { RepositoryContracts } from '@dailyuse/contracts';
-import { apiClient } from '@/shared/utils/apiClient';
+import { apiClient } from '@/shared/api/instances';
 
 export class FolderApiClient {
   /**
@@ -14,40 +14,35 @@ export class FolderApiClient {
       metadata?: Partial<RepositoryContracts.FolderMetadataServerDTO>;
     }
   ): Promise<RepositoryContracts.FolderClientDTO> {
-    const response = await apiClient.post(`/repositories/${repositoryUuid}/folders`, data);
-    return response.data;
+    return await apiClient.post(`/repositories/${repositoryUuid}/folders`, data);
   }
 
   /**
    * 获取文件夹树
    */
   static async getFolderTree(repositoryUuid: string): Promise<RepositoryContracts.FolderClientDTO[]> {
-    const response = await apiClient.get(`/repositories/${repositoryUuid}/folders/tree`);
-    return response.data;
+    return await apiClient.get(`/repositories/${repositoryUuid}/folders/tree`);
   }
 
   /**
    * 获取文件夹详情
    */
   static async getFolder(uuid: string): Promise<RepositoryContracts.FolderClientDTO> {
-    const response = await apiClient.get(`/folders/${uuid}`);
-    return response.data;
+    return await apiClient.get(`/folders/${uuid}`);
   }
 
   /**
    * 重命名文件夹
    */
   static async renameFolder(uuid: string, name: string): Promise<RepositoryContracts.FolderClientDTO> {
-    const response = await apiClient.patch(`/folders/${uuid}/rename`, { name });
-    return response.data;
+    return await apiClient.patch(`/folders/${uuid}/rename`, { name });
   }
 
   /**
    * 移动文件夹
    */
   static async moveFolder(uuid: string, newParentUuid: string | null): Promise<RepositoryContracts.FolderClientDTO> {
-    const response = await apiClient.patch(`/folders/${uuid}/move`, { newParentUuid });
-    return response.data;
+    return await apiClient.patch(`/folders/${uuid}/move`, { newParentUuid });
   }
 
   /**

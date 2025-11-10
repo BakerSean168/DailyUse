@@ -8,16 +8,16 @@ const logger = createLogger('RepositoryController');
 
 /**
  * Repository 控制器
+ * 使用单例模式获取应用服务
  */
 export class RepositoryController {
-  private static repositoryService: RepositoryApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
+  /**
+   * 获取应用服务单例
+   */
   private static getRepositoryService(): RepositoryApplicationService {
-    if (!RepositoryController.repositoryService) {
-      RepositoryController.repositoryService = new RepositoryApplicationService();
-    }
-    return RepositoryController.repositoryService;
+    return RepositoryApplicationService.getInstance();
   }
 
   /**

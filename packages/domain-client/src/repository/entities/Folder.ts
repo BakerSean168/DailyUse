@@ -1,7 +1,13 @@
 /**
  * Folder 实体实现 (Client)
+ * 
+ * DDD 实体职责：
+ * - 管理文件夹属性和元数据
+ * - 管理文件夹层级关系（子文件夹）
+ * - 执行文件夹业务逻辑
  */
 import { RepositoryContracts } from '@dailyuse/contracts';
+import { Entity } from '@dailyuse/utils';
 import { FolderMetadata } from '../value-objects';
 
 // 类型别名
@@ -9,9 +15,8 @@ type FolderClient = RepositoryContracts.FolderClient;
 type FolderClientDTO = RepositoryContracts.FolderClientDTO;
 type FolderServerDTO = RepositoryContracts.FolderServerDTO;
 
-export class Folder implements FolderClient {
+export class Folder extends Entity {
   // ===== 私有字段 =====
-  private _uuid: string;
   private _repositoryUuid: string;
   private _parentUuid: string | null;
   private _name: string;
@@ -24,79 +29,79 @@ export class Folder implements FolderClient {
   private _children: FolderClient[] | null;
 
   // ===== 私有构造函数 =====
-  private constructor(
-    uuid: string,
-    repositoryUuid: string,
-    parentUuid: string | null,
-    name: string,
-    path: string,
-    order: number,
-    isExpanded: boolean,
-    metadata: FolderMetadata,
-    createdAt: number,
-    updatedAt: number,
-    children: FolderClient[] | null = null,
-  ) {
-    this._uuid = uuid;
-    this._repositoryUuid = repositoryUuid;
-    this._parentUuid = parentUuid;
-    this._name = name;
-    this._path = path;
-    this._order = order;
-    this._isExpanded = isExpanded;
-    this._metadata = metadata;
-    this._createdAt = createdAt;
-    this._updatedAt = updatedAt;
-    this._children = children;
+  private constructor(params: {
+    uuid?: string;
+    repositoryUuid: string;
+    parentUuid?: string | null;
+    name: string;
+    path: string;
+    order?: number;
+    isExpanded?: boolean;
+    metadata: FolderMetadata;
+    createdAt: number;
+    updatedAt: number;
+    children?: FolderClient[] | null;
+  }) {
+    super(params.uuid || Entity.generateUUID());
+    this._repositoryUuid = params.repositoryUuid;
+    this._parentUuid = params.parentUuid ?? null;
+    this._name = params.name;
+    this._path = params.path;
+    this._order = params.order ?? 0;
+    this._isExpanded = params.isExpanded ?? true;
+    this._metadata = params.metadata;
+    this._createdAt = params.createdAt;
+    this._updatedAt = params.updatedAt;
+    this._children = params.children ?? null;
   }
 
   // ===== Getters =====
-  get uuid(): string {
+  public override get uuid(): string {
     return this._uuid;
   }
 
-  get repositoryUuid(): string {
+  public get repositoryUuid(): string {
     return this._repositoryUuid;
   }
 
-  get parentUuid(): string | null {
+  public get parentUuid(): string | null {
     return this._parentUuid;
   }
 
-  get name(): string {
+  public get name(): string {
     return this._name;
   }
 
-  get path(): string {
+  public get path(): string {
     return this._path;
   }
 
-  get order(): number {
+  public get order(): number {
     return this._order;
   }
 
-  get isExpanded(): boolean {
+  public get isExpanded(): boolean {
     return this._isExpanded;
   }
 
-  get metadata(): FolderMetadata {
+  public get metadata(): FolderMetadata {
     return this._metadata;
   }
 
-  get createdAt(): number {
+  public get createdAt(): number {
     return this._createdAt;
   }
 
-  get updatedAt(): number {
+  public get updatedAt(): number {
     return this._updatedAt;
   }
 
-  get children(): FolderClient[] | null {
+  public get children(): FolderClient[] | null {
     return this._children;
   }
 
   // ===== UI 计算属性 =====
-  get depth(): number {
+  public get depth(): number {
     return this._path.split('/').filter(p => p.length > 0).length;
   }
 
@@ -191,35 +196,35 @@ export class Folder implements FolderClient {
   }
 
   // ===== 静态工厂方法 =====
-  static fromServerDTO(dto: FolderServerDTO): Folder {
-    return new Folder(
-      dto.uuid,
-      dto.repositoryUuid,
-      dto.parentUuid ?? null,
-      dto.name,
-      dto.path,
-      dto.order,
-      dto.isExpanded,
-      FolderMetadata.fromServerDTO(dto.metadata),
-      dto.createdAt,
-      dto.updatedAt,
-      dto.children?.map(c => Folder.fromServerDTO(c)) || null,
-    );
+  public static fromServerDTO(dto: FolderServerDTO): Folder {
+    return new Folder({
+      uuid: dto.uuid,
+      repositoryUuid: dto.repositoryUuid,
+      parentUuid: dto.parentUuid ?? null,
+      name: dto.name,
+      path: dto.path,
+      order: dto.order,
+      isExpanded: dto.isExpanded,
+      metadata: FolderMetadata.fromServerDTO(dto.metadata),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      children: dto.children?.map(c => Folder.fromServerDTO(c)) || null,
+    });
   }
 
-  static fromClientDTO(dto: FolderClientDTO): Folder {
-    return new Folder(
-      dto.uuid,
-      dto.repositoryUuid,
-      dto.parentUuid ?? null,
-      dto.name,
-      dto.path,
-      dto.order,
-      dto.isExpanded,
-      FolderMetadata.fromClientDTO(dto.metadata),
-      dto.createdAt,
-      dto.updatedAt,
-      dto.children?.map(c => Folder.fromClientDTO(c)) || null,
-    );
+  public static fromClientDTO(dto: FolderClientDTO): Folder {
+    return new Folder({
+      uuid: dto.uuid,
+      repositoryUuid: dto.repositoryUuid,
+      parentUuid: dto.parentUuid ?? null,
+      name: dto.name,
+      path: dto.path,
+      order: dto.order,
+      isExpanded: dto.isExpanded,
+      metadata: FolderMetadata.fromClientDTO(dto.metadata),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      children: dto.children?.map(c => Folder.fromClientDTO(c)) || null,
+    });
   }
 }

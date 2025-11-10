@@ -41,16 +41,31 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
       updatedAt: BigInt(persistence.updatedAt), // number → BigInt
     };
 
-    await this.prisma.repository.upsert({
-      where: { uuid: persistence.uuid },
-      create: {
-        uuid: persistence.uuid,
+    // 检查是否已存在相同的 (accountUuid, path) 组合
+    const existing = await this.prisma.repository.findFirst({
+      where: {
         accountUuid: persistence.accountUuid,
-        createdAt: BigInt(persistence.createdAt), // number → BigInt
-        ...data,
+        path: persistence.path,
       },
-      update: data,
     });
+
+    if (existing) {
+      // 更新已存在的仓储
+      await this.prisma.repository.update({
+        where: { uuid: existing.uuid },
+        data,
+      });
+    } else {
+      // 创建新仓储
+      await this.prisma.repository.create({
+        data: {
+          uuid: persistence.uuid,
+          accountUuid: persistence.accountUuid,
+          createdAt: BigInt(persistence.createdAt), // number → BigInt
+          ...data,
+        },
+      });
+    }
   }
 
   async findByUuid(uuid: string): Promise<Repository | null> {

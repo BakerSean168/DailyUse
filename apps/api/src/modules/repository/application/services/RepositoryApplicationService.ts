@@ -1,30 +1,46 @@
 import type { IRepositoryRepository } from '@dailyuse/domain-server';
 import { Repository } from '@dailyuse/domain-server';
 import type { RepositoryContracts } from '@dailyuse/contracts';
-import { PrismaClient } from '@prisma/client';
-import { PrismaRepositoryRepository } from '../../infrastructure/repositories';
+import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
 /**
  * Repository 应用服务
  * 负责仓储（Repository）的 CRUD 操作
  *
- * 职责：
- * - 创建仓储
- * - 获取仓储详情
- * - 更新仓储配置
- * - 归档/激活/删除仓储
- * - 查询用户的仓储列表
+ * 架构职责：
+ * - 调用 Repository 进行持久化
+ * - DTO 转换（Domain → ClientDTO）
+ * - 协调业务用例
  */
 export class RepositoryApplicationService {
+  private static instance: RepositoryApplicationService;
   private repositoryRepository: IRepositoryRepository;
 
-  constructor(repositoryRepository?: IRepositoryRepository) {
-    if (repositoryRepository) {
-      this.repositoryRepository = repositoryRepository;
-    } else {
-      const prisma = new PrismaClient();
-      this.repositoryRepository = new PrismaRepositoryRepository(prisma);
+  private constructor(repositoryRepository: IRepositoryRepository) {
+    this.repositoryRepository = repositoryRepository;
+  }
+
+  /**
+   * 创建应用服务实例（支持依赖注入）
+   */
+  static createInstance(
+    repositoryRepository?: IRepositoryRepository,
+  ): RepositoryApplicationService {
+    const container = RepositoryContainer.getInstance();
+    const repo = repositoryRepository || container.getRepositoryRepository();
+
+    RepositoryApplicationService.instance = new RepositoryApplicationService(repo);
+    return RepositoryApplicationService.instance;
+  }
+
+  /**
+   * 获取应用服务单例
+   */
+  static getInstance(): RepositoryApplicationService {
+    if (!RepositoryApplicationService.instance) {
+      RepositoryApplicationService.instance = RepositoryApplicationService.createInstance();
     }
+    return RepositoryApplicationService.instance;
   }
 
   /**
@@ -45,7 +61,18 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 3. 返回 ClientDTO
-    return repository.toClientDTO();
+    return this.toClientDTO(repository.toServerDTO());
+  }
+
+  /**
+   * 将 ServerDTO 转换为 ClientDTO
+   */
+  private toClientDTO(
+    serverDTO: RepositoryContracts.RepositoryServerDTO,
+  ): RepositoryContracts.RepositoryClientDTO {
+    const { Repository: RepositoryClient } = require('@dailyuse/domain-client');
+    const clientRepository = RepositoryClient.fromServerDTO(serverDTO);
+    return clientRepository.toClientDTO();
   }
 
   /**
@@ -53,7 +80,7 @@ export class RepositoryApplicationService {
    */
   async getRepository(uuid: string): Promise<RepositoryContracts.RepositoryClientDTO | null> {
     const repository = await this.repositoryRepository.findByUuid(uuid);
-    return repository ? repository.toClientDTO() : null;
+    return repository ? this.toClientDTO(repository.toServerDTO()) : null;
   }
 
   /**
@@ -71,7 +98,7 @@ export class RepositoryApplicationService {
       repositories = await this.repositoryRepository.findByAccountUuid(accountUuid);
     }
 
-    return repositories.map((r) => r.toClientDTO());
+    return repositories.map((r) => this.toClientDTO(r.toServerDTO()));
   }
 
   /**
@@ -94,7 +121,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 4. 返回 ClientDTO
-    return repository.toClientDTO();
+    return this.toClientDTO(repository.toServerDTO());
   }
 
   /**
@@ -117,7 +144,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 4. 返回 ClientDTO
-    return repository.toClientDTO();
+    return this.toClientDTO(repository.toServerDTO());
   }
 
   /**
@@ -137,7 +164,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 4. 返回 ClientDTO
-    return repository.toClientDTO();
+    return this.toClientDTO(repository.toServerDTO());
   }
 
   /**
@@ -157,7 +184,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 4. 返回 ClientDTO
-    return repository.toClientDTO();
+    return this.toClientDTO(repository.toServerDTO());
   }
 
   /**

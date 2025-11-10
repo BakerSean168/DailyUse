@@ -5,8 +5,8 @@
  */
 
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Notification } from '@dailyuse/domain-server/notification';
-import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse/domain-server/notification';
+import { Notification } from '@dailyuse/domain-server';
+import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse/domain-server';
 import type { NotificationContracts } from '@dailyuse/contracts';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 

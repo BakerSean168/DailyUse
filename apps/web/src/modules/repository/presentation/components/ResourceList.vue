@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { ResourceClientDTO } from '@dailyuse/contracts';
+import type { RepositoryContracts } from '@dailyuse/contracts';
 import { useResourceStore } from '../stores/resourceStore';
 
 const props = defineProps<{
@@ -121,7 +121,7 @@ const filteredResources = computed(() => {
 /**
  * 打开资源 (单击)
  */
-function openResource(resource: ResourceClientDTO) {
+function openResource(resource: RepositoryContracts.ResourceClientDTO) {
   // 选中但不打开编辑器
   resourceStore.selectedResource = resource;
 }
@@ -129,7 +129,7 @@ function openResource(resource: ResourceClientDTO) {
 /**
  * 在新标签页打开资源 (双击 / 菜单)
  */
-async function openResourceInTab(resource: ResourceClientDTO) {
+async function openResourceInTab(resource: RepositoryContracts.ResourceClientDTO) {
   await resourceStore.openInTab(resource);
 }
 
@@ -153,7 +153,7 @@ function getResourceIcon(type: string): string {
 /**
  * 重命名资源
  */
-function renameResource(resource: ResourceClientDTO) {
+function renameResource(resource: RepositoryContracts.ResourceClientDTO) {
   const newName = prompt('请输入新名称:', resource.name);
   if (newName && newName !== resource.name) {
     // TODO: 实现重命名 API
@@ -164,7 +164,7 @@ function renameResource(resource: ResourceClientDTO) {
 /**
  * 移动资源
  */
-function moveResource(resource: ResourceClientDTO) {
+function moveResource(resource: RepositoryContracts.ResourceClientDTO) {
   // TODO: 实现移动对话框
   console.log('Move resource:', resource.uuid);
 }
@@ -172,7 +172,7 @@ function moveResource(resource: ResourceClientDTO) {
 /**
  * 删除资源
  */
-async function deleteResource(resource: ResourceClientDTO) {
+async function deleteResource(resource: RepositoryContracts.ResourceClientDTO) {
   const confirmed = confirm(`确定要删除 "${resource.name}" 吗？`);
   if (confirmed) {
     try {

@@ -5,14 +5,50 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Resource } from '@dailyuse/domain-server';
 import { ResourceType } from '@dailyuse/contracts';
-import { IResourceRepository } from '../../domain/repositories/IResourceRepository';
+import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
+import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 import type { RepositoryContracts } from '@dailyuse/contracts';
 
 type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
 type ResourceClientDTO = RepositoryContracts.ResourceClientDTO;
 
+/**
+ * Resource 应用服务
+ * 负责 Resource 的业务用例协调
+ *
+ * 架构职责：
+ * - 调用 Repository 进行持久化
+ * - DTO 转换（Domain → ClientDTO）
+ * - 协调业务用例
+ */
 export class ResourceApplicationService {
-  constructor(private resourceRepository: IResourceRepository) {}
+  private static instance: ResourceApplicationService;
+  private resourceRepository: IResourceRepository;
+
+  private constructor(resourceRepository: IResourceRepository) {
+    this.resourceRepository = resourceRepository;
+  }
+
+  /**
+   * 创建应用服务实例（支持依赖注入）
+   */
+  static createInstance(resourceRepository?: IResourceRepository): ResourceApplicationService {
+    const container = RepositoryContainer.getInstance();
+    const repo = resourceRepository || container.getResourceRepository();
+
+    ResourceApplicationService.instance = new ResourceApplicationService(repo);
+    return ResourceApplicationService.instance;
+  }
+
+  /**
+   * 获取应用服务单例
+   */
+  static getInstance(): ResourceApplicationService {
+    if (!ResourceApplicationService.instance) {
+      ResourceApplicationService.instance = ResourceApplicationService.createInstance();
+    }
+    return ResourceApplicationService.instance;
+  }
 
   async createResource(params: {
     repositoryUuid: string;

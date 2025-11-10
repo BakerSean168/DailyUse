@@ -1,29 +1,23 @@
 /**
  * Resource Routes
  * Resource 路由定义 - Story 10-2
+ * 使用单例模式的控制器静态方法
  */
+import type { Router as RouterType } from 'express';
 import { Router } from 'express';
 import { ResourceController } from '../controllers/ResourceController';
-import { ResourceApplicationService } from '../../../application/services/ResourceApplicationService';
-import { PrismaResourceRepository } from '../../../infrastructure/repositories/PrismaResourceRepository';
-import { prisma } from '../../../../../infrastructure/database/prisma';
-import { authenticate } from '../../../../../middleware/authenticate';
+import { authMiddleware } from '@/shared/middlewares/authMiddleware';
 
-const router = Router();
-
-// 初始化依赖
-const resourceRepository = new PrismaResourceRepository(prisma);
-const resourceService = new ResourceApplicationService(resourceRepository);
-const resourceController = new ResourceController(resourceService);
+const router: RouterType = Router();
 
 // 所有路由都需要认证
-router.use(authenticate);
+router.use(authMiddleware);
 
-// Resource CRUD 路由
-router.post('/resources', resourceController.createResource);
-router.get('/resources/:uuid', resourceController.getResourceById);
-router.get('/repositories/:repositoryUuid/resources', resourceController.getResourcesByRepository);
-router.put('/resources/:uuid/content', resourceController.updateMarkdownContent);
-router.delete('/resources/:uuid', resourceController.deleteResource);
+// Resource CRUD 路由 - 使用静态方法
+router.post('/resources', ResourceController.createResource);
+router.get('/resources/:uuid', ResourceController.getResourceById);
+router.get('/repositories/:repositoryUuid/resources', ResourceController.getResourcesByRepository);
+router.put('/resources/:uuid/content', ResourceController.updateMarkdownContent);
+router.delete('/resources/:uuid', ResourceController.deleteResource);
 
 export default router;

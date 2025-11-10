@@ -1,32 +1,58 @@
 import type { IFolderRepository } from '@dailyuse/domain-server';
 import { Folder, FolderHierarchyService } from '@dailyuse/domain-server';
 import type { RepositoryContracts } from '@dailyuse/contracts';
-import { PrismaClient } from '@prisma/client';
-import { PrismaFolderRepository } from '../../infrastructure/repositories';
+import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
 /**
  * Folder 应用服务
  * 负责文件夹（Folder）的 CRUD 操作
  *
- * 职责：
- * - 创建文件夹
- * - 重命名文件夹
- * - 移动文件夹
- * - 删除文件夹（级联）
- * - 查询文件夹树
+ * 架构职责：
+ * - 调用 Repository 进行持久化
+ * - DTO 转换（Domain → ClientDTO）
+ * - 协调业务用例
+ * - 管理文件夹层次结构
  */
 export class FolderApplicationService {
+  private static instance: FolderApplicationService;
   private folderRepository: IFolderRepository;
   private hierarchyService: FolderHierarchyService;
 
-  constructor(folderRepository?: IFolderRepository) {
-    if (folderRepository) {
-      this.folderRepository = folderRepository;
-    } else {
-      const prisma = new PrismaClient();
-      this.folderRepository = new PrismaFolderRepository(prisma);
-    }
+  private constructor(folderRepository: IFolderRepository) {
+    this.folderRepository = folderRepository;
     this.hierarchyService = new FolderHierarchyService();
+  }
+
+  /**
+   * 创建应用服务实例（支持依赖注入）
+   */
+  static createInstance(folderRepository?: IFolderRepository): FolderApplicationService {
+    const container = RepositoryContainer.getInstance();
+    const repo = folderRepository || container.getFolderRepository();
+
+    FolderApplicationService.instance = new FolderApplicationService(repo);
+    return FolderApplicationService.instance;
+  }
+
+  /**
+   * 获取应用服务单例
+   */
+  static getInstance(): FolderApplicationService {
+    if (!FolderApplicationService.instance) {
+      FolderApplicationService.instance = FolderApplicationService.createInstance();
+    }
+    return FolderApplicationService.instance;
+  }
+
+  /**
+   * 将 ServerDTO 转换为 ClientDTO
+   */
+  private toClientDTO(
+    serverDTO: RepositoryContracts.FolderServerDTO,
+  ): RepositoryContracts.FolderClientDTO {
+    const { Folder: FolderClient } = require('@dailyuse/domain-client');
+    const clientFolder = FolderClient.fromServerDTO(serverDTO);
+    return clientFolder.toClientDTO();
   }
 
   /**
@@ -63,7 +89,7 @@ export class FolderApplicationService {
     await this.folderRepository.save(folder);
 
     // 4. 返回 ClientDTO
-    return folder.toClientDTO();
+    return this.toClientDTO(folder.toServerDTO());
   }
 
   /**
@@ -71,7 +97,7 @@ export class FolderApplicationService {
    */
   async getFolder(uuid: string): Promise<RepositoryContracts.FolderClientDTO | null> {
     const folder = await this.folderRepository.findByUuid(uuid);
-    return folder ? folder.toClientDTO() : null;
+    return folder ? this.toClientDTO(folder.toServerDTO()) : null;
   }
 
   /**
@@ -85,7 +111,7 @@ export class FolderApplicationService {
     const tree = this.hierarchyService.buildTree(allFolders);
 
     // 3. 返回 ClientDTO
-    return tree.map((f) => f.toClientDTO(true)); // includeChildren=true
+    return tree.map((f) => this.toClientDTO(f.toServerDTO(true))); // includeChildren=true
   }
 
   /**
@@ -113,7 +139,7 @@ export class FolderApplicationService {
     }
 
     // 5. 返回 ClientDTO
-    return folder.toClientDTO();
+    return this.toClientDTO(folder.toServerDTO());
   }
 
   /**
@@ -132,9 +158,9 @@ export class FolderApplicationService {
     // 2. 查询所有同仓储的文件夹
     const allFolders = await this.folderRepository.findByRepositoryUuid(folder.repositoryUuid);
 
-    // 3. 循环检测
+    // 3. 循环检测 - await the async result
     if (newParentUuid) {
-      const hasCycle = this.hierarchyService.detectCycle(folder.uuid, newParentUuid, allFolders);
+      const hasCycle = await this.hierarchyService.detectCycle(folder.uuid, newParentUuid, this.folderRepository);
       if (hasCycle) {
         throw new Error('Circular reference detected');
       }
@@ -151,20 +177,16 @@ export class FolderApplicationService {
     }
 
     // 5. 移动（领域方法）
-    folder.moveTo(newParentUuid, newParentPath);
+    folder.moveTo(newParentUuid, newParentPath ?? undefined);
 
     // 6. 持久化
     await this.folderRepository.save(folder);
 
-    // 7. 级联更新子路径
-    const updatedFolders = this.hierarchyService.updateChildrenPaths(folder, allFolders);
-
-    for (const updated of updatedFolders) {
-      await this.folderRepository.save(updated);
-    }
+    // 7. 级联更新子路径 - await the async result
+    await this.hierarchyService.updateChildrenPaths(folder, allFolders, this.folderRepository);
 
     // 8. 返回 ClientDTO
-    return folder.toClientDTO();
+    return this.toClientDTO(folder.toServerDTO());
   }
 
   /**
