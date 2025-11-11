@@ -51,17 +51,39 @@ export class Folder implements FolderServer {
   }
 
   // ===== Getters =====
-  get uuid(): string { return this._uuid; }
-  get repositoryUuid(): string { return this._repositoryUuid; }
-  get parentUuid(): string | null { return this._parentUuid; }
-  get name(): string { return this._name; }
-  get path(): string { return this._path; }
-  get order(): number { return this._order; }
-  get isExpanded(): boolean { return this._isExpanded; }
-  get metadata(): FolderMetadata { return this._metadata; }
-  get createdAt(): number { return this._createdAt; }
-  get updatedAt(): number { return this._updatedAt; }
-  get children(): FolderServer[] | null { return this._children; }
+  get uuid(): string {
+    return this._uuid;
+  }
+  get repositoryUuid(): string {
+    return this._repositoryUuid;
+  }
+  get parentUuid(): string | null {
+    return this._parentUuid;
+  }
+  get name(): string {
+    return this._name;
+  }
+  get path(): string {
+    return this._path;
+  }
+  get order(): number {
+    return this._order;
+  }
+  get isExpanded(): boolean {
+    return this._isExpanded;
+  }
+  get metadata(): FolderMetadata {
+    return this._metadata;
+  }
+  get createdAt(): number {
+    return this._createdAt;
+  }
+  get updatedAt(): number {
+    return this._updatedAt;
+  }
+  get children(): FolderServer[] | null {
+    return this._children;
+  }
 
   // ===== 业务方法 =====
   rename(newName: string): void {
@@ -127,8 +149,48 @@ export class Folder implements FolderServer {
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       children: includeChildren
-        ? this._children?.map(c => (c as Folder).toServerDTO(true)) || null
+        ? this._children?.map((c) => (c as Folder).toServerDTO(true)) || null
         : null,
+    };
+  }
+
+  toClientDTO(includeChildren = false): RepositoryContracts.FolderClientDTO {
+    // 计算路径深度
+    const depth = this._path.split('/').filter((p) => p.length > 0).length;
+    const isRoot = this._parentUuid === null;
+    const hasChildren = this._children !== null && this._children.length > 0;
+    const pathParts = this._path.split('/').filter((p) => p.length > 0);
+
+    // 显示名称（截断过长的名称）
+    const displayName = this._name.length > 30 ? this._name.substring(0, 27) + '...' : this._name;
+
+    // 时间格式化
+    const formattedCreatedAt = new Date(this._createdAt).toLocaleString();
+    const formattedUpdatedAt = new Date(this._updatedAt).toLocaleString();
+
+    return {
+      uuid: this._uuid,
+      repositoryUuid: this._repositoryUuid,
+      parentUuid: this._parentUuid,
+      name: this._name,
+      path: this._path,
+      order: this._order,
+      isExpanded: this._isExpanded,
+      metadata: this._metadata.toServerDTO() as any, // TODO: 待 metadata 实现 toClientDTO
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+      children: includeChildren
+        ? this._children?.map((c) => (c as Folder).toClientDTO(true)) || null
+        : null,
+
+      // UI 计算字段
+      depth,
+      isRoot,
+      hasChildren,
+      pathParts,
+      displayName,
+      createdAtText: formattedCreatedAt,
+      updatedAtText: formattedUpdatedAt,
     };
   }
 
@@ -156,9 +218,7 @@ export class Folder implements FolderServer {
     order?: number;
     metadata?: Partial<RepositoryContracts.FolderMetadataServerDTO>;
   }): Folder {
-    const path = params.parentPath
-      ? `${params.parentPath}/${params.name}`
-      : `/${params.name}`;
+    const path = params.parentPath ? `${params.parentPath}/${params.name}` : `/${params.name}`;
 
     const metadata = FolderMetadata.create(params.metadata);
     const now = Date.now();
@@ -179,9 +239,7 @@ export class Folder implements FolderServer {
   }
 
   static fromServerDTO(dto: FolderServerDTO): Folder {
-    const children = dto.children
-      ? dto.children.map(c => Folder.fromServerDTO(c))
-      : null;
+    const children = dto.children ? dto.children.map((c) => Folder.fromServerDTO(c)) : null;
 
     return new Folder(
       dto.uuid,

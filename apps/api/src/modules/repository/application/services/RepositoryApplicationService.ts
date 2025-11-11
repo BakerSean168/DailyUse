@@ -61,18 +61,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 3. 返回 ClientDTO
-    return this.toClientDTO(repository.toServerDTO());
-  }
-
-  /**
-   * 将 ServerDTO 转换为 ClientDTO
-   */
-  private toClientDTO(
-    serverDTO: RepositoryContracts.RepositoryServerDTO,
-  ): RepositoryContracts.RepositoryClientDTO {
-    const { Repository: RepositoryClient } = require('@dailyuse/domain-client');
-    const clientRepository = RepositoryClient.fromServerDTO(serverDTO);
-    return clientRepository.toClientDTO();
+    return repository.toClientDTO();
   }
 
   /**
@@ -80,7 +69,7 @@ export class RepositoryApplicationService {
    */
   async getRepository(uuid: string): Promise<RepositoryContracts.RepositoryClientDTO | null> {
     const repository = await this.repositoryRepository.findByUuid(uuid);
-    return repository ? this.toClientDTO(repository.toServerDTO()) : null;
+    return repository ? repository.toClientDTO() : null;
   }
 
   /**
@@ -91,14 +80,17 @@ export class RepositoryApplicationService {
     status?: RepositoryContracts.RepositoryStatus,
   ): Promise<RepositoryContracts.RepositoryClientDTO[]> {
     let repositories: Repository[];
-    
+
     if (status) {
-      repositories = await this.repositoryRepository.findByAccountUuidAndStatus(accountUuid, status);
+      repositories = await this.repositoryRepository.findByAccountUuidAndStatus(
+        accountUuid,
+        status,
+      );
     } else {
       repositories = await this.repositoryRepository.findByAccountUuid(accountUuid);
     }
 
-    return repositories.map((r) => this.toClientDTO(r.toServerDTO()));
+    return repositories.map((r) => r.toClientDTO());
   }
 
   /**
@@ -121,7 +113,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 4. 返回 ClientDTO
-    return this.toClientDTO(repository.toServerDTO());
+    return repository.toClientDTO();
   }
 
   /**
@@ -144,7 +136,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 4. 返回 ClientDTO
-    return this.toClientDTO(repository.toServerDTO());
+    return repository.toClientDTO();
   }
 
   /**
@@ -164,7 +156,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 4. 返回 ClientDTO
-    return this.toClientDTO(repository.toServerDTO());
+    return repository.toClientDTO();
   }
 
   /**
@@ -184,7 +176,7 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
 
     // 4. 返回 ClientDTO
-    return this.toClientDTO(repository.toServerDTO());
+    return repository.toClientDTO();
   }
 
   /**

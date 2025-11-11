@@ -2,14 +2,14 @@
  * Resource Entity - Server Implementation
  * 资源实体 - 服务端实现
  */
-import { RepositoryContracts, ResourceStatus } from '@dailyuse/contracts';
+import { RepositoryContracts, ResourceStatus, ResourceType } from '@dailyuse/contracts';
 import { ResourceMetadata } from '../value-objects/ResourceMetadata';
 import { ResourceStats } from '../value-objects/ResourceStats';
 
 type ResourceServer = RepositoryContracts.ResourceServer;
 type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
 type ResourcePersistenceDTO = RepositoryContracts.ResourcePersistenceDTO;
-type ResourceType = RepositoryContracts.ResourceType;
+type ResourceTypeEnum = ResourceType;
 type ResourceStatusEnum = ResourceStatus;
 type ResourceMetadataServerDTO = RepositoryContracts.ResourceMetadataServerDTO;
 type ResourceStatsServerDTO = RepositoryContracts.ResourceStatsServerDTO;
@@ -19,7 +19,7 @@ export class Resource implements ResourceServer {
   private _repositoryUuid: string;
   private _folderUuid?: string | null;
   private _name: string;
-  private _type: ResourceType;
+  private _type: ResourceTypeEnum;
   private _path: string;
   private _size: number;
   private _content?: string | null;
@@ -33,7 +33,7 @@ export class Resource implements ResourceServer {
     uuid: string;
     repositoryUuid: string;
     name: string;
-    type: ResourceType;
+    type: ResourceTypeEnum;
     path: string;
     size: number;
     folderUuid?: string | null;
@@ -76,7 +76,7 @@ export class Resource implements ResourceServer {
     return this._name;
   }
 
-  get type(): ResourceType {
+  get type(): ResourceTypeEnum {
     return this._type;
   }
 
@@ -117,7 +117,7 @@ export class Resource implements ResourceServer {
     this._content = content;
     this._updatedAt = Date.now();
     this._stats.incrementEditCount();
-    
+
     // 更新字数统计
     const wordCount = this.calculateWordCount(content);
     const readingTime = Math.ceil(wordCount / 200); // 假设每分钟 200 字
@@ -183,7 +183,7 @@ export class Resource implements ResourceServer {
       .replace(/\[.*?\]\(.*?\)/g, '$1') // 移除链接，保留文本
       .replace(/[#*`~_\-]/g, '') // 移除 Markdown 符号
       .trim();
-    
+
     // 中文字符计数
     const chineseChars = (plainText.match(/[\u4e00-\u9fa5]/g) || []).length;
     // 英文单词计数
@@ -191,7 +191,7 @@ export class Resource implements ResourceServer {
       .replace(/[\u4e00-\u9fa5]/g, '')
       .split(/\s+/)
       .filter((word) => word.length > 0).length;
-    
+
     return chineseChars + englishWords;
   }
 
@@ -211,6 +211,107 @@ export class Resource implements ResourceServer {
       status: this._status,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+    };
+  }
+
+  toClientDTO(): RepositoryContracts.ResourceClientDTO {
+    // 状态判断
+    const isDeleted = this._status === ResourceStatus.DELETED;
+    const isArchived = this._status === ResourceStatus.ARCHIVED;
+    const isActive = this._status === ResourceStatus.ACTIVE;
+    const isDraft = this._status === ResourceStatus.DRAFT;
+
+    // 状态文本
+    const statusText = isDeleted
+      ? 'Deleted'
+      : isArchived
+        ? 'Archived'
+        : isActive
+          ? 'Active'
+          : 'Draft';
+
+    // 类型文本
+    const typeText =
+      this._type === ResourceType.MARKDOWN
+        ? 'Markdown'
+        : this._type === ResourceType.CODE
+          ? 'Code'
+          : this._type === ResourceType.IMAGE
+            ? 'Image'
+            : this._type === ResourceType.VIDEO
+              ? 'Video'
+              : this._type === ResourceType.AUDIO
+                ? 'Audio'
+                : this._type === ResourceType.PDF
+                  ? 'PDF'
+                  : this._type === ResourceType.LINK
+                    ? 'Link'
+                    : 'Other';
+
+    // 显示名称（截断过长的名称）
+    const displayName = this._name.length > 50 ? this._name.substring(0, 47) + '...' : this._name;
+
+    // 文件大小格式化
+    const formatSize = (bytes: number): string => {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+      if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+      return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    };
+
+    // 时间格式化
+    const formattedCreatedAt = new Date(this._createdAt).toLocaleString();
+    const formattedUpdatedAt = new Date(this._updatedAt).toLocaleString();
+
+    // 文件扩展名
+    const extension = this._name.includes('.') ? '.' + this._name.split('.').pop() : '';
+
+    // 图标（根据类型）
+    const icon =
+      this._type === ResourceType.MARKDOWN
+        ? 'description'
+        : this._type === ResourceType.CODE
+          ? 'code'
+          : this._type === ResourceType.IMAGE
+            ? 'image'
+            : this._type === ResourceType.VIDEO
+              ? 'movie'
+              : this._type === ResourceType.AUDIO
+                ? 'audiotrack'
+                : this._type === ResourceType.PDF
+                  ? 'picture_as_pdf'
+                  : this._type === ResourceType.LINK
+                    ? 'link'
+                    : 'insert_drive_file';
+
+    return {
+      uuid: this._uuid,
+      repositoryUuid: this._repositoryUuid,
+      folderUuid: this._folderUuid,
+      name: this._name,
+      type: this._type,
+      path: this._path,
+      size: this._size,
+      content: this._content,
+      metadata: this._metadata.toServerDTO() as any, // TODO: 待 metadata 实现 toClientDTO
+      stats: this._stats.toServerDTO() as any, // TODO: 待 stats 实现 toClientDTO
+      status: this._status,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+
+      // UI 计算字段
+      isDeleted,
+      isArchived,
+      isActive,
+      isDraft,
+      statusText,
+      typeText,
+      displayName,
+      formattedSize: formatSize(this._size),
+      createdAtText: formattedCreatedAt,
+      updatedAtText: formattedUpdatedAt,
+      extension,
+      icon,
     };
   }
 
@@ -237,7 +338,7 @@ export class Resource implements ResourceServer {
     uuid: string;
     repositoryUuid: string;
     name: string;
-    type: ResourceType;
+    type: ResourceTypeEnum;
     path: string;
     folderUuid?: string | null;
     content?: string;
@@ -293,9 +394,7 @@ export class Resource implements ResourceServer {
       metadata: ResourceMetadata.fromServerDTO(
         JSON.parse(dto.metadata) as ResourceMetadataServerDTO,
       ),
-      stats: ResourceStats.fromServerDTO(
-        JSON.parse(dto.stats) as ResourceStatsServerDTO,
-      ),
+      stats: ResourceStats.fromServerDTO(JSON.parse(dto.stats) as ResourceStatsServerDTO),
       status: dto.status,
       createdAt: dto.created_at.getTime(),
       updatedAt: dto.updated_at.getTime(),

@@ -56,33 +56,35 @@ app.use(
     origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
       // 允许非浏览器客户端（没有 origin header）
       if (!origin) return callback(null, true);
-      
+
       // 如果配置了通配符 *，允许所有源
       if (allowedOrigins.includes('*')) return callback(null, true);
-      
+
       // 检查是否在允许列表中
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      
+
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Skip-Auth', 'Cache-Control'],
     maxAge: 86400,
   }),
 );
 
 // 压缩中间件 - 但排除 SSE 路由
-app.use(compression({
-  filter: (req, res) => {
-    // SSE 路由不应该压缩，因为它是流式传输
-    if (req.path.includes('/sse/')) {
-      return false;
-    }
-    // 其他请求使用默认的压缩过滤器
-    return compression.filter(req, res);
-  }
-}));
+app.use(
+  compression({
+    filter: (req, res) => {
+      // SSE 路由不应该压缩，因为它是流式传输
+      if (req.path.includes('/sse/')) {
+        return false;
+      }
+      // 其他请求使用默认的压缩过滤器
+      return compression.filter(req, res);
+    },
+  }),
+);
 
 // Performance monitoring middleware
 app.use(performanceMiddleware);
@@ -253,7 +255,9 @@ setupSwagger(app);
 console.log('🔍 [Debug] API Router 的路由栈:');
 api.stack.forEach((layer: any, index: number) => {
   if (layer.route) {
-    console.log(`  ${index}: Route ${layer.route.path} [${Object.keys(layer.route.methods).join(', ')}]`);
+    console.log(
+      `  ${index}: Route ${layer.route.path} [${Object.keys(layer.route.methods).join(', ')}]`,
+    );
   } else if (layer.name === 'router') {
     console.log(`  ${index}: Router mounted at ${layer.regexp}`);
   } else {

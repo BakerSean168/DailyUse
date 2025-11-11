@@ -218,6 +218,23 @@ export class InterceptorManager {
         const requestId = `req-${++this.requestId}-${Date.now()}`;
         config.metadata = { requestId, startTime: Date.now() };
 
+        // ✅ 检查 X-Skip-Auth 标记
+        // 如果请求带有 X-Skip-Auth 头，说明这是刷新令牌的请求
+        // 不应该自动添加 Authorization 头（因为 Access Token 已过期）
+        if (config.headers?.['X-Skip-Auth'] === 'true') {
+          // 移除标记（不需要发送到服务器）
+          delete config.headers['X-Skip-Auth'];
+
+          if (this.config.enableLogging) {
+            LogManager.info(`跳过认证: ${config.method?.toUpperCase()} ${config.url}`, {
+              requestId,
+              reason: 'X-Skip-Auth 标记',
+            });
+          }
+
+          return config; // 直接返回，不添加 Authorization 头
+        }
+
         // 认证处理
         if (this.config.enableAuth && AuthManager.isAuthenticated()) {
           const token = AuthManager.getAccessToken();
@@ -336,19 +353,19 @@ export class InterceptorManager {
         // 401 错误处理 - Token 过期或无效
         if (error.response?.status === 401 && !config._retry) {
           // 检查是否是登录或注册等无需认证的请求（这些请求返回 401 是正常的业务错误）
-          const isAuthRequest = 
-            config.url?.includes('/auth/login') || 
+          const isAuthRequest =
+            config.url?.includes('/auth/login') ||
             config.url?.includes('/auth/register') ||
             config.url?.includes('/auth/refresh') ||
             config.url?.includes('/accounts'); // 注册账号接口
-          
+
           // 如果是认证请求本身返回 401，直接返回错误（用户名密码错误等）
           // 不应该触发 token 刷新逻辑
           if (isAuthRequest) {
             LogManager.warn('认证请求失败（业务错误）', {
               url: config.url,
               status: error.response?.status,
-              message: (error.response?.data as any)?.message
+              message: (error.response?.data as any)?.message,
             });
             return Promise.reject(this.transformError(error));
           }

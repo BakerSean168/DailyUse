@@ -217,9 +217,48 @@ export class NotificationInitializationManager {
   }
 
   /**
-   * 初始化 SSE 连接
+   * 初始化 SSE 连接（公开方法，供初始化任务调用）
    */
-  private async initializeSSEConnection(): Promise<void> {
+  async initializeSSEConnection(): Promise<void> {
+    console.log('[NotificationInit] 初始化 SSE 连接...');
+
+    try {
+      await sseClient.connect();
+
+      const status = sseClient.getStatus();
+      this.sseConnected = status.connected;
+
+      if (status.connected) {
+        console.log('[NotificationInit] ✅ SSE 连接建立成功');
+      } else {
+        console.log('[NotificationInit] ⚠️ SSE 连接未立即建立，将在后台继续尝试');
+      }
+    } catch (error) {
+      console.warn('[NotificationInit] ⚠️ SSE 初始化失败，但继续执行:', error);
+      this.sseConnected = false;
+    }
+  }
+
+  /**
+   * 断开 SSE 连接（公开方法，供清理任务调用）
+   */
+  disconnectSSE(): void {
+    console.log('[NotificationInit] 断开 SSE 连接...');
+
+    if (this.sseConnected || sseClient.isConnected()) {
+      sseClient.disconnect();
+      this.sseConnected = false;
+      console.log('[NotificationInit] ✅ SSE 连接已断开');
+    } else {
+      console.log('[NotificationInit] SSE 未连接，无需断开');
+    }
+  }
+
+  /**
+   * 初始化 SSE 连接（私有方法，已废弃）
+   * @deprecated 使用公开的 initializeSSEConnection() 方法
+   */
+  private async initializeSSEConnection_deprecated(): Promise<void> {
     console.log('[NotificationInit] 初始化 SSE 连接...');
 
     // 使用非阻塞方式连接，避免阻塞应用启动
@@ -235,51 +274,21 @@ export class NotificationInitializationManager {
         console.log('[NotificationInit] ✅ SSE 连接建立成功');
       } else {
         console.log('[NotificationInit] SSE 连接未建立，但将在后台继续尝试');
-
-        // 在后台重试连接
-        this.retrySSEConnectionInBackground();
+        // SSEClient 内部有重连机制，不需要外部重试
       }
     } catch (error) {
       console.warn('[NotificationInit] ⚠️ SSE 初始化失败，但继续执行:', error);
       this.sseConnected = false;
-      // SSE 连接失败不应该阻止通知模块初始化
-
-      // 在后台重试连接
-      // ⚠️ 已禁用：SSEClient 内部已有重连机制，无需外部重试
-      // this.retrySSEConnectionInBackground();
     }
   }
 
   /**
-   * 在后台重试 SSE 连接
-   * ⚠️ 已禁用：SSEClient 内部已有重连机制（指数退避，最多10次）
+   * 在后台重试 SSE 连接（私有方法，已废弃）
+   * @deprecated SSEClient 内部已有重连机制
    */
-  private retrySSEConnectionInBackground(): void {
-    console.log('[NotificationInit] ⚠️ SSEClient 有内部重连机制，跳过外部重试');
+  private retrySSEConnectionInBackground_deprecated(): void {
+    // 不再需要外部重试逻辑
     return;
-    
-    /*
-    console.log('[NotificationInit] 将在后台重试 SSE 连接...');
-
-    setTimeout(async () => {
-      if (!this.sseConnected) {
-        try {
-          await sseClient.connect();
-          const status = sseClient.getStatus();
-          this.sseConnected = status.connected;
-
-          if (status.connected) {
-            console.log('[NotificationInit] ✅ SSE 后台重连成功');
-          } else {
-            console.log('[NotificationInit] SSE 后台连接尝试完成，状态:', status);
-          }
-        } catch (error) {
-          console.warn('[NotificationInit] SSE 后台重连失败:', error);
-          // 可以设置更长时间的重试
-        }
-      }
-    }, 10000); // 10秒后重试
-    */
   }
 
   /**

@@ -34,7 +34,7 @@ export class SSEClient {
       // 使用相对路径，通过 Vite 代理访问 API
       this.baseUrl = import.meta.env.VITE_API_URL || '';
     }
-    
+
     // 监听页面可见性变化，页面重新可见时检查连接
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
@@ -111,6 +111,13 @@ export class SSEClient {
     const status = this.getStatus();
     console.log('[SSE Client] 检查连接状态:', status);
 
+    // ✅ 只有在已登录（有 token）时才尝试重连
+    const hasToken = AuthManager.isAuthenticated();
+    if (!hasToken) {
+      console.log('[SSE Client] 用户未登录，跳过重连');
+      return;
+    }
+
     if (!status.connected && !this.isDestroyed && !this.isConnecting) {
       console.log('[SSE Client] 连接已断开，尝试重新连接');
       this.connect();
@@ -143,16 +150,13 @@ export class SSEClient {
     // 获取认证 token
     const token = AuthManager.getAccessToken();
     if (!token) {
-      console.error('[SSE Client] 缺少认证 token，无法建立 SSE 连接');
-      // 1秒后重试
-      if (!this.isDestroyed) {
-        this.reconnectTimer = setTimeout(() => this.connectInBackground(), 1000);
-      }
+      console.warn('[SSE Client] 缺少认证 token，无法建立 SSE 连接（等待用户登录）');
+      // ✅ 不再自动重试，等待用户登录后主动调用 connect()
       return;
     }
 
     this.isConnecting = true;
-    
+
     // 设置连接超时：如果 10 秒内没有成功连接，强制重置
     this.connectTimeout = setTimeout(() => {
       console.warn('[SSE Client] ⏱️ 连接超时（10秒），强制重置');
@@ -161,13 +165,13 @@ export class SSEClient {
         this.eventSource = null;
       }
       this.isConnecting = false;
-      
+
       // 尝试重连
       if (!this.isDestroyed && this.reconnectAttempts < this.maxReconnectAttempts) {
         this.attemptReconnect();
       }
     }, this.connectionTimeout);
-    
+
     // 将 token 作为 URL 参数传递（因为 EventSource 不支持自定义请求头）
     const url = `${this.baseUrl}/api/v1/sse/notifications/events?token=${encodeURIComponent(token)}`;
 
@@ -188,10 +192,14 @@ export class SSEClient {
       const originalAddEventListener = this.eventSource.addEventListener.bind(this.eventSource);
       (this.eventSource as any).addEventListener = (type: string, listener: any, options?: any) => {
         console.log('[SSE Client] 📝 注册事件监听器:', type);
-        return originalAddEventListener(type, (event: any) => {
-          console.log(`[SSE Client] 🔔 事件触发: ${type}`, event);
-          return listener(event);
-        }, options);
+        return originalAddEventListener(
+          type,
+          (event: any) => {
+            console.log(`[SSE Client] 🔔 事件触发: ${type}`, event);
+            return listener(event);
+          },
+          options,
+        );
       };
 
       // 连接成功
@@ -202,7 +210,7 @@ export class SSEClient {
         );
         this.reconnectAttempts = 0;
         this.isConnecting = false;
-        
+
         // 清除连接超时定时器
         if (this.connectTimeout) {
           clearTimeout(this.connectTimeout);
@@ -220,7 +228,7 @@ export class SSEClient {
       this.eventSource.addEventListener('connected', (event) => {
         console.log('[SSE Client] 🔗 连接建立事件触发:', event.data);
         this.handleMessage('connected', event.data);
-        
+
         // 如果 onopen 没有触发，connected 事件也应该清除超时
         if (this.connectTimeout) {
           console.log('[SSE Client] 💡 通过 connected 事件清除连接超时');
@@ -280,7 +288,7 @@ export class SSEClient {
         console.error('[SSE Client] ❌ onerror 触发, readyState:', this.eventSource?.readyState);
         console.error('[SSE Client] Error event:', error);
         this.isConnecting = false;
-        
+
         // 清除连接超时定时器
         if (this.connectTimeout) {
           clearTimeout(this.connectTimeout);
@@ -382,9 +390,7 @@ export class SSEClient {
   private attemptReconnect(): void {
     if (this.isDestroyed || this.reconnectAttempts >= this.maxReconnectAttempts) {
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error(
-          `[SSE Client] 已达到最大重连次数 (${this.maxReconnectAttempts})，停止重连`,
-        );
+        console.error(`[SSE Client] 已达到最大重连次数 (${this.maxReconnectAttempts})，停止重连`);
       }
       return;
     }
@@ -426,7 +432,7 @@ export class SSEClient {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-    
+
     // 清除连接超时定时器
     if (this.connectTimeout) {
       clearTimeout(this.connectTimeout);

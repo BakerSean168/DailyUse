@@ -1,6 +1,6 @@
 /**
  * Repository 聚合根实现 (Server)
- * 
+ *
  * DDD 聚合根职责：
  * - 管理仓储的元数据和配置
  * - 管理文件夹树结构（子实体）
@@ -164,9 +164,69 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       status: this._status,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
+      folders: includeFolders ? this._folders?.map((f) => (f as any).toServerDTO()) || null : null,
+    };
+  }
+
+  toClientDTO(includeFolders = false): RepositoryContracts.RepositoryClientDTO {
+    // 状态判断
+    const isDeleted = this._status === RepositoryStatusEnum.DELETED;
+    const isArchived = this._status === RepositoryStatusEnum.ARCHIVED;
+    const isActive = this._status === RepositoryStatusEnum.ACTIVE;
+
+    // 状态文本
+    const statusText = isDeleted ? 'Deleted' : isArchived ? 'Archived' : 'Active';
+
+    // 类型文本
+    const typeText =
+      this._type === 'MARKDOWN' ? 'Markdown' : this._type === 'CODE' ? 'Code' : 'Mixed';
+
+    // 统计数据
+    const statsDTO = this._stats.toServerDTO();
+    const folderCount = statsDTO.folderCount || 0;
+    const resourceCount = statsDTO.resourceCount || 0;
+    const totalSize = statsDTO.totalSize || 0;
+
+    // 文件大小格式化
+    const formatSize = (bytes: number): string => {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+      if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+      return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    };
+
+    // 时间格式化
+    const formattedCreatedAt = new Date(this._createdAt).toLocaleString();
+    const formattedUpdatedAt = new Date(this._updatedAt).toLocaleString();
+
+    return {
+      uuid: this._uuid,
+      accountUuid: this._accountUuid,
+      name: this._name,
+      type: this._type,
+      path: this._path,
+      description: this._description,
+      config: this._config.toServerDTO() as any, // TODO: 待 config 实现 toClientDTO
+      stats: statsDTO as any, // TODO: 待 stats 实现 toClientDTO
+      status: this._status,
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
       folders: includeFolders
-        ? this._folders?.map(f => (f as any).toServerDTO()) || null
+        ? this._folders?.map((f) => (f as any).toClientDTO?.(true)) || null
         : null,
+
+      // UI 计算字段
+      isDeleted,
+      isArchived,
+      isActive,
+      statusText,
+      typeText,
+      folderCount,
+      resourceCount,
+      totalSize,
+      formattedSize: formatSize(totalSize),
+      createdAtText: formattedCreatedAt,
+      updatedAtText: formattedUpdatedAt,
     };
   }
 
@@ -216,7 +276,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
 
   public static fromServerDTO(dto: RepositoryServerDTO): Repository {
     const folders = dto.folders
-      ? dto.folders.map(f => {
+      ? dto.folders.map((f) => {
           // TODO: Import Folder class when available
           return null as any;
         })

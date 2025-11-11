@@ -45,17 +45,6 @@ export class FolderApplicationService {
   }
 
   /**
-   * 将 ServerDTO 转换为 ClientDTO
-   */
-  private toClientDTO(
-    serverDTO: RepositoryContracts.FolderServerDTO,
-  ): RepositoryContracts.FolderClientDTO {
-    const { Folder: FolderClient } = require('@dailyuse/domain-client');
-    const clientFolder = FolderClient.fromServerDTO(serverDTO);
-    return clientFolder.toClientDTO();
-  }
-
-  /**
    * 创建文件夹
    */
   async createFolder(params: {
@@ -89,7 +78,7 @@ export class FolderApplicationService {
     await this.folderRepository.save(folder);
 
     // 4. 返回 ClientDTO
-    return this.toClientDTO(folder.toServerDTO());
+    return folder.toClientDTO();
   }
 
   /**
@@ -97,7 +86,7 @@ export class FolderApplicationService {
    */
   async getFolder(uuid: string): Promise<RepositoryContracts.FolderClientDTO | null> {
     const folder = await this.folderRepository.findByUuid(uuid);
-    return folder ? this.toClientDTO(folder.toServerDTO()) : null;
+    return folder ? folder.toClientDTO() : null;
   }
 
   /**
@@ -110,8 +99,20 @@ export class FolderApplicationService {
     // 2. 构建树形结构
     const tree = this.hierarchyService.buildTree(allFolders);
 
-    // 3. 返回 ClientDTO
-    return tree.map((f) => this.toClientDTO(f.toServerDTO(true))); // includeChildren=true
+    // 3. 转换 FolderTreeNode 为 ClientDTO（递归处理子节点）
+    const convertTreeNode = (node: any): RepositoryContracts.FolderClientDTO => {
+      const folder = node.folder as Folder;
+      const clientDTO = folder.toClientDTO(false); // 先不包含子节点
+
+      // 递归转换子节点
+      if (node.children && node.children.length > 0) {
+        clientDTO.children = node.children.map((child: any) => convertTreeNode(child));
+      }
+
+      return clientDTO;
+    };
+
+    return tree.map((node) => convertTreeNode(node));
   }
 
   /**
@@ -130,16 +131,15 @@ export class FolderApplicationService {
     // 3. 持久化
     await this.folderRepository.save(folder);
 
-    // 4. 如果有子文件夹，级联更新子路径
-    const allFolders = await this.folderRepository.findByRepositoryUuid(folder.repositoryUuid);
-    const updatedFolders = this.hierarchyService.updateChildrenPaths(folder, allFolders);
-
-    for (const updated of updatedFolders) {
-      await this.folderRepository.save(updated);
-    }
+    // 4. 级联更新子路径（使用正确的方法签名）
+    await this.hierarchyService.updateChildrenPaths(
+      folder.uuid,
+      folder.path,
+      this.folderRepository,
+    );
 
     // 5. 返回 ClientDTO
-    return this.toClientDTO(folder.toServerDTO());
+    return folder.toClientDTO();
   }
 
   /**
@@ -160,7 +160,11 @@ export class FolderApplicationService {
 
     // 3. 循环检测 - await the async result
     if (newParentUuid) {
-      const hasCycle = await this.hierarchyService.detectCycle(folder.uuid, newParentUuid, this.folderRepository);
+      const hasCycle = await this.hierarchyService.detectCycle(
+        folder.uuid,
+        newParentUuid,
+        this.folderRepository,
+      );
       if (hasCycle) {
         throw new Error('Circular reference detected');
       }
@@ -182,11 +186,15 @@ export class FolderApplicationService {
     // 6. 持久化
     await this.folderRepository.save(folder);
 
-    // 7. 级联更新子路径 - await the async result
-    await this.hierarchyService.updateChildrenPaths(folder, allFolders, this.folderRepository);
+    // 7. 级联更新子路径（使用正确的方法签名）
+    await this.hierarchyService.updateChildrenPaths(
+      folder.uuid,
+      folder.path,
+      this.folderRepository,
+    );
 
     // 8. 返回 ClientDTO
-    return this.toClientDTO(folder.toServerDTO());
+    return folder.toClientDTO();
   }
 
   /**
@@ -199,50 +207,24 @@ export class FolderApplicationService {
       throw new Error(`Folder not found: ${uuid}`);
     }
 
-    // 2. 查询所有子文件夹
-    const allFolders = await this.folderRepository.findByRepositoryUuid(folder.repositoryUuid);
-    const tree = this.hierarchyService.buildTree(allFolders);
+    // 2. 收集所有要删除的文件夹UUID（包括子文件夹）
+    const collectChildrenUuids = async (folderUuid: string): Promise<string[]> => {
+      const uuids = [folderUuid];
+      const children = await this.folderRepository.findByParentUuid(folderUuid);
 
-    // 3. 找到当前文件夹及其所有子文件夹
-    const toDelete: Folder[] = [];
-    const collectChildren = (f: Folder) => {
-      toDelete.push(f);
-      if (f.children) {
-        for (const child of f.children) {
-          collectChildren(child);
-        }
+      for (const child of children) {
+        const childUuids = await collectChildrenUuids(child.uuid);
+        uuids.push(...childUuids);
       }
+
+      return uuids;
     };
 
-    const targetInTree = this.findFolderInTree(tree, uuid);
-    if (targetInTree) {
-      collectChildren(targetInTree);
-    } else {
-      // 如果不在树中，只删除自己
-      toDelete.push(folder);
-    }
+    const uuidsToDelete = await collectChildrenUuids(uuid);
 
-    // 4. 级联删除（从叶子节点开始）
-    for (const f of toDelete.reverse()) {
-      await this.folderRepository.delete(f.uuid);
+    // 3. 级联删除（从叶子节点开始，reverse 顺序）
+    for (const folderUuid of uuidsToDelete.reverse()) {
+      await this.folderRepository.delete(folderUuid);
     }
-  }
-
-  /**
-   * 在树中查找文件夹
-   */
-  private findFolderInTree(tree: Folder[], uuid: string): Folder | null {
-    for (const folder of tree) {
-      if (folder.uuid === uuid) {
-        return folder;
-      }
-      if (folder.children) {
-        const found = this.findFolderInTree(folder.children, uuid);
-        if (found) {
-          return found;
-        }
-      }
-    }
-    return null;
   }
 }

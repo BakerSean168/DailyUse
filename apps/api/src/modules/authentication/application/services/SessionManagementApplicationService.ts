@@ -23,6 +23,7 @@ import { AuthenticationDomainService } from '@dailyuse/domain-server';
 import { AuthenticationContainer } from '../../infrastructure/di/AuthenticationContainer';
 import { AccountContainer } from '../../../account/infrastructure/di/AccountContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';
+import jwt from 'jsonwebtoken';
 
 const logger = createLogger('SessionManagementApplicationService');
 
@@ -360,10 +361,32 @@ export class SessionManagementApplicationService {
     refreshToken: string;
     expiresAt: number;
   } {
-    // 简化实现：实际应该使用 JWT
-    const accessToken = `access_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    const refreshToken = `refresh_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    const expiresAt = Date.now() + 3600000; // 1 小时后过期
+    const secret = process.env.JWT_SECRET || 'default-secret';
+    const accessTokenExpiresIn = 3600; // 1 hour in seconds
+    const refreshTokenExpiresIn = 7 * 24 * 3600; // 7 days in seconds
+    const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds
+
+    // Generate JWT access token
+    const accessToken = jwt.sign(
+      {
+        type: 'access',
+        iat: Math.floor(Date.now() / 1000),
+      },
+      secret,
+      { expiresIn: accessTokenExpiresIn },
+    );
+
+    // Generate JWT refresh token (longer expiry, different payload)
+    const refreshToken = jwt.sign(
+      {
+        type: 'refresh',
+        iat: Math.floor(Date.now() / 1000),
+        // Refresh token should have different claims to distinguish from access token
+        purpose: 'token-refresh',
+      },
+      secret,
+      { expiresIn: refreshTokenExpiresIn },
+    );
 
     return { accessToken, refreshToken, expiresAt };
   }

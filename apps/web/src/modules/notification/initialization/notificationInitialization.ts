@@ -1,7 +1,7 @@
 /**
  * Notification 模块初始化任务注册
  * @description 为 notification 模块注册初始化任务到应用级别的初始化管理器中
- * 
+ *
  * 架构说明：
  * - APP_STARTUP 阶段：初始化不依赖用户登录态的核心通知服务（NotificationService、事件总线等）
  * - USER_LOGIN 阶段：初始化需要用户登录态的功能（提醒通知处理器等）
@@ -81,6 +81,38 @@ export function registerNotificationInitializationTasks(): void {
         console.log('✅ [Notification] 提醒通知处理器清理完成');
       } catch (error) {
         console.error('❌ [Notification] 提醒通知处理器清理失败:', error);
+      }
+    },
+  };
+
+  // ========== USER_LOGIN 阶段：SSE 连接（依赖登录态）==========
+  const sseConnectionTask: InitializationTask = {
+    name: 'sse-connection',
+    phase: InitializationPhase.USER_LOGIN,
+    priority: 15, // 在提醒通知处理器之前建立连接
+    initialize: async (context) => {
+      console.log(`🔗 [SSE] 建立 SSE 连接（USER_LOGIN）: ${context?.accountUuid}`);
+
+      try {
+        const notificationManager = NotificationInitializationManager.getInstance();
+        await notificationManager.initializeSSEConnection();
+
+        console.log('✅ [SSE] SSE 连接初始化完成');
+      } catch (error) {
+        console.error('❌ [SSE] SSE 连接初始化失败:', error);
+        // SSE 连接失败不阻塞用户登录
+      }
+    },
+    cleanup: async (context) => {
+      console.log(`🔌 [SSE] 断开 SSE 连接: ${context?.accountUuid}`);
+
+      try {
+        const notificationManager = NotificationInitializationManager.getInstance();
+        notificationManager.disconnectSSE();
+
+        console.log('✅ [SSE] SSE 连接已断开');
+      } catch (error) {
+        console.error('❌ [SSE] SSE 断开失败:', error);
       }
     },
   };
@@ -187,10 +219,10 @@ export function registerNotificationInitializationTasks(): void {
 
   // 注册所有任务
   manager.registerTask(notificationInitTask); // APP_STARTUP
+  manager.registerTask(sseConnectionTask); // USER_LOGIN - SSE 连接
   manager.registerTask(reminderNotificationTask); // USER_LOGIN
   manager.registerTask(notificationPermissionTask); // USER_LOGIN
   manager.registerTask(notificationTestTask); // USER_LOGIN
 
-  console.log('📝 [Notification] 通知模块初始化任务已注册');
+  console.log('📝 [Notification] 通知模块初始化任务已注册（包含 SSE 连接）');
 }
-

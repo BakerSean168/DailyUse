@@ -78,7 +78,7 @@ export class ResourceApplicationService {
     }
 
     await this.resourceRepository.save(resource);
-    return this.toClientDTO(resource.toServerDTO());
+    return resource.toClientDTO();
   }
 
   async updateMarkdownContent(uuid: string, content: string): Promise<ResourceClientDTO> {
@@ -87,18 +87,18 @@ export class ResourceApplicationService {
 
     resource.updateMarkdownContent(content);
     await this.resourceRepository.save(resource);
-    return this.toClientDTO(resource.toServerDTO());
+    return resource.toClientDTO();
   }
 
   async getResourceById(uuid: string): Promise<ResourceClientDTO | null> {
     const resource = await this.resourceRepository.findById(uuid);
     if (!resource) return null;
-    return this.toClientDTO(resource.toServerDTO());
+    return resource.toClientDTO();
   }
 
   async getResourcesByRepository(repositoryUuid: string): Promise<ResourceClientDTO[]> {
     const resources = await this.resourceRepository.findByRepositoryUuid(repositoryUuid);
-    return resources.map((r) => this.toClientDTO(r.toServerDTO()));
+    return resources.map((r) => r.toClientDTO());
   }
 
   async deleteResource(uuid: string): Promise<void> {
@@ -106,11 +106,5 @@ export class ResourceApplicationService {
     if (!resource) throw new Error(`Resource not found: ${uuid}`);
     resource.delete();
     await this.resourceRepository.save(resource);
-  }
-
-  private toClientDTO(serverDTO: ResourceServerDTO): ResourceClientDTO {
-    const { Resource: ResourceClient } = require('@dailyuse/domain-client');
-    const clientResource = ResourceClient.fromServerDTO(serverDTO);
-    return clientResource.toClientDTO();
   }
 }

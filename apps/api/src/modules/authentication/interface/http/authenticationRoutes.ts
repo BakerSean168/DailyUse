@@ -1,6 +1,7 @@
 import type { Router as ExpressRouter } from 'express';
 import { Router } from 'express';
 import { AuthenticationController } from './AuthenticationController';
+import { SessionManagementController } from './SessionManagementController';
 import { RegistrationController } from '../../../account/interface/http/RegistrationController';
 import { deviceInfoMiddleware } from '../../../../shared/middlewares/index';
 
@@ -168,6 +169,66 @@ router.post('/logout', AuthenticationController.logout);
  *         description: 服务器错误
  */
 router.post('/logout-all', AuthenticationController.logoutAll);
+
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: 刷新访问令牌
+ *     description: 使用 refresh token 刷新 access token。不需要在 Authorization header 中传递 token，refresh token 在请求体中传递。
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: 刷新令牌
+ *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *     responses:
+ *       200:
+ *         description: Token 刷新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 200
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     sessionUuid:
+ *                       type: string
+ *                       description: 会话 UUID
+ *                     accessToken:
+ *                       type: string
+ *                       description: 新的访问令牌
+ *                     refreshToken:
+ *                       type: string
+ *                       description: 新的刷新令牌
+ *                     expiresAt:
+ *                       type: number
+ *                       description: 访问令牌过期时间戳
+ *                 message:
+ *                   type: string
+ *                   example: Session refreshed successfully
+ *       400:
+ *         description: 请求参数错误
+ *       401:
+ *         description: Refresh Token 无效或已过期
+ *       404:
+ *         description: Session 不存在
+ *       500:
+ *         description: 服务器错误
+ */
+router.post('/refresh', SessionManagementController.refreshSession);
 
 // ==================== 以下路由暂未实现，后续补充 ====================
 
