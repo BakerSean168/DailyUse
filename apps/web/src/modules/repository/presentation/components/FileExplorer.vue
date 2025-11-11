@@ -80,6 +80,21 @@
 
               <v-divider />
 
+              <v-list-item @click="handleAddToBookmarks(item.raw)">
+                <template #prepend>
+                  <v-icon 
+                    :icon="bookmarkStore.hasBookmark(item.raw.uuid) ? 'mdi-bookmark' : 'mdi-bookmark-outline'" 
+                    :color="bookmarkStore.hasBookmark(item.raw.uuid) ? 'primary' : undefined"
+                    size="small"
+                  />
+                </template>
+                <v-list-item-title>
+                  {{ bookmarkStore.hasBookmark(item.raw.uuid) ? '已添加书签' : '添加到书签' }}
+                </v-list-item-title>
+              </v-list-item>
+
+              <v-divider />
+
               <v-list-item @click="handleDeleteFolder(item.raw)" class="text-error">
                 <template #prepend>
                   <v-icon icon="mdi-delete-outline" size="small" color="error" />
@@ -106,6 +121,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFolderStore } from '../stores';
+import { useBookmarkStore } from '../stores/bookmarkStore';
 import { FolderApiClient } from '../../api';
 import { Folder } from '@dailyuse/domain-client';
 
@@ -129,6 +145,7 @@ const emit = defineEmits<{
 
 // Store
 const folderStore = useFolderStore();
+const bookmarkStore = useBookmarkStore();
 
 // Local state
 const isLoading = ref(false);
@@ -224,6 +241,25 @@ function handleRenameFolder(folder: Folder) {
 
 function handleDeleteFolder(folder: Folder) {
   emit('delete-folder', folder);
+}
+
+function handleAddToBookmarks(folder: Folder) {
+  if (!props.selectedRepository) return;
+  
+  if (bookmarkStore.hasBookmark(folder.uuid)) {
+    // 已存在，不再添加
+    return;
+  }
+  
+  bookmarkStore.addBookmark({
+    name: folder.name,
+    targetUuid: folder.uuid,
+    targetType: 'folder',
+    repositoryUuid: props.selectedRepository,
+    icon: 'mdi-folder-outline',
+  });
+  
+  console.log('已添加文件夹到书签:', folder.name);
 }
 
 // Watchers

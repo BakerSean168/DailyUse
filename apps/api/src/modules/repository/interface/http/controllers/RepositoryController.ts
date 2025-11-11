@@ -277,4 +277,124 @@ export class RepositoryController {
       });
     }
   }
+
+  /**
+   * 获取文件树（文件夹 + 资源统一树形结构）
+   * @route GET /api/repositories/:uuid/tree
+   * Story 11.1: File Tree Unified Rendering
+   */
+  static async getFileTree(req: Request, res: Response): Promise<Response> {
+    try {
+      const { FolderApplicationService } = await import('../../../application/services');
+      const { ResourceApplicationService } = await import('../../../application/services/ResourceApplicationService');
+      
+      const folderService = FolderApplicationService.getInstance();
+      const resourceService = ResourceApplicationService.getInstance();
+      const { uuid: repositoryUuid } = req.params;
+
+      logger.info('Getting file tree', { repositoryUuid });
+
+      // 1. 获取所有文件夹（已包含层级结构）
+      const folders = await folderService.getFolderTree(repositoryUuid);
+
+      // 2. 获取所有资源
+      const resources = await resourceService.getResourcesByRepository(repositoryUuid);
+
+      // 3. 合并成 TreeNode 结构
+      const treeNodes: any[] = [];
+
+      // 3.1 转换 Folders 为 TreeNode
+      const folderMap = new Map<string, any>();
+      const processFolder = (folder: any): any => {
+        const node: any = {
+          uuid: folder.uuid,
+          name: folder.name,
+          type: 'folder' as const,
+          parentUuid: folder.parentUuid,
+          repositoryUuid: folder.repositoryUuid,
+          path: folder.path,
+          isExpanded: false,
+          children: [],
+        };
+        folderMap.set(folder.uuid, node);
+
+        // 递归处理子文件夹
+        if (folder.children && folder.children.length > 0) {
+          node.children = folder.children.map(processFolder);
+        }
+
+        return node;
+      };
+
+      folders.forEach(folder => {
+        treeNodes.push(processFolder(folder));
+      });
+
+      // 3.2 将 Resources 添加到对应的父节点
+      resources.forEach(resource => {
+        const fileNode: any = {
+          uuid: resource.uuid,
+          name: resource.name,
+          type: 'file' as const,
+          parentUuid: resource.folderUuid || null,
+          repositoryUuid: resource.repositoryUuid,
+          path: resource.path || `/${resource.name}`,
+          extension: resource.type === 'MARKDOWN' ? '.md' : undefined,
+          size: resource.size,
+          updatedAt: resource.updatedAt,
+        };
+
+        // 如果有父文件夹，添加到父文件夹的 children
+        if (resource.folderUuid && folderMap.has(resource.folderUuid)) {
+          const parentFolder = folderMap.get(resource.folderUuid);
+          if (!parentFolder.children) {
+            parentFolder.children = [];
+          }
+          parentFolder.children.push(fileNode);
+        } else {
+          // 根级别文件
+          treeNodes.push(fileNode);
+        }
+      });
+
+      // 4. 排序：文件夹优先，然后按名称
+      const sortNodes = (nodes: any[]): any[] => {
+        return nodes.sort((a, b) => {
+          // 文件夹优先
+          if (a.type === 'folder' && b.type === 'file') return -1;
+          if (a.type === 'file' && b.type === 'folder') return 1;
+          // 同类型按名称排序
+          return a.name.localeCompare(b.name);
+        }).map(node => {
+          if (node.children && node.children.length > 0) {
+            node.children = sortNodes(node.children);
+          }
+          return node;
+        });
+      };
+
+      const sortedTree = sortNodes(treeNodes);
+
+      return RepositoryController.responseBuilder.sendSuccess(
+        res,
+        {
+          repositoryUuid,
+          tree: sortedTree,
+        },
+        'File tree retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error getting file tree', { error: error.message });
+        return RepositoryController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return RepositoryController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
 }

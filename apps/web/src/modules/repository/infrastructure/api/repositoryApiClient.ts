@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { apiClient } from '@/shared/api/instances';
-import { type RepositoryContracts } from '@dailyuse/contracts';
+import { type RepositoryContracts, type SearchRequest } from '@dailyuse/contracts';
 
 /**
  * Repository API 客户端
@@ -299,6 +299,20 @@ export class RepositoryApiClient {
   }
 
   // ===== Search and Query =====
+
+  /**
+   * Obsidian 风格搜索
+   * Story 11.2
+   */
+  async search(
+    repositoryUuid: string,
+    request: Omit<SearchRequest, 'repositoryUuid'>,
+  ): Promise<any> {
+    const data = await apiClient.get(`${this.baseUrl}/${repositoryUuid}/search`, {
+      params: request,
+    });
+    return data;
+  }
 
   /**
    * 搜索仓库

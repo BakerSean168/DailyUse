@@ -1,0 +1,138 @@
+/**
+ * Repository Module - Design System Variables
+ * Story 11.3: Unified Styles (Obsidian Style)
+ */
+
+// ==================== 颜色系统 ====================
+// Vuetify 主题变量（运行时注入）
+// 使用方式：rgb(var(--v-theme-primary))
+// 可用颜色：primary, surface, background, error, warning, info, success, on-surface, on-primary 等
+
+// 自定义透明度层级
+$hover-opacity: 0.05;
+$selected-opacity: 0.12;
+$pressed-opacity: 0.16;
+$disabled-opacity: 0.38;
+$divider-opacity: 0.12;
+
+// ==================== 间距系统 ====================
+// 基于 4px 网格系统
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 24px;
+$spacing-2xl: 32px;
+$spacing-3xl: 48px;
+
+// 侧边栏专用
+$sidebar-padding: 8px;
+$sidebar-width-desktop: 300px;
+$sidebar-width-tablet: 250px;
+$sidebar-width-mobile: 280px;
+
+// 组件内边距
+$content-padding-compact: 4px 8px;
+$content-padding-normal: 8px 12px;
+$content-padding-comfortable: 12px 16px;
+
+// ==================== 圆角系统 ====================
+$border-radius-sm: 4px;   // chip, badge, scrollbar
+$border-radius-md: 6px;   // button, input, tooltip
+$border-radius-lg: 8px;   // card, dialog, menu
+$border-radius-xl: 12px;  // panel, large containers
+
+// ==================== 过渡动画 ====================
+$transition-fast: 150ms;
+$transition-normal: 250ms;
+$transition-slow: 350ms;
+
+// 缓动函数
+$ease-out: cubic-bezier(0.4, 0, 0.2, 1);        // Material Design standard
+$ease-in-out: cubic-bezier(0.4, 0, 0.6, 1);    // Smooth
+$ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);  // Playful (expand/collapse)
+
+// ==================== 阴影系统 ====================
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+// ==================== 滚动条样式 ====================
+$scrollbar-width: 8px;
+$scrollbar-thumb-radius: $border-radius-sm;
+$scrollbar-color: rgba(var(--v-theme-on-surface), 0.2);
+$scrollbar-hover-color: rgba(var(--v-theme-on-surface), 0.3);
+$scrollbar-active-color: rgba(var(--v-theme-on-surface), 0.4);
+
+// ==================== 字体系统 ====================
+$font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+$font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+
+$font-size-xs: 11px;
+$font-size-sm: 12px;
+$font-size-base: 14px;
+$font-size-lg: 16px;
+$font-size-xl: 18px;
+$font-size-2xl: 24px;
+
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+// ==================== Z-Index 层级 ====================
+$z-index-base: 1;
+$z-index-sidebar: 10;
+$z-index-header: 20;
+$z-index-dropdown: 100;
+$z-index-modal: 200;
+$z-index-tooltip: 300;
+
+// ==================== 响应式断点 ====================
+$breakpoint-mobile: 768px;
+$breakpoint-tablet: 1024px;
+$breakpoint-desktop: 1280px;
+$breakpoint-wide: 1920px;
+
+// ==================== 组件特定变量 ====================
+
+// Tab 标签栏
+$tab-button-padding: 6px;
+$tab-button-gap: 4px;
+$tab-active-indicator-height: 2px;
+
+// 文件树
+$tree-node-height: 32px;
+$tree-indent-size: 16px;
+$tree-icon-size: 18px;
+
+// 资源列表
+$list-item-height: 48px;
+$list-item-compact-height: 40px;
+$list-item-padding: 8px 12px;
+
+// 书签面板
+$bookmark-item-height: 40px;
+$bookmark-badge-size: 20px;
+
+// 搜索面板
+$search-input-height: 36px;
+$search-result-height: 52px;
+
+// 空状态
+$empty-state-icon-size: 64px;
+$empty-state-padding: 32px;
+
+// ==================== 导出（供 TypeScript 使用）====================
+:export {
+  hoverOpacity: $hover-opacity;
+  selectedOpacity: $selected-opacity;
+  transitionFast: $transition-fast;
+  transitionNormal: $transition-normal;
+  borderRadiusSm: $border-radius-sm;
+  borderRadiusMd: $border-radius-md;
+  borderRadiusLg: $border-radius-lg;
+  sidebarWidthDesktop: $sidebar-width-desktop;
+  sidebarWidthTablet: $sidebar-width-tablet;
+  sidebarWidthMobile: $sidebar-width-mobile;
+}

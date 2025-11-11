@@ -47,24 +47,26 @@
 
         <!-- 搜索视图 -->
         <SearchPanel
+          v-if="selectedRepository"
           v-show="activeTab === 'search'"
+          :repository-uuid="selectedRepository"
           @select="handleSearchResultSelect"
         />
 
         <!-- 书签视图 -->
         <BookmarksPanel
+          v-if="selectedRepository"
           v-show="activeTab === 'bookmarks'"
+          :repository-uuid="selectedRepository"
           @select="handleBookmarkSelect"
-          @add="handleAddBookmark"
-          @remove="handleRemoveBookmark"
         />
 
         <!-- 标签视图 -->
         <TagsPanel
+          v-if="selectedRepository"
           v-show="activeTab === 'tags'"
+          :repository-uuid="selectedRepository"
           @select="handleTagSelect"
-          @add="handleAddTag"
-          @remove="handleRemoveTag"
         />
       </div>
 
@@ -454,41 +456,47 @@ function handleSelectFolder(folder: Folder | null) {
 }
 
 // 搜索相关事件处理
-function handleSearchResultSelect(result: any) {
+async function handleSearchResultSelect(result: any) {
   console.log('选中搜索结果:', result);
-  // TODO: 打开搜索结果对应的资源
+  // 打开搜索结果对应的资源
+  if (result.resourceUuid) {
+    try {
+      await resourceStore.loadResourceById(result.resourceUuid);
+      const resource = resourceStore.resources.find(r => r.uuid === result.resourceUuid);
+      if (resource) {
+        await resourceStore.openInTab(resource);
+      }
+    } catch (error) {
+      console.error('打开搜索结果失败:', error);
+    }
+  }
 }
 
 // 书签相关事件处理
-function handleBookmarkSelect(bookmark: any) {
+async function handleBookmarkSelect(bookmark: any) {
   console.log('选中书签:', bookmark);
-  // TODO: 打开书签对应的资源
+  
+  if (bookmark.targetType === 'resource') {
+    // 打开资源
+    try {
+      await resourceStore.loadResourceById(bookmark.targetUuid);
+      const resource = resourceStore.resources.find(r => r.uuid === bookmark.targetUuid);
+      if (resource) {
+        await resourceStore.openInTab(resource);
+      }
+    } catch (error) {
+      console.error('打开书签资源失败:', error);
+    }
+  } else if (bookmark.targetType === 'folder') {
+    // TODO: 展开文件夹（需要 FilesPanel 支持）
+    console.log('书签指向文件夹:', bookmark.name);
+  }
 }
 
-function handleAddBookmark() {
-  console.log('添加书签');
-  // TODO: 实现添加书签功能
-}
-
-function handleRemoveBookmark(bookmark: any) {
-  console.log('删除书签:', bookmark);
-  // TODO: 实现删除书签功能
-}
-
-// 标签相关事件处理
-function handleTagSelect(tag: any) {
-  console.log('选中标签:', tag);
-  // TODO: 显示标签下的所有资源
-}
-
-function handleAddTag() {
-  console.log('创建标签');
-  // TODO: 实现创建标签功能
-}
-
-function handleRemoveTag(tag: any) {
-  console.log('删除标签:', tag);
-  // TODO: 实现删除标签功能
+// 标签相关事件处理 (Story 11.5)
+function handleTagSelect(resource: any) {
+  console.log('从标签打开资源:', resource);
+  // TagsPanel 已经处理了资源打开，这里只需要记录
 }
 
 // Resource 相关 (Epic 10 Story 10-2)
@@ -513,27 +521,53 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@import '@/modules/repository/styles/index.scss';
+
 .repository-view {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: $sidebar-width-desktop 1fr;
   gap: 0;
   height: 100vh;
   overflow: hidden;
+
+  // 响应式布局
+  @include tablet {
+    grid-template-columns: $sidebar-width-tablet 1fr;
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    position: relative;
+  }
 }
 
 /* 左侧边栏 - Obsidian 风格 */
 .sidebar {
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   height: 100%;
   border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   background: rgb(var(--v-theme-surface));
+  z-index: $z-index-sidebar;
+
+  @include mobile {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: $sidebar-width-mobile;
+    transform: translateX(-100%);
+    transition: transform $transition-normal $ease-out;
+    box-shadow: $shadow-lg;
+
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
 }
 
 /* 侧边栏顶部标签 */
 .sidebar-tabs {
-  padding: 8px;
+  padding: $sidebar-padding;
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   background: rgb(var(--v-theme-surface-variant));
 }
@@ -542,20 +576,38 @@ onMounted(async () => {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  gap: $tab-button-gap;
+
+  :deep(.v-btn) {
+    border-radius: $border-radius-md;
+    transition: background-color $transition-fast $ease-out,
+                color $transition-fast $ease-out;
+
+    &:hover {
+      background-color: rgba(var(--v-theme-on-surface), $hover-opacity);
+    }
+
+    &.v-btn--active {
+      background-color: rgba(var(--v-theme-primary), $selected-opacity);
+      color: rgb(var(--v-theme-primary));
+      font-weight: 600;
+    }
+  }
 }
 
 /* 侧边栏内容区域 */
 .sidebar-content {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
+  @include custom-scrollbar;
 }
 
 /* 底部仓储选择器 - Obsidian 风格 */
 .repository-selector {
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  padding: 8px;
+  padding: $sidebar-padding;
   background: rgb(var(--v-theme-surface));
 }
 
@@ -563,14 +615,19 @@ onMounted(async () => {
   justify-content: flex-start;
   text-transform: none;
   font-weight: 500;
+  border-radius: $border-radius-md;
+  transition: background-color $transition-fast $ease-out;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-on-surface), $hover-opacity);
+  }
 }
 
 /* 右侧编辑器面板 */
 .resource-editor-panel {
   height: 100%;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  @include flex-column;
   background: rgb(var(--v-theme-background));
 }
 
@@ -579,21 +636,35 @@ onMounted(async () => {
   overflow: hidden;
 }
 
+/* 空状态 - 使用 mixin */
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 32px;
+  @include empty-state;
+
+  .v-icon {
+    font-size: $empty-state-icon-size;
+    color: rgb(var(--v-theme-grey-lighten-1));
+    margin-bottom: $spacing-lg;
+  }
+
+  p {
+    &.text-h6 {
+      color: rgb(var(--v-theme-grey));
+      margin-bottom: $spacing-sm;
+    }
+
+    &.text-caption {
+      color: rgb(var(--v-theme-grey-lighten-1));
+    }
+  }
 }
 
+/* 通用样式类 */
 .h-100 {
   height: 100%;
 }
 
 .text-disabled {
-  color: rgba(var(--v-theme-on-surface), 0.38);
+  opacity: $disabled-opacity;
 }
 
 .text-error {

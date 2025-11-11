@@ -59,6 +59,20 @@
 
               <v-divider />
 
+              <v-list-item @click="addToBookmarks(resource)">
+                <template #prepend>
+                  <v-icon 
+                    :icon="bookmarkStore.hasBookmark(resource.uuid) ? 'mdi-bookmark' : 'mdi-bookmark-outline'" 
+                    :color="bookmarkStore.hasBookmark(resource.uuid) ? 'primary' : undefined"
+                  />
+                </template>
+                <v-list-item-title>
+                  {{ bookmarkStore.hasBookmark(resource.uuid) ? '已添加书签' : '添加到书签' }}
+                </v-list-item-title>
+              </v-list-item>
+
+              <v-divider />
+
               <v-list-item @click="deleteResource(resource)" class="text-error">
                 <template #prepend>
                   <v-icon icon="mdi-delete" color="error" />
@@ -84,12 +98,14 @@
 import { ref, computed } from 'vue';
 import type { RepositoryContracts } from '@dailyuse/contracts';
 import { useResourceStore } from '../stores/resourceStore';
+import { useBookmarkStore } from '../stores/bookmarkStore';
 
 const props = defineProps<{
   repositoryUuid: string;
 }>();
 
 const resourceStore = useResourceStore();
+const bookmarkStore = useBookmarkStore();
 
 const resources = computed(() => resourceStore.resources);
 const selectedResourceUuid = computed(() => resourceStore.selectedResource?.uuid);
@@ -156,11 +172,33 @@ async function deleteResource(resource: RepositoryContracts.ResourceClientDTO) {
   if (confirmed) {
     try {
       await resourceStore.deleteResource(resource.uuid);
+      // 同时删除书签
+      bookmarkStore.removeBookmarkByTarget(resource.uuid);
     } catch (error) {
       console.error('Failed to delete resource:', error);
       alert('删除失败，请稍后重试');
     }
   }
+}
+
+/**
+ * 添加到书签
+ */
+function addToBookmarks(resource: RepositoryContracts.ResourceClientDTO) {
+  if (bookmarkStore.hasBookmark(resource.uuid)) {
+    // 已存在，不再添加
+    return;
+  }
+  
+  bookmarkStore.addBookmark({
+    name: resource.name,
+    targetUuid: resource.uuid,
+    targetType: 'resource',
+    repositoryUuid: props.repositoryUuid,
+    icon: getResourceIcon(resource.type),
+  });
+  
+  console.log('已添加到书签:', resource.name);
 }
 </script>
 

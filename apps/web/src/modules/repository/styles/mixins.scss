@@ -1,0 +1,368 @@
+/**
+ * Repository Module - SCSS Mixins
+ * Story 11.3: Unified Styles (Obsidian Style)
+ */
+
+@import './variables.scss';
+
+// ==================== 交互效果 Mixins ====================
+
+/**
+ * Hover 效果 - 背景色透明度变化
+ * @param {number} $opacity - 透明度值 (默认 0.05)
+ * @param {string} $duration - 过渡时间 (默认 150ms)
+ */
+@mixin hover-effect($opacity: $hover-opacity, $duration: $transition-fast) {
+  transition: background-color $duration $ease-out;
+  cursor: pointer;
+  
+  &:hover:not(:disabled):not(.disabled) {
+    background-color: rgba(var(--v-theme-on-surface), $opacity);
+  }
+}
+
+/**
+ * Selected 选中状态 - 主题色高亮 + 文字加粗
+ */
+@mixin selected-state {
+  background-color: rgba(var(--v-theme-primary), $selected-opacity);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 600;
+}
+
+/**
+ * Pressed 按下状态 - transform 和背景色
+ */
+@mixin pressed-state {
+  &:active:not(:disabled):not(.disabled) {
+    transform: translateY(0);
+    background-color: rgba(var(--v-theme-on-surface), $pressed-opacity);
+  }
+}
+
+/**
+ * Disabled 禁用状态 - 透明度 + 禁止点击
+ */
+@mixin disabled-state {
+  &:disabled,
+  &.disabled {
+    opacity: $disabled-opacity;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+/**
+ * 完整交互状态（hover + selected + pressed + disabled）
+ */
+@mixin interactive-element($opacity: $hover-opacity) {
+  @include hover-effect($opacity);
+  @include pressed-state;
+  @include disabled-state;
+  
+  &.selected,
+  &[aria-selected="true"] {
+    @include selected-state;
+  }
+}
+
+// ==================== 滚动条 Mixins ====================
+
+/**
+ * 自定义滚动条样式 (Webkit)
+ */
+@mixin custom-scrollbar {
+  // Webkit (Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    width: $scrollbar-width;
+    height: $scrollbar-width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $scrollbar-color;
+    border-radius: $scrollbar-thumb-radius;
+    transition: background-color $transition-fast $ease-out;
+
+    &:hover {
+      background-color: $scrollbar-hover-color;
+    }
+
+    &:active {
+      background-color: $scrollbar-active-color;
+    }
+  }
+
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: $scrollbar-color transparent;
+}
+
+/**
+ * 隐藏滚动条（但保持滚动功能）
+ */
+@mixin hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  
+  &::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+}
+
+// ==================== 布局 Mixins ====================
+
+/**
+ * Flex 居中布局
+ */
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * Flex 垂直布局
+ */
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * Flex 水平分布
+ */
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/**
+ * 绝对定位铺满父元素
+ */
+@mixin absolute-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+// ==================== 文字处理 Mixins ====================
+
+/**
+ * 单行文字溢出省略
+ */
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * 多行文字溢出省略
+ * @param {number} $lines - 显示行数
+ */
+@mixin text-ellipsis-multiline($lines: 2) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**
+ * 文字选择样式
+ */
+@mixin text-selection($bg-color: rgba(var(--v-theme-primary), 0.2)) {
+  ::selection {
+    background-color: $bg-color;
+  }
+  
+  ::-moz-selection {
+    background-color: $bg-color;
+  }
+}
+
+// ==================== 动画 Mixins ====================
+
+/**
+ * 旋转动画（展开/折叠图标）
+ * @param {number} $degrees - 旋转角度（默认 90deg）
+ */
+@mixin rotate-icon($degrees: 90deg) {
+  transition: transform $transition-fast $ease-out;
+  
+  &.expanded {
+    transform: rotate($degrees);
+  }
+}
+
+/**
+ * 淡入淡出动画
+ */
+@mixin fade-transition {
+  transition: opacity $transition-fast $ease-out;
+}
+
+/**
+ * 滑动进入动画
+ */
+@mixin slide-in($direction: 'down', $distance: 10px) {
+  @if $direction == 'down' {
+    transform: translateY(-$distance);
+  } @else if $direction == 'up' {
+    transform: translateY($distance);
+  } @else if $direction == 'left' {
+    transform: translateX($distance);
+  } @else if $direction == 'right' {
+    transform: translateX(-$distance);
+  }
+  
+  opacity: 0;
+  transition: transform $transition-normal $ease-out, 
+              opacity $transition-normal $ease-out;
+  
+  &.visible {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+// ==================== 组件特定 Mixins ====================
+
+/**
+ * 空状态样式
+ */
+@mixin empty-state {
+  @include flex-column;
+  @include flex-center;
+  padding: $empty-state-padding;
+  text-align: center;
+  
+  .empty-icon {
+    font-size: $empty-state-icon-size;
+    color: rgb(var(--v-theme-grey-lighten-1));
+    margin-bottom: $spacing-lg;
+  }
+  
+  .empty-title {
+    font-size: $font-size-xl;
+    color: rgb(var(--v-theme-grey));
+    margin-bottom: $spacing-sm;
+  }
+  
+  .empty-description {
+    font-size: $font-size-sm;
+    color: rgb(var(--v-theme-grey-lighten-1));
+  }
+}
+
+/**
+ * Card 容器样式
+ */
+@mixin card-container {
+  background-color: rgb(var(--v-theme-surface));
+  border-radius: $border-radius-lg;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  box-shadow: $shadow-sm;
+}
+
+/**
+ * Panel 侧边栏容器
+ */
+@mixin panel-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: $sidebar-padding;
+  @include custom-scrollbar;
+}
+
+/**
+ * List Item 统一样式
+ */
+@mixin list-item {
+  padding: $list-item-padding;
+  border-radius: $border-radius-md;
+  @include interactive-element;
+  
+  &.compact {
+    height: $list-item-compact-height;
+  }
+  
+  &:not(.compact) {
+    height: $list-item-height;
+  }
+}
+
+/**
+ * Divider 分隔线
+ */
+@mixin divider {
+  border: 0;
+  border-top: 1px solid rgba(var(--v-border-color), $divider-opacity);
+  margin: $spacing-sm 0;
+}
+
+// ==================== 响应式 Mixins ====================
+
+/**
+ * 移动端断点
+ */
+@mixin mobile {
+  @media (max-width: $breakpoint-mobile - 1px) {
+    @content;
+  }
+}
+
+/**
+ * 平板端断点
+ */
+@mixin tablet {
+  @media (min-width: $breakpoint-mobile) and (max-width: $breakpoint-tablet - 1px) {
+    @content;
+  }
+}
+
+/**
+ * 桌面端断点
+ */
+@mixin desktop {
+  @media (min-width: $breakpoint-tablet) {
+    @content;
+  }
+}
+
+/**
+ * 宽屏断点
+ */
+@mixin wide {
+  @media (min-width: $breakpoint-wide) {
+    @content;
+  }
+}
+
+// ==================== 暗黑模式 Mixins ====================
+
+/**
+ * 暗黑模式专用样式
+ */
+@mixin dark-mode {
+  :root.v-theme--dark & {
+    @content;
+  }
+}
+
+/**
+ * 浅色模式专用样式
+ */
+@mixin light-mode {
+  :root.v-theme--light & {
+    @content;
+  }
+}

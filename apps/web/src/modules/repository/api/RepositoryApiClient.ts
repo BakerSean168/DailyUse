@@ -1,6 +1,9 @@
 import type { RepositoryContracts } from '@dailyuse/contracts';
 import { apiClient } from '@/shared/api/instances';
 
+type TreeNode = RepositoryContracts.TreeNode;
+type FileTreeResponse = RepositoryContracts.FileTreeResponse;
+
 export class RepositoryApiClient {
   /**
    * 创建仓储
@@ -61,5 +64,13 @@ export class RepositoryApiClient {
    */
   static async deleteRepository(uuid: string): Promise<void> {
     await apiClient.delete(`/repositories/${uuid}`);
+  }
+
+  /**
+   * 获取文件树（文件夹 + 资源统一结构）
+   * Story 11.1: File Tree Unified Rendering
+   */
+  static async getFileTree(repositoryUuid: string): Promise<FileTreeResponse> {
+    return await apiClient.get(`/repositories/${repositoryUuid}/tree`);
   }
 }
