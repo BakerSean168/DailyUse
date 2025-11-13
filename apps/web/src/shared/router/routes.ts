@@ -6,15 +6,7 @@
 import type { RouteRecordRaw } from 'vue-router';
 import MainLayout from '@/modules/app/MainLayout.vue';
 
-// 导入各模块路由
-import { taskRoutes } from '@/modules/task/presentation/router';
-import { goalRoutes } from '@/modules/goal/presentation/router';
-import { reminderRoutes } from '@/modules/reminder/presentation/router';
-import { scheduleRoutes } from '@/modules/schedule/presentation/router';
-import { repositoryRoutes } from '@/modules/repository/presentation/router';
-import { accountRoutes } from '@/modules/account/presentation/router';
-import { settingRoutes } from '@/modules/setting/presentation/router';
-import { notificationRoutes } from '@/modules/notification/presentation/router';
+
 
 /**
  * 认证相关路由
@@ -70,14 +62,29 @@ export const errorRoutes: RouteRecordRaw[] = [
 export const appRoutes: RouteRecordRaw[] = [
   {
     path: '/',
+    name: 'app',
     component: MainLayout,
     meta: {
       requiresAuth: true,
     },
     children: [
-      // 首页/仪表盘
+      // 🏠 欢迎页（新的默认首页，轻量级，无业务模块依赖）
       {
         path: '',
+        name: 'welcome',
+        component: () => import('@/views/WelcomeView.vue'),
+        meta: {
+          title: '首页',
+          showInNav: true,
+          icon: 'mdi-home',
+          order: 0,
+          requiresAuth: true,
+        },
+      },
+
+      // 📊 仪表盘（改为 /dashboard，懒加载）
+      {
+        path: 'dashboard',
         name: 'dashboard',
         component: () => import('@/modules/dashboard/presentation/views/DashboardView.vue'),
         meta: {
@@ -89,38 +96,9 @@ export const appRoutes: RouteRecordRaw[] = [
         },
       },
 
-      // 各模块路由（从模块内部导入）
-      ...taskRoutes,
-      ...goalRoutes,
-      ...reminderRoutes,
-      ...scheduleRoutes,
+      // 各模块路由将通过编程方式动态添加
+      // ...
 
-      // 知识仓库 (Epic 10: Obsidian 风格知识管理系统)
-      // Story 10-2: Resource CRUD + Milkdown 编辑器 - 3列布局视图
-      {
-        path: '/repository',
-        name: 'repository',
-        component: () => import('@/modules/repository/presentation/views/RepositoryView.vue'),
-        meta: {
-          title: '知识仓库',
-          showInNav: true,
-          icon: 'mdi-book-open-variant',
-          order: 6,
-          requiresAuth: true,
-        },
-      },
-
-      // 仓储管理路由（从模块内部导入）
-      ...repositoryRoutes,
-
-      // 账户设置路由（从模块内部导入）
-      ...accountRoutes,
-
-      // 应用设置路由（从模块内部导入）
-      ...settingRoutes,
-
-      // 通知中心路由（从模块内部导入）
-      ...notificationRoutes,
 
       // Assets 资源演示 (开发环境)
       {

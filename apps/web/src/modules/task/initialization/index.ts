@@ -34,6 +34,12 @@ export function registerTaskInitializationTasks(): void {
 
         // 只初始化 Task 模块
         await initializeTaskModule();
+        
+        // 🎨 注册 Dashboard Widgets
+        console.log('🎨 [Task] 注册 Task Widgets...');
+        const { registerTaskWidgets } = await import('../presentation/widgets/registerTaskWidgets');
+        registerTaskWidgets();
+        
         console.log('✅ [Task] Task 模块初始化完成');
       } catch (error) {
         console.error('❌ [Task] Task 模块初始化失败:', error);

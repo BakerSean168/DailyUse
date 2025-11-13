@@ -94,7 +94,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useDashboardConfigStore } from '@/modules/dashboard/stores/dashboardConfigStore';
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
-import { registerDashboardWidgets } from '@/modules/dashboard/infrastructure/registerWidgets';
+// ✅ Widget 注册现在由各业务模块初始化时完成，不需要在这里导入
 import { DashboardContracts } from '@dailyuse/contracts';
 import WidgetSettingsPanel from '../components/WidgetSettingsPanel.vue';
 
@@ -149,12 +149,19 @@ const loadDashboard = async () => {
     hasError.value = false;
     errorMessage.value = '';
 
-    console.log('[Dashboard] Registering widgets...');
-    performance.mark('widget-registration-start');
-    registerDashboardWidgets();
-    performance.mark('widget-registration-end');
-    performance.measure('widget-registration', 'widget-registration-start', 'widget-registration-end');
-    console.log(`[Dashboard] ${widgetRegistry.count} widget(s) registered`);
+    // ✅ Widget 已经由各业务模块在初始化时注册，这里只需要检查即可
+    console.log('[Dashboard] Checking registered widgets...');
+    performance.mark('widget-check-start');
+    
+    const widgetCount = widgetRegistry.count;
+    if (widgetCount === 0) {
+      console.warn('[Dashboard] No widgets registered yet. Widgets will be registered when modules are loaded.');
+    } else {
+      console.log(`[Dashboard] ${widgetCount} widget(s) already registered by modules`);
+    }
+    
+    performance.mark('widget-check-end');
+    performance.measure('widget-check', 'widget-check-start', 'widget-check-end');
 
     // 如果已经初始化过，直接使用缓存的配置
     if (configStore.initialized) {

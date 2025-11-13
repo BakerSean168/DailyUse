@@ -2,7 +2,7 @@ import { AuthenticationContracts, AccountContracts } from '@dailyuse/contracts';
 import { AuthApiService } from '../../infrastructure/api/ApiClient';
 import { AuthManager } from '../../../../shared/api/core/interceptors';
 import { publishUserLoggedInEvent, publishUserLoggedOutEvent } from '../events/authEvents';
-import { AppInitializationManager } from '../../../../shared/initialization/AppInitializationManager';
+// ❌ 移除静态导入：import { AppInitializationManager } from '../../../../shared/initialization/AppInitializationManager';
 import { useAuthenticationStore } from '../../presentation/stores/authenticationStore';
 
 // Type aliases for cleaner code
@@ -91,6 +91,9 @@ export class AuthApplicationService {
 
       // 初始化用户会话
       try {
+        const { AppInitializationManager } = await import(
+          '../../../../shared/initialization/AppInitializationManager'
+        );
         await AppInitializationManager.initializeUserSession(user.uuid);
         console.log('🎯 [AuthService] 用户会话初始化完成');
       } catch (error) {
@@ -134,6 +137,9 @@ export class AuthApplicationService {
 
       // 清理用户会话
       try {
+        const { AppInitializationManager } = await import(
+          '../../../../shared/initialization/AppInitializationManager'
+        );
         await AppInitializationManager.cleanupUserSession();
         console.log('🧹 [AuthService] 用户会话清理完成');
       } catch (error) {

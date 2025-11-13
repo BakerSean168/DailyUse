@@ -30,6 +30,10 @@ export function registerReminderInitializationTasks(): void {
         // 延迟一小段时间，确保 Pinia 完全初始化
         await new Promise((resolve) => setTimeout(resolve, 100));
 
+        // 🎨 注册 Dashboard Widgets
+        console.log('🎨 [Reminder] 注册 Reminder Widgets...');
+        const { registerReminderWidgets } = await import('../presentation/widgets/registerReminderWidgets');
+        registerReminderWidgets();
        
         console.log('✅ [Reminder] Reminder 模块初始化完成');
       } catch (error) {

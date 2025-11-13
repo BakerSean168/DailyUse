@@ -5,6 +5,7 @@ export * from './date';
 export * from './recurrence';
 export * from './domain/index'; // 包含 CrossPlatformEventBus 和所有事件系统导出
 export * from './initializationManager';
+export * from './webInitializationManager'; // Web 端专用初始化管理器
 export * from './response/index';
 export * from './frontend/index';
 export * from './priority-calculator';

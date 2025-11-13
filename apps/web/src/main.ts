@@ -5,7 +5,7 @@ import App from './App.vue';
 import router from './shared/router';
 import vuetify from './shared/vuetify';
 import { i18n } from './shared/i18n';
-import { AppInitializationManager } from './shared/initialization/AppInitializationManager';
+// ❌ 移除静态导入：import { AppInitializationManager } from './shared/initialization/AppInitializationManager';
 import { eventBus } from '@dailyuse/utils';
 import { initializeLogger, getStartupInfo } from './config/logger.config';
 import { createLogger } from '@dailyuse/utils';
@@ -49,7 +49,11 @@ async function startApp() {
   try {
     // 先完成应用模块初始化（包括认证状态恢复）
     logger.info('Initializing application modules...');
+    
+    // ✅ 动态导入 AppInitializationManager（避免打包时加载所有模块）
+    const { AppInitializationManager } = await import('./shared/initialization/AppInitializationManager');
     await AppInitializationManager.initializeApp();
+    
     logger.info('Application modules initialized successfully');
 
     // 然后挂载应用

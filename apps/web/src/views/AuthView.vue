@@ -32,12 +32,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 import AnimatedTrain from '@/shared/animation/AnimatedTrain.vue';
 import LoginWindow from '@/modules/authentication/presentation/components/LoginWindow.vue';
 import RegistrationWindow from '@/modules/account/presentation/components/RegistrationWindow.vue';
+
 const activeMode = ref('login');
+
+onMounted(() => {
+  console.log('✅ [AuthView] 登录页面已渲染完成，用户可见');
+  console.log('⏱️ [Performance] 页面加载耗时:', performance.now().toFixed(2), 'ms');
+});
 </script>
 
 <style scoped>

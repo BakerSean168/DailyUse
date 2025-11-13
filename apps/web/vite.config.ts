@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'node:path';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ mode }) => {
   const isDev = mode !== 'production';
@@ -29,7 +30,15 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
-    ],
+      // 打包分析插件（仅生产模式）
+      !isDev && visualizer({
+        filename: './dist/stats.html', // 输出文件
+        open: true, // 构建后自动打开浏览器
+        gzipSize: true, // 显示 gzip 大小
+        brotliSize: true, // 显示 brotli 大小
+        template: 'treemap', // 使用树状图模式（可选：sunburst, treemap, network）
+      }),
+    ].filter(Boolean),
     server: {
       port: 5173,
       open: false,

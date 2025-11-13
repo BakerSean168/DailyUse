@@ -110,6 +110,24 @@ export const authGuard = async (
     return;
   }
 
+  // ✅ 关键：登录后首次进入需要认证的路由时，初始化用户会话
+  try {
+    // 动态导入 account store
+    const { useAccountStore } = await import('@/modules/account/presentation/stores/accountStore');
+    const accountStore = useAccountStore();
+    
+    // 获取当前用户信息
+    const currentAccount = accountStore.currentAccount;
+    if (currentAccount && currentAccount.uuid) {
+      console.log('🔐 [AuthGuard] 初始化用户会话...');
+      await AppInitializationManager.initializeUserSession(currentAccount.uuid);
+      console.log('✅ [AuthGuard] 用户会话已初始化');
+    }
+  } catch (error) {
+    console.error('❌ [AuthGuard] 用户会话初始化失败', error);
+    // 可选：重定向到错误页或提示用户
+  }
+
   // 如果认证有效，继续导航
   console.log('✅ [AuthGuard] 认证检查通过，继续导航');
   next();
@@ -245,6 +263,15 @@ export const applyRouterGuards = (router: any) => {
     ) => {
       try {
         console.log(`🔀 [Router] 导航: ${from.path} → ${to.path}`);
+
+        // 0. 预加载优化：用户进入登录页时，开始预加载业务模块（不阻塞导航）
+        if (to.name === 'auth' && from.name !== 'auth') {
+          const { AppInitializationManager } = await import('../initialization/AppInitializationManager');
+          console.log('🔮 [Router] 检测到用户进入登录页，开始后台预加载业务模块...');
+          AppInitializationManager.preloadAuthenticatedModules().catch((error) => {
+            console.warn('⚠️ [Router] 业务模块预加载失败（不影响功能）:', error);
+          });
+        }
 
         // 1. 登录重定向检查
         if (to.name === 'auth') {

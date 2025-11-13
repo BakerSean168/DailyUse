@@ -32,6 +32,12 @@ export function registerGoalInitializationTasks(): void {
       try {
         // 只初始化 Goal 模块
         await initializeGoalModule();
+        
+        // 🎨 注册 Dashboard Widgets
+        console.log('🎨 [Goal] 注册 Goal Widgets...');
+        const { registerGoalWidgets } = await import('../presentation/widgets/registerGoalWidgets');
+        registerGoalWidgets();
+        
         console.log('✅ [Goal] Goal 模块初始化完成');
       } catch (error) {
         console.error('❌ [Goal] Goal 模块初始化失败:', error);

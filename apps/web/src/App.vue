@@ -14,8 +14,10 @@
     <!-- 应用内通知组件 -->
     <InAppNotification />
 
-    <!-- 命令面板 (Cmd/Ctrl + K) -->
-    <CommandPalette
+    <!-- 命令面板 (Cmd/Ctrl + K) - 按需加载 -->
+    <component
+      v-if="showCommandPalette"
+      :is="CommandPalette"
       v-model="showCommandPalette"
       :goals="goals"
       :tasks="tasks"
@@ -25,12 +27,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, defineAsyncComponent, shallowRef } from 'vue';
 import { useSettingStore } from '@/modules/setting/presentation/stores/settingStore';
 import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
 import InAppNotification from '@/modules/notification/presentation/components/InAppNotification.vue';
-import CommandPalette from '@/shared/components/command-palette/CommandPalette.vue';
-import { searchDataProvider } from '@/shared/services/SearchDataProvider';
 import { logo128 as logo } from '@dailyuse/assets';
 import { getThemeService } from '@/modules/setting/application/services/ThemeService';
 
@@ -38,10 +38,41 @@ const isLoading = ref(true);
 const showCommandPalette = ref(false);
 const settingStore = useSettingStore();
 
-// Computed properties for search data (reactive to cache updates)
-const goals = computed(() => searchDataProvider.getGoals());
-const tasks = computed(() => searchDataProvider.getTasks());
-const reminders = computed(() => searchDataProvider.getReminders());
+// 懒加载命令面板组件和搜索数据
+const CommandPalette = shallowRef<any>(null);
+const goals = ref<any[]>([]);
+const tasks = ref<any[]>([]);
+const reminders = ref<any[]>([]);
+
+// 监听快捷键，按需加载命令面板
+if (typeof window !== 'undefined') {
+  window.addEventListener('keydown', async (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      
+      // 首次打开时才加载组件和数据
+      if (!CommandPalette.value) {
+        console.log('⏳ 正在加载命令面板...');
+        const [paletteModule, providerModule] = await Promise.all([
+          import('@/shared/components/command-palette/CommandPalette.vue'),
+          import('@/shared/services/SearchDataProvider'),
+        ]);
+        
+        CommandPalette.value = paletteModule.default;
+        const { searchDataProvider } = providerModule;
+        
+        // 加载搜索数据
+        goals.value = searchDataProvider.getGoals();
+        tasks.value = searchDataProvider.getTasks();
+        reminders.value = searchDataProvider.getReminders();
+        
+        console.log('✅ 命令面板加载完成');
+      }
+      
+      showCommandPalette.value = !showCommandPalette.value;
+    }
+  });
+}
 
 // ⚠️ 重要：在 Vue 组件的 setup 中初始化 ThemeService
 const themeService = getThemeService();

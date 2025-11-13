@@ -2,25 +2,19 @@
  * 应用模块初始化管理器
  * App Module Initialization Manager
  *
- * 基于 packages/utils 中的 InitializationManager 实现
+ * 基于 packages/utils 中的 WebInitializationManager 实现
+ * 支持动态模块加载和分阶段初始化
  */
 
 import {
   InitializationManager,
   InitializationPhase,
+  WebInitializationManager,
+  ModuleGroup,
   type InitializationTask,
+  type LoadingProgress,
 } from '@dailyuse/utils';
-import { registerAccountInitializationTasks } from '../../modules/account';
-import { registerAuthenticationInitializationTasks } from '../../modules/authentication';
-import { registerGoalInitializationTasks } from '../../modules/goal';
-import { registerTaskInitializationTasks } from '../../modules/task';
-import { registerReminderInitializationTasks } from '../../modules/reminder';
-import { registerNotificationInitializationTasks } from '../../modules/notification';
-import { registerSSEInitializationTasks } from '../../modules/notification/initialization/sseInitialization';
-import { registerScheduleInitializationTasks } from '../../modules/schedule';
-import { registerDataInitializationTasks } from './dataInitialization';
-import { registerSettingInitializationTasks } from '../../modules/setting/initialization/settingInitialization';
-import { registerThemeInitializationTasks } from '../../modules/theme/initialization';
+import { initializeModuleRegistry } from './moduleRegistry';
 
 /**
  * 注册基础设施的初始化任务
@@ -63,44 +57,15 @@ function registerInfrastructureInitializationTasks(): void {
 }
 
 /**
- * 注册所有模块的初始化任务
- */
-function registerAllInitializationTasks(): void {
-  console.log('📋 [AppInitialization] 开始注册所有初始化任务');
-
-  // 1. 注册基础设施初始化任务
-  registerInfrastructureInitializationTasks();
-
-  // 2. 注册主题模块初始化任务（最高优先级）
-  registerThemeInitializationTasks();
-
-  // 3. 注册各个模块的初始化任务
-  registerAuthenticationInitializationTasks();
-  registerAccountInitializationTasks();
-  registerNotificationInitializationTasks(); // 在用户模块之前初始化通知系统
-  registerSSEInitializationTasks(); // 初始化 SSE 连接
-  registerScheduleInitializationTasks(); // 初始化调度模块
-  registerSettingInitializationTasks(); // 初始化设置模块（在用户登录后加载设置）
-  registerDataInitializationTasks(); // 初始化数据加载
-  registerGoalInitializationTasks();
-  registerTaskInitializationTasks();
-  registerReminderInitializationTasks();
-
-  // 3. 可以在这里添加其他模块的初始化
-  // registerOtherModuleInitializationTasks();
-
-  console.log('✅ [AppInitialization] 所有初始化任务注册完成');
-}
-
-/**
  * 应用初始化管理器
  */
 export class AppInitializationManager {
   private static initialized = false;
+  private static authenticatedModulesLoaded = false;
+  private static webManager: WebInitializationManager;
 
   /**
-   * 初始化应用
-   * 应该在应用启动时调用
+   * 初始化应用（只加载关键模块）
    */
   static async initializeApp(): Promise<void> {
     if (AppInitializationManager.initialized) {
@@ -108,41 +73,65 @@ export class AppInitializationManager {
       return;
     }
 
-    console.log('🚀 [AppInitializationManager] 开始初始化应用');
+    console.log('🚀 [AppInitializationManager] 开始初始化应用（仅关键模块）');
 
     try {
-      // 1. 注册所有初始化任务
-      registerAllInitializationTasks();
+      // 1. 初始化模块注册表
+      initializeModuleRegistry();
+      AppInitializationManager.webManager = WebInitializationManager.getInstance();
 
-      // 2. 执行应用启动阶段的初始化（使用容错模式）
+      // 2. 注册基础设施
+      registerInfrastructureInitializationTasks();
+
+      // 3. 动态加载关键模块（theme、authentication）
+      console.log('📦 [AppInitializationManager] 加载关键模块...');
+      await AppInitializationManager.webManager.loadModuleGroup(
+        ModuleGroup.CRITICAL,
+        (progress: LoadingProgress) => {
+          console.log(
+            `[${progress.current}/${progress.total}] ${progress.status}: ${progress.moduleName} (${progress.percentage}%)`,
+          );
+        },
+      );
+
+      // 4. 执行应用启动阶段的初始化
       const manager = InitializationManager.getInstance();
-
-      try {
-        await manager.executePhase(InitializationPhase.APP_STARTUP);
-        console.log('✅ [AppInitializationManager] 所有模块初始化完成');
-      } catch (error) {
-        console.warn('⚠️ [AppInitializationManager] 部分模块初始化失败，但应用将继续启动:', error);
-        // 不抛出错误，允许应用在部分模块失败的情况下继续运行
-      }
+      await manager.executePhase(InitializationPhase.APP_STARTUP);
 
       AppInitializationManager.initialized = true;
-      console.log('✅ [AppInitializationManager] 应用初始化完成');
+      console.log('✅ [AppInitializationManager] 应用初始化完成（关键模块已加载）');
     } catch (error) {
-      console.error('❌ [AppInitializationManager] 应用核心初始化失败', error);
-
-      // 即使核心初始化失败，也设置为已初始化，避免阻塞应用
-      AppInitializationManager.initialized = true;
+      console.error('❌ [AppInitializationManager] 应用初始化失败', error);
+      AppInitializationManager.initialized = true; // 容错模式
       console.warn('⚠️ [AppInitializationManager] 以降级模式完成初始化');
     }
   }
 
   /**
-   * 用户登录时的初始化
+   * 用户登录时的初始化（加载业务模块）
    */
   static async initializeUserSession(accountUuid: string): Promise<void> {
     console.log(`🔐 [AppInitializationManager] 初始化用户会话: ${accountUuid}`);
 
     try {
+      // 1. 如果业务模块还没加载，先动态加载
+      if (!AppInitializationManager.authenticatedModulesLoaded) {
+        console.log('📦 [AppInitializationManager] 加载业务模块...');
+
+        await AppInitializationManager.webManager.loadModuleGroup(
+          ModuleGroup.AUTHENTICATED,
+          (progress: LoadingProgress) => {
+            console.log(
+              `[${progress.current}/${progress.total}] ${progress.status}: ${progress.moduleName} (${progress.percentage}%)`,
+            );
+          },
+        );
+
+        AppInitializationManager.authenticatedModulesLoaded = true;
+        console.log('✅ [AppInitializationManager] 业务模块已加载');
+      }
+
+      // 2. 执行用户登录阶段的初始化
       const manager = InitializationManager.getInstance();
       await manager.executePhase(InitializationPhase.USER_LOGIN, { accountUuid });
 
@@ -166,6 +155,34 @@ export class AppInitializationManager {
       console.log('✅ [AppInitializationManager] 用户会话清理完成');
     } catch (error) {
       console.error('❌ [AppInitializationManager] 用户会话清理失败', error);
+    }
+  }
+
+  /**
+   * 预加载业务模块（可选优化）
+   * 在空闲时间提前加载，提升登录后的体验
+   */
+  static async preloadAuthenticatedModules(): Promise<void> {
+    if (AppInitializationManager.authenticatedModulesLoaded) {
+      return;
+    }
+
+    console.log('🔮 [AppInitializationManager] 开始预加载业务模块...');
+
+    try {
+      await AppInitializationManager.webManager.preloadModuleGroup(ModuleGroup.AUTHENTICATED, {
+        useIdleCallback: true,
+        onProgress: (progress: LoadingProgress) => {
+          console.log(
+            `[预加载] [${progress.current}/${progress.total}] ${progress.status}: ${progress.moduleName}`,
+          );
+        },
+      });
+
+      AppInitializationManager.authenticatedModulesLoaded = true;
+      console.log('✅ [AppInitializationManager] 业务模块预加载完成');
+    } catch (error) {
+      console.warn('⚠️ [AppInitializationManager] 业务模块预加载失败（不影响功能）', error);
     }
   }
 
