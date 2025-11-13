@@ -2,4 +2,4 @@
  * Dashboard Aggregates Index
  */
 
-export * from './DashboardConfig';
+export { DashboardConfig } from './DashboardConfig';

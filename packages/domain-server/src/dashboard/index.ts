@@ -6,7 +6,9 @@
 export * from './value-objects';
 
 // Aggregates
-export * from './aggregates';
+export {
+    DashboardConfig,
+} from './aggregates';
 
 // Repositories
 export * from './repositories';
