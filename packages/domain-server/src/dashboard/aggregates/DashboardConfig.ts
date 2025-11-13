@@ -28,6 +28,8 @@ const DEFAULT_WIDGET_CONFIG: WidgetConfigData = {
   'goal-stats': { visible: true, order: 2, size: DashboardContracts.WidgetSize.MEDIUM },
   'reminder-stats': { visible: true, order: 3, size: DashboardContracts.WidgetSize.SMALL },
   'schedule-stats': { visible: true, order: 4, size: DashboardContracts.WidgetSize.SMALL },
+  'today-tasks': { visible: true, order: 5, size: DashboardContracts.WidgetSize.MEDIUM },
+  'goal-timeline': { visible: true, order: 6, size: DashboardContracts.WidgetSize.LARGE },
 };
 
 /**

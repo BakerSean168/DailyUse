@@ -40,11 +40,22 @@ export class DashboardConfigApiClient {
    * ```
    */
   static async getWidgetConfig(): Promise<WidgetConfigData> {
+    const startTime = performance.now();
     try {
+      console.log('[DashboardConfigApi] 开始请求 widget-config...');
+
       const data = await apiClient.get<WidgetConfigData>(`${API_BASE}/widget-config`);
+
+      const duration = performance.now() - startTime;
+      console.log(`[DashboardConfigApi] Widget config 加载成功，耗时: ${duration.toFixed(2)}ms`);
+
       return data;
     } catch (error) {
-      console.error('[DashboardConfigApi] Failed to get widget config:', error);
+      const duration = performance.now() - startTime;
+      console.error(
+        `[DashboardConfigApi] Widget config 加载失败，耗时: ${duration.toFixed(2)}ms`,
+        error,
+      );
       throw new Error('获取 Widget 配置失败');
     }
   }

@@ -1429,7 +1429,7 @@ model aiUsageQuota {
 model dashboardConfig {
   id           Int      @id @default(autoincrement())
   accountUuid  String   @unique @map("account_uuid")
-  widgetConfig Json     @default("{}") @map("widget_config") // Widget 配置 JSON
+  widgetConfig Json     @map("widget_config") // Widget 配置 JSON
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

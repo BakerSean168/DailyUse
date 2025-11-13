@@ -17,7 +17,7 @@ export class DashboardConfigApplicationService {
 
   /**
    * 获取用户的 Widget 配置
-   * 如果用户没有配置，返回默认配置
+   * 如果用户没有配置，创建并保存默认配置
    */
   async getWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     try {
@@ -28,15 +28,24 @@ export class DashboardConfigApplicationService {
         return config.widgetConfig;
       }
 
-      // 返回默认配置
+      // 用户没有配置，创建默认配置并保存到数据库
+      console.log(
+        `[DashboardConfigApplicationService] Creating default config for account=${accountUuid}`,
+      );
       const defaultConfig = DashboardConfig.createDefault(accountUuid);
-      return defaultConfig.widgetConfig;
+      const savedConfig = await repository.save(defaultConfig);
+      console.log(
+        `[DashboardConfigApplicationService] Default config saved for account=${accountUuid}`,
+        savedConfig.widgetConfig,
+      );
+
+      return savedConfig.widgetConfig;
     } catch (error) {
       console.error(
         `[DashboardConfigApplicationService] Error getting widget config for account=${accountUuid}:`,
         error,
       );
-      // 出错时返回默认配置
+      // 出错时返回默认配置（但不保存，避免在错误状态下写入数据库）
       const defaultConfig = DashboardConfig.createDefault(accountUuid);
       return defaultConfig.widgetConfig;
     }

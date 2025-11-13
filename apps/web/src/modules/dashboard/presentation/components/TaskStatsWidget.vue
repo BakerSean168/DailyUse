@@ -29,40 +29,26 @@ const { instanceStatistics, completionRate, isLoading } = useTaskStatistics();
 // ===== 计算属性 =====
 
 /**
- * Widget 容器样式类
- */
-const containerClasses = computed(() => [
-  'task-stats-widget',
-  `widget-size-${props.size}`,
-  {
-    'widget-loading': isLoading.value,
-  },
-]);
-
-/**
  * 统计数据列表
  */
 const stats = computed(() => [
   {
     label: '待办',
     value: instanceStatistics.value.pending,
-    icon: 'i-heroicons-clock',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    icon: 'mdi-clock-outline',
+    color: 'blue',
   },
   {
     label: '进行中',
     value: instanceStatistics.value.inProgress,
-    icon: 'i-heroicons-arrow-path',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50',
+    icon: 'mdi-progress-clock',
+    color: 'orange',
   },
   {
     label: '已完成',
     value: instanceStatistics.value.completed,
-    icon: 'i-heroicons-check-circle',
-    color: 'text-green-600',
-    bgColor: 'bg-green-50',
+    icon: 'mdi-check-circle',
+    color: 'green',
   },
 ]);
 
@@ -71,10 +57,10 @@ const stats = computed(() => [
  */
 const completionRateColor = computed(() => {
   const rate = completionRate.value;
-  if (rate >= 80) return 'text-green-600';
-  if (rate >= 50) return 'text-blue-600';
-  if (rate >= 30) return 'text-orange-600';
-  return 'text-gray-600';
+  if (rate >= 80) return 'success';
+  if (rate >= 50) return 'primary';
+  if (rate >= 30) return 'warning';
+  return 'grey';
 });
 
 /**
@@ -89,87 +75,79 @@ const isLargeSize = computed(() => props.size === 'large');
 </script>
 
 <template>
-  <div :class="[
-    'bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700',
-    'overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02]',
-    'backdrop-blur-sm bg-opacity-90',
-    {
-      'p-4': size === 'small',
-      'p-5': size === 'medium',
-      'p-6': size === 'large',
-    }
-  ]" :style="{ minHeight: size === 'small' ? '140px' : size === 'medium' ? '220px' : '300px' }">
-    <!-- Widget Header -->
-    <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-gray-700">
-      <div class="flex items-center gap-3">
-        <div class="i-heroicons-clipboard-document-check text-2xl text-blue-600 dark:text-blue-400" />
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white">任务统计</h3>
+  <v-card class="task-stats-widget" elevation="2">
+    <!-- Header -->
+    <v-card-title class="d-flex align-center justify-space-between pa-4">
+      <div class="d-flex align-center">
+        <v-icon color="primary" size="large" class="mr-2">mdi-clipboard-check</v-icon>
+        <span class="text-h6">任务统计</span>
       </div>
-      <div v-if="!isSmallSize"
-        class="flex flex-col items-end bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 px-3 py-2 rounded-lg">
-        <span :class="['text-xl font-bold', completionRateColor]">
-          {{ completionRate }}%
-        </span>
-        <span class="text-xs text-gray-600 dark:text-gray-400 mt-1">完成率</span>
-      </div>
-    </div>
+      <v-chip v-if="!isSmallSize" :color="completionRateColor" size="small">
+        {{ completionRate }}%
+      </v-chip>
+    </v-card-title>
+
+    <v-divider />
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="flex flex-col items-center justify-center py-8">
-      <div class="i-heroicons-arrow-path animate-spin text-2xl text-gray-400" />
-      <p class="text-sm text-gray-500 mt-2">加载中...</p>
-    </div>
+    <v-card-text v-if="isLoading" class="d-flex flex-column align-center justify-center" style="min-height: 150px;">
+      <v-progress-circular indeterminate color="primary" />
+      <p class="text-caption text-grey mt-2">加载中...</p>
+    </v-card-text>
 
     <!-- Content -->
-    <div v-else class="flex flex-col gap-4">
+    <v-card-text v-else class="pa-4">
       <!-- Small Size: Compact Display -->
-      <div v-if="isSmallSize" class="flex justify-between items-center gap-2">
-        <div class="flex flex-col items-center">
-          <span class="text-xs text-gray-500">总计</span>
-          <span class="text-lg font-bold text-gray-800 dark:text-gray-100 mt-1">{{ instanceStatistics.total }}</span>
+      <div v-if="isSmallSize" class="d-flex justify-space-around align-center">
+        <div class="text-center">
+          <div class="text-caption text-grey">总计</div>
+          <div class="text-h6 font-weight-bold mt-1">{{ instanceStatistics.total }}</div>
         </div>
-        <div class="flex flex-col items-center">
-          <span class="text-xs text-gray-500">完成</span>
-          <span class="text-lg font-bold text-green-600 mt-1">{{ instanceStatistics.completed }}</span>
+        <div class="text-center">
+          <div class="text-caption text-grey">完成</div>
+          <div class="text-h6 font-weight-bold text-success mt-1">{{ instanceStatistics.completed }}</div>
         </div>
-        <div class="flex flex-col items-center">
-          <span class="text-xs text-gray-500">进行中</span>
-          <span class="text-lg font-bold text-orange-600 mt-1">{{ instanceStatistics.inProgress }}</span>
+        <div class="text-center">
+          <div class="text-caption text-grey">进行中</div>
+          <div class="text-h6 font-weight-bold text-warning mt-1">{{ instanceStatistics.inProgress }}</div>
         </div>
       </div>
 
-      <!-- Medium/Large Size: Card Display -->
-      <div v-else class="grid" :class="isLargeSize ? 'grid-cols-3 gap-5' : 'gap-4'"
-        :style="!isLargeSize ? { gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' } : {}">
-        <div v-for="stat in stats" :key="stat.label"
-          class="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border border-gray-200 dark:border-gray-600 transition-all duration-200 hover:scale-105 hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-          <div :class="[
-            'flex items-center justify-center rounded-full',
-            isLargeSize ? 'w-12 h-12' : 'w-10 h-10',
-            stat.bgColor
-          ]">
-            <div :class="[stat.icon, stat.color, isLargeSize ? 'text-2xl' : 'text-xl']" />
-          </div>
-          <div class="flex flex-col">
-            <p :class="['font-medium text-gray-500', isLargeSize ? 'text-sm' : 'text-xs']">{{ stat.label }}</p>
-            <p :class="['font-bold text-gray-800 dark:text-gray-100 mt-0.5', isLargeSize ? 'text-2xl' : 'text-lg']">{{
-              stat.value }}</p>
-          </div>
-        </div>
-      </div>
+      <!-- Medium/Large Size: Card Grid -->
+      <v-row v-else dense>
+        <v-col v-for="stat in stats" :key="stat.label" :cols="isLargeSize ? 4 : 12" :sm="isLargeSize ? 4 : 6" :md="4">
+          <v-card class="stat-card" :color="stat.color" variant="tonal" hover>
+            <v-card-text class="d-flex align-center pa-3">
+              <v-icon :color="stat.color" size="large" class="mr-3">{{ stat.icon }}</v-icon>
+              <div>
+                <div class="text-caption text-grey">{{ stat.label }}</div>
+                <div class="text-h5 font-weight-bold">{{ stat.value }}</div>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
 
       <!-- Total Tasks (Medium/Large) -->
-      <div v-if="!isSmallSize" class="pt-3 border-t border-gray-100">
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-600 font-medium">总任务数</span>
-          <span :class="['font-bold text-gray-800', isLargeSize ? 'text-2xl' : 'text-xl']">{{ instanceStatistics.total
-            }}</span>
-        </div>
+      <v-divider v-if="!isSmallSize" class="my-3" />
+      <div v-if="!isSmallSize" class="d-flex align-center justify-space-between">
+        <span class="text-body-2 text-grey">总任务数</span>
+        <span class="text-h6 font-weight-bold">{{ instanceStatistics.total }}</span>
       </div>
-    </div>
-  </div>
+    </v-card-text>
+  </v-card>
 </template>
 
 <style scoped>
-/* 保留一些无法用 Tailwind 表达的自定义样式 */
+.task-stats-widget {
+  height: 100%;
+}
+
+.stat-card {
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
 </style>

@@ -14,10 +14,7 @@
 <template>
   <div class="dashboard-page min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
     <!-- Widget 设置面板 -->
-    <WidgetSettingsPanel
-      v-model:isOpen="isSettingsPanelOpen"
-      @saved="handleSettingsSaved"
-    />
+    <WidgetSettingsPanel v-model:isOpen="isSettingsPanelOpen" @saved="handleSettingsSaved" />
 
     <!-- 页面标题与操作栏 -->
     <header class="dashboard-header mb-6 flex items-center justify-between">
@@ -28,23 +25,16 @@
 
       <!-- 操作按钮 -->
       <div class="flex items-center gap-2">
-        <button
-          v-if="!isLoading && !hasError"
+        <button v-if="!isLoading && !hasError"
           class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
-          @click="refreshWidgets"
-          :disabled="isRefreshing"
-        >
-          <div
-            class="i-heroicons-arrow-path w-4 h-4"
-            :class="{ 'animate-spin': isRefreshing }"
-          />
+          @click="refreshWidgets" :disabled="isRefreshing">
+          <div class="i-heroicons-arrow-path w-4 h-4" :class="{ 'animate-spin': isRefreshing }" />
           <span class="hidden sm:inline">刷新</span>
         </button>
 
         <button
           class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors flex items-center gap-2"
-          @click="openSettings"
-        >
+          @click="openSettings">
           <div class="i-heroicons-cog-6-tooth w-4 h-4" />
           <span class="hidden sm:inline">设置</span>
         </button>
@@ -54,11 +44,8 @@
     <!-- 加载状态 -->
     <div v-if="isLoading" class="loading-skeleton">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <div
-          v-for="i in 4"
-          :key="i"
-          class="skeleton-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse"
-        >
+        <div v-for="i in 4" :key="i"
+          class="skeleton-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
           <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4" />
           <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
           <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
@@ -68,17 +55,12 @@
     </div>
 
     <!-- 错误状态 -->
-    <div
-      v-else-if="hasError"
-      class="error-state bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center"
-    >
+    <div v-else-if="hasError" class="error-state bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
       <div class="i-heroicons-exclamation-triangle w-16 h-16 mx-auto mb-4 text-red-500" />
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">加载失败</h2>
       <p class="text-gray-600 dark:text-gray-400 mb-6">{{ errorMessage }}</p>
-      <button
-        class="px-6 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
-        @click="retryLoad"
-      >
+      <button class="px-6 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+        @click="retryLoad">
         重试
       </button>
     </div>
@@ -87,33 +69,21 @@
     <div v-else-if="visibleWidgets.length > 0" class="dashboard-grid">
       <!-- 动态渲染 Widgets -->
       <TransitionGroup name="widget-grid" tag="div" class="grid gap-4 widget-grid-container">
-        <div
-          v-for="widget in visibleWidgets"
-          :key="widget.id"
-          :class="getWidgetGridClasses(widget.config.size)"
-          class="widget-container"
-        >
-          <component
-            :is="widget.component"
-            :size="widget.config.size"
-            :class="getWidgetSizeClasses(widget.config.size)"
-          />
+        <div v-for="widget in visibleWidgets" :key="widget.id" :class="getWidgetGridClasses(widget.config.size)"
+          class="widget-container">
+          <component :is="widget.component" :size="widget.config.size"
+            :class="getWidgetSizeClasses(widget.config.size)" />
         </div>
       </TransitionGroup>
     </div>
 
     <!-- 空状态 -->
-    <div
-      v-else
-      class="empty-state bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center"
-    >
+    <div v-else class="empty-state bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center">
       <div class="i-heroicons-squares-plus w-16 h-16 mx-auto mb-4 text-gray-400" />
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">暂无 Widget</h2>
       <p class="text-gray-600 dark:text-gray-400 mb-6">点击右上角设置按钮添加 Widget</p>
-      <button
-        class="px-6 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
-        @click="openSettings"
-      >
+      <button class="px-6 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+        @click="openSettings">
         打开设置
       </button>
     </div>
@@ -172,21 +142,66 @@ const getWidgetSizeClasses = (size: DashboardContracts.WidgetSize): string => {
  * 初始化加载
  */
 const loadDashboard = async () => {
+  performance.mark('dashboard-load-start');
+
   try {
     isLoading.value = true;
     hasError.value = false;
     errorMessage.value = '';
 
     console.log('[Dashboard] Registering widgets...');
+    performance.mark('widget-registration-start');
     registerDashboardWidgets();
+    performance.mark('widget-registration-end');
+    performance.measure('widget-registration', 'widget-registration-start', 'widget-registration-end');
     console.log(`[Dashboard] ${widgetRegistry.count} widget(s) registered`);
 
+    // 如果已经初始化过，直接使用缓存的配置
+    if (configStore.initialized) {
+      console.log('[Dashboard] Using cached widget configurations');
+      performance.mark('dashboard-load-end');
+      performance.measure('dashboard-load-total', 'dashboard-load-start', 'dashboard-load-end');
+
+      // 打印性能报告
+      const measures = performance.getEntriesByType('measure');
+      console.log('📊 Dashboard 加载性能:');
+      measures.forEach(measure => {
+        console.log(`  ${measure.name}: ${measure.duration.toFixed(2)}ms`);
+      });
+
+      isLoading.value = false;
+      return;
+    }
+
     console.log('[Dashboard] Loading widget configurations...');
-    await configStore.loadConfig();
+    performance.mark('config-load-start');
+
+    await Promise.race([
+      configStore.loadConfig(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('配置加载超时（5秒）')), 5000)
+      )
+    ]);
+
+    performance.mark('config-load-end');
+    performance.measure('config-load', 'config-load-start', 'config-load-end');
     console.log('[Dashboard] Widget configurations loaded successfully');
+
+    performance.mark('dashboard-load-end');
+    performance.measure('dashboard-load-total', 'dashboard-load-start', 'dashboard-load-end');
+
+    // 打印性能报告
+    const measures = performance.getEntriesByType('measure');
+    console.log('📊 Dashboard 加载性能:');
+    measures.forEach(measure => {
+      console.log(`  ${measure.name}: ${measure.duration.toFixed(2)}ms`);
+    });
 
     isLoading.value = false;
   } catch (error) {
+    performance.mark('dashboard-load-end');
+    performance.measure('dashboard-load-total', 'dashboard-load-start', 'dashboard-load-end');
+
     console.error('[Dashboard] Failed to load dashboard:', error);
     hasError.value = true;
     errorMessage.value = error instanceof Error ? error.message : '未知错误';
@@ -299,10 +314,12 @@ onMounted(() => {
 
 /* 加载骨架屏动画 */
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -317,6 +334,7 @@ onMounted(() => {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

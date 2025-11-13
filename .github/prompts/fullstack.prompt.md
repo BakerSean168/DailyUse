@@ -231,7 +231,6 @@ export { FocusSession } from './aggregates/FocusSession';
 1. **DDD 最佳实践**：领域对象类名本身就是领域概念，不应该加技术后缀
 2. **TypeScript 友好**：类名和导入名一致，避免重复重命名（如 `import { GoalAggregate as Goal }`）
 
-
 ### domain-client 包
 
 **注意文件结构**：
@@ -323,6 +322,213 @@ export class RepositoryApplicationService {
 **注意文件结构**：
 
 - 每个模块放在 `modules/模块名/` 目录下，具体参考 repository 模块
+
+**架构模式（重要）**：
+
+- ✅ **组件必须通过 composables 获取数据，不允许直接导入 stores**
+- ✅ **composables 封装 stores 访问逻辑，提供响应式数据和方法**
+- ✅ **UI 框架使用 Vuetify 3，不使用其他 CSS 框架（如 Tailwind CSS）**
+- ✅ **Widget 按类型放置在不同目录**：
+  - 统计类 Widget → `/modules/dashboard/presentation/components/`
+  - 功能类 Widget → `/modules/{feature}/presentation/components/widgets/`
+
+**Composables 模式（必须遵循）**：
+
+```typescript
+// ✅ 正确：组件通过 composables 获取数据
+// Location: /modules/task/presentation/components/widgets/TodayTasksWidget.vue
+<script setup lang="ts">
+import { useTaskStatistics } from '@/modules/task/presentation/composables/useTaskStatistics';
+
+// 通过 composable 获取数据
+const { instances, statistics } = useTaskStatistics();
+
+// 组件内部处理逻辑
+const todayTasks = computed(() =>
+  instances.value.filter(task => isToday(task.dueDate))
+);
+</script>
+
+// ❌ 错误：组件直接导入 store
+<script setup lang="ts">
+import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
+
+const taskStore = useTaskStore(); // ❌ 不允许直接访问 store
+</script>
+```
+
+**Composables 实现模式**：
+
+```typescript
+// Location: /modules/notification/composables/useReminderStatistics.ts
+import { computed } from 'vue';
+import { useNotification } from './useNotification';
+
+export function useReminderStatistics() {
+  // ✅ Composable 内部访问 store/其他 composable
+  const { notifications } = useNotification();
+
+  // ✅ 封装业务逻辑，提供计算属性
+  const todayReminders = computed(() => {
+    return notifications.value.filter((n) => {
+      const isReminder = n.type === 'REMINDER';
+      return isReminder && isToday(n.createdAt);
+    }).length;
+  });
+
+  const unreadReminders = computed(() => {
+    return notifications.value.filter((n) => {
+      return n.type === 'REMINDER' && !n.isRead;
+    }).length;
+  });
+
+  // ✅ 返回响应式数据和方法
+  return {
+    todayReminders,
+    unreadReminders,
+  };
+}
+```
+
+**Vuetify 使用规范（必须遵循）**：
+
+- **组件库**：使用 Vuetify 组件，禁止使用 Tailwind CSS 或其他 UI 框架
+  - 布局组件：`v-card`, `v-row`, `v-col`, `v-container`, `v-divider`
+  - 展示组件：`v-chip`, `v-icon`, `v-badge`, `v-progress-linear`, `v-progress-circular`
+  - 交互组件：`v-btn`, `v-checkbox`, `v-text-field`, `v-select`
+  - 列表组件：`v-list`, `v-list-item`, `v-list-item-title`
+
+- **工具类**：使用 Vuetify 工具类，禁止自定义 CSS 类
+  - 布局类：`d-flex`, `d-inline-flex`, `flex-column`, `flex-row`
+  - 间距类：`pa-{0-16}`, `ma-{0-16}`, `px-{0-16}`, `py-{0-16}`, `ga-{0-16}`
+  - 对齐类：`align-center`, `align-start`, `align-end`, `justify-space-between`, `justify-center`
+  - 文本类：`text-h1` ~ `text-h6`, `text-caption`, `text-body-1`, `text-body-2`
+  - 字重类：`font-weight-thin`, `font-weight-regular`, `font-weight-bold`
+  - 颜色类：`text-primary`, `text-error`, `text-success`, `text-grey`
+
+- **图标系统**：使用 Material Design Icons
+  - 格式：`mdi-{icon-name}`（如 `mdi-calendar`, `mdi-bell`, `mdi-trophy`）
+  - 大小：`size="small"`, `size="default"`, `size="large"`, `size="x-large"`
+  - 颜色：`color="primary"`, `color="error"`, `color="success"`, `color="orange"`
+
+**Widget 组件模板**：
+
+```vue
+<!-- 统计类 Widget 示例 -->
+<script setup lang="ts">
+import type { DashboardContracts } from '@dailyuse/contracts';
+import { useTaskStatistics } from '@/modules/task/presentation/composables/useTaskStatistics';
+
+interface Props {
+  size?: DashboardContracts.WidgetSize;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  size: 'medium' as DashboardContracts.WidgetSize,
+});
+
+// ✅ 通过 composable 获取数据
+const { statistics } = useTaskStatistics();
+
+const isSmallSize = computed(() => props.size === 'small');
+
+const stats = computed(() => [
+  { label: '总计', value: statistics.value.total, icon: 'mdi-clipboard-check', color: 'blue' },
+  {
+    label: '进行中',
+    value: statistics.value.inProgress,
+    icon: 'mdi-clock-outline',
+    color: 'orange',
+  },
+  { label: '已完成', value: statistics.value.completed, icon: 'mdi-check-circle', color: 'green' },
+]);
+</script>
+
+<template>
+  <v-card elevation="2">
+    <v-card-title class="d-flex align-center pa-4">
+      <v-icon color="blue" size="large" class="mr-2">mdi-clipboard-check</v-icon>
+      <span class="text-h6">任务统计</span>
+    </v-card-title>
+    <v-divider />
+    <v-card-text class="pa-4">
+      <!-- 小尺寸：紧凑展示 -->
+      <div v-if="isSmallSize" class="d-flex flex-column ga-2">
+        <div v-for="stat in stats" :key="stat.label" class="d-flex align-center">
+          <v-icon :color="stat.color" size="small" class="mr-2">{{ stat.icon }}</v-icon>
+          <span class="text-caption text-grey flex-grow-1">{{ stat.label }}</span>
+          <span class="text-h6 font-weight-bold">{{ stat.value }}</span>
+        </div>
+      </div>
+
+      <!-- 中大尺寸：卡片网格 -->
+      <v-row v-else dense>
+        <v-col v-for="stat in stats" :key="stat.label" cols="12" sm="4">
+          <v-card :color="stat.color" variant="tonal" hover>
+            <v-card-text class="d-flex align-center pa-3">
+              <v-icon :color="stat.color" size="large" class="mr-3">{{ stat.icon }}</v-icon>
+              <div>
+                <div class="text-caption text-grey">{{ stat.label }}</div>
+                <div class="text-h5 font-weight-bold">{{ stat.value }}</div>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
+</template>
+
+<style scoped>
+/* 最小化自定义样式，优先使用 Vuetify 工具类 */
+</style>
+```
+
+**Widget 注册**：
+
+```typescript
+// Location: /modules/dashboard/infrastructure/registerWidgets.ts
+import { defineAsyncComponent } from 'vue';
+
+// ✅ 使用 defineAsyncComponent 实现懒加载
+const TaskStatsWidget = defineAsyncComponent(
+  () => import('../presentation/components/TaskStatsWidget.vue'),
+);
+
+const TodayTasksWidget = defineAsyncComponent(
+  () => import('../../task/presentation/components/widgets/TodayTasksWidget.vue'),
+);
+
+export function registerDashboardWidgets(): void {
+  // 注册统计类 Widget（从 dashboard 模块）
+  widgetRegistry.registerWidget({
+    id: 'task-stats',
+    name: '任务统计',
+    component: TaskStatsWidget,
+    defaultSize: WidgetSize.MEDIUM,
+    defaultOrder: 1,
+  });
+
+  // 注册功能类 Widget（从 task 模块）
+  widgetRegistry.registerWidget({
+    id: 'today-tasks',
+    name: '今日待办',
+    component: TodayTasksWidget,
+    defaultSize: WidgetSize.MEDIUM,
+    defaultOrder: 5,
+  });
+}
+```
+
+**易错点**：
+
+- ❌ **不要在组件中直接导入 store**（`import { useTaskStore }`）
+- ❌ **不要使用 Tailwind CSS 类**（`bg-white`, `rounded-xl`, `shadow-lg`）
+- ❌ **不要自定义 CSS 类**（应优先使用 Vuetify 工具类）
+- ❌ **不要混用多个 UI 框架**（只使用 Vuetify）
+- ✅ **必须通过 composables 获取数据**
+- ✅ **必须使用 Vuetify 组件和工具类**
+- ✅ **Widget 放置在正确的目录**（统计类 → dashboard，功能类 → feature）
 
 ## DDD 架构中各部分的职责与组织方式
 

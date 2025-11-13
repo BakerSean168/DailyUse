@@ -129,9 +129,12 @@ export const useDashboardConfigStore = defineStore('dashboardConfig', () => {
    */
   const loadConfig = async (): Promise<void> => {
     if (loading.value) {
-      console.warn('[DashboardConfigStore] Already loading config, skipping...');
+      console.warn('[DashboardConfigStore] 已经在加载中，跳过此次请求');
       return;
     }
+
+    const startTime = performance.now();
+    console.log('[DashboardConfigStore] 开始加载配置...');
 
     loading.value = true;
     error.value = null;
@@ -140,11 +143,14 @@ export const useDashboardConfigStore = defineStore('dashboardConfig', () => {
       const data = await DashboardConfigApiClient.getWidgetConfig();
       config.value = data;
       initialized.value = true;
-      console.log('[DashboardConfigStore] Config loaded successfully:', data);
+
+      const duration = performance.now() - startTime;
+      console.log(`[DashboardConfigStore] 配置加载成功，耗时: ${duration.toFixed(2)}ms`, data);
     } catch (err) {
+      const duration = performance.now() - startTime;
       const errorMessage = err instanceof Error ? err.message : '未知错误';
       error.value = errorMessage;
-      console.error('[DashboardConfigStore] Failed to load config:', err);
+      console.error(`[DashboardConfigStore] 配置加载失败，耗时: ${duration.toFixed(2)}ms`, err);
       throw err;
     } finally {
       loading.value = false;
