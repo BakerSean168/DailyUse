@@ -2,7 +2,7 @@
  * Domain Client - 客户端领域层
  *
  * 此包包含所有领域模块的客户端实现
- * 
+ *
  * 导出规范：
  * - 直接导出类（聚合根、实体、值对象），可使用类方法
  * - 不使用命名空间导出
@@ -144,3 +144,10 @@ export { DeviceInfo } from './authentication/value-objects/DeviceInfo';
 // ==================== Setting 模块 ====================
 // 聚合根
 export { UserSetting } from './setting/aggregates/UserSetting';
+
+// ==================== Dashboard 模块 ====================
+// 聚合根
+export { DashboardConfig } from './dashboard/aggregates/DashboardConfig';
+
+// 值对象
+export { WidgetConfig } from './dashboard/value-objects/WidgetConfig';

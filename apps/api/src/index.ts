@@ -1,3 +1,15 @@
+// Load environment variables FIRST before any other imports
+import { config } from 'dotenv';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env file from apps/api directory
+config({ path: resolve(__dirname, '../.env') });
+
 import app from './app';
 import { connectPrisma, disconnectPrisma, prisma } from './config/prisma';
 import { initializeApp } from './shared/initialization/initializer';
@@ -15,11 +27,7 @@ import {
   startReminderTriggerCronJob,
   stopReminderTriggerCronJob,
 } from './modules/reminder/infrastructure/cron/reminderTriggerCronJob';
-import {
-  registerAllCronJobs,
-  startCronScheduler,
-  stopCronScheduler,
-} from './infrastructure/cron';
+import { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './infrastructure/cron';
 
 // 初始化日志系统
 initializeLogger();

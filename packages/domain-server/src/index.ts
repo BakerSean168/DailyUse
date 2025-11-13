@@ -34,3 +34,6 @@ export * from './schedule/index';
 
 // AI 模块
 export * from './ai/index';
+
+// Dashboard 模块
+export * from './dashboard/index';

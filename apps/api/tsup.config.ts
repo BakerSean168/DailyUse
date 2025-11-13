@@ -64,6 +64,8 @@ export default defineConfig({
     'swagger-ui-express',
     'node-cron',
     'zod',
+    'ioredis',
+    'dotenv',
   ],
 
   // Watch mode in development

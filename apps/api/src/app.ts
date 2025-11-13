@@ -32,6 +32,7 @@ import repositoryNewRouter from './modules/repository-new/presentation/Repositor
 import resourceNewRouter from './modules/repository-new/presentation/ResourceController';
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
 import aiGenerationRouter from './modules/ai/interface/http/aiGenerationRoutes';
+import dashboardRouter from './modules/dashboard/interface/routes';
 
 import { authMiddleware, optionalAuthMiddleware } from './shared/middlewares/index';
 import { setupSwagger } from './config/swagger';
@@ -201,6 +202,12 @@ api.use('/settings', authMiddleware, settingRouter);
  */
 // 挂载性能指标路由 - 需要认证
 api.use('/metrics', authMiddleware, metricsRouter);
+
+/**
+ * dashboard Dashboard 模块
+ */
+// 挂载 Dashboard 统计路由 - 需要认证
+api.use('/dashboard', authMiddleware, dashboardRouter);
 
 /**
  * ai AI生成模块

@@ -9,10 +9,16 @@ import { AppInitializationManager } from './shared/initialization/AppInitializat
 import { eventBus } from '@dailyuse/utils';
 import { initializeLogger, getStartupInfo } from './config/logger.config';
 import { createLogger } from '@dailyuse/utils';
+import { initWebVitals } from './utils/performance/webVitals';
 
 // 初始化日志系统
 initializeLogger();
 const logger = createLogger('WebApp');
+
+// 初始化 Web Vitals 监控 (生产环境)
+if (import.meta.env.PROD) {
+  initWebVitals();
+}
 
 // 将 eventBus 挂载到全局 window 对象，供调试脚本使用
 if (typeof window !== 'undefined') {

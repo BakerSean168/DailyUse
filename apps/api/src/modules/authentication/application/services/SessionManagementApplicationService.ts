@@ -13,6 +13,7 @@
  * - 发布领域事件
  */
 
+import crypto from 'crypto';
 import type {
   IAuthSessionRepository,
   IAccountRepository,
@@ -150,8 +151,8 @@ export class SessionManagementApplicationService {
         throw new Error('Session is invalid or expired');
       }
 
-      // ===== 步骤 3: 生成新的令牌 =====
-      const { accessToken, refreshToken, expiresAt } = this.generateTokens();
+      // ===== 步骤 3: 生成新的令牌（需要 accountUuid）=====
+      const { accessToken, refreshToken, expiresAt } = this.generateTokens(session.accountUuid);
 
       // ===== 步骤 4: 调用聚合根方法刷新会话 =====
       session.refreshAccessToken(accessToken, 60); // 60 minutes
@@ -356,7 +357,7 @@ export class SessionManagementApplicationService {
   /**
    * 生成访问令牌和刷新令牌
    */
-  private generateTokens(): {
+  private generateTokens(accountUuid: string): {
     accessToken: string;
     refreshToken: string;
     expiresAt: number;
@@ -366,26 +367,42 @@ export class SessionManagementApplicationService {
     const refreshTokenExpiresIn = 7 * 24 * 3600; // 7 days in seconds
     const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds
 
-    // Generate JWT access token
+    const now = Math.floor(Date.now() / 1000);
+
+    // Generate JWT access token with enhanced security
     const accessToken = jwt.sign(
       {
+        accountUuid,
         type: 'access',
-        iat: Math.floor(Date.now() / 1000),
+        iat: now,
+        jti: crypto.randomBytes(16).toString('hex'), // Unique token ID
+        iss: 'dailyuse-api', // Issuer
+        aud: 'dailyuse-client', // Audience
       },
       secret,
-      { expiresIn: accessTokenExpiresIn },
+      {
+        algorithm: 'HS256', // Explicitly specify algorithm
+        expiresIn: accessTokenExpiresIn,
+      },
     );
 
     // Generate JWT refresh token (longer expiry, different payload)
     const refreshToken = jwt.sign(
       {
+        accountUuid,
         type: 'refresh',
-        iat: Math.floor(Date.now() / 1000),
+        iat: now,
+        jti: crypto.randomBytes(16).toString('hex'), // Different unique token ID
+        iss: 'dailyuse-api',
+        aud: 'dailyuse-client',
         // Refresh token should have different claims to distinguish from access token
         purpose: 'token-refresh',
       },
       secret,
-      { expiresIn: refreshTokenExpiresIn },
+      {
+        algorithm: 'HS256',
+        expiresIn: refreshTokenExpiresIn,
+      },
     );
 
     return { accessToken, refreshToken, expiresAt };

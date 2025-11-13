@@ -10,6 +10,7 @@ import {
 import { registerAuthenticationInitializationTasks } from '../../modules/authentication/initialization/authenticationInitialization';
 import { registerGoalInitializationTasks } from '../../modules/goal/initialization/goalInitialization';
 import { registerScheduleInitializationTasks } from '../../modules/schedule/initialization/scheduleInitialization';
+import { registerDashboardInitializationTasks } from '../../modules/dashboard/initialization/dashboardInitialization';
 
 // TODO: 以下模块尚未实现，待实现后取消注释
 // import { registerAccountInitializationTasks } from '../../modules/account';
@@ -58,6 +59,7 @@ export function registerAllInitializationTasks(): void {
   registerAuthenticationInitializationTasks(); // ✅ 已实现（事件处理器）
   registerGoalInitializationTasks(); // ✅ 已实现（Goal 统计事件处理器）
   registerScheduleInitializationTasks(); // ✅ 已实现（Schedule 事件处理器）
+  registerDashboardInitializationTasks(); // ✅ 已实现（Dashboard 缓存失效监听器）
 
   // TODO: 待相应模块实现后取消注释
   // registerAccountInitializationTasks();

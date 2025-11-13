@@ -20,6 +20,7 @@ export * as SettingContracts from './modules/setting';
 export * as NotificationContracts from './modules/notification';
 export * as DocumentContracts from './document.contracts';
 export * as AIContracts from './modules/ai';
+export * as DashboardContracts from './modules/dashboard';
 
 // 导出 Reminder 模块的常量和工具函数（运行时值不能通过命名空间导出）
 export {
@@ -93,6 +94,9 @@ export {
   ScheduleViewType,
   ProfileVisibility,
 } from './modules/setting/enums';
+
+// 导出 Dashboard 枚举（新的 DDD 架构）
+export { WidgetSize, WidgetSizeText } from './modules/dashboard/enums';
 
 // 导出 Task 枚举（常用的）
 export {

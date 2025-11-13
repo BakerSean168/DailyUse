@@ -1,268 +1,328 @@
 <!--
-  Dashboard View
-  仪表盘页面
+  Dashboard View - Widget System
+  仪表盘页面 - Widget 系统集成
+  
+  Sprint 3 - TASK-3.1: Dashboard Page Layout
+  
+  Features:
+  - 动态 Widget 渲染
+  - 响应式网格布局
+  - Widget 配置集成
+  - 加载状态管理
+  - 错误处理
 -->
 <template>
-  <v-container fluid>
-    <!-- 页面标题 -->
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h4 mb-4">
-          <v-icon class="mr-2">mdi-view-dashboard</v-icon>
-          仪表盘
-        </h1>
-      </v-col>
-    </v-row>
+  <div class="dashboard-page min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
+    <!-- Widget 设置面板 -->
+    <WidgetSettingsPanel
+      v-model:isOpen="isSettingsPanelOpen"
+      @saved="handleSettingsSaved"
+    />
 
-    <!-- 快速统计卡片 -->
-    <v-row>
-      <v-col cols="12" sm="6" md="3">
-        <v-card color="primary" dark>
-          <v-card-text>
-            <div class="d-flex justify-space-between">
-              <div>
-                <h3 class="text-h5">{{ stats.tasks || 0 }}</h3>
-                <p class="text-body-2">任务总数</p>
-              </div>
-              <v-icon size="40">mdi-check-circle</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
+    <!-- 页面标题与操作栏 -->
+    <header class="dashboard-header mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="i-heroicons-squares-2x2 w-8 h-8 text-primary-600 dark:text-primary-400" />
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">仪表盘</h1>
+      </div>
 
-      <v-col cols="12" sm="6" md="3">
-        <v-card color="success" dark>
-          <v-card-text>
-            <div class="d-flex justify-space-between">
-              <div>
-                <h3 class="text-h5">{{ stats.goals || 0 }}</h3>
-                <p class="text-body-2">目标总数</p>
-              </div>
-              <v-icon size="40">mdi-target</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
+      <!-- 操作按钮 -->
+      <div class="flex items-center gap-2">
+        <button
+          v-if="!isLoading && !hasError"
+          class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+          @click="refreshWidgets"
+          :disabled="isRefreshing"
+        >
+          <div
+            class="i-heroicons-arrow-path w-4 h-4"
+            :class="{ 'animate-spin': isRefreshing }"
+          />
+          <span class="hidden sm:inline">刷新</span>
+        </button>
 
-      <v-col cols="12" sm="6" md="3">
-        <v-card color="warning" dark>
-          <v-card-text>
-            <div class="d-flex justify-space-between">
-              <div>
-                <h3 class="text-h5">{{ stats.reminders || 0 }}</h3>
-                <p class="text-body-2">提醒总数</p>
-              </div>
-              <v-icon size="40">mdi-bell</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
+        <button
+          class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors flex items-center gap-2"
+          @click="openSettings"
+        >
+          <div class="i-heroicons-cog-6-tooth w-4 h-4" />
+          <span class="hidden sm:inline">设置</span>
+        </button>
+      </div>
+    </header>
 
-      <v-col cols="12" sm="6" md="3">
-        <v-card color="info" dark>
-          <v-card-text>
-            <div class="d-flex justify-space-between">
-              <div>
-                <h3 class="text-h5">{{ stats.repositories || 0 }}</h3>
-                <p class="text-body-2">仓储总数</p>
-              </div>
-              <v-icon size="40">mdi-source-repository</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <!-- 加载状态 -->
+    <div v-if="isLoading" class="loading-skeleton">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div
+          v-for="i in 4"
+          :key="i"
+          class="skeleton-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse"
+        >
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4" />
+          <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
+          <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+          <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
+        </div>
+      </div>
+    </div>
 
-    <!-- 快速操作 -->
-    <v-row class="mt-4">
-      <v-col cols="12">
-        <v-card>
-          <v-card-title>
-            <v-icon class="mr-2">mdi-lightning-bolt</v-icon>
-            快速操作
-          </v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col cols="12" sm="6" md="3">
-                <v-btn color="primary" block size="large" @click="$router.push('/tasks/create')">
-                  <v-icon class="mr-2">mdi-plus</v-icon>
-                  创建任务
-                </v-btn>
-              </v-col>
-              <v-col cols="12" sm="6" md="3">
-                <v-btn color="success" block size="large" @click="$router.push('/goals/create')">
-                  <v-icon class="mr-2">mdi-plus</v-icon>
-                  创建目标
-                </v-btn>
-              </v-col>
-              <v-col cols="12" sm="6" md="3">
-                <v-btn
-                  color="warning"
-                  block
-                  size="large"
-                  @click="$router.push('/reminders/create')"
-                >
-                  <v-icon class="mr-2">mdi-plus</v-icon>
-                  创建提醒
-                </v-btn>
-              </v-col>
-              <v-col cols="12" sm="6" md="3">
-                <v-btn
-                  color="info"
-                  block
-                  size="large"
-                  @click="$router.push('/repositories/create')"
-                >
-                  <v-icon class="mr-2">mdi-plus</v-icon>
-                  添加仓储
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <!-- 错误状态 -->
+    <div
+      v-else-if="hasError"
+      class="error-state bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center"
+    >
+      <div class="i-heroicons-exclamation-triangle w-16 h-16 mx-auto mb-4 text-red-500" />
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">加载失败</h2>
+      <p class="text-gray-600 dark:text-gray-400 mb-6">{{ errorMessage }}</p>
+      <button
+        class="px-6 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+        @click="retryLoad"
+      >
+        重试
+      </button>
+    </div>
 
-    <!-- 最近活动 -->
-    <v-row class="mt-4">
-      <v-col cols="12" md="8">
-        <v-card>
-          <v-card-title>
-            <v-icon class="mr-2">mdi-clock-outline</v-icon>
-            最近活动
-          </v-card-title>
-          <v-card-text>
-            <v-list>
-              <v-list-item
-                v-for="activity in recentActivities"
-                :key="activity.id"
-                :prepend-icon="activity.icon"
-              >
-                <v-list-item-title>{{ activity.title }}</v-list-item-title>
-                <v-list-item-subtitle>{{ activity.time }}</v-list-item-subtitle>
-              </v-list-item>
+    <!-- Widget 网格布局 -->
+    <div v-else-if="visibleWidgets.length > 0" class="dashboard-grid">
+      <!-- 动态渲染 Widgets -->
+      <TransitionGroup name="widget-grid" tag="div" class="grid gap-4 widget-grid-container">
+        <div
+          v-for="widget in visibleWidgets"
+          :key="widget.id"
+          :class="getWidgetGridClasses(widget.config.size)"
+          class="widget-container"
+        >
+          <component
+            :is="widget.component"
+            :size="widget.config.size"
+            :class="getWidgetSizeClasses(widget.config.size)"
+          />
+        </div>
+      </TransitionGroup>
+    </div>
 
-              <v-list-item v-if="recentActivities.length === 0">
-                <v-list-item-title class="text-center text-medium-emphasis">
-                  暂无最近活动
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="4">
-        <v-card>
-          <v-card-title>
-            <v-icon class="mr-2">mdi-calendar-today</v-icon>
-            今日待办
-          </v-card-title>
-          <v-card-text>
-            <v-list>
-              <v-list-item v-for="todo in todayTodos" :key="todo.id">
-                <template #prepend>
-                  <v-checkbox v-model="todo.completed" @change="toggleTodo(todo)" />
-                </template>
-                <v-list-item-title :class="{ 'text-decoration-line-through': todo.completed }">
-                  {{ todo.title }}
-                </v-list-item-title>
-              </v-list-item>
-
-              <v-list-item v-if="todayTodos.length === 0">
-                <v-list-item-title class="text-center text-medium-emphasis">
-                  今日无待办事项
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+    <!-- 空状态 -->
+    <div
+      v-else
+      class="empty-state bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center"
+    >
+      <div class="i-heroicons-squares-plus w-16 h-16 mx-auto mb-4 text-gray-400" />
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">暂无 Widget</h2>
+      <p class="text-gray-600 dark:text-gray-400 mb-6">点击右上角设置按钮添加 Widget</p>
+      <button
+        class="px-6 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+        @click="openSettings"
+      >
+        打开设置
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, onMounted, ref } from 'vue';
+import { useDashboardConfigStore } from '@/modules/dashboard/stores/dashboardConfigStore';
+import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
+import { registerDashboardWidgets } from '@/modules/dashboard/infrastructure/registerWidgets';
+import { DashboardContracts } from '@dailyuse/contracts';
+import WidgetSettingsPanel from '../components/WidgetSettingsPanel.vue';
 
-const router = useRouter();
+// ===== Store & Data =====
+const configStore = useDashboardConfigStore();
+const isLoading = ref(true);
+const hasError = ref(false);
+const errorMessage = ref('');
+const isRefreshing = ref(false);
+const isSettingsPanelOpen = ref(false);
 
-// 统计数据
-const stats = reactive({
-  tasks: 0,
-  goals: 0,
-  reminders: 0,
-  repositories: 0,
-});
+// ===== Computed Properties =====
 
-// 最近活动
-const recentActivities = ref([
-  {
-    id: 1,
-    title: '创建了新任务：完成项目文档',
-    time: '2小时前',
-    icon: 'mdi-check-circle',
-  },
-  {
-    id: 2,
-    title: '更新了目标：学习Vue3',
-    time: '4小时前',
-    icon: 'mdi-target',
-  },
-  {
-    id: 3,
-    title: '设置了提醒：明天的会议',
-    time: '1天前',
-    icon: 'mdi-bell',
-  },
-]);
+/**
+ * 可见的 Widgets 列表（从 store 获取，已排序）
+ */
+const visibleWidgets = computed(() => configStore.visibleWidgets);
 
-// 今日待办
-const todayTodos = ref([
-  {
-    id: 1,
-    title: '检查邮件',
-    completed: false,
-  },
-  {
-    id: 2,
-    title: '完成代码审查',
-    completed: true,
-  },
-  {
-    id: 3,
-    title: '准备周会材料',
-    completed: false,
-  },
-]);
+// ===== Methods =====
 
-// 切换待办状态
-const toggleTodo = (todo: any) => {
-  console.log('Toggle todo:', todo);
-  // TODO: 实现待办状态更新
-};
-
-// 加载数据
-const loadData = async () => {
-  try {
-    // TODO: 从API加载实际数据
-    stats.tasks = 12;
-    stats.goals = 5;
-    stats.reminders = 8;
-    stats.repositories = 3;
-  } catch (error) {
-    console.error('Failed to load dashboard data:', error);
+/**
+ * 获取 Widget 网格布局类名（基于尺寸）
+ */
+const getWidgetGridClasses = (size: DashboardContracts.WidgetSize): string => {
+  switch (size) {
+    case DashboardContracts.WidgetSize.SMALL:
+      return 'col-span-1';
+    case DashboardContracts.WidgetSize.MEDIUM:
+      return 'col-span-1 md:col-span-2';
+    case DashboardContracts.WidgetSize.LARGE:
+      return 'col-span-1 md:col-span-2 lg:col-span-3';
+    default:
+      return 'col-span-1';
   }
 };
 
+/**
+ * 获取 Widget 尺寸类名（传递给组件）
+ */
+const getWidgetSizeClasses = (size: DashboardContracts.WidgetSize): string => {
+  return `widget-size-${size}`;
+};
+
+/**
+ * 初始化加载
+ */
+const loadDashboard = async () => {
+  try {
+    isLoading.value = true;
+    hasError.value = false;
+    errorMessage.value = '';
+
+    console.log('[Dashboard] Registering widgets...');
+    registerDashboardWidgets();
+    console.log(`[Dashboard] ${widgetRegistry.count} widget(s) registered`);
+
+    console.log('[Dashboard] Loading widget configurations...');
+    await configStore.loadConfig();
+    console.log('[Dashboard] Widget configurations loaded successfully');
+
+    isLoading.value = false;
+  } catch (error) {
+    console.error('[Dashboard] Failed to load dashboard:', error);
+    hasError.value = true;
+    errorMessage.value = error instanceof Error ? error.message : '未知错误';
+    isLoading.value = false;
+  }
+};
+
+/**
+ * 刷新 Widgets
+ */
+const refreshWidgets = async () => {
+  try {
+    isRefreshing.value = true;
+    console.log('[Dashboard] Refreshing widgets...');
+    await configStore.loadConfig();
+    console.log('[Dashboard] Widgets refreshed successfully');
+  } catch (error) {
+    console.error('[Dashboard] Failed to refresh widgets:', error);
+  } finally {
+    isRefreshing.value = false;
+  }
+};
+
+/**
+ * 重试加载
+ */
+const retryLoad = () => {
+  loadDashboard();
+};
+
+/**
+ * 打开设置面板
+ */
+const openSettings = () => {
+  console.log('[Dashboard] Opening settings panel...');
+  isSettingsPanelOpen.value = true;
+};
+
+/**
+ * 设置保存成功回调
+ */
+const handleSettingsSaved = () => {
+  console.log('[Dashboard] Settings saved, refreshing widgets...');
+  // 配置已保存，无需额外刷新（Store 已更新）
+};
+
+// ===== Lifecycle =====
 onMounted(() => {
-  loadData();
+  console.log('[Dashboard] DashboardView mounted, initializing...');
+  loadDashboard();
 });
 </script>
 
 <style scoped>
-.text-decoration-line-through {
-  text-decoration: line-through;
+/* Widget 网格容器 */
+.widget-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* 响应式网格 */
+@media (min-width: 768px) {
+  .widget-grid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .widget-grid-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .widget-grid-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Widget 过渡动画 */
+.widget-grid-move,
+.widget-grid-enter-active,
+.widget-grid-leave-active {
+  transition: all 0.3s ease;
+}
+
+.widget-grid-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.widget-grid-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.widget-grid-leave-active {
+  position: absolute;
+}
+
+/* Widget 容器样式 */
+.widget-container {
+  transition: all 0.3s ease;
+}
+
+.widget-container:hover {
+  transform: translateY(-2px);
+}
+
+/* 加载骨架屏动画 */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 旋转动画 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 </style>

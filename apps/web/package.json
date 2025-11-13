@@ -29,6 +29,9 @@
     "// ========== Performance ==========": "",
     "bench": "vitest bench --run --config vitest.bench.config.ts",
     "bench:watch": "vitest bench --config vitest.bench.config.ts",
+    "perf:lighthouse": "lhci autorun",
+    "perf:e2e": "playwright test e2e/performance/",
+    "perf:all": "pnpm bench && pnpm build && pnpm perf:lighthouse",
     "// ========== Code Quality ==========": "",
     "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx",
     "lint:fix": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --fix"
@@ -81,6 +84,7 @@
     "vuetify": "^3.7.5"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.14.0",
     "@playwright/test": "^1.56.0",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/vue": "^8.1.0",
@@ -89,7 +93,10 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/test-utils": "^2.4.6",
+    "autoprefixer": "10.4.22",
     "happy-dom": "^18.0.1",
+    "postcss": "8.5.6",
+    "tailwindcss": "4.1.17",
     "typescript": "^5.8.3",
     "vite": "^7.1.7",
     "vitest": "^3.2.4",

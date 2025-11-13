@@ -59,6 +59,7 @@ model account {
   aiConversation                 aiConversation[]
   aiGenerationTask               aiGenerationTask[]
   aiUsageQuota                   aiUsageQuota?
+  dashboardConfig                dashboardConfig?
 
   @@index([createdAt])
   @@index([email])
@@ -1422,4 +1423,20 @@ model aiUsageQuota {
   @@index([accountUuid])
   @@index([nextResetAt])
   @@map("ai_usage_quotas")
+}
+
+/// Dashboard 配置聚合根（Widget 配置）
+model dashboardConfig {
+  id           Int      @id @default(autoincrement())
+  accountUuid  String   @unique @map("account_uuid")
+  widgetConfig Json     @default("{}") @map("widget_config") // Widget 配置 JSON
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // 关系
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+
+  // 索引
+  @@index([accountUuid])
+  @@map("dashboard_configs")
 }

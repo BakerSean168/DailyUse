@@ -13,6 +13,7 @@
  * - 发布领域事件
  */
 
+import crypto from 'crypto';
 import type {
   IAuthCredentialRepository,
   IAuthSessionRepository,
@@ -383,29 +384,46 @@ export class AuthenticationApplicationService {
     expiresAt: number;
   } {
     const secret = process.env.JWT_SECRET || 'default-secret';
-    const expiresIn = 3600; // 1 hour in seconds
-    const expiresAt = Date.now() + expiresIn * 1000; // milliseconds
+    const accessTokenExpiresIn = 3600; // 1 hour in seconds
+    const refreshTokenExpiresIn = 7 * 24 * 3600; // 7 days in seconds
+    const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds
 
-    // Generate JWT access token
+    const now = Math.floor(Date.now() / 1000);
+
+    // Generate JWT access token with enhanced security
     const accessToken = jwt.sign(
       {
         accountUuid,
         type: 'access',
-        iat: Math.floor(Date.now() / 1000),
+        iat: now,
+        jti: crypto.randomBytes(16).toString('hex'), // Unique token ID
+        iss: 'dailyuse-api', // Issuer
+        aud: 'dailyuse-client', // Audience
       },
       secret,
-      { expiresIn },
+      {
+        algorithm: 'HS256', // Explicitly specify algorithm
+        expiresIn: accessTokenExpiresIn,
+      },
     );
 
-    // Generate JWT refresh token (longer expiry)
+    // Generate JWT refresh token (longer expiry, different payload)
     const refreshToken = jwt.sign(
       {
         accountUuid,
         type: 'refresh',
-        iat: Math.floor(Date.now() / 1000),
+        iat: now,
+        jti: crypto.randomBytes(16).toString('hex'), // Different unique token ID
+        iss: 'dailyuse-api',
+        aud: 'dailyuse-client',
+        // Refresh token should have different claims to distinguish from access token
+        purpose: 'token-refresh',
       },
       secret,
-      { expiresIn: 7 * 24 * 3600 }, // 7 days
+      {
+        algorithm: 'HS256',
+        expiresIn: refreshTokenExpiresIn,
+      },
     );
 
     return { accessToken, refreshToken, expiresAt };
