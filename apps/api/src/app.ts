@@ -15,7 +15,6 @@ import authenticationRouter from './modules/authentication/interface/http/authen
 import taskRouter from './modules/task/interface/http/routes/index';
 import goalRouter from './modules/goal/interface/http/goalRoutes';
 import goalFolderRouter from './modules/goal/interface/http/goalFolderRoutes';
-import focusSessionRouter from './modules/goal/interface/http/focusSessionRoutes';
 import weightSnapshotRouter from './modules/goal/interface/http/weightSnapshotRoutes';
 import reminderRouter from './modules/reminder/interface/http/reminderRoutes';
 import reminderGroupRouter from './modules/reminder/interface/http/reminderGroupRoutes';
@@ -26,10 +25,6 @@ import settingRouter from './modules/setting/interface/http/settingRoutes';
 // import themeRoutes from './modules/theme/interface/http/themeRoutes';
 import editorRouter from './modules/editor/interface/http/routes/editorRoutes';
 import repositoryRouter from './modules/repository/interface/http/routes/repositoryRoutes';
-import resourceRouter from './modules/repository/interface/http/routes/resourceRoutes';
-import folderRouter from './modules/repository/interface/http/routes/folderRoutes';
-import repositoryNewRouter from './modules/repository-new/presentation/RepositoryController';
-import resourceNewRouter from './modules/repository-new/presentation/ResourceController';
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
 import aiGenerationRouter from './modules/ai/interface/http/aiGenerationRoutes';
 import dashboardRouter from './modules/dashboard/interface/routes';
@@ -183,21 +178,11 @@ api.use('/schedules', authMiddleware, scheduleRouter);
 api.use('/editor', authMiddleware, editorRouter);
 
 /**
- * repository 仓储模块
+ * repository 仓储模块 (Epic 10 完整版)
+ * 整合 Repository + Resource + Folder + Search + Tags
  */
-// 挂载仓储路由 - 需要认证
+// 挂载仓储统一路由 - 需要认证
 api.use('/repositories', authMiddleware, repositoryRouter);
-// Epic 10 Story 10-2: Resource CRUD + Markdown 编辑
-// 注意：resourceRouter 和 folderRouter 使用空路径，会匹配所有请求
-// 必须移到文件末尾，避免拦截其他路由（如 /sse）
-// api.use('', resourceRouter); // ← 已移到文件末尾
-// api.use('', folderRouter);   // ← 已移到文件末尾
-
-/**
- * repository-new 仓储模块 (Epic 7 重构版本 - MVP)
- * DDD 架构 - Repository 聚合根 + Resource 实体
- */
-// （已移到文件末尾，避免空路径拦截其他路由）
 
 /**
  * setting 设置模块
@@ -269,28 +254,6 @@ api.use('/sse', (req, res, next) => {
 // 挂载通知管理路由 - 需要认证
 console.log('🚀 [App Init] 注册通知路由到 /notifications');
 api.use('/notifications', authMiddleware, notificationRouter);
-// api.use('/notification-preferences', authMiddleware, notificationPreferenceRouter);
-// api.use('/notification-templates', authMiddleware, notificationTemplateRouter);
-
-// 挂载专注周期管理路由 - 需要认证（路由内部已有 authMiddleware）
-// 注意：这个路由使用空路径''，会匹配所有路径，放在最后避免拦截其他路由
-api.use('', focusSessionRouter);
-
-/**
- * repository-new 仓储模块 (Epic 7 重构版本 - MVP)
- * DDD 架构 - Repository 聚合根 + Resource 实体
- */
-// 挂载新版仓储路由 - 内置简单认证中间件（TODO: 升级为 JWT）
-// 注意：这些路由使用空路径''，会匹配所有路径，放在最后避免拦截其他路由
-api.use('', repositoryNewRouter);
-api.use('', resourceNewRouter);
-
-/**
- * Epic 10 Story 10-2: Resource CRUD + Markdown 编辑
- * 注意：这些路由使用空路径''，会匹配所有路径，必须放在最后！
- */
-api.use('', resourceRouter);
-api.use('', folderRouter);
 
 // 注意：所有模块的初始化都通过 shared/initialization/initializer.ts 统一管理
 // NotificationApplicationService, UserPreferencesApplicationService, ThemeApplicationService

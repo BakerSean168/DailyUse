@@ -9,9 +9,9 @@ export const repositoryRoutes: RouteRecordRaw[] = [
     path: '/repositories',
     name: 'repositories',
     meta: {
-      title: '仓储管理',
-      showInNav: false, // 隐藏旧的仓储管理，使用新的知识仓库
-      icon: 'mdi-source-repository',
+      title: '知识仓库',
+      showInNav: true, // ✅ 恢复显示在导航中
+      icon: 'mdi-book-open-variant',
       order: 7,
       requiresAuth: true,
     },

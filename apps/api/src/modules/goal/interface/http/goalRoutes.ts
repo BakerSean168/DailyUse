@@ -2,15 +2,17 @@ import { Router } from 'express';
 import { GoalController } from './GoalController';
 import goalStatisticsRoutes from './goalStatisticsRoutes';
 import focusModeRoutes from './focusModeRoutes';
+import focusSessionRoutes from './focusSessionRoutes';
 
 /**
- * Goal 模块路由
+ * Goal 模块路由 (完整版)
+ * 整合：Goal CRUD + KeyResult + FocusMode + FocusSession + Statistics
  *
  * 路由规范：
  * 1. RESTful API 设计
  * 2. 统一的错误处理
  * 3. Swagger/OpenAPI 文档
- * 4. 路由分组：基本CRUD、关键结果、搜索统计
+ * 4. 路由分组：基本CRUD、关键结果、专注模式、专注周期、统计
  */
 
 const router: Router = Router();
@@ -621,6 +623,10 @@ router.use('/focus-mode', focusModeRoutes);
 // ===== 专注模式路由 =====
 // 挂载专注周期模式路由（使用独立的 Controller 和路由文件）
 router.use('/focus-mode', focusModeRoutes);
+
+// ===== 专注周期路由 =====
+// 挂载专注周期路由（Pomodoro 时间追踪）
+router.use('', focusSessionRoutes);
 
 // ===== 统计路由（新架构 - 事件驱动） =====
 // 挂载 Goal 统计路由（使用独立的 Controller 和路由文件）

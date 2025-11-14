@@ -10,7 +10,7 @@
 
 import { computed, onMounted, ref } from 'vue';
 import type { DashboardContracts } from '@dailyuse/contracts';
-import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
+import { useGoal } from '@/modules/goal/presentation/composables/useGoal';
 import { GoalStatus } from '@dailyuse/contracts';
 
 // ===== Props =====
@@ -22,8 +22,8 @@ const props = withDefaults(defineProps<Props>(), {
     size: 'medium' as DashboardContracts.WidgetSize,
 });
 
-// ===== Stores =====
-const goalStore = useGoalStore();
+// ===== Composables =====
+const { goals } = useGoal();
 
 // ===== State =====
 const isLoading = ref(true);
@@ -36,13 +36,13 @@ const isLoading = ref(true);
 const activeGoals = computed(() => {
     const today = new Date();
 
-    // 防御性检查：确保 allGoals 已初始化
-    const goals = goalStore.allGoals;
-    if (!goals || !Array.isArray(goals)) {
+    // 使用 composable 提供的响应式数据
+    const allGoals = goals.value;
+    if (!allGoals || !Array.isArray(allGoals)) {
         return [];
     }
 
-    return goals
+    return allGoals
         .filter(goal => {
             if (goal.status !== GoalStatus.IN_PROGRESS) return false;
             return goal.startDate && goal.targetDate;

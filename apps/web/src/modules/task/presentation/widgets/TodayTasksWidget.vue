@@ -11,8 +11,7 @@
 
 import { computed, onMounted, ref } from 'vue';
 import type { DashboardContracts } from '@dailyuse/contracts';
-import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
-const useTaskInstanceStore = useTaskStore; // 别名兼容
+import { useTaskInstance } from '@/modules/task/presentation/composables/useTaskInstance';
 import { TaskInstanceStatus } from '@dailyuse/contracts';
 import type { TaskInstance } from '@dailyuse/domain-client';
 
@@ -25,8 +24,8 @@ const props = withDefaults(defineProps<Props>(), {
     size: 'medium' as DashboardContracts.WidgetSize,
 });
 
-// ===== Stores =====
-const taskInstanceStore = useTaskInstanceStore();
+// ===== Composables =====
+const { taskInstances, completeTaskInstance } = useTaskInstance();
 
 // ===== State =====
 const isLoading = ref(true);
@@ -42,8 +41,8 @@ const todayTasks = computed(() => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // 防御性检查：确保 taskInstances 已初始化
-    const instances = taskInstanceStore.getAllTaskInstances;
+    // 使用 composable 提供的响应式数据
+    const instances = taskInstances.value;
     if (!instances || !Array.isArray(instances)) {
         return [];
     }
