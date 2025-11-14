@@ -1,4 +1,5 @@
 services:
+  # 开发数据库 - PostgreSQL 16
   postgres-dev:
     image: postgres:16-alpine
     container_name: dailyuse-dev-db
@@ -17,11 +18,38 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # 测试数据库 - PostgreSQL 15 (使用 tmpfs，速度更快)
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: dailyuse-test-db
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_DB: dailyuse_test
+    ports:
+      - '5433:5432'
+    tmpfs:
+      - /var/lib/postgresql/data:rw
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test_user -d dailyuse_test']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: 
+      - "postgres"
+      - "-c"
+      - "fsync=off"
+      - "-c"
+      - "synchronous_commit=off"
+      - "-c"
+      - "full_page_writes=off"
+
+  # Redis - 端口 6384
   redis-dev:
     image: redis:7-alpine
     container_name: dailyuse-dev-redis
     ports:
-      - '6379:6379'
+      - '6384:6379'
     volumes:
       - redis-dev-data:/data
     command: redis-server --appendonly yes --requirepass dailyuse123

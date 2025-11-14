@@ -10,7 +10,7 @@ case "$1" in
     echo "✅ Redis started successfully"
     echo "📊 Redis connection info:"
     echo "   Host: localhost"
-    echo "   Port: 6379"
+    echo "   Port: 6384"
     echo "   Password: dailyuse123"
     echo "   DB: 0"
     ;;
