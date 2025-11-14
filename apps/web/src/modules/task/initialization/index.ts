@@ -20,6 +20,13 @@ import { useTaskStore } from '../presentation/stores/taskStore';
 export function registerTaskInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
 
+  // 🎨 立即注册 Dashboard Widgets（不等待初始化阶段）
+  console.log('🎨 [Task] 注册 Task Widgets（立即执行）...');
+  import('../presentation/widgets/registerTaskWidgets').then(({ registerTaskWidgets }) => {
+    registerTaskWidgets();
+    console.log('✅ [Task] Task Widgets 注册完成');
+  });
+
   // Task 模块基础初始化任务
   const taskModuleInitTask: InitializationTask = {
     name: 'task-module',
@@ -34,11 +41,6 @@ export function registerTaskInitializationTasks(): void {
 
         // 只初始化 Task 模块
         await initializeTaskModule();
-        
-        // 🎨 注册 Dashboard Widgets
-        console.log('🎨 [Task] 注册 Task Widgets...');
-        const { registerTaskWidgets } = await import('../presentation/widgets/registerTaskWidgets');
-        registerTaskWidgets();
         
         console.log('✅ [Task] Task 模块初始化完成');
       } catch (error) {

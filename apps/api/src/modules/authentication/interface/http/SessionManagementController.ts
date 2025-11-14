@@ -78,31 +78,61 @@ export class SessionManagementController {
    * 刷新会话
    * @route POST /api/auth/sessions/refresh
    * @description 使用 refresh token 刷新 access token
+   * @description Refresh Token 从 httpOnly Cookie 中读取
    */
   static async refreshSession(req: Request, res: Response): Promise<Response> {
     try {
       logger.info('[SessionManagementController] Refresh session request received');
 
-      // ===== 步骤 1: 验证输入 =====
-      const validatedData = refreshSessionSchema.parse(req.body);
+      // ===== 步骤 1: 从 Cookie 或 Body 读取 Refresh Token =====
+      // 优先使用 Cookie（更安全），如果没有则从 Body 读取（向后兼容）
+      const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+      
+      if (!refreshToken) {
+        logger.warn('[SessionManagementController] No refresh token provided');
+        return SessionManagementController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Refresh token is required',
+          errors: [{
+            code: 'MISSING_REFRESH_TOKEN',
+            field: 'refreshToken',
+            message: 'Refresh token 缺失，请重新登录',
+          }],
+        });
+      }
+
+      logger.debug('[SessionManagementController] Refresh token source:', {
+        fromCookie: !!req.cookies?.refreshToken,
+        fromBody: !!req.body?.refreshToken,
+      });
 
       // ===== 步骤 2: 调用 ApplicationService =====
       const service = await SessionManagementController.getSessionService();
       const result = await service.refreshSession({
-        refreshToken: validatedData.refreshToken,
+        refreshToken,
       });
 
-      // ===== 步骤 3: 返回成功响应 =====
+      // ===== 步骤 3: 设置 httpOnly Cookie（Refresh Token）=====
+      res.cookie('refreshToken', result.session.refreshToken, {
+        httpOnly: true, // 防止 JavaScript 访问（防 XSS）
+        secure: process.env.NODE_ENV === 'production', // 生产环境仅 HTTPS
+        sameSite: 'strict', // 防 CSRF
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 天
+        path: '/',
+      });
+
       logger.info('[SessionManagementController] Session refreshed successfully', {
         sessionUuid: result.session.sessionUuid,
+        refreshTokenSetInCookie: true,
       });
 
+      // ===== 步骤 4: 返回成功响应（不包含 Refresh Token）=====
       return SessionManagementController.responseBuilder.sendSuccess(
         res,
         {
           sessionUuid: result.session.sessionUuid,
           accessToken: result.session.accessToken,
-          refreshToken: result.session.refreshToken,
+          // 🔥 Refresh Token 不再返回给前端，存储在 httpOnly Cookie 中
           expiresAt: result.session.expiresAt,
         },
         'Session refreshed successfully',
@@ -127,7 +157,51 @@ export class SessionManagementController {
       }
 
       if (error instanceof Error) {
-        // Refresh token 无效或过期
+        // 🔥 根据错误代码返回友好的错误信息
+        const errorCode = (error as any).code;
+        const statusCode = (error as any).statusCode || 500;
+        const userMessage = (error as any).userMessage;
+
+        // Refresh Token 过期
+        if (errorCode === 'REFRESH_TOKEN_EXPIRED') {
+          return SessionManagementController.responseBuilder.sendError(res, {
+            code: ResponseCode.UNAUTHORIZED,
+            message: userMessage || 'Refresh token 已过期，请重新登录',
+            errors: [{
+              code: 'REFRESH_TOKEN_EXPIRED',
+              field: 'refreshToken',
+              message: userMessage || '登录已过期（7天），请重新登录',
+            }],
+          });
+        }
+
+        // Session 被撤销
+        if (errorCode === 'SESSION_REVOKED') {
+          return SessionManagementController.responseBuilder.sendError(res, {
+            code: ResponseCode.UNAUTHORIZED,
+            message: userMessage || '会话已被撤销',
+            errors: [{
+              code: 'SESSION_REVOKED',
+              field: 'session',
+              message: userMessage || '会话已被撤销，请重新登录',
+            }],
+          });
+        }
+
+        // Session 无效
+        if (errorCode === 'SESSION_INVALID') {
+          return SessionManagementController.responseBuilder.sendError(res, {
+            code: ResponseCode.UNAUTHORIZED,
+            message: userMessage || '会话无效',
+            errors: [{
+              code: 'SESSION_INVALID',
+              field: 'session',
+              message: userMessage || '会话无效，请重新登录',
+            }],
+          });
+        }
+
+        // Refresh token 无效或过期（旧的检查，保持兼容）
         if (
           error.message.includes('Invalid refresh token') ||
           error.message.includes('expired') ||

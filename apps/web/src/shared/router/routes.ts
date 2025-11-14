@@ -6,6 +6,16 @@
 import type { RouteRecordRaw } from 'vue-router';
 import MainLayout from '@/modules/app/MainLayout.vue';
 
+// 导入各业务模块的路由（只是路由配置，不会加载组件代码）
+import { goalRoutes } from '@/modules/goal/presentation/router';
+import { taskRoutes } from '@/modules/task/presentation/router';
+import { reminderRoutes } from '@/modules/reminder/presentation/router';
+import { scheduleRoutes } from '@/modules/schedule/presentation/router';
+import { settingRoutes } from '@/modules/setting/presentation/router';
+import { accountRoutes } from '@/modules/account/presentation/router';
+import { notificationRoutes } from '@/modules/notification/presentation/router';
+import { repositoryRoutes } from '@/modules/repository/presentation/router';
+
 
 
 /**
@@ -68,23 +78,9 @@ export const appRoutes: RouteRecordRaw[] = [
       requiresAuth: true,
     },
     children: [
-      // 🏠 欢迎页（新的默认首页，轻量级，无业务模块依赖）
+      // 📊 仪表盘（默认首页）
       {
         path: '',
-        name: 'welcome',
-        component: () => import('@/views/WelcomeView.vue'),
-        meta: {
-          title: '首页',
-          showInNav: true,
-          icon: 'mdi-home',
-          order: 0,
-          requiresAuth: true,
-        },
-      },
-
-      // 📊 仪表盘（改为 /dashboard，懒加载）
-      {
-        path: 'dashboard',
         name: 'dashboard',
         component: () => import('@/modules/dashboard/presentation/views/DashboardView.vue'),
         meta: {
@@ -96,9 +92,32 @@ export const appRoutes: RouteRecordRaw[] = [
         },
       },
 
-      // 各模块路由将通过编程方式动态添加
+      // 业务模块路由（组件使用懒加载，不会在首屏打包）
       // ...
 
+      // 🎯 Goal 模块路由
+      ...goalRoutes,
+
+      // ✅ Task 模块路由
+      ...taskRoutes,
+
+      // 🔔 Reminder 模块路由
+      ...reminderRoutes,
+
+      // 📅 Schedule 模块路由
+      ...scheduleRoutes,
+
+      // 👤 Account 模块路由
+      ...accountRoutes,
+
+      // 🔔 Notification 模块路由
+      ...notificationRoutes,
+
+      // 📚 Repository 模块路由
+      ...repositoryRoutes,
+
+      // ⚙️ Setting 模块路由
+      ...settingRoutes,
 
       // Assets 资源演示 (开发环境)
       {

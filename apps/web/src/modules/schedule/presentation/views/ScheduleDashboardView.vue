@@ -312,11 +312,15 @@ onMounted(async () => {
 
 <style scoped>
 .schedule-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.05);
 }
 
 .main-content {
-  background-color: #f5f5f5;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--v-theme-surface), 1),
+    rgba(var(--v-theme-background), 1)
+  );
   overflow-y: auto;
 }
 

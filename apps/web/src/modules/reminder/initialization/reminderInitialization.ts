@@ -18,6 +18,13 @@ import { useReminderStore } from '../presentation/stores/reminderStore';
 export function registerReminderInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
 
+  // 🎨 立即注册 Dashboard Widgets（不等待初始化阶段）
+  console.log('🎨 [Reminder] 注册 Reminder Widgets（立即执行）...');
+  import('../presentation/widgets/registerReminderWidgets').then(({ registerReminderWidgets }) => {
+    registerReminderWidgets();
+    console.log('✅ [Reminder] Reminder Widgets 注册完成');
+  });
+
   // Reminder 模块基础初始化任务
   const reminderModuleInitTask: InitializationTask = {
     name: 'reminder-module',
@@ -29,11 +36,6 @@ export function registerReminderInitializationTasks(): void {
       try {
         // 延迟一小段时间，确保 Pinia 完全初始化
         await new Promise((resolve) => setTimeout(resolve, 100));
-
-        // 🎨 注册 Dashboard Widgets
-        console.log('🎨 [Reminder] 注册 Reminder Widgets...');
-        const { registerReminderWidgets } = await import('../presentation/widgets/registerReminderWidgets');
-        registerReminderWidgets();
        
         console.log('✅ [Reminder] Reminder 模块初始化完成');
       } catch (error) {

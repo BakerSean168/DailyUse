@@ -28,8 +28,6 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
  */
 class AuthManager {
   private static readonly TOKEN_KEY = 'access_token';
-  private static readonly REFRESH_TOKEN_KEY = 'refresh_token';
-  private static readonly REMEMBER_TOKEN_KEY = 'remember_token';
   private static readonly TOKEN_EXPIRY_KEY = 'token_expiry';
 
   /**
@@ -41,16 +39,12 @@ class AuthManager {
 
   /**
    * 获取刷新令牌
+   * @deprecated Refresh Token 现在存储在 httpOnly Cookie 中，前端无法访问
    */
   static getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
-  }
-
-  /**
-   * 获取记住我令牌
-   */
-  static getRememberToken(): string | null {
-    return localStorage.getItem(this.REMEMBER_TOKEN_KEY);
+    // Refresh Token 现在存储在 httpOnly Cookie 中，前端无法访问
+    // 保留此方法以保持向后兼容，但总是返回 null
+    return null;
   }
 
   /**
@@ -63,22 +57,23 @@ class AuthManager {
 
   /**
    * 设置令牌
+   * @param accessToken Access Token (存储在 localStorage)
+   * @param refreshToken 已废弃 - Refresh Token 现在存储在 httpOnly Cookie 中
+   * @param rememberToken 已废弃
+   * @param expiresIn Token 有效期（秒）
    */
   static setTokens(
     accessToken: string,
-    refreshToken?: string,
-    rememberToken?: string,
+    refreshToken?: string, // 保留参数以保持向后兼容，但不再使用
+    rememberToken?: string, // 保留参数以保持向后兼容，但不再使用
     expiresIn?: number,
   ): void {
     localStorage.setItem(this.TOKEN_KEY, accessToken);
     sessionStorage.setItem(this.TOKEN_KEY, accessToken);
 
-    if (refreshToken) {
-      localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
-    }
-    if (rememberToken) {
-      localStorage.setItem(this.REMEMBER_TOKEN_KEY, rememberToken);
-    }
+    // 🔥 不再存储 Refresh Token 到 localStorage
+    // Refresh Token 现在由后端通过 httpOnly Cookie 管理
+
     if (expiresIn) {
       const expiryTime = Date.now() + expiresIn * 1000;
       localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
@@ -103,10 +98,11 @@ class AuthManager {
    */
   static clearTokens(): void {
     localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.REMEMBER_TOKEN_KEY);
     localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
     sessionStorage.removeItem(this.TOKEN_KEY);
+    
+    // 🔥 清除 httpOnly Cookie 需要调用后端 API（logout）
+    // 前端无法直接删除 httpOnly Cookie
   }
 
   /**
@@ -192,12 +188,14 @@ export class InterceptorManager {
   private failedQueue: Array<{
     resolve: (value: any) => void;
     reject: (error: any) => void;
+    config: ExtendedAxiosRequestConfig;
   }> = [];
 
   constructor(instance: AxiosInstance, config: HttpClientConfig) {
     this.instance = instance;
     this.config = config;
     this.setupInterceptors();
+    this.setupEventListeners();
   }
 
   /**
@@ -206,6 +204,25 @@ export class InterceptorManager {
   private setupInterceptors(): void {
     this.setupRequestInterceptors();
     this.setupResponseInterceptors();
+  }
+
+  /**
+   * 设置事件监听器
+   */
+  private setupEventListeners(): void {
+    // 监听 token 刷新成功事件
+    window.addEventListener('auth:token-refreshed', ((event: CustomEvent) => {
+      const { accessToken } = event.detail;
+      LogManager.info('🔄 Token 刷新成功，重试队列中的请求', { queueSize: this.failedQueue.length });
+      this.processQueue(null, accessToken);
+    }) as EventListener);
+
+    // 监听 token 刷新失败事件
+    window.addEventListener('auth:token-refresh-failed', ((event: CustomEvent) => {
+      const error = event.detail?.error || new Error('Token refresh failed');
+      LogManager.error('❌ Token 刷新失败，清空请求队列', { queueSize: this.failedQueue.length });
+      this.processQueue(error, null);
+    }) as EventListener);
   }
 
   /**
@@ -370,41 +387,59 @@ export class InterceptorManager {
             return Promise.reject(this.transformError(error));
           }
 
+          // 标记为已重试
+          config._retry = true;
+
           if (this.isRefreshing) {
             // 如果正在刷新，将请求加入队列
+            LogManager.info('⏸️ Token 正在刷新中，请求加入队列', {
+              url: config.url,
+              queueSize: this.failedQueue.length + 1,
+            });
+            
             return new Promise((resolve, reject) => {
-              this.failedQueue.push({ resolve, reject });
+              this.failedQueue.push({ resolve, reject, config });
             }).then((token) => {
               if (config.headers) {
                 config.headers.Authorization = `Bearer ${token}`;
               }
+              LogManager.info('🔄 重试请求（从队列）', { url: config.url });
               return this.instance(config);
+            }).catch((err) => {
+              LogManager.error('❌ 队列中的请求失败', { url: config.url, error: err });
+              throw err;
             });
           }
 
-          config._retry = true;
+          // 开始刷新 token
           this.isRefreshing = true;
+          
+          LogManager.info('🔐 检测到 401 错误，暂停请求并请求刷新 Token', {
+            url: config.url,
+            queueSize: this.failedQueue.length,
+          });
 
-          try {
-            const newToken = await this.refreshAccessToken();
-            this.processQueue(null, newToken);
-
-            if (config.headers) {
-              config.headers.Authorization = `Bearer ${newToken}`;
+          // 🔥 发布 token 刷新请求事件（通过事件总线）
+          window.dispatchEvent(new CustomEvent('auth:token-refresh-requested', {
+            detail: { 
+              reason: '401 Unauthorized',
+              url: config.url 
             }
+          }));
+
+          // 将当前请求也加入队列，等待 token 刷新后重试
+          return new Promise((resolve, reject) => {
+            this.failedQueue.push({ resolve, reject, config });
+          }).then((token) => {
+            if (config.headers) {
+              config.headers.Authorization = `Bearer ${token}`;
+            }
+            LogManager.info('🔄 重试请求（原始请求）', { url: config.url });
             return this.instance(config);
-          } catch (refreshError) {
-            this.processQueue(refreshError, null);
-
-            // 立即处理未授权错误，跳转到登录页
-            await this.handleUnauthorized();
-
-            // 返回一个被拒绝的 Promise，但不抛出错误到控制台
-            // 因为我们已经处理了（跳转到登录页）
-            return Promise.reject(this.transformError(error));
-          } finally {
-            this.isRefreshing = false;
-          }
+          }).catch((err) => {
+            LogManager.error('❌ 原始请求重试失败', { url: config.url, error: err });
+            throw err;
+          });
         }
 
         // 处理其他错误状态
@@ -427,35 +462,34 @@ export class InterceptorManager {
 
   /**
    * 刷新访问令牌
+   * @description Refresh Token 从 httpOnly Cookie 自动发送，前端无需处理
    */
   private async refreshAccessToken(): Promise<string> {
-    const refreshToken = AuthManager.getRefreshToken();
-
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
-    }
-
     try {
-      // 使用原始 axios 实例避免拦截器循环
+      // 🔥 使用原始 axios 实例避免拦截器循环
+      // 🔥 Refresh Token 存储在 httpOnly Cookie 中，浏览器会自动发送
+      // 🔥 需要设置 withCredentials: true 以携带 Cookie
       const response = await this.instance.post(
-        '/auth/refresh',
-        {
-          refreshToken,
-        },
+        '/auth/sessions/refresh',
+        {}, // 🔥 Body 为空，Refresh Token 从 Cookie 读取
         {
           headers: {
             'X-Skip-Auth': 'true', // 标记为刷新请求，避免重复拦截
           },
+          withCredentials: true, // 🔥 携带 Cookie
         } as any,
       );
 
-      const { accessToken, refreshToken: newRefreshToken, expiresIn } = response.data;
+      const { accessToken, expiresIn } = response.data;
 
-      // 更新 AuthManager
+      // 🔥 更新 Access Token（Refresh Token 由后端自动更新到 Cookie）
       AuthManager.updateAccessToken(accessToken, expiresIn);
-      if (newRefreshToken) {
-        AuthManager.setTokens(accessToken, newRefreshToken, undefined, expiresIn);
-      }
+
+      // 🔔 触发 token 刷新事件，通知 SSE 客户端重连
+      console.log('[AuthManager] 🔔 Token 刷新成功，触发 auth:token-refreshed 事件');
+      window.dispatchEvent(new CustomEvent('auth:token-refreshed', {
+        detail: { accessToken, expiresIn }
+      }));
 
       return accessToken;
     } catch (error) {
@@ -468,15 +502,23 @@ export class InterceptorManager {
    * 处理队列中的请求
    */
   private processQueue(error: any, token: string | null): void {
-    this.failedQueue.forEach(({ resolve, reject }) => {
+    LogManager.info(`🔄 处理队列中的 ${this.failedQueue.length} 个请求`, {
+      hasError: !!error,
+      hasToken: !!token,
+    });
+
+    this.failedQueue.forEach(({ resolve, reject, config }) => {
       if (error) {
+        LogManager.error('❌ 拒绝队列中的请求', { url: config.url });
         reject(error);
       } else {
+        LogManager.info('✅ 解析队列中的请求', { url: config.url });
         resolve(token);
       }
     });
 
     this.failedQueue = [];
+    this.isRefreshing = false;
   }
 
   /**
@@ -516,11 +558,40 @@ export class InterceptorManager {
   /**
    * 处理未授权错误
    */
-  private async handleUnauthorized(): Promise<void> {
-    LogManager.warn('认证失败，清除令牌', AuthManager.getRefreshToken());
+  private async handleUnauthorized(error?: any): Promise<void> {
+    // 🔥 解析错误信息，显示友好提示
+    const errorCode = error?.response?.data?.errors?.[0]?.code;
+    const userMessage = error?.response?.data?.errors?.[0]?.message;
+    
+    let friendlyMessage = '认证失败，请重新登录';
+    let reason = 'session-expired';
+    
+    if (errorCode === 'REFRESH_TOKEN_EXPIRED') {
+      friendlyMessage = userMessage || '登录已过期（7天），请重新登录';
+      reason = 'refresh-token-expired';
+    } else if (errorCode === 'SESSION_REVOKED') {
+      friendlyMessage = userMessage || '会话已被撤销，请重新登录';
+      reason = 'session-revoked';
+    } else if (errorCode === 'SESSION_INVALID') {
+      friendlyMessage = userMessage || '会话无效，请重新登录';
+      reason = 'session-invalid';
+    }
+
+    LogManager.warn(friendlyMessage, AuthManager.getRefreshToken());
 
     // 清除令牌
     AuthManager.clearTokens();
+
+    // 🔔 触发友好的 Session 过期事件
+    window.dispatchEvent(
+      new CustomEvent('auth:session-expired', {
+        detail: { 
+          message: friendlyMessage,
+          reason: reason,
+          errorCode: errorCode
+        },
+      }),
+    );
 
     if (this.config.authFailHandler) {
       this.config.authFailHandler();

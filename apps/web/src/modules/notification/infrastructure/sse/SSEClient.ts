@@ -44,6 +44,9 @@ export class SSEClient {
         }
       });
     }
+
+    // 监听 token 刷新事件，token 刷新后自动重连
+    this.setupTokenRefreshListener();
   }
 
   /**
@@ -147,12 +150,31 @@ export class SSEClient {
       this.eventSource = null;
     }
 
-    // 获取认证 token
+    // 获取认证 token（确保是最新的）
     const token = AuthManager.getAccessToken();
     if (!token) {
       console.warn('[SSE Client] 缺少认证 token，无法建立 SSE 连接（等待用户登录）');
       // ✅ 不再自动重试，等待用户登录后主动调用 connect()
       return;
+    }
+
+    // 🔍 验证 token 是否过期
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp;
+      const now = Math.floor(Date.now() / 1000);
+      
+      if (exp && exp < now) {
+        console.warn('[SSE Client] ⚠️ Access token 已过期，需要刷新');
+        // Token 过期，等待自动刷新后再重连
+        this.scheduleTokenRefreshReconnect();
+        return;
+      }
+      
+      const timeUntilExpiry = exp ? exp - now : 0;
+      console.log(`[SSE Client] 🔑 Token 有效期剩余: ${timeUntilExpiry}秒`);
+    } catch (e) {
+      console.warn('[SSE Client] ⚠️ 无法解析 token，继续尝试连接');
     }
 
     this.isConnecting = true;
@@ -175,8 +197,7 @@ export class SSEClient {
     // 将 token 作为 URL 参数传递（因为 EventSource 不支持自定义请求头）
     const url = `${this.baseUrl}/api/v1/sse/notifications/events?token=${encodeURIComponent(token)}`;
 
-    console.log('[SSE Client] 🚀 正在建立连接到:', url);
-    console.log('[SSE Client] 📋 完整 URL（可复制测试）:', url);
+    console.log('[SSE Client] 🚀 正在建立连接到:', url.substring(0, url.indexOf('?token=') + 10) + '...');
     console.log('[SSE Client] 🔑 Token (前20字符):', token.substring(0, 20) + '...');
 
     try {
@@ -410,15 +431,50 @@ export class SSEClient {
     this.reconnectTimer = setTimeout(() => {
       if (!this.isDestroyed) {
         this.disconnect();
-        this.connect()
-          .then(() => {
-            console.log('[SSE Client] 重连尝试完成');
-          })
-          .catch((error) => {
-            console.error('[SSE Client] 重连失败:', error);
-          });
+        this.connectInBackground();
       }
     }, delay);
+  }
+
+  /**
+   * 在 token 刷新后重新连接
+   * @description 当检测到 token 过期时，放弃连接，等待 auth:token-refreshed 事件触发重连
+   */
+  private scheduleTokenRefreshReconnect(): void {
+    console.log('[SSE Client] 📝 Token 已过期，等待系统自动刷新后重连（监听 auth:token-refreshed 事件）');
+    
+    // 🔥 不再自动重试！等待 auth:token-refreshed 事件触发重连
+    // 清除现有连接
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+    
+    this.isConnecting = false;
+    
+    // 清除定时器
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.connectTimeout) {
+      clearTimeout(this.connectTimeout);
+      this.connectTimeout = null;
+    }
+  }
+
+  /**
+   * 监听 token 刷新事件
+   * @description 当 AuthManager 刷新 token 后，自动重连 SSE
+   */
+  private setupTokenRefreshListener(): void {
+    window.addEventListener('auth:token-refreshed', () => {
+      console.log('[SSE Client] 🔔 检测到 token 刷新事件，重新连接 SSE');
+      if (this.eventSource && !this.isDestroyed) {
+        // 强制重连
+        this.connect(true);
+      }
+    });
   }
 
   /**

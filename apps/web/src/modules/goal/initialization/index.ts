@@ -21,6 +21,13 @@ import { goalSyncApplicationService } from '../application/services/GoalSyncAppl
 export function registerGoalInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
 
+  // 🎨 立即注册 Dashboard Widgets（不等待初始化阶段）
+  console.log('🎨 [Goal] 注册 Goal Widgets（立即执行）...');
+  import('../presentation/widgets/registerGoalWidgets').then(({ registerGoalWidgets }) => {
+    registerGoalWidgets();
+    console.log('✅ [Goal] Goal Widgets 注册完成');
+  });
+
   // Goal 模块基础初始化任务
   const goalModuleInitTask: InitializationTask = {
     name: 'goal-module',
@@ -32,11 +39,6 @@ export function registerGoalInitializationTasks(): void {
       try {
         // 只初始化 Goal 模块
         await initializeGoalModule();
-        
-        // 🎨 注册 Dashboard Widgets
-        console.log('🎨 [Goal] 注册 Goal Widgets...');
-        const { registerGoalWidgets } = await import('../presentation/widgets/registerGoalWidgets');
-        registerGoalWidgets();
         
         console.log('✅ [Goal] Goal 模块初始化完成');
       } catch (error) {

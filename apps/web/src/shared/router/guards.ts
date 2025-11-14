@@ -118,10 +118,34 @@ export const authGuard = async (
     
     // 获取当前用户信息
     const currentAccount = accountStore.currentAccount;
+    console.log('[AuthGuard] Current account:', currentAccount);
+    
     if (currentAccount && currentAccount.uuid) {
-      console.log('🔐 [AuthGuard] 初始化用户会话...');
+      console.log('🔐 [AuthGuard] 初始化用户会话:', currentAccount.uuid);
       await AppInitializationManager.initializeUserSession(currentAccount.uuid);
       console.log('✅ [AuthGuard] 用户会话已初始化');
+    } else {
+      console.warn('⚠️ [AuthGuard] 无法获取当前用户信息，尝试从 token 获取');
+      
+      // 尝试从 token 解析用户信息
+      const accessToken = AuthManager.getAccessToken();
+      if (accessToken) {
+        try {
+          // 简单解析 JWT (不验证签名，只获取 payload)
+          const payload = JSON.parse(atob(accessToken.split('.')[1]));
+          const accountUuid = payload.sub || payload.accountUuid;
+          
+          if (accountUuid) {
+            console.log('🔐 [AuthGuard] 从 token 获取到用户ID，初始化用户会话:', accountUuid);
+            await AppInitializationManager.initializeUserSession(accountUuid);
+            console.log('✅ [AuthGuard] 用户会话已初始化');
+          } else {
+            console.error('❌ [AuthGuard] Token 中没有用户ID');
+          }
+        } catch (parseError) {
+          console.error('❌ [AuthGuard] 解析 token 失败:', parseError);
+        }
+      }
     }
   } catch (error) {
     console.error('❌ [AuthGuard] 用户会话初始化失败', error);

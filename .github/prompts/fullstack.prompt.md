@@ -529,6 +529,7 @@ export function registerDashboardWidgets(): void {
 - ✅ **必须通过 composables 获取数据**
 - ✅ **必须使用 Vuetify 组件和工具类**
 - ✅ **Widget 放置在正确的目录**（统计类 → dashboard，功能类 → feature）
+- 在组件中使用 vuetify 主题色，而非硬编码颜色值
 
 ## DDD 架构中各部分的职责与组织方式
 

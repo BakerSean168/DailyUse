@@ -142,21 +142,50 @@ export class SessionManagementApplicationService {
       // ===== 步骤 1: 查询会话 =====
       const session = await this.sessionRepository.findByRefreshToken(request.refreshToken);
       if (!session) {
-        throw new Error('Session not found or expired');
+        // 🔥 友好的错误信息：明确告诉前端是 Refresh Token 过期
+        const error = new Error('REFRESH_TOKEN_EXPIRED');
+        (error as any).code = 'REFRESH_TOKEN_EXPIRED';
+        (error as any).statusCode = 401;
+        (error as any).userMessage = '登录已过期，请重新登录';
+        throw error;
       }
 
       // ===== 步骤 2: 验证会话有效性 =====
       const isValid = this.authenticationDomainService.validateSession(session);
       if (!isValid) {
-        throw new Error('Session is invalid or expired');
+        // 检查是否被撤销
+        if (session.revokedAt) {
+          const error = new Error('SESSION_REVOKED');
+          (error as any).code = 'SESSION_REVOKED';
+          (error as any).statusCode = 401;
+          (error as any).userMessage = '会话已被撤销，请重新登录';
+          throw error;
+        }
+        
+        // 其他无效原因
+        const error = new Error('SESSION_INVALID');
+        (error as any).code = 'SESSION_INVALID';
+        (error as any).statusCode = 401;
+        (error as any).userMessage = '会话无效，请重新登录';
+        throw error;
       }
 
-      // ===== 步骤 3: 生成新的令牌（需要 accountUuid）=====
-      const { accessToken, refreshToken, expiresAt } = this.generateTokens(session.accountUuid);
+      // ===== 步骤 3: 生成新的 Access Token =====
+      const { accessToken, expiresAt } = this.generateTokens(session.accountUuid);
 
-      // ===== 步骤 4: 调用聚合根方法刷新会话 =====
-      session.refreshAccessToken(accessToken, 60); // 60 minutes
+      // ===== 步骤 4: Sliding Window - 每次刷新时都自动续期 Refresh Token =====
+      // 🔥 简化逻辑：直接调用聚合根方法，重新生成 Refresh Token
+      // 这样只要用户持续使用，Session 永远不会过期
       session.refreshRefreshToken();
+      const newRefreshToken = session.refreshToken.token;
+
+      logger.info('[SessionManagementApplicationService] 🔄 Tokens refreshed', {
+        sessionUuid: session.uuid,
+        newRefreshTokenExpiresAt: new Date(session.refreshToken.expiresAt).toISOString(),
+      });
+
+      // ===== 步骤 5: 更新 Access Token =====
+      session.refreshAccessToken(accessToken, 60); // 60 minutes
 
       // ===== 步骤 5: 持久化 =====
       await this.sessionRepository.save(session);
@@ -173,7 +202,7 @@ export class SessionManagementApplicationService {
         session: {
           sessionUuid: session.uuid,
           accessToken,
-          refreshToken,
+          refreshToken: newRefreshToken, // 返回可能续期的 Refresh Token
           expiresAt,
         },
         message: 'Session refreshed successfully',
@@ -181,6 +210,7 @@ export class SessionManagementApplicationService {
     } catch (error) {
       logger.error('[SessionManagementApplicationService] Session refresh failed', {
         error: error instanceof Error ? error.message : String(error),
+        code: (error as any).code,
       });
       throw error;
     }
@@ -386,8 +416,24 @@ export class SessionManagementApplicationService {
       },
     );
 
+    const refreshToken = this.generateRefreshToken(accountUuid, refreshTokenExpiresIn);
+
+    return {
+      accessToken,
+      refreshToken,
+      expiresAt,
+    };
+  }
+
+  /**
+   * 🔥 生成 Refresh Token（独立方法，支持自定义有效期）
+   */
+  private generateRefreshToken(accountUuid: string, expiresIn: number = 7 * 24 * 3600): string {
+    const secret = process.env.JWT_SECRET || 'default-secret';
+    const now = Math.floor(Date.now() / 1000);
+
     // Generate JWT refresh token (longer expiry, different payload)
-    const refreshToken = jwt.sign(
+    return jwt.sign(
       {
         accountUuid,
         type: 'refresh',
@@ -401,11 +447,9 @@ export class SessionManagementApplicationService {
       secret,
       {
         algorithm: 'HS256',
-        expiresIn: refreshTokenExpiresIn,
+        expiresIn: expiresIn,
       },
     );
-
-    return { accessToken, refreshToken, expiresAt };
   }
 
   /**

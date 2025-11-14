@@ -27,8 +27,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, defineAsyncComponent, shallowRef } from 'vue';
+import { onMounted, onUnmounted, ref, computed, defineAsyncComponent, shallowRef } from 'vue';
 import { useSettingStore } from '@/modules/setting/presentation/stores/settingStore';
+import { useSnackbarStore } from '@/shared/stores/snackbarStore';
 import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
 import InAppNotification from '@/modules/notification/presentation/components/InAppNotification.vue';
 import { logo128 as logo } from '@dailyuse/assets';
@@ -37,6 +38,7 @@ import { getThemeService } from '@/modules/setting/application/services/ThemeSer
 const isLoading = ref(true);
 const showCommandPalette = ref(false);
 const settingStore = useSettingStore();
+const snackbarStore = useSnackbarStore();
 
 // 懒加载命令面板组件和搜索数据
 const CommandPalette = shallowRef<any>(null);
@@ -44,8 +46,30 @@ const goals = ref<any[]>([]);
 const tasks = ref<any[]>([]);
 const reminders = ref<any[]>([]);
 
+// 🔔 监听 Session 过期事件，显示友好提示
+const handleSessionExpired = (event: CustomEvent) => {
+  const { message, reason, errorCode } = event.detail;
+  console.log('🚨 [App] Session 过期事件:', { message, reason, errorCode });
+  
+  // 显示友好的错误提示
+  snackbarStore.show({
+    message: message || '登录已过期，请重新登录',
+    type: 'warning',
+    timeout: 5000,
+    action: {
+      text: '立即登录',
+      handler: () => {
+        window.location.href = '/auth/login';
+      },
+    },
+  });
+};
+
 // 监听快捷键，按需加载命令面板
 if (typeof window !== 'undefined') {
+  // Session 过期监听器
+  window.addEventListener('auth:session-expired', handleSessionExpired as EventListener);
+
   window.addEventListener('keydown', async (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
@@ -90,6 +114,13 @@ onMounted(async () => {
   } catch (error) {
     console.error('应用基础初始化失败:', error);
     isLoading.value = false;
+  }
+});
+
+onUnmounted(() => {
+  // 清理事件监听器
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('auth:session-expired', handleSessionExpired as EventListener);
   }
 });
 </script>

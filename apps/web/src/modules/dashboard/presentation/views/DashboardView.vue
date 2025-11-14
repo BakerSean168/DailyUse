@@ -12,57 +12,54 @@
   - 错误处理
 -->
 <template>
-  <div class="dashboard-page min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
+  <div class="dashboard-page">
     <!-- Widget 设置面板 -->
     <WidgetSettingsPanel v-model:isOpen="isSettingsPanelOpen" @saved="handleSettingsSaved" />
 
     <!-- 页面标题与操作栏 -->
-    <header class="dashboard-header mb-6 flex items-center justify-between">
+    <header class="dashboard-header">
       <div class="flex items-center gap-3">
-        <div class="i-heroicons-squares-2x2 w-8 h-8 text-primary-600 dark:text-primary-400" />
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">仪表盘</h1>
+        <v-icon icon="mdi-view-dashboard" size="32" color="primary" />
+        <h1 class="text-h4">仪表盘</h1>
       </div>
 
       <!-- 操作按钮 -->
       <div class="flex items-center gap-2">
-        <button v-if="!isLoading && !hasError"
-          class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
-          @click="refreshWidgets" :disabled="isRefreshing">
-          <div class="i-heroicons-arrow-path w-4 h-4" :class="{ 'animate-spin': isRefreshing }" />
-          <span class="hidden sm:inline">刷新</span>
-        </button>
+        <v-btn
+          v-if="!isLoading && !hasError"
+          variant="text"
+          @click="refreshWidgets"
+          :disabled="isRefreshing"
+        >
+          <v-icon :class="{ 'rotate-animation': isRefreshing }">mdi-refresh</v-icon>
+          <span class="ml-2 hidden sm:inline">刷新</span>
+        </v-btn>
 
-        <button
-          class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors flex items-center gap-2"
-          @click="openSettings">
-          <div class="i-heroicons-cog-6-tooth w-4 h-4" />
-          <span class="hidden sm:inline">设置</span>
-        </button>
+        <v-btn color="primary" @click="openSettings">
+          <v-icon>mdi-cog</v-icon>
+          <span class="ml-2 hidden sm:inline">设置</span>
+        </v-btn>
       </div>
     </header>
 
     <!-- 加载状态 -->
     <div v-if="isLoading" class="loading-skeleton">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <div v-for="i in 4" :key="i"
-          class="skeleton-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
-          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4" />
-          <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
-          <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
-          <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
-        </div>
+        <v-skeleton-loader
+          v-for="i in 4"
+          :key="i"
+          type="card"
+          class="skeleton-card"
+        />
       </div>
     </div>
 
     <!-- 错误状态 -->
-    <div v-else-if="hasError" class="error-state bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
-      <div class="i-heroicons-exclamation-triangle w-16 h-16 mx-auto mb-4 text-red-500" />
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">加载失败</h2>
-      <p class="text-gray-600 dark:text-gray-400 mb-6">{{ errorMessage }}</p>
-      <button class="px-6 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
-        @click="retryLoad">
-        重试
-      </button>
+    <div v-else-if="hasError" class="error-state">
+      <v-icon size="64" color="error">mdi-alert-circle</v-icon>
+      <h2 class="text-h5 mt-4 mb-2">加载失败</h2>
+      <p class="text-body-1 text-medium-emphasis mb-6">{{ errorMessage }}</p>
+      <v-btn color="primary" @click="retryLoad">重试</v-btn>
     </div>
 
     <!-- Widget 网格布局 -->
@@ -78,14 +75,11 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-else class="empty-state bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center">
-      <div class="i-heroicons-squares-plus w-16 h-16 mx-auto mb-4 text-gray-400" />
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">暂无 Widget</h2>
-      <p class="text-gray-600 dark:text-gray-400 mb-6">点击右上角设置按钮添加 Widget</p>
-      <button class="px-6 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
-        @click="openSettings">
-        打开设置
-      </button>
+    <div v-else class="empty-state">
+      <v-icon size="64" color="grey-lighten-1">mdi-view-dashboard-outline</v-icon>
+      <h2 class="text-h5 mt-4 mb-2">暂无 Widget</h2>
+      <p class="text-body-1 text-medium-emphasis mb-6">点击右上角设置按钮添加 Widget</p>
+      <v-btn color="primary" @click="openSettings">打开设置</v-btn>
     </div>
   </div>
 </template>
@@ -139,6 +133,24 @@ const getWidgetSizeClasses = (size: DashboardContracts.WidgetSize): string => {
 };
 
 /**
+ * 等待 Widget 注册完成
+ */
+const waitForWidgetRegistration = async (maxWaitTime = 3000): Promise<void> => {
+  const startTime = Date.now();
+  const checkInterval = 100;
+
+  while (widgetRegistry.count === 0) {
+    if (Date.now() - startTime > maxWaitTime) {
+      console.warn('[Dashboard] Widget registration timeout, continuing anyway');
+      break;
+    }
+    await new Promise(resolve => setTimeout(resolve, checkInterval));
+  }
+
+  console.log(`[Dashboard] Widget registration check completed: ${widgetRegistry.count} widgets found`);
+};
+
+/**
  * 初始化加载
  */
 const loadDashboard = async () => {
@@ -149,19 +161,17 @@ const loadDashboard = async () => {
     hasError.value = false;
     errorMessage.value = '';
 
-    // ✅ Widget 已经由各业务模块在初始化时注册，这里只需要检查即可
-    console.log('[Dashboard] Checking registered widgets...');
-    performance.mark('widget-check-start');
+    // ✅ 等待业务模块初始化并注册 widgets
+    console.log('[Dashboard] Waiting for widget registration...');
+    performance.mark('widget-wait-start');
+    
+    await waitForWidgetRegistration();
+    
+    performance.mark('widget-wait-end');
+    performance.measure('widget-wait', 'widget-wait-start', 'widget-wait-end');
     
     const widgetCount = widgetRegistry.count;
-    if (widgetCount === 0) {
-      console.warn('[Dashboard] No widgets registered yet. Widgets will be registered when modules are loaded.');
-    } else {
-      console.log(`[Dashboard] ${widgetCount} widget(s) already registered by modules`);
-    }
-    
-    performance.mark('widget-check-end');
-    performance.measure('widget-check', 'widget-check-start', 'widget-check-end');
+    console.log(`[Dashboard] ${widgetCount} widget(s) registered by modules`);
 
     // 如果已经初始化过，直接使用缓存的配置
     if (configStore.initialized) {
@@ -215,10 +225,6 @@ const loadDashboard = async () => {
     isLoading.value = false;
   }
 };
-
-/**
- * 刷新 Widgets
- */
 const refreshWidgets = async () => {
   try {
     isRefreshing.value = true;
@@ -263,6 +269,53 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.dashboard-page {
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--v-theme-surface), 1),
+    rgba(var(--v-theme-background), 1)
+  );
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .dashboard-page {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-page {
+    padding: 2rem;
+  }
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.error-state,
+.empty-state {
+  background: rgb(var(--v-theme-surface));
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(var(--v-theme-on-surface), 0.12);
+  padding: 3rem;
+  text-align: center;
+}
+
+.skeleton-card {
+  background: rgb(var(--v-theme-surface));
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(var(--v-theme-on-surface), 0.12);
+  padding: 1.5rem;
+}
+
 /* Widget 网格容器 */
 .widget-grid-container {
   display: grid;
@@ -319,25 +372,12 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-/* 加载骨架屏动画 */
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
 /* 旋转动画 */
-@keyframes spin {
+.rotate-animation {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
   from {
     transform: rotate(0deg);
   }
@@ -345,9 +385,5 @@ onMounted(() => {
   to {
     transform: rotate(360deg);
   }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
 }
 </style>

@@ -194,10 +194,11 @@ export const useAuthenticationStore = defineStore('authentication', {
     }) {
       this.account = loginResponse.user;
 
-      // 将 token 存储到 AuthManager
+      // 🔥 将 token 存储到 AuthManager
+      // 注意：refreshToken 现在存储在 httpOnly Cookie 中，后端不再返回
       AuthManager.setTokens(
         loginResponse.accessToken,
-        loginResponse.refreshToken,
+        undefined, // refreshToken 不再从响应中获取
         undefined,
         loginResponse.expiresIn,
       );

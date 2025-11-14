@@ -141,16 +141,26 @@ export class AuthenticationController {
         location: validatedData.location,
       });
 
-      // ===== 步骤 3: 返回成功响应 =====
-      logger.info('[AuthenticationController] Login successful', {
-        accountUuid: result.account.uuid,
+      // ===== 步骤 3: 设置 httpOnly Cookie（Refresh Token）=====
+      res.cookie('refreshToken', result.session.refreshToken, {
+        httpOnly: true, // 防止 JavaScript 访问（防 XSS）
+        secure: process.env.NODE_ENV === 'production', // 生产环境仅 HTTPS
+        sameSite: 'strict', // 防 CSRF
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 天
+        path: '/',
       });
 
+      logger.info('[AuthenticationController] Login successful', {
+        accountUuid: result.account.uuid,
+        refreshTokenSetInCookie: true,
+      });
+
+      // ===== 步骤 4: 返回成功响应（不包含 Refresh Token）=====
       return AuthenticationController.responseBuilder.sendSuccess(
         res,
         {
           accessToken: result.session.accessToken,
-          refreshToken: result.session.refreshToken,
+          // 🔥 Refresh Token 不再返回给前端，存储在 httpOnly Cookie 中
           expiresAt: result.session.expiresAt,
           user: result.account,
         },
