@@ -120,6 +120,16 @@ export function registerAuthenticationInitializationTasks(): void {
     initialize: async (context?: { accountUuid: string }) => {
       if (context?.accountUuid) {
         console.log(`👤 [AuthModule] 启动用户会话: ${context.accountUuid}`);
+        
+        // 加载完整的语言包（包含所有业务模块的翻译）
+        try {
+          const { loadFullLanguageMessages } = await import('@/shared/i18n');
+          const currentLocale = localStorage.getItem('locale') as 'zh-CN' | 'en-US' || 'zh-CN';
+          await loadFullLanguageMessages(currentLocale);
+        } catch (error) {
+          console.warn('⚠️ [AuthModule] 加载完整语言包失败:', error);
+        }
+        
         // 启动用户会话相关的服务
         // 例如：心跳检测、会话保活等
       }
