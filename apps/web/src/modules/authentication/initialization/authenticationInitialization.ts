@@ -140,7 +140,48 @@ export function registerAuthenticationInitializationTasks(): void {
     },
   };
 
-  // 4. Token 刷新服务任务
+  // 4. Token 刷新事件处理器注册任务
+  const registerEventHandlersTask: InitializationTask = {
+    name: 'authentication:event-handlers',
+    phase: InitializationPhase.APP_STARTUP,
+    priority: 15,
+    initialize: async () => {
+      console.log('🎯 [AuthModule] 注册事件处理器');
+      
+      // 动态导入事件处理器
+      const { TokenRefreshRequestedHandler } = await import(
+        '../application/event-handlers/TokenRefreshRequestedHandler'
+      );
+      
+      // 获取处理器单例
+      const handler = TokenRefreshRequestedHandler.getInstance();
+      
+      // 注册 token 刷新请求事件监听器
+      const eventListener = ((event: CustomEvent) => {
+        handler.handle(event).catch((error) => {
+          console.error('❌ [AuthModule] Token refresh handler error:', error);
+        });
+      }) as EventListener;
+      
+      window.addEventListener('auth:token-refresh-requested', eventListener);
+      
+      // 存储监听器引用以便清理
+      (registerEventHandlersTask as any)._eventListener = eventListener;
+      
+      console.log('✅ [AuthModule] 事件处理器已注册');
+    },
+    cleanup: async () => {
+      console.log('🧹 [AuthModule] 移除事件处理器');
+      
+      // 移除事件监听器
+      const eventListener = (registerEventHandlersTask as any)._eventListener;
+      if (eventListener) {
+        window.removeEventListener('auth:token-refresh-requested', eventListener);
+      }
+    },
+  };
+
+  // 5. Token 刷新服务任务（已废弃，保留以兼容）
   const tokenRefreshServiceTask: InitializationTask = {
     name: 'token-refresh-service',
     phase: InitializationPhase.USER_LOGIN,
@@ -159,6 +200,7 @@ export function registerAuthenticationInitializationTasks(): void {
   // 注册所有任务
   manager.registerTask(authConfigInitTask);
   manager.registerTask(authStateRestoreTask);
+  manager.registerTask(registerEventHandlersTask); // 事件处理器注册（新增）
   manager.registerTask(userSessionStartTask);
   manager.registerTask(tokenRefreshServiceTask);
 

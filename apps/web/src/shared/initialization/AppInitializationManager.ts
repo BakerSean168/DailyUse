@@ -50,27 +50,11 @@ function registerInfrastructureInitializationTasks(): void {
     },
   };
 
-  // Token 刷新处理器初始化任务
-  const tokenRefreshHandlerInitTask: InitializationTask = {
-    name: 'token-refresh-handler',
-    phase: InitializationPhase.APP_STARTUP,
-    priority: 15,
-    initialize: async () => {
-      // 动态导入 Token 刷新处理器，避免打包时加载
-      const { initializeTokenRefreshHandler } = await import(
-        '@/modules/authentication/infrastructure/tokenRefreshHandler'
-      );
-      initializeTokenRefreshHandler();
-      console.log('✅ [Infrastructure] Token 刷新处理器已初始化');
-    },
-    cleanup: async () => {
-      console.log('🧹 [Infrastructure] Token 刷新处理器已清理');
-    },
-  };
+  // Token 刷新处理器初始化任务已移至 authentication 模块的 initialization 中
+  // 参考: apps/web/src/modules/authentication/initialization/authenticationInitialization.ts
 
   manager.registerTask(eventSystemInitTask);
   manager.registerTask(apiClientInitTask);
-  manager.registerTask(tokenRefreshHandlerInitTask);
 
   console.log('📝 [Infrastructure] 基础设施初始化任务已注册');
 }
