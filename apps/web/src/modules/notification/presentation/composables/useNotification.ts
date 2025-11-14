@@ -5,7 +5,7 @@
 
 // @ts-nocheck - Some types not yet defined, needs refactoring
 import { ref, computed } from 'vue';
-import { notificationApiClient } from '../api/NotificationApiClient';
+import { notificationApiClient } from '../../infrastructure/api/notificationApiClient';
 import type { NotificationContracts } from '@dailyuse/contracts';
 import { useWebSocket } from './useWebSocket';
 

@@ -3,9 +3,21 @@
  * @description 统一导出notification模块的所有公共接口
  */
 
+// ===== Application Layer =====
 // 核心服务
 export { NotificationService } from './application/services/NotificationService';
+export { InAppNotificationService } from './application/services/InAppNotificationService';
 export { NotificationInitializationManager } from './application/initialization/NotificationInitializationManager';
+
+// 事件相关
+export {
+  NOTIFICATION_EVENTS,
+  SCHEDULE_EVENTS,
+  publishReminderTriggered,
+  onReminderTriggered,
+  onScheduleReminderTriggered,
+} from './application/events/notificationEvents';
+export { NotificationEventHandlers } from './application/events/NotificationEventHandlers';
 
 // 类型定义
 export {
@@ -30,29 +42,23 @@ export type {
   INotificationService,
 } from './application/types';
 
-// 事件相关
-export {
-  NOTIFICATION_EVENTS,
-  SCHEDULE_EVENTS,
-  publishReminderTriggered,
-  onReminderTriggered,
-  onScheduleReminderTriggered,
-} from './application/events/notificationEvents';
-
-export { NotificationEventHandlers } from './application/events/NotificationEventHandlers';
-
-// 基础设施服务
+// ===== Infrastructure Layer =====
 export { DesktopNotificationService } from './infrastructure/services/DesktopNotificationService';
 export { AudioNotificationService } from './infrastructure/services/AudioNotificationService';
 export { NotificationConfigStorage } from './infrastructure/storage/NotificationConfigStorage';
 export { NotificationPermissionService } from './infrastructure/browser/NotificationPermissionService';
-export { InAppNotificationService } from './application/services/InAppNotificationService';
+export { notificationApiClient } from './infrastructure/api/notificationApiClient';
 
+// ===== Presentation Layer =====
 // UI 组件
 export { default as InAppNotification } from './presentation/components/InAppNotification.vue';
 export { default as NotificationPermissionWarning } from './presentation/components/NotificationPermissionWarning.vue';
 
-// 初始化相关
+// Composables
+export { useNotification } from './presentation/composables/useNotification';
+export { useReminderStatistics } from './presentation/composables/useReminderStatistics';
+
+// ===== Initialization =====
 export { registerNotificationInitializationTasks } from './initialization/notificationInitialization';
 
 // 便捷方法

@@ -31,7 +31,7 @@ if (import.meta.env.DEV) {
   import('./shared/examples/eventSystemExample');
   import('./shared/debug/eventDebug');
   import('./modules/theme/debug/themeDebug');
-  import('./modules/notification/utils/sseDebug'); // SSE 调试工具
+  import('./modules/notification/infrastructure/sse/sseDebug'); // SSE 调试工具
 }
 
 async function startApp() {

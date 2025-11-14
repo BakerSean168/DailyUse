@@ -4,7 +4,7 @@
  */
 import { computed } from 'vue';
 import type { DashboardContracts } from '@dailyuse/contracts';
-import { useReminderStatistics } from '@/modules/notification/composables/useReminderStatistics';
+import { useReminderStatistics } from '@/modules/notification/presentation/composables/useReminderStatistics';
 
 interface Props {
   size?: DashboardContracts.WidgetSize;

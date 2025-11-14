@@ -8,7 +8,7 @@ export const notificationRoutes: RouteRecordRaw[] = [
   {
     path: '/notifications',
     name: 'notifications',
-    component: () => import('../../pages/NotificationListPage.vue'),
+    component: () => import('../views/NotificationListPage.vue'),
     meta: {
       title: '通知中心',
       showInNav: true,
@@ -20,7 +20,7 @@ export const notificationRoutes: RouteRecordRaw[] = [
   {
     path: '/sse-monitor',
     name: 'sse-monitor',
-    component: () => import('../../pages/SSEMonitorPage.vue'),
+    component: () => import('../views/SSEMonitorPage.vue'),
     meta: {
       title: 'SSE 监控',
       showInNav: import.meta.env.DEV, // 仅开发环境显示
