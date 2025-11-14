@@ -116,7 +116,18 @@ api.use((req, res, next) => {
     path: req.path,
     url: req.url,
     baseUrl: req.baseUrl,
+    fullUrl: req.originalUrl,
   });
+  
+  // 检查是否匹配 SSE 路由
+  if (req.path.startsWith('/sse')) {
+    console.log('✅ [API Router] SSE 路由匹配检查:', {
+      shouldMatch: true,
+      path: req.path,
+      registered: '/sse',
+    });
+  }
+  
   next();
 });
 
@@ -177,9 +188,10 @@ api.use('/editor', authMiddleware, editorRouter);
 // 挂载仓储路由 - 需要认证
 api.use('/repositories', authMiddleware, repositoryRouter);
 // Epic 10 Story 10-2: Resource CRUD + Markdown 编辑
-api.use('', resourceRouter);
-// Folder 管理路由
-api.use('', folderRouter);
+// 注意：resourceRouter 和 folderRouter 使用空路径，会匹配所有请求
+// 必须移到文件末尾，避免拦截其他路由（如 /sse）
+// api.use('', resourceRouter); // ← 已移到文件末尾
+// api.use('', folderRouter);   // ← 已移到文件末尾
 
 /**
  * repository-new 仓储模块 (Epic 7 重构版本 - MVP)
@@ -227,7 +239,32 @@ api.use('/ai', aiGenerationRouter); // authMiddleware 在路由文件内部应�
 // 挂载通知 SSE 路由 - 使用独立路径避免被 /notifications 路由拦截
 // token 通过 URL 参数传递，路由内部自行验证
 console.log('🚀 [App Init] 注册 SSE 路由到 /sse');
+console.log('🚀 [App Init] SSE Router 类型:', typeof notificationSSERouter);
+console.log('🚀 [App Init] SSE Router 是否为函数:', typeof notificationSSERouter === 'function');
+
+// 在 SSE 路由之前添加调试中间件
+api.use('/sse', (req, res, next) => {
+  console.log('🔥 [SSE 路由前置] 请求进入 /sse 路径!', {
+    method: req.method,
+    path: req.path,
+    url: req.url,
+    baseUrl: req.baseUrl,
+    originalUrl: req.originalUrl,
+  });
+  next();
+});
+
 api.use('/sse', notificationSSERouter);
+
+// 在 SSE 路由之后添加调试中间件（用于捕获未匹配的请求）
+api.use('/sse', (req, res, next) => {
+  console.log('⚠️ [SSE 路由后置] 请求未被 SSE Router 处理!', {
+    method: req.method,
+    path: req.path,
+  });
+  // 返回 401 是为了测试
+  res.status(401).json({ error: 'SSE 路由未匹配' });
+});
 
 // 挂载通知管理路由 - 需要认证
 console.log('🚀 [App Init] 注册通知路由到 /notifications');
@@ -247,6 +284,13 @@ api.use('', focusSessionRouter);
 // 注意：这些路由使用空路径''，会匹配所有路径，放在最后避免拦截其他路由
 api.use('', repositoryNewRouter);
 api.use('', resourceNewRouter);
+
+/**
+ * Epic 10 Story 10-2: Resource CRUD + Markdown 编辑
+ * 注意：这些路由使用空路径''，会匹配所有路径，必须放在最后！
+ */
+api.use('', resourceRouter);
+api.use('', folderRouter);
 
 // 注意：所有模块的初始化都通过 shared/initialization/initializer.ts 统一管理
 // NotificationApplicationService, UserPreferencesApplicationService, ThemeApplicationService

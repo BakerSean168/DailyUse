@@ -14,6 +14,7 @@ import type { DashboardContracts } from '@dailyuse/contracts';
 import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
 const useTaskInstanceStore = useTaskStore; // 别名兼容
 import { TaskInstanceStatus } from '@dailyuse/contracts';
+import type { TaskInstance } from '@dailyuse/domain-client';
 
 // ===== Props =====
 interface Props {
@@ -41,8 +42,14 @@ const todayTasks = computed(() => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    return taskInstanceStore.allInstances
-        .filter(task => {
+    // 防御性检查：确保 taskInstances 已初始化
+    const instances = taskInstanceStore.getAllTaskInstances;
+    if (!instances || !Array.isArray(instances)) {
+        return [];
+    }
+
+    return instances
+        .filter((task: TaskInstance) => {
             if (task.status === TaskInstanceStatus.COMPLETED) return false;
 
             // 检查是否有今天的 scheduledTime
@@ -60,7 +67,7 @@ const todayTasks = computed(() => {
             return false;
         })
         .slice(0, props.size === 'small' ? 3 : props.size === 'medium' ? 5 : 10)
-        .sort((a, b) => {
+        .sort((a: TaskInstance, b: TaskInstance) => {
             // 按优先级和时间排序
             const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
             const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 3;
@@ -81,9 +88,9 @@ const todayTasks = computed(() => {
  */
 const taskStats = computed(() => ({
     total: todayTasks.value.length,
-    highPriority: todayTasks.value.filter(t => t.priority === 'HIGH').length,
-    mediumPriority: todayTasks.value.filter(t => t.priority === 'MEDIUM').length,
-    lowPriority: todayTasks.value.filter(t => t.priority === 'LOW').length,
+    highPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'HIGH').length,
+    mediumPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'MEDIUM').length,
+    lowPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'LOW').length,
 }));
 
 /**

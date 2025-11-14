@@ -199,6 +199,16 @@ export class SSEClient {
 
     console.log('[SSE Client] 🚀 正在建立连接到:', url.substring(0, url.indexOf('?token=') + 10) + '...');
     console.log('[SSE Client] 🔑 Token (前20字符):', token.substring(0, 20) + '...');
+    console.log('[SSE Client] 🔑 Token (完整):', token); // 临时：显示完整 token 用于调试
+    console.log('[SSE Client] 📍 当前时间戳:', Math.floor(Date.now() / 1000), '秒');
+    
+    // 尝试解析并显示 token 详情
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log('[SSE Client] 🔍 Token 载荷:', JSON.stringify(payload, null, 2));
+    } catch (e) {
+      console.warn('[SSE Client] ⚠️ 无法解析 token 载荷');
+    }
 
     try {
       this.eventSource = new EventSource(url);

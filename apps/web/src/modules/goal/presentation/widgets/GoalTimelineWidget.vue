@@ -36,7 +36,13 @@ const isLoading = ref(true);
 const activeGoals = computed(() => {
     const today = new Date();
 
-    return goalStore.allGoals
+    // 防御性检查：确保 allGoals 已初始化
+    const goals = goalStore.allGoals;
+    if (!goals || !Array.isArray(goals)) {
+        return [];
+    }
+
+    return goals
         .filter(goal => {
             if (goal.status !== GoalStatus.IN_PROGRESS) return false;
             return goal.startDate && goal.targetDate;
