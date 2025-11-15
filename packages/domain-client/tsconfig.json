@@ -19,12 +19,8 @@
     // 生成输出文件
     "noEmit": false,
 
-    // ============================================================
-    // Composite 项目配置（Monorepo 库的核心）
-    // ============================================================
-
-    // 启用项目引用模式（支持类型热更新）
-    "composite": true,
+    // 禁用增量编译（与 tsup 的 DTS 生成冲突）
+    "incremental": false,
 
     // 生成类型声明文件
     "declaration": true,
@@ -67,12 +63,5 @@
   "include": ["src/**/*"],
 
   // 排除的文件
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-
-  // ============================================================
-  // 项目引用配置（依赖的包）
-  // ============================================================
-
-  // Domain Client 依赖的包（启用 composite 后恢复 references）
-  "references": [{ "path": "../contracts" }, { "path": "../utils" }]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

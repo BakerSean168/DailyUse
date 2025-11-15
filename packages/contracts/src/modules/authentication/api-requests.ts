@@ -34,14 +34,14 @@ export interface LoginRequestDTO {
 export interface LoginResponseDTO {
   /** 访问令牌 */
   accessToken: string;
-  /** 刷新令牌 */
-  refreshToken: string;
+  /** 刷新令牌（已废弃 - 现在存储在 httpOnly Cookie 中，不再返回给前端） */
+  refreshToken?: string;
   /** 访问令牌过期时间戳 (ms) */
   accessTokenExpiresAt: number;
-  /** 刷新令牌过期时间戳 (ms) */
-  refreshTokenExpiresAt: number;
+  /** 刷新令牌过期时间戳 (ms)（已废弃 - Refresh Token 现在存储在 Cookie 中） */
+  refreshTokenExpiresAt?: number;
   /** 会话 ID */
-  sessionId: string;
+  sessionId?: string;
   /** 是否需要两步验证 */
   requiresTwoFactor?: boolean;
 }
@@ -83,12 +83,12 @@ export interface RefreshTokenRequestDTO {
 export interface RefreshTokenResponseDTO {
   /** 新访问令牌 */
   accessToken: string;
-  /** 新刷新令牌 */
-  refreshToken: string;
+  /** 新刷新令牌（已废弃 - 现在通过 httpOnly Cookie 自动更新） */
+  refreshToken?: string;
   /** 访问令牌过期时间戳 (ms) */
   accessTokenExpiresAt: number;
-  /** 刷新令牌过期时间戳 (ms) */
-  refreshTokenExpiresAt: number;
+  /** 刷新令牌过期时间戳 (ms)（已废弃 - Refresh Token 现在存储在 Cookie 中） */
+  refreshTokenExpiresAt?: number;
 }
 
 /**

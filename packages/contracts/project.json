@@ -14,11 +14,11 @@
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/contracts/dist"],
-      "dependsOn": ["typecheck"],
       "options": {
         "command": "pnpm build",
         "cwd": "packages/contracts"
-      }
+      },
+      "cache": true
     },
     "dev": {
       "executor": "nx:run-commands",

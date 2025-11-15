@@ -101,6 +101,16 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
     const persistence = template.toPersistenceDTO();
 
     await this.prisma.$transaction(async (tx) => {
+      // 验证账户是否存在（防止外键约束错误）
+      const accountExists = await tx.account.findUnique({
+        where: { uuid: persistence.accountUuid },
+        select: { uuid: true },
+      });
+
+      if (!accountExists) {
+        throw new Error(`Account not found: ${persistence.accountUuid}`);
+      }
+
       // 1. Upsert TaskTemplate with flattened fields
       await tx.taskTemplate.upsert({
         where: { uuid: persistence.uuid },

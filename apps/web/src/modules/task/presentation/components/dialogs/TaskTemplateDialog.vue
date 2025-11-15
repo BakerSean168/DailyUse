@@ -273,11 +273,16 @@ const resetDialog = (): void => {
  */
 const createBlankTemplate = (): TaskTemplate => {
   console.log('Creating blank template...');
+  
   // 使用静态工厂方法创建空白模板
-  const template = TaskTemplate.forCreate('default-account'); // TODO: 从认证状态获取 accountUuid
-
-  // 设置默认标题
-  template.updateTitle('新任务模板');
+  // forCreate 方法已提供智能默认值：
+  // - accountUuid 使用空字符串占位符，保存时由后端从 token 注入
+  // - 标题为空，让用户直接输入
+  // - 开始日期默认为今天
+  // - 结束日期默认为一个月后
+  // - 时间点默认为当前时间
+  // - 时间段默认为当前时间到1小时后
+  const template = TaskTemplate.forCreate();
 
   console.log('Created blank template:', template);
   return template;
@@ -335,9 +340,9 @@ const handleSave = async (): Promise<void> => {
           title: formData.taskTemplate.title,
           description: formData.taskTemplate.description,
           taskType: formData.taskTemplate.taskType,
-          timeConfig: formData.taskTemplate.timeConfig,
-          recurrenceRule: formData.taskTemplate.recurrenceRule,
-          reminderConfig: formData.taskTemplate.reminderConfig,
+          timeConfig: formData.taskTemplate.timeConfig?.toServerDTO(),
+          recurrenceRule: formData.taskTemplate.recurrenceRule?.toServerDTO(),
+          reminderConfig: formData.taskTemplate.reminderConfig?.toServerDTO(),
           importance: formData.taskTemplate.importance,
           urgency: formData.taskTemplate.urgency,
           goalBinding: formData.taskTemplate.goalBinding,
@@ -358,9 +363,9 @@ const handleSave = async (): Promise<void> => {
           title: formData.taskTemplate.title,
           description: formData.taskTemplate.description,
           taskType: formData.taskTemplate.taskType,
-          timeConfig: formData.taskTemplate.timeConfig,
-          recurrenceRule: formData.taskTemplate.recurrenceRule,
-          reminderConfig: formData.taskTemplate.reminderConfig,
+          timeConfig: formData.taskTemplate.timeConfig?.toServerDTO(),
+          recurrenceRule: formData.taskTemplate.recurrenceRule?.toServerDTO(),
+          reminderConfig: formData.taskTemplate.reminderConfig?.toServerDTO(),
           importance: formData.taskTemplate.importance,
           urgency: formData.taskTemplate.urgency,
           goalBinding: formData.taskTemplate.goalBinding,

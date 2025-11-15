@@ -29,11 +29,13 @@ export function registerAuthenticationInitializationTasks(): void {
 
       // 直接从 AuthManager 读取 token 信息
       const accessToken = AuthManager.getAccessToken();
-      const refreshToken = AuthManager.getRefreshToken();
       const isTokenExpired = AuthManager.isTokenExpired();
 
-      if (!accessToken || !refreshToken) {
-        console.log('ℹ️ [AuthModule] 未发现有效的 token，清除旧数据');
+      // 🔥 修复：只检查 Access Token
+      // Refresh Token 存储在 httpOnly Cookie 中，前端无法读取
+      // 如果 Access Token 过期，会自动触发 refresh（浏览器会自动带上 Cookie）
+      if (!accessToken) {
+        console.log('ℹ️ [AuthModule] 未发现 Access Token，清除旧数据');
         // 清除可能残留的认证数据
         localStorage.removeItem('authentication');
         localStorage.removeItem('auth');

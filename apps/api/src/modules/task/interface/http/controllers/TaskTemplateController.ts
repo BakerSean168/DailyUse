@@ -107,14 +107,19 @@ export class TaskTemplateController {
    */
   static async createTaskTemplate(req: Request, res: Response): Promise<Response> {
     try {
-      const accountUuid = TaskTemplateController.extractAccountUuid(req);
       const service = await TaskTemplateController.getTaskTemplateService();
+      const accountUuid = TaskTemplateController.extractAccountUuid(req);
 
-      logger.info('Creating task template', { accountUuid, title: req.body.title });
+      logger.info('Creating task template', { 
+        accountUuid, 
+        title: req.body.title,
+        requestBody: req.body 
+      });
 
+      // 注入 accountUuid 到请求体（从 token 提取，覆盖前端传递的值）
       const template = await service.createTaskTemplate({
-        accountUuid,
         ...req.body,
+        accountUuid, // 后端注入，确保安全性
       });
 
       return TaskTemplateController.responseBuilder.sendSuccess(

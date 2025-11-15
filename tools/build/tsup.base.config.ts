@@ -67,19 +67,15 @@ export function createTsupConfig(options: CreateTsupConfigOptions): Options {
     // 类型声明配置
     // ============================================================
 
-    // 不使用 tsup 生成类型声明 (由 tsc --build 生成)
-    // 原因：
-    // 1. 支持 composite 项目引用
-    // 2. 实现跨包类型热更新
-    // 3. 生成 declarationMap 便于 IDE 跳转
-    dts: false,
+    // 使用 tsup 生成类型声明（简单高效）
+    dts: true,
 
     // ============================================================
     // 构建优化
     // ============================================================
 
-    // 不清理输出目录 (保留 tsc 生成的 .d.ts 文件)
-    clean: false,
+    // 清理输出目录（避免旧文件残留）
+    clean: true,
 
     // 生成 source map (便于调试)
     sourcemap: true,

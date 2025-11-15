@@ -139,10 +139,25 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
    * 静态工厂方法
    */
   public static fromServerDTO(dto: TaskContracts.RecurrenceRuleServerDTO): RecurrenceRule {
+    // 防御性检查：确保 daysOfWeek 是数组
+    let daysOfWeek: DayOfWeek[];
+    if (Array.isArray(dto.daysOfWeek)) {
+      daysOfWeek = dto.daysOfWeek;
+    } else if (typeof dto.daysOfWeek === 'string') {
+      // 如果是 JSON 字符串，尝试解析
+      try {
+        daysOfWeek = JSON.parse(dto.daysOfWeek);
+      } catch {
+        daysOfWeek = [];
+      }
+    } else {
+      daysOfWeek = [];
+    }
+
     return new RecurrenceRule({
       frequency: dto.frequency,
       interval: dto.interval,
-      daysOfWeek: dto.daysOfWeek,
+      daysOfWeek,
       endDate: dto.endDate,
       occurrences: dto.occurrences,
     });

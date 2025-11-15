@@ -187,7 +187,7 @@ export const useAuthenticationStore = defineStore('authentication', {
     setAuthData(loginResponse: {
       user: AccountClientDTO;
       accessToken: string;
-      refreshToken: string;
+      refreshToken?: string; // 可选 - 现在存储在 httpOnly Cookie 中
       expiresIn: number; // 秒
       tokenType?: string;
       sessionId?: string;
@@ -195,10 +195,10 @@ export const useAuthenticationStore = defineStore('authentication', {
       this.account = loginResponse.user;
 
       // 🔥 将 token 存储到 AuthManager
-      // 注意：refreshToken 现在存储在 httpOnly Cookie 中，后端不再返回
+      // 注意：refreshToken 现在存储在 httpOnly Cookie 中，不再从响应中返回
       AuthManager.setTokens(
         loginResponse.accessToken,
-        undefined, // refreshToken 不再从响应中获取
+        undefined, // refreshToken 不再从响应中获取，由后端通过 Cookie 管理
         undefined,
         loginResponse.expiresIn,
       );

@@ -22,8 +22,8 @@ export enum TaskType {
  */
 export enum TimeType {
   ALL_DAY = 'ALL_DAY', // 全天任务
-  timePoint = 'TIME_POINT', // 时间点任务
-  timeRange = 'TIME_RANGE', // 时间段任务
+  TIME_POINT = 'TIME_POINT', // 时间点任务
+  TIME_RANGE = 'TIME_RANGE', // 时间段任务
 }
 
 /**

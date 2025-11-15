@@ -4,7 +4,7 @@
  */
 
 import type { TaskContracts } from '@dailyuse/contracts';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { ImportanceLevel, UrgencyLevel, TaskType, TimeType, TaskTemplateStatus } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   TaskTimeConfig,
@@ -18,9 +18,6 @@ import { TaskInstance } from './TaskInstance';
 type ITaskTemplate = TaskContracts.TaskTemplateClient;
 type TaskTemplateDTO = TaskContracts.TaskTemplateClientDTO;
 type TaskTemplateServerDTO = TaskContracts.TaskTemplateServerDTO;
-type TaskType = TaskContracts.TaskType;
-type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
-type TimeType = TaskContracts.TimeType;
 
 export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   private _accountUuid: string;
@@ -404,6 +401,95 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     this._updatedAt = Date.now();
   }
 
+  /**
+   * 更新时间类型，并自动初始化对应的时间数据
+   * @param newTimeType 新的时间类型
+   */
+  public updateTimeType(newTimeType: TimeType): void {
+    if (!this.canEdit()) {
+      throw new Error('Cannot update archived or deleted template');
+    }
+
+    const now = Date.now();
+    const currentDate = new Date();
+    
+    // 根据不同的时间类型，初始化不同的时间数据
+    switch (newTimeType) {
+      case TimeType.ALL_DAY: {
+        // 全天：设置今天到一个月后
+        const today = new Date(currentDate);
+        today.setHours(0, 0, 0, 0);
+        const oneMonthLater = new Date(today);
+        oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+
+        this._timeConfig = TaskTimeConfig.fromClientDTO({
+          timeType: TimeType.ALL_DAY,
+          startDate: today.getTime(),
+          endDate: oneMonthLater.getTime(),
+          timePoint: null,
+          timeRange: null,
+          timeTypeText: '全天',
+          formattedStartDate: today.toLocaleDateString('zh-CN'),
+          formattedEndDate: oneMonthLater.toLocaleDateString('zh-CN'),
+          formattedTimePoint: '',
+          formattedTimeRange: '',
+          displayText: `${today.toLocaleDateString('zh-CN')} - ${oneMonthLater.toLocaleDateString('zh-CN')}`,
+          hasDateRange: true,
+        });
+        break;
+      }
+
+      case TimeType.TIME_POINT: {
+        // 时间点：设置为当前时间
+        this._timeConfig = TaskTimeConfig.fromClientDTO({
+          timeType: TimeType.TIME_POINT,
+          startDate: null,
+          endDate: null,
+          timePoint: now,
+          timeRange: null,
+          timeTypeText: '时间点',
+          formattedStartDate: '',
+          formattedEndDate: '',
+          formattedTimePoint: currentDate.toLocaleString('zh-CN'),
+          formattedTimeRange: '',
+          displayText: currentDate.toLocaleString('zh-CN'),
+          hasDateRange: false,
+        });
+        break;
+      }
+
+      case TimeType.TIME_RANGE: {
+        // 时间段：设置为当前时间到1小时后
+        const startTime = new Date(currentDate);
+        const endTime = new Date(currentDate.getTime() + 60 * 60 * 1000); // 1小时后
+
+        this._timeConfig = TaskTimeConfig.fromClientDTO({
+          timeType: TimeType.TIME_RANGE,
+          startDate: null,
+          endDate: null,
+          timePoint: null,
+          timeRange: {
+            start: startTime.getTime(),
+            end: endTime.getTime(),
+          },
+          timeTypeText: '时间段',
+          formattedStartDate: '',
+          formattedEndDate: '',
+          formattedTimePoint: '',
+          formattedTimeRange: `${startTime.toLocaleString('zh-CN')} - ${endTime.toLocaleString('zh-CN')}`,
+          displayText: `${startTime.toLocaleString('zh-CN')} - ${endTime.toLocaleString('zh-CN')}`,
+          hasDateRange: false,
+        });
+        break;
+      }
+
+      default:
+        throw new Error(`Unknown time type: ${newTimeType}`);
+    }
+
+    this._updatedAt = Date.now();
+  }
+
   public updateTitle(title: string): void {
     if (!this.canEdit()) {
       throw new Error('Cannot update archived or deleted template');
@@ -604,11 +690,10 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
 
   public static fromServerDTO(dto: TaskTemplateServerDTO): TaskTemplate {
     // 对于 timeConfig，如果为 null/undefined，创建默认配置（全天无时间范围）
-    const TaskContracts = require('@dailyuse/contracts').TaskContracts;
     const defaultTimeConfig: TaskTimeConfig = dto.timeConfig
       ? TaskTimeConfig.fromServerDTO(dto.timeConfig)
       : TaskTimeConfig.fromServerDTO({
-          timeType: TaskContracts.TimeType.ALL_DAY,
+          timeType: TimeType.ALL_DAY,
           startDate: null,
           endDate: null,
           timePoint: null,
@@ -645,31 +730,50 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     });
   }
 
-  public static forCreate(accountUuid: string): TaskTemplate {
+  public static forCreate(): TaskTemplate {
     const now = Date.now();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTimestamp = today.getTime();
+
+    // 一个月后的日期
+    const oneMonthLater = new Date(today);
+    oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
+    const oneMonthLaterTimestamp = oneMonthLater.getTime();
+
+    // 当前时间点
+    const currentTimePoint = Date.now();
+
+    // 当前时间 - 1小时后 的时间段
+    const currentTime = new Date();
+    const oneHourLater = new Date(currentTime.getTime() + 60 * 60 * 1000);
 
     return new TaskTemplate({
-      accountUuid,
-      title: '',
-      taskType: 'ONE_TIME' as TaskType,
+      accountUuid: '', // 占位符，保存时由后端从 token 注入
+      title: '', // 空标题，让用户直接输入
+      taskType: TaskType.ONE_TIME,
       timeConfig: TaskTimeConfig.fromClientDTO({
-        timeType: 'ALL_DAY' as TimeType,
-        startDate: null,
-        endDate: null,
-        timePoint: null,
-        timeRange: null,
+        timeType: TimeType.ALL_DAY,
+        startDate: todayTimestamp, // 默认开始日期：今天
+        endDate: oneMonthLaterTimestamp, // 默认结束日期：一个月后
+        timePoint: currentTimePoint, // 默认时间点：当前时间
+        timeRange: {
+          // 默认时间段：当前时间 - 1小时后
+          start: currentTime.getTime(),
+          end: oneHourLater.getTime(),
+        },
         timeTypeText: '全天',
-        formattedStartDate: '',
-        formattedEndDate: '',
-        formattedTimePoint: '',
-        formattedTimeRange: '',
+        formattedStartDate: today.toLocaleDateString('zh-CN'),
+        formattedEndDate: oneMonthLater.toLocaleDateString('zh-CN'),
+        formattedTimePoint: new Date(currentTimePoint).toLocaleString('zh-CN'),
+        formattedTimeRange: `${currentTime.toLocaleTimeString('zh-CN')} - ${oneHourLater.toLocaleTimeString('zh-CN')}`,
         displayText: '全天',
-        hasDateRange: false,
+        hasDateRange: true,
       }),
       importance: ImportanceLevel.Moderate,
       urgency: UrgencyLevel.Medium,
       tags: [],
-      status: 'ACTIVE' as TaskTemplateStatus,
+      status: TaskTemplateStatus.ACTIVE,
       generateAheadDays: 7,
       createdAt: now,
       updatedAt: now,
@@ -682,7 +786,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     const now = Date.now();
 
     const defaultTimeConfig = TaskTimeConfig.fromClientDTO({
-      timeType: 'ALL_DAY' as TimeType,
+      timeType: TimeType.ALL_DAY,
       startDate: null,
       endDate: null,
       timePoint: null,
@@ -700,7 +804,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       accountUuid: params.accountUuid,
       title: params.title || '',
       description: params.description,
-      taskType: params.taskType || ('ONE_TIME' as TaskType),
+      taskType: params.taskType || TaskType.ONE_TIME,
       timeConfig: params.timeConfig || defaultTimeConfig,
       recurrenceRule: params.recurrenceRule,
       reminderConfig: params.reminderConfig,
@@ -710,7 +814,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       folderUuid: params.folderUuid,
       tags: params.tags || [],
       color: params.color,
-      status: params.status || ('ACTIVE' as TaskTemplateStatus),
+      status: params.status || TaskTemplateStatus.ACTIVE,
       lastGeneratedDate: params.lastGeneratedDate,
       generateAheadDays: params.generateAheadDays || 7,
       createdAt: params.createdAt || now,

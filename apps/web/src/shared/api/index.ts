@@ -19,6 +19,10 @@ export { InterceptorManager, AuthManager } from './core/interceptors';
 // 预配置实例
 export { api, apiClient, publicApiClient, uploadClient, adminApiClient } from './instances';
 
+// 跨模块查询客户端
+export { CrossModuleAPIClient } from './crossModuleApiClient';
+export type { GoalBindingOption, KeyResultBindingOption } from './crossModuleApiClient';
+
 // 组合式API（如果有的话）
 // export { useAuth } from './composables/useAuth';
 // export { useRequest, usePagination, useInfiniteScroll } from './composables/useRequest';

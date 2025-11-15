@@ -6,6 +6,7 @@ import type {
 import { TaskExpirationService } from '@dailyuse/domain-server';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 import type { TaskContracts } from '@dailyuse/contracts';
+import { eventBus } from '@dailyuse/utils';
 
 /**
  * TaskInstance 应用服务
@@ -157,8 +158,12 @@ export class TaskInstanceApplicationService {
       throw new Error('Cannot complete this task instance');
     }
 
+    // 标记为完成
     instance.complete(params.duration, params.note, params.rating);
     await this.instanceRepository.save(instance);
+
+    // 🔥 发布事件：任务实例完成
+    await this.publishTaskCompletedEvent(instance);
 
     return instance.toClientDTO();
   }
@@ -198,5 +203,56 @@ export class TaskInstanceApplicationService {
    */
   async deleteTaskInstance(uuid: string): Promise<void> {
     await this.instanceRepository.delete(uuid);
+  }
+
+  /**
+   * 发布任务完成事件
+   * @private
+   */
+  private async publishTaskCompletedEvent(instance: TaskInstance): Promise<void> {
+    try {
+      // 获取任务模板以获取 goalBinding 和 title 信息
+      const template = await this.templateRepository.findByUuid(instance.templateUuid);
+      if (!template) {
+        console.warn(`[TaskInstance] Template not found: ${instance.templateUuid}`);
+        return;
+      }
+
+      // 获取完成时间
+      const completedAt = instance.completionRecord?.completedAt || Date.now();
+
+      // 构造事件
+      const event: TaskContracts.TaskInstanceCompletedEvent = {
+        eventType: 'task.instance.completed',
+        payload: {
+          taskInstanceUuid: instance.uuid,
+          taskTemplateUuid: instance.templateUuid,
+          title: template.title,
+          completedAt,
+          accountUuid: instance.accountUuid,
+          goalBinding: template.goalBinding
+            ? {
+                goalUuid: template.goalBinding.goalUuid,
+                keyResultUuid: template.goalBinding.keyResultUuid,
+                incrementValue: template.goalBinding.incrementValue,
+              }
+            : undefined,
+        },
+      };
+
+      // 发布事件
+      await eventBus.publish(event);
+
+      console.log('✅ [TaskInstance] Task completion event published', {
+        taskInstanceUuid: instance.uuid,
+        hasGoalBinding: !!template.goalBinding,
+      });
+    } catch (error) {
+      console.error('❌ [TaskInstance] Failed to publish task completion event', {
+        error: error instanceof Error ? error.message : String(error),
+        taskInstanceUuid: instance.uuid,
+      });
+      // 不抛出错误，避免影响任务完成流程
+    }
   }
 }

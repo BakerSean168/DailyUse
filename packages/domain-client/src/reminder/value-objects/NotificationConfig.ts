@@ -11,7 +11,8 @@ type SoundConfig = ReminderContracts.SoundConfig;
 type VibrationConfig = ReminderContracts.VibrationConfig;
 type NotificationActionConfig = ReminderContracts.NotificationActionConfig;
 
-const NotificationChannel = ReminderContracts.NotificationChannel;
+// 枚举常量使用 Enum 后缀，避免与类型名冲突
+const NotificationChannelEnum = ReminderContracts.NotificationChannel;
 
 export class NotificationConfig implements ReminderContracts.NotificationConfigClient {
   private readonly _channels: NotificationChannel[];
@@ -139,13 +140,13 @@ export class NotificationConfig implements ReminderContracts.NotificationConfigC
     // 生成 channelsText
     const channelNames = dto.channels.map((c) => {
       switch (c) {
-        case NotificationChannel.IN_APP:
+        case NotificationChannelEnum.IN_APP:
           return '应用内';
-        case NotificationChannel.PUSH:
+        case NotificationChannelEnum.PUSH:
           return '推送';
-        case NotificationChannel.EMAIL:
+        case NotificationChannelEnum.EMAIL:
           return '邮件';
-        case NotificationChannel.SMS:
+        case NotificationChannelEnum.SMS:
           return '短信';
         default:
           return '未知';

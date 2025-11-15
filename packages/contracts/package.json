@@ -16,10 +16,9 @@
     }
   },
   "scripts": {
-    "clean": "node ../../node_modules/rimraf/dist/esm/bin.mjs dist",
-    "typecheck": "node ../../node_modules/typescript/lib/tsc.js --build tsconfig.json",
-    "build": "pnpm typecheck && node ../../node_modules/tsup/dist/cli-default.js",
-    "dev": "node ../../node_modules/concurrently/dist/bin/concurrently.js \"pnpm typecheck --watch\" \"node ../../node_modules/tsup/dist/cli-default.js --watch\""
+    "clean": "rm -rf dist",
+    "build": "node ../../node_modules/tsup/dist/cli-default.js",
+    "dev": "node ../../node_modules/tsup/dist/cli-default.js --watch"
   },
   "dependencies": {
     "zod": "^3.23.8"

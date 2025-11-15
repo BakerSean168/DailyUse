@@ -28,6 +28,7 @@ import repositoryRouter from './modules/repository/interface/http/routes/reposit
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
 import aiGenerationRouter from './modules/ai/interface/http/aiGenerationRoutes';
 import dashboardRouter from './modules/dashboard/interface/routes';
+import crossModuleRouter from './shared/api/crossModuleRoutes';
 
 import { authMiddleware, optionalAuthMiddleware } from './shared/middlewares/index';
 import { setupSwagger } from './config/swagger';
@@ -205,6 +206,12 @@ api.use('/metrics', authMiddleware, metricsRouter);
  */
 // 挂载 Dashboard 统计路由 - 需要认证
 api.use('/dashboard', authMiddleware, dashboardRouter);
+
+/**
+ * cross-module 跨模块查询 API
+ */
+// 挂载跨模块查询路由 - 需要认证
+api.use('/cross-module', authMiddleware, crossModuleRouter);
 
 /**
  * ai AI生成模块

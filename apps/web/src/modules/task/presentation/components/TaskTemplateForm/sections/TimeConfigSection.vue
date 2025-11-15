@@ -10,8 +10,8 @@
       <!-- 时间类型选择 -->
       <v-radio-group v-model="timeType" label="时间类型" @update:model-value="handleTimeTypeChange">
         <v-radio label="全天" :value="TimeType.ALL_DAY"></v-radio>
-        <v-radio label="时间点" :value="TimeType.timePoint"></v-radio>
-        <v-radio label="时间段" :value="TimeType.timeRange"></v-radio>
+        <v-radio label="时间点" :value="TimeType.TIME_POINT"></v-radio>
+        <v-radio label="时间段" :value="TimeType.TIME_RANGE"></v-radio>
       </v-radio-group>
 
       <!-- 日期范围 -->
@@ -26,23 +26,23 @@
         </v-col>
       </v-row>
 
-      <!-- 时间点输入 (仅当选择 timePoint 时显示) -->
-      <v-row v-if="timeType === TimeType.timePoint">
+      <!-- 时间点输入 (仅当选择 TIME_POINT 时显示) -->
+      <v-row v-if="timeType === TimeType.TIME_POINT">
         <v-col cols="12">
-          <v-text-field v-model="timePoint" label="具体时间" type="time" variant="outlined" density="comfortable"
-            hint="格式: HH:MM" @update:model-value="handleTimePointChange"></v-text-field>
+          <v-text-field v-model="timePoint" label="具体时间" type="datetime-local" variant="outlined" density="comfortable"
+            hint="选择具体日期和时间" @update:model-value="handleTimePointChange"></v-text-field>
         </v-col>
       </v-row>
 
-      <!-- 时间段输入 (仅当选择 timeRange 时显示) -->
-      <v-row v-if="timeType === TimeType.timeRange">
+      <!-- 时间段输入 (仅当选择 TIME_RANGE 时显示) -->
+      <v-row v-if="timeType === TimeType.TIME_RANGE">
         <v-col cols="12" md="6">
-          <v-text-field v-model="timeRangeStart" label="开始时间" type="time" variant="outlined" density="comfortable"
-            hint="格式: HH:MM" @update:model-value="handleTimeRangeChange"></v-text-field>
+          <v-text-field v-model="timeRangeStart" label="开始时间" type="datetime-local" variant="outlined" density="comfortable"
+            hint="选择开始日期和时间" @update:model-value="handleTimeRangeChange"></v-text-field>
         </v-col>
         <v-col cols="12" md="6">
-          <v-text-field v-model="timeRangeEnd" label="结束时间" type="time" variant="outlined" density="comfortable"
-            hint="格式: HH:MM" @update:model-value="handleTimeRangeChange"></v-text-field>
+          <v-text-field v-model="timeRangeEnd" label="结束时间" type="datetime-local" variant="outlined" density="comfortable"
+            hint="选择结束日期和时间" @update:model-value="handleTimeRangeChange"></v-text-field>
         </v-col>
       </v-row>
 
@@ -58,8 +58,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { TaskTemplate, TaskTimeConfig } from '@dailyuse/domain-client';
 import { TaskContracts } from '@dailyuse/contracts';
-
-const TimeType = TaskContracts.TimeType;
+import { TimeType } from '@dailyuse/contracts';
 
 const props = defineProps<{
   modelValue: TaskTemplate;
@@ -71,7 +70,7 @@ const emit = defineEmits<{
 }>();
 
 // 表单数据
-const timeType = ref<TaskContracts.TimeType>(TimeType.ALL_DAY);
+const timeType = ref<TimeType>(TimeType.ALL_DAY);
 const startDate = ref<string>('');
 const endDate = ref<string>('');
 const timePoint = ref<string>('');
@@ -107,14 +106,14 @@ const initializeFormData = () => {
   }
 
   // 时间点
-  if (config.timeType === TimeType.timePoint && config.timePoint) {
-    timePoint.value = formatTimeToInput(config.timePoint);
+  if (config.timeType === TimeType.TIME_POINT && config.timePoint) {
+    timePoint.value = formatDateTimeToInput(config.timePoint);
   }
 
   // 时间段
-  if (config.timeType === TimeType.timeRange && config.timeRange) {
-    timeRangeStart.value = formatTimeToInput(config.timeRange.start);
-    timeRangeEnd.value = formatTimeToInput(config.timeRange.end);
+  if (config.timeType === TimeType.TIME_RANGE && config.timeRange) {
+    timeRangeStart.value = formatDateTimeToInput(config.timeRange.start);
+    timeRangeEnd.value = formatDateTimeToInput(config.timeRange.end);
   }
 };
 
@@ -132,6 +131,19 @@ const formatDateToInput = (timestamp: number): string => {
 const formatTimeToInput = (timestamp: number): string => {
   const date = new Date(timestamp);
   return date.toTimeString().slice(0, 5); // HH:MM
+};
+
+/**
+ * 格式化时间戳为 input[type=datetime-local] 格式
+ */
+const formatDateTimeToInput = (timestamp: number): string => {
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
 /**
@@ -154,10 +166,35 @@ const parseTimeInput = (timeStr: string): number | null => {
 };
 
 /**
+ * 解析 datetime-local 输入为时间戳
+ */
+const parseDateTimeInput = (datetimeStr: string): number | null => {
+  if (!datetimeStr) return null;
+  return new Date(datetimeStr).getTime();
+};
+
+/**
  * 处理时间类型变更
  */
 const handleTimeTypeChange = () => {
-  updateTimeConfig();
+  try {
+    validationError.value = '';
+    
+    // 直接调用实体方法，自动初始化默认时间
+    const updated = props.modelValue.clone();
+    updated.updateTimeType(timeType.value);
+    emit('update:modelValue', updated);
+    
+    // 更新表单显示
+    initializeFormData();
+    
+    // 验证通过
+    emit('update:validation', true);
+  } catch (error) {
+    console.error('更新时间类型失败:', error);
+    validationError.value = error instanceof Error ? error.message : '更新失败';
+    emit('update:validation', false);
+  }
 };
 
 /**
@@ -193,12 +230,12 @@ const updateTimeConfig = () => {
       timeType: timeType.value,
       startDate: parseDateInput(startDate.value),
       endDate: parseDateInput(endDate.value),
-      timePoint: timeType.value === TimeType.timePoint ? parseTimeInput(timePoint.value) : null,
+      timePoint: timeType.value === TimeType.TIME_POINT ? parseDateTimeInput(timePoint.value) : null,
       timeRange:
-        timeType.value === TimeType.timeRange && timeRangeStart.value && timeRangeEnd.value
+        timeType.value === TimeType.TIME_RANGE && timeRangeStart.value && timeRangeEnd.value
           ? {
-            start: parseTimeInput(timeRangeStart.value)!,
-            end: parseTimeInput(timeRangeEnd.value)!,
+            start: parseDateTimeInput(timeRangeStart.value)!,
+            end: parseDateTimeInput(timeRangeEnd.value)!,
           }
           : null,
       timeTypeText: '',
@@ -211,18 +248,20 @@ const updateTimeConfig = () => {
     };
 
     // 验证
-    if (timeType.value === TimeType.timePoint && !newConfig.timePoint) {
+    if (timeType.value === TimeType.TIME_POINT && !newConfig.timePoint) {
       validationError.value = '请输入具体时间';
       emit('update:validation', false);
       return;
     }
 
-    if (timeType.value === TimeType.timeRange && !newConfig.timeRange) {
+    if (timeType.value === TimeType.TIME_RANGE && !newConfig.timeRange) {
       validationError.value = '请输入完整的时间段';
       emit('update:validation', false);
       return;
-    } if (
-      timeType.value === TimeType.timeRange &&
+    }
+    
+    if (
+      timeType.value === TimeType.TIME_RANGE &&
       newConfig.timeRange &&
       newConfig.timeRange.start >= newConfig.timeRange.end
     ) {
