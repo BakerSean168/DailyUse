@@ -202,6 +202,29 @@ export const useTaskStore = defineStore('task', {
           });
       },
 
+    /**
+     * 根据日期范围获取任务实例
+     * @param startDate 开始日期（时间戳）
+     * @param endDate 结束日期（时间戳）
+     */
+    getInstancesByDateRange:
+      (state) =>
+      (startDate: number, endDate: number): TaskInstance[] => {
+        return state.taskInstances
+          .filter((instance) => {
+            const instanceDate = instance.instanceDate;
+            return instanceDate >= startDate && instanceDate <= endDate;
+          })
+          .map((instance) => {
+            if (instance instanceof TaskInstance) {
+              return instance;
+            } else {
+              return TaskInstance.fromClientDTO(instance as any);
+            }
+          })
+          .sort((a, b) => a.instanceDate - b.instanceDate); // 按日期排序
+      },
+
     // ===== 统计信息 =====
 
     /**

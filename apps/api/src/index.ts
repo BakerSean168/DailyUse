@@ -28,6 +28,7 @@ import {
   stopReminderTriggerCronJob,
 } from './modules/reminder/infrastructure/cron/reminderTriggerCronJob';
 import { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './infrastructure/cron';
+import { registerTaskEventListeners } from './modules/task/application/event-handlers/registerTaskEventListeners';
 
 // 初始化日志系统
 initializeLogger();
@@ -59,6 +60,10 @@ const PORT = process.env.PORT || 3888;
     // 🎯 注册事件处理器（事件驱动架构）
     // registerEventHandlers(prisma, sseController); // DISABLED: Schedule module needs refactoring
     // logger.info('Event handlers registered successfully');
+    
+    // 注册 Task 事件监听器
+    registerTaskEventListeners();
+    logger.info('✅ Task event listeners registered successfully');
 
     // 启动调度器（优先队列 vs 轮询）
     // DISABLED: Schedule module needs complete refactoring for new cron-based schema

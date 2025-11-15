@@ -71,4 +71,11 @@ export interface ITaskInstanceRepository {
    * 删除模板的所有任务实例
    */
   deleteByTemplate(templateUuid: string): Promise<void>;
+
+  /**
+   * 统计模板的未过期实例数量
+   * @param templateUuid 模板 UUID
+   * @param fromDate 起始日期（默认为当前时间）
+   */
+  countFutureInstances(templateUuid: string, fromDate?: number): Promise<number>;
 }

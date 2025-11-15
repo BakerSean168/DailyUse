@@ -142,4 +142,14 @@ export class PrismaTaskInstanceRepository implements ITaskInstanceRepository {
   async deleteByTemplate(templateUuid: string): Promise<void> {
     await this.prisma.taskInstance.deleteMany({ where: { templateUuid } });
   }
+
+  async countFutureInstances(templateUuid: string, fromDate?: number): Promise<number> {
+    const date = fromDate ? new Date(fromDate) : new Date();
+    return await this.prisma.taskInstance.count({
+      where: {
+        templateUuid,
+        instanceDate: { gte: date },
+      },
+    });
+  }
 }

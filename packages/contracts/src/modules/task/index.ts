@@ -6,6 +6,9 @@
 // 枚举
 export * from './enums';
 
+// 配置常量
+export * from './config';
+
 // 值对象
 export * from './value-objects';
 

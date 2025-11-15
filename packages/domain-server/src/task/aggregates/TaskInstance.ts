@@ -308,6 +308,9 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
 
   /**
    * 创建新的任务实例
+   * 
+   * 注意：不再发布领域事件
+   * 提醒由 ScheduleTask 统一管理（混合方案 C）
    */
   public static create(params: {
     templateUuid: string;
@@ -316,7 +319,7 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
     timeConfig: TaskTimeConfig;
   }): TaskInstance {
     const now = Date.now();
-    return new TaskInstance({
+    const instance = new TaskInstance({
       templateUuid: params.templateUuid,
       accountUuid: params.accountUuid,
       instanceDate: params.instanceDate,
@@ -325,6 +328,8 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
       createdAt: now,
       updatedAt: now,
     });
+
+    return instance;
   }
 
   /**

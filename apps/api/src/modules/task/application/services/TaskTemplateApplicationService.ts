@@ -71,6 +71,7 @@ export class TaskTemplateApplicationService {
 
   /**
    * 创建任务模板
+   * 创建后自动生成初始实例（100天/最多100个）
    */
   async createTaskTemplate(params: {
     accountUuid: string;
@@ -118,7 +119,94 @@ export class TaskTemplateApplicationService {
     // 保存到仓储
     await this.templateRepository.save(template);
 
+    // 🔥 如果状态是 ACTIVE，立即生成初始实例
+    if (template.status === TaskContracts.TaskTemplateStatus.ACTIVE) {
+      console.log(`[TaskTemplateApplicationService] 模板 "${template.title}" 已创建，开始生成初始实例...`);
+      await this.generateInitialInstances(template);
+    }
+
     return template.toClientDTO();
+  }
+
+  /**
+   * 生成初始实例（私有方法）
+   * 
+   * 实施策略（方案 C - 混合方案）：
+   * 1. 生成未来100天内的TaskInstance（用于前端展示和允许用户修改）
+   * 2. 创建1个循环ScheduleTask（用于提醒）
+   * 3. ScheduleTask触发时，检查当天Instance的实际时间，发送提醒
+   * 
+   * 收益：
+   * - 用户体验好（可修改单天时间）
+   * - 性能合理（只有1个ScheduleTask）
+   * - 提醒准确（使用Instance的实际时间）
+   */
+  private async generateInitialInstances(template: TaskTemplate): Promise<void> {
+    try {
+      // 1. 生成 100 天的 TaskInstance（用于展示和修改）
+      const instances = await this.generationService.generateInstancesForTemplate(template);
+      console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 生成了 ${instances.length} 个实例（未来100天）`);
+      
+      // 2. 🔥 如果配置了提醒，创建循环 ScheduleTask（只创建1个）
+      if (template.reminderConfig?.enabled) {
+        await this.createScheduleTaskForTemplate(template);
+      }
+      
+      console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 初始化完成`);
+    } catch (error) {
+      console.error(
+        `❌ [TaskTemplateApplicationService] 模板 "${template.title}" 初始化失败:`,
+        error,
+      );
+      // 不抛出错误，模板已经创建成功，实例生成失败不影响模板创建
+    }
+  }
+
+  /**
+   * 为TaskTemplate创建循环ScheduleTask（用于提醒）
+   * 
+   * 策略：
+   * - 只创建1个ScheduleTask（不是100个）
+   * - 使用cron表达式循环触发
+   * - 触发时检查当天的TaskInstance，使用其实际时间
+   */
+  private async createScheduleTaskForTemplate(template: TaskTemplate): Promise<void> {
+    try {
+      const { ScheduleTaskFactory } = await import('@dailyuse/domain-server');
+      const { SourceModule } = await import('@dailyuse/contracts');
+      const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
+      
+      // 创建 ScheduleTaskFactory
+      const factory = new ScheduleTaskFactory();
+      const templateDTO = template.toServerDTO();
+      
+      // 使用 TaskScheduleStrategy 创建 ScheduleTask
+      const scheduleTask = factory.createFromSourceEntity({
+        accountUuid: template.accountUuid,
+        sourceModule: SourceModule.TASK,
+        sourceEntityId: template.uuid,
+        sourceEntity: templateDTO,
+      });
+      
+      // 保存到仓储
+      const container = ScheduleContainer.getInstance();
+      const repository = container.getScheduleTaskRepository();
+      await repository.save(scheduleTask);
+      
+      console.log(`✅ [TaskTemplateApplicationService] 为模板 "${template.title}" 创建了循环 ScheduleTask: ${scheduleTask.uuid}`);
+    } catch (error: any) {
+      // 如果是"不需要调度"错误，不报错
+      if (error?.name === 'SourceEntityNoScheduleRequiredError') {
+        console.log(`ℹ️  [TaskTemplateApplicationService] 模板 "${template.title}" 不需要创建 ScheduleTask（未配置提醒或不满足条件）`);
+        return;
+      }
+      
+      console.error(
+        `❌ [TaskTemplateApplicationService] 为模板 "${template.title}" 创建 ScheduleTask 失败:`,
+        error,
+      );
+      // 不抛出错误，ScheduleTask 创建失败不影响 TaskTemplate 创建
+    }
   }
 
   /**
@@ -137,12 +225,34 @@ export class TaskTemplateApplicationService {
 
   /**
    * 根据账户获取任务模板列表
+   * 获取时自动检查并补充实例
    */
   async getTaskTemplatesByAccount(
     accountUuid: string,
   ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findByAccount(accountUuid);
+    
+    // 🔥 自动检查并补充每个 ACTIVE 模板的实例
+    for (const template of templates) {
+      if (template.status === TaskContracts.TaskTemplateStatus.ACTIVE) {
+        this.checkAndRefillInstances(template.uuid).catch((error) => {
+          console.error(`❌ 补充模板 "${template.title}" 实例失败:`, error);
+        });
+      }
+    }
+    
     return templates.map((t) => t.toClientDTO());
+  }
+
+  /**
+   * 检查并补充模板实例（异步执行，不阻塞返回）
+   */
+  private async checkAndRefillInstances(templateUuid: string): Promise<void> {
+    try {
+      await this.generationService.checkAndRefillInstances(templateUuid);
+    } catch (error) {
+      console.error(`❌ [TaskTemplateApplicationService] 补充实例失败:`, error);
+    }
   }
 
   /**
@@ -158,11 +268,20 @@ export class TaskTemplateApplicationService {
 
   /**
    * 获取活跃的任务模板
+   * 获取时自动检查并补充实例
    */
   async getActiveTaskTemplates(
     accountUuid: string,
   ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findActiveTemplates(accountUuid);
+    
+    // 🔥 自动检查并补充每个模板的实例
+    for (const template of templates) {
+      this.checkAndRefillInstances(template.uuid).catch((error) => {
+        console.error(`❌ 补充模板 "${template.title}" 实例失败:`, error);
+      });
+    }
+    
     return templates.map((t) => t.toClientDTO());
   }
 
@@ -237,6 +356,10 @@ export class TaskTemplateApplicationService {
 
     template.activate();
     await this.templateRepository.save(template);
+
+    // 🔥 激活后立即生成实例
+    console.log(`[TaskTemplateApplicationService] 模板 "${template.title}" 已激活，开始生成实例...`);
+    await this.generateInitialInstances(template);
 
     return template.toClientDTO();
   }
@@ -338,17 +461,19 @@ export class TaskTemplateApplicationService {
 
   /**
    * 为模板生成实例
+   * @deprecated 使用新的自动维护机制，不再需要手动指定 toDate
    */
   async generateInstances(
     uuid: string,
-    toDate: number,
+    toDate?: number,
   ): Promise<TaskContracts.TaskInstanceServerDTO[]> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
     }
 
-    const instances = await this.generationService.generateInstancesForTemplate(template, toDate);
+    // 使用强制生成模式，重新生成实例
+    const instances = await this.generationService.generateInstancesForTemplate(template, true);
     return instances.map((i) => i.toClientDTO());
   }
 

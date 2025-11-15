@@ -54,7 +54,7 @@
           <p class="text-body-1 text-medium-emphasis">
             {{ getEmptyStateDescription() }}
           </p>
-          <v-btn v-if="currentStatus === 'active'" data-testid="create-first-task-template-button" color="primary"
+          <v-btn v-if="currentStatus === TaskTemplateStatus.ACTIVE" data-testid="create-first-task-template-button" color="primary"
             variant="tonal" prepend-icon="mdi-plus" @click="taskTemplateDialogRef?.openForCreation()" class="mt-4">
             创建第一个模板
           </v-btn>
@@ -100,15 +100,19 @@ import { useTaskStore } from '../stores/taskStore';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import TaskDAGVisualization from './dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from './dialogs/TaskTemplateDialog.vue';
-import type { TaskContracts } from '@dailyuse/contracts';
+import { TaskContracts } from '@dailyuse/contracts';
 // composables
 import { taskDependencyApiClient } from '../../infrastructure/api/taskApiClient';
 
 type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
 type TaskTemplateClientDTO = TaskContracts.TaskTemplateClientDTO;
 
+// 导入枚举类型
+const TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
+type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
+
 const taskStore = useTaskStore();
-const currentStatus = ref('active'); // 设置为 active，因为新创建的模板现在直接激活
+const currentStatus = ref<TaskTemplateStatus>(TaskTemplateStatus.ACTIVE); // 使用枚举类型
 const showDeleteDialog = ref(false);
 const showDeleteAllDialog = ref(false);
 const selectedTemplate = ref<TaskTemplateClientDTO | null>(null);
@@ -118,89 +122,40 @@ const allDependencies = ref<TaskDependencyClientDTO[]>([]);
 // component refs
 const taskTemplateDialogRef = ref<InstanceType<typeof TaskTemplateDialog> | null>(null);
 
-// 状态筛选器配置
+// 状态筛选器配置 - 直接使用枚举值
 const statusFilters = [
-  { label: '进行中', value: 'active', icon: 'mdi-play-circle' },
-  { label: '草稿', value: 'draft', icon: 'mdi-file-document-outline' },
-  { label: '已暂停', value: 'paused', icon: 'mdi-pause-circle' },
-  { label: '已归档', value: 'archived', icon: 'mdi-archive' },
+  { label: '进行中', value: TaskTemplateStatus.ACTIVE, icon: 'mdi-play-circle' },
+  { label: '已暂停', value: TaskTemplateStatus.PAUSED, icon: 'mdi-pause-circle' },
+  { label: '已归档', value: TaskTemplateStatus.ARCHIVED, icon: 'mdi-archive' },
 ];
 
 // 计算属性
 const filteredTemplates = computed(() => {
   const allTemplates = taskStore.getAllTaskTemplates;
-  console.log('🔍 [filteredTemplates] 计算筛选结果...');
-  console.log('📊 所有模板:', allTemplates.length);
-  console.log('🎯 筛选状态:', currentStatus.value);
-
+  
+  // 直接使用枚举值进行匹配，无需转换
   const filtered = allTemplates.filter((template) => {
-    const status = template.status;
-    console.log(
-      `📋 模板 ${template.title}: status=${status}, 匹配=${status === currentStatus.value}`,
-    );
-    return status === currentStatus.value;
+    return template.status === currentStatus.value;
   });
 
-  console.log('✅ 筛选结果:', filtered.length);
   return filtered;
 });
 
-// 调试信息 - 监听数据变化
-watchEffect(() => {
-  console.log('🔍 [TaskTemplateManagement] 数据变化检测:');
-  console.log('📊 模板总数:', taskStore.getAllTaskTemplates.length);
-
-  // 详细检查每个模板的状态结构
-  const templates = taskStore.getAllTaskTemplates;
-  console.log(
-    '📋 模板详情:',
-    templates.map((t) => ({
-      uuid: t.uuid,
-      title: t.title,
-      status: t.status,
-    })),
-  );
-
-  console.log('🎯 当前筛选状态:', currentStatus.value);
-
-  // 检查状态分布
-  const statusDistribution: Record<string, number> = templates.reduce(
-    (acc, t) => {
-      const status = t.status || 'unknown';
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
-  console.log('📊 状态分布:', statusDistribution);
-
-  console.log('📈 筛选后模板数:', filteredTemplates.value.length);
-  console.log(
-    '🔍 筛选后的模板:',
-    filteredTemplates.value.map((t) => ({
-      uuid: t.uuid,
-      title: t.title,
-      status: t.status,
-    })),
-  );
-});
-
 // 工具方法
-const getTemplateCountByStatus = (status: string) => {
-  return taskStore.getAllTaskTemplates.filter((template) => template.status === status)
-    .length;
+const getTemplateCountByStatus = (status: TaskTemplateStatus) => {
+  return taskStore.getAllTaskTemplates.filter((template) => template.status === status).length;
 };
 
-const getStatusChipColor = (status: string) => {
+const getStatusChipColor = (status: TaskTemplateStatus) => {
   switch (status) {
-    case 'active':
+    case TaskTemplateStatus.ACTIVE:
       return 'success';
-    case 'draft':
-      return 'info';
-    case 'paused':
+    case TaskTemplateStatus.PAUSED:
       return 'warning';
-    case 'archived':
+    case TaskTemplateStatus.ARCHIVED:
       return 'info';
+    case TaskTemplateStatus.DELETED:
+      return 'error';
     default:
       return 'default';
   }
@@ -208,14 +163,14 @@ const getStatusChipColor = (status: string) => {
 
 const getEmptyStateText = () => {
   switch (currentStatus.value) {
-    case 'active':
+    case TaskTemplateStatus.ACTIVE:
       return '暂无进行中的模板';
-    case 'draft':
-      return '暂无草稿模板';
-    case 'paused':
+    case TaskTemplateStatus.PAUSED:
       return '暂无暂停的模板';
-    case 'archived':
+    case TaskTemplateStatus.ARCHIVED:
       return '暂无归档的模板';
+    case TaskTemplateStatus.DELETED:
+      return '暂无已删除的模板';
     default:
       return '暂无模板';
   }
@@ -223,14 +178,14 @@ const getEmptyStateText = () => {
 
 const getEmptyStateDescription = () => {
   switch (currentStatus.value) {
-    case 'active':
+    case TaskTemplateStatus.ACTIVE:
       return '创建任务模板来安排你的日常工作，或者为目标的关键结果创建任务';
-    case 'draft':
-      return '草稿模板需要激活后才能使用';
-    case 'paused':
+    case TaskTemplateStatus.PAUSED:
       return '暂停的模板可以随时恢复使用';
-    case 'archived':
+    case TaskTemplateStatus.ARCHIVED:
       return '过期的任务模板';
+    case TaskTemplateStatus.DELETED:
+      return '已删除的模板可以永久清除';
     default:
       return '';
   }
