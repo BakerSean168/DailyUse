@@ -44,9 +44,10 @@
 
 <script setup lang="ts">
 import { toRefs } from 'vue';
-import { useMessage, type MessageType } from '../../composables/useMessage';
+import { getGlobalMessage, type MessageType } from '../../composables/useMessage';
 
-const { snackbar, dialog, closeSnackbar, handleDialogConfirm, handleDialogCancel } = useMessage();
+// 🔥 使用全局单例，确保所有地方调用的是同一个实例
+const { snackbar, dialog, closeSnackbar, handleDialogConfirm, handleDialogCancel } = getGlobalMessage();
 
 /**
  * 获取对话框图标

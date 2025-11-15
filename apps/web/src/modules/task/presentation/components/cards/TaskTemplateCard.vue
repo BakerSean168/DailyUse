@@ -194,25 +194,6 @@
         </span>
       </div>
     </v-card-actions>
-    <!-- 删除确认对话框 -->
-    <v-dialog v-model="showDeleteDialog" max-width="400">
-      <v-card>
-        <v-card-title class="text-h6">
-          <v-icon color="error" class="mr-2">mdi-delete-alert</v-icon>
-          确认删除
-        </v-card-title>
-        <v-card-text>
-          确定要删除任务模板 "{{ props.template?.title }}" 吗？
-          <br />
-          <span class="text-caption text-error">此操作不可恢复，相关的任务实例也会被删除。</span>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="showDeleteDialog = false"> 取消 </v-btn>
-          <v-btn color="error" variant="elevated" @click="handleDelete"> 删除 </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-card>
 </template>
 
@@ -229,7 +210,11 @@ import type { Goal, KeyResult } from '@dailyuse/domain-client';
 
 // composables
 import { useTaskTemplate } from '../../composables/useTaskTemplate';
+import { getGlobalMessage } from '@dailyuse/ui';
+
 const { deleteTaskTemplate, pauseTaskTemplate, activateTaskTemplate } = useTaskTemplate();
+// 🔥 使用全局单例，确保与 DuMessageProvider 共享同一个实例
+const message = getGlobalMessage();
 
 interface Props {
   template: TaskTemplate;
@@ -258,7 +243,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 const goalStore = useGoalStore();
-const showDeleteDialog = ref(false);
 
 // 状态相关方法
 const getTemplateStatusColor = (template: TaskTemplate) => {
@@ -361,9 +345,18 @@ const handleEdit = () => {
   emit('edit', props.template.uuid);
 };
 
-const handleDelete = () => {
-  deleteTaskTemplate(props.template.uuid);
-  showDeleteDialog.value = false;
+const handleDelete = async () => {
+  try {
+    await message.delConfirm(
+      `确定要删除任务模板 "${props.template.title}" 吗？\n此操作不可恢复，相关的任务实例也会被删除。`,
+      '删除任务模板'
+    );
+    
+    await deleteTaskTemplate(props.template.uuid);
+    message.success('任务模板删除成功');
+  } catch {
+    // 用户取消删除，静默处理
+  }
 };
 
 const handlePauseTemplate = () => {

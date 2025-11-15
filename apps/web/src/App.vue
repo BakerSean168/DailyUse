@@ -14,6 +14,9 @@
     <!-- 应用内通知组件 -->
     <InAppNotification />
 
+    <!-- @dailyuse/ui 消息提示组件 (用于 useMessage 确认框) -->
+    <DuMessageProvider />
+
     <!-- 命令面板 (Cmd/Ctrl + K) - 按需加载 -->
     <component
       v-if="showCommandPalette"
@@ -32,6 +35,7 @@ import { useSettingStore } from '@/modules/setting/presentation/stores/settingSt
 import { useSnackbarStore } from '@/shared/stores/snackbarStore';
 import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
 import InAppNotification from '@/modules/notification/presentation/components/InAppNotification.vue';
+import { DuMessageProvider } from '@dailyuse/ui';
 import { logo128 as logo } from '@dailyuse/assets';
 import { getThemeService } from '@/modules/setting/application/services/ThemeService';
 

@@ -335,11 +335,16 @@ const handleSave = async (): Promise<void> => {
     switch (dialogState.mode) {
       case 'create':
         // 将 TaskTemplate 对象转换为 CreateTaskTemplateRequest
+        // 🔥 自动判断 taskType：如果有 recurrenceRule 则为 RECURRING，否则为 ONE_TIME
+        const taskType = formData.taskTemplate.recurrenceRule 
+          ? 'RECURRING' 
+          : 'ONE_TIME';
+        
         const createRequest: any = {
           accountUuid: formData.taskTemplate.accountUuid,
           title: formData.taskTemplate.title,
           description: formData.taskTemplate.description,
-          taskType: formData.taskTemplate.taskType,
+          taskType: taskType, // 使用自动判断的 taskType
           timeConfig: formData.taskTemplate.timeConfig?.toServerDTO(),
           recurrenceRule: formData.taskTemplate.recurrenceRule?.toServerDTO(),
           reminderConfig: formData.taskTemplate.reminderConfig?.toServerDTO(),
@@ -359,10 +364,15 @@ const handleSave = async (): Promise<void> => {
           throw new Error('缺少原始模板数据');
         }
         // 将 TaskTemplate 对象转换为 UpdateTaskTemplateRequest
+        // 🔥 自动判断 taskType：如果有 recurrenceRule 则为 RECURRING，否则为 ONE_TIME
+        const editTaskType = formData.taskTemplate.recurrenceRule 
+          ? 'RECURRING' 
+          : 'ONE_TIME';
+        
         const updateRequest: any = {
           title: formData.taskTemplate.title,
           description: formData.taskTemplate.description,
-          taskType: formData.taskTemplate.taskType,
+          taskType: editTaskType, // 使用自动判断的 taskType
           timeConfig: formData.taskTemplate.timeConfig?.toServerDTO(),
           recurrenceRule: formData.taskTemplate.recurrenceRule?.toServerDTO(),
           reminderConfig: formData.taskTemplate.reminderConfig?.toServerDTO(),

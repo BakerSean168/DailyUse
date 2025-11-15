@@ -310,23 +310,27 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     }
 
     if (this._taskType === TaskType.ONE_TIME) {
-      // 单次任务：只在指定日期生成一个实例
-      if (
-        this._timeConfig?.startDate &&
-        this._timeConfig.startDate >= fromDate &&
-        this._timeConfig.startDate <= toDate
-      ) {
-        const instance = TaskInstance.create({
-          templateUuid: this.uuid,
-          accountUuid: this._accountUuid,
-          instanceDate: this._timeConfig.startDate,
-          timeConfig: this._timeConfig,
-        });
-        instances.push(instance);
-        this._instances.push(instance);
+      // 单次任务：只要有 startDate 就生成实例（不限制日期范围）
+      // 原因：单次任务可能在未来很远的日期，用户仍然需要看到
+      if (this._timeConfig?.startDate) {
+        // 检查是否已经生成过（避免重复生成）
+        const alreadyGenerated = this._instances.some(
+          (inst) => inst.instanceDate === this._timeConfig!.startDate
+        );
+        
+        if (!alreadyGenerated) {
+          const instance = TaskInstance.create({
+            templateUuid: this.uuid,
+            accountUuid: this._accountUuid,
+            instanceDate: this._timeConfig.startDate,
+            timeConfig: this._timeConfig,
+          });
+          instances.push(instance);
+          this._instances.push(instance);
+        }
       }
     } else if (this._taskType === TaskType.RECURRING && this._recurrenceRule && this._timeConfig) {
-      // 重复任务：根据重复规则生成多个实例
+      // 重复任务：根据重复规则生成多个实例（限制在日期范围内）
       let currentDate = fromDate;
       while (currentDate <= toDate) {
         if (this.shouldGenerateInstance(currentDate)) {
