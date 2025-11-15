@@ -40,8 +40,8 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { useFolderStore } from '../stores';
-import { FolderApiClient } from '../../api';
+import { useFolderStore } from '../../stores';
+import { repositoryApiClient } from '../../../infrastructure/api';
 import { Folder } from '@dailyuse/domain-client';
 
 // Props
@@ -96,7 +96,7 @@ async function handleSubmit() {
   isSubmitting.value = true;
 
   try {
-    const folderDTO = await FolderApiClient.createFolder(props.repositoryUuid, {
+    const folderDTO = await repositoryApiClient.createFolder(props.repositoryUuid, {
       name: formData.value.name,
       parentUuid: props.parentUuid || null,
     });

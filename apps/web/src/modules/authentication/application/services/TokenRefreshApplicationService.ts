@@ -66,7 +66,7 @@ export class TokenRefreshApplicationService {
       // 调用后端 API 刷新 token
       // 使用 X-Skip-Auth 跳过拦截器，避免循环刷新
       const response = await apiClient.post<any>(
-        '/auth/sessions/refresh',
+        '/auth/refresh',  // ✅ 修复：正确的路由是 /auth/refresh 而非 /auth/sessions/refresh
         {},
         {
           headers: { 'X-Skip-Auth': 'true' }

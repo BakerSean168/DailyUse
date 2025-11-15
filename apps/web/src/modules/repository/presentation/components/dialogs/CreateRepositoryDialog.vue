@@ -222,8 +222,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRepositoryStore } from '../stores';
-import { RepositoryApiClient } from '../../api';
+import { useRepositoryStore } from '../../stores';
+import { repositoryApiClient } from '../../../infrastructure/api';
 import { Repository } from '@dailyuse/domain-client';
 import type { RepositoryContracts } from '@dailyuse/contracts';
 
@@ -362,7 +362,7 @@ async function handleSubmit() {
       } as any, // 临时使用 any，后续需要更新 contracts 类型定义
     };
 
-    const response = await RepositoryApiClient.createRepository(payload);
+    const response = await repositoryApiClient.createRepository(payload);
     const repository = Repository.fromClientDTO(response);
     repositoryStore.addRepository(repository);
     emit('created', repository);

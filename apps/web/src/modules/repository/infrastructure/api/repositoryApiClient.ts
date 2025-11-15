@@ -410,6 +410,71 @@ export class RepositoryApiClient {
     const data = await apiClient.get(`${this.baseUrl}/resources/${resourceUuid}/references`);
     return data;
   }
+
+  /**
+   * 获取仓储的文件树（Story 11.1: File Tree Unified Rendering）
+   * @param repositoryUuid 仓储UUID
+   * @returns 统一的文件树结构（包含文件夹和资源）
+   */
+  async getFileTree(repositoryUuid: string): Promise<any> {
+    const data = await apiClient.get(`${this.baseUrl}/${repositoryUuid}/tree`);
+    return data;
+  }
+
+  // ===== Folder 文件夹管理 =====
+
+  /**
+   * 创建文件夹
+   */
+  async createFolder(
+    repositoryUuid: string,
+    request: RepositoryContracts.CreateFolderRequestDTO,
+  ): Promise<RepositoryContracts.FolderDTO> {
+    const data = await apiClient.post(`${this.baseUrl}/${repositoryUuid}/folders`, request);
+    return data;
+  }
+
+  /**
+   * 获取文件夹树
+   */
+  async getFolderTree(repositoryUuid: string): Promise<RepositoryContracts.FolderDTO[]> {
+    const data = await apiClient.get(`${this.baseUrl}/${repositoryUuid}/folders/tree`);
+    return data;
+  }
+
+  /**
+   * 获取文件夹详情
+   */
+  async getFolder(uuid: string): Promise<RepositoryContracts.FolderDTO> {
+    const data = await apiClient.get(`${this.baseUrl}/folders/${uuid}`);
+    return data;
+  }
+
+  /**
+   * 重命名文件夹
+   */
+  async renameFolder(uuid: string, name: string): Promise<RepositoryContracts.FolderDTO> {
+    const data = await apiClient.patch(`${this.baseUrl}/folders/${uuid}/rename`, { name });
+    return data;
+  }
+
+  /**
+   * 移动文件夹
+   */
+  async moveFolder(
+    uuid: string,
+    request: { parentFolderUuid?: string | null },
+  ): Promise<RepositoryContracts.FolderDTO> {
+    const data = await apiClient.patch(`${this.baseUrl}/folders/${uuid}/move`, request);
+    return data;
+  }
+
+  /**
+   * 删除文件夹
+   */
+  async deleteFolder(uuid: string): Promise<void> {
+    await apiClient.delete(`${this.baseUrl}/folders/${uuid}`);
+  }
 }
 
 // 导出单例实例

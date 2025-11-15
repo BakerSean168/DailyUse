@@ -122,7 +122,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useFolderStore } from '../stores';
 import { useBookmarkStore } from '../stores/bookmarkStore';
-import { FolderApiClient } from '../../api';
+import { repositoryApiClient } from '../../infrastructure/api';
 import { Folder } from '@dailyuse/domain-client';
 
 // Props
@@ -169,7 +169,7 @@ async function loadFolderTree() {
   error.value = null;
 
   try {
-    const data = await FolderApiClient.getFolderTree(props.selectedRepository);
+    const data = await repositoryApiClient.getFolderTree(props.selectedRepository);
     const folders = data.map((dto: any) => Folder.fromServerDTO(dto));
     folderStore.setFoldersForRepository(props.selectedRepository!, folders);
   } catch (err: any) {

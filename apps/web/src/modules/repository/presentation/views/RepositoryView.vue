@@ -257,15 +257,15 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRepositoryStore, useFolderStore } from '../stores';
 import { useResourceStore } from '../stores/resourceStore';
-import { RepositoryApiClient, FolderApiClient } from '../../api';
+import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
 import { Repository, Folder } from '@dailyuse/domain-client';
 import FilesPanel from '../components/FilesPanel.vue';
 import SearchPanel from '../components/SearchPanel.vue';
 import BookmarksPanel from '../components/BookmarksPanel.vue';
 import TagsPanel from '../components/TagsPanel.vue';
-import CreateRepositoryDialog from '../components/CreateRepositoryDialog.vue';
-import CreateFolderDialog from '../components/CreateFolderDialog.vue';
-import CreateResourceDialog from '../components/CreateResourceDialog.vue';
+import CreateRepositoryDialog from '../components/dialogs/CreateRepositoryDialog.vue';
+import CreateFolderDialog from '../components/dialogs/CreateFolderDialog.vue';
+import CreateResourceDialog from '../components/dialogs/CreateResourceDialog.vue';
 import ResourceEditor from '../components/ResourceEditor.vue';
 import TabManager from '../components/TabManager.vue';
 
@@ -315,8 +315,8 @@ async function loadRepositories() {
   error.value = null;
 
   try {
-    const data = await RepositoryApiClient.listRepositories();
-    const repos = data.map((dto: any) => Repository.fromClientDTO(dto));
+    const data = await repositoryApiClient.getRepositories();
+    const repos = data.repositories.map((dto: any) => Repository.fromClientDTO(dto));
     repositoryStore.setRepositories(repos);
 
     // 如果有仓储，默认选中第一个
@@ -347,7 +347,7 @@ function handleSelectRepository(uuid: string) {
 
 async function handleArchiveRepository(uuid: string) {
   try {
-    await RepositoryApiClient.archiveRepository(uuid);
+    await repositoryApiClient.archiveRepository(uuid);
     console.log('仓储已归档');
     loadRepositories();
   } catch (err: any) {
@@ -359,7 +359,7 @@ async function handleDeleteRepository(uuid: string) {
   if (!confirm('确定要删除此仓储吗？此操作不可撤销。')) return;
 
   try {
-    await RepositoryApiClient.deleteRepository(uuid);
+    await repositoryApiClient.deleteRepository(uuid);
     repositoryStore.removeRepository(uuid);
     folderStore.removeFoldersByRepositoryUuid(uuid);
     
@@ -414,7 +414,7 @@ async function handleSubmitRename() {
   isRenaming.value = true;
 
   try {
-    const updatedFolderDTO = await FolderApiClient.renameFolder(
+    const updatedFolderDTO = await repositoryApiClient.renameFolder(
       folderToRename.value.uuid,
       newFolderName.value
     );
@@ -440,7 +440,7 @@ async function handleSubmitDelete() {
   isDeleting.value = true;
 
   try {
-    await FolderApiClient.deleteFolder(folderToDelete.value.uuid);
+    await repositoryApiClient.deleteFolder(folderToDelete.value.uuid);
     folderStore.removeFolder(folderToDelete.value.uuid);
     showDeleteFolderDialog.value = false;
     filesPanelRef.value?.refresh();
@@ -521,153 +521,71 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped lang="scss">
-@import '@/modules/repository/styles/index.scss';
-
+<style scoped>
+/* 使用 Vuetify 工具类和主题变量 */
 .repository-view {
   display: grid;
-  grid-template-columns: $sidebar-width-desktop 1fr;
+  grid-template-columns: 300px 1fr;
   gap: 0;
   height: 100vh;
   overflow: hidden;
+}
 
-  // 响应式布局
-  @include tablet {
-    grid-template-columns: $sidebar-width-tablet 1fr;
+@media (max-width: 1024px) {
+  .repository-view {
+    grid-template-columns: 250px 1fr;
   }
+}
 
-  @include mobile {
+@media (max-width: 768px) {
+  .repository-view {
     grid-template-columns: 1fr;
     position: relative;
   }
 }
 
-/* 左侧边栏 - Obsidian 风格 */
 .sidebar {
-  @include flex-column;
   height: 100%;
   border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   background: rgb(var(--v-theme-surface));
-  z-index: $z-index-sidebar;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
 
-  @include mobile {
+@media (max-width: 768px) {
+  .sidebar {
     position: fixed;
     left: 0;
     top: 0;
-    width: $sidebar-width-mobile;
+    width: 280px;
     transform: translateX(-100%);
-    transition: transform $transition-normal $ease-out;
-    box-shadow: $shadow-lg;
+    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
 
-    &.mobile-open {
-      transform: translateX(0);
-    }
+  .sidebar.mobile-open {
+    transform: translateX(0);
   }
 }
 
-/* 侧边栏顶部标签 */
-.sidebar-tabs {
-  padding: $sidebar-padding;
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  background: rgb(var(--v-theme-surface-variant));
-}
-
-.tab-group {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: $tab-button-gap;
-
-  :deep(.v-btn) {
-    border-radius: $border-radius-md;
-    transition: background-color $transition-fast $ease-out,
-                color $transition-fast $ease-out;
-
-    &:hover {
-      background-color: rgba(var(--v-theme-on-surface), $hover-opacity);
-    }
-
-    &.v-btn--active {
-      background-color: rgba(var(--v-theme-primary), $selected-opacity);
-      color: rgb(var(--v-theme-primary));
-      font-weight: 600;
-    }
-  }
-}
-
-/* 侧边栏内容区域 */
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
-  @include custom-scrollbar;
 }
 
-/* 底部仓储选择器 - Obsidian 风格 */
-.repository-selector {
-  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  padding: $sidebar-padding;
-  background: rgb(var(--v-theme-surface));
-}
-
-.repository-selector-btn {
-  justify-content: flex-start;
-  text-transform: none;
-  font-weight: 500;
-  border-radius: $border-radius-md;
-  transition: background-color $transition-fast $ease-out;
-
-  &:hover {
-    background-color: rgba(var(--v-theme-on-surface), $hover-opacity);
-  }
-}
-
-/* 右侧编辑器面板 */
 .resource-editor-panel {
   height: 100%;
   overflow: hidden;
-  @include flex-column;
+  display: flex;
+  flex-direction: column;
   background: rgb(var(--v-theme-background));
 }
 
 .editor-wrapper {
   flex: 1;
   overflow: hidden;
-}
-
-/* 空状态 - 使用 mixin */
-.empty-state {
-  @include empty-state;
-
-  .v-icon {
-    font-size: $empty-state-icon-size;
-    color: rgb(var(--v-theme-grey-lighten-1));
-    margin-bottom: $spacing-lg;
-  }
-
-  p {
-    &.text-h6 {
-      color: rgb(var(--v-theme-grey));
-      margin-bottom: $spacing-sm;
-    }
-
-    &.text-caption {
-      color: rgb(var(--v-theme-grey-lighten-1));
-    }
-  }
-}
-
-/* 通用样式类 */
-.h-100 {
-  height: 100%;
-}
-
-.text-disabled {
-  opacity: $disabled-opacity;
-}
-
-.text-error {
-  color: rgb(var(--v-theme-error));
 }
 </style>

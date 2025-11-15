@@ -470,7 +470,7 @@ export class InterceptorManager {
       // 🔥 Refresh Token 存储在 httpOnly Cookie 中，浏览器会自动发送
       // 🔥 需要设置 withCredentials: true 以携带 Cookie
       const response = await this.instance.post(
-        '/auth/sessions/refresh',
+        '/auth/refresh',  // ✅ 修复：正确的路由是 /auth/refresh 而非 /auth/sessions/refresh
         {}, // 🔥 Body 为空，Refresh Token 从 Cookie 读取
         {
           headers: {

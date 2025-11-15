@@ -212,40 +212,6 @@ function isLast(bookmark: Bookmark): boolean {
 }
 </script>
 
-<style scoped lang="scss">
-@import '@/modules/repository/styles/index.scss';
-
-.bookmarks-panel {
-  @include panel-container;
-  @include flex-column;
-  background: rgb(var(--v-theme-surface));
-  padding: 0; // panel-container adds padding, we override for header
-}
-
-.panel-header {
-  padding: $spacing-md $sidebar-padding;
-  border-bottom: 1px solid rgba(var(--v-border-color), $divider-opacity);
-}
-
-.bookmarks-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: $spacing-xs $sidebar-padding;
-  @include custom-scrollbar;
-}
-
-.bookmark-item {
-  @include interactive-element;
-  border-radius: $border-radius-md;
-  border: none;
-  margin-bottom: $spacing-xs;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.empty-state {
-  @include empty-state;
-}
+<style scoped>
+/* 使用 Vuetify 工具类，无需自定义样式 */
 </style>

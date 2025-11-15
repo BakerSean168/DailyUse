@@ -42,8 +42,8 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { useResourceStore } from '../stores/resourceStore';
-import { ResourceApiClient } from '../../infrastructure/api/ResourceApiClient';
+import { useResourceStore } from '../../stores/resourceStore';
+import { repositoryApiClient } from '../../../infrastructure/api';
 import { apiClient } from '@/shared/api/instances';
 
 // Props
@@ -64,7 +64,6 @@ const emit = defineEmits<{
 
 // Store
 const resourceStore = useResourceStore();
-const resourceApiClient = new ResourceApiClient(apiClient);
 
 // Local state
 const formRef = ref<any>(null);
@@ -110,7 +109,7 @@ tags: []
 
 `;
 
-    const resourceDTO = await resourceApiClient.createResource({
+    const resourceDTO = await repositoryApiClient.createResource({
       repositoryUuid: props.repositoryUuid,
       name: formData.value.name.endsWith('.md') ? formData.value.name : `${formData.value.name}.md`,
       type: 'MARKDOWN',
