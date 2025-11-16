@@ -11,7 +11,7 @@ import type { TaskTimeConfigClientDTO } from './TaskTimeConfigClient';
 export interface TaskTimeConfigServer {
   timeType: TimeType;
   startDate?: number | null;
-  endDate?: number | null;
+  // endDate 已移除 - 结束日期属于重复规则的结束条件，不属于时间配置
   timePoint?: number | null;
   timeRange?: { start: number; end: number } | null;
 
@@ -26,7 +26,7 @@ export interface TaskTimeConfigServer {
 export interface TaskTimeConfigServerDTO {
   timeType: TimeType;
   startDate?: number | null;
-  endDate?: number | null;
+  // endDate 已移除
   timePoint?: number | null;
   timeRange?: { start: number; end: number } | null;
 }
@@ -34,7 +34,7 @@ export interface TaskTimeConfigServerDTO {
 export interface TaskTimeConfigPersistenceDTO {
   timeType: string;
   startDate?: number | null;
-  endDate?: number | null;
+  // endDate 已移除
   timePoint?: number | null;
   timeRange?: string | null; // JSON
 }

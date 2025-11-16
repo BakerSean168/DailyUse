@@ -419,22 +419,20 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
         // 全天：设置今天到一个月后
         const today = new Date(currentDate);
         today.setHours(0, 0, 0, 0);
-        const oneMonthLater = new Date(today);
-        oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
         this._timeConfig = TaskTimeConfig.fromClientDTO({
           timeType: TimeType.ALL_DAY,
           startDate: today.getTime(),
-          endDate: oneMonthLater.getTime(),
+          // endDate 已移除 - 结束日期属于重复规则
           timePoint: null,
           timeRange: null,
           timeTypeText: '全天',
           formattedStartDate: today.toLocaleDateString('zh-CN'),
-          formattedEndDate: oneMonthLater.toLocaleDateString('zh-CN'),
+          // formattedEndDate 已移除
           formattedTimePoint: '',
           formattedTimeRange: '',
-          displayText: `${today.toLocaleDateString('zh-CN')} - ${oneMonthLater.toLocaleDateString('zh-CN')}`,
-          hasDateRange: true,
+          displayText: '全天',
+          hasDateRange: false,
         });
         break;
       }
@@ -444,12 +442,12 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
         this._timeConfig = TaskTimeConfig.fromClientDTO({
           timeType: TimeType.TIME_POINT,
           startDate: null,
-          endDate: null,
+          // endDate 已移除
           timePoint: now,
           timeRange: null,
           timeTypeText: '时间点',
           formattedStartDate: '',
-          formattedEndDate: '',
+          // formattedEndDate 已移除
           formattedTimePoint: currentDate.toLocaleString('zh-CN'),
           formattedTimeRange: '',
           displayText: currentDate.toLocaleString('zh-CN'),
@@ -466,7 +464,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
         this._timeConfig = TaskTimeConfig.fromClientDTO({
           timeType: TimeType.TIME_RANGE,
           startDate: null,
-          endDate: null,
+          // endDate 已移除
           timePoint: null,
           timeRange: {
             start: startTime.getTime(),
@@ -474,7 +472,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
           },
           timeTypeText: '时间段',
           formattedStartDate: '',
-          formattedEndDate: '',
+          // formattedEndDate 已移除
           formattedTimePoint: '',
           formattedTimeRange: `${startTime.toLocaleString('zh-CN')} - ${endTime.toLocaleString('zh-CN')}`,
           displayText: `${startTime.toLocaleString('zh-CN')} - ${endTime.toLocaleString('zh-CN')}`,
@@ -695,7 +693,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       : TaskTimeConfig.fromServerDTO({
           timeType: TimeType.ALL_DAY,
           startDate: null,
-          endDate: null,
+          // endDate 已移除
           timePoint: null,
           timeRange: null,
         });
@@ -755,7 +753,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       timeConfig: TaskTimeConfig.fromClientDTO({
         timeType: TimeType.ALL_DAY,
         startDate: todayTimestamp, // 默认开始日期：今天
-        endDate: oneMonthLaterTimestamp, // 默认结束日期：一个月后
+        // endDate 已移除 - 结束日期属于重复规则，不属于时间配置
         timePoint: currentTimePoint, // 默认时间点：当前时间
         timeRange: {
           // 默认时间段：当前时间 - 1小时后
@@ -764,11 +762,11 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
         },
         timeTypeText: '全天',
         formattedStartDate: today.toLocaleDateString('zh-CN'),
-        formattedEndDate: oneMonthLater.toLocaleDateString('zh-CN'),
+        // formattedEndDate 已移除
         formattedTimePoint: new Date(currentTimePoint).toLocaleString('zh-CN'),
         formattedTimeRange: `${currentTime.toLocaleTimeString('zh-CN')} - ${oneHourLater.toLocaleTimeString('zh-CN')}`,
         displayText: '全天',
-        hasDateRange: true,
+        hasDateRange: false, // 指的是 timeRange 是否有值
       }),
       importance: ImportanceLevel.Moderate,
       urgency: UrgencyLevel.Medium,
@@ -788,12 +786,12 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     const defaultTimeConfig = TaskTimeConfig.fromClientDTO({
       timeType: TimeType.ALL_DAY,
       startDate: null,
-      endDate: null,
+      // endDate 已移除
       timePoint: null,
       timeRange: null,
       timeTypeText: '全天',
       formattedStartDate: '',
-      formattedEndDate: '',
+      // formattedEndDate 已移除
       formattedTimePoint: '',
       formattedTimeRange: '',
       displayText: '全天',

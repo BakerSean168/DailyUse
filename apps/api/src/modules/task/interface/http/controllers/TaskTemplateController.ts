@@ -524,6 +524,52 @@ export class TaskTemplateController {
   }
 
   /**
+   * 根据日期范围获取模板实例
+   * @route GET /api/task-templates/:uuid/instances
+   */
+  static async getInstancesByDateRange(req: Request, res: Response): Promise<Response> {
+    try {
+      const service = await TaskTemplateController.getTaskTemplateService();
+      const { uuid } = req.params;
+      const { from, to } = req.query;
+
+      if (!from || !to) {
+        return TaskTemplateController.responseBuilder.sendError(res, {
+          code: ResponseCode.BAD_REQUEST,
+          message: 'Missing required query parameters: from, to',
+        });
+      }
+
+      const fromDate = Number(from);
+      const toDate = Number(to);
+
+      if (isNaN(fromDate) || isNaN(toDate)) {
+        return TaskTemplateController.responseBuilder.sendError(res, {
+          code: ResponseCode.BAD_REQUEST,
+          message: 'Invalid date format: from and to must be timestamps',
+        });
+      }
+
+      logger.info('Fetching task instances by date range', {
+        templateUuid: uuid,
+        from: fromDate,
+        to: toDate,
+      });
+
+      // 调用服务获取指定日期范围的实例
+      const instances = await service.getInstancesByDateRange(uuid, fromDate, toDate);
+
+      return TaskTemplateController.responseBuilder.sendSuccess(
+        res,
+        instances,
+        `Retrieved ${instances.length} task instances`,
+      );
+    } catch (error) {
+      return TaskTemplateController.handleError(res, error);
+    }
+  }
+
+  /**
    * 获取一次性任务列表（支持过滤）
    * @route GET /api/tasks/one-time
    */

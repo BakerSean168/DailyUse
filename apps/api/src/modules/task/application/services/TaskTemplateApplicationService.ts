@@ -1050,4 +1050,35 @@ export class TaskTemplateApplicationService {
       },
     };
   }
+
+  /**
+   * 根据日期范围获取模板实例
+   * 用于前端按需加载任务实例
+   */
+  async getInstancesByDateRange(
+    templateUuid: string,
+    fromDate: number,
+    toDate: number,
+  ): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+    // 验证模板是否存在
+    const template = await this.templateRepository.findByUuid(templateUuid);
+    if (!template) {
+      throw new Error(`Task template not found: ${templateUuid}`);
+    }
+
+    // 从仓储中获取该模板的所有实例
+    const allInstances = await this.instanceRepository.findByTemplate(templateUuid);
+
+    // 在内存中按日期范围过滤
+    const filteredInstances = allInstances.filter(instance => {
+      const instanceDate = (instance.instanceDate as any);
+      const timestamp = typeof instanceDate === 'number' 
+        ? instanceDate 
+        : instanceDate.getTime?.() || instanceDate;
+      return timestamp >= fromDate && timestamp <= toDate;
+    });
+
+    // 转换为客户端 DTO
+    return filteredInstances.map(instance => instance.toClientDTO());
+  }
 }

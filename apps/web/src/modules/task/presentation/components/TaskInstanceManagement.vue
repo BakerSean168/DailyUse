@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect, onMounted } from 'vue';
+import { ref, computed, watchEffect, onMounted, watch } from 'vue';
 import { useTaskStore } from '../stores/taskStore';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import { format, startOfDay, isToday, isSameDay } from 'date-fns';
@@ -206,6 +206,8 @@ import { Goal, KeyResult } from '@dailyuse/domain-client';
 import { useTaskInstance } from '../composables/useTaskInstance';
 // 导入 TaskInstanceCard 组件
 import TaskInstanceCard from './cards/TaskInstanceCard.vue';
+// 导入智能同步服务
+import { taskInstanceSyncService } from '../../services/taskInstanceSyncService';
 
 const { completeTaskInstance, undoCompleteTaskInstance } = useTaskInstance();
 
@@ -319,16 +321,80 @@ const selectDay = async (date: string) => {
   selectedDate.value = date;
 };
 
-const previousWeek = () => {
+const previousWeek = async () => {
   const newDate = new Date(currentWeekStart.value);
   newDate.setDate(newDate.getDate() - 7);
   currentWeekStart.value = newDate;
+  
+  // 加载前一周的任务实例
+  await loadWeekInstances();
 };
 
-const nextWeek = () => {
+const nextWeek = async () => {
   const newDate = new Date(currentWeekStart.value);
   newDate.setDate(newDate.getDate() + 7);
   currentWeekStart.value = newDate;
+  
+  // 加载下一周的任务实例
+  await loadWeekInstances();
+};
+
+/**
+ * 加载当前周的任务实例
+ */
+const loadWeekInstances = async () => {
+  try {
+    loading.value = true;
+    console.log('📥 [TaskInstanceManagement] 加载当前周的任务实例...');
+
+    // 计算当前周的开始和结束时间
+    const monday = new Date(currentWeekStart.value);
+    monday.setDate(currentWeekStart.value.getDate() - (currentWeekStart.value.getDay() || 7) + 1);
+    monday.setHours(0, 0, 0, 0);
+    
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    const weekStart = monday.getTime();
+    const weekEnd = sunday.getTime();
+
+    console.log(`📅 [TaskInstanceManagement] 加载范围: ${monday.toLocaleDateString()} - ${sunday.toLocaleDateString()}`);
+
+    // 获取所有活跃的任务模板
+    const activeTemplates = taskStore.getAllTaskTemplates.filter(
+      (t) => t.status === 'ACTIVE'
+    );
+
+    console.log(`📋 [TaskInstanceManagement] 找到 ${activeTemplates.length} 个活跃模板`);
+
+    // 为每个模板加载该周的实例
+    const loadPromises = activeTemplates.map(async (template) => {
+      try {
+        await taskInstanceSyncService.loadInstancesForDate(
+          template.uuid,
+          weekStart,
+          weekEnd
+        );
+      } catch (error) {
+        console.error(`❌ [TaskInstanceManagement] 加载模板 ${template.title} 的实例失败:`, error);
+      }
+    });
+
+    await Promise.all(loadPromises);
+
+    // 统计加载的实例数量
+    const instancesInWeek = taskStore.getAllTaskInstances.filter((inst) => {
+      const instDate = new Date(inst.instanceDate).getTime();
+      return instDate >= weekStart && instDate <= weekEnd;
+    });
+
+    console.log(`✅ [TaskInstanceManagement] 已加载 ${instancesInWeek.length} 个实例`);
+  } catch (error) {
+    console.error('❌ [TaskInstanceManagement] 加载周实例失败:', error);
+  } finally {
+    loading.value = false;
+  }
 };
 
 // 手动刷新数据
@@ -363,6 +429,15 @@ watchEffect(() => {
   }
 });
 
+// 监听 currentWeekStart 变化，自动加载对应周的数据
+watch(currentWeekStart, async (newWeekStart, oldWeekStart) => {
+  // 避免初始化时重复加载
+  if (oldWeekStart && newWeekStart.getTime() !== oldWeekStart.getTime()) {
+    console.log('📅 [TaskInstanceManagement] 周切换，加载新数据...');
+    await loadWeekInstances();
+  }
+});
+
 // 组件挂载时检查并加载数据
 onMounted(async () => {
   console.log('📋 [TaskInstanceManagement] 组件已挂载，开始检查数据...');
@@ -382,6 +457,9 @@ onMounted(async () => {
     const templates = taskStore.getAllTaskTemplates.length;
     const instances = taskStore.getAllTaskInstances.length;
     console.log(`📊 [TaskInstanceManagement] 当前数据: ${templates} 个模板，${instances} 个实例`);
+
+    // 加载当前周的实例
+    await loadWeekInstances();
   } catch (error) {
     console.error('❌ [TaskInstanceManagement] 数据加载失败:', error);
     // 不影响组件正常显示，只记录错误

@@ -15,7 +15,46 @@ import taskInstanceRoutes from './taskInstanceRoutes';
  */
 const router: ExpressRouter = Router();
 
+/**
+ * @swagger
+ * /task-templates/{uuid}/instances:
+ *   get:
+ *     tags: [Task Templates]
+ *     summary: 根据日期范围获取模板实例
+ *     description: 获取指定任务模板在指定日期范围内的所有实例
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 任务模板UUID
+ *       - in: query
+ *         name: from
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: 起始日期（时间戳）
+ *       - in: query
+ *         name: to
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: 结束日期（时间戳）
+ *     responses:
+ *       200:
+ *         description: 成功返回任务实例列表
+ *       400:
+ *         description: 缺少必需参数或参数格式错误
+ *       404:
+ *         description: 任务模板不存在
+ */
+router.get('/:uuid/instances', TaskTemplateController.getInstancesByDateRange);
+
 // ============ 子路由：任务实例 ============
+// 注意：必须放在 /:uuid/instances 之后，否则会拦截所有 /instances 请求
 router.use('/instances', taskInstanceRoutes);
 
 // ============ 聚合根操作路由 ============

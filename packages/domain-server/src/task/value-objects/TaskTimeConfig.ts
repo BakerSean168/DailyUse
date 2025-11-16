@@ -21,14 +21,13 @@ type TimeType = TaskContracts.TimeType;
 export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
   public readonly timeType: TimeType;
   public readonly startDate: number | null;
-  public readonly endDate: number | null;
+  // endDate 已移除 - 结束日期属于重复规则的结束条件
   public readonly timePoint: number | null;
   public readonly timeRange: { start: number; end: number } | null;
 
   constructor(params: {
     timeType: TimeType;
     startDate?: number | null;
-    endDate?: number | null;
     timePoint?: number | null;
     timeRange?: { start: number; end: number } | null;
   }) {
@@ -36,7 +35,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
 
     this.timeType = params.timeType;
     this.startDate = params.startDate ?? null;
-    this.endDate = params.endDate ?? null;
+    // endDate 已移除
     this.timePoint = params.timePoint ?? null;
     this.timeRange = params.timeRange ? { ...params.timeRange } : null;
 
@@ -54,7 +53,6 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     changes: Partial<{
       timeType: TimeType;
       startDate: number | null;
-      endDate: number | null;
       timePoint: number | null;
       timeRange: { start: number; end: number } | null;
     }>,
@@ -62,7 +60,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     return new TaskTimeConfig({
       timeType: changes.timeType ?? this.timeType,
       startDate: changes.startDate ?? this.startDate,
-      endDate: changes.endDate ?? this.endDate,
+      // endDate 已移除
       timePoint: changes.timePoint ?? this.timePoint,
       timeRange: changes.timeRange ?? this.timeRange,
     });
@@ -86,7 +84,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     return (
       this.timeType === other.timeType &&
       this.startDate === other.startDate &&
-      this.endDate === other.endDate &&
+      // endDate 已移除
       this.timePoint === other.timePoint &&
       timeRangeEqual
     );
@@ -99,7 +97,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     return {
       timeType: this.timeType,
       startDate: this.startDate,
-      endDate: this.endDate,
+      // endDate 已移除
       timePoint: this.timePoint,
       timeRange: this.timeRange ? { ...this.timeRange } : null,
     };
@@ -109,16 +107,16 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     return {
       timeType: this.timeType,
       startDate: this.startDate,
-      endDate: this.endDate,
+      // endDate 已移除
       timePoint: this.timePoint,
       timeRange: this.timeRange ? { ...this.timeRange } : null,
       timeTypeText: this.getTimeTypeText(),
       formattedStartDate: this.getFormattedStartDate(),
-      formattedEndDate: this.getFormattedEndDate(),
+      // formattedEndDate 已移除
       formattedTimePoint: this.getFormattedTimePoint(),
       formattedTimeRange: this.getFormattedTimeRange(),
       displayText: this.getDisplayText(),
-      hasDateRange: this.startDate !== null && this.endDate !== null,
+      hasDateRange: this.timeRange !== null, // 指的是 timeRange 有开始和结束时间
     };
   }
 
@@ -126,7 +124,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     return {
       timeType: this.timeType,
       startDate: this.startDate,
-      endDate: this.endDate,
+      // endDate 已移除
       timePoint: this.timePoint,
       timeRange: this.timeRange ? JSON.stringify(this.timeRange) : null,
     };
@@ -139,7 +137,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     return new TaskTimeConfig({
       timeType: dto.timeType,
       startDate: dto.startDate,
-      endDate: dto.endDate,
+      // endDate 已移除
       timePoint: dto.timePoint,
       timeRange: dto.timeRange,
     });
@@ -151,7 +149,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     return new TaskTimeConfig({
       timeType: dto.timeType as TimeType,
       startDate: dto.startDate,
-      endDate: dto.endDate,
+      // endDate 已移除
       timePoint: dto.timePoint,
       timeRange: dto.timeRange ? JSON.parse(dto.timeRange) : null,
     });
@@ -173,9 +171,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     return this.startDate ? new Date(this.startDate).toLocaleDateString() : '';
   }
 
-  private getFormattedEndDate(): string {
-    return this.endDate ? new Date(this.endDate).toLocaleDateString() : '';
-  }
+  // getFormattedEndDate 已移除
 
   private getFormattedTimePoint(): string {
     return this.timePoint ? new Date(this.timePoint).toLocaleString() : '';

@@ -11,6 +11,7 @@
 import { TaskTemplate, TaskInstance } from '../aggregates';
 import type { ITaskTemplateRepository, ITaskInstanceRepository } from '../repositories';
 import { TaskContracts } from '@dailyuse/contracts';
+import { eventBus } from '@dailyuse/utils';
 
 const {
   TARGET_GENERATE_AHEAD_DAYS,
@@ -89,6 +90,48 @@ export class TaskInstanceGenerationService {
       
       console.log(
         `✅ [TaskInstanceGenerationService] 为模板 "${template.title}" 生成了 ${instances.length} 个实例（${new Date(fromDate).toLocaleDateString()} - ${new Date(toDate).toLocaleDateString()}）`,
+      );
+
+      // ⭐ 发布领域事件：混合方案（智能选择推送策略）
+      const SMALL_BATCH_THRESHOLD = 20; // 少于20个实例直接推送完整数据
+      
+      const eventPayload: any = {
+        templateUuid: template.uuid,
+        templateTitle: template.title,
+        instanceCount: instances.length,
+        dateRange: {
+          from: fromDate,
+          to: toDate,
+        },
+      };
+
+      // 智能选择推送策略
+      if (instances.length <= SMALL_BATCH_THRESHOLD) {
+        // 小数据量：直接推送完整数据（避免额外API调用）
+        eventPayload.instances = instances.map(inst => inst.toClientDTO());
+        eventPayload.strategy = 'full';
+        console.log(
+          `📤 [TaskInstanceGenerationService] 小数据量（${instances.length}个），推送完整数据`,
+        );
+      } else {
+        // 大数据量：只推送摘要，前端按需拉取
+        eventPayload.strategy = 'summary';
+        console.log(
+          `📤 [TaskInstanceGenerationService] 大数据量（${instances.length}个），只推送摘要`,
+        );
+      }
+
+      eventBus.emit('task.instances.generated', {
+        eventType: 'task_template.instances_generated',
+        version: '1.0',
+        aggregateId: template.uuid,
+        occurredOn: new Date(),
+        accountUuid: template.accountUuid,
+        payload: eventPayload,
+      });
+
+      console.log(
+        `📤 [TaskInstanceGenerationService] 已发布 task.instances.generated 事件（策略：${eventPayload.strategy}）`,
       );
     } else {
       console.log(

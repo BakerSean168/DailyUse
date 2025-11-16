@@ -97,6 +97,15 @@ export enum DayOfWeek {
   SATURDAY = 6,
 }
 
+/**
+ * 重复规则结束条件类型
+ */
+export enum RecurrenceEndConditionType {
+  NEVER = 'NEVER',           // 永不结束
+  END_DATE = 'END_DATE',     // 指定日期结束
+  OCCURRENCES = 'OCCURRENCES', // 指定次数结束
+}
+
 // ============ 提醒枚举 ============
 
 /**

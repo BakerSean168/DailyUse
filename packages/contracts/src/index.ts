@@ -106,6 +106,7 @@ export {
   TimeType,
   TaskScheduleMode,
   RecurrenceFrequency,
+  RecurrenceEndConditionType,
   DayOfWeek,
   ReminderType,
   ReminderTimeUnit,

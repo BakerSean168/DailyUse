@@ -61,7 +61,7 @@ export class TaskInstanceApplicationService {
       const instanceDTO = await taskInstanceApiClient.getTaskInstanceById(uuid);
 
       // 转换为实体对象并添加到缓存
-      const entityInstance = TaskInstanceClient.fromClientDTO(instanceDTO);
+      const entityInstance = TaskInstance.fromClientDTO(instanceDTO);
       this.taskStore.addTaskInstance(entityInstance);
 
       return instanceDTO;
@@ -124,15 +124,29 @@ export class TaskInstanceApplicationService {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
 
+      console.log('🔄 [TaskInstanceAppService] 开始完成任务实例:', uuid);
+
       const instanceDTO = await taskInstanceApiClient.completeTaskInstance(uuid, request);
 
+      console.log('✅ [TaskInstanceAppService] API 返回成功:', {
+        uuid: instanceDTO.uuid,
+        status: instanceDTO.status,
+      });
+
       // 转换为实体对象并更新缓存
-      const entityInstance = TaskInstanceClient.fromClientDTO(instanceDTO);
+      const entityInstance = TaskInstance.fromClientDTO(instanceDTO);
+      console.log('🔄 [TaskInstanceAppService] 转换为实体对象:', {
+        uuid: entityInstance.uuid,
+        status: entityInstance.status,
+        isCompleted: entityInstance.isCompleted,
+      });
+
       this.taskStore.updateTaskInstance(uuid, entityInstance);
 
       return instanceDTO;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '完成任务实例失败';
+      console.error('❌ [TaskInstanceAppService] 完成任务失败:', error);
       this.taskStore.setError(errorMessage);
       throw error;
     } finally {

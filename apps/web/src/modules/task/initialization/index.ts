@@ -13,6 +13,7 @@ import {
   getTaskSyncService,
 } from '../index';
 import { useTaskStore } from '../presentation/stores/taskStore';
+import { taskInstanceSyncService } from '../services/taskInstanceSyncService';
 
 /**
  * 注册 Task 模块的初始化任务
@@ -113,9 +114,39 @@ export function registerTaskInitializationTasks(): void {
     },
   };
 
+  // Task 实例智能同步服务初始化（SSE事件监听 + 智能预加载）
+  const taskInstanceSyncTask: InitializationTask = {
+    name: 'task-instance-sync',
+    phase: InitializationPhase.USER_LOGIN,
+    priority: 17, // 在 SSE 连接之后（priority 65）初始化
+    initialize: async (context?: { accountUuid?: string }) => {
+      console.log('🔄 [Task] 启动 Task Instance 智能同步服务...');
+
+      try {
+        // 初始化 TaskInstanceSyncService（注册 SSE 事件监听）
+        taskInstanceSyncService.initialize();
+        console.log('✅ [Task] Task Instance 智能同步服务已启动');
+      } catch (error) {
+        console.error('❌ [Task] Task Instance 同步服务启动失败:', error);
+      }
+    },
+    cleanup: async () => {
+      console.log('🧹 [Task] 清理 Task Instance 同步服务...');
+
+      try {
+        // 清理事件监听器
+        taskInstanceSyncService.dispose();
+        console.log('✅ [Task] Task Instance 同步服务已清理');
+      } catch (error) {
+        console.error('❌ [Task] Task Instance 同步服务清理失败:', error);
+      }
+    },
+  };
+
   // 注册任务
   manager.registerTask(taskModuleInitTask);
   manager.registerTask(taskUserDataSyncTask);
+  manager.registerTask(taskInstanceSyncTask); // 新增：实例智能同步服务
 
   console.log('✅ [Task] 已注册 Task 模块初始化任务');
 }

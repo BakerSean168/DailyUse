@@ -17,6 +17,7 @@
 
 import { createLogger, eventBus } from '@dailyuse/utils';
 import { TaskReminderScheduleHandler } from './TaskReminderScheduleHandler';
+import { TaskEventHandler } from '../services/TaskEventHandler';
 
 const logger = createLogger('TaskEventListeners');
 
@@ -24,6 +25,10 @@ const logger = createLogger('TaskEventListeners');
  * 注册 Task 事件监听器
  */
 export function registerTaskEventListeners(): void {
+  // 初始化 TaskEventHandler（监听实例生成等事件）
+  TaskEventHandler.initialize();
+  logger.info('✅ TaskEventHandler 已初始化（监听实例生成、模板创建、实例完成事件）');
+  
   // 监听 ScheduleTaskTriggered 事件
   eventBus.subscribe('ScheduleTaskTriggered', async (event: any) => {
     try {

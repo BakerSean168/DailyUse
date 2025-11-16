@@ -314,6 +314,24 @@ export class SSEClient {
         this.handleNotificationEvent('task-executed', event.data);
       });
 
+      // ⭐ 新增：监听 Task 实例生成事件
+      this.eventSource.addEventListener('task:instances-generated', (event) => {
+        console.log('[SSE Client] 📦 任务实例生成事件:', event.data);
+        this.handleTaskEvent('instances-generated', event.data);
+      });
+
+      // ⭐ 新增：监听 Task 模板创建事件
+      this.eventSource.addEventListener('task:template-created', (event) => {
+        console.log('[SSE Client] 📝 任务模板创建事件:', event.data);
+        this.handleTaskEvent('template-created', event.data);
+      });
+
+      // ⭐ 新增：监听 Task 实例完成事件
+      this.eventSource.addEventListener('task:instance-completed', (event) => {
+        console.log('[SSE Client] ✅ 任务实例完成事件:', event.data);
+        this.handleTaskEvent('instance-completed', event.data);
+      });
+
       // 连接错误
       this.eventSource.onerror = (error) => {
         console.error('[SSE Client] ❌ onerror 触发, readyState:', this.eventSource?.readyState);
@@ -412,6 +430,39 @@ export class SSEClient {
       eventBus.emit(`sse:notification:${eventType}`, parsedData);
     } catch (error) {
       console.error('[SSE Client] 处理通知事件失败:', error, data);
+    }
+  }
+
+  /**
+   * 处理 Task 事件（新增）
+   */
+  private handleTaskEvent(eventType: string, data: string): void {
+    try {
+      const parsedData = JSON.parse(data);
+      console.log(`[SSE Client] 处理 Task 事件 ${eventType}:`, parsedData);
+
+      // 转发到前端事件总线
+      switch (eventType) {
+        case 'instances-generated':
+          eventBus.emit('task:instances-generated', parsedData);
+          break;
+
+        case 'template-created':
+          eventBus.emit('task:template-created', parsedData);
+          break;
+
+        case 'instance-completed':
+          eventBus.emit('task:instance-completed', parsedData);
+          break;
+
+        default:
+          console.warn('[SSE Client] 未知 Task 事件类型:', eventType);
+      }
+
+      // 同时发送通用的 SSE 事件
+      eventBus.emit(`sse:task:${eventType}`, parsedData);
+    } catch (error) {
+      console.error('[SSE Client] 处理 Task 事件失败:', error, data);
     }
   }
 

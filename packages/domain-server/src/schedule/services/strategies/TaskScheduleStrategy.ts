@@ -80,7 +80,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
       cronExpression,
       timezone: 'Asia/Shanghai', // 默认时区，后续可以从用户设置获取
       startDate: timeConfig?.startDate ?? Date.now(),
-      endDate: timeConfig?.endDate ?? recurrenceRule.endDate ?? null,
+      endDate: recurrenceRule.endDate ?? null, // 结束日期从重复规则获取，不再从 timeConfig 获取
       maxExecutions: recurrenceRule.occurrences ?? null,
     });
 

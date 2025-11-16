@@ -4,7 +4,13 @@
  */
 
 import type { TaskContracts } from '@dailyuse/contracts';
-import { ImportanceLevel, UrgencyLevel, TaskType, TaskTemplateStatus } from '@dailyuse/contracts';
+import { 
+  ImportanceLevel, 
+  UrgencyLevel, 
+  TaskType, 
+  TaskTemplateStatus,
+  RecurrenceEndConditionType,
+} from '@dailyuse/contracts';
 import { AggregateRoot, calculatePriority } from '@dailyuse/utils';
 import {
   TaskTimeConfig,
@@ -687,6 +693,82 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
   }
 
   /**
+   * 更新重复规则的结束条件（使用枚举类型和默认值）
+   * @param endConditionType 结束条件类型
+   * @param customValue 自定义值（日期时间戳或重复次数）
+   */
+  public updateRecurrenceEndCondition(
+    endConditionType: RecurrenceEndConditionType,
+    customValue?: number,
+  ): void {
+    if (this._taskType !== TaskType.RECURRING) {
+      throw new InvalidTaskTemplateStateError('Only RECURRING tasks have recurrence rules.', {
+        templateUuid: this.uuid,
+        currentStatus: this._status,
+        attemptedAction: 'updateRecurrenceEndCondition',
+      });
+    }
+
+    if (!this._recurrenceRule) {
+      throw new InvalidTaskTemplateStateError('Recurrence rule is not set', {
+        templateUuid: this.uuid,
+        currentStatus: this._status,
+        attemptedAction: 'updateRecurrenceEndCondition',
+      });
+    }
+
+    let updatedRule: RecurrenceRule;
+
+    switch (endConditionType) {
+      case RecurrenceEndConditionType.NEVER:
+        // 永不结束：清空 endDate 和 occurrences
+        updatedRule = this._recurrenceRule.withNeverEnd();
+        break;
+
+      case RecurrenceEndConditionType.END_DATE:
+        // 指定日期结束：使用提供的日期，如果没有则默认为 30 天后
+        const endDate = customValue ?? Date.now() + 30 * 86400000; // 默认 30 天后
+        updatedRule = this._recurrenceRule.withEndDate(endDate);
+        break;
+
+      case RecurrenceEndConditionType.OCCURRENCES:
+        // 指定次数结束：使用提供的次数，如果没有则默认为 10 次
+        const occurrences = customValue ?? 10; // 默认 10 次
+        updatedRule = this._recurrenceRule.withOccurrences(occurrences);
+        break;
+
+      default:
+        throw new InvalidTaskTemplateStateError(`Invalid end condition type: ${endConditionType}`, {
+          templateUuid: this.uuid,
+          currentStatus: this._status,
+          attemptedAction: 'updateRecurrenceEndCondition',
+        });
+    }
+
+    const oldRuleDTO = this._recurrenceRule.toServerDTO();
+    this._recurrenceRule = updatedRule;
+    this._updatedAt = Date.now();
+    
+    this.addHistory('recurrence_end_condition_updated', {
+      oldRule: oldRuleDTO,
+      newRule: updatedRule.toServerDTO(),
+      endConditionType,
+    });
+
+    this.addDomainEvent({
+      eventType: 'task_template.recurrence_changed',
+      aggregateId: this.uuid,
+      occurredOn: new Date(this._updatedAt),
+      accountUuid: this._accountUuid,
+      payload: {
+        taskTemplate: this.toServerDTO(),
+        oldRecurrenceRule: oldRuleDTO,
+        newRecurrenceRule: updatedRule.toServerDTO(),
+      },
+    });
+  }
+
+  /**
    * 更新优先级
    */
   public updatePriority(newImportance: ImportanceLevel, newUrgency: UrgencyLevel): void {
@@ -1271,7 +1353,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       // Flattened timeConfig (RECURRING 任务专用)
       timeConfigType: this._timeConfig?.timeType as 'POINT' | 'RANGE' | 'ALL_DAY' | undefined,
       timeConfigStartTime: this._timeConfig?.startDate,
-      timeConfigEndTime: this._timeConfig?.endDate,
+      timeConfigEndTime: null, // endDate 已移除 - 结束日期属于重复规则
       timeConfigDurationMinutes:
         this._timeConfig?.timeRange &&
         this._timeConfig.timeRange.end &&
@@ -1556,7 +1638,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
     const timeConfig = new TaskTimeConfig({
       timeType: dto.timeConfigType as TaskContracts.TimeType,
       startDate: dto.timeConfigStartTime,
-      endDate: dto.timeConfigEndTime,
+      // endDate 已移除 - 结束日期属于重复规则，不属于时间配置
     });
 
     let recurrenceRule = null;

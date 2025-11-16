@@ -169,6 +169,23 @@ export class TaskTemplateApiClient {
     const data = await apiClient.post(`${this.baseUrl}/${templateUuid}/unbind-goal`);
     return data;
   }
+
+  /**
+   * 根据日期范围获取模板实例
+   * @param templateUuid 模板 UUID
+   * @param from 起始日期（时间戳）
+   * @param to 结束日期（时间戳）
+   */
+  async getInstancesByDateRange(
+    templateUuid: string,
+    from: number,
+    to: number
+  ): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+    const data = await apiClient.get(`${this.baseUrl}/${templateUuid}/instances`, {
+      params: { from, to },
+    });
+    return data;
+  }
 }
 
 /**

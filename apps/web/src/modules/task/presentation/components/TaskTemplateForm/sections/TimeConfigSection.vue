@@ -20,10 +20,6 @@
           <v-text-field v-model="startDate" label="开始日期" type="date" variant="outlined" density="comfortable"
             @update:model-value="handleDateChange"></v-text-field>
         </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field v-model="endDate" label="结束日期" type="date" variant="outlined" density="comfortable"
-            @update:model-value="handleDateChange"></v-text-field>
-        </v-col>
       </v-row>
 
       <!-- 时间点输入 (仅当选择 TIME_POINT 时显示) -->
@@ -70,9 +66,8 @@ const emit = defineEmits<{
 }>();
 
 // 表单数据
-const timeType = ref<TimeType>(TimeType.ALL_DAY);
+const timeType = ref<TaskContracts.TimeType>(TimeType.ALL_DAY);
 const startDate = ref<string>('');
-const endDate = ref<string>('');
 const timePoint = ref<string>('');
 const timeRangeStart = ref<string>('');
 const timeRangeEnd = ref<string>('');
@@ -88,7 +83,6 @@ const initializeFormData = () => {
     // 默认配置
     timeType.value = TimeType.ALL_DAY;
     startDate.value = '';
-    endDate.value = '';
     timePoint.value = '';
     timeRangeStart.value = '';
     timeRangeEnd.value = '';
@@ -97,12 +91,9 @@ const initializeFormData = () => {
 
   timeType.value = config.timeType;
 
-  // 日期范围
+  // 开始日期
   if (config.startDate) {
     startDate.value = formatDateToInput(config.startDate);
-  }
-  if (config.endDate) {
-    endDate.value = formatDateToInput(config.endDate);
   }
 
   // 时间点
@@ -229,7 +220,7 @@ const updateTimeConfig = () => {
     const newConfig: TaskContracts.TaskTimeConfigClientDTO = {
       timeType: timeType.value,
       startDate: parseDateInput(startDate.value),
-      endDate: parseDateInput(endDate.value),
+      endDate: null, // 时间配置不再包含结束日期
       timePoint: timeType.value === TimeType.TIME_POINT ? parseDateTimeInput(timePoint.value) : null,
       timeRange:
         timeType.value === TimeType.TIME_RANGE && timeRangeStart.value && timeRangeEnd.value

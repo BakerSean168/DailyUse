@@ -22,18 +22,14 @@
 
     <div class="task-content-wrapper">
       <v-list-item-title :class="['task-title', { completed: isCompleted }]">
-        <!-- TaskInstance 没有 title，显示日期 -->
-        任务实例 {{ task.instanceDateFormatted }}
-        <!-- TaskInstance 没有 title，显示日期 -->
-        任务实例 {{ task.instanceDateFormatted }}
+        {{ taskTitle }}
       </v-list-item-title>
 
       <v-list-item-subtitle class="task-meta">
         <v-icon size="small" class="mr-1">{{
           isCompleted ? 'mdi-check' : 'mdi-clock-outline'
         }}</v-icon>
-        <span v-if="!isCompleted">{{ task.timeConfig.displayText }}</span>
-        <span v-if="!isCompleted">{{ task.timeConfig.displayText }}</span>
+        <span v-if="!isCompleted">{{ timeLabel }}</span>
         <span v-else>完成于 {{ formatCompletionTime }}</span>
       </v-list-item-subtitle>
     </div>
@@ -60,6 +56,7 @@ import { format } from 'date-fns';
 import type { TaskInstance } from '@dailyuse/domain-client';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { Goal, KeyResult } from '@dailyuse/domain-client';
+import { useTaskStore } from '../../stores/taskStore';
 
 // Props
 interface Props {
@@ -78,11 +75,56 @@ const emit = defineEmits<{
   undo: [uuid: string];
 }>();
 
+// Store
+const taskStore = useTaskStore();
+
 // Computed
 const isCompleted = computed(() => props.task.isCompleted);
 
+/**
+ * 从模板获取任务标题
+ */
+const taskTitle = computed(() => {
+  const template = taskStore.getTaskTemplateByUuid(props.task.templateUuid);
+  return template?.title || '未知任务';
+});
+
 const formatCompletionTime = computed(() => {
-  return props.task.actualEndTime ? format(props.task.actualEndTime, 'yyyy-MM-dd HH:mm:ss') : '';
+  return props.task.actualEndTime ? format(props.task.actualEndTime, 'HH:mm') : '';
+});
+
+/**
+ * 根据时间类型生成时间标签
+ * - ALL_DAY: 全天
+ * - TIME_POINT: HH:mm
+ * - TIME_RANGE: HH:mm - HH:mm
+ */
+const timeLabel = computed(() => {
+  const timeConfig = props.task.timeConfig;
+  
+  if (timeConfig.timeType === 'ALL_DAY') {
+    return '全天';
+  }
+  
+  if (timeConfig.timeType === 'TIME_POINT' && timeConfig.timePoint !== null) {
+    const hours = Math.floor(timeConfig.timePoint / 60);
+    const minutes = timeConfig.timePoint % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+  
+  if (timeConfig.timeType === 'TIME_RANGE' && timeConfig.timeRange) {
+    const startHours = Math.floor(timeConfig.timeRange.start / 60);
+    const startMinutes = timeConfig.timeRange.start % 60;
+    const endHours = Math.floor(timeConfig.timeRange.end / 60);
+    const endMinutes = timeConfig.timeRange.end % 60;
+    
+    const startTime = `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
+    const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+    
+    return `${startTime} - ${endTime}`;
+  }
+  
+  return '全天';
 });
 
 // 这里需要 goalStore 来获取关键结果名称

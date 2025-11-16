@@ -81,6 +81,52 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   }
 
   /**
+   * 更新结束条件 - 便捷方法
+   */
+
+  /**
+   * 设置为永不结束
+   */
+  public withNeverEnd(): RecurrenceRule {
+    return this.with({ endDate: null, occurrences: null });
+  }
+
+  /**
+   * 设置结束日期
+   */
+  public withEndDate(endDate: number): RecurrenceRule {
+    return this.with({ endDate, occurrences: null });
+  }
+
+  /**
+   * 设置重复次数
+   */
+  public withOccurrences(occurrences: number): RecurrenceRule {
+    return this.with({ endDate: null, occurrences });
+  }
+
+  /**
+   * 更新重复频率
+   */
+  public withFrequency(frequency: RecurrenceFrequency): RecurrenceRule {
+    return this.with({ frequency });
+  }
+
+  /**
+   * 更新重复间隔
+   */
+  public withInterval(interval: number): RecurrenceRule {
+    return this.with({ interval });
+  }
+
+  /**
+   * 更新星期几（仅用于每周重复）
+   */
+  public withDaysOfWeek(daysOfWeek: DayOfWeek[]): RecurrenceRule {
+    return this.with({ daysOfWeek });
+  }
+
+  /**
    * 值相等性比较
    */
   public equals(other: RecurrenceRule): boolean {
@@ -136,7 +182,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   }
 
   /**
-   * 静态工厂方法
+   * 静态工厂方法 - 从 DTO 恢复
    */
   public static fromServerDTO(dto: TaskContracts.RecurrenceRuleServerDTO): RecurrenceRule {
     // 防御性检查：确保 daysOfWeek 是数组
@@ -160,6 +206,166 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
       daysOfWeek,
       endDate: dto.endDate,
       occurrences: dto.occurrences,
+    });
+  }
+
+  /**
+   * 静态工厂方法 - 创建常见的重复规则
+   */
+
+  /**
+   * 创建每天重复的规则（永不结束）
+   */
+  public static daily(interval: number = 1): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'DAILY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate: null,
+      occurrences: null,
+    });
+  }
+
+  /**
+   * 创建每天重复的规则（指定结束日期）
+   */
+  public static dailyUntil(interval: number, endDate: number): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'DAILY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate,
+      occurrences: null,
+    });
+  }
+
+  /**
+   * 创建每天重复的规则（指定重复次数）
+   */
+  public static dailyCount(interval: number, occurrences: number): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'DAILY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate: null,
+      occurrences,
+    });
+  }
+
+  /**
+   * 创建每周重复的规则（永不结束）
+   */
+  public static weekly(daysOfWeek: DayOfWeek[], interval: number = 1): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'WEEKLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek,
+      endDate: null,
+      occurrences: null,
+    });
+  }
+
+  /**
+   * 创建每周重复的规则（指定结束日期）
+   */
+  public static weeklyUntil(daysOfWeek: DayOfWeek[], interval: number, endDate: number): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'WEEKLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek,
+      endDate,
+      occurrences: null,
+    });
+  }
+
+  /**
+   * 创建每周重复的规则（指定重复次数）
+   */
+  public static weeklyCount(daysOfWeek: DayOfWeek[], interval: number, occurrences: number): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'WEEKLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek,
+      endDate: null,
+      occurrences,
+    });
+  }
+
+  /**
+   * 创建每月重复的规则（永不结束）
+   */
+  public static monthly(interval: number = 1): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'MONTHLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate: null,
+      occurrences: null,
+    });
+  }
+
+  /**
+   * 创建每月重复的规则（指定结束日期）
+   */
+  public static monthlyUntil(interval: number, endDate: number): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'MONTHLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate,
+      occurrences: null,
+    });
+  }
+
+  /**
+   * 创建每月重复的规则（指定重复次数）
+   */
+  public static monthlyCount(interval: number, occurrences: number): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'MONTHLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate: null,
+      occurrences,
+    });
+  }
+
+  /**
+   * 创建每年重复的规则（永不结束）
+   */
+  public static yearly(interval: number = 1): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'YEARLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate: null,
+      occurrences: null,
+    });
+  }
+
+  /**
+   * 创建每年重复的规则（指定结束日期）
+   */
+  public static yearlyUntil(interval: number, endDate: number): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'YEARLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate,
+      occurrences: null,
+    });
+  }
+
+  /**
+   * 创建每年重复的规则（指定重复次数）
+   */
+  public static yearlyCount(interval: number, occurrences: number): RecurrenceRule {
+    return new RecurrenceRule({
+      frequency: 'YEARLY' as RecurrenceFrequency,
+      interval,
+      daysOfWeek: [],
+      endDate: null,
+      occurrences,
     });
   }
 

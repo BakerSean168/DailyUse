@@ -87,7 +87,7 @@
         <div class="meta-item">
           <v-icon color="info" size="small" class="meta-icon"> mdi-clock </v-icon>
           <span class="meta-text">
-            {{ template.timeDisplayText }}
+            {{ timeLabel }}
           </span>
         </div>
 
@@ -339,6 +339,40 @@ const formatCompletionTime = (minutes: number): string => {
     return remainingMinutes > 0 ? `${hours}小时${remainingMinutes}分钟` : `${hours}小时`;
   }
 };
+
+/**
+ * 根据时间类型生成时间标签
+ * - ALL_DAY: 全天
+ * - TIME_POINT: HH:mm
+ * - TIME_RANGE: HH:mm - HH:mm
+ */
+const timeLabel = computed(() => {
+  const timeConfig = props.template.timeConfig;
+  
+  if (timeConfig.timeType === 'ALL_DAY') {
+    return '全天';
+  }
+  
+  if (timeConfig.timeType === 'TIME_POINT' && timeConfig.timePoint !== null) {
+    const hours = Math.floor(timeConfig.timePoint / 60);
+    const minutes = timeConfig.timePoint % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+  
+  if (timeConfig.timeType === 'TIME_RANGE' && timeConfig.timeRange) {
+    const startHours = Math.floor(timeConfig.timeRange.start / 60);
+    const startMinutes = timeConfig.timeRange.start % 60;
+    const endHours = Math.floor(timeConfig.timeRange.end / 60);
+    const endMinutes = timeConfig.timeRange.end % 60;
+    
+    const startTime = `${startHours.toString().padStart(2, '0')}:${startMinutes.toString().padStart(2, '0')}`;
+    const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+    
+    return `${startTime} - ${endTime}`;
+  }
+  
+  return '全天';
+});
 
 // 事件处理方法
 const handleEdit = () => {

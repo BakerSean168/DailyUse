@@ -412,7 +412,15 @@ export const useTaskStore = defineStore('task', {
     updateTaskInstance(uuid: string, updatedInstance: TaskInstance) {
       const index = this.taskInstances.findIndex((i) => i.uuid === uuid);
       if (index >= 0) {
-        this.taskInstances[index] = updatedInstance;
+        // 使用 splice 确保触发响应式更新
+        this.taskInstances.splice(index, 1, updatedInstance);
+        console.log('✅ [TaskStore] 任务实例已更新:', {
+          uuid,
+          status: updatedInstance.status,
+          isCompleted: updatedInstance.isCompleted
+        });
+      } else {
+        console.warn('⚠️ [TaskStore] 未找到要更新的任务实例:', uuid);
       }
     },
 
