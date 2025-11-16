@@ -151,7 +151,7 @@
                   :task="task"
                   :show-border="index < incompleteTasks.length - 1"
                   :goal-store="goalStore"
-                  @complete="completeTaskInstance"
+                  @complete="openCompleteDialog"
                 />
               </v-list>
             </div>
@@ -189,6 +189,18 @@
         </v-card>
       </div>
     </div>
+
+    <!-- 完成任务对话框 -->
+    <TaskCompleteDialog
+      v-if="dialogData.show"
+      v-model="dialogData.show"
+      :task-uuid="dialogData.taskUuid"
+      :task-title="dialogData.taskTitle"
+      :instance-date="dialogData.instanceDate"
+      :goal-binding="dialogData.goalBinding"
+      @confirm="confirmComplete"
+      @cancel="cancelDialog"
+    />
   </div>
 </template>
 
@@ -204,12 +216,15 @@ import { Goal, KeyResult } from '@dailyuse/domain-client';
 
 // composables
 import { useTaskInstance } from '../composables/useTaskInstance';
+import { useTaskCompleteDialog } from '../composables/useTaskCompleteDialog';
 // 导入 TaskInstanceCard 组件
 import TaskInstanceCard from './cards/TaskInstanceCard.vue';
+import TaskCompleteDialog from './dialogs/TaskCompleteDialog.vue';
 // 导入智能同步服务
 import { taskInstanceSyncService } from '../../services/taskInstanceSyncService';
 
-const { completeTaskInstance, undoCompleteTaskInstance } = useTaskInstance();
+const { undoCompleteTaskInstance } = useTaskInstance();
+const { dialogData, openCompleteDialog, confirmComplete, cancelDialog } = useTaskCompleteDialog();
 
 const taskStore = useTaskStore();
 const goalStore = useGoalStore();

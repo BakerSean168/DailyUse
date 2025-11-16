@@ -176,6 +176,7 @@ export interface QueryTaskInstancesRequest {
  * 完成任务实例请求
  */
 export interface CompleteTaskInstanceRequest {
+  recordValue?: number; // Goal Record 的值（如果任务绑定了 KeyResult）
   duration?: number; // 实际耗时（分钟）
   note?: string; // 完成备注
   rating?: number; // 满意度评分（1-5）

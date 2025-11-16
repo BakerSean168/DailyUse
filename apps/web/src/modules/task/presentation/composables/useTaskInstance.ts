@@ -180,7 +180,15 @@ export function useTaskInstance() {
   /**
    * 完成任务
    */
-  async function completeTaskInstance(uuid: string, result?: { duration?: number; note?: string; rating?: number }) {
+  async function completeTaskInstance(
+    uuid: string,
+    result?: {
+      recordValue?: number;
+      duration?: number;
+      note?: string;
+      rating?: number;
+    }
+  ) {
     try {
       isOperating.value = true;
       operationError.value = null;

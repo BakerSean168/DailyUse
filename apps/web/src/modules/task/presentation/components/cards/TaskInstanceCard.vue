@@ -33,20 +33,6 @@
         <span v-else>完成于 {{ formatCompletionTime }}</span>
       </v-list-item-subtitle>
     </div>
-
-    <template v-slot:append>
-      <!-- 已完成任务：显示撤销按钮 -->
-      <v-btn
-        v-if="isCompleted"
-        icon
-        variant="text"
-        size="small"
-        @click="$emit('undo', task.uuid)"
-        class="undo-btn"
-      >
-        <v-icon>mdi-undo</v-icon>
-      </v-btn>
-    </template>
   </v-list-item>
 </template>
 
@@ -72,7 +58,6 @@ const props = withDefaults(defineProps<Props>(), {
 // Emits
 const emit = defineEmits<{
   complete: [uuid: string];
-  undo: [uuid: string];
 }>();
 
 // Store
