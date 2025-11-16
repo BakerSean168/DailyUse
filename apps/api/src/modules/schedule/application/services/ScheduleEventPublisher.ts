@@ -111,6 +111,51 @@ export class ScheduleEventPublisher {
     eventBus.on('task_template.recurrence_changed', handleTaskTemplateUpdate);
 
     /**
+     * 监听 TaskTemplate 暂停事件，删除调度任务
+     */
+    eventBus.on('task.template.paused', async (event: DomainEvent) => {
+      try {
+        if (!event.accountUuid) {
+          console.error('❌ [ScheduleEventPublisher] Missing accountUuid in task.template.paused event');
+          return;
+        }
+
+        const { taskTemplateUuid } = event.payload as { taskTemplateUuid: string };
+        console.log(`⏸️  [ScheduleEventPublisher] 处理任务模板暂停: ${taskTemplateUuid}`);
+        await this.deleteTasksBySource(event.accountUuid, SourceModule.TASK, taskTemplateUuid);
+      } catch (error) {
+        console.error('❌ [ScheduleEventPublisher] Error handling task.template.paused:', error);
+      }
+    });
+
+    /**
+     * 监听 TaskTemplate 恢复/激活事件，重新创建调度任务
+     */
+    eventBus.on('task.template.resumed', async (event: DomainEvent) => {
+      try {
+        if (!event.accountUuid) {
+          console.error('❌ [ScheduleEventPublisher] Missing accountUuid in task.template.resumed event');
+          return;
+        }
+
+        const { taskTemplateData } = event.payload as { 
+          taskTemplateUuid: string;
+          taskTemplateData?: TaskContracts.TaskTemplateServerDTO;
+        };
+        
+        if (!taskTemplateData) {
+          console.error('❌ [ScheduleEventPublisher] Missing taskTemplateData in event payload');
+          return;
+        }
+
+        console.log(`▶️  [ScheduleEventPublisher] 处理任务模板恢复: ${taskTemplateData.uuid}`);
+        await this.handleTaskCreated(event.accountUuid, taskTemplateData);
+      } catch (error) {
+        console.error('❌ [ScheduleEventPublisher] Error handling task.template.resumed:', error);
+      }
+    });
+
+    /**
      * 监听 Task 创建事件
      */
     eventBus.on('task.created', async (event: DomainEvent) => {
@@ -700,6 +745,8 @@ export class ScheduleEventPublisher {
       // Task 模块事件
       'task.created',
       'task.deleted',
+      'task.template.paused',
+      'task.template.resumed',
       'task_template.schedule_time_changed',
       'task_template.recurrence_changed',
       // Reminder 模块事件

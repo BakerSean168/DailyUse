@@ -63,7 +63,7 @@
 
       <!-- 使用 DraggableTaskCard 组件 (支持拖放创建依赖关系) -->
       <DraggableTaskCard v-for="template in filteredTemplates" :key="template.uuid" :template="template"
-        :enable-drag="true" @dependency-created="handleDependencyCreated" />
+        :enable-drag="true" @dependency-created="handleDependencyCreated" @resume="handleResumeTemplate" />
     </div>
 
     <!-- 任务模板编辑对话框 -->
@@ -103,6 +103,7 @@ import TaskTemplateDialog from './dialogs/TaskTemplateDialog.vue';
 import { TaskContracts } from '@dailyuse/contracts';
 // composables
 import { taskDependencyApiClient } from '../../infrastructure/api/taskApiClient';
+import { useTaskTemplate } from '../composables/useTaskTemplate';
 
 type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
 type TaskTemplateClientDTO = TaskContracts.TaskTemplateClientDTO;
@@ -250,6 +251,25 @@ const loadAllDependencies = async () => {
 
 // Load dependencies on mount
 loadAllDependencies();
+
+// Use task template composable
+const { activateTaskTemplate } = useTaskTemplate();
+
+/**
+ * Handle resume template
+ */
+const handleResumeTemplate = async (template: TaskTemplateClientDTO) => {
+  try {
+    console.log('🔄 [TaskTemplateManagement] 恢复模板:', template.title);
+    
+    // Call activate API
+    await activateTaskTemplate(template.uuid);
+    
+    console.log('✅ [TaskTemplateManagement] 模板已恢复:', template.title);
+  } catch (error) {
+    console.error('❌ [TaskTemplateManagement] 恢复模板失败:', error);
+  }
+};
 
 // const pauseTemplate = (template: TaskTemplate) => {
 //     handlePauseTaskTemplate(template.uuid)

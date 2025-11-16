@@ -7,6 +7,9 @@ export * as sharedContracts from './shared/index';
 export { ImportanceLevel } from './shared/importance';
 export { UrgencyLevel } from './shared/urgency';
 
+// 导出通用的调度生命周期事件（跨模块使用）
+export * from './modules/common/schedule-lifecycle-events';
+
 // 导出模块相关的类型定义（定义命名空间防止冲突）
 export * as TaskContracts from './modules/task';
 export * as GoalContracts from './modules/goal';

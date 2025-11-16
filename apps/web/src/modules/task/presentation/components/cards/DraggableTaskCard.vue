@@ -47,7 +47,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
     </div>
 
     <!-- Original Task Card -->
-    <TaskTemplateCard :template="template" @edit="handleEdit" @delete="handleDelete" />
+    <TaskTemplateCard :template="template" @edit="handleEdit" @delete="handleDelete" @resume="handleResume" />
   </div>
 </template>
 
@@ -74,6 +74,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   edit: [templateUuid: string]; // Changed: TaskTemplateCard emits uuid string, not full DTO
   delete: [templateUuid: string];
+  resume: [template: TaskTemplateClientDTO];
   dependencyCreated: [sourceUuid: string, targetUuid: string];
 }>();
 
@@ -85,6 +86,10 @@ const handleEdit = (templateUuid: string) => {
 
 const handleDelete = (templateUuid: string) => {
   emit('delete', templateUuid);
+};
+
+const handleResume = (template: TaskTemplateClientDTO) => {
+  emit('resume', template);
 };
 
 // Services

@@ -9,6 +9,7 @@ import {
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 import { TaskContracts } from '@dailyuse/contracts';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { eventBus } from '@dailyuse/utils';
 
 /**
  * TaskTemplate 应用服务
@@ -347,6 +348,11 @@ export class TaskTemplateApplicationService {
 
   /**
    * 激活任务模板
+   * 
+   * 业务逻辑：
+   * 1. 修改模板状态为 ACTIVE
+   * 2. 立即生成实例到今天
+   * 3. 发布恢复事件，触发提醒调度恢复
    */
   async activateTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateServerDTO> {
     const template = await this.templateRepository.findByUuid(uuid);
@@ -354,18 +360,47 @@ export class TaskTemplateApplicationService {
       throw new Error(`TaskTemplate ${uuid} not found`);
     }
 
+    console.log(`[TaskTemplateApplicationService] 开始激活模板: ${template.title}`);
+
+    // 1. 激活模板状态
     template.activate();
     await this.templateRepository.save(template);
+    console.log(`✅ [TaskTemplateApplicationService] 模板状态已更新为 ACTIVE`);
 
-    // 🔥 激活后立即生成实例
+    // 2. 立即生成实例到今天
     console.log(`[TaskTemplateApplicationService] 模板 "${template.title}" 已激活，开始生成实例...`);
     await this.generateInitialInstances(template);
 
+    // 3. 🔥 发布恢复事件，触发提醒调度恢复
+    try {
+      await eventBus.publish({
+        eventType: 'task.template.resumed',
+        payload: {
+          taskTemplateUuid: template.uuid,
+          taskTemplateTitle: template.title,
+          accountUuid: template.accountUuid,
+          resumedAt: Date.now(),
+          taskTemplateData: template.toServerDTO(),
+        },
+        timestamp: Date.now(),
+      });
+      console.log(`📤 [TaskTemplateApplicationService] 已发布 task.template.resumed 事件`);
+    } catch (error) {
+      console.error(`❌ [TaskTemplateApplicationService] 发布恢复事件失败:`, error);
+    }
+
+    console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 已激活并生成实例`);
     return template.toClientDTO();
   }
 
   /**
    * 暂停任务模板
+   * 
+   * 业务逻辑：
+   * 1. 修改模板状态为 PAUSED
+   * 2. 停止生成新的任务实例
+   * 3. 处理已存在的未完成实例（标记为 SKIPPED）
+   * 4. 发布暂停事件，触发提醒调度暂停
    */
   async pauseTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateServerDTO> {
     const template = await this.templateRepository.findByUuid(uuid);
@@ -373,10 +408,69 @@ export class TaskTemplateApplicationService {
       throw new Error(`TaskTemplate ${uuid} not found`);
     }
 
+    console.log(`[TaskTemplateApplicationService] 开始暂停模板: ${template.title}`);
+
+    // 1. 暂停模板状态
     template.pause();
     await this.templateRepository.save(template);
+    console.log(`✅ [TaskTemplateApplicationService] 模板状态已更新为 PAUSED`);
 
+    // 2. 处理未完成的任务实例
+    await this.handleInstancesOnPause(uuid);
+
+    // 3. 🔥 发布暂停事件，触发提醒调度暂停
+    try {
+      await eventBus.publish({
+        eventType: 'task.template.paused',
+        payload: {
+          taskTemplateUuid: template.uuid,
+          accountUuid: template.accountUuid,
+          pausedAt: Date.now(),
+          reason: '用户手动暂停',
+        },
+        timestamp: Date.now(),
+      });
+      console.log(`📤 [TaskTemplateApplicationService] 已发布 task.template.paused 事件`);
+    } catch (error) {
+      console.error(`❌ [TaskTemplateApplicationService] 发布暂停事件失败:`, error);
+    }
+
+    console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 已暂停`);
     return template.toClientDTO();
+  }
+
+  /**
+   * 处理暂停时的任务实例
+   * - 将所有未完成的实例标记为 SKIPPED
+   */
+  private async handleInstancesOnPause(templateUuid: string): Promise<void> {
+    try {
+      // 获取该模板的所有未完成实例
+      const instances = await this.instanceRepository.findByTemplate(templateUuid);
+      const pendingInstances = instances.filter(
+        (inst) => inst.status === 'PENDING' || inst.status === 'IN_PROGRESS'
+      );
+
+      if (pendingInstances.length === 0) {
+        console.log(`[TaskTemplateApplicationService] 没有未完成的实例需要处理`);
+        return;
+      }
+
+      console.log(
+        `[TaskTemplateApplicationService] 找到 ${pendingInstances.length} 个未完成实例，标记为 SKIPPED`
+      );
+
+      // 批量标记为跳过
+      for (const instance of pendingInstances) {
+        instance.skip('模板已暂停');
+        await this.instanceRepository.save(instance);
+      }
+
+      console.log(`✅ [TaskTemplateApplicationService] 已处理 ${pendingInstances.length} 个实例`);
+    } catch (error) {
+      console.error(`❌ [TaskTemplateApplicationService] 处理实例失败:`, error);
+      // 不抛出错误，允许暂停继续
+    }
   }
 
   /**
