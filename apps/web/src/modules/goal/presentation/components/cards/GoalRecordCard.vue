@@ -5,12 +5,12 @@
         <!-- 记录值 -->
         <v-col cols="4">
           <div class="d-flex align-center">
-            <v-avatar :color="record.changeColor || 'primary'" variant="tonal" size="32" class="mr-3">
-              <v-icon size="16">{{ record.changeIcon || 'mdi-plus' }}</v-icon>
+            <v-avatar color="primary" variant="tonal" size="32" class="mr-3">
+              <v-icon size="16">mdi-plus</v-icon>
             </v-avatar>
             <div>
-              <div class="text-h6 font-weight-bold">{{ record.changeText || `+${record.changeAmount}` }}</div>
-              <div class="text-caption text-medium-emphasis">{{ record.previousValue }} → {{ record.newValue }}</div>
+              <div class="text-h6 font-weight-bold">{{ record.value }}</div>
+              <div class="text-caption text-medium-emphasis">本次记录值</div>
             </div>
           </div>
         </v-col>

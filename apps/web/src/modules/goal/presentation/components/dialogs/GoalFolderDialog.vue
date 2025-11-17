@@ -59,15 +59,12 @@ import { computed, watch, ref } from 'vue';
 import { GoalFolder } from '@dailyuse/domain-client';
 // composables
 import { useGoalFolder } from '../../composables/useGoalFolder';
-import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 
 const goalFolderComposable = useGoalFolder();
 const { createFolder, updateFolder } = goalFolderComposable;
-const accountStore = useAccountStore();
 
 const visible = ref(false);
-const getDefaultAccountUuid = () => accountStore.currentAccountUuid ?? '';
-const createDraftGoalFolder = () => GoalFolder.forCreate(getDefaultAccountUuid());
+const createDraftGoalFolder = () => GoalFolder.forCreate(''); // accountUuid 由后端注入，前端传空字符串
 
 const propGoalFolder = ref<GoalFolder | null>(null);
 const localGoalFolder = ref<GoalFolder>(createDraftGoalFolder());
@@ -121,16 +118,11 @@ const handleSave = () => {
     };
     updateFolder(localGoalFolder.value.uuid, updateRequest);
   } else {
-    // 创建模式：注入 accountUuid（使用新 accountStore 的 currentAccountUuid）
-    const accountUuid = accountStore.currentAccountUuid;
-    if (!accountUuid) {
-      console.error('❌ GoalFolderDialog: 无法获取 accountUuid');
-      return;
-    }
+    // 创建模式：accountUuid 由后端从 JWT token 注入（安全可靠）
+    // 前端不需要传递 accountUuid
     
     // 转换为请求格式（null -> undefined）
     const createRequest = {
-      accountUuid: accountUuid,
       name: localGoalFolder.value.name,
       description: localGoalFolder.value.description || undefined,
       icon: localGoalFolder.value.icon || undefined,

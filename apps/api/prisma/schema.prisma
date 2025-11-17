@@ -345,8 +345,7 @@ model goalFolder {
 model goalRecord {
   uuid          String    @id
   keyResultUuid String    @map("key_result_uuid")
-  previousValue Float     @default(0) @map("previous_value")
-  value         Float
+  value         Float     // 本次记录的独立值
   note          String?
   recordedAt    DateTime  @map("recorded_at")
   createdAt     DateTime  @default(now()) @map("created_at")

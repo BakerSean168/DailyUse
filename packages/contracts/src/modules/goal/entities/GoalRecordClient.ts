@@ -8,38 +8,26 @@ export interface GoalRecordClientDTO {
   uuid: string;
   keyResultUuid: string;
   goalUuid: string;
-  previousValue: number;
-  newValue: number;
-  changeAmount: number;
+  value: number;  // 本次记录的值（独立值）
+  calculatedCurrentValue?: number;  // 记录时计算的累计值（用于展示）
   note?: string | null;
   recordedAt: number;
   createdAt: number;
-  changePercentage: number;
-  isPositiveChange: boolean;
-  changeText: string;
   formattedRecordedAt: string;
   formattedCreatedAt: string;
-  changeIcon: string;
-  changeColor: string;
 }
 
 export interface GoalRecordClient {
   uuid: string;
   keyResultUuid: string;
   goalUuid: string;
-  previousValue: number;
-  newValue: number;
-  changeAmount: number;
+  value: number;  // 本次记录的值（独立值）
+  calculatedCurrentValue?: number;  // 记录时计算的累计值（用于展示）
   note?: string | null;
   recordedAt: number;
   createdAt: number;
-  changePercentage: number;
-  isPositiveChange: boolean;
-  changeText: string;
   formattedRecordedAt: string;
   formattedCreatedAt: string;
-  changeIcon: string;
-  changeColor: string;
 
   getDisplayText(): string;
   getSummary(): string;

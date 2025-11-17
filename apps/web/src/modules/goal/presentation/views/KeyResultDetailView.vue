@@ -186,12 +186,12 @@
                   <v-list-item class="py-3">
                     <template v-slot:prepend>
                       <v-avatar
-                        :color="record.changeAmount > 0 ? 'success' : 'error'"
+                        :color="getChangeColor(record, index)"
                         variant="tonal"
                         size="small"
                       >
                         <v-icon size="small">
-                          {{ record.changeAmount > 0 ? 'mdi-plus' : 'mdi-minus' }}
+                          {{ getChangeIcon(record, index) }}
                         </v-icon>
                       </v-avatar>
                     </template>
@@ -199,7 +199,7 @@
                     <v-list-item-title class="text-body-2">
                       <div class="d-flex align-center justify-space-between mb-1">
                         <span class="font-weight-medium">
-                          {{ record.previousValue }} → {{ record.newValue }}
+                          {{ record.value }}
                         </span>
                         <span class="text-caption text-medium-emphasis">
                           {{ formatRecordDate(record.recordedAt) }}
@@ -214,12 +214,12 @@
 
                     <v-list-item-subtitle class="text-caption">
                       <v-chip
-                        :color="record.changeAmount > 0 ? 'success' : 'error'"
+                        :color="getChangeColor(record, index)"
                         size="x-small"
                         variant="tonal"
                         class="font-weight-bold"
                       >
-                        {{ record.changeAmount > 0 ? '+' : '' }}{{ record.changeAmount }}
+                        {{ getChangeAmountText(record, index) }}
                       </v-chip>
                     </v-list-item-subtitle>
 
@@ -478,6 +478,46 @@ const handleDeleteRecord = async (recordUuid: string) => {
     console.error('删除记录失败', err);
     snackbar.showError('删除记录失败');
   }
+};
+
+// 计算当前记录相对于前一条记录的变化量
+const getChangeAmount = (record: GoalContracts.GoalRecordClientDTO, index: number): number => {
+  if (index === records.value.length - 1) {
+    // 最后一条记录（最新的），没有后续记录
+    return 0;
+  }
+
+  // 获取下一条记录（因为列表是倒序的，最新的在前）
+  const nextRecord = records.value[index + 1];
+  const currentCalcValue = record.calculatedCurrentValue ?? 0;
+  const nextCalcValue = nextRecord.calculatedCurrentValue ?? 0;
+
+  // changeAmount = 当前记录的累计值 - 下一条记录的累计值
+  return currentCalcValue - nextCalcValue;
+};
+
+// 获取变化量的颜色
+const getChangeColor = (record: GoalContracts.GoalRecordClientDTO, index: number): string => {
+  const changeAmount = getChangeAmount(record, index);
+  if (changeAmount > 0) return 'success';
+  if (changeAmount < 0) return 'error';
+  return 'warning';
+};
+
+// 获取变化量的图标
+const getChangeIcon = (record: GoalContracts.GoalRecordClientDTO, index: number): string => {
+  const changeAmount = getChangeAmount(record, index);
+  if (changeAmount > 0) return 'mdi-plus';
+  if (changeAmount < 0) return 'mdi-minus';
+  return 'mdi-equal';
+};
+
+// 获取变化量的文本显示
+const getChangeAmountText = (record: GoalContracts.GoalRecordClientDTO, index: number): string => {
+  const changeAmount = getChangeAmount(record, index);
+  if (changeAmount > 0) return `+${changeAmount}`;
+  if (changeAmount < 0) return `${changeAmount}`;
+  return '无变化';
 };
 
 

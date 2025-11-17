@@ -53,6 +53,7 @@
               @selected-goal-folder="onSelectedGoalFolder"
               @create-goal-folder="GoalFolderDialogRef?.openForCreate"
               @edit-goal-folder="GoalFolderDialogRef?.openForEdit"
+              @delete-goal-folder="handleDeleteFolder"
               class="h-100"
             />
           </v-col>
@@ -242,9 +243,9 @@ const statusTabs = [
 // ===== 计算属性 =====
 
 /**
- * 过滤后的目标列表
+ * 根据选中的分类过滤目标
  */
-const filteredGoals = computed(() => {
+const goalsInSelectedFolder = computed(() => {
   let result = goals.value;
 
   // 按目录过滤
@@ -256,10 +257,19 @@ const filteredGoals = computed(() => {
     }
   }
 
+  return result;
+});
+
+/**
+ * 过滤后的目标列表（分类 + 状态双重过滤）
+ */
+const filteredGoals = computed(() => {
+  let result = goalsInSelectedFolder.value;
+
   // 按状态过滤
   const currentStatus = statusTabs[selectedStatusIndex.value]?.value;
   if (currentStatus && currentStatus !== 'all') {
-  result = result.filter((goal: Goal) => goal.status === currentStatus.toUpperCase());
+    result = result.filter((goal: Goal) => goal.status === currentStatus.toUpperCase());
   }
 
   return result;
@@ -268,15 +278,17 @@ const filteredGoals = computed(() => {
 // ===== 方法 =====
 
 /**
- * 根据状态获取目标数量的计算属性
+ * 根据状态获取目标数量的计算属性（基于当前选中的分类）
  */
 const goalCountByStatus = computed(() => {
+  const goalsInFolder = goalsInSelectedFolder.value;
+  
   return {
-    all: goals.value.length,
-  active: goals.value.filter((goal: Goal) => goal.status === 'ACTIVE').length,
-  paused: goals.value.filter((goal: Goal) => goal.status === 'DRAFT').length,
-  completed: goals.value.filter((goal: Goal) => goal.status === 'COMPLETED').length,
-  archived: goals.value.filter((goal: Goal) => goal.status === 'ARCHIVED').length,
+    all: goalsInFolder.length,
+    active: goalsInFolder.filter((goal: Goal) => goal.status === 'ACTIVE').length,
+    paused: goalsInFolder.filter((goal: Goal) => goal.status === 'DRAFT').length,
+    completed: goalsInFolder.filter((goal: Goal) => goal.status === 'COMPLETED').length,
+    archived: goalsInFolder.filter((goal: Goal) => goal.status === 'ARCHIVED').length,
   };
 });
 
@@ -325,6 +337,24 @@ const handleDeleteGoal = async () => {
     deleteDialog.show = false;
   } catch (error) {
     console.error('删除目标失败:', error);
+  }
+};
+
+/**
+ * 删除分类
+ */
+const handleDeleteFolder = async (folderUuid: string) => {
+  // TODO: 添加确认对话框
+  if (confirm('确定要删除这个分类吗？此操作无法撤销。')) {
+    try {
+      await goalFolderComposable.deleteFolder(folderUuid);
+      // 如果删除的是当前选中的分类，切换到"全部"
+      if (selectedDirUuid.value === folderUuid) {
+        selectedDirUuid.value = 'all';
+      }
+    } catch (error) {
+      console.error('删除分类失败:', error);
+    }
   }
 };
 

@@ -146,15 +146,10 @@ const handleCreateKeyResult = async () => {
     return;
   }
 
-  const previousValue = currentKeyResult.currentValue ?? 0; // ✅ 如果为 null/undefined，使用 0
-  const changeAmount = localRecord.value.changeAmount;
-  const newValue = previousValue + changeAmount;
-
+  // ✅ 新的数据模型：value 就是本次记录的独立值
+  // 不需要再加上 previousValue
   await createGoalRecord(propGoalUuid.value, propKeyResultUuid.value, {
-    keyResultUuid: propKeyResultUuid.value,
-    goalUuid: propGoalUuid.value,
-    previousValue,
-    newValue,
+    value: localRecord.value.changeAmount,  // ✅ 直接传递用户输入的值
     note: localRecord.value.note,
     recordedAt: Date.now(),
   });

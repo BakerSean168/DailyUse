@@ -7,14 +7,13 @@ import type { GoalRecordClientDTO } from './GoalRecordClient';
 
 /**
  * GoalRecord Server DTO
+ * 记录本次的独立值，而不是累计值
  */
 export interface GoalRecordServerDTO {
   uuid: string;
   keyResultUuid: string;
   goalUuid: string;
-  previousValue: number;
-  newValue: number;
-  changeAmount: number;
+  value: number;  // 本次记录的值（独立值）
   note?: string | null;
   recordedAt: number;
   createdAt: number;
@@ -28,9 +27,7 @@ export interface GoalRecordPersistenceDTO {
   uuid: string;
   keyResultUuid: string;
   goalUuid: string;
-  previousValue: number;
-  newValue: number;
-  changeAmount: number;
+  value: number;  // 本次记录的值（独立值）
   note?: string | null;
   recordedAt: number;
   createdAt: number;
@@ -42,19 +39,15 @@ export interface GoalRecordServer {
   uuid: string;
   keyResultUuid: string;
   goalUuid: string;
-  previousValue: number;
-  newValue: number;
-  changeAmount: number;
+  value: number;  // 本次记录的值（独立值）
   note?: string | null;
   recordedAt: number;
   createdAt: number;
 
-  getChangePercentage(): number;
-  isPositiveChange(): boolean;
   updateNote(note: string): void;
 
   toServerDTO(): GoalRecordServerDTO;
-  toClientDTO(): GoalRecordClientDTO;
+  toClientDTO(calculatedCurrentValue?: number): GoalRecordClientDTO;
   toPersistenceDTO(): GoalRecordPersistenceDTO;
 }
 
@@ -62,8 +55,7 @@ export interface GoalRecordServerStatic {
   create(params: {
     keyResultUuid: string;
     goalUuid: string;
-    previousValue: number;
-    newValue: number;
+    value: number;  // 本次记录的值
     note?: string;
     recordedAt?: number;
   }): GoalRecordServer;

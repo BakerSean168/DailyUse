@@ -242,11 +242,11 @@ const weightRules = [
 
 // 计算方法选项
 const calculationMethods = [
-  { title: '累加 - 适用于递增指标', value: 'sum' },
-  { title: '平均值 - 适用于波动指标', value: 'average' },
-  { title: '最大值 - 取最高值', value: 'max' },
-  { title: '最小值 - 取最低值', value: 'min' },
-  { title: '自定义计算', value: 'custom' },
+  { title: '累加 - 适用于递增指标', value: 'SUM' },
+  { title: '平均值 - 适用于波动指标', value: 'AVERAGE' },
+  { title: '最大值 - 取最高值', value: 'MAX' },
+  { title: '最小值 - 取最低值', value: 'MIN' },
+  { title: '取最后一次 - 适用于绝对值', value: 'LAST' },
 ];
 
 // 进度颜色计算

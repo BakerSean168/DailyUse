@@ -124,9 +124,7 @@ export class PrismaGoalRepository implements IGoalRepository {
               uuid: recordData.uuid,
               keyResultUuid: krData.uuid,
               goalUuid: data.uuid,
-              previousValue: recordData.previousValue || 0,
-              newValue: recordData.value,
-              changeAmount: recordData.value - (recordData.previousValue || 0),
+              value: recordData.value,  // ✅ 本次记录的独立值
               note: recordData.note,
               recordedAt: recordData.recordedAt instanceof Date 
                 ? recordData.recordedAt.getTime() 
@@ -245,8 +243,7 @@ export class PrismaGoalRepository implements IGoalRepository {
               where: { uuid: record.uuid },
               create: {
                 uuid: record.uuid,
-                previousValue: record.previousValue ?? 0, // ✅ 保存 previousValue
-                value: record.newValue ?? 0, // ✅ 默认值 0 如果为 null
+                value: record.value ?? 0,  // ✅ 本次记录的独立值
                 note: record.note || null,
                 recordedAt: new Date(record.recordedAt),
                 createdAt: new Date(record.createdAt),
@@ -255,8 +252,7 @@ export class PrismaGoalRepository implements IGoalRepository {
                 },
               },
               update: {
-                previousValue: record.previousValue ?? 0, // ✅ 保存 previousValue
-                value: record.newValue ?? 0, // ✅ 默认值 0 如果为 null
+                value: record.value ?? 0,  // ✅ 本次记录的独立值
                 note: record.note || null,
                 recordedAt: new Date(record.recordedAt),
               },

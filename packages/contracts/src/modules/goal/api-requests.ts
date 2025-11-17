@@ -158,14 +158,12 @@ export interface KeyResultsResponse {
 
 /**
  * 创建目标记录请求
+ * 注意：只需要提供新值 (value)，后端会自动计算 previousValue 和 changeAmount
  */
 export interface CreateGoalRecordRequest {
-  keyResultUuid: string;
-  goalUuid: string;
-  previousValue: number;
-  newValue: number;
-  note?: string;
-  recordedAt?: number;
+  value: number;        // 新的进度值
+  note?: string;        // 备注说明
+  recordedAt?: number;  // 记录时间戳（可选，默认当前时间）
 }
 
 /**

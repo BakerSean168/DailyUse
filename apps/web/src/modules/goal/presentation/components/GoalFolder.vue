@@ -1,5 +1,10 @@
 <template>
-  <v-card class="goal-dir h-100 d-flex flex-column" elevation="0" variant="outlined">
+  <v-card 
+    class="goal-dir h-100 d-flex flex-column" 
+    elevation="0" 
+    variant="outlined"
+    @contextmenu.prevent
+  >
     <!-- 头部 -->
     <v-card-title class="goal-dir-header d-flex align-center justify-space-between pa-4">
       <div class="d-flex align-center">
@@ -36,7 +41,10 @@
     <v-divider></v-divider>
 
     <!-- 目标分类列表 -->
-    <v-card-text class="goal-dir-list pa-0 flex-grow-1 overflow-y-auto">
+    <v-card-text 
+      class="goal-dir-list pa-0 flex-grow-1 overflow-y-auto"
+      @contextmenu.prevent="handleAreaContextMenu"
+    >
       <v-list class="py-0" density="compact">
         <!-- 全部目标 -->
         <v-list-item
@@ -73,6 +81,7 @@
           :class="{ 'goal-dir-item--active': selectedDirUuid === folder.uuid }"
           class="goal-dir-item mx-2 my-1"
           @click="selectDir(folder.uuid)"
+          @contextmenu.prevent.stop="handleFolderContextMenu($event, folder)"
           rounded="lg"
         >
           <template v-slot:prepend>
@@ -86,30 +95,15 @@
           </v-list-item-title>
 
           <template v-slot:append>
-            <div class="d-flex align-center">
-              <v-chip
-                :color="selectedDirUuid === folder.uuid ? 'primary' : 'surface-bright'"
-                :text-color="selectedDirUuid === folder.uuid ? 'on-primary' : 'on-surface-variant'"
-                size="small"
-                variant="flat"
-                class="font-weight-bold"
-              >
-                {{ getGoalCountByDir(folder.uuid) }}
-              </v-chip>
-
-              <!-- 系统目录不显示编辑按钮 -->
-              <v-btn
-                v-if="!folder.isSystemFolder"
-                icon="mdi-pencil"
-                size="x-small"
-                variant="text"
-                color="medium-emphasis"
-                class="ml-1"
-                @click.stop="$emit('edit-goal-folder', folder)"
-              >
-                <v-icon size="12">mdi-pencil</v-icon>
-              </v-btn>
-            </div>
+            <v-chip
+              :color="selectedDirUuid === folder.uuid ? 'primary' : 'surface-bright'"
+              :text-color="selectedDirUuid === folder.uuid ? 'on-primary' : 'on-surface-variant'"
+              size="small"
+              variant="flat"
+              class="font-weight-bold"
+            >
+              {{ getGoalCountByDir(folder.uuid) }}
+            </v-chip>
           </template>
         </v-list-item>
 
@@ -143,13 +137,22 @@
         </v-list-item>
       </v-list>
     </v-card-text>
+
+    <!-- 右键菜单 -->
+    <DuContextMenu
+      v-model:show="contextMenu.show"
+      :x="contextMenu.x"
+      :y="contextMenu.y"
+      :items="contextMenu.items"
+    />
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, reactive } from 'vue';
 import type { GoalFolder } from '@dailyuse/domain-client';
 import { useGoalStore } from '../stores/goalStore';
+import { DuContextMenu, type ContextMenuItem } from '@/shared/components/context-menu';
 
 interface Props {
   goalFolders: GoalFolder[];
@@ -159,6 +162,7 @@ interface Emits {
   (e: 'selected-goal-folder', folderUuid: string): void;
   (e: 'create-goal-folder'): void;
   (e: 'edit-goal-folder', goalFolder: GoalFolder): void;
+  (e: 'delete-goal-folder', folderUuid: string): void;
 }
 
 const props = defineProps<Props>();
@@ -166,6 +170,124 @@ const emit = defineEmits<Emits>();
 
 const goalStore = useGoalStore();
 const selectedDirUuid = ref<string>('all');
+
+// ===== 右键菜单 =====
+
+const contextMenu = reactive<{
+  show: boolean;
+  x: number;
+  y: number;
+  items: ContextMenuItem[];
+  currentFolder: GoalFolder | null;
+}>({
+  show: false,
+  x: 0,
+  y: 0,
+  items: [],
+  currentFolder: null,
+});
+
+/**
+ * 处理文件夹右键菜单
+ */
+const handleFolderContextMenu = (event: MouseEvent, folder: GoalFolder) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  contextMenu.currentFolder = folder;
+  contextMenu.x = event.clientX;
+  contextMenu.y = event.clientY;
+
+  // 系统文件夹只能查看，不能编辑删除
+  if (folder.isSystemFolder) {
+    contextMenu.items = [
+      {
+        title: '查看详情',
+        icon: 'mdi-information-outline',
+        iconColor: 'primary',
+        action: () => {
+          selectDir(folder.uuid);
+        },
+      },
+      { divider: true },
+      {
+        title: '系统文件夹',
+        icon: 'mdi-lock-outline',
+        disabled: true,
+      },
+    ];
+  } else {
+    contextMenu.items = [
+      {
+        title: '打开',
+        icon: 'mdi-folder-open',
+        iconColor: 'primary',
+        action: () => {
+          selectDir(folder.uuid);
+        },
+      },
+      { divider: true },
+      {
+        title: '重命名',
+        icon: 'mdi-pencil',
+        action: () => {
+          emit('edit-goal-folder', folder);
+        },
+      },
+      {
+        title: '新建子分类',
+        icon: 'mdi-folder-plus',
+        iconColor: 'success',
+        action: () => {
+          emit('create-goal-folder');
+        },
+      },
+      { divider: true },
+      {
+        title: '删除分类',
+        icon: 'mdi-delete',
+        iconColor: 'error',
+        danger: true,
+        action: () => {
+          emit('delete-goal-folder', folder.uuid);
+        },
+      },
+    ];
+  }
+
+  contextMenu.show = true;
+};
+
+/**
+ * 处理空白区域右键菜单
+ */
+const handleAreaContextMenu = (event: MouseEvent) => {
+  event.preventDefault();
+
+  contextMenu.currentFolder = null;
+  contextMenu.x = event.clientX;
+  contextMenu.y = event.clientY;
+  contextMenu.items = [
+    {
+      title: '新建分类',
+      icon: 'mdi-folder-plus',
+      iconColor: 'primary',
+      action: () => {
+        emit('create-goal-folder');
+      },
+    },
+    {
+      title: '刷新列表',
+      icon: 'mdi-refresh',
+      action: () => {
+        // 触发刷新
+        window.location.reload();
+      },
+    },
+  ];
+
+  contextMenu.show = true;
+};
 
 // ===== 计算属性 =====
 

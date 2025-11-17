@@ -217,36 +217,23 @@ export class KeyResult extends Entity implements IKeyResultServer {
   }
 
   /**
-   * 更新进度并创建记录
+   * @deprecated 使用 addRecord + recalculateProgress 代替
+   * 更新进度并创建记录（保留用于向后兼容）
    */
   public updateProgress(newValue: number, note?: string): GoalRecordServerDTO {
-    const previousValue = this._progress.currentValue;
-    const changeAmount = newValue - previousValue;
-
-    // 创建记录
-    const record: GoalRecordServerDTO = {
-      uuid: Entity.generateUUID(),
+    // 创建记录（只需要value）
+    const record = GoalRecord.create({
       keyResultUuid: this.uuid,
       goalUuid: this._goalUuid,
-      previousValue,
-      newValue,
-      changeAmount,
-      note: note?.trim() || null,
+      value: newValue,
+      note: note?.trim() || undefined,
       recordedAt: Date.now(),
-      createdAt: Date.now(),
-    };
+    });
 
-    // 更新进度
-    this._progress = {
-      ...this._progress,
-      currentValue: newValue,
-    };
-    this._updatedAt = Date.now();
+    // 添加记录并重新计算
+    this.addRecord(record.toServerDTO());
 
-    // 添加到记录列表
-    this._records.push(record);
-
-    return record;
+    return record.toServerDTO();
   }
 
   /**
@@ -276,10 +263,12 @@ export class KeyResult extends Entity implements IKeyResultServer {
   }
 
   /**
-   * 添加记录
+   * 添加记录并重新计算进度
    */
   public addRecord(record: GoalRecordServerDTO): void {
     this._records.push(record);
+    this._updatedAt = Date.now();
+    this.recalculateProgress();
   }
 
   /**
@@ -300,25 +289,34 @@ export class KeyResult extends Entity implements IKeyResultServer {
    * 根据聚合方式重新计算进度
    */
   public recalculateProgress(): void {
-    if (this._records.length === 0) return;
+    if (this._records.length === 0) {
+      this._progress.currentValue = 0;
+      this._updatedAt = Date.now();
+      return;
+    }
 
-    const values = this.getRecordValues();
-    let newValue = this._progress.currentValue;
+    const values = this._records.map((record) => record.value);
+    let newValue = 0;
 
     switch (this._progress.aggregationMethod) {
       case 'SUM':
+        // 累加所有记录的值
         newValue = values.reduce((sum, val) => sum + val, 0);
         break;
       case 'AVERAGE':
+        // 计算平均值
         newValue = values.reduce((sum, val) => sum + val, 0) / values.length;
         break;
       case 'MAX':
+        // 取最大值
         newValue = Math.max(...values);
         break;
       case 'MIN':
+        // 取最小值
         newValue = Math.min(...values);
         break;
       case 'LAST':
+        // 取最后一次
         newValue = values[values.length - 1];
         break;
     }
@@ -334,7 +332,7 @@ export class KeyResult extends Entity implements IKeyResultServer {
    * 获取所有记录的值
    */
   public getRecordValues(): number[] {
-    return this._records.map((record) => record.newValue);
+    return this._records.map((record) => record.value);
   }
 
   // ===== DTO 转换 =====

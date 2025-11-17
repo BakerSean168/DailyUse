@@ -51,7 +51,7 @@ export class GoalRecordApplicationService {
     goalUuid: string,
     keyResultUuid: string,
     params: {
-      value: number;
+      value: number;  // 本次记录的值
       note?: string;
       recordedAt?: number;
     },
@@ -68,34 +68,26 @@ export class GoalRecordApplicationService {
       throw new Error(`KeyResult not found: ${keyResultUuid}`);
     }
 
-    // 3. 获取当前值作为 previousValue
-    const previousValue = keyResult.progress.currentValue;
-    const newValue = params.value;
-
-    // 4. 创建记录实体
+    // 3. 创建记录实体
     const record = GoalRecord.create({
       keyResultUuid,
       goalUuid,
-      previousValue,
-      newValue,
+      value: params.value,  // 本次记录的值
       note: params.note || undefined,
       recordedAt: params.recordedAt || Date.now(),
     });
 
-    // 5. 添加到关键结果
-    keyResult.addRecord(record);
+    // 4. 添加到关键结果（会自动重新计算 currentValue）
+    keyResult.addRecord(record.toServerDTO());
 
-    // 6. 更新关键结果的当前值
-    keyResult.updateProgress(newValue);
-
-    // 7. 持久化
+    // 5. 持久化
     await this.goalRepository.save(goal);
 
-    // 8. 发布领域事件
+    // 6. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 9. 返回 ClientDTO
-    return record.toClientDTO();
+    // 7. 返回 ClientDTO（包含计算后的 currentValue）
+    return record.toClientDTO(keyResult.progress.currentValue);
   }
 
   /**

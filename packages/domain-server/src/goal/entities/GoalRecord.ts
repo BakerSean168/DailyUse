@@ -22,9 +22,7 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
   // ===== 私有字段 =====
   private _keyResultUuid: string; // ⚠️ 所属 KeyResult 的 UUID
   private _goalUuid: string; // ⚠️ 所属 Goal 的 UUID
-  private _previousValue: number;
-  private _newValue: number;
-  private _changeAmount: number;
+  private _value: number; // 本次记录的值（独立值）
   private _note: string | null;
   private _recordedAt: number;
   private _createdAt: number;
@@ -34,9 +32,7 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
     uuid?: string;
     keyResultUuid: string;
     goalUuid: string;
-    previousValue: number;
-    newValue: number;
-    changeAmount: number;
+    value: number;
     note?: string | null;
     recordedAt: number;
     createdAt: number;
@@ -44,9 +40,7 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
     super(params.uuid ?? Entity.generateUUID());
     this._keyResultUuid = params.keyResultUuid;
     this._goalUuid = params.goalUuid;
-    this._previousValue = params.previousValue;
-    this._newValue = params.newValue;
-    this._changeAmount = params.changeAmount;
+    this._value = params.value;
     this._note = params.note ?? null;
     this._recordedAt = params.recordedAt;
     this._createdAt = params.createdAt;
@@ -62,14 +56,8 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
   public get goalUuid(): string {
     return this._goalUuid;
   }
-  public get previousValue(): number {
-    return this._previousValue;
-  }
-  public get newValue(): number {
-    return this._newValue;
-  }
-  public get changeAmount(): number {
-    return this._changeAmount;
+  public get value(): number {
+    return this._value;
   }
   public get note(): string | null {
     return this._note;
@@ -89,8 +77,7 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
   public static create(params: {
     keyResultUuid: string;
     goalUuid: string;
-    previousValue: number;
-    newValue: number;
+    value: number;
     note?: string;
     recordedAt?: number;
   }): GoalRecord {
@@ -101,16 +88,16 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
     if (!params.goalUuid) {
       throw new Error('Goal UUID is required');
     }
+    if (typeof params.value !== 'number' || isNaN(params.value)) {
+      throw new Error('Value must be a valid number');
+    }
 
     const now = Date.now();
-    const changeAmount = params.newValue - params.previousValue;
 
     return new GoalRecord({
       keyResultUuid: params.keyResultUuid,
       goalUuid: params.goalUuid,
-      previousValue: params.previousValue,
-      newValue: params.newValue,
-      changeAmount,
+      value: params.value,
       note: params.note?.trim() || null,
       recordedAt: params.recordedAt ?? now,
       createdAt: now,
@@ -125,9 +112,7 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
       uuid: dto.uuid,
       keyResultUuid: dto.keyResultUuid,
       goalUuid: dto.goalUuid,
-      previousValue: dto.previousValue,
-      newValue: dto.newValue,
-      changeAmount: dto.changeAmount,
+      value: dto.value,
       note: dto.note ?? null,
       recordedAt: dto.recordedAt,
       createdAt: dto.createdAt,
@@ -142,9 +127,7 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
       uuid: dto.uuid,
       keyResultUuid: dto.keyResultUuid,
       goalUuid: dto.goalUuid,
-      previousValue: dto.previousValue,
-      newValue: dto.newValue,
-      changeAmount: dto.changeAmount,
+      value: dto.value,
       note: dto.note ?? null,
       recordedAt: dto.recordedAt,
       createdAt: dto.createdAt,
@@ -152,23 +135,6 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
   }
 
   // ===== 业务方法 =====
-
-  /**
-   * 获取变化百分比
-   */
-  public getChangePercentage(): number {
-    if (this._previousValue === 0) {
-      return this._newValue > 0 ? 100 : 0;
-    }
-    return (this._changeAmount / this._previousValue) * 100;
-  }
-
-  /**
-   * 是否为正向变化
-   */
-  public isPositiveChange(): boolean {
-    return this._changeAmount > 0;
-  }
 
   /**
    * 更新备注
@@ -187,38 +153,25 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
       uuid: this.uuid,
       keyResultUuid: this._keyResultUuid,
       goalUuid: this._goalUuid,
-      previousValue: this._previousValue,
-      newValue: this._newValue,
-      changeAmount: this._changeAmount,
+      value: this._value,
       note: this._note,
       recordedAt: this._recordedAt,
       createdAt: this._createdAt,
     };
   }
 
-  public toClientDTO(): GoalRecordClientDTO {
-    const isPositive = this.isPositiveChange();
-    const changePercentage = this.getChangePercentage();
-
+  public toClientDTO(calculatedCurrentValue?: number): GoalRecordClientDTO {
     return {
       uuid: this.uuid,
       keyResultUuid: this._keyResultUuid,
       goalUuid: this._goalUuid,
-      previousValue: this._previousValue,
-      newValue: this._newValue,
-      changeAmount: this._changeAmount,
+      value: this._value,
+      calculatedCurrentValue,
       note: this._note,
       recordedAt: this._recordedAt,
       createdAt: this._createdAt,
-
-      // UI 计算字段
-      changePercentage: changePercentage,
-      isPositiveChange: isPositive,
-      changeText: `${isPositive ? '+' : ''}${this._changeAmount}`,
       formattedRecordedAt: new Date(this._recordedAt).toLocaleString(),
       formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
-      changeIcon: isPositive ? 'arrow-up' : 'arrow-down',
-      changeColor: isPositive ? 'green' : 'red',
     };
   }
 
@@ -230,9 +183,7 @@ export class GoalRecord extends Entity implements IGoalRecordServer {
       uuid: this.uuid,
       keyResultUuid: this._keyResultUuid,
       goalUuid: this._goalUuid,
-      previousValue: this._previousValue,
-      newValue: this._newValue,
-      changeAmount: this._changeAmount,
+      value: this._value,
       note: this._note,
       recordedAt: this._recordedAt,
       createdAt: this._createdAt,

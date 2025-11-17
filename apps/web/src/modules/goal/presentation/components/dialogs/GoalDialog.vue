@@ -151,7 +151,12 @@
                 </v-col>
               </v-row>
 
-              <v-textarea v-model="goalNote" label="备注" rows="3" />
+              <v-textarea 
+                v-model="goalDescription" 
+                label="目标描述" 
+                placeholder="详细描述目标的具体内容和预期结果..."
+                rows="3" 
+              />
             </v-form>
           </v-window-item>
 
@@ -247,7 +252,6 @@ import { Goal, KeyResult } from '@dailyuse/domain-client';
 import { GoalContracts } from '@dailyuse/contracts';
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
-import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 
 const goalManagement = useGoalManagement();
 const keyResultComposable = useKeyResult();
@@ -256,7 +260,6 @@ const { createGoal, updateGoal } = goalManagement;
 const { deleteKeyResult } = keyResultComposable;
 
 const goalStore = useGoalStore();
-const accountStore = useAccountStore();
 
 const visible = ref(false);
 const propGoal = ref<Goal | null>(null);
@@ -489,13 +492,7 @@ const goalDescription = computed({
   },
 });
 
-const goalNote = computed({
-  get: () => goalModel.value?.motivation || '',
-  set: (val: string) => {
-    goalModel.value?.updateMotivation(val);
-  },
-});
-
+// 目标动机
 const goalMotive = computed({
   get: () => goalModel.value?.motivation || '',
   set: (val: string) => {
@@ -503,6 +500,7 @@ const goalMotive = computed({
   },
 });
 
+// 可行性分析
 const goalFeasibility = computed({
   get: () => goalModel.value?.feasibilityAnalysis || '',
   set: (val: string) => {
@@ -608,38 +606,8 @@ const handleSave = async () => {
       };
       await updateGoal(goalModel.value.uuid, updateData);
     } else {
-      // 创建模式：注入 accountUuid（乐观更新）
-      // 使用新 accountStore 的 currentAccountUuid computed property
-      let accountUuid = accountStore.currentAccountUuid;
-      
-      // 如果还是失败，尝试从 localStorage 获取 token 并解析（兜底方案）
-      if (!accountUuid) {
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            accountUuid = payload.accountUuid;
-            console.log('✅ 从 token 中获取 accountUuid:', accountUuid);
-          } catch (e) {
-            console.error('❌ 解析 token 失败:', e);
-          }
-        }
-      }
-      
-      if (!accountUuid) {
-        console.error('❌ 无法获取 accountUuid，AccountStore 状态:', {
-          currentAccount: accountStore.currentAccount,
-          currentAccountUuid: accountStore.currentAccountUuid,
-          isAuthenticated: accountStore.isAuthenticated,
-          token: !!localStorage.getItem('token'),
-        });
-        throw new Error('无法获取用户信息，请重新登录');
-      }
-      
-      console.log('✅ 成功获取 accountUuid:', accountUuid);
-      
-      // 设置 accountUuid（只在创建时设置一次）
-      goalModel.value.setAccountUuid(accountUuid);
+      // 创建模式：后端会从 token 自动注入 accountUuid，前端无需传递
+      // 参考 Task 模块的实现方式
       
       // 转换 KeyResults 为简化格式
       const keyResults = (goalModel.value.keyResults || []).map(kr => ({
@@ -652,7 +620,7 @@ const handleSave = async () => {
       }));
       
       const createData: any = {
-        accountUuid: goalModel.value.accountUuid,
+        // accountUuid 不传递，后端会从 req.user.accountUuid 或 JWT token 中获取
         title: goalModel.value.title,
         description: goalModel.value.description ?? undefined,
         color: goalModel.value.color ?? undefined,
@@ -668,6 +636,8 @@ const handleSave = async () => {
         parentGoalUuid: goalModel.value.parentGoalUuid ?? undefined,
         keyResults: keyResults.length > 0 ? keyResults : undefined,
       };
+      
+      console.log('✅ 创建目标请求数据（accountUuid 由后端注入）:', createData);
       await createGoal(createData);
     }
     closeDialog();

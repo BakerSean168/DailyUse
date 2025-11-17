@@ -194,20 +194,35 @@
 
         <!-- 内容标签页 -->
         <v-card elevation="2" class="tabs-card">
-          <v-tabs v-model="activeTab" :color="goalColor" class="px-4 pt-2 flex-shrink-0">
-            <v-tab value="keyResults">
-              <v-icon start>mdi-target</v-icon>
-              关键结果
-            </v-tab>
-            <v-tab value="dag">
-              <v-icon start>mdi-graph-outline</v-icon>
-              权重关系图
-            </v-tab>
-            <v-tab value="repositories">
-              <v-icon start>mdi-source-repository</v-icon>
-              关联仓库
-            </v-tab>
-          </v-tabs>
+          <div class="d-flex align-center">
+            <v-tabs v-model="activeTab" :color="goalColor" class="px-4 pt-2 flex-shrink-0 flex-grow-1">
+              <v-tab value="keyResults">
+                <v-icon start>mdi-target</v-icon>
+                关键结果
+              </v-tab>
+              <v-tab value="dag">
+                <v-icon start>mdi-graph-outline</v-icon>
+                权重关系图
+              </v-tab>
+              <v-tab value="repositories">
+                <v-icon start>mdi-source-repository</v-icon>
+                关联仓库
+              </v-tab>
+            </v-tabs>
+            
+            <!-- 添加关键结果按钮 -->
+            <v-btn
+              v-if="activeTab === 'keyResults'"
+              color="primary"
+              size="small"
+              variant="elevated"
+              prepend-icon="mdi-plus"
+              class="mr-4"
+              @click="openCreateKeyResultDialog"
+            >
+              添加关键结果
+            </v-btn>
+          </div>
 
           <div class="tab-content">
             <v-window v-model="activeTab" class="h-100">
