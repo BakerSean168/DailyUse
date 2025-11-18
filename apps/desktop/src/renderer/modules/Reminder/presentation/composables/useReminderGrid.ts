@@ -13,8 +13,27 @@ export function useReminderGrid() {
     const groupItems: ReminderTemplateGroup[] = reminderStore.getAllReminderGroupExceptSystemGroup;
     const systemGroup = reminderStore.getSystemGroup;
 
-    const allGridItems: GridItem[] = [...(systemGroup?.templates ?? []), ...groupItems];
-    console.log('所有网格项:', allGridItems);
+    // 获取所有已分组的模板 UUID 集合
+    const groupedTemplateUuids = new Set<string>();
+    for (const group of groupItems) {
+      for (const template of group.templates) {
+        groupedTemplateUuids.add(template.uuid);
+      }
+    }
+
+    // 只渲染未分组的模板（groupUuid 为 null/undefined/空字符串 且不在任何其他分组中）
+    const ungroupedTemplates = (systemGroup?.templates ?? []).filter((template) => {
+      const hasNoGroupUuid = !template.groupUuid || template.groupUuid === '' || template.groupUuid === null || template.groupUuid === 'system-root';
+      const notInOtherGroup = !groupedTemplateUuids.has(template.uuid);
+      return hasNoGroupUuid && notInOtherGroup;
+    });
+
+    const allGridItems: GridItem[] = [...ungroupedTemplates, ...groupItems];
+    console.log('所有网格项:', allGridItems, {
+      ungroupedCount: ungroupedTemplates.length,
+      groupCount: groupItems.length,
+      groupedTemplateUuids: Array.from(groupedTemplateUuids),
+    });
     return allGridItems;
   });
 

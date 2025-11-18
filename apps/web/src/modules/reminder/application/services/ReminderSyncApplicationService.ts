@@ -22,6 +22,11 @@ export interface ReminderTemplateRefreshEvent {
   templateUuid: string;
   reason: string;
   timestamp: number;
+  action?: string;
+  payload?: Record<string, unknown>;
+  template?:
+    | ReminderContracts.ReminderTemplateClientDTO
+    | ReminderContracts.ReminderTemplateServerDTO;
 }
 
 /**
@@ -31,6 +36,11 @@ export interface ReminderGroupRefreshEvent {
   groupUuid: string;
   reason: string;
   timestamp: number;
+  action?: string;
+  payload?: Record<string, unknown>;
+  group?:
+    | ReminderContracts.ReminderGroupClientDTO
+    | ReminderContracts.ReminderGroupServerDTO;
 }
 
 /**
@@ -127,22 +137,35 @@ export class ReminderSyncApplicationService {
    */
   private async handleTemplateRefreshEvent(event: ReminderTemplateRefreshEvent): Promise<void> {
     try {
+      const action = event.action || event.reason;
       console.log('[ReminderSyncApplicationService] 收到 Template 刷新事件:', {
         templateUuid: event.templateUuid,
         reason: event.reason,
+        action,
         timestamp: new Date(event.timestamp).toISOString(),
       });
 
-      // 从服务器刷新该 Template 的完整数据
-      const templateDto = await reminderApiClient.getReminderTemplate(event.templateUuid);
-
-      if (!templateDto) {
-        console.warn(`❌ [ReminderSyncApplicationService] Template 不存在: ${event.templateUuid}`);
+      if (action === 'template-deleted') {
+        this.reminderStore.removeReminderTemplate(event.templateUuid);
+        console.log('[ReminderSyncApplicationService] 已根据 SSE 事件删除模板:', event.templateUuid);
         return;
       }
 
-      // 转换为客户端实体
-      const template = ReminderTemplate.fromClientDTO(templateDto);
+      let template = this.normalizeTemplateSnapshot(event.template);
+
+      if (!template) {
+        // 从服务器刷新该 Template 的完整数据
+        const templateDto = await reminderApiClient.getReminderTemplate(event.templateUuid);
+
+        if (!templateDto) {
+          console.warn(
+            `❌ [ReminderSyncApplicationService] Template 不存在: ${event.templateUuid}`,
+          );
+          return;
+        }
+
+        template = ReminderTemplate.fromClientDTO(templateDto);
+      }
 
       // 更新 store
       this.reminderStore.addOrUpdateReminderTemplate(template);
@@ -151,6 +174,7 @@ export class ReminderSyncApplicationService {
         uuid: template.uuid,
         title: template.title,
         reason: event.reason,
+        action,
       });
     } catch (error) {
       console.error(
@@ -165,22 +189,33 @@ export class ReminderSyncApplicationService {
    */
   private async handleGroupRefreshEvent(event: ReminderGroupRefreshEvent): Promise<void> {
     try {
+      const action = event.action || event.reason;
       console.log('[ReminderSyncApplicationService] 收到 Group 刷新事件:', {
         groupUuid: event.groupUuid,
         reason: event.reason,
+        action,
         timestamp: new Date(event.timestamp).toISOString(),
       });
 
-      // 从服务器刷新该 Group 的完整数据
-      const groupDto = await reminderApiClient.getReminderGroup(event.groupUuid);
-
-      if (!groupDto) {
-        console.warn(`❌ [ReminderSyncApplicationService] Group 不存在: ${event.groupUuid}`);
+      if (action === 'group-deleted') {
+        this.reminderStore.removeReminderGroup(event.groupUuid);
+        console.log('[ReminderSyncApplicationService] 已根据 SSE 事件删除分组:', event.groupUuid);
         return;
       }
 
-      // 转换为客户端实体
-      const group = ReminderGroup.fromClientDTO(groupDto);
+      let group = this.normalizeGroupSnapshot(event.group);
+
+      if (!group) {
+        // 从服务器刷新该 Group 的完整数据
+        const groupDto = await reminderApiClient.getReminderGroup(event.groupUuid);
+
+        if (!groupDto) {
+          console.warn(`❌ [ReminderSyncApplicationService] Group 不存在: ${event.groupUuid}`);
+          return;
+        }
+
+        group = ReminderGroup.fromClientDTO(groupDto);
+      }
 
       // 更新 store
       this.reminderStore.addOrUpdateReminderGroup(group);
@@ -189,6 +224,7 @@ export class ReminderSyncApplicationService {
         uuid: group.uuid,
         name: group.name,
         reason: event.reason,
+        action,
       });
     } catch (error) {
       console.error(
@@ -329,6 +365,38 @@ export class ReminderSyncApplicationService {
       console.error('❌ 刷新提醒数据失败:', error);
       throw error;
     }
+  }
+
+  private normalizeTemplateSnapshot(
+    snapshot?:
+      | ReminderContracts.ReminderTemplateClientDTO
+      | ReminderContracts.ReminderTemplateServerDTO,
+  ): ReminderTemplate | null {
+    if (!snapshot) {
+      return null;
+    }
+
+    if ('displayName' in snapshot) {
+      return ReminderTemplate.fromClientDTO(snapshot);
+    }
+
+    return ReminderTemplate.fromServerDTO(snapshot as ReminderContracts.ReminderTemplateServerDTO);
+  }
+
+  private normalizeGroupSnapshot(
+    snapshot?:
+      | ReminderContracts.ReminderGroupClientDTO
+      | ReminderContracts.ReminderGroupServerDTO,
+  ): ReminderGroup | null {
+    if (!snapshot) {
+      return null;
+    }
+
+    if ('displayName' in snapshot || 'controlModeText' in snapshot) {
+      return ReminderGroup.fromClientDTO(snapshot as ReminderContracts.ReminderGroupClientDTO);
+    }
+
+    return ReminderGroup.fromServerDTO(snapshot as ReminderContracts.ReminderGroupServerDTO);
   }
 }
 

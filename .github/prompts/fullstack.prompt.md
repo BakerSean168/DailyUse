@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 ---
 
 description: "全栈工程师 AI 助手 (v1.0)"
@@ -576,6 +576,12 @@ export function registerDashboardWidgets(): void {
   - 调用仓储完成持久化
   - 发布领域事件
   - 转换并返回 DTO（通常是 ClientDTO）
+
+- **Domain Service 应该是纯函数** - 无副作用，不依赖仓储层，输入对象→计算→输出结果
+- **移除所有 Repository 依赖** - Domain Service 构造函数不应注入任何 repository
+- **Application Service 负责编排** - 查询、持久化、事件发布都在应用层完成
+- **Domain Service 按业务拆分** - 不同业务领域的计算逻辑分到不同文件
+- **Application Service 按用例拆分** - 每个用例有明确的业务流程编排
 
 - **依赖注入**：
   - 注入仓储接口（`IAccountRepository`）

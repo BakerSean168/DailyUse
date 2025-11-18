@@ -134,10 +134,10 @@
               <div class="d-flex align-center justify-space-between mt-2">
                 <v-chip
                   size="x-small"
-                  :color="isOverdue(reminder.scheduledTime) ? 'error' : 'primary'"
+                  :color="isOverdue(reminder.nextTriggerAt) ? 'error' : 'primary'"
                   variant="text"
                 >
-                  {{ formatTime(reminder.scheduledTime) }}
+                  {{ formatTime(reminder.nextTriggerAt) }}
                 </v-chip>
 
                 <div v-if="reminder.metadata?.tags?.length" class="d-flex gap-1">
@@ -317,7 +317,7 @@ const upcomingData = ref<any>(null);
 
 // 过滤器状态
 const filters = ref({
-  days: props.filters.days || 7,
+  days: props.filters.days || 1, // 默认查看今天内的提醒
   priorities: props.filters.priorities || [],
   categories: props.filters.categories || [],
   tags: props.filters.tags || [],
@@ -345,7 +345,8 @@ const groupedReminders = computed(() => {
   const groups = new Map<string, any[]>();
 
   upcomingData.value.reminders.forEach((reminder: any) => {
-    const date = startOfDay(new Date(reminder.scheduledTime)).toISOString();
+    // 使用 nextTriggerAt 而不是 scheduledTime
+    const date = startOfDay(new Date(reminder.nextTriggerAt)).toISOString();
     if (!groups.has(date)) {
       groups.set(date, []);
     }
@@ -356,7 +357,7 @@ const groupedReminders = computed(() => {
     .map(([date, reminders]) => ({
       date,
       reminders: reminders.sort(
-        (a, b) => new Date(a.scheduledTime).getTime() - new Date(b.scheduledTime).getTime(),
+        (a, b) => new Date(a.nextTriggerAt).getTime() - new Date(b.nextTriggerAt).getTime(),
       ),
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -368,7 +369,7 @@ const groupedReminders = computed(() => {
 const todayCount = computed(() => {
   if (!upcomingData.value?.reminders) return 0;
   return upcomingData.value.reminders.filter((reminder: any) =>
-    isToday(new Date(reminder.scheduledTime)),
+    isToday(new Date(reminder.nextTriggerAt)),
   ).length;
 });
 
@@ -378,7 +379,7 @@ const todayCount = computed(() => {
 const overdueCount = computed(() => {
   if (!upcomingData.value?.reminders) return 0;
   return upcomingData.value.reminders.filter((reminder: any) =>
-    isPast(new Date(reminder.scheduledTime)),
+    isPast(new Date(reminder.nextTriggerAt)),
   ).length;
 });
 
@@ -449,7 +450,7 @@ function isOverdue(timestamp: number): boolean {
 function getReminderClass(reminder: any): string[] {
   const classes = [];
 
-  if (isOverdue(reminder.scheduledTime)) {
+  if (isOverdue(reminder.nextTriggerAt)) {
     classes.push('overdue');
   }
 

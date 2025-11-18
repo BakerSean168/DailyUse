@@ -100,6 +100,19 @@ export const reminderApiClient = {
   },
 
   /**
+   * 移动模板到指定分组（专用方法）
+   */
+  async moveTemplateToGroup(
+    uuid: string,
+    targetGroupUuid: string | null,
+  ): Promise<ReminderTemplateClientDTO> {
+    return apiClient.post<ReminderTemplateClientDTO>(
+      `/reminders/templates/${uuid}/move`,
+      { targetGroupUuid }
+    );
+  },
+
+  /**
    * 切换提醒模板启用状态
    */
   async toggleTemplateStatus(uuid: string): Promise<ReminderTemplateClientDTO> {

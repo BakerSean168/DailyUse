@@ -184,6 +184,43 @@ router.delete('/templates/:uuid', ReminderController.deleteReminderTemplate);
  */
 router.post('/templates/:uuid/toggle', ReminderController.toggleReminderTemplateStatus);
 
+/**
+ * @swagger
+ * /api/reminders/templates/{uuid}/move:
+ *   post:
+ *     tags: [Reminder]
+ *     summary: 移动提醒模板到分组
+ *     description: 移动提醒模板到指定分组或移出分组（targetGroupUuid 为 null）
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 提醒模板 UUID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - targetGroupUuid
+ *             properties:
+ *               targetGroupUuid:
+ *                 type: string
+ *                 nullable: true
+ *                 description: 目标分组 UUID，null 表示移出分组
+ *     responses:
+ *       200:
+ *         description: 移动成功
+ *       400:
+ *         description: 请求参数错误
+ *       404:
+ *         description: 提醒模板或目标分组不存在
+ */
+router.post('/templates/:uuid/move', ReminderController.moveTemplateToGroup);
+
 // ===== 查询和统计 =====
 
 /**

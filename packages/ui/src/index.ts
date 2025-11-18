@@ -17,6 +17,10 @@ export { default as DuLoadingOverlay } from './components/feedback/DuLoadingOver
 // Components - Form
 export { default as DuTextField } from './components/form/DuTextField.vue';
 
+// Components - Pickers
+export { default as ColorPicker } from './components/ColorPicker.vue';
+export { default as IconPicker } from './components/IconPicker.vue';
+
 // Composables
 export { useSnackbar } from './composables/useSnackbar';
 export { useFormRules } from './composables/useFormValidation';

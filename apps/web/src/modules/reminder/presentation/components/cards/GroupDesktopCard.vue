@@ -102,9 +102,15 @@
           @click="handleTemplateClick(template)"
           @contextmenu.prevent="handleTemplateContextMenu(template, $event)"
         >
-          <div class="icon-circle">
-            <v-icon :color="template.effectiveEnabled ? '#2196F3' : '#999'" size="28">
-              mdi-bell
+          <div 
+            class="icon-circle"
+            :style="{ backgroundColor: template.effectiveEnabled ? (template.color || '#E3F2FD') : '#F5F5F5' }"
+          >
+            <v-icon 
+              :color="template.effectiveEnabled ? 'primary' : '#999'" 
+              size="28"
+            >
+              {{ template.icon || 'mdi-bell' }}
             </v-icon>
           </div>
           <div class="app-name">{{ template.title }}</div>

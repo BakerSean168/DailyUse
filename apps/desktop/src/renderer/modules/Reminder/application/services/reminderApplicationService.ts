@@ -570,13 +570,9 @@ export class ReminderDomainApplicationService {
       const response = await reminderIpcClient.moveTemplateToGroup(templateId, toGroupId);
       console.log('移动模板到组响应:', response);
       if (response.success) {
-        // // 更新本地状态
-        // this.store.moveTemplateToGroup(templateId, toGroupId);
-        // return {
-        //   success: true,
-        //   message: response.message,
-        // };
-        this.getAllReminderGroups();
+        // 等待数据刷新完成，确保前端状态同步
+        await this.syncAllReminderGroups();
+        console.log('✅ 移动模板成功，数据已同步');
       }
 
       return response;

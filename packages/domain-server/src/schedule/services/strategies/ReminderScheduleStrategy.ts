@@ -34,6 +34,10 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * 1. selfEnabled 为 true（自身启用）
    * 2. status 为 ACTIVE
    * 3. 有有效的 trigger 配置
+   * 
+   * 注意：
+   * - RECURRING 类型即使没有 recurrence 配置，也会创建（使用默认配置）
+   * - INTERVAL 触发器会创建周期任务
    */
   shouldCreateSchedule(sourceEntity: ReminderContracts.ReminderTemplateServerDTO): boolean {
     // 必须启用且激活
@@ -46,11 +50,8 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
       return false;
     }
 
-    // 对于 RECURRING 类型，必须有重复配置
-    if (sourceEntity.type === 'RECURRING' && !sourceEntity.recurrence) {
-      return false;
-    }
-
+    // ✅ RECURRING 或 ONE_TIME 且有 trigger 即可创建调度任务
+    // （RECURRING 没有 recurrence 时会使用默认的每日配置）
     return true;
   }
 
@@ -155,8 +156,9 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     }
 
     // 循环提醒：根据重复规则
+    // ✅ 当 recurrence 为 null/undefined 时，默认每日触发
     if (!recurrence) {
-      // 无重复规则，默认每天
+      // 默认：每天该时间触发
       return `0 ${minute} ${hour} * * *`;
     }
 

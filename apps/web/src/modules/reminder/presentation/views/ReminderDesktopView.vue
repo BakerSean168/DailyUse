@@ -8,15 +8,23 @@
         <div class="desktop-grid" @contextmenu.prevent="handleDesktopContextMenu">
           <!-- 模板项（应用图标风格） -->
           <div
-            v-for="template in reminderTemplates"
+            v-for="template in ungroupedTemplates"
             :key="template.uuid"
             class="app-icon"
             :class="{ disabled: !template.effectiveEnabled }"
             @click="handleTemplateClick(template)"
             @contextmenu.prevent="handleTemplateContextMenu(template, $event)"
           >
-            <div class="icon-circle">
-              <v-icon :color="template.effectiveEnabled ? '#2196F3' : '#999'" size="32"> mdi-bell </v-icon>
+            <div 
+              class="icon-circle"
+              :style="{ backgroundColor: template.effectiveEnabled ? (template.color || '#E3F2FD') : '#F5F5F5' }"
+            >
+              <v-icon 
+                :color="template.effectiveEnabled ? 'primary' : '#999'" 
+                size="32"
+              >
+                {{ template.icon || 'mdi-bell' }}
+              </v-icon>
             </div>
             <div class="app-name">{{ template.title }}</div>
           </div>
@@ -30,8 +38,16 @@
             @click="handleGroupClick(group)"
             @contextmenu.prevent="handleGroupContextMenu(group, $event)"
           >
-            <div class="folder-circle">
-              <v-icon :color="group.enabled ? '#4CAF50' : '#999'" size="32"> mdi-folder </v-icon>
+            <div 
+              class="folder-circle"
+              :style="{ backgroundColor: group.enabled ? (group.color || '#E8F5E9') : '#F5F5F5' }"
+            >
+              <v-icon 
+                :color="group.enabled ? 'success' : '#999'" 
+                size="32"
+              >
+                {{ group.icon || 'mdi-folder' }}
+              </v-icon>
               <div class="folder-badge" v-if="getGroupTemplateCount(group) > 0">
                 {{ getGroupTemplateCount(group) }}
               </div>
@@ -177,6 +193,12 @@ const snackbar = useSnackbar();
 const templates = computed(() => reminderTemplates.value);
 const groups = computed(() => reminderGroups.value);
 const templateGroups = computed(() => reminderGroups.value);
+
+// 计算属性：只显示未分组的模板（groupUuid 为 null）
+const ungroupedTemplates = computed(() => {
+  return reminderTemplates.value.filter((t) => t.groupUuid === null || t.groupUuid === undefined);
+});
+
 const refresh = refreshAll;
 
 // 加载分组数据（数据已通过 reminderSyncApplicationService 自动加载）

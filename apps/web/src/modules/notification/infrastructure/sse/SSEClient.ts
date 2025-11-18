@@ -6,6 +6,7 @@
 
 import { eventBus } from '@dailyuse/utils';
 import { AuthManager } from '@/shared/api/core/interceptors';
+import { ReminderEvents } from '@/modules/reminder/application/services/ReminderSyncApplicationService';
 
 export interface SSEEvent {
   type: string;
@@ -332,6 +333,30 @@ export class SSEClient {
         this.handleTaskEvent('instance-completed', event.data);
       });
 
+      // ⭐ Reminder 模块：模板增量刷新事件
+      this.eventSource.addEventListener(ReminderEvents.TEMPLATE_REFRESH, (event) => {
+        console.log('[SSE Client] 🔁 提醒模板刷新事件:', event.data);
+        this.handleReminderEvent(ReminderEvents.TEMPLATE_REFRESH, event.data);
+      });
+
+      // ⭐ Reminder 模块：分组增量刷新事件
+      this.eventSource.addEventListener(ReminderEvents.GROUP_REFRESH, (event) => {
+        console.log('[SSE Client] 📂 提醒分组刷新事件:', event.data);
+        this.handleReminderEvent(ReminderEvents.GROUP_REFRESH, event.data);
+      });
+
+      // ⭐ Reminder 模块：模板全量刷新事件
+      this.eventSource.addEventListener(ReminderEvents.TEMPLATES_REFRESH_ALL, (event) => {
+        console.log('[SSE Client] 🔄 提醒模板全量刷新事件:', event.data);
+        this.handleReminderEvent(ReminderEvents.TEMPLATES_REFRESH_ALL, event.data);
+      });
+
+      // ⭐ Reminder 模块：分组全量刷新事件
+      this.eventSource.addEventListener(ReminderEvents.GROUPS_REFRESH_ALL, (event) => {
+        console.log('[SSE Client] 🔄 提醒分组全量刷新事件:', event.data);
+        this.handleReminderEvent(ReminderEvents.GROUPS_REFRESH_ALL, event.data);
+      });
+
       // 连接错误
       this.eventSource.onerror = (error) => {
         console.error('[SSE Client] ❌ onerror 触发, readyState:', this.eventSource?.readyState);
@@ -463,6 +488,31 @@ export class SSEClient {
       eventBus.emit(`sse:task:${eventType}`, parsedData);
     } catch (error) {
       console.error('[SSE Client] 处理 Task 事件失败:', error, data);
+    }
+  }
+
+  /**
+   * 处理 Reminder 事件（新增）
+   */
+  private handleReminderEvent(eventName: string, data: string): void {
+    try {
+      const parsedData = JSON.parse(data);
+      console.log(`[SSE Client] 处理 Reminder 事件 ${eventName}:`, parsedData);
+
+      switch (eventName) {
+        case ReminderEvents.TEMPLATE_REFRESH:
+        case ReminderEvents.GROUP_REFRESH:
+        case ReminderEvents.TEMPLATES_REFRESH_ALL:
+        case ReminderEvents.GROUPS_REFRESH_ALL:
+          eventBus.emit(eventName, parsedData);
+          break;
+        default:
+          console.warn('[SSE Client] 未知 Reminder 事件类型:', eventName);
+      }
+
+      eventBus.emit(`sse:reminder:${eventName}`, parsedData);
+    } catch (error) {
+      console.error('[SSE Client] 处理 Reminder 事件失败:', error, data);
     }
   }
 

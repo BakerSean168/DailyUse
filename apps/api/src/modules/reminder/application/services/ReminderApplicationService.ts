@@ -1,10 +1,16 @@
-import { ReminderDomainService, ReminderGroup } from '@dailyuse/domain-server';
+import { 
+  ReminderDomainService, 
+  ReminderGroup,
+  ReminderTemplateBusinessService,
+  ReminderGroupBusinessService,
+} from '@dailyuse/domain-server';
 import type {
   IReminderTemplateRepository,
   IReminderGroupRepository,
   IReminderStatisticsRepository,
 } from '@dailyuse/domain-server';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
+import { ReminderQueryApplicationService } from './ReminderQueryApplicationService';
 import type { ReminderContracts } from '@dailyuse/contracts';
 import { ImportanceLevel } from '@dailyuse/contracts';
 import { 
@@ -42,6 +48,10 @@ export class ReminderApplicationService {
   private reminderTemplateRepository: IReminderTemplateRepository;
   private reminderGroupRepository: IReminderGroupRepository;
   private reminderStatisticsRepository: IReminderStatisticsRepository;
+  
+  // 纯业务逻辑服务（推荐使用）
+  private templateBusinessService: ReminderTemplateBusinessService;
+  private groupBusinessService: ReminderGroupBusinessService;
 
   private constructor(
     reminderTemplateRepository: IReminderTemplateRepository,
@@ -56,6 +66,10 @@ export class ReminderApplicationService {
       reminderGroupRepository,
       reminderStatisticsRepository,
     );
+    
+    // 初始化纯业务服务
+    this.templateBusinessService = new ReminderTemplateBusinessService();
+    this.groupBusinessService = new ReminderGroupBusinessService();
   }
 
   /**
@@ -303,22 +317,46 @@ export class ReminderApplicationService {
   /**
    * 切换提醒模板启用状态
    */
+  /**
+   * 切换提醒模板启用状态（使用纯业务服务重构）
+   * 
+   * 用例流程：
+   * 1. 查询 - 获取模板和分组
+   * 2. 领域操作 - 调用聚合根的 enable/pause 方法
+   * 3. 计算 - 使用纯业务服务计算新的 effectiveEnabled 状态
+   * 4. 持久化 - 保存模板
+   * 5. 事件发布 - 发布领域事件
+   */
   async toggleReminderTemplateStatus(uuid: string): Promise<ReminderTemplateClientDTO> {
-    const template = await this.domainService.getTemplate(uuid);
+    // Step 1: 查询
+    const template = await this.reminderTemplateRepository.findById(uuid);
     if (!template) {
       throw new Error(`ReminderTemplate not found: ${uuid}`);
     }
 
-    // Toggle enabled status
+    let group = null;
+    if (template.groupUuid) {
+      group = await this.reminderGroupRepository.findById(template.groupUuid);
+    }
+
+    // Step 2: 领域操作 - Toggle enabled status
     if (template.selfEnabled) {
       template.pause();
     } else {
       template.enable();
     }
 
+    // Step 3: 计算 - 使用纯业务服务重新计算 effectiveEnabled
+    const effectiveStatus = this.templateBusinessService.calculateEffectiveEnabled(
+      template,
+      group,
+    );
+    template.setEffectiveEnabled(effectiveStatus.isEffectivelyEnabled);
+
+    // Step 4: 持久化
     await this.reminderTemplateRepository.save(template);
 
-    // 发布启用/禁用事件到事件总线（触发调度任务启用/禁用）
+    // Step 5: 事件发布
     const events = template.getDomainEvents();
     for (const event of events) {
       const enhancedEvent = {
@@ -335,10 +373,114 @@ export class ReminderApplicationService {
     logger.info('Reminder template status toggled and events published', {
       uuid,
       enabled: template.selfEnabled,
+      effectiveEnabled: effectiveStatus.isEffectivelyEnabled,
+      reason: effectiveStatus.reason,
       eventsCount: events.length,
     });
 
     return template.toClientDTO();
+  }
+
+  /**
+   * 移动提醒模板到分组（专用方法）
+   */
+  /**
+   * 移动模板到分组（使用纯业务服务重构）
+   * 
+   * 用例流程：
+   * 1. 查询 - 获取模板和目标分组
+   * 2. 验证 - 使用纯业务服务验证分组分配合法性
+   * 3. 领域操作 - 调用聚合根的 moveToGroup 方法
+   * 4. 计算 - 使用纯业务服务计算新的 effectiveEnabled 状态
+   * 5. 持久化 - 保存模板
+   * 6. 事件发布 - 发布领域事件
+   */
+  async moveTemplateToGroup(
+    uuid: string,
+    targetGroupUuid: string | null,
+  ): Promise<ReminderTemplateClientDTO> {
+    const operationId = `move-template-${uuid}-${Date.now()}`;
+
+    try {
+      logger.info('Starting template move to group', {
+        operationId,
+        uuid,
+        targetGroupUuid,
+      });
+
+      // Step 1: 查询 - Application 层负责所有数据查询
+      const template = await this.reminderTemplateRepository.findById(uuid);
+      if (!template) {
+        throw new Error(`ReminderTemplate not found: ${uuid}`);
+      }
+
+      let targetGroup = null;
+      if (targetGroupUuid) {
+        targetGroup = await this.reminderGroupRepository.findById(targetGroupUuid);
+        if (!targetGroup) {
+          throw new Error(`Target group not found: ${targetGroupUuid}`);
+        }
+      }
+
+      // Step 2: 验证 - 使用纯业务服务进行验证
+      const validation = this.templateBusinessService.validateGroupAssignment(
+        template,
+        targetGroup,
+      );
+      if (!validation.valid) {
+        throw new Error(validation.reason || 'Invalid group assignment');
+      }
+
+      // Step 3: 领域操作 - 调用聚合根方法
+      template.moveToGroup(targetGroupUuid);
+
+      // Step 4: 计算 - 使用纯业务服务计算 effectiveEnabled
+      const effectiveStatus = this.templateBusinessService.calculateEffectiveEnabled(
+        template,
+        targetGroup,
+      );
+      template.setEffectiveEnabled(effectiveStatus.isEffectivelyEnabled);
+
+      // Step 5: 持久化 - Application 层负责持久化
+      await this.reminderTemplateRepository.save(template);
+      logger.info('Template moved and saved', { 
+        operationId, 
+        uuid,
+        effectiveEnabled: effectiveStatus.isEffectivelyEnabled,
+        reason: effectiveStatus.reason,
+      });
+
+      // Step 6: 事件发布 - Application 层负责事件发布
+      const events = template.getDomainEvents();
+      for (const event of events) {
+        const enhancedEvent = {
+          ...event,
+          payload: {
+            ...(typeof event.payload === 'object' && event.payload !== null ? event.payload : {}),
+            reminder: template.toServerDTO(),
+          },
+        };
+        await eventBus.publish(enhancedEvent);
+      }
+      template.clearDomainEvents();
+
+      logger.info('Template move completed and events published', {
+        operationId,
+        uuid,
+        targetGroupUuid,
+        eventsCount: events.length,
+      });
+
+      return template.toClientDTO();
+    } catch (error) {
+      logger.error('Template move failed', {
+        operationId,
+        uuid,
+        targetGroupUuid,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      throw error;
+    }
   }
 
   /**
@@ -378,29 +520,62 @@ export class ReminderApplicationService {
     limit?: number;
     importanceLevel?: ImportanceLevel;
     type?: ReminderType;
+    accountUuid?: string; // 新增：从 token 获取
   }): Promise<ReminderContracts.UpcomingRemindersResponseDTO> {
-    const days = params.days || 7;
-    const limit = params.limit || 50;
+    try {
+      const days = params.days || 1; // 默认今天内
+      const limit = params.limit || 50;
+      const now = Date.now();
 
-    const now = Date.now();
-    const fromDate = now;
-    const toDate = now + days * 24 * 60 * 60 * 1000;
+      // 获取 accountUuid（优先使用参数中的，否则从当前上下文获取）
+      // TODO: 这里需要从认证信息中获取真实的 accountUuid
+      const accountUuid = params.accountUuid;
+      if (!accountUuid) {
+        logger.warn('getUpcomingReminders: Missing accountUuid');
+        return {
+          reminders: [],
+          total: 0,
+          fromDate: now,
+          toDate: now + days * 24 * 60 * 60 * 1000,
+        };
+      }
 
-    // TODO: 实现真实的调度计算逻辑
-    // 1. 查询所有活跃模板
-    // 2. 根据每个模板的 trigger + recurrence 配置计算未来触发时间
-    // 3. 筛选在时间范围内的触发点
-    // 4. 按时间排序并限制数量
-    console.warn(
-      `getUpcomingReminders: 此功能需要调度计算引擎支持，当前返回空数据`,
-    );
+      // 使用新的查询服务计算即将到来的提醒
+      const queryService = ReminderQueryApplicationService.getInstance();
+      const upcomingReminders = await queryService.getUpcomingReminders({
+        accountUuid,
+        days,
+        limit,
+        afterTime: now,
+        importanceLevel: params.importanceLevel,
+      });
 
-    return {
-      reminders: [],
-      total: 0,
-      fromDate,
-      toDate,
-    };
+      logger.info('Retrieved upcoming reminders', {
+        accountUuid,
+        count: upcomingReminders.length,
+      });
+
+      return {
+        reminders: upcomingReminders,
+        total: upcomingReminders.length,
+        fromDate: now,
+        toDate: now + days * 24 * 60 * 60 * 1000,
+      };
+    } catch (error) {
+      logger.error('Error calculating upcoming reminders', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      
+      // 返回空结果而不是抛出异常，提升容错性
+      const now = Date.now();
+      const days = params.days || 7;
+      return {
+        reminders: [],
+        total: 0,
+        fromDate: now,
+        toDate: now + days * 24 * 60 * 60 * 1000,
+      };
+    }
   }
 
   /**
@@ -419,7 +594,7 @@ export class ReminderApplicationService {
     // TODO: 实现真实的调度状态查询
     // 当前基于模板状态返回基本信息
     const now = Date.now();
-    const effectiveEnabled = await template.getEffectiveEnabled();
+    const effectiveEnabled = template.isEffectivelyEnabled();
 
     return {
       templateUuid: template.uuid,

@@ -325,6 +325,49 @@ export class ReminderController {
   }
 
   /**
+   * 移动提醒模板到分组
+   * @route POST /api/reminders/templates/:uuid/move
+   */
+  static async moveTemplateToGroup(req: Request, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+      const { targetGroupUuid } = req.body;
+
+      // targetGroupUuid 可以是 null（移出分组）或字符串（移入分组）
+      if (targetGroupUuid !== null && typeof targetGroupUuid !== 'string') {
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.VALIDATION_ERROR,
+          message: 'targetGroupUuid must be a string or null',
+        });
+      }
+
+      const service = await ReminderController.getReminderService();
+      logger.info('Moving reminder template to group', { uuid, targetGroupUuid });
+
+      const template = await service.moveTemplateToGroup(uuid, targetGroupUuid);
+
+      logger.info('Reminder template moved successfully', { uuid, targetGroupUuid });
+      return ReminderController.responseBuilder.sendSuccess(
+        res,
+        template,
+        'Reminder template moved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error moving reminder template', { error: error.message });
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return ReminderController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
    * 搜索提醒模板
    * @route GET /api/reminders/templates/search
    */
@@ -403,9 +446,18 @@ export class ReminderController {
   static async getUpcomingReminders(req: Request, res: Response): Promise<Response> {
     try {
       const { days, limit, importanceLevel, type } = req.query;
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return ReminderController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'User not authenticated',
+        });
+      }
 
       const service = await ReminderController.getReminderService();
       const result = await service.getUpcomingReminders({
+        accountUuid,
         days: days ? Number(days) : undefined,
         limit: limit ? Number(limit) : undefined,
         importanceLevel: importanceLevel as any,

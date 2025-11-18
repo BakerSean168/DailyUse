@@ -197,6 +197,20 @@ export interface ReminderTemplateTriggeredEvent {
 }
 
 /**
+ * 提醒模板移动到分组事件
+ */
+export interface ReminderTemplateMovedEvent {
+  type: 'reminder.template.moved';
+  aggregateId: string;
+  timestamp: number;
+  payload: {
+    templateUuid: string;
+    oldGroupUuid?: string | null;
+    newGroupUuid?: string | null;
+  };
+}
+
+/**
  * Reminder Template 领域事件联合类型
  */
 export type ReminderTemplateDomainEvent =
@@ -205,7 +219,8 @@ export type ReminderTemplateDomainEvent =
   | ReminderTemplateDeletedEvent
   | ReminderTemplateEnabledEvent
   | ReminderTemplatePausedEvent
-  | ReminderTemplateTriggeredEvent;
+  | ReminderTemplateTriggeredEvent
+  | ReminderTemplateMovedEvent;
 
 // ============ 实体接口 ============
 
@@ -285,10 +300,11 @@ export interface ReminderTemplateServer {
   enable(): void;
   pause(): void;
   toggle(): void;
+  moveToGroup(targetGroupUuid: string | null): void;
 
   // 实际启用状态计算
-  getEffectiveEnabled(): Promise<boolean>;
-  isEffectivelyEnabled(): Promise<boolean>;
+  setEffectiveEnabled(effectiveEnabled: boolean): void;
+  isEffectivelyEnabled(): boolean;
 
   // 触发计算
   calculateNextTrigger(): number | null;

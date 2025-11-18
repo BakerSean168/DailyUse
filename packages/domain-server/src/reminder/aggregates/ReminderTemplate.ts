@@ -49,6 +49,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   private _selfEnabled: boolean;
   private _status: ReminderStatus;
   private _groupUuid: string | null;
+  private _effectiveEnabled: boolean; // 缓存的有效启用状态
   private _importanceLevel: ImportanceLevel;
   private _tags: string[];
   private _color: string | null;
@@ -109,6 +110,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     this._selfEnabled = params.selfEnabled;
     this._status = params.status;
     this._groupUuid = params.groupUuid ?? null;
+    this._effectiveEnabled = params.selfEnabled; // 初始化时默认等于 selfEnabled
     this._importanceLevel = params.importanceLevel;
     this._tags = params.tags ? [...params.tags] : [];
     this._color = params.color ?? null;
@@ -191,6 +193,10 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   }
   public get deletedAt(): number | null {
     return this._deletedAt;
+  }
+
+  public get effectiveEnabled(): boolean {
+    return this._effectiveEnabled;
   }
 
   // ===== 智能频率相关 Getter (Story 5-2) =====
@@ -487,6 +493,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     tags?: string[];
     color?: string | null;
     icon?: string | null;
+    groupUuid?: string | null;
   }): void {
     const now = Date.now();
 
@@ -508,6 +515,9 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     }
     if (updates.icon !== undefined) {
       this._icon = updates.icon;
+    }
+    if (updates.groupUuid !== undefined) {
+      this._groupUuid = updates.groupUuid;
     }
 
     // 更新值对象
@@ -556,6 +566,11 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     this._status = ReminderContracts.ReminderStatus.ACTIVE;
     this._updatedAt = Date.now();
 
+    // selfEnabled 变化，需要重新计算 effectiveEnabled
+    // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
+    // 这里先假设启用（应用层会调用 setEffectiveEnabled 来修正）
+    this._effectiveEnabled = true;
+
     // 发布启用事件
     this.addDomainEvent({
       eventType: 'reminder.template.enabled',
@@ -575,6 +590,11 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     this._selfEnabled = false;
     this._status = ReminderContracts.ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
+
+    // selfEnabled 变化，需要重新计算 effectiveEnabled
+    // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
+    // 这里先简单设置为 false
+    this._effectiveEnabled = false;
 
     // 发布暂停事件
     this.addDomainEvent({
@@ -600,19 +620,57 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   }
 
   /**
-   * 计算实际启用状态（需要考虑分组）
+   * 移动到分组（专用方法）
+   * 
+   * @param targetGroupUuid 目标分组 UUID，null 表示移出分组
    */
-  public async getEffectiveEnabled(): Promise<boolean> {
-    // 注意：这个方法需要在应用层实现，因为需要查询 Group
-    // 这里只返回 selfEnabled 状态
-    return this._selfEnabled;
+  public moveToGroup(targetGroupUuid: string | null): void {
+    const oldGroupUuid = this._groupUuid;
+    
+    // 如果分组没有变化，直接返回
+    if (oldGroupUuid === targetGroupUuid) {
+      return;
+    }
+
+    this._groupUuid = targetGroupUuid;
+    this._updatedAt = Date.now();
+
+    // groupUuid 变化，effectiveEnabled 需要重新计算
+    // 应用层需要调用 setEffectiveEnabled 来更新
+
+    // 发布移动事件
+    this.addDomainEvent({
+      eventType: 'reminder.template.moved',
+      aggregateId: this.uuid,
+      occurredOn: new Date(),
+      accountUuid: this._accountUuid,
+      payload: {
+        templateUuid: this.uuid,
+        oldGroupUuid,
+        newGroupUuid: targetGroupUuid,
+      },
+    });
   }
 
   /**
-   * 是否实际启用
+   * 设置有效启用状态（由应用层/领域服务调用）
+   * 
+   * 应在以下情况调用：
+   * 1. 模板移动到新分组时
+   * 2. 模板的 selfEnabled 变化时
+   * 3. 分组的控制模式或启用状态变化时
+   * 
+   * @param effectiveEnabled 计算后的有效启用状态
    */
-  public async isEffectivelyEnabled(): Promise<boolean> {
-    return this.getEffectiveEnabled();
+  public setEffectiveEnabled(effectiveEnabled: boolean): void {
+    this._effectiveEnabled = effectiveEnabled;
+  }
+
+  /**
+   * 是否实际启用（同步方法，直接返回缓存值）
+   */
+  public isEffectivelyEnabled(): boolean {
+    return this._effectiveEnabled;
   }
 
   /**

@@ -17,7 +17,7 @@
         >
           <div class="text-subtitle-2">当前模板</div>
           <div class="text-body-2 mt-1">
-            <v-icon size="small" class="mr-1">mdi-bell</v-icon>
+            <v-icon size="small" class="mr-1">{{ template.icon || 'mdi-bell' }}</v-icon>
             {{ template.title }}
           </div>
           <div v-if="template.groupUuid" class="text-caption mt-1 text-grey-darken-1">
@@ -39,13 +39,13 @@
           required
         >
           <template #selection="{ item }">
-            <v-icon :icon="item.raw.icon" class="mr-2" :color="item.raw.color" />
-            {{ item.title }}
+            <v-icon :icon="item?.raw?.icon || 'mdi-folder'" class="mr-2" :color="item?.raw?.color" />
+            {{ item?.title || '' }}
           </template>
           <template #item="{ props, item }">
             <v-list-item v-bind="props">
               <template #prepend>
-                <v-icon :icon="item.raw.icon" :color="item.raw.color" />
+                <v-icon :icon="item?.raw?.icon || 'mdi-folder'" :color="item?.raw?.color" />
               </template>
               <template #append v-if="item.value === template?.groupUuid">
                 <v-chip size="small" color="primary" variant="tonal">
@@ -177,7 +177,7 @@ const emit = defineEmits<{
 }>();
 
 // Composables
-const { reminderTemplates, refreshAll } = useReminder();
+const { reminderTemplates, reminderGroups, refreshAll } = useReminder();
 const snackbar = useSnackbar();
 
 // 响应式状态
@@ -186,44 +186,13 @@ const selectedGroupUuid = ref<string | null>(null);
 const moveToRoot = ref(false);
 const isMoving = ref(false);
 
-// 模拟分组数据（实际应该从 API 获取）
-const availableGroups = ref<Partial<ReminderTemplateGroup>[]>([
-  {
-    uuid: 'group-1',
-    accountUuid: 'acc-1',
-    name: '工作提醒',
-    description: '工作相关的提醒事项',
-    enabled: true,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  },
-  {
-    uuid: 'group-2',
-    accountUuid: 'acc-1',
-    name: '生活提醒',
-    description: '日常生活提醒',
-    enabled: true,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  },
-  {
-    uuid: 'group-3',
-    accountUuid: 'acc-1',
-    name: '学习提醒',
-    description: '学习计划提醒',
-    enabled: false,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  },
-]);
-
-// 分组选项
+// 分组选项 - 使用真实数据
 const groupOptions = computed(() => {
-  return availableGroups.value.map(group => ({
+  return reminderGroups.value.map(group => ({
     title: group.name,
     value: group.uuid,
-    icon: 'mdi-folder',
-    color: group.enabled ? 'primary' : 'grey',
+    icon: group.icon || 'mdi-folder',
+    color: group.enabled ? (group.color || 'primary') : 'grey',
     subtitle: group.description,
   }));
 });
@@ -248,19 +217,19 @@ const canMove = computed(() => {
 // 获取当前分组名称
 const getCurrentGroupName = (): string => {
   if (!props.template?.groupUuid) return '无';
-  const group = availableGroups.value.find(g => g.uuid === props.template!.groupUuid);
+  const group = reminderGroups.value.find(g => g.uuid === props.template!.groupUuid);
   return group?.name || '未知分组';
 };
 
 // 获取分组名称
 const getGroupName = (groupUuid: string): string => {
-  const group = availableGroups.value.find(g => g.uuid === groupUuid);
+  const group = reminderGroups.value.find(g => g.uuid === groupUuid);
   return group?.name || '未知';
 };
 
 // 获取分组状态
 const getGroupStatus = (groupUuid: string): string => {
-  const group = availableGroups.value.find(g => g.uuid === groupUuid);
+  const group = reminderGroups.value.find(g => g.uuid === groupUuid);
   return group?.enabled ? '已启用' : '已禁用';
 };
 
@@ -304,14 +273,8 @@ const handleMove = async () => {
 
   try {
     // 使用根分组 UUID 代替 null
-    const targetGroupUuid = moveToRoot.value ? getRootGroupUuid() : selectedGroupUuid.value;
+    const targetGroupUuid = moveToRoot.value ? null : selectedGroupUuid.value;
 
-    if (!targetGroupUuid) {
-      snackbar.showError('请选择目标分组');
-      return;
-    }
-
-    // TODO: 调用 API 移动模板
     console.log('移动模板:', {
       templateUuid: props.template.uuid,
       fromGroup: props.template.groupUuid,
@@ -319,21 +282,19 @@ const handleMove = async () => {
       isMovingToDesktop: moveToRoot.value,
     });
 
-    // 模拟 API 调用
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // 调用应用服务移动模板
+    const { reminderTemplateApplicationService } = await import('../../../application/services');
+    await reminderTemplateApplicationService.moveTemplateToGroup(
+      props.template.uuid,
+      targetGroupUuid
+    );
 
-    if (moveToRoot.value) {
-      snackbar.showSuccess('模板已移动到桌面');
-    } else {
-      snackbar.showSuccess(`模板已移动到 "${getGroupName(targetGroupUuid)}"`);
-    }
-
-    // 保存后自动刷新数据
-    await refreshAll();
+    // 触发刷新（应用服务已经更新了 store）
+    emit('moved', props.template.uuid, targetGroupUuid || getRootGroupUuid());
     close();
   } catch (error) {
     console.error('移动模板失败:', error);
-    snackbar.showError('移动失败: ' + (error instanceof Error ? error.message : '未知错误'));
+    // 错误提示已在应用服务中处理
   } finally {
     isMoving.value = false;
   }
@@ -355,6 +316,17 @@ watch(selectedGroupUuid, (newVal) => {
     moveToRoot.value = false;
   }
 });
+
+// 当父组件传入模板时，默认选择当前分组（便于快速移动）
+watch(
+  () => props.template,
+  (newTemplate) => {
+    if (!newTemplate) return;
+    // 允许用户先选择当前分组作为默认目标
+    selectedGroupUuid.value = newTemplate.groupUuid || null;
+  },
+  { immediate: true },
+);
 
 defineExpose({
   open,

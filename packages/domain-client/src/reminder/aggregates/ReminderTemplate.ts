@@ -142,7 +142,8 @@ export class ReminderTemplate extends AggregateRoot
   }
   
   public get typeText(): string {
-    return this._type === ReminderTypeEnum.ONE_TIME ? '一次性' : '循环';
+    // Reminder模块专注于循环提醒，单次任务由Task模块处理
+    return this._type === ReminderTypeEnum.ONE_TIME ? '一次性' : '循环提醒';
   }
   
   public get triggerText(): string {
@@ -474,7 +475,7 @@ export class ReminderTemplate extends AggregateRoot
       accountUuid: '', // 占位符
       title: '',
       description: null,
-      type: ReminderTypeEnum.ONE_TIME,
+      type: ReminderTypeEnum.RECURRING, // 默认为循环提醒
       trigger: ValueObjects.TriggerConfig.fromClientDTO({
         type: ReminderContracts.TriggerType.FIXED_TIME,
         fixedTime: { time: '09:00' },

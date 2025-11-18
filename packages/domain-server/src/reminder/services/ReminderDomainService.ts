@@ -5,6 +5,7 @@ import type {
 } from '../repositories';
 import { ReminderTemplate } from '../aggregates/ReminderTemplate';
 import { ReminderGroup } from '../aggregates/ReminderGroup';
+import { ReminderTemplateControlService } from './ReminderTemplateControlService';
 import type { ReminderContracts } from '@dailyuse/contracts';
 import { ImportanceLevel } from '@dailyuse/contracts';
 
@@ -22,11 +23,25 @@ import { ImportanceLevel } from '@dailyuse/contracts';
  * - 业务逻辑的内聚中心：将分散在应用服务中的业务逻辑下沉到此。
  */
 export class ReminderDomainService {
+  private readonly controlService: ReminderTemplateControlService;
+
   constructor(
     private readonly reminderTemplateRepository: IReminderTemplateRepository,
     private readonly reminderGroupRepository: IReminderGroupRepository,
     private readonly reminderStatisticsRepository: IReminderStatisticsRepository,
-  ) {}
+  ) {
+    this.controlService = new ReminderTemplateControlService(
+      reminderTemplateRepository,
+      reminderGroupRepository,
+    );
+  }
+
+  /**
+   * 获取模板控制服务（供应用层使用）
+   */
+  public getControlService(): ReminderTemplateControlService {
+    return this.controlService;
+  }
 
   // --- ReminderTemplate Methods ---
 

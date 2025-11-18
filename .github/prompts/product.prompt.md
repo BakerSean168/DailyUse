@@ -1,5 +1,5 @@
 ---
-mode: agent
+agent: agent
 ---
 
 description: "产品经理提示词手册（新功能构想与功能文档专注版 v2.0)"

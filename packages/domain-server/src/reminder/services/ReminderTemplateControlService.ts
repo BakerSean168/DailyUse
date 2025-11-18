@@ -57,13 +57,19 @@ export class ReminderTemplateControlService {
 
   /**
    * 计算单个模板的有效启用状态
+   * 
+   * 注意：计算服务接收 template 和 group 对象，不直接查询仓储
+   * 应用层负责先获取这些对象，然后传递给计算服务
    *
    * 规则：
    * - 如果模板未分组：模板状态 = 有效状态
    * - 如果分组为 INDIVIDUAL 模式：模板状态 = 有效状态
    * - 如果分组为 GROUP 模式：分组状态 AND 模板状态 = 有效状态
    */
-  async calculateEffectiveStatus(template: ReminderTemplate): Promise<ITemplateEffectiveStatus> {
+  async calculateEffectiveStatus(
+    template: ReminderTemplate,
+    group?: ReminderGroup | null,
+  ): Promise<ITemplateEffectiveStatus> {
     const groupUuid = template.groupUuid;
     const templateStatus = template.status;
 
@@ -82,8 +88,12 @@ export class ReminderTemplateControlService {
     }
 
     // 获取分组信息
-    const group = await this.groupRepository.findById(groupUuid);
-    if (!group) {
+    let targetGroup = group;
+    if (!targetGroup) {
+      targetGroup = await this.groupRepository.findById(groupUuid);
+    }
+
+    if (!targetGroup) {
       // 分组不存在，视为未分组
       return {
         templateUuid: template.uuid,
@@ -97,8 +107,8 @@ export class ReminderTemplateControlService {
       };
     }
 
-    const groupStatus = group.status;
-    const controlMode = group.controlMode;
+    const groupStatus = targetGroup.status;
+    const controlMode = targetGroup.controlMode;
 
     // INDIVIDUAL 模式：模板状态即有效状态
     if (controlMode === ReminderContracts.ControlMode.INDIVIDUAL) {

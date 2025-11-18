@@ -234,6 +234,37 @@ export class ReminderTemplateApplicationService {
       this.reminderStore.setLoading(false);
     }
   }
+
+  /**
+   * 移动模板到指定分组
+   */
+  async moveTemplateToGroup(
+    templateUuid: string,
+    targetGroupUuid: string | null,
+  ): Promise<ReminderTemplate> {
+    try {
+      this.reminderStore.setLoading(true);
+      this.reminderStore.setError(null);
+
+      const templateData = await reminderApiClient.moveTemplateToGroup(
+        templateUuid,
+        targetGroupUuid
+      );
+
+      const template = ReminderTemplate.fromClientDTO(templateData);
+      this.reminderStore.addOrUpdateReminderTemplate(template);
+
+      this.snackbar.showSuccess(targetGroupUuid ? '模板已移动到分组' : '模板已移动到桌面');
+      return template;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '移动模板失败';
+      this.reminderStore.setError(errorMessage);
+      this.snackbar.showError(errorMessage);
+      throw error;
+    } finally {
+      this.reminderStore.setLoading(false);
+    }
+  }
 }
 
 // 导出单例实例
