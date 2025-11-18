@@ -7,10 +7,10 @@
 
         <v-spacer />
 
-        <!-- 权重总和警告 -->
-        <v-chip v-if="totalWeight !== 100" color="error" size="small" class="mr-2">
-          <v-icon start>mdi-alert</v-icon>
-          权重总和: {{ totalWeight }}%
+        <!-- 权重总和显示 -->
+        <v-chip color="info" size="small" class="mr-2">
+          <v-icon start>mdi-dumbbell</v-icon>
+          总权重: {{ totalWeight }}
         </v-chip>
 
         <!-- 布局类型切换 -->
@@ -52,11 +52,10 @@
       </v-card-title>
 
       <v-card-text>
-        <!-- 权重异常提示 -->
-        <v-alert v-if="!compact && totalWeight !== 100" type="warning" variant="tonal" class="mb-4">
-          <template #title>权重分配异常</template>
-          当前所有 KeyResult 权重总和为 {{ totalWeight }}%，应该为 100%。 请调整各 KeyResult
-          的权重值。
+        <!-- 权重分布信息 -->
+        <v-alert v-if="!compact && hasKeyResults" type="info" variant="tonal" class="mb-4">
+          <template #title>权重分布信息</template>
+          总权重: {{ totalWeight }} | 权重范围: 1-10 | 占比计算: (权重/总权重) × 100%
         </v-alert>
 
         <!-- 加载状态 -->
@@ -88,15 +87,15 @@
             </v-chip>
             <v-chip size="small" color="success" variant="flat">
               <v-icon start>mdi-circle</v-icon>
-              权重 70-100%
+              权重 7-10
             </v-chip>
             <v-chip size="small" color="warning" variant="flat">
               <v-icon start>mdi-circle</v-icon>
-              权重 30-70%
+              权重 4-7
             </v-chip>
             <v-chip size="small" color="error" variant="flat">
               <v-icon start>mdi-circle</v-icon>
-              权重 0-30%
+              权重 1-3
             </v-chip>
             <v-spacer />
             <div class="text-caption text-grey">节点大小表示权重，边宽度表示权重占比</div>
@@ -162,11 +161,11 @@ const totalWeight = computed(() => {
   return currentGoal.value.keyResults.reduce((sum: number, kr: any) => sum + kr.weight, 0);
 });
 
-// 颜色映射函数
+// 颜色映射函数 (权重范围: 1-10)
 const getWeightColor = (weight: number): string => {
-  if (weight >= 70) return '#4CAF50'; // 绿色 - 高权重
-  if (weight >= 30) return '#FF9800'; // 橙色 - 中权重
-  return '#F44336'; // 红色 - 低权重
+  if (weight >= 7) return '#4CAF50'; // 绿色 - 高权重 (7-10)
+  if (weight >= 4) return '#FF9800'; // 橙色 - 中权重 (4-7)
+  return '#F44336'; // 红色 - 低权重 (1-3)
 };
 
 // 分层布局计算
@@ -212,8 +211,8 @@ const calculateHierarchicalLayout = () => {
     source: currentGoal.value!.uuid,
     target: kr.uuid,
     lineStyle: {
-      width: Math.max(1, kr.weight / 10),
-      color: totalWeight.value !== 100 ? '#f44336' : '#999',
+      width: Math.max(1, kr.weight / 2),
+      color: '#999',
     },
   }));
 
@@ -248,8 +247,8 @@ const calculateForceLayout = () => {
     source: currentGoal.value!.uuid,
     target: kr.uuid,
     lineStyle: {
-      width: Math.max(1, kr.weight / 10),
-      color: totalWeight.value !== 100 ? '#f44336' : '#999',
+      width: Math.max(1, kr.weight / 2),
+      color: '#999',
     },
   }));
 
@@ -301,6 +300,10 @@ const dagOption = computed<EChartsOption>(() => {
               </div>
             `;
           } else {
+            // 计算权重占比
+            const percentage = totalWeight.value > 0 
+              ? ((params.data.value / totalWeight.value) * 100).toFixed(1)
+              : 0;
             return `
               <div style="padding: 8px;">
                 <div style="font-weight: bold; margin-bottom: 4px;">
@@ -309,7 +312,8 @@ const dagOption = computed<EChartsOption>(() => {
                 <div>${params.data.name}</div>
                 <div style="margin-top: 4px;">
                   <span style="color: #666;">权重:</span> 
-                  <span style="font-weight: bold; color: ${params.data.itemStyle.color};">${params.data.value}%</span>
+                  <span style="font-weight: bold; color: ${params.data.itemStyle.color};">${params.data.value}/10</span>
+                  <span style="color: #999; margin-left: 4px;">(${percentage}%)</span>
                 </div>
               </div>
             `;

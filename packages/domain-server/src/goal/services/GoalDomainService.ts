@@ -207,8 +207,8 @@ export class GoalDomainService {
     }
 
     // 验证评分范围
-    if (params.rating !== undefined && (params.rating < 1 || params.rating > 5)) {
-      throw new Error('Review rating must be between 1 and 5');
+    if (params.rating !== undefined && (params.rating < 0 || params.rating > 10)) {
+      throw new Error('Review rating must be between 0 and 10');
     }
 
     // 创建并添加回顾

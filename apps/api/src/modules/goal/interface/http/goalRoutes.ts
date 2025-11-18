@@ -166,10 +166,86 @@ router.patch('/:uuid', GoalController.updateGoal);
 
 /**
  * @swagger
+ * /api/goals/{uuid}/aggregate:
+ *   get:
+ *     tags: [Goal]
+ *     summary: 获取目标的聚合视图（包含权重分布）
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 goal:
+ *                   type: object
+ *                   description: 目标基本信息
+ *                 keyResults:
+ *                   type: array
+ *                   description: 关键结果列表（包含权重和占比）
+ *                 statistics:
+ *                   type: object
+ *                   description: 统计信息（总 KR 数、完成 KR 数、总记录数、总体进度）
+ *       404:
+ *         description: 目标不存在
+ */
+router.get('/:uuid/aggregate', GoalController.getGoalAggregateView);
+
+/**
+ * @swagger
+ * /api/goals/{uuid}/dependencies:
+ *   get:
+ *     tags: [Goal]
+ *     summary: 检查目标依赖关系（删除前检查）
+ *     description: 检查目标是否有关键结果、复盘记录等关联数据，用于删除前提示
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 检查成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 hasKeyResults:
+ *                   type: boolean
+ *                 keyResultCount:
+ *                   type: number
+ *                 hasReviews:
+ *                   type: boolean
+ *                 reviewCount:
+ *                   type: number
+ *                 hasTaskLinks:
+ *                   type: boolean
+ *                 canDelete:
+ *                   type: boolean
+ *                 warnings:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       404:
+ *         description: 目标不存在
+ */
+router.get('/:uuid/dependencies', GoalController.checkGoalDependencies);
+
+/**
+ * @swagger
  * /api/goals/{uuid}:
  *   delete:
  *     tags: [Goal]
- *     summary: 删除目标
+ *     summary: 删除目标（软删除，级联删除子实体）
  *     parameters:
  *       - in: path
  *         name: uuid
@@ -183,6 +259,26 @@ router.patch('/:uuid', GoalController.updateGoal);
  *         description: 目标不存在
  */
 router.delete('/:uuid', GoalController.deleteGoal);
+
+/**
+ * @swagger
+ * /api/goals/{uuid}:
+ *   get:
+ *     tags: [Goal]
+ *     summary: 获取目标详情
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *       404:
+ *         description: 目标不存在
+ */
+router.get('/:uuid', GoalController.getGoal);
 
 // ===== 状态管理 =====
 

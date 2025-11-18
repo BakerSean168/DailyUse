@@ -6,7 +6,9 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalTimeRangeServerDTO = GoalContracts.GoalTimeRangeServerDTO;
+// 类型别名
+type GoalTimeRangeServerDTO = GoalContracts.GoalTimeRangeServerDTO;
+type GoalTimeRangePersistenceDTO = GoalContracts.GoalTimeRangePersistenceDTO;
 
 /**
  * GoalTimeRange 值对象
@@ -128,9 +130,9 @@ export class GoalTimeRange extends ValueObject {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IGoalTimeRangeServerDTO {
+  public toServerDTO(): GoalTimeRangeServerDTO {
     return {
       startDate: this.startDate,
       targetDate: this.targetDate,
@@ -140,9 +142,28 @@ export class GoalTimeRange extends ValueObject {
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 从 Server DTO 创建值对象
    */
-  public static fromContract(dto: IGoalTimeRangeServerDTO): GoalTimeRange {
+  public static fromServerDTO(dto: GoalTimeRangeServerDTO): GoalTimeRange {
+    return new GoalTimeRange(dto);
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): GoalTimeRangePersistenceDTO {
+    return {
+      startDate: this.startDate,
+      targetDate: this.targetDate,
+      completedAt: this.completedAt,
+      archivedAt: this.archivedAt,
+    };
+  }
+
+  /**
+   * 从 Persistence DTO 创建值对象
+   */
+  public static fromPersistenceDTO(dto: GoalTimeRangePersistenceDTO): GoalTimeRange {
     return new GoalTimeRange(dto);
   }
 

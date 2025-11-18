@@ -233,13 +233,20 @@ export class GoalRecordApplicationService {
       throw new Error(`Goal not found: ${goalUuid}`);
     }
 
-    // 2. 计算每个关键结果的贡献度
+    // 2. 计算权重总和
+    const totalWeight = goal.keyResults.reduce((sum, kr) => sum + (kr.weight || 0), 0);
+    if (totalWeight === 0) {
+      throw new Error('Total weight is 0, cannot calculate weighted progress');
+    }
+
+    // 3. 计算每个关键结果的贡献度
     const keyResultContributions = goal.keyResults.map((kr) => {
       const progress = kr.progress;
       const progressPercentage = progress.targetValue !== 0 
         ? (progress.currentValue / progress.targetValue) * 100 
         : 0;
-      const contribution = (progressPercentage / 100) * kr.weight;
+      // 贡献度 = 进度百分比 × (该 KR 权重 / 总权重)
+      const contribution = (progressPercentage / 100) * (kr.weight / totalWeight);
 
       return {
         keyResultUuid: kr.uuid,
@@ -250,13 +257,14 @@ export class GoalRecordApplicationService {
       };
     });
 
-    // 3. 计算总进度（加权平均）
+    // 4. 计算总进度（加权平均）
+    // 总进度 = Σ(进度百分比 × (权重 / 总权重))
     const totalProgress = goal.keyResults.reduce((sum, kr) => {
       const progress = kr.progress;
       const progressPercentage = progress.targetValue !== 0
         ? (progress.currentValue / progress.targetValue) * 100
         : 0;
-      return sum + (progressPercentage * kr.weight / 100);
+      return sum + (progressPercentage * (kr.weight / totalWeight));
     }, 0);
 
     return {

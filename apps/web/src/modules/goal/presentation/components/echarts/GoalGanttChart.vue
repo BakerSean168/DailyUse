@@ -189,7 +189,7 @@ const isWeekend = (date: Date) => {
 };
 
 // 计算目标条样式
-const getGoalBarStyle = (goal: GoalClient, isFill: boolean) => {
+const getGoalBarStyle = (goal: Goal, isFill: boolean) => {
   const startDate = goal.startDate ? new Date(goal.startDate) : new Date();
   startDate.setHours(0, 0, 0, 0);
   const endDate = goal.targetDate ? new Date(goal.targetDate) : new Date();
@@ -215,7 +215,7 @@ const getGoalBarStyle = (goal: GoalClient, isFill: boolean) => {
 };
 
 // 计算目标标签位置
-const getGoalLabelPosition = (goal: GoalClient) => {
+const getGoalLabelPosition = (goal: Goal) => {
   const startDate = goal.startDate ? new Date(goal.startDate) : new Date();
   const rangeStart = new Date(dateRange.value.start);
   const startOffset = Math.max(

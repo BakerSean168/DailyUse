@@ -167,20 +167,20 @@ export class WeightRecommendationService {
   /**
    * 策略 1: 均衡分配
    * 适用场景：所有 KR 同等重要
+   * 
+   * **新策略**: 生成 1-10 范围的权重（而不是 0-100）
    */
   private balancedStrategy(count: number): WeightStrategy {
-    const baseWeight = Math.floor(100 / count);
-    const remainder = 100 - baseWeight * count;
-
-    const weights = Array(count).fill(baseWeight);
-    weights[0] += remainder; // 余数加到第一个
+    // 使用 1-10 的权重范围
+    const baseWeight = count <= 3 ? 3 : 2;
+    const weights = Array(count).fill(baseWeight).map(() => baseWeight);
 
     return {
       name: 'balanced',
       label: '均衡策略',
       description: '所有 KeyResult 权重相等，适合目标优先级相近的场景',
       weights,
-      reasoning: `每个 KR 分配约 ${baseWeight}% 权重，确保所有目标均衡推进`,
+      reasoning: `每个 KR 分配权重 ${baseWeight}/10，确保所有目标均衡推进`,
       confidence: 80,
     };
   }
@@ -188,17 +188,18 @@ export class WeightRecommendationService {
   /**
    * 策略 2: 聚焦策略
    * 适用场景：根据关键词识别核心 KR
+   * 
+   * **新策略**: 生成 1-10 范围的权重（而不是 0-100）
    */
   private focusedStrategy(keyResults: KeyResult[], priorities: number[]): WeightStrategy {
-    // 按优先级分数分配权重
-    const total = priorities.reduce((sum, p) => sum + p, 0);
-    const weights = priorities.map((p) => Math.round((p / total) * 100));
-
-    // 调整确保总和为 100
-    const sum = weights.reduce((a, b) => a + b, 0);
-    if (sum !== 100) {
-      weights[0] += 100 - sum;
-    }
+    const count = keyResults.length;
+    
+    // 将优先级分数 (0-100) 映射到权重范围 (1-10)
+    const weights = priorities.map((p) => {
+      // 映射公式：priority 越高，权重越大
+      const weight = Math.round((p / 100) * 9) + 1; // 结果范围 1-10
+      return Math.max(1, Math.min(10, weight)); // 确保在 1-10 范围内
+    });
 
     // 找出最高权重的 KR 索引
     const maxWeightIndex = weights.indexOf(Math.max(...weights));
@@ -209,7 +210,7 @@ export class WeightRecommendationService {
       label: '聚焦策略',
       description: '根据关键词分析，重点关注高优先级 KeyResult',
       weights,
-      reasoning: `基于标题关键词分析，"${topKRTitle.slice(0, 30)}${topKRTitle.length > 30 ? '...' : ''}" 识别为核心 KR，分配更多权重`,
+      reasoning: `基于标题关键词分析，"${topKRTitle.slice(0, 30)}${topKRTitle.length > 30 ? '...' : ''}" 识别为核心 KR，权重最高`,
       confidence: this.calculateConfidence(priorities),
     };
   }
@@ -217,6 +218,8 @@ export class WeightRecommendationService {
   /**
    * 策略 3: 阶梯策略
    * 适用场景：明确的优先级顺序
+   * 
+   * **新策略**: 生成 1-10 范围的权重（而不是 0-100）
    */
   private steppedStrategy(keyResults: KeyResult[], priorities: number[]): WeightStrategy {
     const count = keyResults.length;
@@ -226,13 +229,22 @@ export class WeightRecommendationService {
       .map((p, i) => ({ priority: p, index: i }))
       .sort((a, b) => b.priority - a.priority);
 
-    // 使用等差数列分配权重：第一名最多，逐级递减
-    const step = Math.floor(100 / ((count * (count + 1)) / 2));
-    const tempWeights = priorityIndexes.map((_, i) => (count - i) * step);
-
-    // 调整确保总和为 100
-    const sum = tempWeights.reduce((a, b) => a + b, 0);
-    tempWeights[0] += 100 - sum;
+    // 使用 1-10 范围生成阶梯权重
+    // 高优先级 KR 权重更高
+    const tempWeights: number[] = [];
+    if (count === 1) {
+      tempWeights.push(5); // 单个 KR 权重为 5
+    } else if (count === 2) {
+      tempWeights.push(7, 3); // 7 和 3
+    } else if (count === 3) {
+      tempWeights.push(7, 4, 1); // 7、4、1
+    } else {
+      // 对于更多的 KR，使用更均衡的分布
+      for (let i = 0; i < count; i++) {
+        const weight = Math.max(1, 10 - i * 2);
+        tempWeights.push(weight);
+      }
+    }
 
     // 映射回原始顺序
     const weights = new Array(count).fill(0);
@@ -248,7 +260,7 @@ export class WeightRecommendationService {
       label: '阶梯策略',
       description: '按优先级梯度分配权重，适合明确优先级顺序的场景',
       weights,
-      reasoning: `按优先级创建阶梯式分布，最高优先级 KR 获得 ${weights[priorityIndexes[0].index]}% 权重`,
+      reasoning: `按优先级创建阶梯式分布，最高优先级 KR 获得权重 ${weights[priorityIndexes[0].index]}/10`,
       confidence: this.calculateConfidence(priorities),
     };
   }
@@ -273,26 +285,42 @@ export class WeightRecommendationService {
   }
 
   /**
-   * 验证权重总和
+   * 验证权重
+   * 
+   * **新规则**: 
+   * - 权重范围: 1-10（而不是 0-100）
+   * - 无需权重总和为 100%
+   * - 权重占比由总权重自动计算
    */
-  validateWeights(weights: number[]): { valid: boolean; error?: string } {
-    const total = weights.reduce((sum, w) => sum + w, 0);
-
-    if (total !== 100) {
-      return {
-        valid: false,
-        error: `权重总和为 ${total}%，应该为 100%`,
-      };
+  validateWeights(weights: number[]): { valid: boolean; error?: string; info?: string } {
+    // 检查每个权重是否在 1-10 之间
+    for (let i = 0; i < weights.length; i++) {
+      const w = weights[i];
+      if (w < 1 || w > 10) {
+        return {
+          valid: false,
+          error: `第 ${i + 1} 个权重必须在 1-10 之间，当前值：${w}`,
+        };
+      }
+      if (!Number.isInteger(w)) {
+        return {
+          valid: false,
+          error: `第 ${i + 1} 个权重必须是整数，当前值：${w}`,
+        };
+      }
     }
 
-    if (weights.some((w) => w < 0 || w > 100)) {
-      return {
-        valid: false,
-        error: '每个权重必须在 0-100% 之间',
-      };
-    }
+    // 计算总权重和占比
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+    const weightDistribution = weights
+      .map((w) => ((w / totalWeight) * 100).toFixed(2))
+      .join('%, ')
+      .concat('%');
 
-    return { valid: true };
+    return { 
+      valid: true,
+      info: `总权重: ${totalWeight}, 占比: ${weightDistribution}`
+    };
   }
 
   /**

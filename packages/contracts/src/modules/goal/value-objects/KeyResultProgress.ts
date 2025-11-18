@@ -13,6 +13,15 @@ import type { KeyResultValueType, AggregationMethod } from '../enums';
 export interface IKeyResultProgressServer {
   valueType: KeyResultValueType;
   aggregationMethod: AggregationMethod; // 聚合计算方式
+  /**
+   * 起始值（可选，默认为 0）
+   * 用于计算进度百分比：(currentValue - initialValue) / (targetValue - initialValue)
+   * 
+   * 示例：
+   * - 用户从 10K 增长到 20K：initialValue = 10000, targetValue = 20000
+   * - 减重 10kg：initialValue = 0, targetValue = 10（表述为"减重10kg"而非"从60kg减到50kg"）
+   */
+  initialValue?: number;
   targetValue: number;
   currentValue: number;
   unit?: string | null;
@@ -46,6 +55,10 @@ export interface IKeyResultProgressServer {
 export interface IKeyResultProgressClient {
   valueType: KeyResultValueType;
   aggregationMethod: AggregationMethod;
+  /**
+   * 起始值（可选，默认为 0）
+   */
+  initialValue?: number;
   targetValue: number;
   currentValue: number;
   unit?: string | null;
@@ -73,6 +86,8 @@ export interface IKeyResultProgressClient {
 export interface KeyResultProgressServerDTO {
   valueType: KeyResultValueType;
   aggregationMethod: AggregationMethod;
+  /** 起始值（可选，默认为 0） */
+  initialValue?: number;
   targetValue: number;
   currentValue: number;
   unit?: string | null;
@@ -84,6 +99,8 @@ export interface KeyResultProgressServerDTO {
 export interface KeyResultProgressClientDTO {
   valueType: KeyResultValueType;
   aggregationMethod: AggregationMethod;
+  /** 起始值（可选，默认为 0） */
+  initialValue?: number;
   targetValue: number;
   currentValue: number;
   unit?: string | null;
@@ -97,12 +114,15 @@ export interface KeyResultProgressClientDTO {
 
 /**
  * Key Result Progress Persistence DTO
+ * 持久化层使用 camelCase 命名（与数据库 snake_case 的映射在仓储层处理）
  */
 export interface KeyResultProgressPersistenceDTO {
   valueType: KeyResultValueType;
-  aggregation_method: AggregationMethod;
-  target_value: number;
-  current_value: number;
+  aggregationMethod: AggregationMethod;
+  /** 起始值（可选，默认为 0） */
+  initialValue?: number;
+  targetValue: number;
+  currentValue: number;
   unit?: string | null;
 }
 

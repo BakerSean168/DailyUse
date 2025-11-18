@@ -7,7 +7,9 @@ import type { GoalContracts } from '@dailyuse/contracts';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalMetadataServerDTO = GoalContracts.GoalMetadataServerDTO;
+// 类型别名
+type GoalMetadataServerDTO = GoalContracts.GoalMetadataServerDTO;
+type GoalMetadataPersistenceDTO = GoalContracts.GoalMetadataPersistenceDTO;
 
 /**
  * GoalMetadata 值对象
@@ -148,21 +150,46 @@ export class GoalMetadata extends ValueObject {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IGoalMetadataServerDTO {
+  public toServerDTO(): GoalMetadataServerDTO {
     return {
       importance: this.importance,
       urgency: this.urgency,
+      category: this.category,
       tags: [...this.tags],
     };
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 从 Server DTO 创建值对象
    */
-  public static fromContract(dto: IGoalMetadataServerDTO): GoalMetadata {
+  public static fromServerDTO(dto: GoalMetadataServerDTO): GoalMetadata {
     return new GoalMetadata(dto);
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): GoalMetadataPersistenceDTO {
+    return {
+      importance: this.importance,
+      urgency: this.urgency,
+      category: this.category,
+      tags: JSON.stringify(this.tags),
+    };
+  }
+
+  /**
+   * 从 Persistence DTO 创建值对象
+   */
+  public static fromPersistenceDTO(dto: GoalMetadataPersistenceDTO): GoalMetadata {
+    return new GoalMetadata({
+      importance: dto.importance,
+      urgency: dto.urgency,
+      category: dto.category ?? null,
+      tags: JSON.parse(dto.tags) as string[],
+    });
   }
 
   /**
@@ -170,8 +197,8 @@ export class GoalMetadata extends ValueObject {
    */
   public static createDefault(): GoalMetadata {
     return new GoalMetadata({
-      importance: 2 as unknown as ImportanceLevel, // MEDIUM
-      urgency: 2 as unknown as UrgencyLevel, // MEDIUM
+      importance: ImportanceLevel.Moderate,
+      urgency: UrgencyLevel.Medium,
       category: null,
       tags: [],
     });

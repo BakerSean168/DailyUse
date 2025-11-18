@@ -6,7 +6,7 @@
  * 2. 查询快照历史（按 Goal、按 KR）
  * 3. 获取权重趋势数据
  * 4. 多时间点权重对比
- * 5. 权重总和验证
+ * 5. 权重分布信息（权重占比计算）
  * 6. 边界情况和错误处理
  */
 
@@ -269,25 +269,48 @@ describe('Weight Snapshot Integration Tests', () => {
     });
   });
 
-  describe('权重总和验证', () => {
-    it('应该验证权重总和为 100%', async () => {
-      const result = await snapshotService.validateWeightSum(testGoalUuid);
+  describe('获取权重分布信息', () => {
+    it('应该返回权重分布及占比', async () => {
+      const info = await snapshotService.getWeightSumInfo(testGoalUuid);
 
-      expect(result.isValid).toBe(true);
-      expect(result.sum).toBe(100); // 40% + 30% + 30% = 100%
-      expect(result.keyResults).toHaveLength(3);
+      expect(info.totalWeight).toBe(100); // 40 + 30 + 30 = 100
+      expect(info.keyResults).toHaveLength(3);
+      expect(info.keyResults[0]).toMatchObject({
+        uuid: testKR1Uuid,
+        title: 'User Growth',
+        weight: 40,
+        percentage: 40,
+      });
+      expect(info.keyResults[1]).toMatchObject({
+        uuid: testKR2Uuid,
+        title: 'Revenue Growth',
+        weight: 30,
+        percentage: 30,
+      });
+      expect(info.keyResults[2]).toMatchObject({
+        uuid: testKR3Uuid,
+        title: 'Retention Rate',
+        weight: 30,
+        percentage: 30,
+      });
     });
 
-    it('应该在权重总和不为 100% 时返回无效', async () => {
-      // Update KR1 weight to 50%, making sum = 110%
-      await goalService.updateKeyResult(testGoalUuid, testKR1Uuid, {
-        weight: 50,
+    it('应该在权重更新后计算正确的占比', async () => {
+      const prisma = getTestPrisma();
+      // 模拟权重更新：KR1 权重从 40 改为 5（模拟 1-10 范围）
+      // 此时总权重：5 + 30 + 30 = 65
+      await prisma.keyResult.update({
+        where: { uuid: testKR1Uuid },
+        data: { weight: 5 },
       });
 
-      const result = await snapshotService.validateWeightSum(testGoalUuid);
+      const info = await snapshotService.getWeightSumInfo(testGoalUuid);
 
-      expect(result.isValid).toBe(false);
-      expect(result.sum).toBe(110);
+      // 占比：KR1 = 5/65 ≈ 7.69%, KR2 = 30/65 ≈ 46.15%, KR3 = 30/65 ≈ 46.15%
+      expect(info.totalWeight).toBe(65);
+      expect(info.keyResults[0].percentage).toBeCloseTo(7.69, 2);
+      expect(info.keyResults[1].percentage).toBeCloseTo(46.15, 2);
+      expect(info.keyResults[2].percentage).toBeCloseTo(46.15, 2);
     });
   });
 

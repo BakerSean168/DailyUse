@@ -13,11 +13,7 @@ import { createLogger } from '@dailyuse/utils';
 import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
 import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
 import prisma from '../../../../shared/db/prisma';
-import {
-  InvalidWeightSumError,
-  GoalNotFoundError,
-  KeyResultNotFoundError,
-} from '../../application/errors/WeightSnapshotErrors';
+import { GoalNotFoundError, KeyResultNotFoundError } from '../../application/errors/WeightSnapshotErrors';
 
 const logger = createLogger('WeightSnapshotController');
 
@@ -64,17 +60,28 @@ export class WeightSnapshotController {
    * **Request Body**:
    * ```json
    * {
-   *   "newWeight": 50,
+   *   "newWeight": 7,
    *   "reason": "季度中期调整"
    * }
    * ```
+   *
+   * **权重范围**: 1-10（权重占比由所有 KR 权重的总和计算）
    *
    * **Response**:
    * ```json
    * {
    *   "success": true,
    *   "message": "Weight updated successfully",
-   *   "data": { ... KeyResult DTO ... }
+   *   "data": { 
+   *     "keyResult": { "uuid": "...", "title": "...", "oldWeight": 5, "newWeight": 7 },
+   *     "weightInfo": { 
+   *       "totalWeight": 30,
+   *       "keyResults": [
+   *         { "uuid": "...", "title": "...", "weight": 7, "percentage": 23.33 },
+   *         { "uuid": "...", "title": "...", "weight": 10, "percentage": 33.33 }
+   *       ]
+   *     }
+   *   }
    * }
    * ```
    */
@@ -83,11 +90,11 @@ export class WeightSnapshotController {
       const { goalUuid, krUuid } = req.params;
       const { newWeight, reason } = req.body;
 
-      // 参数验证
-      if (typeof newWeight !== 'number' || newWeight < 0 || newWeight > 100) {
+      // 参数验证：权重范围 1-10
+      if (typeof newWeight !== 'number' || newWeight < 1 || newWeight > 10 || !Number.isInteger(newWeight)) {
         return WeightSnapshotController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
-          message: 'newWeight must be a number between 0 and 100',
+          message: 'newWeight must be an integer between 1 and 10',
         });
       }
 
@@ -134,32 +141,15 @@ export class WeightSnapshotController {
         data: { weight: newWeight },
       });
 
-      // 5. 校验权重总和（查询 Goal 的所有 KR）
-      const allKRs = await prisma.keyResult.findMany({
-        where: { goalUuid },
-        select: { uuid: true, weight: true },
-      });
+      // 5. 获取更新后的权重分布信息
+      const weightInfo = await service.getWeightSumInfo(goalUuid);
 
-      const weights: Record<string, number> = {};
-      allKRs.forEach((k) => {
-        weights[k.uuid] = k.uuid === krUuid ? newWeight : k.weight;
-      });
-
-      const isValid = await service.validateWeightSum(goalUuid, weights);
-      if (!isValid) {
-        const { weights: currentWeights, total } = await service.getWeightDistribution(
-          goalUuid,
-          weights,
-        );
-        throw new InvalidWeightSumError(goalUuid, total, currentWeights);
-      }
-
-      logger.info('KR weight updated successfully', { krUuid, oldWeight, newWeight });
+      logger.info('KR weight updated successfully', { krUuid, oldWeight, newWeight, weightInfo });
       return WeightSnapshotController.responseBuilder.sendSuccess(
         res,
         {
           keyResult: { uuid: krData.uuid, title: krData.title, oldWeight, newWeight },
-          snapshot: { oldWeight, newWeight, delta: newWeight - oldWeight },
+          weightInfo,
         },
         'Weight updated successfully',
       );
@@ -491,15 +481,6 @@ export class WeightSnapshotController {
    * 统一错误处理
    */
   private static handleError(error: unknown, res: Response): Response {
-    if (error instanceof InvalidWeightSumError) {
-      logger.warn('Invalid weight sum', { error: error.message });
-      return WeightSnapshotController.responseBuilder.sendError(res, {
-        code: ResponseCode.VALIDATION_ERROR,
-        message: error.message,
-        debug: error.context,
-      });
-    }
-
     if (error instanceof GoalNotFoundError || error instanceof KeyResultNotFoundError) {
       logger.warn('Resource not found', { error: error.message });
       return WeightSnapshotController.responseBuilder.sendError(res, {

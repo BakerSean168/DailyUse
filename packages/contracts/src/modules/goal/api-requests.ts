@@ -125,6 +125,7 @@ export interface AddKeyResultRequest {
 export interface UpdateKeyResultRequest {
   title?: string;
   description?: string;
+  startValue?: number;
   targetValue?: number;
   unit?: string;
   weight?: number;

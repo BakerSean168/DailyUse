@@ -39,14 +39,12 @@ export class WeightSnapshotWebApplicationService {
    *
    * @param goalUuid - Goal UUID
    * @param krUuid - KeyResult UUID
-   * @param newWeight - 新权重值 (0-100)
+   * @param newWeight - 新权重值 (1-10)
    * @param reason - 调整原因（可选）
-   *
-   * @throws Error 如果权重总和不等于 100% 或其他验证失败
    *
    * @example
    * ```typescript
-   * await service.updateKRWeight('goal-123', 'kr-456', 50, '根据Q1反馈调整');
+   * await service.updateKRWeight('goal-123', 'kr-456', 7, '根据Q1反馈调整');
    * ```
    */
   async updateKRWeight(
@@ -56,7 +54,10 @@ export class WeightSnapshotWebApplicationService {
     reason?: string,
   ): Promise<{
     keyResult: { uuid: string; title: string; oldWeight: number; newWeight: number };
-    snapshot: { oldWeight: number; newWeight: number; delta: number };
+    weightInfo: {
+      totalWeight: number;
+      keyResults: Array<{ uuid: string; title: string; weight: number; percentage: number }>;
+    };
   }> {
     try {
       this.goalStore.setLoading(true);
@@ -76,13 +77,15 @@ export class WeightSnapshotWebApplicationService {
         krUuid,
         oldWeight: result.keyResult.oldWeight,
         newWeight: result.keyResult.newWeight,
-        delta: result.snapshot.delta,
+        delta: result.keyResult.newWeight - result.keyResult.oldWeight,
         timestamp: Date.now(),
       });
 
-      // 显示成功提示
+      // 显示成功提示和权重占比
+      const krInfo = result.weightInfo.keyResults.find((kr) => kr.uuid === krUuid);
+      const percentage = krInfo ? krInfo.percentage.toFixed(1) : '?';
       this.snackbar.showSuccess(
-        `权重已更新：${result.keyResult.title} (${result.keyResult.oldWeight}% → ${result.keyResult.newWeight}%)`,
+        `权重已更新：${result.keyResult.title} (${result.keyResult.oldWeight} → ${result.keyResult.newWeight}, 占比 ${percentage}%)`,
       );
 
       // 刷新 Goal 数据（包含更新后的 KR 权重）

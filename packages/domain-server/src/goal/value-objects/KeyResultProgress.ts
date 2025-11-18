@@ -3,12 +3,18 @@
  * 关键成果进度 - 不可变值对象
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
-import { KeyResultValueType } from '@dailyuse/contracts';
+import { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IKeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
+// 类型别名
+type KeyResultValueType = GoalContracts.KeyResultValueType;
 type AggregationMethod = GoalContracts.AggregationMethod;
+type KeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
+type KeyResultProgressPersistenceDTO = GoalContracts.KeyResultProgressPersistenceDTO;
+
+// 枚举别名
+const KeyResultValueTypeEnum = GoalContracts.KeyResultValueType;
+const AggregationMethodEnum = GoalContracts.AggregationMethod;
 
 /**
  * KeyResultProgress 值对象
@@ -24,13 +30,15 @@ export class KeyResultProgress extends ValueObject {
   public readonly aggregationMethod: AggregationMethod;
   public readonly targetValue: number;
   public readonly currentValue: number;
+  public readonly initialValue?: number;
   public readonly unit: string | null;
 
-  constructor(params: {
+  private constructor(params: {
     valueType: KeyResultValueType;
     aggregationMethod: AggregationMethod;
     targetValue: number;
     currentValue: number;
+    initialValue?: number;
     unit?: string | null;
   }) {
     super();
@@ -39,6 +47,7 @@ export class KeyResultProgress extends ValueObject {
     this.aggregationMethod = params.aggregationMethod;
     this.targetValue = params.targetValue;
     this.currentValue = params.currentValue;
+    this.initialValue = params.initialValue;
     this.unit = params.unit ?? null;
 
     // 验证
@@ -92,11 +101,15 @@ export class KeyResultProgress extends ValueObject {
    * 计算完成百分比
    */
   public calculatePercentage(): number {
-    if (this.targetValue === 0) {
+    const start = this.initialValue ?? 0;
+    const range = this.targetValue - start;
+    
+    // 如果目标值无效或范围无效，返回 0
+    if (this.targetValue <= 0 || range <= 0) {
       return 0;
     }
 
-    const percentage = (this.currentValue / this.targetValue) * 100;
+    const percentage = ((this.currentValue - start) / range) * 100;
     return Math.min(Math.max(percentage, 0), 100); // 限制在 0-100 之间
   }
 
@@ -147,12 +160,13 @@ export class KeyResultProgress extends ValueObject {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IKeyResultProgressServerDTO {
+  public toServerDTO(): KeyResultProgressServerDTO {
     return {
       valueType: this.valueType,
       aggregationMethod: this.aggregationMethod,
+      initialValue: this.initialValue,
       targetValue: this.targetValue,
       currentValue: this.currentValue,
       unit: this.unit,
@@ -160,10 +174,38 @@ export class KeyResultProgress extends ValueObject {
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 从 Server DTO 创建值对象
    */
-  public static fromContract(dto: IKeyResultProgressServerDTO): KeyResultProgress {
+  public static fromServerDTO(dto: KeyResultProgressServerDTO): KeyResultProgress {
     return new KeyResultProgress(dto);
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): KeyResultProgressPersistenceDTO {
+    return {
+      valueType: this.valueType,
+      aggregationMethod: this.aggregationMethod,
+      initialValue: this.initialValue,
+      targetValue: this.targetValue,
+      currentValue: this.currentValue,
+      unit: this.unit,
+    };
+  }
+
+  /**
+   * 从 Persistence DTO 创建值对象
+   */
+  public static fromPersistenceDTO(dto: KeyResultProgressPersistenceDTO): KeyResultProgress {
+    return new KeyResultProgress({
+      valueType: dto.valueType,
+      aggregationMethod: dto.aggregationMethod,
+      initialValue: dto.initialValue,
+      targetValue: dto.targetValue,
+      currentValue: dto.currentValue,
+      unit: dto.unit ?? null,
+    });
   }
 
   /**
@@ -174,8 +216,8 @@ export class KeyResultProgress extends ValueObject {
     unit: string | null = null,
   ): KeyResultProgress {
     return new KeyResultProgress({
-      valueType: 'INCREMENTAL' as KeyResultValueType,
-      aggregationMethod: 'SUM' as AggregationMethod,
+      valueType: KeyResultValueTypeEnum.INCREMENTAL,
+      aggregationMethod: AggregationMethodEnum.SUM,
       targetValue,
       currentValue: 0,
       unit,

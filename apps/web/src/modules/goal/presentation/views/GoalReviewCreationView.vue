@@ -17,9 +17,9 @@
       </div>
       <div class="goal-review-header-content d-flex flex-column align-center text-center">
         <span class="text-h4 font-weight-bold mb-2">创建目标复盘</span>
-        <span class="text-h6 font-weight-medium">{{ goal.title }}</span>
+        <span class="text-h6 font-weight-medium">{{ goal?.title }}</span>
         <span class="text-caption font-weight-light">
-          {{ format(new Date(localGoalReview.reviewedAt), 'yyyy-MM-dd HH:mm') }}
+          {{ localGoalReview ? format(new Date(localGoalReview.reviewedAt), 'yyyy-MM-dd HH:mm') : '' }}
         </span>
       </div>
       <div>
@@ -31,49 +31,6 @@
     </header>
 
     <main class="goal-review-main pt-4">
-      <!-- 目标基本相关信息 -->
-      <section class="goal-analysis">
-        <div class="goal-review-card-container d-flex flex-row gap-6 mb-8 justify-center">
-          <!-- 评分卡片 -->
-          <div class="goal-review-card goal-info">
-            <div class="card-header pa-4 d-flex flex-column align-start">
-              <div class="d-flex align-baseline">
-                <span class="text-h3 font-weight-bold mr-1">{{ localGoalReview.rating }}</span>
-                <span class="text-h6 font-weight-light">/ 5</span>
-              </div>
-              <div>
-                <span class="text-subtitle-1">复盘评分</span>
-              </div>
-            </div>
-            <div class="card-content d-flex flex-column pa-4 justify-center">
-              <v-rating v-model="localGoalReview.rating" color="orange" hover half-increments class="mb-4" />
-              <div class="text-body-2 text-medium-emphasis">
-                复盘时间: {{ format(localGoalReview.reviewedAt, 'yyyy-MM-dd HH:mm') }}
-              </div>
-            </div>
-          </div>
-
-          <!-- 复盘类型卡片 -->
-          <div class="goal-review-card stats-info">
-            <div class="card-header pa-4 d-flex flex-column align-start">
-              <div>
-                <span class="text-h6">{{ localGoalReview.typeText }}</span>
-              </div>
-              <div>
-                <span class="text-subtitle-1">复盘类型</span>
-              </div>
-            </div>
-            <div class="card-content d-flex flex-column pa-4 justify-center gap-3">
-              <div>
-                <div class="text-body-2 font-weight-medium mb-2">复盘摘要</div>
-                <v-textarea v-model="localGoalReview.summary" placeholder="输入复盘摘要..." variant="outlined" rows="3"
-                  hide-details density="compact" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Charts Section -->
       <section class="goal-review-charts mb-8">
         <v-card elevation="2" class="pa-4">
@@ -87,6 +44,12 @@
             </v-col>
             <v-col cols="12" md="6">
               <KrProgressChart :goal="(goal as Goal)" />
+            </v-col>
+            <v-col cols="12" md="6">
+              <KrCompletionChart :goal="(goal as Goal)" />
+            </v-col>
+            <v-col cols="12" md="6">
+              <KrWeightDistributionChart :goal="(goal as Goal)" />
             </v-col>
             <v-col cols="12">
               <PeriodBarChart :goal="(goal as Goal)" />
@@ -110,7 +73,7 @@
                 <h3 class="text-h6">主要成就</h3>
               </div>
               <div class="diagnosis-card-content pa-4">
-                <v-textarea v-model="localGoalReview.achievements" placeholder="列出这段时间的主要成就和突破..." variant="outlined"
+                <v-textarea v-model="achievements" placeholder="列出这段时间的主要成就和突破..." variant="outlined"
                   rows="4" auto-grow hide-details />
               </div>
             </div>
@@ -121,7 +84,7 @@
                 <h3 class="text-h6">遇到的挑战</h3>
               </div>
               <div class="diagnosis-card-content pa-4">
-                <v-textarea v-model="localGoalReview.challenges" placeholder="记录遇到的主要挑战和困难..." variant="outlined"
+                <v-textarea v-model="challenges" placeholder="记录遇到的主要挑战和困难..." variant="outlined"
                   rows="4" auto-grow hide-details />
               </div>
             </div>
@@ -132,8 +95,59 @@
                 <h3 class="text-h6">改进方向</h3>
               </div>
               <div class="diagnosis-card-content pa-4">
-                <v-textarea v-model="localGoalReview.improvements" placeholder="总结改进方向和下步计划..." variant="outlined"
+                <v-textarea v-model="improvements" placeholder="总结改进方向和下步计划..." variant="outlined"
                   rows="4" auto-grow hide-details />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 目标基本相关信息 - 评分和摘要 -->
+      <section class="goal-analysis">
+        <div class="goal-review-card-container d-flex flex-row gap-6 mb-8 justify-center">
+          <!-- 评分卡片 -->
+          <div class="goal-review-card goal-info">
+            <div class="card-header pa-4 d-flex flex-column align-start">
+              <div class="d-flex align-baseline">
+                <span class="text-h3 font-weight-bold mr-1">{{ rating }}</span>
+                <span class="text-h6 font-weight-light">/ 10</span>
+              </div>
+              <div>
+                <span class="text-subtitle-1">复盘评分</span>
+              </div>
+            </div>
+            <div class="card-content d-flex flex-column pa-4 justify-center">
+              <v-rating 
+                v-model="rating" 
+                color="orange" 
+                hover 
+                half-increments 
+                class="mb-4"
+                length="10"
+                size="small"
+              />
+              <div class="text-body-2 text-medium-emphasis">
+                复盘时间: {{ localGoalReview ? format(localGoalReview.reviewedAt, 'yyyy-MM-dd HH:mm') : '' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 复盘类型和摘要卡片 -->
+          <div class="goal-review-card stats-info">
+            <div class="card-header pa-4 d-flex flex-column align-start">
+              <div>
+                <span class="text-h6">{{ localGoalReview?.typeText }}</span>
+              </div>
+              <div>
+                <span class="text-subtitle-1">复盘类型</span>
+              </div>
+            </div>
+            <div class="card-content d-flex flex-column pa-4 justify-center gap-3">
+              <div>
+                <div class="text-body-2 font-weight-medium mb-2">复盘摘要</div>
+                <v-textarea v-model="summary" placeholder="输入复盘摘要..." variant="outlined" rows="3"
+                  hide-details density="compact" />
               </div>
             </div>
           </div>
@@ -153,16 +167,16 @@
           <div class="mt-4 pa-3 rounded" style="background: rgba(var(--v-theme-primary), 0.1)">
             <div class="text-body-2 text-medium-emphasis">复盘摘要:</div>
             <div class="mt-2">
-              <v-chip class="mr-2 mb-1" size="small" color="success" v-if="localGoalReview.achievements">
+              <v-chip class="mr-2 mb-1" size="small" color="success" v-if="achievements">
                 有成就记录
               </v-chip>
-              <v-chip class="mr-2 mb-1" size="small" color="warning" v-if="localGoalReview.challenges">
+              <v-chip class="mr-2 mb-1" size="small" color="warning" v-if="challenges">
                 有挑战记录
               </v-chip>
-              <v-chip class="mr-2 mb-1" size="small" color="info" v-if="localGoalReview.improvements">
+              <v-chip class="mr-2 mb-1" size="small" color="info" v-if="improvements">
                 有改进方向
               </v-chip>
-              <v-chip class="mr-2 mb-1" size="small" color="primary" v-if="localGoalReview.summary">
+              <v-chip class="mr-2 mb-1" size="small" color="primary" v-if="summary">
                 有复盘摘要
               </v-chip>
             </div>
@@ -179,16 +193,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import GoalProgressChart from '../components/echarts/GoalProgressChart.vue';
 import KrProgressChart from '../components/echarts/KrProgressChart.vue';
+import KrCompletionChart from '../components/echarts/KrCompletionChart.vue';
+import KrWeightDistributionChart from '../components/echarts/KrWeightDistributionChart.vue';
 import PeriodBarChart from '../components/echarts/PeriodBarChart.vue';
 import { GoalReview } from '@dailyuse/domain-client';
 import { Goal } from '@dailyuse/domain-client';
+import { GoalContracts } from '@dailyuse/contracts';
 import { format } from 'date-fns';
 
 // 路由和状态
@@ -201,21 +218,73 @@ const goalStore = useGoalStore();
 const snackbar = useSnackbar();
 
 // 业务逻辑
-const { createGoalReview, getGoalAggregateView } = useGoal();
+const { createGoalReview, getGoalAggregateView, fetchGoalById } = useGoal();
 
 // 获取目标信息
 const goalUuid = route.params.goalUuid as string;
 const goal = ref<Goal | null>(null);
-const localGoalReview = ref<GoalReview | null>(null);
+
+// 使用 GoalReview 实体（参考 GoalDialog 的 goalModel 实现）
+const reviewModel = ref<GoalReview | null>(null);
+
+// 使用 computed 属性实现双向绑定（参考 GoalDialog 实现）
+const localGoalReview = computed(() => reviewModel.value);
+
+// 计算属性 - 评分
+const rating = computed({
+  get: () => reviewModel.value?.rating ?? 5,
+  set: (val: number) => {
+    reviewModel.value?.updateRating(val);
+  },
+});
+
+// 计算属性 - 摘要
+const summary = computed({
+  get: () => reviewModel.value?.summary ?? '',
+  set: (val: string) => {
+    reviewModel.value?.updateSummary(val);
+  },
+});
+
+// 计算属性 - 成就
+const achievements = computed({
+  get: () => reviewModel.value?.achievements ?? '',
+  set: (val: string) => {
+    reviewModel.value?.updateAchievements(val);
+  },
+});
+
+// 计算属性 - 挑战
+const challenges = computed({
+  get: () => reviewModel.value?.challenges ?? '',
+  set: (val: string) => {
+    reviewModel.value?.updateChallenges(val);
+  },
+});
+
+// 计算属性 - 改进
+const improvements = computed({
+  get: () => reviewModel.value?.improvements ?? '',
+  set: (val: string) => {
+    reviewModel.value?.updateImprovements(val);
+  },
+});
+
+// 计算属性 - 类型
+const reviewType = computed({
+  get: () => reviewModel.value?.type ?? GoalContracts.ReviewType.ADHOC,
+  set: (val: GoalContracts.ReviewType) => {
+    reviewModel.value?.updateType(val);
+  },
+});
 
 // 计算属性
 const canSave = computed(() => {
-  if (!localGoalReview.value) return false;
   return !!(
-    localGoalReview.value.achievements ||
-    localGoalReview.value.challenges ||
-    localGoalReview.value.improvements ||
-    localGoalReview.value.summary
+    achievements.value ||
+    challenges.value ||
+    improvements.value ||
+    summary.value
   );
 });
 
@@ -238,11 +307,8 @@ const initializeReview = async () => {
       throw new Error('无法获取目标信息');
     }
 
-    // 创建复盘实例
-    localGoalReview.value = GoalReview.forCreate(goalUuid);
-    if (!localGoalReview.value) {
-      throw new Error('无法创建复盘实例');
-    }
+    // 创建新的 GoalReview 实体
+    reviewModel.value = GoalReview.forCreate(goalUuid);
   } catch (error) {
     console.error('初始化复盘失败:', error);
     snackbar.showError('加载目标信息失败，请重试');
@@ -261,27 +327,36 @@ const handleSaveReview = () => {
 };
 
 const confirmSaveReview = async () => {
-  if (!localGoalReview.value || !goal.value) return;
+  if (!reviewModel.value || !goal.value) return;
 
   try {
     saving.value = true;
 
     // 使用API请求格式调用
-    await createGoalReview(goalUuid, {
+    const createdReview = await createGoalReview(goalUuid, {
       goalUuid: goalUuid,
       title: `${goal.value.title} - ${format(new Date(), 'yyyy-MM-dd')} 复盘`,
-      content: localGoalReview.value.summary,
-      reviewType: localGoalReview.value.type,
-      rating: localGoalReview.value.rating,
-      achievements: localGoalReview.value.achievements ?? undefined,
-      challenges: localGoalReview.value.challenges ?? undefined,
-      nextActions: localGoalReview.value.improvements ?? undefined,
-      reviewedAt: localGoalReview.value.reviewedAt,
+      content: reviewModel.value.summary,
+      reviewType: reviewModel.value.type,
+      rating: reviewModel.value.rating,
+      achievements: reviewModel.value.achievements ?? undefined,
+      challenges: reviewModel.value.challenges ?? undefined,
+      nextActions: reviewModel.value.improvements ?? undefined,
+      reviewedAt: reviewModel.value.reviewedAt,
     });
 
+    console.log('[GoalReviewCreationView] ✅ Review 创建成功:', createdReview);
+    
     snackbar.showSuccess('目标复盘创建成功');
     showConfirmDialog.value = false;
 
+    // 等待 store 更新完成（给 refreshGoalWithReviews 时间完成）
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // 再次确认刷新 Goal 数据
+    console.log('[GoalReviewCreationView] 🔄 最后确认刷新 Goal 数据');
+    await fetchGoalById(goalUuid);
+    
     // 跳转到目标详情页
     router.push({ name: 'goal-detail', params: { id: goalUuid } });
   } catch (error) {

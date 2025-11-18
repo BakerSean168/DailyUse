@@ -4,11 +4,7 @@
 
 import { GoalContracts } from '@dailyuse/contracts';
 import { AggregateRoot } from '@dailyuse/utils';
-import {
-  GoalMetadata,
-  GoalTimeRange,
-  GoalReminderConfig,
-} from '../value-objects';
+import { GoalReminderConfig } from '../value-objects';
 import { KeyResult, GoalReview } from '../entities';
 
 // 类型别名（从命名空间导入）
@@ -18,11 +14,15 @@ type GoalServerDTO = GoalContracts.GoalServerDTO;
 type GoalStatus = GoalContracts.GoalStatus;
 type ImportanceLevel = GoalContracts.ImportanceLevel;
 type UrgencyLevel = GoalContracts.UrgencyLevel;
+type GoalRecordClientDTO = GoalContracts.GoalRecordClientDTO;
+type GoalTimeRangeSummary = GoalContracts.GoalTimeRangeSummary;
 
 // 枚举值别名
 const GoalStatus = GoalContracts.GoalStatus;
 const ImportanceLevel = GoalContracts.ImportanceLevel;
 const UrgencyLevel = GoalContracts.UrgencyLevel;
+const DAY_MS = 1000 * 60 * 60 * 24;
+const DEFAULT_DURATION = 30 * DAY_MS;
 
 export class Goal extends AggregateRoot implements IGoal {
   private _accountUuid: string;
@@ -269,6 +269,61 @@ export class Goal extends AggregateRoot implements IGoal {
 
   public get reminderSummary(): string | null {
     return this._reminderConfig?.triggerSummary ?? null;
+  }
+
+  public get weightedProgress(): number {
+    return this.overallProgress;
+  }
+
+  public get timeProgressRatio(): number | null {
+    return this.calculateTimeProgressRatio();
+  }
+
+  public get timeProgressPercentage(): number | null {
+    const ratio = this.timeProgressRatio;
+    if (ratio === null) return null;
+    return Math.round(ratio * 10000) / 100;
+  }
+
+  public get timeProgressText(): string | null {
+    const percentage = this.timeProgressPercentage;
+    if (percentage === null) return null;
+    return `${percentage.toFixed(1)}%`;
+  }
+
+  public get timeRangeSummary(): GoalTimeRangeSummary | null {
+    return this.buildTimeRangeSummary();
+  }
+
+  public get records(): GoalRecordClientDTO[] | null {
+    if (!this._keyResults.length) return null;
+    const aggregated = this._keyResults.reduce<GoalRecordClientDTO[]>((acc, kr) => {
+      const recordList = kr.records ?? [];
+      if (recordList && recordList.length) {
+        return acc.concat(recordList);
+      }
+      return acc;
+    }, []);
+    return aggregated.length ? aggregated : null;
+  }
+
+  public get recordCount(): number {
+    return this.records?.length ?? 0;
+  }
+
+  public getTimeRangeSummary(): GoalTimeRangeSummary | null {
+    const summary = this.timeRangeSummary;
+    if (!summary) return null;
+    return { ...summary };
+  }
+
+  public getRecords(): GoalRecordClientDTO[] | null {
+    const data = this.records;
+    return data ? [...data] : null;
+  }
+
+  public getRecordCount(): number {
+    return this.recordCount;
   }
 
   /**
@@ -634,6 +689,7 @@ export class Goal extends AggregateRoot implements IGoal {
   }
 
   public toClientDTO(includeChildren = false): GoalDTO {
+    const recordsPayload = includeChildren ? this.records : undefined;
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
@@ -675,6 +731,13 @@ export class Goal extends AggregateRoot implements IGoal {
       reviewCount: this.reviewCount,
       hasActiveReminders: this.hasActiveReminders,
       reminderSummary: this.reminderSummary,
+      weightedProgress: this.weightedProgress,
+      timeProgressRatio: this.timeProgressRatio,
+      timeProgressPercentage: this.timeProgressPercentage,
+      timeProgressText: this.timeProgressText,
+      timeRangeSummary: this.timeRangeSummary,
+      records: recordsPayload,
+      recordCount: this.recordCount,
     };
   }
 
@@ -797,5 +860,45 @@ export class Goal extends AggregateRoot implements IGoal {
 
   public clone(): Goal {
     return Goal.fromClientDTO(this.toClientDTO(true));
+  }
+
+  private resolveTimeRange(): { start: number | null; end: number | null } {
+    let start = this._startDate ?? this._createdAt ?? null;
+    let end = this._targetDate ?? this._completedAt ?? this._updatedAt ?? null;
+
+    if (start && (!end || end <= start)) {
+      end = start + DEFAULT_DURATION;
+    }
+
+    return { start, end };
+  }
+
+  private calculateTimeProgressRatio(): number | null {
+    const { start, end } = this.resolveTimeRange();
+    if (!start || !end || end <= start) return null;
+    const now = Date.now();
+    if (now <= start) return 0;
+    if (now >= end) return 1;
+    return (now - start) / (end - start);
+  }
+
+  private buildTimeRangeSummary(): GoalTimeRangeSummary | null {
+    const { start, end } = this.resolveTimeRange();
+    if (!start && !end) return null;
+
+    const now = Date.now();
+    const duration = start && end ? Math.ceil((end - start) / DAY_MS) : null;
+    const elapsed = start ? Math.max(0, Math.ceil((now - start) / DAY_MS)) : null;
+    const remaining = end ? Math.ceil((end - now) / DAY_MS) : null;
+
+    return {
+      startDate: this._startDate ?? null,
+      targetDate: this._targetDate ?? null,
+      actualStartDate: start,
+      actualEndDate: end,
+      durationDays: duration,
+      elapsedDays: elapsed,
+      remainingDays: remaining,
+    };
   }
 }

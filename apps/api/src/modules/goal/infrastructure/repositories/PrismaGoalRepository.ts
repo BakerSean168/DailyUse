@@ -1,6 +1,6 @@
 import type { PrismaClient, goal as PrismaGoal } from '@prisma/client';
 import type { IGoalRepository } from '@dailyuse/domain-server';
-import { Goal, KeyResult } from '@dailyuse/domain-server';
+import { Goal, KeyResult, GoalReview } from '@dailyuse/domain-server';
 import { GoalContracts } from '@dailyuse/contracts';
 
 // 类型别名（从命名空间导入）
@@ -51,10 +51,11 @@ export class PrismaGoalRepository implements IGoalRepository {
    * 将 Prisma 模型映射为领域实体
    * 注意：Prisma Client 自动将 @map 的字段转换为 camelCase
    */
-  private mapToEntity(data: PrismaGoal & { keyResults?: any[]; keyResult?: any[] }): Goal {
+  private mapToEntity(data: PrismaGoal & { keyResults?: any[]; keyResult?: any[]; goalReview?: any[] }): Goal {
     console.log('[PrismaGoalRepository.mapToEntity] 开始映射, Goal UUID:', data.uuid);
     console.log('[PrismaGoalRepository.mapToEntity] data.keyResults:', data.keyResults);
     console.log('[PrismaGoalRepository.mapToEntity] data.keyResult:', data.keyResult);
+    console.log('[PrismaGoalRepository.mapToEntity] data.goalReview:', data.goalReview);
     
     const goal = Goal.fromPersistenceDTO({
       uuid: data.uuid,
@@ -96,24 +97,25 @@ export class PrismaGoalRepository implements IGoalRepository {
           goalRecordCount: krData.goalRecord?.length || 0,
         });
         
-        const keyResult = KeyResult.fromPersistenceDTO({
+        // ✅ 从数据库扁平化字段构建 KeyResult
+        const keyResult = KeyResult.fromServerDTO({
           uuid: krData.uuid,
-          goalUuid: krData.goalUuid,
+          goalUuid: data.uuid,
           title: krData.title,
           description: krData.description,
-          progress: JSON.stringify({
-            valueType: krData.valueType,
-            aggregation_method: krData.aggregationMethod,
-            target_value: krData.targetValue,
-            current_value: krData.currentValue,
+          progress: {
+            valueType: krData.valueType as any,
+            aggregationMethod: krData.aggregationMethod as any,
+            initialValue: undefined, // 数据库中暂无此字段
+            targetValue: krData.targetValue,
+            currentValue: krData.currentValue,
             unit: krData.unit,
-          }),
+          },
           weight: krData.weight,
           order: krData.order,
-          createdAt:
-            krData.createdAt instanceof Date ? krData.createdAt.getTime() : krData.createdAt,
-          updatedAt:
-            krData.updatedAt instanceof Date ? krData.updatedAt.getTime() : krData.updatedAt,
+          createdAt: krData.createdAt instanceof Date ? krData.createdAt.getTime() : krData.createdAt,
+          updatedAt: krData.updatedAt instanceof Date ? krData.updatedAt.getTime() : krData.updatedAt,
+          records: null,
         });
         
         // ✅ 恢复 GoalRecords（如果有）
@@ -145,13 +147,44 @@ export class PrismaGoalRepository implements IGoalRepository {
     }
 
     console.log('[PrismaGoalRepository.mapToEntity] Goal 实体的 keyResults 数量:', goal.keyResults?.length || 0);
+
+    // 恢复 GoalReviews（如果有）
+    const reviewsData = data.goalReview || [];
+    if (reviewsData.length > 0) {
+      console.log(`[PrismaGoalRepository.mapToEntity] 开始恢复 ${reviewsData.length} 条 GoalReviews...`);
+      for (const reviewData of reviewsData) {
+        const review = GoalReview.fromServerDTO({
+          uuid: reviewData.uuid,
+          goalUuid: data.uuid,
+          type: reviewData.reviewType as any,
+          rating: reviewData.rating || 5,
+          summary: reviewData.content,
+          achievements: reviewData.achievements,
+          challenges: reviewData.challenges,
+          improvements: reviewData.lessonsLearned,
+          keyResultSnapshots: [], // 暂不支持快照
+          reviewedAt: reviewData.createdAt instanceof Date 
+            ? reviewData.createdAt.getTime() 
+            : reviewData.createdAt,
+          createdAt: reviewData.createdAt instanceof Date 
+            ? reviewData.createdAt.getTime() 
+            : reviewData.createdAt,
+        });
+        goal.addReview(review);
+        console.log(`[PrismaGoalRepository.mapToEntity] GoalReview ${reviewData.uuid} 已添加到 Goal`);
+      }
+      console.log(`[PrismaGoalRepository.mapToEntity] ✅ ${reviewsData.length} 条 GoalReviews 已恢复`);
+    } else {
+      console.log('[PrismaGoalRepository.mapToEntity] 没有 GoalReviews 数据');
+    }
+
     return goal;
   }
 
   /**
    * 保存领域实体到数据库
    * 注意：这里处理 camelCase (PersistenceDTO) → snake_case (数据库) 的映射
-   * 级联保存子实体：KeyResults（暂不保存 Reviews，因为接口不完整）
+   * 级联保存子实体：KeyResults 和 GoalReviews
    */
   async save(goal: Goal): Promise<void> {
     const persistence = goal.toPersistenceDTO();
@@ -261,6 +294,38 @@ export class PrismaGoalRepository implements IGoalRepository {
         }
       }
     }
+
+    // 级联保存 GoalReviews
+    if (serverDTO.reviews && serverDTO.reviews.length > 0) {
+      console.log(`[PrismaGoalRepository.save] 保存 ${serverDTO.reviews.length} 条 GoalReviews for Goal ${goal.uuid}`);
+      for (const review of serverDTO.reviews) {
+        await (this.prisma as any).goalReview.upsert({
+          where: { uuid: review.uuid },
+          create: {
+            uuid: review.uuid,
+            goalUuid: goal.uuid,
+            reviewType: review.type,
+            content: review.summary,
+            achievements: review.achievements || null,
+            challenges: review.challenges || null,
+            lessonsLearned: review.improvements || null,
+            nextSteps: null, // 如果需要可以从 improvements 映射
+            rating: review.rating,
+            createdAt: new Date(review.createdAt),
+            updatedAt: new Date(review.createdAt), // 初次创建时 updatedAt = createdAt
+          },
+          update: {
+            reviewType: review.type,
+            content: review.summary,
+            achievements: review.achievements || null,
+            challenges: review.challenges || null,
+            lessonsLearned: review.improvements || null,
+            rating: review.rating,
+            updatedAt: new Date(), // 更新时使用当前时间
+          },
+        });
+      }
+    }
   }
 
   async findById(uuid: string, options?: { includeChildren?: boolean }): Promise<Goal | null> {
@@ -271,6 +336,7 @@ export class PrismaGoalRepository implements IGoalRepository {
               goalRecord: true, // ✅ 包含 KeyResult 的所有 GoalRecords
             },
           },
+          goalReview: true, // ✅ 包含所有 GoalReviews
         }
       : undefined;
 

@@ -21,12 +21,14 @@ type KeyResultProgressClientDTO = GoalContracts.KeyResultProgressClientDTO;
 type GoalRecordServerDTO = GoalContracts.GoalRecordServerDTO;
 type AggregationMethod = GoalContracts.AggregationMethod;
 
-// 用于解析持久化 DTO 中的 progress
+// 用于解析持久化 DTO 中的 progress（JSON 字符串）
 interface ProgressPersistence {
-  current_value: number;
-  target_value: number;
+  initialValue?: number;
+  currentValue: number;
+  targetValue: number;
   valueType: string;
-  aggregation_method: string;
+  aggregationMethod: string;
+  unit?: string | null;
 }
 
 /**
@@ -163,10 +165,12 @@ export class KeyResult extends Entity implements IKeyResultServer {
     const progressData = JSON.parse(dto.progress) as ProgressPersistence;
 
     const progress: KeyResultProgressServerDTO = {
-      currentValue: progressData.current_value,
-      targetValue: progressData.target_value,
+      initialValue: progressData.initialValue,
+      currentValue: progressData.currentValue,
+      targetValue: progressData.targetValue,
       valueType: progressData.valueType as any,
-      aggregationMethod: progressData.aggregation_method as any,
+      aggregationMethod: progressData.aggregationMethod as any,
+      unit: progressData.unit,
     };
 
     return new KeyResult({
@@ -240,10 +244,15 @@ export class KeyResult extends Entity implements IKeyResultServer {
    * 计算完成百分比
    */
   public calculatePercentage(): number {
-    if (this._progress.targetValue === 0) {
+    const start = (this._progress as any).initialValue ?? 0;
+    const range = this._progress.targetValue - start;
+    
+    // 如果目标值无效或范围无效，返回 0
+    if (this._progress.targetValue <= 0 || range <= 0) {
       return 0;
     }
-    const percentage = (this._progress.currentValue / this._progress.targetValue) * 100;
+    
+    const percentage = ((this._progress.currentValue - start) / range) * 100;
     return Math.min(Math.max(percentage, 0), 100);
   }
 
@@ -432,10 +441,12 @@ export class KeyResult extends Entity implements IKeyResultServer {
    */
   public toPersistenceDTO(): KeyResultPersistenceDTO {
     const progressPersistence: ProgressPersistence = {
-      current_value: this._progress.currentValue,
-      target_value: this._progress.targetValue,
+      initialValue: (this._progress as any).initialValue,
+      currentValue: this._progress.currentValue,
+      targetValue: this._progress.targetValue,
       valueType: this._progress.valueType,
-      aggregation_method: this._progress.aggregationMethod,
+      aggregationMethod: this._progress.aggregationMethod,
+      unit: this._progress.unit,
     };
 
     return {

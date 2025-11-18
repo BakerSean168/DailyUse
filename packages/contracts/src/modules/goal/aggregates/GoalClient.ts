@@ -8,8 +8,19 @@ import type { GoalServerDTO } from './GoalServer';
 import type { KeyResultClient, KeyResultClientDTO } from '../entities/KeyResultClient';
 import type { GoalReviewClient, GoalReviewClientDTO } from '../entities/GoalReviewClient';
 import type { GoalReminderConfigClient, GoalReminderConfigClientDTO } from '../value-objects';
+import type { GoalRecordClientDTO } from '../entities/GoalRecordClient';
 
 // ============ DTO 定义 ============
+
+export interface GoalTimeRangeSummary {
+  startDate?: number | null;
+  targetDate?: number | null;
+  actualStartDate?: number | null;
+  actualEndDate?: number | null;
+  durationDays?: number | null;
+  elapsedDays?: number | null;
+  remainingDays?: number | null;
+}
 
 /**
  * Goal Client DTO
@@ -59,6 +70,13 @@ export interface GoalClientDTO {
   reviewCount: number;
   hasActiveReminders: boolean; // 是否有启用的提醒
   reminderSummary?: string | null; // 提醒摘要
+  weightedProgress?: number | null;
+  timeProgressRatio?: number | null;
+  timeProgressPercentage?: number | null;
+  timeProgressText?: string | null;
+  timeRangeSummary?: GoalTimeRangeSummary | null;
+  records?: GoalRecordClientDTO[] | null;
+  recordCount?: number;
 }
 
 // ============ 实体接口 ============
@@ -110,6 +128,13 @@ export interface GoalClient {
   reviewCount: number;
   hasActiveReminders: boolean;
   reminderSummary?: string | null;
+  weightedProgress?: number | null;
+  timeProgressRatio?: number | null;
+  timeProgressPercentage?: number | null;
+  timeProgressText?: string | null;
+  timeRangeSummary?: GoalTimeRangeSummary | null;
+  records?: GoalRecordClientDTO[] | null;
+  recordCount?: number;
 
   // ===== 子实体集合（聚合根统一管理） =====
 
@@ -248,6 +273,21 @@ export interface GoalClient {
    * 是否应该显示提醒徽章
    */
   shouldShowReminderBadge(): boolean;
+
+  /**
+   * 获取时间范围摘要
+   */
+  getTimeRangeSummary(): GoalTimeRangeSummary | null;
+
+  /**
+   * 获取所有记录
+   */
+  getRecords(): GoalRecordClientDTO[] | null;
+
+  /**
+   * 获取记录数量
+   */
+  getRecordCount(): number;
 
   // ===== 操作判断方法 =====
 

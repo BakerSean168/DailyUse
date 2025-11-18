@@ -8,7 +8,9 @@
 import { GoalContracts } from '@dailyuse/contracts';
 import { InvalidWeightError } from './KeyResultWeightSnapshotErrors';
 
+// 类型别名
 type KeyResultWeightSnapshotServerDTO = GoalContracts.KeyResultWeightSnapshotServerDTO;
+type KeyResultWeightSnapshotPersistenceDTO = GoalContracts.KeyResultWeightSnapshotPersistenceDTO;
 type SnapshotTrigger = GoalContracts.SnapshotTrigger;
 
 export class KeyResultWeightSnapshot {
@@ -82,6 +84,43 @@ export class KeyResultWeightSnapshot {
       dto.operatorUuid,
       dto.reason ?? undefined,
       dto.createdAt,
+    );
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): KeyResultWeightSnapshotPersistenceDTO {
+    return {
+      uuid: this.uuid,
+      goalUuid: this.goalUuid,
+      keyResultUuid: this.keyResultUuid,
+      oldWeight: this.oldWeight,
+      newWeight: this.newWeight,
+      weightDelta: this.weightDelta,
+      snapshotTime: BigInt(this.snapshotTime),
+      trigger: this.trigger,
+      reason: this.reason ?? null,
+      operatorUuid: this.operatorUuid,
+      createdAt: new Date(this.createdAt ?? Date.now()),
+    };
+  }
+
+  /**
+   * 从 Persistence DTO 创建实例
+   */
+  public static fromPersistenceDTO(dto: KeyResultWeightSnapshotPersistenceDTO): KeyResultWeightSnapshot {
+    return new KeyResultWeightSnapshot(
+      dto.uuid,
+      dto.goalUuid,
+      dto.keyResultUuid,
+      dto.oldWeight,
+      dto.newWeight,
+      Number(dto.snapshotTime),
+      dto.trigger,
+      dto.operatorUuid,
+      dto.reason ?? undefined,
+      dto.createdAt.getTime(),
     );
   }
 }

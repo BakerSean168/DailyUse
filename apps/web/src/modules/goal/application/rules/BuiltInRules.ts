@@ -90,30 +90,9 @@ export const BUILT_IN_RULES: StatusRule[] = [
     updatedAt: Date.now(),
   },
 
-  // 规则4: 权重总和 != 100 → 权重异常警告
-  {
-    id: 'rule-weight-warning',
-    name: '权重异常',
-    description: '当关键结果权重总和不等于 100% 时发出警告',
-    enabled: true,
-    priority: 5,
-    conditionType: 'any',
-    conditions: [
-      {
-        metric: 'weight',
-        operator: '!=',
-        value: 100,
-        scope: 'all',
-      },
-    ],
-    action: {
-      status: GoalStatus.ACTIVE,
-      notify: true,
-      message: '⚠️ 权重异常：关键结果权重总和不等于 100%',
-    },
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  },
+  // 规则4: 权重范围验证（已弃用 0-100% 检查，改为 1-10 范围）
+  // 由 WeightRecommendationService 和后端 API 负责验证
+  // 前端不再强制权重总和为 100%
 
   // 规则5: KR 数量 = 0 → 草稿状态
   {

@@ -18,7 +18,7 @@
     </div>
 
     <!-- 找不到复盘 -->
-    <div v-else-if="!review" class="d-flex justify-center align-center" style="height: 400px">
+    <div v-else-if="!review || !goal" class="d-flex justify-center align-center" style="height: 400px">
       <v-alert type="warning" variant="tonal" class="ma-4">
         <template #title>复盘不存在</template>
         找不到指定的复盘记录
@@ -42,10 +42,10 @@
 
         <v-toolbar-title class="text-h6 font-weight-medium">
           <div class="d-flex align-center">
-            <v-icon class="mr-2" :color="getReviewTypeColor(review.type)">
-              {{ getReviewTypeIcon(review.type) }}
+            <v-icon class="mr-2" :color="getRatingColor(review.rating)">
+              {{ getRatingIcon(review.rating) }}
             </v-icon>
-            {{ review.title || '复盘详情' }}
+            复盘详情
           </div>
         </v-toolbar-title>
 
@@ -53,7 +53,7 @@
 
         <!-- 复盘类型标签 -->
         <v-chip :color="getReviewTypeColor(review.type)" variant="tonal" class="mr-3">
-          {{ getReviewTypeText(review.type) }}
+          {{ review.typeText }}
         </v-chip>
 
         <!-- 编辑按钮 -->
@@ -65,227 +65,161 @@
       <!-- 主要内容区域 -->
       <div class="main-content flex-grow-1 px-6">
         <div class="content-wrapper">
-          <!-- 基本信息卡片 -->
+          <!-- 1. 基本信息卡片 -->
           <v-card class="mb-6" elevation="2">
-            <v-card-title class="d-flex justify-space-between align-center">
-              <div>
-                <div class="text-h5">{{ review.title }}</div>
-                <div class="text-body-2 text-medium-emphasis mt-1">
-                  复盘时间: {{ format(review.reviewDate, 'yyyy年MM月dd日 HH:mm') }}
-                </div>
-                <div class="text-body-2 text-medium-emphasis">
-                  目标: {{ goal?.title || '加载中...' }}
-                </div>
-              </div>
-            </v-card-title>
-          </v-card>
-
-          <!-- 快照信息 -->
-          <v-card variant="tonal" class="mb-6" elevation="2">
-            <v-card-title class="text-subtitle-1">
-              <v-icon class="mr-2">mdi-camera</v-icon>
-              目标快照信息 ({{ format(review.snapshot.snapshotDate, 'yyyy年MM月dd日') }})
-            </v-card-title>
             <v-card-text>
-              <v-row>
-                <v-col cols="6" md="3">
-                  <div class="text-center">
-                    <div class="text-h4 font-weight-bold text-primary">
-                      {{ review.snapshot.weightedProgress }}%
-                    </div>
-                    <div class="text-body-2 text-medium-emphasis">加权进度</div>
+              <div class="d-flex justify-space-between align-center">
+                <div>
+                  <div class="text-h5 font-weight-bold mb-2">{{ goal.title }}</div>
+                  <div class="d-flex align-center gap-3">
+                    <v-chip size="small" prepend-icon="mdi-calendar" variant="text">
+                      {{ formatDate(review.reviewedAt) }}
+                    </v-chip>
+                    <v-chip size="small" prepend-icon="mdi-clock-outline" variant="text">
+                      复盘时间
+                    </v-chip>
                   </div>
-                </v-col>
-                <v-col cols="6" md="3">
-                  <div class="text-center">
-                    <div class="text-h4 font-weight-bold text-secondary">
-                      {{ review.snapshot.overallProgress }}%
-                    </div>
-                    <div class="text-body-2 text-medium-emphasis">整体进度</div>
-                  </div>
-                </v-col>
-                <v-col cols="6" md="3">
-                  <div class="text-center">
-                    <div class="text-h4 font-weight-bold text-success">
-                      {{ review.snapshot.completedKeyResults }}
-                    </div>
-                    <div class="text-body-2 text-medium-emphasis">已完成</div>
-                  </div>
-                </v-col>
-                <v-col cols="6" md="3">
-                  <div class="text-center">
-                    <div class="text-h4 font-weight-bold text-info">
-                      {{ review.snapshot.totalKeyResults }}
-                    </div>
-                    <div class="text-body-2 text-medium-emphasis">总计</div>
-                  </div>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-
-          <!-- 关键结果快照详情 -->
-          <v-card
-            v-if="review.snapshot.keyResultsSnapshot.length > 0"
-            variant="outlined"
-            class="mb-6"
-            elevation="2"
-          >
-            <v-card-title class="text-subtitle-1">
-              <v-icon class="mr-2">mdi-target</v-icon>
-              关键结果快照
-            </v-card-title>
-            <v-card-text>
-              <div
-                v-for="krSnapshot in review.snapshot.keyResultsSnapshot"
-                :key="krSnapshot.uuid"
-                class="mb-4"
-              >
-                <div class="d-flex justify-space-between align-center mb-2">
-                  <div class="text-subtitle-2 font-weight-medium">{{ krSnapshot.name }}</div>
-                  <v-chip
-                    size="small"
-                    :color="getProgressColor(krSnapshot.progress)"
-                    variant="tonal"
-                  >
-                    {{ krSnapshot.progress }}%
-                  </v-chip>
                 </div>
-                <v-progress-linear
-                  :model-value="krSnapshot.progress"
-                  height="8"
-                  rounded
-                  :color="getProgressColor(krSnapshot.progress)"
-                />
-                <div class="d-flex justify-space-between mt-2 text-caption text-medium-emphasis">
-                  <span>当前值: {{ krSnapshot.currentValue }}</span>
-                  <span>目标值: {{ krSnapshot.targetValue }}</span>
-                </div>
+                <v-avatar :color="getRatingColor(review.rating)" size="72" variant="flat">
+                  <span class="text-h4 font-weight-bold text-white">{{ review.rating }}</span>
+                  <div class="text-caption text-white mt-n2">/ 10</div>
+                </v-avatar>
               </div>
             </v-card-text>
           </v-card>
 
-          <!-- 复盘内容 -->
+          <!-- 2. 快照核心指标 -->
+          <v-row class="mb-6">
+            <v-col cols="12" md="3">
+              <v-card variant="tonal" color="primary" elevation="2">
+                <v-card-text class="text-center">
+                  <v-icon size="40" class="mb-2">mdi-target</v-icon>
+                  <div class="text-h4 font-weight-bold">
+                    {{ completedKRsCount }} / {{ totalKRsCount }}
+                  </div>
+                  <div class="text-body-2">关键结果</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-card variant="tonal" color="success" elevation="2">
+                <v-card-text class="text-center">
+                  <v-icon size="40" class="mb-2">mdi-check-circle</v-icon>
+                  <div class="text-h4 font-weight-bold">
+                    {{ completedKRsCount }}
+                  </div>
+                  <div class="text-body-2">已完成</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-card variant="tonal" color="info" elevation="2">
+                <v-card-text class="text-center">
+                  <v-icon size="40" class="mb-2">mdi-progress-check</v-icon>
+                  <div class="text-h4 font-weight-bold">
+                    {{ averageProgress.toFixed(1) }}%
+                  </div>
+                  <div class="text-body-2">平均进度</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-card variant="tonal" color="warning" elevation="2">
+                <v-card-text class="text-center">
+                  <v-icon size="40" class="mb-2">mdi-star</v-icon>
+                  <div class="text-h4 font-weight-bold">
+                    {{ review.ratingText }}
+                  </div>
+                  <div class="text-body-2">评级</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <!-- 3. 进度分析图表 -->
+          <ReviewProgressChart v-if="goal && review" :goal="(goal as Goal)" :review="(review as GoalReview)" class="mb-6" />
+
+          <!-- 4. 权重分布图表 -->
+          <KrWeightDistributionChart v-if="goal && review" :goal="(goal as Goal)" :review="(review as GoalReview)" class="mb-6" />
+
+          <!-- 5. 复盘内容 -->
           <div class="content-sections">
-            <div v-if="review.content.achievements" class="content-section mb-4">
+            <div v-if="review.achievements" class="content-section mb-4">
               <v-card elevation="2">
                 <v-card-title class="d-flex align-center">
                   <v-icon color="success" class="mr-2">mdi-trophy</v-icon>
                   <h3 class="text-h6">主要成就</h3>
                 </v-card-title>
                 <v-card-text>
-                  <p class="text-body-1 whitespace-pre-line">{{ review.content.achievements }}</p>
+                  <p class="text-body-1 whitespace-pre-line">{{ review.achievements }}</p>
                 </v-card-text>
               </v-card>
             </div>
 
-            <div v-if="review.content.challenges" class="content-section mb-4">
+            <div v-if="review.challenges" class="content-section mb-4">
               <v-card elevation="2">
                 <v-card-title class="d-flex align-center">
                   <v-icon color="warning" class="mr-2">mdi-alert-circle</v-icon>
                   <h3 class="text-h6">遇到的挑战</h3>
                 </v-card-title>
                 <v-card-text>
-                  <p class="text-body-1 whitespace-pre-line">{{ review.content.challenges }}</p>
+                  <p class="text-body-1 whitespace-pre-line">{{ review.challenges }}</p>
                 </v-card-text>
               </v-card>
             </div>
 
-            <div v-if="review.content.learnings" class="content-section mb-4">
+            <div v-if="review.improvements" class="content-section mb-4">
               <v-card elevation="2">
                 <v-card-title class="d-flex align-center">
                   <v-icon color="info" class="mr-2">mdi-lightbulb</v-icon>
-                  <h3 class="text-h6">经验总结</h3>
+                  <h3 class="text-h6">改进建议</h3>
                 </v-card-title>
                 <v-card-text>
-                  <p class="text-body-1 whitespace-pre-line">{{ review.content.learnings }}</p>
-                </v-card-text>
-              </v-card>
-            </div>
-
-            <div v-if="review.content.nextSteps" class="content-section mb-4">
-              <v-card elevation="2">
-                <v-card-title class="d-flex align-center">
-                  <v-icon color="primary" class="mr-2">mdi-arrow-right-circle</v-icon>
-                  <h3 class="text-h6">下一步计划</h3>
-                </v-card-title>
-                <v-card-text>
-                  <p class="text-body-1 whitespace-pre-line">{{ review.content.nextSteps }}</p>
-                </v-card-text>
-              </v-card>
-            </div>
-
-            <div v-if="review.content.adjustments" class="content-section mb-4">
-              <v-card elevation="2">
-                <v-card-title class="d-flex align-center">
-                  <v-icon color="purple" class="mr-2">mdi-tune</v-icon>
-                  <h3 class="text-h6">调整建议</h3>
-                </v-card-title>
-                <v-card-text>
-                  <p class="text-body-1 whitespace-pre-line">{{ review.content.adjustments }}</p>
+                  <p class="text-body-1 whitespace-pre-line">{{ review.improvements }}</p>
                 </v-card-text>
               </v-card>
             </div>
           </div>
 
-          <!-- 评分详情 -->
-          <div v-if="hasRating(review)" class="rating-section mb-4">
-            <v-card variant="tonal" color="orange" elevation="2">
-              <v-card-title class="text-subtitle-1">
-                <v-icon class="mr-2">mdi-star</v-icon>
-                综合评分
-              </v-card-title>
-              <v-card-text>
-                <v-row>
-                  <v-col cols="12" md="4">
-                    <div class="text-body-2 mb-2">进度满意度</div>
-                    <v-rating
-                      :model-value="review.rating.progressSatisfaction"
-                      readonly
-                      color="orange"
-                    />
-                    <div class="text-caption text-center mt-1">
-                      {{ review.rating.progressSatisfaction }}/5
-                    </div>
-                  </v-col>
-                  <v-col cols="12" md="4">
-                    <div class="text-body-2 mb-2">执行效率</div>
-                    <v-rating
-                      :model-value="review.rating.executionEfficiency"
-                      readonly
-                      color="orange"
-                    />
-                    <div class="text-caption text-center mt-1">
-                      {{ review.rating.executionEfficiency }}/5
-                    </div>
-                  </v-col>
-                  <v-col cols="12" md="4">
-                    <div class="text-body-2 mb-2">目标合理性</div>
-                    <v-rating
-                      :model-value="review.rating.goalReasonableness"
-                      readonly
-                      color="orange"
-                    />
-                    <div class="text-caption text-center mt-1">
-                      {{ review.rating.goalReasonableness }}/5
-                    </div>
-                  </v-col>
-                </v-row>
-                <v-divider class="my-4" />
-                <div class="text-center">
-                  <div class="text-h6 font-weight-bold">
-                    平均评分: {{ getAverageRating(review).toFixed(1) }}/5
+          <!-- 6. 复盘评分和摘要 -->
+          <v-card variant="tonal" color="primary" elevation="2" class="mt-6">
+            <v-card-title class="text-h6">
+              <v-icon class="mr-2">mdi-star-circle</v-icon>
+              复盘评分
+            </v-card-title>
+            <v-card-text>
+              <div class="d-flex align-center justify-space-between mb-4">
+                <div class="flex-1">
+                  <div class="text-h3 font-weight-bold text-center mb-2">
+                    {{ review.rating }} <span class="text-h5">/ 10</span>
                   </div>
-                  <v-rating
-                    :model-value="getAverageRating(review)"
-                    readonly
-                    color="orange"
-                    size="large"
-                  />
+                  <div class="text-center">
+                    <v-rating
+                      :model-value="review.rating"
+                      :length="10"
+                      readonly
+                      color="warning"
+                      size="large"
+                      density="comfortable"
+                    />
+                  </div>
+                  <div class="text-h6 text-center mt-2 font-weight-medium">
+                    {{ review.ratingText }}
+                  </div>
                 </div>
-              </v-card-text>
-            </v-card>
-          </div>
+              </div>
+
+              <v-divider class="my-4" />
+
+              <div v-if="review.summary">
+                <div class="text-subtitle-1 font-weight-medium mb-2">
+                  <v-icon class="mr-1">mdi-text</v-icon>
+                  复盘摘要
+                </div>
+                <p class="text-body-1 whitespace-pre-line">{{ review.summary }}</p>
+              </div>
+            </v-card-text>
+          </v-card>
         </div>
       </div>
     </div>
@@ -298,8 +232,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { Goal } from '@dailyuse/domain-client';
+import { Goal, GoalReview } from '@dailyuse/domain-client';
 import { format } from 'date-fns';
+import ReviewProgressChart from '../components/echarts/ReviewProgressChart.vue';
+import KrWeightDistributionChart from '../components/echarts/KrWeightDistributionChart.vue';
 
 // 路由和状态
 const loading = ref(false);
@@ -316,62 +252,69 @@ const { fetchGoalById } = useGoal();
 const goalUuid = route.params.goalUuid as string;
 const reviewUuid = route.params.reviewUuid as string;
 const goal = ref<Goal | null>(null);
-const review = ref<any | null>(null);
+const review = ref<GoalReview | null>(null);
+
+// 计算属性 - 完成的关键结果数量
+const completedKRsCount = computed(() => {
+  if (!review.value) return 0;
+  return review.value.keyResultSnapshots.filter(kr => kr.progressPercentage >= 100).length;
+});
+
+// 计算属性 - 总关键结果数量
+const totalKRsCount = computed(() => {
+  return review.value?.keyResultSnapshots.length || 0;
+});
+
+// 计算属性 - 平均进度
+const averageProgress = computed(() => {
+  if (!review.value || review.value.keyResultSnapshots.length === 0) return 0;
+  
+  const total = review.value.keyResultSnapshots.reduce(
+    (sum, kr) => sum + kr.progressPercentage,
+    0
+  );
+  
+  return total / review.value.keyResultSnapshots.length;
+});
+
+// 格式化日期
+const formatDate = (timestamp: number): string => {
+  return format(new Date(timestamp), 'yyyy年MM月dd日 HH:mm');
+};
 
 // 工具方法
-const getReviewTypeIcon = (type: string): string => {
-  const icons = {
-    weekly: 'mdi-calendar-week',
-    monthly: 'mdi-calendar-month',
-    midterm: 'mdi-calendar-check',
-    final: 'mdi-flag-checkered',
-    custom: 'mdi-calendar-edit',
-  };
-  return icons[type as keyof typeof icons] || 'mdi-book-open-variant';
-};
-
 const getReviewTypeColor = (type: string): string => {
-  const colors = {
-    weekly: 'primary',
-    monthly: 'secondary',
-    midterm: 'warning',
-    final: 'success',
-    custom: 'info',
+  const colors: Record<string, string> = {
+    WEEKLY: 'primary',
+    MONTHLY: 'secondary',
+    QUARTERLY: 'warning',
+    ANNUAL: 'success',
+    ADHOC: 'info',
   };
-  return colors[type as keyof typeof colors] || 'grey';
+  return colors[type] || 'grey';
 };
 
-const getReviewTypeText = (type: string): string => {
-  const texts = {
-    weekly: '周复盘',
-    monthly: '月复盘',
-    midterm: '期中复盘',
-    final: '最终复盘',
-    custom: '自定义复盘',
-  };
-  return texts[type as keyof typeof texts] || '复盘';
+const getRatingColor = (rating: number): string => {
+  if (rating >= 9) return 'success';
+  if (rating >= 7) return 'info';
+  if (rating >= 5) return 'warning';
+  if (rating >= 3) return 'orange';
+  return 'error';
+};
+
+const getRatingIcon = (rating: number): string => {
+  if (rating >= 9) return 'mdi-emoticon-excited';
+  if (rating >= 7) return 'mdi-emoticon-happy';
+  if (rating >= 5) return 'mdi-emoticon-neutral';
+  if (rating >= 3) return 'mdi-emoticon-sad';
+  return 'mdi-emoticon-cry';
 };
 
 const getProgressColor = (progress: number): string => {
   if (progress >= 80) return 'success';
-  if (progress >= 60) return 'warning';
-  if (progress >= 40) return 'orange';
+  if (progress >= 60) return 'info';
+  if (progress >= 40) return 'warning';
   return 'error';
-};
-
-const hasRating = (review: any): boolean => {
-  return !!(
-    review.rating &&
-    (review.rating.progressSatisfaction > 0 ||
-      review.rating.executionEfficiency > 0 ||
-      review.rating.goalReasonableness > 0)
-  );
-};
-
-const getAverageRating = (review: any): number => {
-  if (!review.rating) return 0;
-  const { progressSatisfaction, executionEfficiency, goalReasonableness } = review.rating;
-  return (progressSatisfaction + executionEfficiency + goalReasonableness) / 3;
 };
 
 // 业务方法
@@ -380,30 +323,53 @@ const loadReview = async () => {
     loading.value = true;
     error.value = '';
 
-    // 加载目标信息
-    if (!goal.value) {
-      const goalData = goalStore.getGoalByUuid(goalUuid);
-      if (!goalData) {
-        await fetchGoalById(goalUuid);
-        goal.value = goalStore.getGoalByUuid(goalUuid);
-      } else {
-        goal.value = goalData;
-      }
+    console.log('[GoalReviewDetailView] 🔍 开始加载 review:', { goalUuid, reviewUuid });
+
+    // 1. 先从 store 尝试获取
+    let goalData = goalStore.getGoalByUuid(goalUuid);
+    console.log('[GoalReviewDetailView] 📦 从 store 获取 goal:', {
+      found: !!goalData,
+      reviewsCount: goalData?.reviews?.length || 0,
+    });
+
+    // 2. 如果 store 中没有或没有 reviews，则重新加载
+    if (!goalData || !goalData.reviews || goalData.reviews.length === 0) {
+      console.log('[GoalReviewDetailView] 🔄 Store 中没有 goal 或 reviews，重新加载');
+      await fetchGoalById(goalUuid);
+      goalData = goalStore.getGoalByUuid(goalUuid);
+      console.log('[GoalReviewDetailView] 📥 重新加载后的 goal:', {
+        found: !!goalData,
+        reviewsCount: goalData?.reviews?.length || 0,
+      });
     }
 
-    // 从store中获取复盘数据
-    if (goal.value && goal.value.reviews) {
-      const foundReview = goal.value.reviews.find((r) => r.uuid === reviewUuid);
-      if (foundReview) {
-        review.value = foundReview;
-      } else {
-        throw new Error('找不到指定的复盘记录');
-      }
+    goal.value = goalData;
+
+    if (!goal.value) {
+      throw new Error('无法获取目标信息');
+    }
+
+    // 3. 从 goal 的 reviews 中查找目标 review
+    const foundReview = goal.value.reviews?.find((r) => r.uuid === reviewUuid);
+    console.log('[GoalReviewDetailView] 🔍 查找 review 结果:', {
+      found: !!foundReview,
+      reviewUuid,
+      totalReviews: goal.value.reviews?.length || 0,
+      reviewUuids: goal.value.reviews?.map(r => r.uuid) || [],
+    });
+
+    if (foundReview) {
+      review.value = foundReview;
+      console.log('[GoalReviewDetailView] ✅ Review 加载成功:', {
+        uuid: review.value.uuid,
+        rating: review.value.rating,
+        type: review.value.type,
+      });
     } else {
-      throw new Error('无法获取复盘信息');
+      throw new Error('找不到指定的复盘记录');
     }
   } catch (err) {
-    console.error('加载复盘详情失败:', err);
+    console.error('[GoalReviewDetailView] ❌ 加载复盘详情失败:', err);
     error.value = typeof err === 'string' ? err : '加载复盘详情失败，请重试';
     snackbar.showError('加载复盘详情失败');
   } finally {

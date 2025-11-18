@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="visible" max-width="600px" persistent>
     <v-card>
-      <v-card-title class="d-flex align-center bg-primary text-white">
+      <v-card-title class="d-flex align-center bg-primary text-white flex-shrink-0">
         <v-icon class="mr-2">mdi-folder</v-icon>
         <span class="text-h5">{{ isEditMode ? '编辑分组' : '创建分组' }}</span>
       </v-card-title>

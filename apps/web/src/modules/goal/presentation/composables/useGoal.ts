@@ -842,31 +842,70 @@ export function useGoal() {
   const hasSelection = computed(() => !!currentGoal.value);
 
   // ===== 工具方法 =====
+  const DAY_MS = 1000 * 60 * 60 * 24;
+  const DEFAULT_DURATION = 30 * DAY_MS;
+
+  const toTimestamp = (value?: number | string | Date | null) => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'number') return value;
+    if (value instanceof Date) return value.getTime();
+    const date = new Date(value);
+    const time = date.getTime();
+    return Number.isNaN(time) ? null : time;
+  };
+
+  const resolveGoalTimeRange = (goal: any) => {
+    if (!goal) return { start: null, end: null };
+
+    const startCandidates = [goal.startDate, goal.startTime, goal.createdAt];
+    const endCandidates = [goal.targetDate, goal.endDate, goal.endTime, goal.completedAt, goal.updatedAt];
+
+    let start = startCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
+    let end = endCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
+
+    if (start && (!end || end <= start)) {
+      end = start + DEFAULT_DURATION;
+    }
+
+    return { start, end };
+  };
+
   /**
    * Goal 的时间进度
    * @param goal 目标实体
    * @returns 0 到 1 之间的数值，表示时间进度百分比
    */
   const getTimeProgress = (goal: any) => {
-    const now = new Date();
-    if (goal.startTime && goal.endTime) {
-      const start = new Date(goal.startTime);
-      const end = new Date(goal.endTime);
-      if (now < start) return 0;
-      if (now > end) return 1;
-      return (now.getTime() - start.getTime()) / (end.getTime() - start.getTime());
+    if (!goal) return 0;
+    if (typeof goal.timeProgressRatio === 'number' && !Number.isNaN(goal.timeProgressRatio)) {
+      return Math.min(Math.max(goal.timeProgressRatio, 0), 1);
     }
-    return 0;
+    if (typeof goal.timeProgressPercentage === 'number' && !Number.isNaN(goal.timeProgressPercentage)) {
+      return Math.min(Math.max(goal.timeProgressPercentage / 100, 0), 1);
+    }
+    if (goal.timeRangeSummary?.elapsedDays !== undefined && goal.timeRangeSummary?.durationDays) {
+      const ratio = goal.timeRangeSummary.elapsedDays / goal.timeRangeSummary.durationDays;
+      return Math.min(Math.max(ratio, 0), 1);
+    }
+    const { start, end } = resolveGoalTimeRange(goal);
+    if (!start || !end || end <= start) return 0;
+    const now = Date.now();
+    if (now <= start) return 0;
+    if (now >= end) return 1;
+    return (now - start) / (end - start);
   };
 
   const getRemainingDays = (goal: any) => {
-    if (goal.endTime) {
-      const now = new Date();
-      const end = new Date(goal.endTime);
-      const diff = end.getTime() - now.getTime();
-      return Math.ceil(diff / (1000 * 3600 * 24));
+    if (!goal) return 0;
+    const summaryRemaining = goal.timeRangeSummary?.remainingDays;
+    if (summaryRemaining !== undefined && summaryRemaining !== null) {
+      return summaryRemaining;
     }
-    return 0;
+    const { end } = resolveGoalTimeRange(goal);
+    if (!end) return 0;
+    const diff = end - Date.now();
+    if (diff <= 0) return 0;
+    return Math.ceil(diff / DAY_MS);
   };
 
   return {

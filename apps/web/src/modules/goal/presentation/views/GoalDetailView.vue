@@ -290,17 +290,6 @@
     <KeyResultDialog ref="keyResultDialogRef" />
     <!-- 关键结果对话框 -->
     <KeyResultDialog ref="keyResultDialogRef" />
-    <!-- 确认对话框 -->
-    <ConfirmDialog
-      v-model="confirmDialog.show"
-      :title="confirmDialog.title"
-      :message="confirmDialog.message"
-      confirm-text="确认"
-      cancel-text="取消"
-      @update:modelValue="confirmDialog.show = $event"
-      @confirm="confirmDialog.onConfirm"
-      @cancel="confirmDialog.onCancel"
-    />
     <!-- 进度分解对话框 -->
     <v-dialog v-model="showProgressBreakdown" max-width="700">
       <ProgressBreakdownPanel
@@ -321,6 +310,7 @@ import { useGoalStore } from '../stores/goalStore';
 
 // composables
 import { useGoal } from '../composables/useGoal';
+import { useMessage } from '@dailyuse/ui';
 // domain
 import { Goal } from '@dailyuse/domain-client';
 
@@ -328,7 +318,6 @@ import { Goal } from '@dailyuse/domain-client';
 import GoalDialog from '@/modules/goal/presentation/components/dialogs/GoalDialog.vue';
 import KeyResultDialog from '@/modules/goal/presentation/components/dialogs/KeyResultDialog.vue';
 import GoalReviewListCard from '@/modules/goal/presentation/components/cards/GoalReviewListCard.vue';
-import ConfirmDialog from '@/shared/components/ConfirmDialog.vue';
 import KeyResultCard from '@/modules/goal/presentation/components/cards/KeyResultCard.vue';
 import GoalDAGVisualization from '@/modules/goal/presentation/components/dag/GoalDAGVisualization.vue';
 import ProgressBreakdownPanel from '@/modules/goal/presentation/components/ProgressBreakdownPanel.vue';
@@ -338,6 +327,7 @@ import { format } from 'date-fns';
 const route = useRoute();
 const router = useRouter();
 const goalStore = useGoalStore();
+const message = useMessage();
 
 const { deleteGoal, getGoalAggregateView } = useGoal();
 
@@ -357,7 +347,13 @@ const goal: ComputedRef<Goal | null> = computed(() => {
 
 console.log('[goalDetailView]Current Goal:', goal.value);
 
+const timeRangeSummary = computed(() => goal.value?.timeRangeSummary ?? null);
+
 const remainingDays = computed(() => {
+  const summary = timeRangeSummary.value;
+  if (summary && summary.remainingDays !== undefined && summary.remainingDays !== null) {
+    return summary.remainingDays;
+  }
   if (!goal.value?.targetDate) return 0;
   const endTime = goal.value.targetDate;
   const remaining = endTime - Date.now();
@@ -371,20 +367,6 @@ const keyResults = computed(() => {
 
 const goalColor = computed(() => goal.value?.color || '#FF5733');
 
-const confirmDialog = ref<{
-  show: boolean;
-  title: string;
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}>({
-  show: false,
-  title: '',
-  message: '',
-  onConfirm: () => {},
-  onCancel: () => {},
-});
-
 const isArchived = computed(() => goal.value?.folderUuid === 'archive');
 const toggleArchiveGoal = (goalUuid: string) => {
   if (!isArchived.value) {
@@ -394,18 +376,20 @@ const toggleArchiveGoal = (goalUuid: string) => {
   }
 };
 
-const startDeleteGoal = (goalUuid: string) => {
-  confirmDialog.value = {
-    show: true,
-    title: '删除目标',
-    message: '您确定要删除这个目标吗？此操作不可逆。',
-    onConfirm: () => {
+const startDeleteGoal = async (goalUuid: string) => {
+  try {
+    const confirmed = await message.delConfirm(
+      '您确定要删除这个目标吗？此操作不可逆。',
+      '删除目标'
+    );
+    if (confirmed) {
       deleteGoal(goalUuid);
-    },
-    onCancel: () => {
+    } else {
       console.log('❌ 删除目标操作已取消');
-    },
-  };
+    }
+  } catch (error) {
+    console.error('确认对话框错误:', error);
+  }
 };
 
 const isGoalEnded = computed(() => {
@@ -414,12 +398,26 @@ const isGoalEnded = computed(() => {
 });
 
 const totalDays = computed(() => {
+  const summary = timeRangeSummary.value;
+  if (summary && summary.durationDays) {
+    return summary.durationDays;
+  }
   if (!goal.value?.startDate || !goal.value?.targetDate) return 0;
   const timeDiff = goal.value.targetDate - goal.value.startDate;
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 });
 
 const timeProgress = computed(() => {
+  const derived = goal.value?.timeProgressPercentage;
+  if (typeof derived === 'number' && !Number.isNaN(derived)) {
+    return derived.toFixed(1);
+  }
+  const summary = timeRangeSummary.value;
+  if (summary && summary.elapsedDays !== null && summary.elapsedDays !== undefined && summary.durationDays) {
+    const ratio = summary.elapsedDays / summary.durationDays;
+    const clamped = Math.min(Math.max(ratio, 0), 1);
+    return (clamped * 100).toFixed(1);
+  }
   if (!goal.value?.startDate || !goal.value?.targetDate) return '0';
   const now = Date.now();
   const totalTime = goal.value.targetDate - goal.value.startDate;

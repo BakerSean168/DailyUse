@@ -143,16 +143,41 @@ export class GoalReviewApplicationService {
    */
   private async refreshGoalWithReviews(goalUuid: string): Promise<void> {
     try {
-      console.log('[GoalReviewApplicationService] 开始刷新Goal及其Reviews:', goalUuid);
+      console.log('[GoalReviewApplicationService] 🔄 开始刷新Goal及其Reviews:', goalUuid);
       const goalResponse = await goalApiClient.getGoalById(goalUuid, true);
-      console.log('[GoalReviewApplicationService] 获取到Goal数据:', goalResponse);
+      console.log('[GoalReviewApplicationService] 📥 获取到Goal数据:', {
+        uuid: goalResponse.uuid,
+        title: goalResponse.title,
+        reviewsCount: goalResponse.reviews?.length || 0,
+        reviews: goalResponse.reviews,
+      });
       
       const goal = Goal.fromClientDTO(goalResponse);
+      console.log('[GoalReviewApplicationService] 🔨 Goal实体创建完成:', {
+        uuid: goal.uuid,
+        title: goal.title,
+        reviewsCount: goal.reviews?.length || 0,
+        reviews: goal.reviews?.map(r => ({
+          uuid: r.uuid,
+          rating: r.rating,
+          type: r.type,
+        })) || [],
+      });
+      
       this.goalStore.addOrUpdateGoal(goal);
       
-      console.log('[GoalReviewApplicationService] Goal已更新到store');
+      console.log('[GoalReviewApplicationService] ✅ Goal已更新到store');
+      
+      // 验证 store 中的数据
+      const storedGoal = this.goalStore.getGoalByUuid(goalUuid);
+      console.log('[GoalReviewApplicationService] 🔍 验证store中的Goal:', {
+        uuid: storedGoal?.uuid,
+        title: storedGoal?.title,
+        reviewsCount: storedGoal?.reviews?.length || 0,
+        reviews: storedGoal?.reviews,
+      });
     } catch (error) {
-      console.warn('❌ 刷新Goal和Reviews失败:', error);
+      console.error('❌ [GoalReviewApplicationService] 刷新Goal和Reviews失败:', error);
     }
   }
 }

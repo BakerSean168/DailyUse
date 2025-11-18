@@ -102,16 +102,6 @@
                   <v-progress-circular indeterminate color="primary" size="64" />
                 </div>
 
-                <!-- 错误状态 -->
-                <div v-else-if="error" class="d-flex justify-center align-center h-100">
-                  <v-alert type="error" variant="tonal" class="ma-4">
-                    {{ error }}
-                    <template v-slot:append>
-                      <v-btn variant="text" color="error" @click="refresh"> 重试 </v-btn>
-                    </template>
-                  </v-alert>
-                </div>
-
                 <!-- 有目标时显示 -->
                 <div v-else-if="filteredGoals?.length">
                   <v-row>
@@ -165,10 +155,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- 成功/错误提示 -->
-    <!-- <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="snackbar.timeout">
-            {{ snackbar.message }}
-        </v-snackbar> -->
     <GoalDialog ref="goalDialogRef" />
     <GoalFolderDialog ref="GoalFolderDialogRef" />
   </v-container>
@@ -180,6 +166,7 @@ import { useRouter } from 'vue-router';
 import { useGoalManagement } from '../composables/useGoalManagement';
 import { useGoalFolder } from '../composables/useGoalFolder';
 import { useGoalStore } from '../stores/goalStore';
+import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 import type { Goal, GoalFolder } from '@dailyuse/domain-client';
 
 // 组件导入
@@ -209,6 +196,9 @@ const {
 const { folders: GoalFolders, fetchFolders: fetchGoalFolders } = goalFolderComposable;
 
 const goalStore = useGoalStore();
+
+// 获取 snackbar 用于错误提示
+const snackbar = useSnackbar();
 
 // ===== 本地状态 =====
 
@@ -335,8 +325,10 @@ const handleDeleteGoal = async () => {
   try {
     await deleteGoal(deleteDialog.goalUuid);
     deleteDialog.show = false;
+    snackbar.showSuccess('删除目标成功');
   } catch (error) {
     console.error('删除目标失败:', error);
+    snackbar.showError('删除目标失败');
   }
 };
 
@@ -352,8 +344,10 @@ const handleDeleteFolder = async (folderUuid: string) => {
       if (selectedDirUuid.value === folderUuid) {
         selectedDirUuid.value = 'all';
       }
+      snackbar.showSuccess('删除分类成功');
     } catch (error) {
       console.error('删除分类失败:', error);
+      snackbar.showError('删除分类失败');
     }
   }
 };
@@ -395,6 +389,7 @@ onMounted(async () => {
     await fetchGoalFolders();
   } catch (error) {
     console.error('初始化失败:', error);
+    snackbar.showError('初始化失败');
   }
 });
 </script>

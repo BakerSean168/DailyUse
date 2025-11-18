@@ -104,16 +104,14 @@ export function useWeightSnapshot() {
    * 
    * @param goalUuid - Goal UUID
    * @param krUuid - KeyResult UUID
-   * @param newWeight - 新权重值 (0-100)
+   * @param newWeight - 新权重值 (1-10，权重占比由所有 KR 权重的总和计算)
    * @param reason - 调整原因（可选）
-   * 
-   * @throws Error 如果权重总和不等于 100% 或其他验证失败
    * 
    * @example
    * ```typescript
    * const { updateKRWeight } = useWeightSnapshot();
    * 
-   * await updateKRWeight('goal-123', 'kr-456', 50, '根据Q1反馈调整');
+   * await updateKRWeight('goal-123', 'kr-456', 7, '根据Q1反馈调整');
    * ```
    */
   async function updateKRWeight(
@@ -123,7 +121,10 @@ export function useWeightSnapshot() {
     reason?: string,
   ): Promise<{
     keyResult: { uuid: string; title: string; oldWeight: number; newWeight: number };
-    snapshot: { oldWeight: number; newWeight: number; delta: number };
+    weightInfo: {
+      totalWeight: number;
+      keyResults: Array<{ uuid: string; title: string; weight: number; percentage: number }>;
+    };
   }> {
     isUpdating.value = true;
     error.value = null;
@@ -140,7 +141,8 @@ export function useWeightSnapshot() {
 
       // 保存最后更新信息
       lastWeightUpdate.value = {
-        ...result,
+        keyResult: result.keyResult,
+        snapshot: { oldWeight: result.keyResult.oldWeight, newWeight: result.keyResult.newWeight, delta: result.keyResult.newWeight - result.keyResult.oldWeight },
         timestamp: Date.now(),
       };
 
@@ -148,7 +150,8 @@ export function useWeightSnapshot() {
         krUuid,
         oldWeight: result.keyResult.oldWeight,
         newWeight: result.keyResult.newWeight,
-        delta: result.snapshot.delta,
+        delta: result.keyResult.newWeight - result.keyResult.oldWeight,
+        weightInfo: result.weightInfo,
       });
 
       return result;

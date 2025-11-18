@@ -157,16 +157,16 @@ export interface KeyResultWeightSnapshotClientDTO {
  */
 export interface KeyResultWeightSnapshotPersistenceDTO {
   uuid: string;
-  goal_uuid: string;
-  key_result_uuid: string;
-  old_weight: number;
-  new_weight: number;
-  weight_delta: number;
-  snapshot_time: bigint; // Prisma BigInt
+  goalUuid: string;
+  keyResultUuid: string;
+  oldWeight: number;
+  newWeight: number;
+  weightDelta: number;
+  snapshotTime: bigint; // Prisma BigInt
   trigger: SnapshotTrigger;
   reason?: string | null;
-  operator_uuid: string;
-  created_at: Date; // Prisma DateTime
+  operatorUuid: string;
+  createdAt: Date; // Prisma DateTime
 }
 
 // ============ Zod Schema 定义 ============

@@ -168,8 +168,77 @@ export class GoalApplicationService {
   /**
    * 删除目标（软删除）
    */
+  /**
+   * 检查目标是否有关联数据
+   * @returns 返回关联信息
+   */
+  async checkGoalDependencies(uuid: string): Promise<{
+    hasKeyResults: boolean;
+    keyResultCount: number;
+    hasReviews: boolean;
+    reviewCount: number;
+    hasTaskLinks: boolean; // 未来扩展：检查 Task 模块关联
+    canDelete: boolean;
+    warnings: string[];
+  }> {
+    // 1. 查询目标（包含子实体）
+    const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
+    if (!goal) {
+      throw new Error(`Goal not found: ${uuid}`);
+    }
+
+    const keyResults = goal.keyResults || [];
+    const reviews = goal.reviews || [];
+    const keyResultCount = keyResults.length;
+    const reviewCount = reviews.length;
+
+    const warnings: string[] = [];
+    
+    if (keyResultCount > 0) {
+      warnings.push(`该目标包含 ${keyResultCount} 个关键结果`);
+    }
+    
+    if (reviewCount > 0) {
+      warnings.push(`该目标包含 ${reviewCount} 条复盘记录`);
+    }
+
+    // TODO: 未来检查 Task 模块关联
+    // const hasTaskLinks = await this.checkTaskLinks(uuid);
+    const hasTaskLinks = false;
+
+    return {
+      hasKeyResults: keyResultCount > 0,
+      keyResultCount,
+      hasReviews: reviewCount > 0,
+      reviewCount,
+      hasTaskLinks,
+      canDelete: true, // 即使有关联也允许删除（级联删除）
+      warnings,
+    };
+  }
+
+  /**
+   * 删除目标（软删除，级联删除子实体）
+   */
   async deleteGoal(uuid: string): Promise<void> {
-    await this.goalRepository.softDelete(uuid);
+    // 1. 查询目标（包含子实体）
+    const goal = await this.goalRepository.findById(uuid, { includeChildren: true });
+    if (!goal) {
+      throw new Error(`Goal not found: ${uuid}`);
+    }
+
+    // 2. 调用聚合根的软删除方法
+    goal.softDelete();
+
+    // 3. 持久化（包括子实体）
+    await this.goalRepository.save(goal);
+
+    // 4. 级联删除子实体（如果需要物理删除）
+    // 注意：Prisma 的级联删除配置应该在 schema 中设置
+    // 这里只是软删除，实际数据仍保留
+    
+    // 5. 发布领域事件
+    await GoalEventPublisher.publishGoalEvents(goal);
   }
 
   /**

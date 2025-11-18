@@ -220,22 +220,11 @@
   <!-- AI 权重推荐面板 -->
   <WeightSuggestionPanel
     ref="weightSuggestionRef"
-    :key-results="(goalModel?.keyResults || []) as KeyResult[]"
+    :key-results="((goalModel?.keyResults || []) as KeyResult[])"
     @apply="handleApplyWeightStrategy"
   />
   <!-- 目标模板浏览器 -->
   <TemplateBrowser ref="templateBrowserRef" @apply="handleApplyTemplate" />
-  <!-- 确认对话框 -->
-  <DuConfirmDialog
-    v-model="confirmDialog.show"
-    :title="confirmDialog.title"
-    :message="confirmDialog.message"
-    confirm-text="确认"
-    cancel-text="取消"
-    @update:modelValue="confirmDialog.show = $event"
-    @confirm="confirmDialog.onConfirm"
-    @cancel="confirmDialog.onCancel"
-  />
 </template>
 
 <script setup lang="ts">
@@ -245,16 +234,17 @@ import KeyResultDialog from './KeyResultDialog.vue';
 import WeightSuggestionPanel from '../weight/WeightSuggestionPanel.vue';
 import TemplateBrowser from '../template/TemplateBrowser.vue';
 import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
-import DuConfirmDialog from '@dailyuse/ui/components/dialog/DuConfirmDialog.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
 import { Goal, KeyResult } from '@dailyuse/domain-client';
 import { GoalContracts } from '@dailyuse/contracts';
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
+import { useMessage } from '@dailyuse/ui';
 
 const goalManagement = useGoalManagement();
 const keyResultComposable = useKeyResult();
+const message = useMessage();
 
 const { createGoal, updateGoal } = goalManagement;
 const { deleteKeyResult } = keyResultComposable;
@@ -291,20 +281,6 @@ watch(
   },
   { immediate: true },
 );
-
-const confirmDialog = ref<{
-  show: boolean;
-  title: string;
-  message: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}>({
-  show: false,
-  title: '',
-  message: '',
-  onConfirm: () => {},
-  onCancel: () => {},
-});
 
 // Apply AI weight strategy
 const handleApplyWeightStrategy = (strategy: any) => {
@@ -367,20 +343,17 @@ const handleApplyTemplate = (template: any) => {
   );
 };
 
-const startRemoveKeyResult = (goal: Goal, keyResultUuid: string) => {
-  confirmDialog.value = {
-    show: true,
-    title: '确认删除',
-    message: '您确定要删除这个关键结果吗？',
-    onConfirm: () => {
+const startRemoveKeyResult = async (goal: Goal, keyResultUuid: string) => {
+  try {
+    const confirmed = await message.delConfirm('确定要删除这个关键结果吗？', '确认删除');
+    if (confirmed) {
       // 直接使用 removeKeyResult 方法
       goalModel.value?.removeKeyResult(keyResultUuid);
-      confirmDialog.value.show = false;
-    },
-    onCancel: () => {
-      confirmDialog.value.show = false;
-    },
-  };
+    }
+  } catch {
+    // 用户取消或关闭对话框
+    console.log('取消删除关键结果');
+  }
 };
 
 // 监听弹窗和传入对象，初始化本地对象

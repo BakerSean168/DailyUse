@@ -87,9 +87,9 @@ export interface KeyResultSnapshotClientDTO {
 export interface KeyResultSnapshotPersistenceDTO {
   keyResultUuid: string;
   title: string;
-  target_value: number;
-  current_value: number;
-  progress_percentage: number;
+  targetValue: number;
+  currentValue: number;
+  progressPercentage: number;
 }
 
 // ============ 类型导出 ============

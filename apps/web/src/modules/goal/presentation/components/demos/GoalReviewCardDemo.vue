@@ -76,7 +76,7 @@
           </v-chip>
           <v-chip color="success" size="small" variant="tonal">
             <v-icon start size="12">mdi-chart-line</v-icon>
-            进度: {{ Math.round(selectedGoal.weightedProgress) }}%
+            进度: {{ Math.round((selectedGoal.weightedProgress ?? selectedGoal.overallProgress ?? 0)) }}%
           </v-chip>
         </div>
       </v-card-text>

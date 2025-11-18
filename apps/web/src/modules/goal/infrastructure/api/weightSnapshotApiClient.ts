@@ -10,7 +10,7 @@ export class WeightSnapshotApiClient {
    * 更新 KeyResult 权重并创建快照
    * @param goalUuid - Goal UUID
    * @param krUuid - KeyResult UUID
-   * @param newWeight - 新权重值 (0-100)
+   * @param newWeight - 新权重值 (1-10，权重占比由所有 KR 权重的总和计算)
    * @param reason - 调整原因（可选）
    */
   async updateKRWeight(
@@ -20,7 +20,10 @@ export class WeightSnapshotApiClient {
     reason?: string,
   ): Promise<{
     keyResult: { uuid: string; title: string; oldWeight: number; newWeight: number };
-    snapshot: { oldWeight: number; newWeight: number; delta: number };
+    weightInfo: {
+      totalWeight: number;
+      keyResults: Array<{ uuid: string; title: string; weight: number; percentage: number }>;
+    };
   }> {
     const data = await apiClient.post(`/goals/${goalUuid}/key-results/${krUuid}/weight`, {
       newWeight,

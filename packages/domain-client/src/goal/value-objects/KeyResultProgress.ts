@@ -17,6 +17,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
   private _aggregationMethod: AggregationMethod;
   private _targetValue: number;
   private _currentValue: number;
+  private _initialValue?: number;
   private _unit: string | null;
 
   private constructor(params: {
@@ -24,6 +25,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
     aggregationMethod: AggregationMethod;
     targetValue: number;
     currentValue: number;
+    initialValue?: number;
     unit?: string | null;
   }) {
     super();
@@ -32,6 +34,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
     this._targetValue = params.targetValue;
     this._currentValue = params.currentValue;
     this._unit = params.unit ?? null;
+  this._initialValue = params.initialValue;
   }
 
   // Getters
@@ -51,10 +54,18 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
     return this._unit;
   }
 
+  public get initialValue(): number | undefined {
+    return this._initialValue;
+  }
+
   // UI 辅助属性
   public get progressPercentage(): number {
-    if (this._targetValue === 0) return 0;
-    return Math.min(100, Math.max(0, Math.round((this._currentValue / this._targetValue) * 100)));
+  // If an initial value exists, compute progress relative to the range [initialValue, targetValue]
+  const start = this._initialValue ?? 0;
+  const range = this._targetValue - start;
+  if (range === 0) return 0;
+  const percentage = ((this._currentValue - start) / range) * 100;
+  return Math.min(100, Math.max(0, Math.round(percentage)));
   }
 
   public get progressText(): string {
@@ -117,6 +128,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
     return {
       valueType: this._valueType,
       aggregationMethod: this._aggregationMethod,
+      initialValue: this._initialValue,
       targetValue: this._targetValue,
       currentValue: this._currentValue,
       unit: this._unit,
@@ -127,6 +139,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
     return {
       valueType: this._valueType,
       aggregationMethod: this._aggregationMethod,
+      initialValue: this._initialValue,
       targetValue: this._targetValue,
       currentValue: this._currentValue,
       unit: this._unit,
@@ -144,6 +157,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
     return new KeyResultProgress({
       valueType: dto.valueType,
       aggregationMethod: dto.aggregationMethod,
+      initialValue: (dto as any).initialValue,
       targetValue: dto.targetValue,
       currentValue: dto.currentValue,
       unit: dto.unit,
@@ -154,6 +168,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
     return new KeyResultProgress({
       valueType: dto.valueType,
       aggregationMethod: dto.aggregationMethod,
+      initialValue: (dto as any).initialValue,
       targetValue: dto.targetValue,
       currentValue: dto.currentValue,
       unit: dto.unit,
@@ -192,8 +207,8 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
    * 注：当前实现中没有 initialValue 字段，此方法保留用于未来扩展
    */
   public updateInitialValue(_initialValue: number): void {
-    // 当前实现中不存储 initialValue，此方法为兼容性保留
-    // 如需支持，需在构造函数中添加 _initialValue 字段
+    // 支持 initialValue
+    this._initialValue = _initialValue;
   }
 
   /**

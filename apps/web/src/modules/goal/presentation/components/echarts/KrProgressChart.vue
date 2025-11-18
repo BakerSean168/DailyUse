@@ -5,6 +5,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
+import { use } from 'echarts/core';
+import { TitleComponent, TooltipComponent, GridComponent } from 'echarts/components';
+import { BarChart } from 'echarts/charts';
+import { CanvasRenderer } from 'echarts/renderers';
+
+use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
 import { Goal } from '@dailyuse/domain-client';
 import { useTheme } from 'vuetify';
 
@@ -17,13 +23,16 @@ const fontColor = theme.current.value.colors.font; // 获取主题主色
 
 const keyResults = computed(() => props.goal?.keyResults || []);
 
-const krNames = computed(() => props.goal?.keyResults?.map((kr) => kr.name) ?? []);
-const krProgress = computed(() => props.goal?.keyResults?.map((kr) => kr.progress) ?? []);
+const krNames = computed(() => props.goal?.keyResults?.map((kr) => kr.title) ?? []);
+const krProgress = computed(() =>
+  props.goal?.keyResults?.map((kr) => kr.progress.progressPercentage) ?? [],
+);
 
 const krBarOption = computed(() => {
-  const data = keyResults.value.map((kr) => kr.progress);
-  const max = Math.max(...data);
-  const min = Math.min(...data);
+  const data = keyResults.value.map((kr) => kr.progress.progressPercentage);
+  console.log('KR 进度数据:', data);
+  const max = data.length ? Math.max(...data) : 0;
+  const min = data.length ? Math.min(...data) : 0;
   const maxIdx = data.indexOf(max);
   const minIdx = data.indexOf(min);
 
@@ -54,9 +63,9 @@ const krBarOption = computed(() => {
         <span style="font-weight:bold;">${params.name}</span>
       </div>
       <div>
-        起始值: ${kr.startValue}<br/>
-        目标值: ${kr.targetValue}<br/>
-        当前值: ${kr.currentValue}
+  起始值: ${kr.progress.initialValue ?? 0}<br/>
+        目标值: ${kr.progress.targetValue}<br/>
+        当前值: ${kr.progress.currentValue}
       </div>
     `;
       },
@@ -78,7 +87,7 @@ const krBarOption = computed(() => {
     series: [
       {
         type: 'bar',
-        data: krProgress.value,
+  data: data,
         label: {
           show: true,
           position: 'right',

@@ -6,7 +6,9 @@
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ValueObject } from '@dailyuse/utils';
 
-type IKeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
+// 类型别名
+type KeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
+type KeyResultSnapshotPersistenceDTO = GoalContracts.KeyResultSnapshotPersistenceDTO;
 
 /**
  * KeyResultSnapshot 值对象
@@ -82,9 +84,9 @@ export class KeyResultSnapshot extends ValueObject {
   }
 
   /**
-   * 转换为 Contract 接口
+   * 转换为 Server DTO
    */
-  public toContract(): IKeyResultSnapshotServerDTO {
+  public toServerDTO(): KeyResultSnapshotServerDTO {
     return {
       keyResultUuid: this.keyResultUuid,
       title: this.title,
@@ -95,9 +97,35 @@ export class KeyResultSnapshot extends ValueObject {
   }
 
   /**
-   * 从 Contract 接口创建值对象
+   * 从 Server DTO 创建值对象
    */
-  public static fromContract(dto: IKeyResultSnapshotServerDTO): KeyResultSnapshot {
+  public static fromServerDTO(dto: KeyResultSnapshotServerDTO): KeyResultSnapshot {
     return new KeyResultSnapshot(dto);
+  }
+
+  /**
+   * 转换为 Persistence DTO
+   */
+  public toPersistenceDTO(): KeyResultSnapshotPersistenceDTO {
+    return {
+      keyResultUuid: this.keyResultUuid,
+      title: this.title,
+      targetValue: this.targetValue,
+      currentValue: this.currentValue,
+      progressPercentage: this.progressPercentage,
+    };
+  }
+
+  /**
+   * 从 Persistence DTO 创建值对象
+   */
+  public static fromPersistenceDTO(dto: KeyResultSnapshotPersistenceDTO): KeyResultSnapshot {
+    return new KeyResultSnapshot({
+      keyResultUuid: dto.keyResultUuid,
+      title: dto.title,
+      targetValue: dto.targetValue,
+      currentValue: dto.currentValue,
+      progressPercentage: dto.progressPercentage,
+    });
   }
 }

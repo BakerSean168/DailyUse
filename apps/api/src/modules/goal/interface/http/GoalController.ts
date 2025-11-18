@@ -3,9 +3,13 @@ import { GoalApplicationService } from '../../application/services/GoalApplicati
 import { GoalKeyResultApplicationService } from '../../application/services/GoalKeyResultApplicationService';
 import { GoalRecordApplicationService } from '../../application/services/GoalRecordApplicationService';
 import { GoalReviewApplicationService } from '../../application/services/GoalReviewApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { WeightSnapshotApplicationService } from '../../application/services/WeightSnapshotApplicationService';
+import { createResponseBuilder, ResponseCode, type GoalContracts } from '@dailyuse/contracts';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
+import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
+import prisma from '../../../../shared/db/prisma';
 
 const logger = createLogger('GoalController');
 
@@ -24,6 +28,7 @@ export class GoalController {
   private static keyResultService: GoalKeyResultApplicationService | null = null;
   private static recordService: GoalRecordApplicationService | null = null;
   private static reviewService: GoalReviewApplicationService | null = null;
+  private static weightSnapshotService: WeightSnapshotApplicationService | null = null;
   private static responseBuilder = createResponseBuilder();
 
   /**
@@ -55,6 +60,18 @@ export class GoalController {
       GoalController.reviewService = await GoalReviewApplicationService.getInstance();
     }
     return GoalController.reviewService;
+  }
+
+  private static async getWeightSnapshotService(): Promise<WeightSnapshotApplicationService> {
+    if (!GoalController.weightSnapshotService) {
+      const goalRepo = new PrismaGoalRepository(prisma);
+      const snapshotRepo = new PrismaWeightSnapshotRepository(prisma);
+      GoalController.weightSnapshotService = WeightSnapshotApplicationService.getInstance(
+        goalRepo,
+        snapshotRepo,
+      );
+    }
+    return GoalController.weightSnapshotService;
   }
 
   /**
@@ -372,6 +389,54 @@ export class GoalController {
    * 删除目标
    * @route DELETE /api/goals/:uuid
    */
+  /**
+   * 检查目标依赖关系
+   * @route GET /api/goals/:uuid/dependencies
+   */
+  static async checkGoalDependencies(req: Request, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+
+      const accountUuid = (req as AuthenticatedRequest).accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证目标归属权限
+      const verification = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (verification.error) {
+        logger.warn('Unauthorized goal dependency check attempt', { uuid, accountUuid });
+        return GoalController.responseBuilder.sendError(res, verification.error);
+      }
+
+      const service = await GoalController.getGoalService();
+      const dependencies = await service.checkGoalDependencies(uuid);
+
+      logger.info('Goal dependencies checked', { uuid, accountUuid, dependencies });
+      return GoalController.responseBuilder.sendSuccess(res, dependencies, 'Dependencies checked successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error checking goal dependencies', { error: error.message });
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: error.message,
+        });
+      }
+      return GoalController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
+  /**
+   * 删除目标（软删除）
+   * @route DELETE /api/goals/:uuid
+   */
   static async deleteGoal(req: Request, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
@@ -677,6 +742,93 @@ export class GoalController {
    * 获取目标进度分解详情
    * @route GET /api/goals/:uuid/progress-breakdown
    */
+  /**
+   * 获取目标的聚合视图（权重分布）
+   * @route GET /api/goals/:uuid/aggregate
+   * 
+   * 返回目标及其所有关键结果的权重分布信息
+   */
+  static async getGoalAggregateView(req: AuthenticatedRequest, res: Response): Promise<Response> {
+    try {
+      const { uuid } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.UNAUTHORIZED,
+          message: 'Authentication required',
+        });
+      }
+
+      // 验证所有权
+      const { error } = await GoalController.verifyGoalOwnership(uuid, accountUuid);
+      if (error) {
+        return GoalController.responseBuilder.sendError(res, error);
+      }
+
+      const service = await GoalController.getGoalService();
+      const goal = await service.getGoal(uuid);
+
+      if (!goal) {
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.NOT_FOUND,
+          message: 'Goal not found',
+        });
+      }
+
+      // 获取权重分布信息
+      const snapshotService = await GoalController.getWeightSnapshotService();
+      const weightInfo = await snapshotService.getWeightSumInfo(uuid);
+
+      // 构建聚合视图响应
+      const response: GoalContracts.GoalAggregateViewResponse = {
+        goal: goal as GoalContracts.GoalClientDTO,
+        keyResults: (goal.keyResults || []).map((kr: any) => ({
+          ...kr,
+          weight: kr.weight || 0,
+          weightPercentage: weightInfo.keyResults.find((w: any) => w.uuid === kr.uuid)?.percentage || 0,
+        })),
+        statistics: {
+          totalKeyResults: goal.keyResults?.length || 0,
+          completedKeyResults: (goal.keyResults || []).filter((kr: any) => kr.isCompleted()).length || 0,
+          totalRecords: (goal.keyResults || []).reduce((sum: number, kr: any) => sum + (kr.records?.length || 0), 0) || 0,
+          totalReviews: 0,
+          overallProgress: Math.round(
+            (goal.keyResults || []).reduce((sum: number, kr: any) => {
+              const totalWeight = weightInfo.totalWeight;
+              if (totalWeight === 0) return sum;
+              const progressPercentage = kr.progress.targetValue !== 0
+                ? (kr.progress.currentValue / kr.progress.targetValue) * 100
+                : 0;
+              return sum + (progressPercentage * (kr.weight / totalWeight));
+            }, 0)
+          ),
+        },
+      };
+
+      return GoalController.responseBuilder.sendSuccess(
+        res,
+        response,
+        'Goal aggregate view retrieved successfully',
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error('Error getting goal aggregate view', { 
+          error: error.message, 
+          goalUuid: req.params.uuid 
+        });
+        return GoalController.responseBuilder.sendError(res, {
+          code: ResponseCode.INTERNAL_ERROR,
+          message: 'Failed to get goal aggregate view',
+        });
+      }
+      return GoalController.responseBuilder.sendError(res, {
+        code: ResponseCode.INTERNAL_ERROR,
+        message: 'Unknown error occurred',
+      });
+    }
+  }
+
   static async getProgressBreakdown(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;

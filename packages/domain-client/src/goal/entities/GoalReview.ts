@@ -161,6 +161,46 @@ export class GoalReview extends Entity implements IGoalReview {
     return this._keyResultSnapshots.length;
   }
 
+  // 更新方法（参考 Goal 实体实现）
+  public updateRating(rating: number): boolean {
+    if (rating < 0 || rating > 10) {
+      console.error('Rating must be between 0 and 10');
+      return false;
+    }
+    this._rating = rating;
+    return true;
+  }
+
+  public updateSummary(summary: string): boolean {
+    this._summary = summary;
+    return true;
+  }
+
+  public updateAchievements(achievements: string): boolean {
+    this._achievements = achievements;
+    return true;
+  }
+
+  public updateChallenges(challenges: string): boolean {
+    this._challenges = challenges;
+    return true;
+  }
+
+  public updateImprovements(improvements: string): boolean {
+    this._improvements = improvements;
+    return true;
+  }
+
+  public updateType(type: ReviewType): boolean {
+    this._type = type;
+    return true;
+  }
+
+  public updateReviewedAt(reviewedAt: number): boolean {
+    this._reviewedAt = reviewedAt;
+    return true;
+  }
+
   // DTO 转换
   public toClientDTO(): GoalReviewDTO {
     return {

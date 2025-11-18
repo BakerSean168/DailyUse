@@ -136,35 +136,23 @@ export class WeightSnapshotApplicationService {
   }
 
   /**
-   * 校验 Goal 中所有 KR 的权重总和是否为 100%
+   * 获取 Goal 的权重分布信息
    *
-   * **业务规则**: 所有 KeyResult 的权重之和必须等于 100%
-   * **浮点精度**: 使用 0.01 的误差范围（避免浮点数精度问题）
+   * **业务规则**: KeyResult 权重范围为 1-10，按比例计算每个 KR 在 Goal 中的占比
+   * **不再强制权重总和为 100%**
    *
-   * **注意**: 当前 KeyResult 实体暂无 `weight` 属性，此方法需要传入权重 map
+   * **示例**:
+   * - KR1 权重: 3, KR2 权重: 7
+   * - 总权重: 10
+   * - KR1 占比: 3/10 = 30%, KR2 占比: 7/10 = 70%
    *
    * @param goalUuid - Goal UUID
-   * @param weights - KR UUID → weight 映射 (如果不传则从 Goal 获取)
-   * @returns true 如果总和 = 100%, false 否则
+   * @returns 权重分布信息（包含每个 KR 的权重和占比）
    * @throws {GoalNotFoundError} Goal 不存在
-   *
-   * @example
-   * ```typescript
-   * const weights = {
-   *   'kr-1': 30,
-   *   'kr-2': 40,
-   *   'kr-3': 30
-   * };
-   * const isValid = await service.validateWeightSum('goal-123', weights);
-   * if (!isValid) {
-   *   throw new InvalidWeightSumError(...);
-   * }
-   * ```
    */
-  async validateWeightSum(goalUuid: string): Promise<{
-    isValid: boolean;
-    sum: number;
-    keyResults: Array<{ uuid: string; title: string; weight: number }>;
+  async getWeightSumInfo(goalUuid: string): Promise<{
+    totalWeight: number;
+    keyResults: Array<{ uuid: string; title: string; weight: number; percentage: number }>;
   }> {
     // 验证 Goal 存在
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
@@ -172,20 +160,18 @@ export class WeightSnapshotApplicationService {
       throw new GoalNotFoundError(goalUuid);
     }
 
-    // 从KeyResults中读取权重
+    // 计算总权重
+    const totalWeight = goal.keyResults.reduce((sum, kr) => sum + (kr.weight || 0), 0);
+
+    // 计算每个 KR 的权重和占比
     const keyResults = goal.keyResults.map((kr) => ({
       uuid: kr.uuid,
       title: kr.title,
       weight: kr.weight || 0,
+      percentage: totalWeight > 0 ? ((kr.weight || 0) / totalWeight) * 100 : 0,
     }));
 
-    // 计算权重总和
-    const sum = keyResults.reduce((total, kr) => total + kr.weight, 0);
-
-    // 浮点数精度处理: 允许 ±0.01 的误差
-    const isValid = Math.abs(sum - 100) < 0.01;
-
-    return { isValid, sum, keyResults };
+    return { totalWeight, keyResults };
   }
 
   /**
