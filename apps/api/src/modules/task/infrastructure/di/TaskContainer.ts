@@ -95,10 +95,7 @@ export class TaskContainer {
    */
   getTaskDependencyService(): TaskDependencyService {
     if (!this.taskDependencyService) {
-      this.taskDependencyService = new TaskDependencyService(
-        this.getTaskDependencyRepository(),
-        this.getTaskTemplateRepository(),
-      );
+      this.taskDependencyService = new TaskDependencyService();
     }
     return this.taskDependencyService!;
   }

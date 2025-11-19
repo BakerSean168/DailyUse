@@ -14,259 +14,96 @@
  * - 所有业务逻辑委托给 GoalStatistics 聚合根
  */
 
-import type { IGoalStatisticsRepository } from '../repositories/IGoalStatisticsRepository';
-import type { IGoalRepository } from '../repositories/IGoalRepository';
 import { GoalStatistics } from '../aggregates/GoalStatistics';
 import type { Goal } from '../aggregates/Goal';
 import type { GoalContracts } from '@dailyuse/contracts';
 import { GoalStatus } from '@dailyuse/contracts';
 
 type GoalStatisticsUpdateEvent = GoalContracts.GoalStatisticsUpdateEvent;
-type RecalculateGoalStatisticsRequest = GoalContracts.RecalculateGoalStatisticsRequest;
-type RecalculateGoalStatisticsResponse = GoalContracts.RecalculateGoalStatisticsResponse;
 
 /**
  * GoalStatisticsDomainService
  *
- * 负责协调统计聚合根的持久化和事件处理
+ * 纯业务逻辑服务，负责统计数据的计算和更新
+ * 不包含任何持久化逻辑
  */
 export class GoalStatisticsDomainService {
-  // 用于保护并发统计更新的锁
-  private readonly locks = new Map<string, Promise<void>>();
-
-  constructor(
-    private readonly statisticsRepo: IGoalStatisticsRepository,
-    private readonly goalRepo: IGoalRepository,
-  ) {}
+  constructor() {}
 
   /**
-   * 使用锁来保护操作，确保同一 accountUuid 的操作是串行的
-   */
-  private async withLock<T>(key: string, operation: () => Promise<T>): Promise<T> {
-    // 等待之前的操作完成
-    while (this.locks.has(key)) {
-      await this.locks.get(key);
-    }
-
-    // 创建新的锁
-    let resolve!: () => void;
-    const promise = new Promise<void>((r) => {
-      resolve = r;
-    });
-    this.locks.set(key, promise);
-
-    try {
-      return await operation();
-    } finally {
-      this.locks.delete(key);
-      resolve();
-    }
-  }
-
-  /**
-   * 获取或创建统计信息
+   * 根据事件更新统计聚合根
    *
-   * 如果账户还没有统计记录，则创建一个空统计
+   * @param statistics 统计聚合根
+   * @param event 更新事件
    */
-  public async getOrCreateStatistics(accountUuid: string): Promise<GoalStatistics> {
-    // 1. 尝试获取现有统计
-    let statistics = await this.statisticsRepo.findByAccountUuid(accountUuid);
+  public applyEventToStatistics(
+    statistics: GoalStatistics,
+    event: GoalStatisticsUpdateEvent,
+  ): void {
+    // 根据事件类型更新统计
+    switch (event.type) {
+      case 'goal.created':
+        statistics.onGoalCreated(event);
+        break;
 
-    // 2. 如果不存在，创建空统计
-    if (!statistics) {
-      statistics = GoalStatistics.createEmpty(accountUuid);
-      await this.statisticsRepo.upsert(statistics);
-    }
+      case 'goal.deleted':
+        statistics.onGoalDeleted(event);
+        break;
 
-    return statistics;
-  }
+      case 'goal.status_changed':
+        statistics.onGoalStatusChanged(event);
+        break;
 
-  /**
-   * 获取统计信息（不自动创建）
-   */
-  public async getStatistics(accountUuid: string): Promise<GoalStatistics | null> {
-    return await this.statisticsRepo.findByAccountUuid(accountUuid);
-  }
+      case 'goal.completed':
+        statistics.onGoalCompleted(event);
+        break;
 
-  /**
-   * 初始化统计信息（从现有Goal数据计算）
-   *
-   * 用于：
-   * - 新账户首次创建统计
-   * - 数据迁移后初始化统计
-   */
-  public async initializeStatistics(accountUuid: string): Promise<GoalStatistics> {
-    // 1. 检查是否已存在
-    const existing = await this.statisticsRepo.findByAccountUuid(accountUuid);
-    if (existing) {
-      return existing;
-    }
+      case 'goal.archived':
+        statistics.onGoalArchived(event);
+        break;
 
-    // 2. 从数据库重新计算所有统计
-    const statistics = await this.calculateStatisticsFromDatabase(accountUuid);
+      case 'goal.activated':
+        statistics.onGoalActivated(event);
+        break;
 
-    // 3. 保存统计
-    await this.statisticsRepo.upsert(statistics);
+      case 'key_result.created':
+        statistics.onKeyResultCreated(event);
+        break;
 
-    return statistics;
-  }
+      case 'key_result.deleted':
+        statistics.onKeyResultDeleted(event);
+        break;
 
-  /**
-   * 重新计算统计信息（修复数据不一致）
-   *
-   * 用于：
-   * - 管理员手动触发重算
-   * - 数据不一致时修复
-   * - 定期校验统计准确性
-   */
-  public async recalculateStatistics(
-    request: RecalculateGoalStatisticsRequest,
-  ): Promise<RecalculateGoalStatisticsResponse> {
-    const { accountUuid, force = false } = request;
+      case 'key_result.completed':
+        statistics.onKeyResultCompleted(event);
+        break;
 
-    try {
-      // 1. 检查是否存在现有统计
-      const existing = await this.statisticsRepo.findByAccountUuid(accountUuid);
+      case 'review.created':
+        statistics.onReviewCreated(event);
+        break;
 
-      // 2. 如果不强制且已存在，可以选择跳过或比较差异
-      if (existing && !force) {
-        return {
-          success: true,
-          message: 'Statistics already exist. Use force=true to recalculate.',
-          statistics: existing.toServerDTO(),
-        };
-      }
+      case 'review.deleted':
+        statistics.onReviewDeleted(event);
+        break;
 
-      // 3. 从数据库重新计算所有统计
-      const statistics = await this.calculateStatisticsFromDatabase(accountUuid);
+      case 'focus_session.completed':
+        statistics.onFocusSessionCompleted(event);
+        break;
 
-      // 4. 保存统计
-      await this.statisticsRepo.upsert(statistics);
-
-      return {
-        success: true,
-        message: 'Statistics recalculated successfully.',
-        statistics: statistics.toServerDTO(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: `Failed to recalculate statistics: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        statistics: GoalStatistics.createEmpty(accountUuid).toServerDTO(),
-      };
+      default:
+        // 未知事件类型，记录警告
+        console.warn(`Unknown goal statistics update event type: ${(event as any).type}`);
     }
   }
 
   /**
-   * 处理统计更新事件（增量更新）
+   * 从Goal数组重新计算统计（纯计算）
    *
-   * 用于：
-   * - 实时响应目标事件
-   * - 增量更新统计数据
-   * - 避免全量重算
-   * - 使用锁确保同一账户的统计更新是串行的，避免并发冲突
+   * @param accountUuid 账户UUID
+   * @param goals 目标列表
+   * @returns 新的统计聚合根
    */
-  public async handleStatisticsUpdateEvent(event: GoalStatisticsUpdateEvent): Promise<void> {
-    // 使用锁保护整个"读取-修改-保存"流程
-    return this.withLock(event.accountUuid, async () => {
-      // 1. 获取或创建统计
-      const statistics = await this.getOrCreateStatistics(event.accountUuid);
-
-      // 2. 根据事件类型更新统计
-      switch (event.type) {
-        case 'goal.created':
-          statistics.onGoalCreated(event);
-          break;
-
-        case 'goal.deleted':
-          statistics.onGoalDeleted(event);
-          break;
-
-        case 'goal.status_changed':
-          statistics.onGoalStatusChanged(event);
-          break;
-
-        case 'goal.completed':
-          statistics.onGoalCompleted(event);
-          break;
-
-        case 'goal.archived':
-          statistics.onGoalArchived(event);
-          break;
-
-        case 'goal.activated':
-          statistics.onGoalActivated(event);
-          break;
-
-        case 'key_result.created':
-          statistics.onKeyResultCreated(event);
-          break;
-
-        case 'key_result.deleted':
-          statistics.onKeyResultDeleted(event);
-          break;
-
-        case 'key_result.completed':
-          statistics.onKeyResultCompleted(event);
-          break;
-
-        case 'review.created':
-          statistics.onReviewCreated(event);
-          break;
-
-        case 'review.deleted':
-          statistics.onReviewDeleted(event);
-          break;
-
-        case 'focus_session.completed':
-          statistics.onFocusSessionCompleted(event);
-          break;
-
-        default:
-          // 未知事件类型，记录警告
-          console.warn(`Unknown goal statistics update event type: ${(event as any).type}`);
-          return;
-      }
-
-      // 3. 保存更新后的统计
-      await this.statisticsRepo.upsert(statistics);
-    });
-  }
-
-  /**
-   * 删除统计信息
-   *
-   * 用于：
-   * - 删除账户时清理统计
-   * - 通常由数据库 CASCADE 自动触发
-   */
-  public async deleteStatistics(accountUuid: string): Promise<boolean> {
-    return await this.statisticsRepo.delete(accountUuid);
-  }
-
-  // ===== 私有辅助方法 =====
-
-  /**
-   * 从数据库重新计算统计（私有方法）
-   *
-   * 遍历所有Goal计算统计数据
-   */
-  private async calculateStatisticsFromDatabase(accountUuid: string): Promise<GoalStatistics> {
-    // 1. 获取账户所有目标（包括归档）
-    const goals = await this.goalRepo.findByAccountUuid(accountUuid, {
-      includeChildren: true, // 包含子目标
-    });
-
-    // 2. 使用工厂方法从Goal数组创建统计
-    const statistics = this.calculateStatisticsFromGoals(accountUuid, goals);
-
-    return statistics;
-  }
-
-  /**
-   * 从Goal数组计算统计（纯计算，无副作用）
-   */
-  private calculateStatisticsFromGoals(accountUuid: string, goals: Goal[]): GoalStatistics {
+  public calculateStatisticsFromGoals(accountUuid: string, goals: Goal[]): GoalStatistics {
     // 创建空统计对象
     const statistics = GoalStatistics.createEmpty(accountUuid);
 

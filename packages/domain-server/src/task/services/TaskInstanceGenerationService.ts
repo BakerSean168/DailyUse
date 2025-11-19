@@ -2,252 +2,80 @@
  * TaskInstanceGenerationService - 任务实例生成服务
  *
  * 领域服务职责：
- * - 根据任务模板生成任务实例
- * - 处理重复规则
- * - 管理实例生成的业务逻辑
- * - 自动维护每个模板未来 100 天内的所有实例
+ * - 纯业务逻辑：计算需要生成的实例
+ * - 不进行持久化
  */
 
 import { TaskTemplate, TaskInstance } from '../aggregates';
-import type { ITaskTemplateRepository, ITaskInstanceRepository } from '../repositories';
 import { TaskContracts } from '@dailyuse/contracts';
-import { eventBus } from '@dailyuse/utils';
 
-const {
-  TARGET_GENERATE_AHEAD_DAYS,
-  REFILL_THRESHOLD_DAYS,
-} = TaskContracts.TASK_INSTANCE_GENERATION_CONFIG;
+const { TARGET_GENERATE_AHEAD_DAYS, REFILL_THRESHOLD_DAYS } =
+  TaskContracts.TASK_INSTANCE_GENERATION_CONFIG;
 
 export class TaskInstanceGenerationService {
-  constructor(
-    private readonly templateRepository: ITaskTemplateRepository,
-    private readonly instanceRepository: ITaskInstanceRepository,
-  ) {}
+  constructor() {}
 
   /**
-   * 为所有活跃模板生成实例（到指定日期）
-   */
-  async generateInstancesForActiveTemplates(accountUuid: string): Promise<void> {
-    // 获取所有活跃的模板
-    const templates = await this.templateRepository.findActiveTemplates(accountUuid);
-
-    // 为每个模板生成实例
-    for (const template of templates) {
-      await this.generateInstancesForTemplate(template);
-    }
-  }
-
-  /**
-   * 为指定模板生成实例
-   * 新策略：自动维护未来 100 天内的所有实例
-   * 
+   * 为指定模板生成实例（纯计算）
+   *
    * @param template 任务模板
-   * @param forceGenerate 是否强制重新生成（删除现有并重新生成）
+   * @param options 配置选项
+   * @returns 生成的实例列表（未持久化）
    */
-  async generateInstancesForTemplate(
+  generateInstances(
     template: TaskTemplate,
-    forceGenerate: boolean = false,
-  ): Promise<TaskInstance[]> {
+    options: {
+      forceGenerate?: boolean;
+      targetDate?: number; // 覆盖默认的 100 天
+    } = {},
+  ): TaskInstance[] {
     const now = Date.now();
-    
-    // 1. 如果是强制生成，删除所有未完成的实例
-    if (forceGenerate) {
-      const existingInstances = await this.instanceRepository.findByTemplate(template.uuid);
-      const pendingUuids = existingInstances
-        .filter(inst => inst.status === 'PENDING')
-        .map(inst => inst.uuid);
-      if (pendingUuids.length > 0) {
-        await this.instanceRepository.deleteMany(pendingUuids);
-        console.log(
-          `🗑️ [TaskInstanceGenerationService] 已删除模板 "${template.title}" 的 ${pendingUuids.length} 个未完成实例`,
-        );
-      }
-    }
+    const { forceGenerate = false } = options;
 
-    // 2. 计算起始日期：从上次生成日期的下一天，或从今天开始
-    const fromDate = template.lastGeneratedDate
-      ? template.lastGeneratedDate + 86400000
-      : now;
+    // 1. 计算起始日期：从上次生成日期的下一天，或从今天开始
+    // 注意：如果是强制生成，调用方应该负责清理旧实例，这里只负责生成新的
+    const fromDate =
+      !forceGenerate && template.lastGeneratedDate ? template.lastGeneratedDate + 86400000 : now;
 
-    // 3. 计算目标结束日期：未来 100 天
-    const toDate = now + TARGET_GENERATE_AHEAD_DAYS * 86400000;
+    // 2. 计算目标结束日期：默认未来 100 天
+    const targetDays = TARGET_GENERATE_AHEAD_DAYS;
+    const toDate = options.targetDate || now + targetDays * 86400000;
 
-    // 4. 如果起始日期已经超过目标日期，说明已经生成够了
+    // 3. 如果起始日期已经超过目标日期，说明已经生成够了
     if (fromDate > toDate) {
-      console.log(
-        `[TaskInstanceGenerationService] 模板 "${template.title}" 已生成到 ${new Date(fromDate).toLocaleDateString()}，无需补充`,
-      );
       return [];
     }
 
-    // 5. 生成实例
-    const instances = template.generateInstances(fromDate, toDate);
-
-    // 6. 保存实例
-    if (instances.length > 0) {
-      await this.instanceRepository.saveMany(instances);
-      await this.templateRepository.save(template);
-      
-      console.log(
-        `✅ [TaskInstanceGenerationService] 为模板 "${template.title}" 生成了 ${instances.length} 个实例（${new Date(fromDate).toLocaleDateString()} - ${new Date(toDate).toLocaleDateString()}）`,
-      );
-
-      // ⭐ 发布领域事件：混合方案（智能选择推送策略）
-      const SMALL_BATCH_THRESHOLD = 20; // 少于20个实例直接推送完整数据
-      
-      const eventPayload: any = {
-        templateUuid: template.uuid,
-        templateTitle: template.title,
-        instanceCount: instances.length,
-        dateRange: {
-          from: fromDate,
-          to: toDate,
-        },
-      };
-
-      // 智能选择推送策略
-      if (instances.length <= SMALL_BATCH_THRESHOLD) {
-        // 小数据量：直接推送完整数据（避免额外API调用）
-        eventPayload.instances = instances.map(inst => inst.toClientDTO());
-        eventPayload.strategy = 'full';
-        console.log(
-          `📤 [TaskInstanceGenerationService] 小数据量（${instances.length}个），推送完整数据`,
-        );
-      } else {
-        // 大数据量：只推送摘要，前端按需拉取
-        eventPayload.strategy = 'summary';
-        console.log(
-          `📤 [TaskInstanceGenerationService] 大数据量（${instances.length}个），只推送摘要`,
-        );
-      }
-
-      eventBus.emit('task.instances.generated', {
-        eventType: 'task_template.instances_generated',
-        version: '1.0',
-        aggregateId: template.uuid,
-        occurredOn: new Date(),
-        accountUuid: template.accountUuid,
-        payload: eventPayload,
-      });
-
-      console.log(
-        `📤 [TaskInstanceGenerationService] 已发布 task.instances.generated 事件（策略：${eventPayload.strategy}）`,
-      );
-    } else {
-      console.log(
-        `[TaskInstanceGenerationService] 模板 "${template.title}" 在指定范围内无实例（非重复任务或已过期）`,
-      );
-    }
-
-    return instances;
+    // 4. 调用聚合根方法生成实例
+    return template.generateInstances(fromDate, toDate);
   }
 
   /**
-   * 检查并补充模板的实例
-   * 当最远实例的日期 < 今天 + 100 天时，自动补充
+   * 检查模板是否需要补充实例
+   *
+   * @param template 任务模板
+   * @returns 是否需要补充
    */
-  async checkAndRefillInstances(templateUuid: string): Promise<void> {
-    const template = await this.templateRepository.findByUuid(templateUuid);
-    if (!template) {
-      return;
-    }
-
+  shouldRefillInstances(template: TaskTemplate): boolean {
     // 只为 ACTIVE 状态的模板补充实例
     if (template.status !== 'ACTIVE') {
-      return;
+      return false;
     }
 
     const now = Date.now();
-    const targetDate = now + TARGET_GENERATE_AHEAD_DAYS * 86400000;
-    
+
     // 检查最远实例的日期
     const lastGenerated = template.lastGeneratedDate || 0;
     const daysRemaining = Math.floor((lastGenerated - now) / 86400000);
-    
-    // 如果剩余天数少于阈值，触发补充
-    if (daysRemaining < REFILL_THRESHOLD_DAYS) {
-      console.log(
-        `🔄 [TaskInstanceGenerationService] 模板 "${template.title}" 实例只到 ${new Date(lastGenerated).toLocaleDateString()}（还有 ${daysRemaining} 天），开始补充到 ${new Date(targetDate).toLocaleDateString()}...`,
-      );
-      await this.generateInstancesForTemplate(template, false);
-    } else {
-      console.log(
-        `[TaskInstanceGenerationService] 模板 "${template.title}" 实例已充足（还有 ${daysRemaining} 天）`,
-      );
-    }
+
+    // 如果剩余天数少于阈值，需要补充
+    return daysRemaining < REFILL_THRESHOLD_DAYS;
   }
 
   /**
-   * 为指定日期范围生成所有实例
+   * 计算补充实例的目标日期
    */
-  async generateInstancesForDateRange(
-    accountUuid: string,
-    fromDate: number,
-    toDate: number,
-  ): Promise<Map<string, TaskInstance[]>> {
-    const templates = await this.templateRepository.findActiveTemplates(accountUuid);
-    const result = new Map<string, TaskInstance[]>();
-
-    for (const template of templates) {
-      const instances = template.generateInstances(fromDate, toDate);
-      if (instances.length > 0) {
-        await this.instanceRepository.saveMany(instances);
-        await this.templateRepository.save(template);
-        result.set(template.uuid, instances);
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * 重新生成模板的所有实例
-   */
-  async regenerateTemplateInstances(
-    templateUuid: string,
-    fromDate: number,
-    toDate: number,
-  ): Promise<TaskInstance[]> {
-    // 查找模板
-    const template = await this.templateRepository.findByUuid(templateUuid);
-    if (!template) {
-      throw new Error(`Template ${templateUuid} not found`);
-    }
-
-    // 删除现有实例
-    await this.instanceRepository.deleteByTemplate(templateUuid);
-
-    // 重新生成
-    const instances = template.generateInstances(fromDate, toDate);
-    if (instances.length > 0) {
-      await this.instanceRepository.saveMany(instances);
-      await this.templateRepository.save(template);
-    }
-
-    return instances;
-  }
-
-  /**
-   * 检查并生成待生成的实例
-   * 遍历所有 ACTIVE 模板，补充实例到目标数量
-   */
-  async checkAndGenerateInstances(): Promise<void> {
-    // 查找所有需要补充的模板
-    const templates = await this.templateRepository.findActiveTemplates(''); // 需要修改为支持所有账户
-    
-    console.log(
-      `[TaskInstanceGenerationService] 开始检查 ${templates.length} 个活跃模板的实例数量`,
-    );
-
-    for (const template of templates) {
-      try {
-        await this.checkAndRefillInstances(template.uuid);
-      } catch (error) {
-        console.error(
-          `❌ [TaskInstanceGenerationService] 检查模板 "${template.title}" 失败:`,
-          error,
-        );
-      }
-    }
+  calculateRefillTargetDate(): number {
+    return Date.now() + TARGET_GENERATE_AHEAD_DAYS * 86400000;
   }
 }

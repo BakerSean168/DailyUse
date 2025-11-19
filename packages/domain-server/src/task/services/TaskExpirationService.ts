@@ -2,29 +2,29 @@
  * TaskExpirationService - 任务过期处理服务
  *
  * 领域服务职责：
- * - 检查并标记过期的任务实例
- * - 处理过期任务的业务逻辑
+ * - 纯业务逻辑：判断任务是否过期
+ * - 标记过期状态（内存中修改）
+ * - 不进行持久化
  */
 
 import { TaskInstance } from '../aggregates';
-import type { ITaskInstanceRepository } from '../repositories';
 
 export class TaskExpirationService {
-  constructor(private readonly instanceRepository: ITaskInstanceRepository) {}
+  constructor() {}
 
   /**
    * 检查并标记过期的任务实例
+   *
+   * @param instances 待检查的任务实例列表
+   * @returns 已标记为过期的实例列表（需要在应用层保存）
    */
-  async checkAndMarkExpiredInstances(accountUuid: string): Promise<TaskInstance[]> {
-    // 查找所有过期的任务实例
-    const overdueInstances = await this.instanceRepository.findOverdueInstances(accountUuid);
-
-    // 标记为过期
+  markExpiredInstances(instances: TaskInstance[]): TaskInstance[] {
     const expiredInstances: TaskInstance[] = [];
-    for (const instance of overdueInstances) {
-      if (instance.canSkip()) {
+
+    for (const instance of instances) {
+      // 检查是否过期且可以跳过
+      if (instance.isOverdue() && instance.canSkip()) {
         instance.markExpired();
-        await this.instanceRepository.save(instance);
         expiredInstances.push(instance);
       }
     }
@@ -33,60 +33,26 @@ export class TaskExpirationService {
   }
 
   /**
-   * 检查单个实例是否过期
+   * 检查单个实例是否过期并标记
+   *
+   * @param instance 任务实例
+   * @returns 是否已标记为过期
    */
-  async checkInstanceExpiration(instanceUuid: string): Promise<boolean> {
-    const instance = await this.instanceRepository.findByUuid(instanceUuid);
-    if (!instance) {
-      return false;
-    }
-
+  checkAndMarkExpiration(instance: TaskInstance): boolean {
     if (instance.isOverdue() && instance.canSkip()) {
       instance.markExpired();
-      await this.instanceRepository.save(instance);
       return true;
     }
-
     return false;
   }
 
   /**
-   * 批量检查实例是否过期
+   * 获取指定日期范围内的过期任务数量（纯计算）
+   *
+   * @param instances 任务实例列表
+   * @returns 过期数量
    */
-  async checkInstancesExpiration(instanceUuids: string[]): Promise<Map<string, boolean>> {
-    const result = new Map<string, boolean>();
-
-    for (const uuid of instanceUuids) {
-      const isExpired = await this.checkInstanceExpiration(uuid);
-      result.set(uuid, isExpired);
-    }
-
-    return result;
-  }
-
-  /**
-   * 定时任务：检查所有账户的过期任务
-   */
-  async scheduleExpirationCheck(accountUuids: string[]): Promise<void> {
-    for (const accountUuid of accountUuids) {
-      await this.checkAndMarkExpiredInstances(accountUuid);
-    }
-  }
-
-  /**
-   * 获取指定日期范围内的过期任务数量
-   */
-  async getExpiredInstanceCount(
-    accountUuid: string,
-    startDate: number,
-    endDate: number,
-  ): Promise<number> {
-    const instances = await this.instanceRepository.findByDateRange(
-      accountUuid,
-      startDate,
-      endDate,
-    );
-
+  countExpiredInstances(instances: TaskInstance[]): number {
     return instances.filter((i) => i.status === 'EXPIRED').length;
   }
 }

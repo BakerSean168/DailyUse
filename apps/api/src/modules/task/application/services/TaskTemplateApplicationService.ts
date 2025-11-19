@@ -5,6 +5,7 @@ import type {
 } from '@dailyuse/domain-server';
 import {
   TaskTemplate,
+  TaskInstance,
   TaskInstanceGenerationService,
   TaskTimeConfig,
   RecurrenceRule,
@@ -35,10 +36,7 @@ export class TaskTemplateApplicationService {
     templateRepository: ITaskTemplateRepository,
     instanceRepository: ITaskInstanceRepository,
   ) {
-    this.generationService = new TaskInstanceGenerationService(
-      templateRepository,
-      instanceRepository,
-    );
+    this.generationService = new TaskInstanceGenerationService();
     this.templateRepository = templateRepository;
     this.instanceRepository = instanceRepository;
   }
@@ -151,10 +149,20 @@ export class TaskTemplateApplicationService {
   private async generateInitialInstances(template: TaskTemplate): Promise<void> {
     try {
       // 1. 生成 100 天的 TaskInstance（用于展示和修改）
-      const instances = await this.generationService.generateInstancesForTemplate(template);
-      console.log(
-        `✅ [TaskTemplateApplicationService] 模板 "${template.title}" 生成了 ${instances.length} 个实例（未来100天）`,
-      );
+      const instances = this.generationService.generateInstances(template);
+
+      if (instances.length > 0) {
+        await this.instanceRepository.saveMany(instances);
+        // 更新模板的 lastGeneratedDate
+        await this.templateRepository.save(template);
+
+        console.log(
+          `✅ [TaskTemplateApplicationService] 模板 "${template.title}" 生成了 ${instances.length} 个实例（未来100天）`,
+        );
+
+        // 发布生成事件
+        this.publishInstancesGeneratedEvent(template, instances);
+      }
 
       // 2. 🔥 如果配置了提醒，创建循环 ScheduleTask（只创建1个）
       if (template.reminderConfig?.enabled) {
@@ -169,6 +177,38 @@ export class TaskTemplateApplicationService {
       );
       // 不抛出错误，模板已经创建成功，实例生成失败不影响模板创建
     }
+  }
+
+  /**
+   * 发布实例生成事件
+   */
+  private publishInstancesGeneratedEvent(template: TaskTemplate, instances: TaskInstance[]): void {
+    const SMALL_BATCH_THRESHOLD = 20;
+    const eventPayload: any = {
+      templateUuid: template.uuid,
+      templateTitle: template.title,
+      instanceCount: instances.length,
+      dateRange: {
+        from: Date.now(),
+        to: Date.now() + 100 * 86400000, // Approx
+      },
+    };
+
+    if (instances.length <= SMALL_BATCH_THRESHOLD) {
+      eventPayload.instances = instances.map((inst) => inst.toClientDTO());
+      eventPayload.strategy = 'full';
+    } else {
+      eventPayload.strategy = 'summary';
+    }
+
+    eventBus.emit('task.instances.generated', {
+      eventType: 'task_template.instances_generated',
+      version: '1.0',
+      aggregateId: template.uuid,
+      occurredOn: new Date(),
+      accountUuid: template.accountUuid,
+      payload: eventPayload,
+    });
   }
 
   /**
@@ -250,7 +290,7 @@ export class TaskTemplateApplicationService {
     // 🔥 自动检查并补充每个 ACTIVE 模板的实例
     for (const template of templates) {
       if (template.status === TaskContracts.TaskTemplateStatus.ACTIVE) {
-        this.checkAndRefillInstances(template.uuid).catch((error) => {
+        this.checkAndRefillInstances(template).catch((error) => {
           console.error(`❌ 补充模板 "${template.title}" 实例失败:`, error);
         });
       }
@@ -262,9 +302,28 @@ export class TaskTemplateApplicationService {
   /**
    * 检查并补充模板实例（异步执行，不阻塞返回）
    */
-  private async checkAndRefillInstances(templateUuid: string): Promise<void> {
+  private async checkAndRefillInstances(template: TaskTemplate): Promise<void> {
     try {
-      await this.generationService.checkAndRefillInstances(templateUuid);
+      // 1. 检查是否需要补充
+      if (this.generationService.shouldRefillInstances(template)) {
+        console.log(`🔄 [TaskTemplateApplicationService] 模板 "${template.title}" 需要补充实例...`);
+
+        // 2. 生成实例
+        const instances = this.generationService.generateInstances(template);
+
+        if (instances.length > 0) {
+          // 3. 保存实例和模板
+          await this.instanceRepository.saveMany(instances);
+          await this.templateRepository.save(template);
+
+          console.log(
+            `✅ [TaskTemplateApplicationService] 为模板 "${template.title}" 补充了 ${instances.length} 个实例`,
+          );
+
+          // 4. 发布事件
+          this.publishInstancesGeneratedEvent(template, instances);
+        }
+      }
     } catch (error) {
       console.error(`❌ [TaskTemplateApplicationService] 补充实例失败:`, error);
     }
@@ -292,7 +351,7 @@ export class TaskTemplateApplicationService {
 
     // 🔥 自动检查并补充每个模板的实例
     for (const template of templates) {
-      this.checkAndRefillInstances(template.uuid).catch((error) => {
+      this.checkAndRefillInstances(template).catch((error) => {
         console.error(`❌ 补充模板 "${template.title}" 实例失败:`, error);
       });
     }
@@ -628,7 +687,13 @@ export class TaskTemplateApplicationService {
     }
 
     // 使用强制生成模式，重新生成实例
-    const instances = await this.generationService.generateInstancesForTemplate(template, true);
+    const instances = this.generationService.generateInstances(template, { forceGenerate: true });
+
+    if (instances.length > 0) {
+      await this.instanceRepository.saveMany(instances);
+      await this.templateRepository.save(template);
+    }
+
     return instances.map((i) => i.toClientDTO());
   }
 
@@ -636,7 +701,17 @@ export class TaskTemplateApplicationService {
    * 检查并生成待生成的实例
    */
   async checkAndGenerateInstances(): Promise<void> {
-    await this.generationService.checkAndGenerateInstances();
+    // 查找所有需要补充的模板
+    // 注意：这里需要支持所有账户，可能需要调整 Repository 接口
+    const templates = await this.templateRepository.findActiveTemplates('');
+
+    console.log(
+      `[TaskTemplateApplicationService] 开始检查 ${templates.length} 个活跃模板的实例数量`,
+    );
+
+    for (const template of templates) {
+      await this.checkAndRefillInstances(template);
+    }
   }
 
   // ===== ONE_TIME 任务管理 =====

@@ -28,7 +28,7 @@ export class TaskInstanceApplicationService {
     instanceRepository: ITaskInstanceRepository,
     templateRepository: ITaskTemplateRepository,
   ) {
-    this.expirationService = new TaskExpirationService(instanceRepository);
+    this.expirationService = new TaskExpirationService();
     this.instanceRepository = instanceRepository;
     this.templateRepository = templateRepository;
   }
@@ -194,7 +194,17 @@ export class TaskInstanceApplicationService {
    * 检查并标记过期的任务实例
    */
   async checkExpiredInstances(accountUuid: string): Promise<TaskContracts.TaskInstanceServerDTO[]> {
-    const expiredInstances = await this.expirationService.checkAndMarkExpiredInstances(accountUuid);
+    // 1. 查找所有过期的任务实例
+    const overdueInstances = await this.instanceRepository.findOverdueInstances(accountUuid);
+
+    // 2. 委托给领域服务标记过期
+    const expiredInstances = this.expirationService.markExpiredInstances(overdueInstances);
+
+    // 3. 保存修改后的实例
+    if (expiredInstances.length > 0) {
+      await this.instanceRepository.saveMany(expiredInstances);
+    }
+
     return expiredInstances.map((i) => i.toClientDTO());
   }
 

@@ -16,12 +16,42 @@ import type { GoalContracts } from '@dailyuse/contracts';
 export class GoalStatisticsApplicationService {
   private static instance: GoalStatisticsApplicationService;
   private domainService: GoalStatisticsDomainService;
+  private statisticsRepository: IGoalStatisticsRepository;
+  private goalRepository: IGoalRepository;
+  // 用于保护并发统计更新的锁
+  private readonly locks = new Map<string, Promise<void>>();
 
   private constructor(
     statisticsRepository: IGoalStatisticsRepository,
     goalRepository: IGoalRepository,
   ) {
-    this.domainService = new GoalStatisticsDomainService(statisticsRepository, goalRepository);
+    this.domainService = new GoalStatisticsDomainService();
+    this.statisticsRepository = statisticsRepository;
+    this.goalRepository = goalRepository;
+  }
+
+  /**
+   * 使用锁来保护操作，确保同一 accountUuid 的操作是串行的
+   */
+  private async withLock<T>(key: string, operation: () => Promise<T>): Promise<T> {
+    // 等待之前的操作完成
+    while (this.locks.has(key)) {
+      await this.locks.get(key);
+    }
+
+    // 创建新的锁
+    let resolve!: () => void;
+    const promise = new Promise<void>((r) => {
+      resolve = r;
+    });
+    this.locks.set(key, promise);
+
+    try {
+      return await operation();
+    } finally {
+      this.locks.delete(key);
+      resolve();
+    }
   }
 
   /**
@@ -59,8 +89,16 @@ export class GoalStatisticsApplicationService {
    * 获取账户的统计信息（不存在则自动创建）
    */
   async getOrCreateStatistics(accountUuid: string): Promise<GoalContracts.GoalStatisticsClientDTO> {
-    // 委托给领域服务处理
-    const statistics = await this.domainService.getOrCreateStatistics(accountUuid);
+    // 1. 尝试获取现有统计
+    let statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
+
+    // 2. 如果不存在，创建空统计
+    if (!statistics) {
+      // 使用聚合根的工厂方法创建
+      const { GoalStatistics } = await import('@dailyuse/domain-server');
+      statistics = GoalStatistics.createEmpty(accountUuid);
+      await this.statisticsRepository.upsert(statistics);
+    }
 
     // 转换为 ClientDTO
     return statistics.toClientDTO();
@@ -70,9 +108,7 @@ export class GoalStatisticsApplicationService {
    * 获取账户的统计信息（不自动创建）
    */
   async getStatistics(accountUuid: string): Promise<GoalContracts.GoalStatisticsClientDTO | null> {
-    // 委托给领域服务处理
-    const statistics = await this.domainService.getStatistics(accountUuid);
-
+    const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
     return statistics ? statistics.toClientDTO() : null;
   }
 
@@ -83,8 +119,28 @@ export class GoalStatisticsApplicationService {
     request: GoalContracts.InitializeGoalStatisticsRequest,
   ): Promise<GoalContracts.InitializeGoalStatisticsResponse> {
     try {
-      // 委托给领域服务处理
-      const statistics = await this.domainService.initializeStatistics(request.accountUuid);
+      const accountUuid = request.accountUuid;
+
+      // 1. 检查是否已存在
+      const existing = await this.statisticsRepository.findByAccountUuid(accountUuid);
+      if (existing) {
+        return {
+          success: true,
+          message: 'Goal statistics already initialized.',
+          statistics: existing.toServerDTO(),
+        };
+      }
+
+      // 2. 从数据库获取所有 Goal
+      const goals = await this.goalRepository.findByAccountUuid(accountUuid, {
+        includeChildren: true,
+      });
+
+      // 3. 委托给领域服务计算
+      const statistics = this.domainService.calculateStatisticsFromGoals(accountUuid, goals);
+
+      // 4. 保存统计
+      await this.statisticsRepository.upsert(statistics);
 
       return {
         success: true,
@@ -127,22 +183,72 @@ export class GoalStatisticsApplicationService {
   async recalculateStatistics(
     request: GoalContracts.RecalculateGoalStatisticsRequest,
   ): Promise<GoalContracts.RecalculateGoalStatisticsResponse> {
-    // 委托给领域服务处理（Response 已经是 DTO 格式）
-    return await this.domainService.recalculateStatistics(request);
+    const { accountUuid, force = false } = request;
+
+    try {
+      // 1. 检查是否存在现有统计
+      const existing = await this.statisticsRepository.findByAccountUuid(accountUuid);
+
+      // 2. 如果不强制且已存在，可以选择跳过
+      if (existing && !force) {
+        return {
+          success: true,
+          message: 'Statistics already exist. Use force=true to recalculate.',
+          statistics: existing.toServerDTO(),
+        };
+      }
+
+      // 3. 从数据库获取所有 Goal
+      const goals = await this.goalRepository.findByAccountUuid(accountUuid, {
+        includeChildren: true,
+      });
+
+      // 4. 委托给领域服务计算
+      const statistics = this.domainService.calculateStatisticsFromGoals(accountUuid, goals);
+
+      // 5. 保存统计
+      await this.statisticsRepository.upsert(statistics);
+
+      return {
+        success: true,
+        message: 'Statistics recalculated successfully.',
+        statistics: statistics.toServerDTO(),
+      };
+    } catch (error) {
+      const { GoalStatistics } = await import('@dailyuse/domain-server');
+      return {
+        success: false,
+        message: `Failed to recalculate statistics: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        statistics: GoalStatistics.createEmpty(accountUuid).toServerDTO(),
+      };
+    }
   }
 
   /**
    * 处理统计更新事件（增量更新）
    */
   async handleStatisticsUpdateEvent(event: GoalContracts.GoalStatisticsUpdateEvent): Promise<void> {
-    // 委托给领域服务处理
-    await this.domainService.handleStatisticsUpdateEvent(event);
+    // 使用锁保护整个"读取-修改-保存"流程
+    return this.withLock(event.accountUuid, async () => {
+      // 1. 获取或创建统计
+      let statistics = await this.statisticsRepository.findByAccountUuid(event.accountUuid);
+      if (!statistics) {
+        const { GoalStatistics } = await import('@dailyuse/domain-server');
+        statistics = GoalStatistics.createEmpty(event.accountUuid);
+      }
+
+      // 2. 委托给领域服务更新状态
+      this.domainService.applyEventToStatistics(statistics, event);
+
+      // 3. 保存更新后的统计
+      await this.statisticsRepository.upsert(statistics);
+    });
   }
 
   /**
    * 删除统计信息
    */
   async deleteStatistics(accountUuid: string): Promise<boolean> {
-    return await this.domainService.deleteStatistics(accountUuid);
+    return await this.statisticsRepository.delete(accountUuid);
   }
 }
