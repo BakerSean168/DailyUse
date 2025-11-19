@@ -1,6 +1,6 @@
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import type { ScheduleTask } from '@dailyuse/domain-server';
-import { 
+import {
   ScheduleTaskFactory,
   ScheduleStrategyNotFoundError,
   SourceEntityNoScheduleRequiredError,
@@ -79,7 +79,9 @@ export class ScheduleEventPublisher {
     const handleGoalUpdate = async (event: DomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error(`❌ [ScheduleEventPublisher] Missing accountUuid in ${event.eventType} event`);
+          console.error(
+            `❌ [ScheduleEventPublisher] Missing accountUuid in ${event.eventType} event`,
+          );
           return;
         }
         const { goal } = event.payload as { goal: GoalContracts.GoalServerDTO };
@@ -97,18 +99,30 @@ export class ScheduleEventPublisher {
     const handleTaskTemplateUpdate = async (event: DomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error(`❌ [ScheduleEventPublisher] Missing accountUuid in ${event.eventType} event`);
+          console.error(
+            `❌ [ScheduleEventPublisher] Missing accountUuid in ${event.eventType} event`,
+          );
           return;
         }
-        const { taskTemplate } = event.payload as { taskTemplate: TaskContracts.TaskTemplateServerDTO };
-        await this.handleTaskTemplateScheduleChanged(event.accountUuid, taskTemplate);
+        const { taskTemplateData } = event.payload as {
+          taskTemplateData: TaskContracts.TaskTemplateServerDTO;
+        };
+
+        if (!taskTemplateData) {
+          console.error(
+            `❌ [ScheduleEventPublisher] Missing taskTemplateData in ${event.eventType}`,
+          );
+          return;
+        }
+
+        await this.handleTaskTemplateScheduleChanged(event.accountUuid, taskTemplateData);
       } catch (error) {
         console.error(`❌ [ScheduleEventPublisher] Error handling ${event.eventType}:`, error);
       }
     };
 
-    eventBus.on('task_template.schedule_time_changed', handleTaskTemplateUpdate);
-    eventBus.on('task_template.recurrence_changed', handleTaskTemplateUpdate);
+    // 修正事件名称监听
+    eventBus.on('task.template.schedule_changed', handleTaskTemplateUpdate);
 
     /**
      * 监听 TaskTemplate 暂停事件，删除调度任务
@@ -116,13 +130,16 @@ export class ScheduleEventPublisher {
     eventBus.on('task.template.paused', async (event: DomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [ScheduleEventPublisher] Missing accountUuid in task.template.paused event');
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing accountUuid in task.template.paused event',
+          );
           return;
         }
 
         const { taskTemplateUuid } = event.payload as { taskTemplateUuid: string };
         console.log(`⏸️  [ScheduleEventPublisher] 处理任务模板暂停: ${taskTemplateUuid}`);
-        await this.deleteTasksBySource(event.accountUuid, SourceModule.TASK, taskTemplateUuid);
+        // 使用 pause 而不是 delete
+        await this.pauseTasksBySource(event.accountUuid, SourceModule.TASK, taskTemplateUuid);
       } catch (error) {
         console.error('❌ [ScheduleEventPublisher] Error handling task.template.paused:', error);
       }
@@ -134,22 +151,20 @@ export class ScheduleEventPublisher {
     eventBus.on('task.template.resumed', async (event: DomainEvent) => {
       try {
         if (!event.accountUuid) {
-          console.error('❌ [ScheduleEventPublisher] Missing accountUuid in task.template.resumed event');
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing accountUuid in task.template.resumed event',
+          );
           return;
         }
 
-        const { taskTemplateData } = event.payload as { 
+        const { taskTemplateUuid } = event.payload as {
           taskTemplateUuid: string;
           taskTemplateData?: TaskContracts.TaskTemplateServerDTO;
         };
-        
-        if (!taskTemplateData) {
-          console.error('❌ [ScheduleEventPublisher] Missing taskTemplateData in event payload');
-          return;
-        }
 
-        console.log(`▶️  [ScheduleEventPublisher] 处理任务模板恢复: ${taskTemplateData.uuid}`);
-        await this.handleTaskCreated(event.accountUuid, taskTemplateData);
+        console.log(`▶️  [ScheduleEventPublisher] 处理任务模板恢复: ${taskTemplateUuid}`);
+        // 使用 resume 而不是 recreate
+        await this.resumeTasksBySource(event.accountUuid, SourceModule.TASK, taskTemplateUuid);
       } catch (error) {
         console.error('❌ [ScheduleEventPublisher] Error handling task.template.resumed:', error);
       }
@@ -203,7 +218,7 @@ export class ScheduleEventPublisher {
         hasPayload: !!event.payload,
         hasReminder: !!(event.payload as any)?.reminder,
       });
-      
+
       try {
         if (!event.accountUuid) {
           console.error(
@@ -226,7 +241,10 @@ export class ScheduleEventPublisher {
 
         await this.handleReminderCreated(event.accountUuid, reminder);
       } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.created:', error);
+        console.error(
+          '❌ [ScheduleEventPublisher] Error handling reminder.template.created:',
+          error,
+        );
       }
     });
 
@@ -242,11 +260,22 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        // 获取更新后的完整 reminder 数据
-        // 注意：这里需要重新查询，因为事件payload只包含更新的字段
-        await this.handleReminderUpdated(event.accountUuid, event.aggregateId);
+        const { template } = event.payload as { template: any };
+
+        if (!template) {
+          console.error(
+            '❌ [ScheduleEventPublisher] Missing template in reminder.template.updated event payload',
+          );
+          return;
+        }
+
+        // 使用事件携带的完整数据更新调度
+        await this.handleReminderUpdated(event.accountUuid, template);
       } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.updated:', error);
+        console.error(
+          '❌ [ScheduleEventPublisher] Error handling reminder.template.updated:',
+          error,
+        );
       }
     });
 
@@ -262,10 +291,13 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        // 启用时：确保有调度任务
-        await this.handleReminderUpdated(event.accountUuid, event.aggregateId);
+        // 启用时：恢复调度任务
+        await this.resumeTasksBySource(event.accountUuid, SourceModule.REMINDER, event.aggregateId);
       } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.enabled:', error);
+        console.error(
+          '❌ [ScheduleEventPublisher] Error handling reminder.template.enabled:',
+          error,
+        );
       }
     });
 
@@ -281,10 +313,13 @@ export class ScheduleEventPublisher {
           return;
         }
 
-        // 禁用时：删除调度任务
-        await this.handleReminderDeleted(event.accountUuid, event.aggregateId);
+        // 禁用时：暂停调度任务
+        await this.pauseTasksBySource(event.accountUuid, SourceModule.REMINDER, event.aggregateId);
       } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.paused:', error);
+        console.error(
+          '❌ [ScheduleEventPublisher] Error handling reminder.template.paused:',
+          error,
+        );
       }
     });
 
@@ -302,7 +337,10 @@ export class ScheduleEventPublisher {
 
         await this.handleReminderDeleted(event.accountUuid, event.aggregateId);
       } catch (error) {
-        console.error('❌ [ScheduleEventPublisher] Error handling reminder.template.deleted:', error);
+        console.error(
+          '❌ [ScheduleEventPublisher] Error handling reminder.template.deleted:',
+          error,
+        );
       }
     });
 
@@ -419,9 +457,9 @@ export class ScheduleEventPublisher {
       });
 
       // 保存调度任务
-  const scheduleService = await ScheduleApplicationService.getInstance();
-  const metadataDTO = scheduleTask.metadata.toServerDTO();
-      
+      const scheduleService = await ScheduleApplicationService.getInstance();
+      const metadataDTO = scheduleTask.metadata.toServerDTO();
+
       await scheduleService.createScheduleTask({
         accountUuid,
         name: scheduleTask.name,
@@ -430,19 +468,20 @@ export class ScheduleEventPublisher {
         sourceEntityId: scheduleTask.sourceEntityId,
         schedule: scheduleTask.schedule,
         retryConfig: scheduleTask.retryPolicy,
-  payload: metadataDTO.payload,
-  tags: metadataDTO.tags,
+        payload: metadataDTO.payload,
+        tags: metadataDTO.tags,
       });
 
-      console.log(
-        `✅ [ScheduleEventPublisher] Created schedule task for Goal ${goal.uuid}`,
-      );
+      console.log(`✅ [ScheduleEventPublisher] Created schedule task for Goal ${goal.uuid}`);
     } catch (error: any) {
       // 如果 Goal 不需要调度（没有启用 reminderConfig），这是正常情况
       if (error.message?.includes('does not require')) {
         console.log(`ℹ️  [ScheduleEventPublisher] Goal ${goal.uuid} does not require scheduling`);
       } else {
-        console.error(`❌ [ScheduleEventPublisher] Failed to create schedule for Goal ${goal.uuid}:`, error);
+        console.error(
+          `❌ [ScheduleEventPublisher] Failed to create schedule for Goal ${goal.uuid}:`,
+          error,
+        );
       }
     }
   }
@@ -450,7 +489,7 @@ export class ScheduleEventPublisher {
   /**
    * 处理 Goal 删除事件
    */
-  private static async handleGoalDeleted(accountUuid: string, goalUuid:string): Promise<void> {
+  private static async handleGoalDeleted(accountUuid: string, goalUuid: string): Promise<void> {
     console.log(`🗑️ [ScheduleEventPublisher] Handling goal deletion for: ${goalUuid}`);
     await this.deleteTasksBySource(accountUuid, SourceModule.GOAL, goalUuid);
   }
@@ -471,7 +510,9 @@ export class ScheduleEventPublisher {
     // 2. 根据更新后的目标信息重新创建调度任务
     await this.handleGoalCreated(accountUuid, goal);
 
-    console.log(`✅ [ScheduleEventPublisher] Successfully handled goal schedule change for: ${goal.uuid}`);
+    console.log(
+      `✅ [ScheduleEventPublisher] Successfully handled goal schedule change for: ${goal.uuid}`,
+    );
   }
 
   /**
@@ -481,7 +522,9 @@ export class ScheduleEventPublisher {
     accountUuid: string,
     taskTemplate: TaskContracts.TaskTemplateServerDTO,
   ): Promise<void> {
-    console.log(`🔄 [ScheduleEventPublisher] Handling task template schedule change for: ${taskTemplate.uuid}`);
+    console.log(
+      `🔄 [ScheduleEventPublisher] Handling task template schedule change for: ${taskTemplate.uuid}`,
+    );
 
     // 1. 删除此模板的所有现有调度任务
     await this.deleteTasksBySource(accountUuid, SourceModule.TASK, taskTemplate.uuid);
@@ -489,7 +532,9 @@ export class ScheduleEventPublisher {
     // 2. 根据更新后的模板信息重新创建调度任务
     await this.handleTaskCreated(accountUuid, taskTemplate);
 
-    console.log(`✅ [ScheduleEventPublisher] Successfully handled task template schedule change for: ${taskTemplate.uuid}`);
+    console.log(
+      `✅ [ScheduleEventPublisher] Successfully handled task template schedule change for: ${taskTemplate.uuid}`,
+    );
   }
 
   /**
@@ -515,6 +560,62 @@ export class ScheduleEventPublisher {
   }
 
   /**
+   * Helper to pause schedule tasks for a given source.
+   */
+  private static async pauseTasksBySource(
+    accountUuid: string,
+    sourceType: SourceModule,
+    sourceId: string,
+  ): Promise<void> {
+    try {
+      const scheduleService = await ScheduleApplicationService.getInstance();
+      const tasks = await scheduleService.getScheduleTaskBySource(sourceType, sourceId);
+
+      for (const task of tasks) {
+        if (task.accountUuid !== accountUuid) continue;
+        await scheduleService.pauseScheduleTask(task.uuid);
+      }
+
+      console.log(
+        `✅ [ScheduleEventPublisher] Paused ${tasks.length} tasks related to ${sourceType} ${sourceId}`,
+      );
+    } catch (error) {
+      console.error(
+        `❌ [ScheduleEventPublisher] Error pausing tasks for ${sourceType} ${sourceId}:`,
+        error,
+      );
+    }
+  }
+
+  /**
+   * Helper to resume schedule tasks for a given source.
+   */
+  private static async resumeTasksBySource(
+    accountUuid: string,
+    sourceType: SourceModule,
+    sourceId: string,
+  ): Promise<void> {
+    try {
+      const scheduleService = await ScheduleApplicationService.getInstance();
+      const tasks = await scheduleService.getScheduleTaskBySource(sourceType, sourceId);
+
+      for (const task of tasks) {
+        if (task.accountUuid !== accountUuid) continue;
+        await scheduleService.resumeScheduleTask(task.uuid);
+      }
+
+      console.log(
+        `✅ [ScheduleEventPublisher] Resumed ${tasks.length} tasks related to ${sourceType} ${sourceId}`,
+      );
+    } catch (error) {
+      console.error(
+        `❌ [ScheduleEventPublisher] Error resuming tasks for ${sourceType} ${sourceId}:`,
+        error,
+      );
+    }
+  }
+
+  /**
    * 处理 Task 创建事件
    */
   private static async handleTaskCreated(
@@ -532,8 +633,8 @@ export class ScheduleEventPublisher {
 
       // 保存调度任务
       const scheduleService = await ScheduleApplicationService.getInstance();
-  const metadataDTO = scheduleTask.metadata.toServerDTO();
-      
+      const metadataDTO = scheduleTask.metadata.toServerDTO();
+
       await scheduleService.createScheduleTask({
         accountUuid,
         name: scheduleTask.name,
@@ -546,15 +647,16 @@ export class ScheduleEventPublisher {
         tags: metadataDTO.tags,
       });
 
-      console.log(
-        `✅ [ScheduleEventPublisher] Created schedule task for Task ${task.uuid}`,
-      );
+      console.log(`✅ [ScheduleEventPublisher] Created schedule task for Task ${task.uuid}`);
     } catch (error: any) {
       // 如果 Task 不需要调度（不是循环任务或没有提醒配置），这是正常情况
       if (error.message?.includes('does not have valid')) {
         console.log(`ℹ️  [ScheduleEventPublisher] Task ${task.uuid} does not require scheduling`);
       } else {
-        console.error(`❌ [ScheduleEventPublisher] Failed to create schedule for Task ${task.uuid}:`, error);
+        console.error(
+          `❌ [ScheduleEventPublisher] Failed to create schedule for Task ${task.uuid}:`,
+          error,
+        );
       }
     }
   }
@@ -562,10 +664,7 @@ export class ScheduleEventPublisher {
   /**
    * 处理 Task 删除事件
    */
-  private static async handleTaskDeleted(
-    accountUuid: string,
-    taskUuid: string,
-  ): Promise<void> {
+  private static async handleTaskDeleted(accountUuid: string, taskUuid: string): Promise<void> {
     console.log(`🗑️ [ScheduleEventPublisher] Handling task deletion for: ${taskUuid}`);
     await this.deleteTasksBySource(accountUuid, SourceModule.TASK, taskUuid);
   }
@@ -589,7 +688,7 @@ export class ScheduleEventPublisher {
     reminder: any, // ReminderServerDTO
   ): Promise<void> {
     const operationId = `handle-reminder-created-${reminder.uuid}-${Date.now()}`;
-    
+
     try {
       // 使用工厂创建调度任务
       const scheduleTask = this.taskFactory.createFromSourceEntity({
@@ -601,8 +700,8 @@ export class ScheduleEventPublisher {
 
       // 保存调度任务
       const scheduleService = await ScheduleApplicationService.getInstance();
-  const metadataDTO = scheduleTask.metadata.toServerDTO();
-      
+      const metadataDTO = scheduleTask.metadata.toServerDTO();
+
       await scheduleService.createScheduleTask({
         accountUuid,
         name: scheduleTask.name,
@@ -673,37 +772,26 @@ export class ScheduleEventPublisher {
    */
   private static async handleReminderUpdated(
     accountUuid: string,
-    reminderUuid: string,
+    reminder: any, // ReminderServerDTO
   ): Promise<void> {
+    const reminderUuid = reminder.uuid;
     console.log(`🔄 [ScheduleEventPublisher] Handling reminder update for: ${reminderUuid}`);
 
     try {
       // 1. 删除此提醒的所有现有调度任务
       await this.handleReminderDeleted(accountUuid, reminderUuid);
 
-      // 2. 重新获取提醒数据并创建新的调度任务
-      // 注意：这里需要从数据库重新查询完整的 reminder 数据
-      // 因为事件 payload 只包含更新的字段
-      const { ReminderContainer } = await import('../../../reminder/infrastructure/di/ReminderContainer');
-      const container = ReminderContainer.getInstance();
-      const reminderRepo = container.getReminderTemplateRepository();
-      
-      const templates = await reminderRepo.findByAccountUuid(accountUuid, { includeHistory: false });
-      const template = templates.find(t => t.uuid === reminderUuid);
-      if (!template) {
-        console.warn(`⚠️ [ScheduleEventPublisher] Reminder ${reminderUuid} not found, skip schedule update`);
-        return;
-      }
+      // 2. 根据更新后的提醒信息重新创建调度任务
+      await this.handleReminderCreated(accountUuid, reminder);
 
-      // 转换为 ServerDTO
-      const reminderDTO = template.toServerDTO();
-      
-      // 3. 根据更新后的提醒信息重新创建调度任务
-      await this.handleReminderCreated(accountUuid, reminderDTO);
-
-      console.log(`✅ [ScheduleEventPublisher] Successfully handled reminder update for: ${reminderUuid}`);
+      console.log(
+        `✅ [ScheduleEventPublisher] Successfully handled reminder update for: ${reminderUuid}`,
+      );
     } catch (error) {
-      console.error(`❌ [ScheduleEventPublisher] Error handling reminder update for ${reminderUuid}:`, error);
+      console.error(
+        `❌ [ScheduleEventPublisher] Error handling reminder update for ${reminderUuid}:`,
+        error,
+      );
     }
   }
 

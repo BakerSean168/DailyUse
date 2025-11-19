@@ -367,38 +367,40 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       : null;
     const stats = ReminderStats.fromServerDTO(JSON.parse(dto.stats));
     const tags = JSON.parse(dto.tags);
-    
+
     // Smart Frequency: Reconstruct ResponseMetrics from flat fields
-    const responseMetrics = (
+    const responseMetrics =
       dto.clickRate !== null &&
       dto.clickRate !== undefined &&
       dto.ignoreRate !== null &&
       dto.ignoreRate !== undefined
-    ) ? ResponseMetrics.fromServerDTO({
-      clickRate: dto.clickRate,
-      ignoreRate: dto.ignoreRate,
-      avgResponseTime: dto.avgResponseTime ?? 0,
-      snoozeCount: dto.snoozeCount ?? 0,
-      effectivenessScore: dto.effectivenessScore ?? 0,
-      sampleSize: dto.sampleSize ?? 0,
-      lastAnalysisTime: dto.lastAnalysisTime ?? Date.now(),
-    }) : null;
-    
+        ? ResponseMetrics.fromServerDTO({
+            clickRate: dto.clickRate,
+            ignoreRate: dto.ignoreRate,
+            avgResponseTime: dto.avgResponseTime ?? 0,
+            snoozeCount: dto.snoozeCount ?? 0,
+            effectivenessScore: dto.effectivenessScore ?? 0,
+            sampleSize: dto.sampleSize ?? 0,
+            lastAnalysisTime: dto.lastAnalysisTime ?? Date.now(),
+          })
+        : null;
+
     // Smart Frequency: Reconstruct FrequencyAdjustment from flat fields
-    const frequencyAdjustment = (
+    const frequencyAdjustment =
       dto.originalInterval !== null &&
       dto.originalInterval !== undefined &&
       dto.adjustedInterval !== null &&
       dto.adjustedInterval !== undefined
-    ) ? FrequencyAdjustment.fromServerDTO({
-      originalInterval: dto.originalInterval,
-      adjustedInterval: dto.adjustedInterval,
-      adjustmentReason: dto.adjustmentReason ?? '',
-      adjustmentTime: dto.adjustmentTime ?? Date.now(),
-      isAutoAdjusted: dto.isAutoAdjusted ?? false,
-      userConfirmed: dto.userConfirmed ?? false,
-      rejectionReason: null,
-    }) : null;
+        ? FrequencyAdjustment.fromServerDTO({
+            originalInterval: dto.originalInterval,
+            adjustedInterval: dto.adjustedInterval,
+            adjustmentReason: dto.adjustmentReason ?? '',
+            adjustmentTime: dto.adjustmentTime ?? Date.now(),
+            isAutoAdjusted: dto.isAutoAdjusted ?? false,
+            userConfirmed: dto.userConfirmed ?? false,
+            rejectionReason: null,
+          })
+        : null;
 
     return new ReminderTemplate({
       uuid: dto.uuid,
@@ -420,12 +422,12 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       icon: dto.icon,
       nextTriggerAt: dto.nextTriggerAt,
       stats,
-      
+
       // Smart Frequency fields
       responseMetrics,
       frequencyAdjustment,
       smartFrequencyEnabled: dto.smartFrequencyEnabled ?? true,
-      
+
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       deletedAt: dto.deletedAt,
@@ -531,13 +533,13 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       this._notificationConfig = NotificationConfig.fromServerDTO(updates.notificationConfig);
     }
     if (updates.recurrence !== undefined) {
-      this._recurrence = updates.recurrence 
-        ? RecurrenceConfig.fromServerDTO(updates.recurrence) 
+      this._recurrence = updates.recurrence
+        ? RecurrenceConfig.fromServerDTO(updates.recurrence)
         : null;
     }
     if (updates.activeHours !== undefined) {
-      this._activeHours = updates.activeHours 
-        ? ActiveHoursConfig.fromServerDTO(updates.activeHours) 
+      this._activeHours = updates.activeHours
+        ? ActiveHoursConfig.fromServerDTO(updates.activeHours)
         : null;
     }
 
@@ -552,7 +554,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
       payload: {
-        templateUuid: this.uuid,
+        template: this.toServerDTO(),
         updates: Object.keys(updates),
       },
     });
@@ -621,12 +623,12 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
   /**
    * 移动到分组（专用方法）
-   * 
+   *
    * @param targetGroupUuid 目标分组 UUID，null 表示移出分组
    */
   public moveToGroup(targetGroupUuid: string | null): void {
     const oldGroupUuid = this._groupUuid;
-    
+
     // 如果分组没有变化，直接返回
     if (oldGroupUuid === targetGroupUuid) {
       return;
@@ -654,12 +656,12 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
   /**
    * 设置有效启用状态（由应用层/领域服务调用）
-   * 
+   *
    * 应在以下情况调用：
    * 1. 模板移动到新分组时
    * 2. 模板的 selfEnabled 变化时
    * 3. 分组的控制模式或启用状态变化时
-   * 
+   *
    * @param effectiveEnabled 计算后的有效启用状态
    */
   public setEffectiveEnabled(effectiveEnabled: boolean): void {
@@ -924,7 +926,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
     const effectivenessScore = this._responseMetrics.effectivenessScore;
     const ignoreRate = this._responseMetrics.ignoreRate;
-    
+
     // 获取当前间隔（秒）
     let currentIntervalSeconds: number;
     if (this._trigger.interval) {
@@ -1109,7 +1111,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       icon: this.icon,
       nextTriggerAt: this.nextTriggerAt,
       stats: JSON.stringify(this._stats.toServerDTO()),
-      
+
       // Smart Frequency: Response Metrics（扁平化）
       clickRate: responseMetricsFlat?.clickRate ?? null,
       ignoreRate: responseMetricsFlat?.ignoreRate ?? null,
@@ -1118,7 +1120,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       effectivenessScore: responseMetricsFlat?.effectivenessScore ?? null,
       sampleSize: responseMetricsFlat?.sampleSize ?? 0,
       lastAnalysisTime: responseMetricsFlat?.lastAnalysisTime ?? null,
-      
+
       // Smart Frequency: Frequency Adjustment（扁平化）
       originalInterval: frequencyAdjustmentFlat?.originalInterval ?? null,
       adjustedInterval: frequencyAdjustmentFlat?.adjustedInterval ?? null,
@@ -1126,9 +1128,9 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       adjustmentTime: frequencyAdjustmentFlat?.adjustmentTime ?? null,
       isAutoAdjusted: frequencyAdjustmentFlat?.isAutoAdjusted ?? false,
       userConfirmed: frequencyAdjustmentFlat?.userConfirmed ?? false,
-      
+
       smartFrequencyEnabled: this._smartFrequencyEnabled ?? true,
-      
+
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt,

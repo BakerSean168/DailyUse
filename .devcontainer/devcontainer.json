@@ -2,7 +2,7 @@
   "name": "DailyUse Development Environment",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
   "runArgs": ["--cpus=2", "--memory=8g"],
-  
+
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22.20.0",
@@ -55,12 +55,7 @@
     }
   },
 
-  "forwardPorts": [
-    3000,
-    3001,
-    5173,
-    5432
-  ],
+  "forwardPorts": [3888, 5173, 5432],
 
   "portsAttributes": {
     "3000": {

@@ -1,4 +1,8 @@
-import type { ITaskInstanceRepository, ITaskTemplateRepository, TaskFilters } from '@dailyuse/domain-server';
+import type {
+  ITaskInstanceRepository,
+  ITaskTemplateRepository,
+  TaskFilters,
+} from '@dailyuse/domain-server';
 import {
   TaskTemplate,
   TaskInstanceGenerationService,
@@ -91,7 +95,7 @@ export class TaskTemplateApplicationService {
     // Note: Account existence is implicitly validated by the database foreign key constraint.
     // If account doesn't exist, Prisma will throw a foreign key constraint error.
     // For more explicit validation, check account in a separate repository if needed.
-    
+
     // 转换值对象
     const timeConfig = TaskTimeConfig.fromServerDTO(params.timeConfig);
     const recurrenceRule = params.recurrenceRule
@@ -122,7 +126,9 @@ export class TaskTemplateApplicationService {
 
     // 🔥 如果状态是 ACTIVE，立即生成初始实例
     if (template.status === TaskContracts.TaskTemplateStatus.ACTIVE) {
-      console.log(`[TaskTemplateApplicationService] 模板 "${template.title}" 已创建，开始生成初始实例...`);
+      console.log(
+        `[TaskTemplateApplicationService] 模板 "${template.title}" 已创建，开始生成初始实例...`,
+      );
       await this.generateInitialInstances(template);
     }
 
@@ -131,12 +137,12 @@ export class TaskTemplateApplicationService {
 
   /**
    * 生成初始实例（私有方法）
-   * 
+   *
    * 实施策略（方案 C - 混合方案）：
    * 1. 生成未来100天内的TaskInstance（用于前端展示和允许用户修改）
    * 2. 创建1个循环ScheduleTask（用于提醒）
    * 3. ScheduleTask触发时，检查当天Instance的实际时间，发送提醒
-   * 
+   *
    * 收益：
    * - 用户体验好（可修改单天时间）
    * - 性能合理（只有1个ScheduleTask）
@@ -146,13 +152,15 @@ export class TaskTemplateApplicationService {
     try {
       // 1. 生成 100 天的 TaskInstance（用于展示和修改）
       const instances = await this.generationService.generateInstancesForTemplate(template);
-      console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 生成了 ${instances.length} 个实例（未来100天）`);
-      
+      console.log(
+        `✅ [TaskTemplateApplicationService] 模板 "${template.title}" 生成了 ${instances.length} 个实例（未来100天）`,
+      );
+
       // 2. 🔥 如果配置了提醒，创建循环 ScheduleTask（只创建1个）
       if (template.reminderConfig?.enabled) {
         await this.createScheduleTaskForTemplate(template);
       }
-      
+
       console.log(`✅ [TaskTemplateApplicationService] 模板 "${template.title}" 初始化完成`);
     } catch (error) {
       console.error(
@@ -165,7 +173,7 @@ export class TaskTemplateApplicationService {
 
   /**
    * 为TaskTemplate创建循环ScheduleTask（用于提醒）
-   * 
+   *
    * 策略：
    * - 只创建1个ScheduleTask（不是100个）
    * - 使用cron表达式循环触发
@@ -175,12 +183,14 @@ export class TaskTemplateApplicationService {
     try {
       const { ScheduleTaskFactory } = await import('@dailyuse/domain-server');
       const { SourceModule } = await import('@dailyuse/contracts');
-      const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
-      
+      const { ScheduleContainer } = await import(
+        '../../../schedule/infrastructure/di/ScheduleContainer'
+      );
+
       // 创建 ScheduleTaskFactory
       const factory = new ScheduleTaskFactory();
       const templateDTO = template.toServerDTO();
-      
+
       // 使用 TaskScheduleStrategy 创建 ScheduleTask
       const scheduleTask = factory.createFromSourceEntity({
         accountUuid: template.accountUuid,
@@ -188,20 +198,24 @@ export class TaskTemplateApplicationService {
         sourceEntityId: template.uuid,
         sourceEntity: templateDTO,
       });
-      
+
       // 保存到仓储
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
       await repository.save(scheduleTask);
-      
-      console.log(`✅ [TaskTemplateApplicationService] 为模板 "${template.title}" 创建了循环 ScheduleTask: ${scheduleTask.uuid}`);
+
+      console.log(
+        `✅ [TaskTemplateApplicationService] 为模板 "${template.title}" 创建了循环 ScheduleTask: ${scheduleTask.uuid}`,
+      );
     } catch (error: any) {
       // 如果是"不需要调度"错误，不报错
       if (error?.name === 'SourceEntityNoScheduleRequiredError') {
-        console.log(`ℹ️  [TaskTemplateApplicationService] 模板 "${template.title}" 不需要创建 ScheduleTask（未配置提醒或不满足条件）`);
+        console.log(
+          `ℹ️  [TaskTemplateApplicationService] 模板 "${template.title}" 不需要创建 ScheduleTask（未配置提醒或不满足条件）`,
+        );
         return;
       }
-      
+
       console.error(
         `❌ [TaskTemplateApplicationService] 为模板 "${template.title}" 创建 ScheduleTask 失败:`,
         error,
@@ -232,7 +246,7 @@ export class TaskTemplateApplicationService {
     accountUuid: string,
   ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findByAccount(accountUuid);
-    
+
     // 🔥 自动检查并补充每个 ACTIVE 模板的实例
     for (const template of templates) {
       if (template.status === TaskContracts.TaskTemplateStatus.ACTIVE) {
@@ -241,7 +255,7 @@ export class TaskTemplateApplicationService {
         });
       }
     }
-    
+
     return templates.map((t) => t.toClientDTO());
   }
 
@@ -275,14 +289,14 @@ export class TaskTemplateApplicationService {
     accountUuid: string,
   ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findActiveTemplates(accountUuid);
-    
+
     // 🔥 自动检查并补充每个模板的实例
     for (const template of templates) {
       this.checkAndRefillInstances(template.uuid).catch((error) => {
         console.error(`❌ 补充模板 "${template.title}" 实例失败:`, error);
       });
     }
-    
+
     return templates.map((t) => t.toClientDTO());
   }
 
@@ -343,12 +357,35 @@ export class TaskTemplateApplicationService {
     // TODO: 在 TaskTemplate 聚合根中添加 update() 方法
 
     await this.templateRepository.save(template);
+
+    // 🔥 如果更新了调度相关配置，发布变更事件
+    if (params.timeConfig || params.recurrenceRule || params.reminderConfig) {
+      try {
+        await eventBus.publish({
+          eventType: 'task.template.schedule_changed',
+          payload: {
+            taskTemplateUuid: template.uuid,
+            taskTemplateTitle: template.title,
+            accountUuid: template.accountUuid,
+            changedAt: Date.now(),
+            taskTemplateData: template.toServerDTO(),
+          },
+          timestamp: Date.now(),
+        });
+        console.log(
+          `📤 [TaskTemplateApplicationService] 已发布 task.template.schedule_changed 事件`,
+        );
+      } catch (error) {
+        console.error(`❌ [TaskTemplateApplicationService] 发布调度变更事件失败:`, error);
+      }
+    }
+
     return template.toClientDTO();
   }
 
   /**
    * 激活任务模板
-   * 
+   *
    * 业务逻辑：
    * 1. 修改模板状态为 ACTIVE
    * 2. 立即生成实例到今天
@@ -368,7 +405,9 @@ export class TaskTemplateApplicationService {
     console.log(`✅ [TaskTemplateApplicationService] 模板状态已更新为 ACTIVE`);
 
     // 2. 立即生成实例到今天
-    console.log(`[TaskTemplateApplicationService] 模板 "${template.title}" 已激活，开始生成实例...`);
+    console.log(
+      `[TaskTemplateApplicationService] 模板 "${template.title}" 已激活，开始生成实例...`,
+    );
     await this.generateInitialInstances(template);
 
     // 3. 🔥 发布恢复事件，触发提醒调度恢复
@@ -395,7 +434,7 @@ export class TaskTemplateApplicationService {
 
   /**
    * 暂停任务模板
-   * 
+   *
    * 业务逻辑：
    * 1. 修改模板状态为 PAUSED
    * 2. 停止生成新的任务实例
@@ -448,7 +487,7 @@ export class TaskTemplateApplicationService {
       // 获取该模板的所有未完成实例
       const instances = await this.instanceRepository.findByTemplate(templateUuid);
       const pendingInstances = instances.filter(
-        (inst) => inst.status === 'PENDING' || inst.status === 'IN_PROGRESS'
+        (inst) => inst.status === 'PENDING' || inst.status === 'IN_PROGRESS',
       );
 
       if (pendingInstances.length === 0) {
@@ -457,7 +496,7 @@ export class TaskTemplateApplicationService {
       }
 
       console.log(
-        `[TaskTemplateApplicationService] 找到 ${pendingInstances.length} 个未完成实例，标记为 SKIPPED`
+        `[TaskTemplateApplicationService] 找到 ${pendingInstances.length} 个未完成实例，标记为 SKIPPED`,
       );
 
       // 批量标记为跳过
@@ -513,7 +552,29 @@ export class TaskTemplateApplicationService {
    * 删除任务模板
    */
   async deleteTaskTemplate(uuid: string): Promise<void> {
+    const template = await this.templateRepository.findByUuid(uuid);
+    if (!template) {
+      // 如果模板不存在，直接返回（幂等性）
+      return;
+    }
+
     await this.templateRepository.delete(uuid);
+
+    // 🔥 发布删除事件，触发提醒调度删除
+    try {
+      await eventBus.publish({
+        eventType: 'task.template.deleted',
+        payload: {
+          taskTemplateUuid: uuid,
+          accountUuid: template.accountUuid,
+          deletedAt: Date.now(),
+        },
+        timestamp: Date.now(),
+      });
+      console.log(`📤 [TaskTemplateApplicationService] 已发布 task.template.deleted 事件`);
+    } catch (error) {
+      console.error(`❌ [TaskTemplateApplicationService] 发布删除事件失败:`, error);
+    }
   }
 
   /**
@@ -658,7 +719,10 @@ export class TaskTemplateApplicationService {
   /**
    * 更新截止时间
    */
-  async updateDueDate(uuid: string, newDueDate: number | null): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async updateDueDate(
+    uuid: string,
+    newDueDate: number | null,
+  ): Promise<TaskContracts.TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -673,7 +737,10 @@ export class TaskTemplateApplicationService {
   /**
    * 更新预估时间
    */
-  async updateEstimatedTime(uuid: string, estimatedMinutes: number): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async updateEstimatedTime(
+    uuid: string,
+    estimatedMinutes: number,
+  ): Promise<TaskContracts.TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -723,10 +790,7 @@ export class TaskTemplateApplicationService {
       task.updateDueDate(updates.dueDate);
     }
     if (updates.importance !== undefined || updates.urgency !== undefined) {
-      task.updatePriority(
-        updates.importance ?? task.importance,
-        updates.urgency ?? task.urgency,
-      );
+      task.updatePriority(updates.importance ?? task.importance, updates.urgency ?? task.urgency);
     }
     if (updates.estimatedMinutes !== undefined) {
       task.updateEstimatedTime(updates.estimatedMinutes);
@@ -1164,15 +1228,14 @@ export class TaskTemplateApplicationService {
     const allInstances = await this.instanceRepository.findByTemplate(templateUuid);
 
     // 在内存中按日期范围过滤
-    const filteredInstances = allInstances.filter(instance => {
-      const instanceDate = (instance.instanceDate as any);
-      const timestamp = typeof instanceDate === 'number' 
-        ? instanceDate 
-        : instanceDate.getTime?.() || instanceDate;
+    const filteredInstances = allInstances.filter((instance) => {
+      const instanceDate = instance.instanceDate as any;
+      const timestamp =
+        typeof instanceDate === 'number' ? instanceDate : instanceDate.getTime?.() || instanceDate;
       return timestamp >= fromDate && timestamp <= toDate;
     });
 
     // 转换为客户端 DTO
-    return filteredInstances.map(instance => instance.toClientDTO());
+    return filteredInstances.map((instance) => instance.toClientDTO());
   }
 }
