@@ -57,6 +57,7 @@ GitHub Copilot Cloud Agent 是 GitHub Copilot 的云端增强版本，它通过�
 **功能描述**: Cloud Agent 可以根据自然语言描述生成完整的代码片段、函数或类。
 
 **示例**:
+
 ```typescript
 // 你的输入（注释）：
 // 创建一个用户认证服务，支持 JWT token 生成和验证
@@ -64,15 +65,15 @@ GitHub Copilot Cloud Agent 是 GitHub Copilot 的云端增强版本，它通过�
 // Cloud Agent 生成：
 export class AuthService {
   private jwtSecret: string;
-  
+
   constructor(secret: string) {
     this.jwtSecret = secret;
   }
-  
+
   generateToken(userId: string, expiresIn: string = '24h'): string {
     return jwt.sign({ userId }, this.jwtSecret, { expiresIn });
   }
-  
+
   verifyToken(token: string): { userId: string } | null {
     try {
       return jwt.verify(token, this.jwtSecret) as { userId: string };
@@ -88,6 +89,7 @@ export class AuthService {
 **功能描述**: 理解复杂代码逻辑，提供详细的解释和文档。
 
 **使用场景**:
+
 - 理解遗留代码
 - 学习新的代码库
 - 为代码添加注释和文档
@@ -97,6 +99,7 @@ export class AuthService {
 **功能描述**: 自动识别潜在的 bug，并提供修复建议。
 
 **示例**:
+
 ```typescript
 // 原始代码（有 bug）：
 function divideNumbers(a: number, b: number): number {
@@ -117,6 +120,7 @@ function divideNumbers(a: number, b: number): number {
 **功能描述**: 智能重构代码，提高代码质量和可维护性。
 
 **重构类型**:
+
 - 提取函数
 - 简化复杂逻辑
 - 优化性能
@@ -127,6 +131,7 @@ function divideNumbers(a: number, b: number): number {
 **功能描述**: 自动生成 JSDoc、TSDoc 或其他格式的文档注释。
 
 **示例**:
+
 ```typescript
 // 原始函数：
 function calculateTotal(items: Item[]): number {
@@ -158,6 +163,7 @@ function calculateTotal(items: Item[]): number {
 **功能描述**: 自动生成单元测试、集成测试代码。
 
 **示例**:
+
 ```typescript
 // 原始函数：
 export function validateEmail(email: string): boolean {
@@ -171,14 +177,14 @@ describe('validateEmail', () => {
     expect(validateEmail('user@example.com')).toBe(true);
     expect(validateEmail('test.user@domain.co.uk')).toBe(true);
   });
-  
+
   it('应该拒绝无效的邮箱地址', () => {
     expect(validateEmail('invalid')).toBe(false);
     expect(validateEmail('user@')).toBe(false);
     expect(validateEmail('@domain.com')).toBe(false);
     expect(validateEmail('user @domain.com')).toBe(false);
   });
-  
+
   it('应该拒绝空字符串', () => {
     expect(validateEmail('')).toBe(false);
   });
@@ -190,6 +196,7 @@ describe('validateEmail', () => {
 **功能描述**: 帮助快速集成第三方 API。
 
 **示例**:
+
 ```typescript
 // 你的需求：集成 Stripe 支付 API
 
@@ -198,13 +205,13 @@ import Stripe from 'stripe';
 
 export class PaymentService {
   private stripe: Stripe;
-  
+
   constructor(apiKey: string) {
     this.stripe = new Stripe(apiKey, {
       apiVersion: '2023-10-16',
     });
   }
-  
+
   async createPaymentIntent(amount: number, currency: string = 'usd') {
     return await this.stripe.paymentIntents.create({
       amount: amount * 100, // 转换为最小货币单位
@@ -214,7 +221,7 @@ export class PaymentService {
       },
     });
   }
-  
+
   async confirmPayment(paymentIntentId: string) {
     return await this.stripe.paymentIntents.confirm(paymentIntentId);
   }
@@ -239,6 +246,7 @@ export class PaymentService {
 4. 点击 "Install" 安装
 
 **推荐扩展**:
+
 - `GitHub.copilot` - 核心扩展
 - `GitHub.copilot-chat` - 聊天界面
 - `GitHub.copilot-labs` - 实验性功能
@@ -292,18 +300,18 @@ export class PaymentService {
     "plaintext": true,
     "markdown": true
   },
-  
+
   // Cloud Agent 设置
   "github.copilot.advanced": {
     "useCloudAgent": true,
     "contextWindow": "large",
     "debug.overrideEngine": "cloud-agent"
   },
-  
+
   // 聊天设置
   "github.copilot.chat.enable": true,
   "github.copilot.chat.localeOverride": "zh-CN",
-  
+
   // 建议设置
   "editor.inlineSuggest.enabled": true,
   "editor.quickSuggestions": {
@@ -323,6 +331,7 @@ export class PaymentService {
 **最常用的功能**: 边写边获得智能建议。
 
 **使用方法**:
+
 1. 开始输入代码
 2. Copilot 会自动显示灰色的建议文本
 3. 按 `Tab` 接受建议
@@ -331,6 +340,7 @@ export class PaymentService {
 6. 按 `Alt+[` 查看上一个建议
 
 **示例场景**:
+
 ```typescript
 // 1. 输入函数签名
 function fetchUserData(userId: string) {
@@ -344,18 +354,19 @@ function fetchUserData(userId: string) {
 **功能**: 通过对话方式与 AI 交互。
 
 **打开方式**:
+
 - 快捷键: `Ctrl+Shift+I` (Windows/Linux) 或 `Cmd+Shift+I` (Mac)
 - 或点击右侧面板的聊天图标
 
 **聊天命令**:
 
-| 命令 | 功能 | 示例 |
-|------|------|------|
-| `/explain` | 解释选中的代码 | `/explain 这个函数做什么？` |
-| `/fix` | 修复选中代码的 bug | `/fix 这段代码有什么问题？` |
-| `/tests` | 生成测试用例 | `/tests 为这个函数生成测试` |
-| `/docs` | 生成文档 | `/docs 为这个类添加文档` |
-| `/refactor` | 重构代码 | `/refactor 优化这个函数` |
+| 命令        | 功能               | 示例                        |
+| ----------- | ------------------ | --------------------------- |
+| `/explain`  | 解释选中的代码     | `/explain 这个函数做什么？` |
+| `/fix`      | 修复选中代码的 bug | `/fix 这段代码有什么问题？` |
+| `/tests`    | 生成测试用例       | `/tests 为这个函数生成测试` |
+| `/docs`     | 生成文档           | `/docs 为这个类添加文档`    |
+| `/refactor` | 重构代码           | `/refactor 优化这个函数`    |
 
 **使用示例**:
 
@@ -377,12 +388,14 @@ Copilot: 这是一个深度优先搜索（DFS）算法的实现：
 **功能**: 对选中的代码执行特定操作。
 
 **使用步骤**:
+
 1. 选中代码块
 2. 右键点击
 3. 选择 "Copilot" 子菜单
 4. 选择操作类型
 
 **可用操作**:
+
 - **Explain**: 解释代码
 - **Fix**: 修复问题
 - **Refactor**: 重构优化
@@ -394,6 +407,7 @@ Copilot: 这是一个深度优先搜索（DFS）算法的实现：
 **功能**: Cloud Agent 会分析整个项目的上下文。
 
 **工作原理**:
+
 ```
 项目结构:
 ├── src/
@@ -403,6 +417,7 @@ Copilot: 这是一个深度优先搜索（DFS）算法的实现：
 ```
 
 当你在 `auth.ts` 中编写代码时，Cloud Agent 会：
+
 - 了解 `User` 模型的结构
 - 知道 `validation.ts` 中有哪些可用函数
 - 根据项目架构提供相关建议
@@ -418,18 +433,20 @@ Copilot: 这是一个深度优先搜索（DFS）算法的实现：
 **示例**:
 
 **❌ 不好的提示**:
+
 ```typescript
 // 用户函数
 ```
 
 **✅ 好的提示**:
+
 ```typescript
 /**
  * 用户服务类
  * 功能: 处理用户的 CRUD 操作
  * 数据库: PostgreSQL
  * 框架: Prisma ORM
- * 要求: 
+ * 要求:
  * - 所有方法需要错误处理
  * - 密码需要使用 bcrypt 加密
  * - 返回用户时不包含密码字段
@@ -441,6 +458,7 @@ Copilot: 这是一个深度优先搜索（DFS）算法的实现：
 **功能**: 创建可重用的代码模板。
 
 **示例配置** (`.vscode/copilot-templates.json`):
+
 ```json
 {
   "templates": {
@@ -461,6 +479,7 @@ Copilot: 这是一个深度优先搜索（DFS）算法的实现：
 **功能**: 自动检测安全漏洞。
 
 **Cloud Agent 会检测**:
+
 - SQL 注入风险
 - XSS 攻击风险
 - 硬编码的密钥和密码
@@ -468,6 +487,7 @@ Copilot: 这是一个深度优先搜索（DFS）算法的实现：
 - CORS 配置问题
 
 **示例**:
+
 ```typescript
 // ❌ 不安全的代码
 const query = `SELECT * FROM users WHERE id = ${userId}`;
@@ -483,6 +503,7 @@ db.query(query, [userId]);
 **功能**: 识别性能瓶颈并提供优化建议。
 
 **示例**:
+
 ```typescript
 // ❌ 低效代码
 function findDuplicates(arr: number[]): number[] {
@@ -502,7 +523,7 @@ function findDuplicates(arr: number[]): number[] {
 function findDuplicates(arr: number[]): number[] {
   const seen = new Set<number>();
   const duplicates = new Set<number>();
-  
+
   for (const num of arr) {
     if (seen.has(num)) {
       duplicates.add(num);
@@ -510,7 +531,7 @@ function findDuplicates(arr: number[]): number[] {
       seen.add(num);
     }
   }
-  
+
   return Array.from(duplicates);
 }
 ```
@@ -520,6 +541,7 @@ function findDuplicates(arr: number[]): number[] {
 **功能**: 帮助选择和安装合适的依赖包。
 
 **使用场景**:
+
 ```typescript
 // 你的需求注释：
 // 我需要一个日期处理库，要求：
@@ -543,6 +565,7 @@ import { format, parseISO, addDays } from 'date-fns';
 **功能**: 支持几乎所有主流编程语言。
 
 **支持的语言**:
+
 - **Web**: JavaScript, TypeScript, HTML, CSS, React, Vue, Angular
 - **后端**: Python, Java, C#, Go, Rust, PHP, Ruby
 - **移动**: Swift, Kotlin, Dart (Flutter)
@@ -560,6 +583,7 @@ import { format, parseISO, addDays } from 'date-fns';
 **步骤**:
 
 1. **创建项目结构**
+
 ```typescript
 // 输入注释
 // 创建一个 Express + TypeScript 项目结构
@@ -569,6 +593,7 @@ import { format, parseISO, addDays } from 'date-fns';
 ```
 
 2. **实现数据模型**
+
 ```typescript
 // 创建 Todo 模型，包含 id, title, completed, createdAt
 // 使用 Prisma ORM
@@ -577,6 +602,7 @@ import { format, parseISO, addDays } from 'date-fns';
 ```
 
 3. **实现 API 端点**
+
 ```typescript
 // 创建 RESTful API：
 // GET /todos - 获取所有待办事项
@@ -594,6 +620,7 @@ import { format, parseISO, addDays } from 'date-fns';
 **Cloud Agent 帮助**:
 
 1. **添加类型定义**
+
 ```javascript
 // 原始 JavaScript 代码
 function calculateDiscount(price, percentage) {
@@ -611,6 +638,7 @@ function calculateDiscount(price: number, percentage: number): number {
 ```
 
 2. **修复类型错误**
+
 - Cloud Agent 自动识别类型不匹配
 - 提供修复建议
 - 一键应用修复
@@ -622,6 +650,7 @@ function calculateDiscount(price: number, percentage: number): number {
 **使用 Cloud Agent**:
 
 1. **询问基础概念**
+
 ```
 你: Vue 3 的 Composition API 和 Options API 有什么区别？
 
@@ -629,6 +658,7 @@ Copilot: [提供详细解释和代码示例]
 ```
 
 2. **生成示例代码**
+
 ```typescript
 // 创建一个使用 Composition API 的计数器组件
 // 包含：ref、computed、watch 和生命周期钩子
@@ -637,6 +667,7 @@ Copilot: [提供详细解释和代码示例]
 ```
 
 3. **实践中学习**
+
 - 边写边学，实时获得建议
 - 看到最佳实践的实现方式
 
@@ -647,6 +678,7 @@ Copilot: [提供详细解释和代码示例]
 **使用 Cloud Agent**:
 
 1. **粘贴错误信息**
+
 ```
 你: 我遇到了这个错误：
 TypeError: Cannot read property 'map' of undefined
@@ -670,6 +702,7 @@ function processData(data) {
 ```
 
 2. **获取调试建议**
+
 - 添加日志语句
 - 设置断点位置
 - 检查边界条件
@@ -681,6 +714,7 @@ function processData(data) {
 **使用 Cloud Agent**:
 
 1. **分析代码质量**
+
 ```typescript
 // 选中 PR 中的代码
 // 使用 /explain 和 /refactor 命令
@@ -693,6 +727,7 @@ function processData(data) {
 ```
 
 2. **生成审查意见**
+
 ```
 你: 帮我审查这段代码，重点关注安全性和性能
 
@@ -707,25 +742,30 @@ Copilot: [提供详细的审查报告]
 
 ```markdown
 <!-- 告诉 Copilot 你的项目信息 -->
-<!-- 
+<!--
 项目名称：TaskFlow
 技术栈：React + Node.js + PostgreSQL
 功能：团队任务管理系统
 -->
 
 <!-- Cloud Agent 会生成完整的 README：-->
+
 # TaskFlow - 团队任务管理系统
 
 ## 简介
+
 [自动生成的项目介绍]
 
 ## 功能特性
+
 [自动列出主要功能]
 
 ## 快速开始
+
 [自动生成安装步骤]
 
 ## API 文档
+
 [基于代码自动生成]
 ```
 
@@ -738,6 +778,7 @@ Copilot: [提供详细的审查报告]
 **原则**: 越清晰的意图，越准确的代码建议。
 
 **✅ 好的示例**:
+
 ```typescript
 /**
  * 用户认证中间件
@@ -746,17 +787,18 @@ Copilot: [提供详细的审查报告]
  * 2. 验证 token 有效性
  * 3. 将用户信息附加到 request 对象
  * 4. 处理认证失败情况（返回 401）
- * 
+ *
  * 使用的库：jsonwebtoken
  * 错误处理：需要区分 token 过期和无效 token
  */
-export const authMiddleware = 
+export const authMiddleware =
 ```
 
 **❌ 不好的示例**:
+
 ```typescript
 // auth
-export const authMiddleware = 
+export const authMiddleware =
 ```
 
 ### 2. 🎯 渐进式开发
@@ -764,12 +806,14 @@ export const authMiddleware =
 **策略**: 分步骤让 Cloud Agent 帮助你。
 
 **步骤**:
+
 1. 先生成函数签名和类型定义
 2. 再实现主要逻辑
 3. 最后添加错误处理和边界条件
 4. 生成测试用例
 
 **示例**:
+
 ```typescript
 // 第 1 步：定义接口
 interface UserRepository {
@@ -796,6 +840,7 @@ class UserRepositoryImpl implements UserRepository {
 **技巧**: 保持相关文件打开，提供更好的上下文。
 
 **推荐做法**:
+
 ```
 打开的文件：
 ├── types/User.ts          ← 类型定义
@@ -809,20 +854,21 @@ class UserRepositoryImpl implements UserRepository {
 
 **常用快捷键**:
 
-| Windows/Linux | Mac | 功能 |
-|---------------|-----|------|
-| `Tab` | `Tab` | 接受建议 |
-| `Esc` | `Esc` | 拒绝建议 |
-| `Alt+]` | `Option+]` | 下一个建议 |
-| `Alt+[` | `Option+[` | 上一个建议 |
-| `Ctrl+Enter` | `Cmd+Enter` | 查看所有建议 |
-| `Ctrl+Shift+I` | `Cmd+Shift+I` | 打开聊天 |
+| Windows/Linux  | Mac           | 功能         |
+| -------------- | ------------- | ------------ |
+| `Tab`          | `Tab`         | 接受建议     |
+| `Esc`          | `Esc`         | 拒绝建议     |
+| `Alt+]`        | `Option+]`    | 下一个建议   |
+| `Alt+[`        | `Option+[`    | 上一个建议   |
+| `Ctrl+Enter`   | `Cmd+Enter`   | 查看所有建议 |
+| `Ctrl+Shift+I` | `Cmd+Shift+I` | 打开聊天     |
 
 ### 5. 🎨 代码风格一致性
 
 **配置**: 确保项目有明确的代码风格配置。
 
 **配置文件**:
+
 ```json
 // .prettierrc
 {
@@ -848,13 +894,14 @@ Cloud Agent 会遵循这些配置生成代码。
 **流程**: 先写测试，再让 Cloud Agent 实现功能。
 
 **示例**:
+
 ```typescript
 // 第 1 步：编写测试（你自己写）
 describe('calculateShippingFee', () => {
   it('国内订单运费 10 元', () => {
     expect(calculateShippingFee('domestic', 100)).toBe(10);
   });
-  
+
   it('国际订单运费按重量计算', () => {
     expect(calculateShippingFee('international', 1000)).toBe(50);
   });
@@ -882,6 +929,7 @@ function calculateShippingFee(region: string, weight: number): number {
 ### 8. 🔄 持续学习
 
 **建议**:
+
 - 定期查看 Cloud Agent 的建议，学习新的编码模式
 - 比较自己的实现和 AI 建议的差异
 - 收藏好的代码模板供以后参考
@@ -893,6 +941,7 @@ function calculateShippingFee(region: string, weight: number): number {
 ### Q1: Cloud Agent 不工作，没有代码建议
 
 **可能原因**:
+
 1. 网络连接问题
 2. GitHub Copilot 订阅已过期
 3. VS Code 扩展未正确安装
@@ -900,6 +949,7 @@ function calculateShippingFee(region: string, weight: number): number {
 **解决方案**:
 
 **步骤 1**: 检查网络连接
+
 ```bash
 # 测试 GitHub API 连接
 curl -I https://api.github.com
@@ -908,16 +958,19 @@ curl -I https://api.github.com
 ```
 
 **步骤 2**: 检查订阅状态
+
 1. 访问 https://github.com/settings/copilot
 2. 确认订阅状态为 "Active"
 
 **步骤 3**: 重新安装扩展
+
 1. 在 VS Code 中卸载 GitHub Copilot
 2. 重启 VS Code
 3. 重新安装扩展
 4. 重新登录 GitHub
 
 **步骤 4**: 检查 VS Code 输出
+
 1. 按 `Ctrl+Shift+U` 打开输出面板
 2. 选择 "GitHub Copilot" 频道
 3. 查看错误日志
@@ -929,6 +982,7 @@ curl -I https://api.github.com
 **解决方案**:
 
 1. **添加更详细的注释**
+
 ```typescript
 // ❌ 不够详细
 // 用户函数
@@ -943,11 +997,13 @@ curl -I https://api.github.com
 ```
 
 2. **打开相关文件**
+
 - 打开接口定义文件
 - 打开类型定义文件
 - 保持在编辑器标签页中
 
 3. **使用项目级别的配置**
+
 ```typescript
 // 在项目根目录创建 .copilot-context.json
 {
@@ -966,6 +1022,7 @@ curl -I https://api.github.com
 **最佳实践**:
 
 1. **始终审查生成的代码**
+
 ```typescript
 // Cloud Agent 生成的代码
 function divide(a, b) {
@@ -983,6 +1040,7 @@ function divide(a: number, b: number): number {
 ```
 
 2. **运行测试和 Linter**
+
 ```bash
 # 始终运行这些检查
 npm run lint
@@ -991,6 +1049,7 @@ npm run type-check
 ```
 
 3. **使用 Code Review**
+
 - 让团队成员审查 AI 生成的代码
 - 特别关注安全和性能
 
@@ -1001,12 +1060,14 @@ npm run type-check
 **解决方案**:
 
 1. **检查网络速度**
+
 ```bash
 # 测试延迟
 ping api.github.com
 ```
 
 2. **使用本地缓存**
+
 ```json
 // settings.json
 {
@@ -1018,10 +1079,11 @@ ping api.github.com
 ```
 
 3. **减小上下文窗口**
+
 ```json
 {
   "github.copilot.advanced": {
-    "contextWindow": "medium"  // large -> medium
+    "contextWindow": "medium" // large -> medium
   }
 }
 ```
@@ -1031,11 +1093,13 @@ ping api.github.com
 **支持程度**: 不同语言支持程度不同。
 
 **语言支持级别**:
+
 - 🟢 **优秀**: JavaScript, TypeScript, Python, Java, C#
 - 🟡 **良好**: Go, Rust, PHP, Ruby, Swift, Kotlin
 - 🟠 **基础**: R, Julia, Scala, Haskell
 
 **解决方案**: 如果你的语言支持不好，可以：
+
 1. 在设置中明确指定语言
 2. 提供更多的示例代码
 3. 使用更详细的注释
@@ -1047,6 +1111,7 @@ ping api.github.com
 **优化方案**:
 
 1. **配置 .copilotignore**
+
 ```
 # .copilotignore
 node_modules/
@@ -1058,6 +1123,7 @@ test-data/
 ```
 
 2. **限制上下文文件数量**
+
 ```json
 {
   "github.copilot.advanced": {
@@ -1070,23 +1136,20 @@ test-data/
 
 **问题**: 代码会发送到云端吗？
 
-**回答**: 
+**回答**:
+
 - ✅ 是的，Cloud Agent 需要将代码发送到 GitHub 服务器
 - ✅ 代码会加密传输（HTTPS）
 - ✅ GitHub 不会将你的代码用于训练模型（除非你明确同意）
 - ✅ 可以配置哪些文件不发送
 
 **配置私密文件**:
+
 ```json
 // .vscode/settings.json
 {
   "github.copilot.advanced": {
-    "excludePatterns": [
-      "**/.env",
-      "**/*.key",
-      "**/secrets/**",
-      "**/config/production.*"
-    ]
+    "excludePatterns": ["**/.env", "**/*.key", "**/secrets/**", "**/config/production.*"]
   }
 }
 ```
@@ -1097,20 +1160,21 @@ test-data/
 
 ### 对比表格
 
-| 特性 | 传统 Copilot | Cloud Agent |
-|------|--------------|-------------|
-| **计算位置** | 本地 | 云端 |
-| **上下文理解** | 当前文件 + 少量相关文件 | 整个项目 + 依赖关系 |
-| **代码质量** | 良好 | 优秀 |
-| **响应速度** | 快（<100ms） | 较慢（300-500ms） |
-| **功能丰富度** | 代码补全为主 | 补全 + 重构 + 调试 + 文档 |
-| **学习能力** | 基于训练数据 | 训练数据 + 实时项目分析 |
-| **网络要求** | 低 | 高 |
-| **成本** | 包含在 Copilot 订阅 | 可能需要额外费用（取决于计划） |
+| 特性           | 传统 Copilot            | Cloud Agent                    |
+| -------------- | ----------------------- | ------------------------------ |
+| **计算位置**   | 本地                    | 云端                           |
+| **上下文理解** | 当前文件 + 少量相关文件 | 整个项目 + 依赖关系            |
+| **代码质量**   | 良好                    | 优秀                           |
+| **响应速度**   | 快（<100ms）            | 较慢（300-500ms）              |
+| **功能丰富度** | 代码补全为主            | 补全 + 重构 + 调试 + 文档      |
+| **学习能力**   | 基于训练数据            | 训练数据 + 实时项目分析        |
+| **网络要求**   | 低                      | 高                             |
+| **成本**       | 包含在 Copilot 订阅     | 可能需要额外费用（取决于计划） |
 
 ### 何时使用 Cloud Agent
 
 **✅ 推荐使用 Cloud Agent 的场景**:
+
 - 大型复杂项目
 - 需要深度代码理解和重构
 - 团队协作开发
@@ -1118,6 +1182,7 @@ test-data/
 - 代码审查和安全检查
 
 **✅ 可以使用传统 Copilot 的场景**:
+
 - 网络不稳定
 - 需要快速响应
 - 简单的代码补全
@@ -1126,6 +1191,7 @@ test-data/
 ### 切换方法
 
 **在两种模式间切换**:
+
 ```json
 // settings.json
 {
@@ -1133,7 +1199,7 @@ test-data/
   "github.copilot.advanced": {
     "debug.overrideEngine": "cloud-agent"
   }
-  
+
   // 或使用传统 Copilot
   "github.copilot.advanced": {
     "debug.overrideEngine": "default"
@@ -1184,7 +1250,7 @@ test-data/
     "markdown": true,
     "json": true
   },
-  
+
   // Cloud Agent 设置
   "github.copilot.advanced": {
     "useCloudAgent": true,
@@ -1193,19 +1259,14 @@ test-data/
     "maxContextFiles": 20,
     "enableLocalCache": true,
     "cacheSize": "large",
-    "excludePatterns": [
-      "**/.env",
-      "**/*.key",
-      "**/node_modules/**",
-      "**/dist/**"
-    ]
+    "excludePatterns": ["**/.env", "**/*.key", "**/node_modules/**", "**/dist/**"]
   },
-  
+
   // 聊天设置
   "github.copilot.chat.enable": true,
   "github.copilot.chat.localeOverride": "zh-CN",
   "github.copilot.chat.welcomeMessage": "enable",
-  
+
   // 编辑器集成
   "editor.inlineSuggest.enabled": true,
   "editor.quickSuggestions": {
@@ -1215,7 +1276,7 @@ test-data/
   },
   "editor.suggestSelection": "first",
   "editor.tabCompletion": "on",
-  
+
   // 实验性功能
   "github.copilot.experimental": {
     "inlineCompletions": true,
@@ -1227,20 +1288,21 @@ test-data/
 
 ### B. 快捷键速查表
 
-| 操作 | Windows/Linux | Mac | 说明 |
-|------|---------------|-----|------|
-| 接受建议 | `Tab` | `Tab` | 接受整个建议 |
-| 拒绝建议 | `Esc` | `Esc` | 关闭建议 |
-| 下一个建议 | `Alt+]` | `Option+]` | 查看替代建议 |
-| 上一个建议 | `Alt+[` | `Option+[` | 返回上一个建议 |
-| 所有建议 | `Ctrl+Enter` | `Cmd+Enter` | 在面板中查看所有建议 |
-| 打开聊天 | `Ctrl+Shift+I` | `Cmd+Shift+I` | 打开 Copilot Chat |
-| 内联聊天 | `Ctrl+I` | `Cmd+I` | 在代码中聊天 |
-| 解释代码 | 选中代码 + `Alt+E` | 选中代码 + `Option+E` | 解释选中的代码 |
+| 操作       | Windows/Linux      | Mac                   | 说明                 |
+| ---------- | ------------------ | --------------------- | -------------------- |
+| 接受建议   | `Tab`              | `Tab`                 | 接受整个建议         |
+| 拒绝建议   | `Esc`              | `Esc`                 | 关闭建议             |
+| 下一个建议 | `Alt+]`            | `Option+]`            | 查看替代建议         |
+| 上一个建议 | `Alt+[`            | `Option+[`            | 返回上一个建议       |
+| 所有建议   | `Ctrl+Enter`       | `Cmd+Enter`           | 在面板中查看所有建议 |
+| 打开聊天   | `Ctrl+Shift+I`     | `Cmd+Shift+I`         | 打开 Copilot Chat    |
+| 内联聊天   | `Ctrl+I`           | `Cmd+I`               | 在代码中聊天         |
+| 解释代码   | 选中代码 + `Alt+E` | 选中代码 + `Option+E` | 解释选中的代码       |
 
 ### C. 常用命令参考
 
 **聊天命令**:
+
 ```
 /explain    - 解释代码
 /fix        - 修复 bug
@@ -1253,6 +1315,7 @@ test-data/
 ```
 
 **斜杠命令详解**:
+
 ```
 /explain [代码或问题]
   示例: /explain 这个递归函数如何工作
@@ -1299,6 +1362,7 @@ test-data/
 现在你已经了解了 GitHub Copilot Cloud Agent 的完整使用方法！
 
 **建议的学习路径**:
+
 1. 📖 完整阅读本指南（30 分钟）
 2. ⚙️ 完成安装和配置（10 分钟）
 3. 🎯 在小项目中练习基本功能（1 小时）

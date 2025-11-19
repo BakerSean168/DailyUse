@@ -415,6 +415,7 @@ chore: 构建/工具变动
 4. 等待 3-5 分钟自动配置完成
 
 **包含内容**:
+
 - ✅ Node.js 22.20.0 + pnpm 10.18.3
 - ✅ Docker + Git + GitHub CLI
 - ✅ 所有 VS Code 扩展（Copilot, Nx Console, Vue Volar...）
@@ -446,4 +447,3 @@ pnpm exec nx graph
 ```
 
 更多信息: [Codespaces 快速入门](.devcontainer/QUICKSTART.md)
-
