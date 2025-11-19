@@ -7,11 +7,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-#Bmad-method
-BMAD-METHOD/
-.github/chatmodes
-bmad/
-
 # Dependencies
 node_modules
 
