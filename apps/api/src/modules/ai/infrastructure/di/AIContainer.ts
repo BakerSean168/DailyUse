@@ -16,6 +16,7 @@
 import { PrismaClient } from '@prisma/client';
 import { AIGenerationService } from '@dailyuse/domain-server';
 import { AIGenerationApplicationService } from '../../application/services/AIGenerationApplicationService';
+import { AIConversationService } from '../../application/services/AIConversationService';
 import { PrismaAIUsageQuotaRepository } from '../repositories/PrismaAIUsageQuotaRepository';
 import { PrismaAIConversationRepository } from '../repositories/PrismaAIConversationRepository';
 import { OpenAIAdapter } from '../adapters/OpenAIAdapter';
@@ -28,6 +29,7 @@ export class AIContainer {
   private static instance: AIContainer;
   private prisma: PrismaClient;
   private applicationService?: AIGenerationApplicationService;
+  private conversationService?: AIConversationService;
   private validationService?: AIGenerationService;
   private conversationRepository?: PrismaAIConversationRepository;
   private quotaRepository?: PrismaAIUsageQuotaRepository;
@@ -86,6 +88,17 @@ export class AIContainer {
       this.validationService = new AIGenerationService();
     }
     return this.validationService;
+  }
+
+  /**
+   * 获取 AIConversationService（对话管理服务）
+   */
+  getConversationService(): AIConversationService {
+    if (!this.conversationService) {
+      const conversationRepository = this.getConversationRepository();
+      this.conversationService = new AIConversationService(conversationRepository);
+    }
+    return this.conversationService;
   }
 
   /**

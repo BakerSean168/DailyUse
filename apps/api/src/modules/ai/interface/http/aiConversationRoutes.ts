@@ -137,33 +137,94 @@ router.post('/chat/stream', AIConversationController.sendMessageStream);
 /**
  * @swagger
  * /api/ai/conversations:
- *   get:
+ *   post:
  *     tags: [AI Conversation]
- *     summary: 获取用户的对话历史列表
+ *     summary: 创建新对话
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: 对话标题（可选，默认"New Chat"）
+ *     responses:
+ *       201:
+ *         description: 对话创建成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 uuid:
+ *                   type: string
+ *                 title:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                 createdAt:
+ *                   type: number
+ *       401:
+ *         description: 未授权
+ */
+router.post('/conversations', AIConversationController.createConversation);
+
+/**
+ * @swagger
+ * /api/ai/conversations:
+ *   get:
+ *     tags: [AI Conversation]
+ *     summary: 获取用户的对话历史列表（分页）
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *         description: 页码（默认1）
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *         description: 每页数量（默认20）
  *     responses:
  *       200:
  *         description: 获取成功
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   uuid:
- *                     type: string
- *                   title:
- *                     type: string
- *                   status:
- *                     type: string
- *                   messageCount:
- *                     type: number
- *                   lastMessageAt:
- *                     type: number
- *                   createdAt:
- *                     type: number
+ *               type: object
+ *               properties:
+ *                 conversations:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       uuid:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       messageCount:
+ *                         type: number
+ *                       lastMessageAt:
+ *                         type: number
+ *                       createdAt:
+ *                         type: number
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: number
+ *                     limit:
+ *                       type: number
+ *                     total:
+ *                       type: number
  *       401:
  *         description: 未授权
  */
@@ -212,6 +273,42 @@ router.get('/conversations', AIConversationController.getConversations);
  *         description: 对话不存在
  */
 router.get('/conversations/:id', AIConversationController.getConversation);
+
+/**
+ * @swagger
+ * /api/ai/conversations/{id}:
+ *   delete:
+ *     tags: [AI Conversation]
+ *     summary: 删除对话（软删除）
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 对话ID
+ *     responses:
+ *       200:
+ *         description: 删除成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 deleted:
+ *                   type: boolean
+ *                 conversationUuid:
+ *                   type: string
+ *       401:
+ *         description: 未授权
+ *       403:
+ *         description: 无权访问
+ *       404:
+ *         description: 对话不存在
+ */
+router.delete('/conversations/:id', AIConversationController.deleteConversation);
 
 /**
  * @swagger

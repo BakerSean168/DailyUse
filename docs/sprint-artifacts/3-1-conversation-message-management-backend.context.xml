@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="story-3.1-backend-conversation-management" version="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.1</storyId>
+    <storyKey>3-1-conversation-message-management-backend</storyKey>
+    <title>Conversation &amp; Message Management Backend</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-01-20</generatedAt>
+    <generator>BMAD Story Context Workflow v6</generator>
+    <sourceStoryPath>docs/sprint-artifacts/3-1-conversation-message-management-backend.md</sourceStoryPath>
+    <techSpecPath>docs/sprint-artifacts/tech-spec-epic-3.md</techSpecPath>
+    <architecturePath>docs/architecture-api.md</architecturePath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>my chat history to be saved</iWant>
+    <soThat>I can review past advice</soThat>
+    <tasks>
+      <task id="1" status="pending">
+        <title>Define Domain Entities &amp; Value Objects</title>
+        <acceptanceCriteria>AC-1, AC-6</acceptanceCriteria>
+        <subtasks>
+          <subtask>Create AIConversation aggregate in packages/domain-server/src/ai/domain/aggregates</subtask>
+          <subtask>Create Message entity in packages/domain-server/src/ai/domain/entities</subtask>
+          <subtask>Define MessageRole value object/enum ('user', 'assistant', 'system')</subtask>
+          <subtask>Update packages/contracts with DTOs (AIConversationDto, MessageDto, CreateConversationDto)</subtask>
+        </subtasks>
+      </task>
+      <task id="2" status="pending">
+        <title>Update Prisma Schema</title>
+        <acceptanceCriteria>AC-1, AC-7</acceptanceCriteria>
+        <subtasks>
+          <subtask>Add AIConversation model to apps/api/prisma/schema.prisma</subtask>
+          <subtask>Add Message model to apps/api/prisma/schema.prisma</subtask>
+          <subtask>Define relation: Account -&gt; AIConversations -&gt; Messages</subtask>
+          <subtask>Run migration: pnpm prisma migrate dev --name add_ai_conversation</subtask>
+        </subtasks>
+      </task>
+      <task id="3" status="pending">
+        <title>Implement Repositories</title>
+        <acceptanceCriteria>AC-9, AC-11</acceptanceCriteria>
+        <subtasks>
+          <subtask>Create IAIConversationRepository interface in domain-server</subtask>
+          <subtask>Implement PrismaAIConversationRepository in apps/api/src/modules/ai/infrastructure/repositories</subtask>
+          <subtask>Implement methods: save, findById, findAllByAccount, delete</subtask>
+        </subtasks>
+      </task>
+      <task id="4" status="pending">
+        <title>Implement Domain Service</title>
+        <acceptanceCriteria>AC-9, AC-12</acceptanceCriteria>
+        <subtasks>
+          <subtask>Create AIConversationService in domain-server</subtask>
+          <subtask>Implement createConversation(accountUuid, title?)</subtask>
+          <subtask>Implement getConversation(id)</subtask>
+          <subtask>Implement listConversations(accountUuid, page, limit)</subtask>
+          <subtask>Implement deleteConversation(id)</subtask>
+          <subtask>Implement addMessage(conversationId, role, content)</subtask>
+          <subtask>Write unit tests for AIConversationService</subtask>
+        </subtasks>
+      </task>
+      <task id="5" status="pending">
+        <title>Implement API Controller</title>
+        <acceptanceCriteria>AC-2, AC-3, AC-4, AC-5, AC-10</acceptanceCriteria>
+        <subtasks>
+          <subtask>Create AIConversationController in apps/api/src/modules/ai/interface</subtask>
+          <subtask>Map HTTP requests to Domain Service calls</subtask>
+          <subtask>Handle DTO mapping and validation</subtask>
+          <subtask>Register routes in apps/api/src/modules/ai/ai.routes.ts</subtask>
+        </subtasks>
+      </task>
+      <task id="6" status="pending">
+        <title>Integration Tests</title>
+        <acceptanceCriteria>AC-13</acceptanceCriteria>
+        <subtasks>
+          <subtask>Create apps/api/test/integration/ai/conversation.test.ts</subtask>
+          <subtask>Test full CRUD lifecycle via API</subtask>
+          <subtask>Verify account isolation (cannot access other's conversations)</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <functional>
+      <criterion id="AC-1">Database schema supports AIConversation and Message entities</criterion>
+      <criterion id="AC-2">POST /api/ai/conversations creates a new conversation</criterion>
+      <criterion id="AC-3">GET /api/ai/conversations returns paginated list of conversations (summary)</criterion>
+      <criterion id="AC-4">GET /api/ai/conversations/:id returns full conversation details with messages</criterion>
+      <criterion id="AC-5">DELETE /api/ai/conversations/:id soft deletes conversation and messages</criterion>
+      <criterion id="AC-6">Messages have roles: 'user', 'assistant', 'system'</criterion>
+      <criterion id="AC-7">Conversations belong to a specific account (multi-tenancy)</criterion>
+      <criterion id="AC-8">Conversation title is auto-generated or default "New Chat"</criterion>
+    </functional>
+    <technical>
+      <criterion id="AC-9">Implemented in domain-server (aggregates/repositories)</criterion>
+      <criterion id="AC-10">Exposed via apps/api controllers</criterion>
+      <criterion id="AC-11">Uses Prisma for persistence</criterion>
+      <criterion id="AC-12">Unit tests for Domain Service</criterion>
+      <criterion id="AC-13">Integration tests for API endpoints</criterion>
+    </technical>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-3.md" type="technical-specification">
+        <section name="2.1 Domain Model">
+          <content>
+            - AIConversation aggregate root with properties:
+              * uuid: string (UUID)
+              * accountUuid: string (UUID) - Multi-tenancy support
+              * title: string - Auto-generated or "New Chat"
+              * createdAt: Date
+              * updatedAt: Date
+              * messages: List&lt;Message&gt;
+            - Message entity with properties:
+              * uuid: string (UUID)
+              * conversationUuid: string (UUID)
+              * role: 'user' | 'assistant' | 'system'
+              * content: string (Markdown supported)
+              * createdAt: Date
+              * tokens: number (approximate token count)
+          </content>
+          <relevance>Defines the exact domain structure to implement in Task 1</relevance>
+        </section>
+        <section name="2.2 API Design">
+          <content>
+            Base Path: /api/ai/conversations
+            | Method | Endpoint | Description | Request Body | Response |
+            |--------|----------|-------------|--------------|----------|
+            | GET    | /        | List conversations | - | Paginated&lt;AIConversationSummaryDto&gt; |
+            | GET    | /:id     | Get conversation details | - | AIConversationDetailDto |
+            | POST   | /        | Start new conversation | { initialMessage?: string } | AIConversationDetailDto |
+            | DELETE | /:id     | Delete conversation | - | { success: true } |
+          </content>
+          <relevance>API contract for Task 5 (Controller implementation)</relevance>
+        </section>
+        <section name="3.2 Security">
+          <content>
+            - Authentication: All endpoints require valid JWT
+            - Authorization: Users can only access their own conversations
+            - Input Sanitization: HTML injection prevention (sanitize-html)
+          </content>
+          <relevance>Security constraints for all tasks</relevance>
+        </section>
+      </doc>
+      <doc path="docs/architecture-api.md" type="architecture">
+        <section name="DDD Layering">
+          <content>
+            1. Interface Layer: HTTP Controllers, API Routes, Request/Response DTOs
+            2. Application Layer: Application Services, Use Cases, Event Handlers
+            3. Domain Layer: Aggregate Roots, Entities &amp; Value Objects, Domain Services
+            4. Infrastructure Layer: Repositories, Prisma Client, External APIs
+          </content>
+          <relevance>Architectural pattern to follow in all tasks</relevance>
+        </section>
+        <section name="Request Processing Flow">
+          <content>
+            Client Request → Middleware (Auth, Validation) → Controller → Application Service → Domain Service → Repository → Prisma ORM → PostgreSQL
+          </content>
+          <relevance>Flow to implement in Task 5 (Controller → Service → Repository)</relevance>
+        </section>
+        <section name="API Response Format">
+          <content>
+            Success: { success: true, data: {...}, metadata: {timestamp, duration} }
+            Error: { success: false, error: {code, message, details} }
+          </content>
+          <relevance>Response format for Task 5 (Controller responses)</relevance>
+        </section>
+      </doc>
+      <doc path="docs/epics.md" type="requirements">
+        <section name="Epic 3: AI Conversation Assistant">
+          <content>
+            - F-04: 智能对话助手 (Smart Conversation Assistant)
+            - F-06: 对话历史管理 (Conversation History Management)
+            Requirements:
+              * Save user-AI conversations with full history
+              * Support multi-turn context-aware dialogue
+              * Enable query and archive of past conversations
+          </content>
+          <relevance>Business requirements driving this story</relevance>
+        </section>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact type="reference-implementation" path="packages/domain-server/src/modules/ai/aggregates/AIConversationServer.ts">
+        <purpose>Existing AIConversation aggregate implementation</purpose>
+        <keyPatterns>
+          <pattern name="Aggregate Root Structure">
+            - Extends AggregateRoot from @dailyuse/utils
+            - Private constructor + static factory methods (create, fromServerDTO, fromPersistenceDTO)
+            - Private fields with getters
+            - Business methods (addMessage, updateStatus, softDelete)
+            - DTO conversion methods (toServerDTO, toClientDTO, toPersistenceDTO)
+          </pattern>
+          <pattern name="Domain Events">
+            - addDomainEvent() for conversation.created, message.added, status_changed
+            - Event payloads include accountUuid and relevant data
+          </pattern>
+        </keyPatterns>
+        <codeSnippets>
+          <snippet location="lines 1-10">
+            import { AggregateRoot } from '@dailyuse/utils';
+            import { AIContracts } from '@dailyuse/contracts';
+            import { MessageServer } from '../entities/MessageServer';
+          </snippet>
+          <snippet location="lines 90-110">
+            public static create(params: { accountUuid: string; title: string }): AIConversationServer {
+              const now = Date.now();
+              const conversation = new AIConversationServer({...});
+              conversation.addDomainEvent({
+                eventType: 'ai.conversation.created',
+                aggregateId: conversation.uuid,
+                occurredOn: new Date(now),
+                accountUuid: params.accountUuid,
+                payload: { conversation: conversation.toServerDTO() }
+              });
+              return conversation;
+            }
+          </snippet>
+        </codeSnippets>
+        <note>This aggregate is ALREADY IMPLEMENTED. Task 1 should review and potentially enhance if needed.</note>
+      </artifact>
+
+      <artifact type="reference-implementation" path="packages/domain-server/src/modules/ai/entities/MessageServer.ts">
+        <purpose>Existing Message entity implementation</purpose>
+        <keyPatterns>
+          <pattern name="Entity Structure">
+            - Extends Entity from @dailyuse/utils
+            - Private constructor + static factory methods
+            - MessageRole value object ('USER', 'ASSISTANT', 'SYSTEM')
+            - DTO conversion methods
+          </pattern>
+        </keyPatterns>
+        <note>This entity is ALREADY IMPLEMENTED. Task 1 should review and potentially enhance if needed.</note>
+      </artifact>
+
+      <artifact type="reference-implementation" path="apps/api/src/modules/account/infrastructure/repositories/PrismaAccountRepository.ts">
+        <purpose>Example Prisma repository pattern</purpose>
+        <keyPatterns>
+          <pattern name="Repository Structure">
+            - Implements IAccountRepository interface
+            - Constructor accepts PrismaClient
+            - Private mapAccountToEntity() for DTO mapping
+            - Methods: save, findById, findByUsername, findAll, existsBy*, delete
+            - Transaction support via optional PrismaTransactionClient parameter
+          </pattern>
+          <pattern name="Data Mapping">
+            <![CDATA[
+            // Prisma Model → Domain Entity
+            private mapAccountToEntity(data: any): Account {
+              return Account.fromPersistenceDTO({
+                uuid: data.uuid,
+                username: data.username,
+                // ... map all fields
+                createdAt: data.createdAt.getTime(),
+                updatedAt: data.updatedAt.getTime()
+              });
+            }
+            
+            // Domain Entity → Prisma Model
+            async save(account: Account, tx?: PrismaTransactionClient): Promise<void> {
+              const persistence = account.toPersistenceDTO();
+              const data = {
+                uuid: persistence.uuid,
+                username: persistence.username,
+                // ... map all fields
+                createdAt: new Date(persistence.createdAt),
+                updatedAt: new Date(persistence.updatedAt)
+              };
+              await client.account.upsert({
+                where: { uuid: persistence.uuid },
+                create: data,
+                update: { ...data, uuid: undefined, createdAt: undefined }
+              });
+            }
+            ]]>
+          </pattern>
+        </keyPatterns>
+        <relevance>Follow this pattern for Task 3 (PrismaAIConversationRepository)</relevance>
+      </artifact>
+
+      <artifact type="reference-implementation" path="packages/domain-server/src/ai/repositories/IAIConversationRepository.ts">
+        <purpose>Existing AI Conversation Repository Interface</purpose>
+        <keyPatterns>
+          <pattern name="Repository Interface">
+            <![CDATA[
+            export interface IAIConversationRepository {
+              save(conversation: AIConversationServerDTO): Promise<void>;
+              findByUuid(uuid: string, includeMessages?: boolean): Promise<AIConversationServerDTO | null>;
+              findByAccountUuid(accountUuid: string): Promise<AIConversationServerDTO[]>;
+              findByStatus(accountUuid: string, status: ConversationStatus): Promise<AIConversationServerDTO[]>;
+              findRecent(accountUuid: string, limit: number, offset?: number): Promise<AIConversationServerDTO[]>;
+              delete(uuid: string): Promise<void>;
+              exists(uuid: string): Promise<boolean>;
+            }
+            ]]>
+          </pattern>
+        </keyPatterns>
+        <note>This interface is ALREADY DEFINED. Task 3 focuses on implementing PrismaAIConversationRepository.</note>
+      </artifact>
+
+      <artifact type="stub-implementation" path="apps/api/src/modules/ai/infrastructure/repositories/PrismaAIConversationRepository.ts">
+        <purpose>Stub repository awaiting implementation</purpose>
+        <currentState>
+          <![CDATA[
+          // @ts-nocheck
+          export class PrismaAIConversationRepository implements IAIConversationRepository {
+            constructor(private prisma: PrismaClient) {}
+            
+            async save(conversation: AIConversationServerDTO): Promise<void> {
+              throw new Error('Not implemented yet');
+            }
+            
+            async findByUuid(uuid: string, includeMessages?: boolean): Promise<AIConversationServerDTO | null> {
+              throw new Error('Not implemented yet');
+            }
+            
+            // ... all methods throw 'Not implemented yet'
+          }
+          ]]>
+        </currentState>
+        <note>Task 3 must implement all methods in this repository.</note>
+      </artifact>
+
+      <artifact type="reference-implementation" path="apps/api/src/modules/ai/interface/http/AIConversationController.ts">
+        <purpose>Existing AI Controller with sendMessage endpoint</purpose>
+        <keyPatterns>
+          <pattern name="Controller Structure">
+            - Static methods for each endpoint
+            - Uses AuthenticatedRequest (extends Express.Request with user: { accountUuid })
+            - Validates request body with Zod schemas
+            - Calls Application Service methods
+            - Uses ResponseBuilder for consistent responses
+          </pattern>
+          <pattern name="Request Validation">
+            <![CDATA[
+            const schema = z.object({
+              message: z.string().min(1).max(10000),
+              conversationUuid: z.string().uuid().optional(),
+              // ... other fields
+            });
+            const body = schema.parse(req.body);
+            ]]>
+          </pattern>
+          <pattern name="Response Formatting">
+            <![CDATA[
+            res.status(200).json(
+              AIConversationController.responseBuilder.success(
+                {
+                  conversationUuid: result.conversationUuid,
+                  userMessageUuid: result.userMessageUuid,
+                  content: result.content,
+                  tokensUsed: result.tokensUsed
+                },
+                { message: 'Message sent successfully' }
+              )
+            );
+            ]]>
+          </pattern>
+        </keyPatterns>
+        <note>Task 5 should add CRUD endpoints (GET /, GET /:id, POST /, DELETE /:id) to this controller.</note>
+      </artifact>
+
+      <artifact type="prisma-schema" path="apps/api/prisma/schema.prisma">
+        <purpose>Database schema definition</purpose>
+        <existingModels>
+          <model name="aiConversation" status="defined">
+            <![CDATA[
+            model aiConversation {
+              uuid          String    @id
+              accountUuid   String    @map("account_uuid")
+              title         String
+              status        String    // ACTIVE, CLOSED, ARCHIVED
+              messageCount  Int       @default(0) @map("message_count")
+              lastMessageAt DateTime? @map("last_message_at")
+              createdAt     DateTime  @default(now()) @map("created_at")
+              updatedAt     DateTime  @updatedAt @map("updated_at")
+              deletedAt     DateTime? @map("deleted_at")
+              
+              account  account     @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+              messages aiMessage[]
+              
+              @@index([accountUuid])
+              @@index([status])
+              @@index([createdAt])
+              @@index([lastMessageAt])
+              @@map("ai_conversations")
+            }
+            ]]>
+          </model>
+          <model name="aiMessage" status="defined">
+            <![CDATA[
+            model aiMessage {
+              uuid             String   @id
+              conversationUuid String   @map("conversation_uuid")
+              role             String   // USER, ASSISTANT, SYSTEM
+              content          String   @db.Text
+              tokenUsage       String?  @map("token_usage") // JSON: {promptTokens, completionTokens, totalTokens}
+              createdAt        DateTime @default(now()) @map("created_at")
+              
+              conversation aiConversation @relation(fields: [conversationUuid], references: [uuid], onDelete: Cascade)
+              
+              @@index([conversationUuid])
+              @@index([createdAt])
+              @@map("ai_messages")
+            }
+            ]]>
+          </model>
+        </existingModels>
+        <note>Schema is ALREADY DEFINED. Task 2 should verify and run migration if not already applied.</note>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <runtime>
+        <dependency name="@prisma/client" version="6.17.1" scope="apps/api">
+          <usage>Database ORM for persistence layer</usage>
+          <importPattern>import { PrismaClient } from '@prisma/client';</importPattern>
+        </dependency>
+        <dependency name="express" version="4.21.2" scope="apps/api">
+          <usage>Web framework for HTTP endpoints</usage>
+          <importPattern>import express, { Request, Response } from 'express';</importPattern>
+        </dependency>
+        <dependency name="zod" version="3.25.76" scope="apps/api">
+          <usage>Request validation schemas</usage>
+          <importPattern>import { z } from 'zod';</importPattern>
+        </dependency>
+        <dependency name="jsonwebtoken" version="9.0.2" scope="apps/api">
+          <usage>JWT authentication middleware</usage>
+          <importPattern>import jwt from 'jsonwebtoken';</importPattern>
+        </dependency>
+      </runtime>
+      <internal>
+        <dependency name="@dailyuse/domain-server" scope="packages/domain-server">
+          <usage>Domain entities, value objects, aggregates, repository interfaces</usage>
+          <importPattern>import { AIConversationServer, MessageServer, IAIConversationRepository } from '@dailyuse/domain-server';</importPattern>
+        </dependency>
+        <dependency name="@dailyuse/contracts" scope="packages/contracts">
+          <usage>DTO types shared between client and server</usage>
+          <importPattern>import { AIContracts } from '@dailyuse/contracts';</importPattern>
+        </dependency>
+        <dependency name="@dailyuse/utils" scope="packages/utils">
+          <usage>Base classes (AggregateRoot, Entity), utilities (generateUUID, Logger)</usage>
+          <importPattern>import { AggregateRoot, Entity, generateUUID } from '@dailyuse/utils';</importPattern>
+        </dependency>
+      </internal>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <architectural>
+      <constraint id="ARCH-01" severity="critical">
+        <description>Follow DDD layering pattern</description>
+        <details>
+          - Domain Layer: Pure business logic, no external dependencies
+          - Infrastructure Layer: Prisma repositories implement domain interfaces
+          - Interface Layer: Controllers delegate to domain services
+          - No direct Prisma imports in domain-server package
+        </details>
+      </constraint>
+      <constraint id="ARCH-02" severity="critical">
+        <description>Aggregate Root pattern enforcement</description>
+        <details>
+          - AIConversation is the aggregate root
+          - Message entities MUST be accessed through AIConversation
+          - Repository operations MUST be on AIConversation (cascade save/delete messages)
+          - No direct MessageRepository - messages are part of conversation aggregate
+        </details>
+      </constraint>
+      <constraint id="ARCH-03" severity="high">
+        <description>Multi-tenancy enforcement</description>
+        <details>
+          - ALL queries MUST filter by accountUuid
+          - Middleware ensures req.user.accountUuid is present
+          - Repository methods MUST NOT return data from other accounts
+          - Soft delete (deletedAt) instead of hard delete
+        </details>
+      </constraint>
+    </architectural>
+
+    <technical>
+      <constraint id="TECH-01" severity="high">
+        <description>Timestamp consistency</description>
+        <details>
+          - Domain entities use Unix timestamps (number, milliseconds)
+          - Prisma models use DateTime objects
+          - Repository layer handles conversion: Date.getTime() → timestamp, new Date(timestamp) → DateTime
+        </details>
+      </constraint>
+      <constraint id="TECH-02" severity="high">
+        <description>DTO mapping requirements</description>
+        <details>
+          - Domain entities expose: toServerDTO(), toClientDTO(), toPersistenceDTO()
+          - Controllers use ServerDTO for service communication
+          - API responses use ClientDTO (includes computed fields like statusText)
+          - Repository uses PersistenceDTO for database operations
+        </details>
+      </constraint>
+      <constraint id="TECH-03" severity="medium">
+        <description>Transaction support</description>
+        <details>
+          - Repository methods accept optional PrismaTransactionClient parameter
+          - Use transaction for operations affecting multiple tables
+          - Example: Saving conversation with messages should be atomic
+        </details>
+      </constraint>
+    </technical>
+
+    <testing>
+      <constraint id="TEST-01" severity="high">
+        <description>Unit test coverage requirement</description>
+        <details>
+          - Domain services MUST have unit tests (Task 4)
+          - Test all business logic methods
+          - Mock repository dependencies
+          - Achieve &gt;80% code coverage
+        </details>
+      </constraint>
+      <constraint id="TEST-02" severity="high">
+        <description>Integration test requirement</description>
+        <details>
+          - Test full API lifecycle (Task 6)
+          - Use real database (test container or test DB)
+          - Verify JWT authentication
+          - Test account isolation (negative test: accessing other user's data should fail)
+        </details>
+      </constraint>
+    </testing>
+  </constraints>
+
+  <interfaces>
+    <interface type="repository" name="IAIConversationRepository" path="packages/domain-server/src/ai/repositories/IAIConversationRepository.ts">
+      <methods>
+        <method name="save">
+          <signature>save(conversation: AIConversationServerDTO): Promise&lt;void&gt;</signature>
+          <description>Upsert conversation and cascade save all messages</description>
+        </method>
+        <method name="findByUuid">
+          <signature>findByUuid(uuid: string, includeMessages?: boolean): Promise&lt;AIConversationServerDTO | null&gt;</signature>
+          <description>Find conversation by UUID, optionally include messages</description>
+        </method>
+        <method name="findByAccountUuid">
+          <signature>findByAccountUuid(accountUuid: string): Promise&lt;AIConversationServerDTO[]&gt;</signature>
+          <description>Find all conversations for an account (paginated in Task 5)</description>
+        </method>
+        <method name="findByStatus">
+          <signature>findByStatus(accountUuid: string, status: ConversationStatus): Promise&lt;AIConversationServerDTO[]&gt;</signature>
+          <description>Filter conversations by status (ACTIVE, CLOSED, ARCHIVED)</description>
+        </method>
+        <method name="findRecent">
+          <signature>findRecent(accountUuid: string, limit: number, offset?: number): Promise&lt;AIConversationServerDTO[]&gt;</signature>
+          <description>Get recent conversations with pagination</description>
+        </method>
+        <method name="delete">
+          <signature>delete(uuid: string): Promise&lt;void&gt;</signature>
+          <description>Soft delete conversation (set deletedAt timestamp)</description>
+        </method>
+        <method name="exists">
+          <signature>exists(uuid: string): Promise&lt;boolean&gt;</signature>
+          <description>Check if conversation exists</description>
+        </method>
+      </methods>
+    </interface>
+
+    <interface type="http-api" basePath="/api/ai/conversations">
+      <endpoint method="POST" path="/">
+        <description>Create new conversation</description>
+        <requestBody>
+          <![CDATA[
+          {
+            "title"?: string,           // Optional, defaults to "New Chat"
+            "initialMessage"?: string   // Optional first message
+          }
+          ]]>
+        </requestBody>
+        <responseBody>
+          <![CDATA[
+          {
+            "success": true,
+            "data": {
+              "uuid": "uuid-v4",
+              "accountUuid": "uuid-v4",
+              "title": "New Chat",
+              "status": "ACTIVE",
+              "messageCount": 0,
+              "createdAt": 1234567890,
+              "updatedAt": 1234567890,
+              "messages": []
+            }
+          }
+          ]]>
+        </responseBody>
+        <authentication>Required (JWT in Authorization header)</authentication>
+      </endpoint>
+
+      <endpoint method="GET" path="/">
+        <description>List conversations (paginated)</description>
+        <queryParams>
+          <param name="page" type="number" default="1">Page number</param>
+          <param name="limit" type="number" default="20">Items per page</param>
+          <param name="status" type="string" optional="true">Filter by status</param>
+        </queryParams>
+        <responseBody>
+          <![CDATA[
+          {
+            "success": true,
+            "data": {
+              "conversations": [
+                {
+                  "uuid": "uuid-v4",
+                  "title": "Chat about Goals",
+                  "status": "ACTIVE",
+                  "messageCount": 12,
+                  "lastMessageAt": 1234567890,
+                  "createdAt": 1234567890
+                }
+              ],
+              "pagination": {
+                "page": 1,
+                "limit": 20,
+                "total": 45,
+                "totalPages": 3
+              }
+            }
+          }
+          ]]>
+        </responseBody>
+      </endpoint>
+
+      <endpoint method="GET" path="/:id">
+        <description>Get conversation details with messages</description>
+        <responseBody>
+          <![CDATA[
+          {
+            "success": true,
+            "data": {
+              "uuid": "uuid-v4",
+              "accountUuid": "uuid-v4",
+              "title": "Chat about Goals",
+              "status": "ACTIVE",
+              "messageCount": 3,
+              "lastMessageAt": 1234567890,
+              "createdAt": 1234567890,
+              "updatedAt": 1234567890,
+              "messages": [
+                {
+                  "uuid": "msg-uuid-1",
+                  "conversationUuid": "uuid-v4",
+                  "role": "USER",
+                  "content": "How can I improve my goals?",
+                  "createdAt": 1234567890
+                },
+                {
+                  "uuid": "msg-uuid-2",
+                  "conversationUuid": "uuid-v4",
+                  "role": "ASSISTANT",
+                  "content": "Here are some suggestions...",
+                  "createdAt": 1234567891
+                }
+              ]
+            }
+          }
+          ]]>
+        </responseBody>
+        <errorCases>
+          <case code="404">Conversation not found</case>
+          <case code="403">Forbidden (conversation belongs to another user)</case>
+        </errorCases>
+      </endpoint>
+
+      <endpoint method="DELETE" path="/:id">
+        <description>Soft delete conversation and messages</description>
+        <responseBody>
+          <![CDATA[
+          {
+            "success": true,
+            "data": {
+              "deleted": true,
+              "conversationUuid": "uuid-v4"
+            }
+          }
+          ]]>
+        </responseBody>
+        <errorCases>
+          <case code="404">Conversation not found</case>
+          <case code="403">Forbidden (conversation belongs to another user)</case>
+        </errorCases>
+      </endpoint>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      <framework name="Vitest" version="latest">
+        <usage>Unit and integration testing</usage>
+        <configPath>vitest.config.ts</configPath>
+      </framework>
+      <framework name="Supertest" version="latest">
+        <usage>HTTP endpoint testing</usage>
+      </framework>
+      <patterns>
+        <pattern name="Unit Test Structure">
+          <![CDATA[
+          describe('AIConversationService', () => {
+            describe('createConversation', () => {
+              it('should create conversation with default title', async () => {
+                // Arrange
+                const mockRepo = { save: vi.fn() };
+                const service = new AIConversationService(mockRepo);
+                
+                // Act
+                const result = await service.createConversation('account-123');
+                
+                // Assert
+                expect(result.title).toBe('New Chat');
+                expect(mockRepo.save).toHaveBeenCalledTimes(1);
+              });
+            });
+          });
+          ]]>
+        </pattern>
+        <pattern name="Integration Test Structure">
+          <![CDATA[
+          describe('POST /api/ai/conversations', () => {
+            it('should create conversation and return 201', async () => {
+              const response = await request(app)
+                .post('/api/ai/conversations')
+                .set('Authorization', `Bearer ${validToken}`)
+                .send({ title: 'Test Chat' });
+              
+              expect(response.status).toBe(201);
+              expect(response.body.success).toBe(true);
+              expect(response.body.data.title).toBe('Test Chat');
+            });
+          });
+          ]]>
+        </pattern>
+      </patterns>
+    </standards>
+
+    <locations>
+      <unitTests path="packages/domain-server/src/ai/services/__tests__/AIConversationService.test.ts">
+        <description>Unit tests for domain service (Task 4)</description>
+      </unitTests>
+      <integrationTests path="apps/api/test/integration/ai/conversation.test.ts">
+        <description>Integration tests for API endpoints (Task 6)</description>
+      </integrationTests>
+    </locations>
+
+    <ideas>
+      <testIdea priority="high" task="4">
+        <title>Test createConversation with default title</title>
+        <acceptanceCriteria>AC-8</acceptanceCriteria>
+        <scenario>When title is omitted, should default to "New Chat"</scenario>
+      </testIdea>
+      <testIdea priority="high" task="4">
+        <title>Test addMessage updates conversation metadata</title>
+        <acceptanceCriteria>AC-1, AC-6</acceptanceCriteria>
+        <scenario>When message is added, messageCount increments and lastMessageAt updates</scenario>
+      </testIdea>
+      <testIdea priority="high" task="4">
+        <title>Test softDelete sets deletedAt and changes status</title>
+        <acceptanceCriteria>AC-5</acceptanceCriteria>
+        <scenario>When conversation is deleted, deletedAt is set and status becomes ARCHIVED</scenario>
+      </testIdea>
+      <testIdea priority="critical" task="6">
+        <title>Test account isolation in GET /conversations</title>
+        <acceptanceCriteria>AC-7, AC-13</acceptanceCriteria>
+        <scenario>User A should not see conversations from User B</scenario>
+        <steps>
+          1. Create conversation for User A
+          2. Create conversation for User B
+          3. Authenticate as User A
+          4. GET /api/ai/conversations
+          5. Assert only User A's conversations are returned
+        </steps>
+      </testIdea>
+      <testIdea priority="critical" task="6">
+        <title>Test 403 Forbidden when accessing other user's conversation</title>
+        <acceptanceCriteria>AC-7, AC-13</acceptanceCriteria>
+        <scenario>User A attempts to GET /conversations/:id for User B's conversation</scenario>
+        <expectedResult>403 Forbidden</expectedResult>
+      </testIdea>
+      <testIdea priority="high" task="6">
+        <title>Test pagination in GET /conversations</title>
+        <acceptanceCriteria>AC-3</acceptanceCriteria>
+        <scenario>Create 25 conversations, request page 2 with limit 10, should return 10 items with correct total</scenario>
+      </testIdea>
+      <testIdea priority="high" task="6">
+        <title>Test full CRUD lifecycle</title>
+        <acceptanceCriteria>AC-2, AC-3, AC-4, AC-5</acceptanceCriteria>
+        <scenario>
+          1. POST /conversations → Create
+          2. GET /conversations/:id → Read
+          3. DELETE /conversations/:id → Delete
+          4. GET /conversations/:id → Verify 404
+        </scenario>
+      </testIdea>
+      <testIdea priority="medium" task="6">
+        <title>Test conversation with messages in response</title>
+        <acceptanceCriteria>AC-4, AC-6</acceptanceCriteria>
+        <scenario>GET /conversations/:id should include messages array with correct roles</scenario>
+      </testIdea>
+      <testIdea priority="medium" task="3">
+        <title>Test repository save with cascade messages</title>
+        <acceptanceCriteria>AC-1, AC-11</acceptanceCriteria>
+        <scenario>Saving conversation should also save all message entities in a transaction</scenario>
+      </testIdea>
+      <testIdea priority="medium" task="3">
+        <title>Test findRecent with pagination and sorting</title>
+        <acceptanceCriteria>AC-3</acceptanceCriteria>
+        <scenario>findRecent should return conversations ordered by lastMessageAt DESC with offset/limit</scenario>
+      </testIdea>
+    </ideas>
+  </tests>
+
+  <devNotes>
+    <note priority="critical" category="implementation-order">
+      <title>Task execution dependencies</title>
+      <content>
+        Task 1 (Domain) → Task 2 (Schema) → Task 3 (Repository) → Task 4 (Service) → Task 5 (Controller) → Task 6 (Tests)
+        - Must complete Tasks 1-4 before implementing Task 5
+        - Task 6 requires all tasks 1-5 to be complete
+      </content>
+    </note>
+    <note priority="high" category="existing-code">
+      <title>Domain entities already exist</title>
+      <content>
+        AIConversationServer and MessageServer are ALREADY IMPLEMENTED in packages/domain-server/src/modules/ai/.
+        Task 1 should review these implementations and only make changes if requirements differ.
+        Focus may shift to enhancing contracts DTOs if needed.
+      </content>
+    </note>
+    <note priority="high" category="migration">
+      <title>Database migration status</title>
+      <content>
+        Check if ai_conversations and ai_messages tables exist in the database before running migration in Task 2.
+        Use: pnpm prisma migrate status
+        If migration already exists, skip "pnpm prisma migrate dev --name add_ai_conversation"
+      </content>
+    </note>
+    <note priority="medium" category="repository-implementation">
+      <title>Repository cascade operations</title>
+      <content>
+        When implementing PrismaAIConversationRepository.save():
+        1. Upsert aiConversation record
+        2. Delete existing messages (if updating)
+        3. Insert new messages with conversationUuid FK
+        4. Use Prisma transaction for atomicity
+        
+        Example transaction:
+        await prisma.$transaction([
+          prisma.aiConversation.upsert({...}),
+          prisma.aiMessage.deleteMany({ where: { conversationUuid } }),
+          prisma.aiMessage.createMany({ data: messages })
+        ]);
+      </content>
+    </note>
+    <note priority="medium" category="service-implementation">
+      <title>Service methods should be thin wrappers</title>
+      <content>
+        AIConversationService methods should:
+        1. Create/retrieve domain entities
+        2. Call business methods on aggregates
+        3. Persist via repository
+        4. Return DTOs (not domain entities)
+        
+        Avoid duplicating business logic in service - keep it in aggregate methods.
+      </content>
+    </note>
+    <note priority="medium" category="controller-implementation">
+      <title>Controller validation and error handling</title>
+      <content>
+        All controller methods must:
+        1. Validate request body with Zod schemas
+        2. Extract accountUuid from req.user (added by auth middleware)
+        3. Call service methods
+        4. Catch domain errors and map to HTTP status codes:
+           - NotFoundError → 404
+           - ForbiddenError → 403
+           - ValidationError → 400
+           - Generic Error → 500
+        5. Use ResponseBuilder for consistent response format
+      </content>
+    </note>
+    <note priority="low" category="optimization">
+      <title>Future optimization opportunities</title>
+      <content>
+        - Add Redis caching for frequently accessed conversations
+        - Implement pagination cursor instead of offset-based
+        - Add full-text search on conversation titles and message content
+        - Consider materialized views for conversation summaries
+      </content>
+    </note>
+  </devNotes>
+
+  <relatedStories>
+    <story id="1.1" relationship="dependency">
+      <title>AI Domain Server Implementation</title>
+      <reason>Established AI module structure and base domain entities</reason>
+    </story>
+    <story id="3.2" relationship="blocks">
+      <title>Chat Stream Backend</title>
+      <reason>Streaming endpoint requires conversation persistence from this story</reason>
+    </story>
+    <story id="3.3" relationship="enables">
+      <title>Chat Interface UI</title>
+      <reason>Frontend needs conversation API endpoints to display chat history</reason>
+    </story>
+    <story id="3.4" relationship="enables">
+      <title>Conversation History UI</title>
+      <reason>Sidebar conversation list depends on GET /conversations endpoint</reason>
+    </story>
+  </relatedStories>
+
+  <workflowChecklist>
+    <item id="WF-01" status="complete">Story file loaded and parsed</item>
+    <item id="WF-02" status="complete">Technical specification extracted</item>
+    <item id="WF-03" status="complete">Architecture documents analyzed</item>
+    <item id="WF-04" status="complete">Existing code patterns identified</item>
+    <item id="WF-05" status="complete">Repository interfaces documented</item>
+    <item id="WF-06" status="complete">API contracts defined</item>
+    <item id="WF-07" status="complete">Testing standards outlined</item>
+    <item id="WF-08" status="complete">Dependencies extracted</item>
+    <item id="WF-09" status="complete">Constraints documented</item>
+    <item id="WF-10" status="complete">Context XML generated</item>
+  </workflowChecklist>
+</story-context>

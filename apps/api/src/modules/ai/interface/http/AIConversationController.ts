@@ -74,8 +74,8 @@ export class AIConversationController {
         messageLength: message.length,
       });
 
-      // 调用 Domain Service
-      const service = AIConversationController.container.getGenerationService();
+      // 调用 Application Service
+      const service = AIConversationController.container.getApplicationService();
       const result = await service.generateText({
         accountUuid,
         conversationUuid,
@@ -215,12 +215,13 @@ export class AIConversationController {
   }
 
   /**
-   * 获取对话历史
-   * GET /api/ai/conversations
+   * 创建新对话
+   * POST /api/ai/conversations
    */
-  static async getConversations(req: AuthenticatedRequest, res: Response): Promise<void> {
+  static async createConversation(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const accountUuid = req.user?.accountUuid;
+      const { title } = req.body;
 
       if (!accountUuid) {
         res
@@ -234,23 +235,61 @@ export class AIConversationController {
         return;
       }
 
-      logger.info('Getting conversation history', { accountUuid });
+      logger.info('Creating new conversation', { accountUuid, title });
 
-      // 调用 Domain Service
-      const service = AIConversationController.container.getGenerationService();
-      const conversations = await service.getConversationHistory(accountUuid);
+      // 调用 Conversation Service
+      const conversationService = AIConversationController.container.getConversationService();
+      const conversation = await conversationService.createConversation(accountUuid, title);
 
-      // 转换为 Client DTO
-      const conversationDTOs = conversations.map((conv: any) => {
-        const dto = conv.toClientDTO();
-        return dto;
-      });
+      res
+        .status(201)
+        .json(
+          AIConversationController.responseBuilder.success(
+            conversation,
+            'Conversation created successfully',
+          ),
+        );
+    } catch (error) {
+      AIConversationController.handleError(error, res);
+    }
+  }
+
+  /**
+   * 获取对话历史（列表，带分页）
+   * GET /api/ai/conversations
+   */
+  static async getConversations(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      logger.info('Getting conversation history', { accountUuid, page, limit });
+
+      // 调用 Conversation Service
+      const conversationService = AIConversationController.container.getConversationService();
+      const result = await conversationService.listConversations(accountUuid, page, limit);
 
       res
         .status(200)
         .json(
           AIConversationController.responseBuilder.success(
-            conversationDTOs,
+            {
+              conversations: result.conversations,
+              pagination: result.pagination,
+            },
             'Conversations retrieved successfully',
           ),
         );
@@ -294,9 +333,9 @@ export class AIConversationController {
 
       logger.info('Getting conversation', { accountUuid, conversationId: id });
 
-      // 调用 Domain Service
-      const service = AIConversationController.container.getGenerationService();
-      const conversation = await service.getConversation(id);
+      // 调用 Conversation Service
+      const conversationService = AIConversationController.container.getConversationService();
+      const conversation = await conversationService.getConversation(id, true);
 
       if (!conversation) {
         res
@@ -335,6 +374,86 @@ export class AIConversationController {
           AIConversationController.responseBuilder.success(
             fullDTO,
             'Conversation retrieved successfully',
+          ),
+        );
+    } catch (error) {
+      AIConversationController.handleError(error, res);
+    }
+  }
+
+  /**
+   * 删除对话（软删除）
+   * DELETE /api/ai/conversations/:id
+   */
+  static async deleteConversation(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      if (!id) {
+        res
+          .status(400)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              'Conversation ID is required',
+            ),
+          );
+        return;
+      }
+
+      logger.info('Deleting conversation', { accountUuid, conversationId: id });
+
+      // 先获取对话验证所有权
+      const conversationService = AIConversationController.container.getConversationService();
+      const conversation = await conversationService.getConversation(id, false);
+
+      if (!conversation) {
+        res
+          .status(404)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.NOT_FOUND,
+              'Conversation not found',
+            ),
+          );
+        return;
+      }
+
+      // 验证所有权
+      if (conversation.accountUuid !== accountUuid) {
+        res
+          .status(403)
+          .json(
+            AIConversationController.responseBuilder.error(ResponseCode.FORBIDDEN, 'Access denied'),
+          );
+        return;
+      }
+
+      // 执行软删除
+      await conversationService.deleteConversation(id);
+
+      res
+        .status(200)
+        .json(
+          AIConversationController.responseBuilder.success(
+            {
+              deleted: true,
+              conversationUuid: id,
+            },
+            'Conversation deleted successfully',
           ),
         );
     } catch (error) {

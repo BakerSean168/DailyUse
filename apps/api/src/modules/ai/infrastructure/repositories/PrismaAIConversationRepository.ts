@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Prisma AI Conversation Repository
  * Prisma AI 对话仓储实现
@@ -7,58 +6,198 @@
  * - 操作 ai_conversations 和 ai_messages 表
  * - ServerDTO ↔ Prisma Model 映射
  * - 聚合根模式：级联操作消息
- *
- * TODO: 完整实现 + 数据库 migration 应用后修复类型错误
  */
 
 import { PrismaClient } from '@prisma/client';
 import type { IAIConversationRepository } from '@dailyuse/domain-server';
-import type { AIContracts } from '@dailyuse/contracts';
+import { AIConversationServer, MessageServer } from '@dailyuse/domain-server';
 import { ConversationStatus } from '@dailyuse/contracts';
+import { createLogger } from '@dailyuse/utils';
 
-type AIConversationServerDTO = AIContracts.AIConversationServerDTO;
+const logger = createLogger('PrismaAIConversationRepository');
 
 /**
- * PrismaAIConversationRepository 实现（TODO）
+ * PrismaAIConversationRepository 实现
  */
 export class PrismaAIConversationRepository implements IAIConversationRepository {
   constructor(private prisma: PrismaClient) {}
 
-  async save(conversation: AIConversationServerDTO): Promise<void> {
-    throw new Error('Not implemented yet');
+  /**
+   * 保存对话（包括级联保存消息）
+   */
+  async save(conversation: AIConversationServer): Promise<void> {
+    try {
+      // 将聚合根转换为DTO
+      const dto = conversation.toServerDTO(true); // includeChildren = true
+
+      await this.prisma.$transaction(async (tx) => {
+        // Upsert conversation
+        await tx.aiConversation.upsert({
+          where: { uuid: dto.uuid },
+          create: {
+            uuid: dto.uuid,
+            accountUuid: dto.accountUuid,
+            title: dto.title,
+            status: dto.status,
+            messageCount: dto.messageCount,
+            lastMessageAt: dto.lastMessageAt ? new Date(dto.lastMessageAt) : null,
+            createdAt: new Date(dto.createdAt),
+            updatedAt: new Date(dto.updatedAt),
+            deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+          },
+          update: {
+            title: dto.title,
+            status: dto.status,
+            messageCount: dto.messageCount,
+            lastMessageAt: dto.lastMessageAt ? new Date(dto.lastMessageAt) : null,
+            updatedAt: new Date(dto.updatedAt),
+            deletedAt: dto.deletedAt ? new Date(dto.deletedAt) : null,
+          },
+        });
+
+        // Cascade save messages if present
+        if (dto.messages && dto.messages.length > 0) {
+          // Delete existing messages
+          await tx.aiMessage.deleteMany({
+            where: { conversationUuid: dto.uuid },
+          });
+
+          // Insert new messages
+          await tx.aiMessage.createMany({
+            data: dto.messages.map((msg) => ({
+              uuid: msg.uuid,
+              conversationUuid: msg.conversationUuid,
+              role: msg.role,
+              content: msg.content,
+              tokenUsage: msg.tokenCount ? JSON.stringify({ totalTokens: msg.tokenCount }) : null,
+              createdAt: new Date(msg.createdAt),
+            })),
+          });
+        }
+      });
+
+      logger.info('Conversation saved', { uuid: dto.uuid });
+    } catch (error) {
+      logger.error('Failed to save conversation', { error, uuid: conversation.uuid });
+      throw error;
+    }
   }
 
-  async findByUuid(
+  /**
+   * 根据UUID查找对话
+   */
+  async findById(
     uuid: string,
-    includeMessages?: boolean,
-  ): Promise<AIConversationServerDTO | null> {
-    throw new Error('Not implemented yet');
+    options?: { includeChildren?: boolean },
+  ): Promise<AIConversationServer | null> {
+    try {
+      const conversation = await this.prisma.aiConversation.findUnique({
+        where: { uuid },
+        include: {
+          messages: options?.includeChildren
+            ? {
+                orderBy: { createdAt: 'asc' },
+              }
+            : false,
+        },
+      });
+
+      if (!conversation) {
+        return null;
+      }
+
+      return this.mapToDomainEntity(conversation);
+    } catch (error) {
+      logger.error('Failed to find conversation by UUID', { error, uuid });
+      throw error;
+    }
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<AIConversationServerDTO[]> {
-    throw new Error('Not implemented yet');
-  }
-
-  async findByStatus(
+  /**
+   * 根据账户UUID查找所有对话
+   */
+  async findByAccountUuid(
     accountUuid: string,
-    status: ConversationStatus,
-  ): Promise<AIConversationServerDTO[]> {
-    throw new Error('Not implemented yet');
+    options?: { includeChildren?: boolean },
+  ): Promise<AIConversationServer[]> {
+    try {
+      const conversations = await this.prisma.aiConversation.findMany({
+        where: {
+          accountUuid,
+          deletedAt: null,
+        },
+        orderBy: {
+          lastMessageAt: 'desc',
+        },
+        include: {
+          messages: options?.includeChildren
+            ? {
+                orderBy: { createdAt: 'asc' },
+              }
+            : false,
+        },
+      });
+
+      return conversations.map((conv) => this.mapToDomainEntity(conv));
+    } catch (error) {
+      logger.error('Failed to find conversations by account', { error, accountUuid });
+      throw error;
+    }
   }
 
-  async findRecent(
-    accountUuid: string,
-    limit: number,
-    offset?: number,
-  ): Promise<AIConversationServerDTO[]> {
-    throw new Error('Not implemented yet');
-  }
 
+
+  /**
+   * 软删除对话
+   */
   async delete(uuid: string): Promise<void> {
-    throw new Error('Not implemented yet');
+    try {
+      await this.prisma.aiConversation.update({
+        where: { uuid },
+        data: {
+          deletedAt: new Date(),
+          status: ConversationStatus.ARCHIVED,
+          updatedAt: new Date(),
+        },
+      });
+
+      logger.info('Conversation soft deleted', { uuid });
+    } catch (error) {
+      logger.error('Failed to delete conversation', { error, uuid });
+      throw error;
+    }
   }
 
-  async exists(uuid: string): Promise<boolean> {
-    throw new Error('Not implemented yet');
+  /**
+   * 将 Prisma 模型映射为领域聚合根
+   */
+  private mapToDomainEntity(data: any): AIConversationServer {
+    // 先构建 ServerDTO
+    const dto = {
+      uuid: data.uuid,
+      accountUuid: data.accountUuid,
+      title: data.title,
+      status: data.status as ConversationStatus,
+      messageCount: data.messageCount,
+      lastMessageAt: data.lastMessageAt ? data.lastMessageAt.getTime() : null,
+      createdAt: data.createdAt.getTime(),
+      updatedAt: data.updatedAt.getTime(),
+      deletedAt: data.deletedAt ? data.deletedAt.getTime() : null,
+      messages: data.messages
+        ? data.messages.map((msg: any) => ({
+            uuid: msg.uuid,
+            conversationUuid: msg.conversationUuid,
+            role: msg.role,
+            content: msg.content,
+            tokenCount: msg.tokenUsage
+              ? (JSON.parse(msg.tokenUsage) as { totalTokens?: number }).totalTokens ?? null
+              : null,
+            createdAt: msg.createdAt.getTime(),
+          }))
+        : null,
+    };
+
+    // 从 DTO 重建聚合根
+    return AIConversationServer.fromServerDTO(dto);
   }
 }
