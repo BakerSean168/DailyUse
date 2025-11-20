@@ -1,6 +1,6 @@
 /**
  * AIConversationService Unit Tests
- * 
+ *
  * 测试范围（AC-12）：
  * - createConversation() - 创建对话
  * - getConversation() - 获取对话详情
@@ -132,7 +132,7 @@ describe('AIConversationService', () => {
   describe('listConversations', () => {
     it('should return paginated conversations', async () => {
       const accountUuid = 'test-account';
-      
+
       // 创建 10 个 mock conversations
       const mockConversations = Array.from({ length: 10 }, (_, i) =>
         AIConversationServer.create({
@@ -153,7 +153,7 @@ describe('AIConversationService', () => {
 
     it('should return second page correctly', async () => {
       const accountUuid = 'test-account';
-      
+
       const mockConversations = Array.from({ length: 25 }, (_, i) =>
         AIConversationServer.create({
           accountUuid,
@@ -256,12 +256,7 @@ describe('AIConversationService', () => {
 
       vi.mocked(mockRepository.findById).mockResolvedValue(mockConversation);
 
-      const result = await service.addMessage(
-        conversationUuid,
-        MessageRole.USER,
-        'Hello, AI!',
-        50,
-      );
+      const result = await service.addMessage(conversationUuid, MessageRole.USER, 'Hello, AI!', 50);
 
       expect(result.content).toBe('Hello, AI!');
       expect(result.role).toBe(MessageRole.USER);
@@ -310,9 +305,9 @@ describe('AIConversationService', () => {
       const conversationUuid = 'non-existent-conv';
       vi.mocked(mockRepository.findById).mockResolvedValue(null);
 
-      await expect(
-        service.addMessage(conversationUuid, MessageRole.USER, 'Hello'),
-      ).rejects.toThrow('Conversation not found');
+      await expect(service.addMessage(conversationUuid, MessageRole.USER, 'Hello')).rejects.toThrow(
+        'Conversation not found',
+      );
       expect(mockRepository.save).not.toHaveBeenCalled();
     });
 
@@ -326,16 +321,16 @@ describe('AIConversationService', () => {
       vi.mocked(mockRepository.findById).mockResolvedValue(mockConversation);
       vi.mocked(mockRepository.save).mockRejectedValue(new Error('Database error'));
 
-      await expect(
-        service.addMessage(conversationUuid, MessageRole.USER, 'Hello'),
-      ).rejects.toThrow('Database error');
+      await expect(service.addMessage(conversationUuid, MessageRole.USER, 'Hello')).rejects.toThrow(
+        'Database error',
+      );
     });
   });
 
   describe('getConversationsByStatus', () => {
     it('should filter conversations by ACTIVE status', async () => {
       const accountUuid = 'test-account';
-      
+
       const activeConv1 = AIConversationServer.create({
         accountUuid,
         title: 'Active Chat 1',
@@ -364,7 +359,7 @@ describe('AIConversationService', () => {
 
     it('should filter conversations by CLOSED status', async () => {
       const accountUuid = 'test-account';
-      
+
       const activeConv = AIConversationServer.create({
         accountUuid,
         title: 'Active Chat',
@@ -394,7 +389,7 @@ describe('AIConversationService', () => {
 
     it('should return empty array when no conversations match status', async () => {
       const accountUuid = 'test-account';
-      
+
       const activeConv = AIConversationServer.create({
         accountUuid,
         title: 'Active Chat',
