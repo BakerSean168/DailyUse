@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.1</storyId>
+    <title>Generate Key Results Backend</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-20</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-1-generate-key-results-backend.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>to get AI suggestions for Key Results</iWant>
+    <soThat>I can define my goals more effectively</soThat>
+    <tasks>
+      <task id="1" priority="high">Create Request/Response DTOs (GenerateKeyResultsRequest, KeyResultPreview, GenerateKeyResultsResponse)</task>
+      <task id="2" priority="high">Extend AIGenerationService with generateKeyResults() method</task>
+      <task id="3" priority="high">Implement API Controller handler for POST /api/ai/generate/key-results</task>
+      <task id="4" priority="medium">Add Route Configuration with Swagger/OpenAPI documentation</task>
+      <task id="5" priority="medium">Error Handling & Resilience (timeout, retry, circuit breaker)</task>
+      <task id="6" priority="high">Unit Tests for generateKeyResults with mock OpenAIAdapter</task>
+      <task id="7" priority="high">Integration Tests with MockAIAdapter</task>
+      <task id="8" priority="low">Manual Quality Verification (10 samples, SMART compliance)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1" type="functional">Endpoint POST /api/ai/generate/key-results accepts valid request and returns 200 OK</criterion>
+    <criterion id="AC-2" type="functional">Response contains 3-5 KeyResultPreview objects with all required fields</criterion>
+    <criterion id="AC-3" type="functional">Each KR has title (5-100 chars), valueType (valid enum), targetValue (&gt; 0), weight (0-100)</criterion>
+    <criterion id="AC-4" type="functional">Total weights of all KRs sum to 100 (±5 tolerance)</criterion>
+    <criterion id="AC-5" type="quality">KRs follow SMART principles (verified by manual inspection of 10 samples)</criterion>
+    <criterion id="AC-6" type="functional">Quota check performed before generation, returns 429 if exceeded</criterion>
+    <criterion id="AC-7" type="functional">Quota consumed (decremented by 1) after successful generation</criterion>
+    <criterion id="AC-8" type="functional">TokenUsage accurately reported in response</criterion>
+    <criterion id="AC-9" type="technical">Uses OpenAIAdapter from Epic 1 (no new AI client code)</criterion>
+    <criterion id="AC-10" type="technical">Implements 10-second timeout, returns 504 if exceeded</criterion>
+    <criterion id="AC-11" type="technical">Prompt template loaded from epic-2-ai-prompts.md (KR section)</criterion>
+    <criterion id="AC-12" type="technical">Invalid JSON response retried once, then returns 500 error</criterion>
+    <criterion id="AC-13" type="technical">Logs generation start/complete/fail events with accountUuid and tokenUsage</criterion>
+    <criterion id="AC-14" type="technical">No business logic in AIGenerationController (delegated to service)</criterion>
+    <criterion id="AC-15" type="quality">Unit tests for AIGenerationService.generateKeyResults() (mock OpenAI)</criterion>
+    <criterion id="AC-16" type="quality">Integration test with MockAIAdapter (no real API calls)</criterion>
+    <criterion id="AC-17" type="quality">Zero TypeScript compilation errors</criterion>
+    <criterion id="AC-18" type="quality">API documented in Swagger/OpenAPI spec</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-2.md" title="Epic 2 Technical Specification" section="APIs and Interfaces">
+        Comprehensive tech spec detailing POST /api/ai/generate/key-results endpoint with request/response schemas, error codes (429, 504, 400, 500), and workflow sequences (19 steps, 8-12s timing).
+      </doc>
+      <doc path="docs/sprint-artifacts/epic-2-ai-prompts.md" title="Epic 2 AI Prompts" section="KR Generation Prompt Template">
+        System and user prompt templates for Key Results generation with SMART criteria, JSON output format, validation rules (3-5 items, weights sum to 100), and example input/output.
+      </doc>
+      <doc path="docs/architecture-api.md" title="API Architecture" section="DDD Layers">
+        DDD layering: Domain (AIGenerationService), Infrastructure (OpenAIAdapter), Interface (AIGenerationController). Controllers must delegate to services, max 20 lines per handler.
+      </doc>
+      <doc path="docs/epics.md" title="DailyUse Epics" section="Story 2.1">
+        Story description: Generate Key Results Backend with acceptance criteria for API endpoint, quota management, and SMART KR generation.
+      </doc>
+      <doc path="docs/sprint-artifacts/1-4-ai-api-layer-integration.md" title="Story 1-4 Completion" section="Dev Agent Record">
+        Previous story established AIConversationController pattern, error handling middleware, DI Container (AIContainer), and route configuration at /api/ai.
+      </doc>
+    </docs>
+    
+    <code>
+      <file path="packages/domain-server/src/ai/services/AIGenerationService.ts" kind="service" symbol="AIGenerationService" lines="30-108" reason="Domain service for AI generation - extend with generateKeyResults() method. Already has quota integration and error handling patterns."/>
+      <file path="packages/domain-server/src/ai/services/QuotaEnforcementService.ts" kind="service" symbol="QuotaEnforcementService" lines="21-60" reason="Quota management service - use checkQuota() and consumeQuota() methods for quota validation."/>
+      <file path="packages/domain-server/src/ai/adapters/OpenAIAdapter.ts" kind="adapter" symbol="OpenAIAdapter" lines="28-140" reason="OpenAI adapter with generateText() method - reuse for AI calls with 10s timeout. Already implements retry logic."/>
+      <file path="packages/domain-server/src/ai/adapters/BaseAIAdapter.ts" kind="adapter" symbol="BaseAIAdapter" lines="1-70" reason="Base adapter interface defining AIGenerationRequest and AIGenerationResponse structures."/>
+      <file path="apps/api/src/modules/ai/interface/http/AIConversationController.ts" kind="controller" symbol="AIConversationController" lines="1-411" reason="Existing AI controller - add generateKeyResults() handler here. Follow established pattern: auth, validation, delegation, error mapping."/>
+      <file path="apps/api/src/modules/ai/interface/http/aiConversationRoutes.ts" kind="routes" symbol="aiConversationRoutes" lines="1-228" reason="Existing route configuration - add POST /api/ai/generate/key-results with Swagger docs following established patterns."/>
+      <file path="apps/api/src/modules/ai/infrastructure/di/AIContainer.ts" kind="di-container" symbol="AIContainer" lines="26-99" reason="DI container for AI services - use getGenerationService() and getQuotaService() to inject dependencies."/>
+      <file path="apps/api/src/modules/ai/application/services/AIGenerationApplicationService.ts" kind="application-service" symbol="AIGenerationApplicationService" lines="35-191" reason="Application service orchestrating domain services, repositories, and transactions. Has generateKeyResults() stub at line 35."/>
+    </code>
+    
+    <dependencies>
+      <package name="ai" version="5.0.89" ecosystem="npm">Vercel AI SDK for generateText() function</package>
+      <package name="@ai-sdk/openai" version="2.0.64" ecosystem="npm">OpenAI provider for createOpenAI()</package>
+      <package name="zod" version="4.1.12" ecosystem="npm">Request validation schemas</package>
+      <package name="@dailyuse/contracts" version="workspace:*" ecosystem="pnpm-workspace">DTOs and interfaces (GenerateKeyResultsRequest, GenerateKeyResultsResponse, TokenUsageServerDTO)</package>
+      <package name="@dailyuse/domain-server" version="workspace:*" ecosystem="pnpm-workspace">Domain services (AIGenerationService, QuotaEnforcementService), adapters (OpenAIAdapter)</package>
+      <package name="@dailyuse/utils" version="workspace:*" ecosystem="pnpm-workspace">Logger, EventBus, error utilities</package>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Strict DDD layering: Domain services contain business logic, Controllers only handle HTTP mapping (max 20 lines)</constraint>
+    <constraint type="architecture">No direct OpenAI client instantiation - must use OpenAIAdapter from Epic 1 infrastructure</constraint>
+    <constraint type="performance">API response time P95 ≤ 10 seconds, OpenAI call time P95 ≤ 8 seconds</constraint>
+    <constraint type="security">Quota check BEFORE generation, authentication required (JWT token), rate limit 10 requests/minute</constraint>
+    <constraint type="validation">KR output: 3-5 items, weights sum to 100±5, title 5-100 chars, targetValue &gt; 0</constraint>
+    <constraint type="error-handling">10-second timeout mandatory, JSON parse retry once, circuit breaker after 5 consecutive failures</constraint>
+    <constraint type="testing">Unit tests must mock OpenAIAdapter (no real API calls), integration tests use MockAIAdapter</constraint>
+    <constraint type="logging">Log generation events with accountUuid, tokenUsage, duration using structured logger</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="GenerateKeyResultsRequest" kind="DTO" signature="{ goalTitle: string; goalDescription?: string; goalContext?: string; startDate: number; endDate: number }" path="packages/contracts/src/modules/ai/requests/GenerateKeyResultsRequest.ts"/>
+    <interface name="GenerateKeyResultsResponse" kind="DTO" signature="{ keyResults: KeyResultPreview[]; tokenUsage: TokenUsageServerDTO; generatedAt: number }" path="packages/contracts/src/modules/ai/responses/GenerateKeyResultsResponse.ts"/>
+    <interface name="KeyResultPreview" kind="DTO" signature="{ title: string; description?: string; valueType: KeyResultValueType; targetValue: number; currentValue?: number; unit?: string; weight: number; aggregationMethod: AggregationMethod }" path="packages/contracts/src/modules/ai/responses/GenerateKeyResultsResponse.ts"/>
+    <interface name="POST /api/ai/generate/key-results" kind="REST-API" signature="Authorization: Bearer {token}, Body: GenerateKeyResultsRequest → Response: GenerateKeyResultsResponse | 429 | 504 | 400 | 500" path="apps/api/src/modules/ai/interface/http/aiConversationRoutes.ts"/>
+    <interface name="AIGenerationService.generateKeyResults()" kind="domain-method" signature="async generateKeyResults(input: { goalTitle, goalDescription, category, importance, urgency }, quota: AIUsageQuotaServerDTO): Promise&lt;{ result, updatedQuota, tokenUsage }&gt;" path="packages/domain-server/src/ai/services/AIGenerationService.ts"/>
+    <interface name="OpenAIAdapter.generateText()" kind="adapter-method" signature="async generateText&lt;T&gt;(request: AIGenerationRequest, model?: AIModel): Promise&lt;AIGenerationResponse&lt;T&gt;&gt;" path="packages/domain-server/src/ai/adapters/OpenAIAdapter.ts"/>
+    <interface name="QuotaEnforcementService.checkQuota()" kind="domain-method" signature="checkQuota(quota: AIUsageQuotaServerDTO, requestedAmount: number): void (throws AIQuotaExceededError)" path="packages/domain-server/src/ai/services/QuotaEnforcementService.ts"/>
+    <interface name="QuotaEnforcementService.consumeQuota()" kind="domain-method" signature="consumeQuota(quota: AIUsageQuotaServerDTO, amount: number): AIUsageQuotaServerDTO" path="packages/domain-server/src/ai/services/QuotaEnforcementService.ts"/>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing framework: Vitest 3.2.4 with @vitest/coverage-v8. Test structure: Domain services (unit tests with mocks), Application services (integration tests with MockAIAdapter), Controllers (integration tests with Supertest). Mock strategy: Mock OpenAIAdapter for unit tests, use MockAIAdapter for integration tests (no real OpenAI API calls). Coverage target: ≥70% line coverage for new code.
+    </standards>
+    <locations>
+      <location>packages/domain-server/src/ai/services/__tests__/AIGenerationService.test.ts</location>
+      <location>apps/api/src/modules/ai/interface/http/__tests__/AIConversationController.test.ts</location>
+      <location>apps/api/src/modules/ai/__tests__/integration/generate-kr.integration.test.ts</location>
+    </locations>
+    <ideas>
+      <idea criterion="AC-1">Integration test: POST /api/ai/generate/key-results with valid request → assert 200 OK response</idea>
+      <idea criterion="AC-2">Unit test: Mock OpenAI to return 3 KRs → assert response.keyResults.length === 3</idea>
+      <idea criterion="AC-3">Unit test: Validate KR fields → assert title.length ∈ [5,100], targetValue &gt; 0, weight ∈ [0,100]</idea>
+      <idea criterion="AC-4">Unit test: Assert Σ(keyResults.weight) === 100 ± 5</idea>
+      <idea criterion="AC-6">Integration test: Mock quota=0 → assert 429 response with "QUOTA_EXCEEDED" error</idea>
+      <idea criterion="AC-7">Unit test: Generate KRs → assert quota.used incremented by 1</idea>
+      <idea criterion="AC-8">Unit test: Assert response.tokenUsage.totalTokens &gt; 0</idea>
+      <idea criterion="AC-10">Integration test: Mock slow OpenAI (11s) → assert 504 timeout error</idea>
+      <idea criterion="AC-12">Unit test: Mock invalid JSON → retry once → assert 500 error after 2 attempts</idea>
+      <idea criterion="AC-13">Unit test: Assert logger.info() called with {accountUuid, tokenUsage, duration}</idea>
+      <idea criterion="AC-14">Code review: Assert AIGenerationController.generateKeyResults handler ≤ 20 lines</idea>
+      <idea criterion="AC-17">CI check: Run `tsc --noEmit` → assert exit code 0</idea>
+      <idea criterion="AC-18">Integration test: GET /api-docs → assert /api/ai/generate/key-results endpoint documented</idea>
+    </ideas>
+  </tests>
+</story-context>

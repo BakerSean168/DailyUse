@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@dailyuse/utils": "workspace:*",
+    "@dailyuse/contracts": "workspace:*",
     "bcryptjs": "^2.4.3",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",

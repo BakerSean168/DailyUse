@@ -32,8 +32,8 @@ export * from './editor/index';
 // Schedule 模块
 export * from './schedule/index';
 
-// AI 模块
-export * from './ai/index';
+// AI 模块 (新版 - DDD架构)
+export * from './modules/ai/index';
 
 // Dashboard 模块
 export * from './dashboard/index';

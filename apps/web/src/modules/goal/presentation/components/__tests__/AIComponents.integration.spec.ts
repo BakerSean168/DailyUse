@@ -1,12 +1,12 @@
 /**
  * AI Components Integration Tests
- * 
+ *
  * 测试范围：
  * - 组件基本渲染
  * - 事件触发机制
  * - Props 传递
  * - 组件集成
- * 
+ *
  * 注意：由于 Vuetify 3 + Vue 3 组件测试的复杂性，
  * 这里采用简化的集成测试策略，专注于测试关键行为和事件流。
  */
@@ -25,7 +25,7 @@ const mockLoadQuotaStatus = vi.fn();
 const mockClearKeyResults = vi.fn();
 const mockResetState = vi.fn();
 
-vi.mock('../../../../modules/ai/composables/useAIGeneration', () => ({
+vi.mock('../../../../ai/presentation/composables/useAIGeneration', () => ({
   useAIGeneration: () => ({
     generateKeyResults: mockGenerateKeyResults,
     loadQuotaStatus: mockLoadQuotaStatus,
@@ -121,8 +121,8 @@ describe('AI Components Integration Tests', () => {
 
       // 查找包含 AI 生成文本的按钮
       const buttons = wrapper.findAll('button');
-      const hasAIButton = buttons.some(btn => btn.text().includes('AI 生成'));
-      
+      const hasAIButton = buttons.some((btn) => btn.text().includes('AI 生成'));
+
       expect(hasAIButton).toBe(true);
       wrapper.unmount();
     });
@@ -203,13 +203,13 @@ describe('AI Components Integration Tests', () => {
       const generateButton = wrapper.findComponent({ name: 'AIGenerateKRButton' });
       if (generateButton.exists()) {
         const error = new Error('生成失败');
-        
+
         // 清除之前的 mock 调用
         mockShowSnackbar.mockClear();
-        
+
         await generateButton.vm.$emit('error', error);
         await wrapper.vm.$nextTick();
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
 
         // 验证错误被处理（可能通过 snackbar 或其他方式）
         // 由于组件可能有异步处理，我们验证事件能正常触发即可
@@ -231,8 +231,8 @@ describe('AI Components Integration Tests', () => {
 
       // 查找手动添加按钮
       const buttons = wrapper.findAll('button');
-      const manualAddBtn = buttons.find(btn => btn.text().includes('手动添加'));
-      
+      const manualAddBtn = buttons.find((btn) => btn.text().includes('手动添加'));
+
       if (manualAddBtn) {
         await manualAddBtn.trigger('click');
         await wrapper.vm.$nextTick();
@@ -279,7 +279,7 @@ describe('AI Components Integration Tests', () => {
       });
 
       expect(wrapper.exists()).toBe(true);
-      
+
       wrapper.unmount();
       expect(wrapper.exists()).toBe(false);
     });
@@ -311,7 +311,7 @@ describe('AI Components Integration Tests', () => {
 
 /**
  * 测试总结：
- * 
+ *
  * ✅ 已测试：
  * - 组件基本渲染
  * - 子组件存在性验证
@@ -319,13 +319,13 @@ describe('AI Components Integration Tests', () => {
  * - 事件触发和传递
  * - 组件生命周期
  * - 响应式更新
- * 
+ *
  * ⚠️ 未测试（需要更复杂的 Vuetify 组件交互）：
  * - 对话框详细交互
  * - 表单验证细节
  * - 列表项具体操作
  * - 复杂的用户交互流程
- * 
+ *
  * 📝 建议：
  * - 这些集成测试覆盖了核心功能和事件流
  * - 详细的 UI 交互测试建议通过 E2E 测试（Cypress/Playwright）完成

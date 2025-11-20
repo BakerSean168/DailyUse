@@ -31,11 +31,7 @@
     <!-- 正常内容 -->
     <template v-else>
       <!-- 头部导航栏 -->
-      <v-toolbar
-        :color="`rgba(var(--v-theme-surface))`"
-        elevation="2"
-        class="key-result-header flex-shrink-0"
-      >
+      <v-toolbar :color="`rgba(var(--v-theme-surface))`" elevation="2" class="key-result-header flex-shrink-0">
         <v-btn icon @click="$router.back()">
           <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
@@ -87,24 +83,13 @@
                   </div>
 
                   <!-- 进度条 -->
-                  <v-progress-linear
-                    :model-value="progressPercentage"
-                    height="8"
-                    :color="progressColor"
-                    class="mb-4"
-                    rounded
-                  />
+                  <v-progress-linear :model-value="progressPercentage" height="8" :color="progressColor" class="mb-4"
+                    rounded />
 
                   <!-- 完成百分比 -->
                   <div class="text-body-2 text-medium-emphasis">
                     完成度：<span class="font-weight-bold">{{ progressPercentage }}%</span>
-                    <v-chip
-                      v-if="keyResult.isCompleted"
-                      color="success"
-                      size="small"
-                      variant="elevated"
-                      class="ml-2"
-                    >
+                    <v-chip v-if="keyResult.isCompleted" color="success" size="small" variant="elevated" class="ml-2">
                       已完成
                     </v-chip>
                   </div>
@@ -119,23 +104,13 @@
                     </v-col>
                     <v-col cols="12" sm="6">
                       <div class="text-body-2 text-medium-emphasis mb-1">聚合方式</div>
-                      <v-chip
-                        :color="goalColor || 'primary'"
-                        variant="tonal"
-                        size="small"
-                        class="font-weight-medium"
-                      >
+                      <v-chip :color="goalColor || 'primary'" variant="tonal" size="small" class="font-weight-medium">
                         {{ aggregationMethodLabel }}
                       </v-chip>
                     </v-col>
                     <v-col cols="12" sm="6">
                       <div class="text-body-2 text-medium-emphasis mb-1">值类型</div>
-                      <v-chip
-                        color="info"
-                        variant="tonal"
-                        size="small"
-                        class="font-weight-medium"
-                      >
+                      <v-chip color="info" variant="tonal" size="small" class="font-weight-medium">
                         {{ valueTypeLabel }}
                       </v-chip>
                     </v-col>
@@ -156,6 +131,12 @@
                 <p class="text-body-2 mb-0">{{ keyResult.description }}</p>
               </div>
               <div v-else class="text-body-2 text-medium-emphasis italic">暂无描述</div>
+
+              <!-- AI Generate Tasks Button (Story 2.4) -->
+              <v-divider class="my-4" />
+              <v-btn color="primary" variant="tonal" prepend-icon="mdi-creation" @click="openGenerateTasksDialog" block>
+                ✨ 生成任务
+              </v-btn>
             </v-card-text>
           </v-card>
 
@@ -164,15 +145,10 @@
             <v-card-title class="pa-6 d-flex align-center justify-space-between">
               <div class="d-flex align-center">
                 <v-icon class="mr-2" color="primary">mdi-history</v-icon>
-                <span class="text-h6">进度记录<v-chip size="small" variant="flat" class="ml-2">{{ records.length }}</v-chip></span>
+                <span class="text-h6">进度记录<v-chip size="small" variant="flat" class="ml-2">{{ records.length
+                    }}</v-chip></span>
               </div>
-              <v-btn
-                color="primary"
-                variant="elevated"
-                size="small"
-                prepend-icon="mdi-plus"
-                @click="handleAddRecord"
-              >
+              <v-btn color="primary" variant="elevated" size="small" prepend-icon="mdi-plus" @click="handleAddRecord">
                 添加记录
               </v-btn>
             </v-card-title>
@@ -185,11 +161,7 @@
                 <template v-for="(record, index) in records" :key="record.uuid">
                   <v-list-item class="py-3">
                     <template v-slot:prepend>
-                      <v-avatar
-                        :color="getChangeColor(record, index)"
-                        variant="tonal"
-                        size="small"
-                      >
+                      <v-avatar :color="getChangeColor(record, index)" variant="tonal" size="small">
                         <v-icon size="small">
                           {{ getChangeIcon(record, index) }}
                         </v-icon>
@@ -213,12 +185,8 @@
                     </v-list-item-subtitle>
 
                     <v-list-item-subtitle class="text-caption">
-                      <v-chip
-                        :color="getChangeColor(record, index)"
-                        size="x-small"
-                        variant="tonal"
-                        class="font-weight-bold"
-                      >
+                      <v-chip :color="getChangeColor(record, index)" size="x-small" variant="tonal"
+                        class="font-weight-bold">
                         {{ getChangeAmountText(record, index) }}
                       </v-chip>
                     </v-list-item-subtitle>
@@ -248,13 +216,7 @@
             <div v-else class="pa-12 d-flex flex-column align-center justify-center">
               <v-icon size="64" color="medium-emphasis" class="mb-2">mdi-history</v-icon>
               <p class="text-body-2 text-medium-emphasis">暂无进度记录</p>
-              <v-btn
-                color="primary"
-                variant="text"
-                size="small"
-                @click="handleAddRecord"
-                class="mt-2"
-              >
+              <v-btn color="primary" variant="text" size="small" @click="handleAddRecord" class="mt-2">
                 立即添加
               </v-btn>
             </div>
@@ -264,6 +226,13 @@
 
       <!-- GoalRecordDialog -->
       <GoalRecordDialog ref="recordDialogRef" />
+
+      <!-- TaskAIGenerationDialog (Story 2.4) -->
+      <TaskAIGenerationDialog v-if="keyResult" v-model="showGenerateTasksDialog" :key-result-title="keyResult.title"
+        :key-result-description="keyResult.description || ''" :target-value="keyResult.progress.targetValue"
+        :current-value="keyResult.progress.currentValue || 0" :unit="keyResult.progress.unit"
+        :time-remaining="timeRemainingDays" :goal-uuid="goalUuid" :key-result-uuid="keyResultUuid"
+        :account-uuid="authStore.accountUuid || ''" @tasks-imported="handleTasksImported" />
     </template>
   </v-container>
 </template>
@@ -276,19 +245,25 @@ import { GoalContracts } from '@dailyuse/contracts';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
+import TaskAIGenerationDialog from '@/modules/task/presentation/components/TaskAIGenerationDialog.vue';
 // 引入 snackbar 和 message
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { useMessage } from '@dailyuse/ui';
 import type { KeyResult, Goal } from '@dailyuse/domain-client';
+import { useAuthStore } from '@/stores/auth/authStore';
 
 const router = useRouter();
 const route = useRoute();
 const { goals, getGoalRecordsByKeyResult, deleteKeyResultForGoal, fetchGoalById } = useGoal();
+const authStore = useAuthStore();
 
 const recordDialogRef = ref<InstanceType<typeof GoalRecordDialog> | null>(null);
 const records = ref<GoalContracts.GoalRecordClientDTO[]>([]);
 const loading = ref(true);
 const error = ref('');
+
+// AI Generate Tasks Dialog (Story 2.4)
+const showGenerateTasksDialog = ref(false);
 
 // 从路由参数获取 goalUuid 和 keyResultUuid
 const goalUuid = computed(() => route.params.goalUuid as string);
@@ -371,7 +346,7 @@ const loadData = async () => {
     if (!goal.value || !goal.value.keyResults?.length) {
       // 从 API 强制刷新 Goal 数据（includeChildren=true）
       const fetchedGoal = await fetchGoalById(goalUuid.value, true);
-      
+
       if (!fetchedGoal) {
         error.value = '目标不存在';
         setTimeout(() => {
@@ -467,11 +442,11 @@ const handleAddRecord = () => {
 const handleDeleteRecord = async (recordUuid: string) => {
   try {
     if (!confirm('确定要删除此记录吗？')) return;
-    
+
     // ✅ 直接调用 goalApiClient 删除
     const { goalApiClient } = await import('../../infrastructure/api/goalApiClient');
     await goalApiClient.deleteGoalRecord(goalUuid.value, keyResultUuid.value, recordUuid);
-    
+
     snackbar.showSuccess('记录删除成功');
     await loadRecords();
   } catch (err) {
@@ -479,6 +454,26 @@ const handleDeleteRecord = async (recordUuid: string) => {
     snackbar.showError('删除记录失败');
   }
 };
+
+// Open Generate Tasks Dialog (Story 2.4)
+const openGenerateTasksDialog = () => {
+  showGenerateTasksDialog.value = true;
+};
+
+// Handle tasks imported (Story 2.4)
+const handleTasksImported = (count: number) => {
+  snackbar.showSuccess(`成功导入 ${count} 个任务`);
+  showGenerateTasksDialog.value = false;
+};
+
+// Calculate time remaining for AI generation (Story 2.4)
+const timeRemainingDays = computed(() => {
+  if (!goal.value?.timeRange?.endDate) return 30; // Default 30 days
+  const now = Date.now();
+  const endDate = goal.value.timeRange.endDate;
+  const daysRemaining = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
+  return daysRemaining;
+});
 
 // 计算当前记录相对于前一条记录的变化量
 const getChangeAmount = (record: GoalContracts.GoalRecordClientDTO, index: number): number => {
@@ -598,4 +593,3 @@ onMounted(() => {
   }
 }
 </style>
-

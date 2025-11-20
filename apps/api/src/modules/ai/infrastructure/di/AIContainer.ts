@@ -6,13 +6,20 @@
  * - 管理服务实例生命周期
  * - 提供统一的依赖注入接口
  * - 单例模式
+ *
+ * 架构说明：
+ * - 领域服务从 @dailyuse/domain-server 导入（纯验证逻辑）
+ * - 基础设施服务从本地 infrastructure/ 导入（Adapter、Quota、Prompts）
+ * - 应用服务协调所有依赖
  */
 
 import { PrismaClient } from '@prisma/client';
-import { OpenAIAdapter, AIGenerationService } from '@dailyuse/domain-server';
+import { AIGenerationService } from '@dailyuse/domain-server';
 import { AIGenerationApplicationService } from '../../application/services/AIGenerationApplicationService';
 import { PrismaAIUsageQuotaRepository } from '../repositories/PrismaAIUsageQuotaRepository';
-import { PrismaAIGenerationTaskRepository } from '../repositories/PrismaAIGenerationTaskRepository';
+import { PrismaAIConversationRepository } from '../repositories/PrismaAIConversationRepository';
+import { OpenAIAdapter } from '../adapters/OpenAIAdapter';
+import type { BaseAIAdapter } from '../adapters/BaseAIAdapter';
 
 /**
  * AI Container 单例
@@ -21,6 +28,10 @@ export class AIContainer {
   private static instance: AIContainer;
   private prisma: PrismaClient;
   private applicationService?: AIGenerationApplicationService;
+  private validationService?: AIGenerationService;
+  private conversationRepository?: PrismaAIConversationRepository;
+  private quotaRepository?: PrismaAIUsageQuotaRepository;
+  private aiAdapter?: BaseAIAdapter;
 
   private constructor() {
     // 初始化 Prisma Client（共享实例）
@@ -38,29 +49,62 @@ export class AIContainer {
   }
 
   /**
+   * 获取 Conversation Repository
+   */
+  getConversationRepository(): PrismaAIConversationRepository {
+    if (!this.conversationRepository) {
+      this.conversationRepository = new PrismaAIConversationRepository(this.prisma);
+    }
+    return this.conversationRepository;
+  }
+
+  /**
+   * 获取 Quota Repository
+   */
+  getQuotaRepository(): PrismaAIUsageQuotaRepository {
+    if (!this.quotaRepository) {
+      this.quotaRepository = new PrismaAIUsageQuotaRepository(this.prisma);
+    }
+    return this.quotaRepository;
+  }
+
+  /**
+   * 获取 AI Adapter（基础设施）
+   */
+  getAIAdapter(): BaseAIAdapter {
+    if (!this.aiAdapter) {
+      this.aiAdapter = new OpenAIAdapter();
+    }
+    return this.aiAdapter;
+  }
+
+  /**
+   * 获取 AIGenerationService（领域服务 - 纯验证）
+   */
+  getValidationService(): AIGenerationService {
+    if (!this.validationService) {
+      this.validationService = new AIGenerationService();
+    }
+    return this.validationService;
+  }
+
+  /**
    * 获取 ApplicationService
    */
   getApplicationService(): AIGenerationApplicationService {
     if (!this.applicationService) {
-      // 创建 Adapter
-      const apiKey = process.env.OPENAI_API_KEY;
-      if (!apiKey) {
-        throw new Error('OPENAI_API_KEY environment variable is not set');
-      }
-      const adapter = new OpenAIAdapter(apiKey);
-
-      // 创建 Domain Service
-      const generationService = new AIGenerationService(adapter);
-
-      // 创建 Repositories
-      const quotaRepository = new PrismaAIUsageQuotaRepository(this.prisma);
-      const taskRepository = new PrismaAIGenerationTaskRepository(this.prisma);
+      // 创建依赖
+      const validationService = this.getValidationService();
+      const aiAdapter = this.getAIAdapter();
+      const quotaRepository = this.getQuotaRepository();
+      const conversationRepository = this.getConversationRepository();
 
       // 创建 Application Service
       this.applicationService = new AIGenerationApplicationService(
-        generationService,
+        validationService,
+        aiAdapter,
         quotaRepository,
-        taskRepository,
+        conversationRepository,
       );
     }
 

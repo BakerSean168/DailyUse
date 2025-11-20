@@ -12,9 +12,9 @@
  * ```vue
  * <script setup>
  * import { useAIGeneration } from '@/modules/ai/composables/useAIGeneration';
- * 
+ *
  * const { generateKeyResults, isGenerating, error, quota } = useAIGeneration();
- * 
+ *
  * async function handleGenerate() {
  *   const result = await generateKeyResults({
  *     goalTitle: '学习 Vue 3',
@@ -28,6 +28,7 @@
 
 import { computed } from 'vue';
 import { useAIGenerationStore } from '@/stores/ai/aiGenerationStore';
+import { goalApiClient } from '@/modules/goal/infrastructure/api/goalApiClient';
 import { aiGenerationApiClient } from '../api/aiGenerationApiClient';
 import { createLogger } from '@dailyuse/utils';
 
@@ -90,13 +91,14 @@ export function useAIGeneration() {
 
   /**
    * 生成关键结果
+   * Epic 2 API: Uses startDate/endDate instead of category/importance/urgency
    */
   async function generateKeyResults(params: {
     goalTitle: string;
     goalDescription?: string;
-    category?: string;
-    importance?: string;
-    urgency?: string;
+    startDate: number;
+    endDate: number;
+    goalContext?: string;
   }) {
     try {
       store.setGenerating(true);
@@ -104,16 +106,17 @@ export function useAIGeneration() {
 
       logger.info('Generating key results', { goalTitle: params.goalTitle });
 
-      // 调用 API
-      const result = await aiGenerationApiClient.generateKeyResults(params);
+      // 调用 Goal 模块的 API 客户端 (DDD架构)
+      const result = await goalApiClient.generateKeyResults(params);
 
-      // 更新 Store
-      store.addKeyResults(result.keyResults, result.taskUuid);
-      store.setQuota(result.quota);
+      // 更新 Store (Note: Epic 2 API returns tokenUsage/generatedAt instead of quota/taskUuid)
+      store.addKeyResults(result.keyResults, result.generatedAt.toString());
+      // Quota needs to be fetched separately or from response if backend returns it
+      // store.setQuota(result.quota);
 
       logger.info('Key results generated successfully', {
         count: result.keyResults.length,
-        taskUuid: result.taskUuid,
+        generatedAt: result.generatedAt,
       });
 
       return result;

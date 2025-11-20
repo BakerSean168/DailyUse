@@ -132,7 +132,7 @@ function getResults() {
 
 ```vue
 <script setup lang="ts">
-import { useAIGeneration } from '@/modules/ai/composables/useAIGeneration';
+import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
 
 const {
   // 状态
@@ -144,7 +144,7 @@ const {
   timeToReset,
   quotaStatusText,
   recentKeyResults,
-  
+
   // 方法
   generateKeyResults,
   loadQuotaStatus,
@@ -162,7 +162,7 @@ async function generate() {
       importance: 'high',
       urgency: 'urgent',
     });
-    
+
     console.log('生成成功:', result);
   } catch (err) {
     console.error('生成失败:', err);
@@ -175,9 +175,9 @@ async function generate() {
     <v-btn @click="generate" :loading="isGenerating" :disabled="!hasQuota">
       生成关键结果 ({{ quotaStatusText }})
     </v-btn>
-    
+
     <v-alert v-if="error" type="error">{{ error }}</v-alert>
-    
+
     <div v-for="kr in recentKeyResults" :key="kr.uuid">
       {{ kr.title }}
     </div>
@@ -192,14 +192,16 @@ async function generate() {
 ### AIGenerateKRButton.vue
 
 **Props:**
+
 ```typescript
 interface Props {
-  initialGoalTitle?: string;        // 初始目标标题
-  initialGoalDescription?: string;  // 初始目标描述
+  initialGoalTitle?: string; // 初始目标标题
+  initialGoalDescription?: string; // 初始目标描述
 }
 ```
 
 **Emits:**
+
 ```typescript
 {
   generated: [result: any];  // 生成成功
@@ -208,6 +210,7 @@ interface Props {
 ```
 
 **Methods (Expose):**
+
 ```typescript
 {
   openDialog(): void;   // 打开生成对话框
@@ -220,13 +223,15 @@ interface Props {
 ### KRPreviewList.vue
 
 **Props:**
+
 ```typescript
 interface Props {
-  results?: any[];  // 生成的关键结果数组
+  results?: any[]; // 生成的关键结果数组
 }
 ```
 
 **Emits:**
+
 ```typescript
 {
   accept: [results: KeyResultPreview[]];               // 采纳选中的结果
@@ -237,6 +242,7 @@ interface Props {
 ```
 
 **Methods (Expose):**
+
 ```typescript
 {
   loadResults(results: any[]): void;  // 加载结果
@@ -251,14 +257,16 @@ interface Props {
 ### AIKeyResultsSection.vue
 
 **Props:**
+
 ```typescript
 interface Props {
-  goalTitle?: string;       // 目标标题
+  goalTitle?: string; // 目标标题
   goalDescription?: string; // 目标描述
 }
 ```
 
 **Emits:**
+
 ```typescript
 {
   resultsUpdated: [results: KeyResultData[]];  // 已采纳结果更新
@@ -267,6 +275,7 @@ interface Props {
 ```
 
 **Methods (Expose):**
+
 ```typescript
 {
   openGenerateDialog(): void;                    // 打开生成对话框
@@ -295,7 +304,7 @@ interface Props {
   timeToReset: ComputedRef<string | null>;      // 重置倒计时
   quotaStatusText: ComputedRef<string>;         // 配额状态文本
   recentKeyResults: ComputedRef<any[]>;         // 最近生成的结果
-  
+
   // ===== 方法 =====
   generateKeyResults(params: {
     goalTitle: string;
@@ -304,10 +313,10 @@ interface Props {
     importance?: string;
     urgency?: string;
   }): Promise<any>;                             // 生成关键结果
-  
+
   generateTaskTemplate(): Promise<any>;         // 生成任务模板（未实现）
   generateKnowledgeDocument(): Promise<any>;    // 生成知识文档（未实现）
-  
+
   loadQuotaStatus(): Promise<void>;             // 加载配额状态
   clearError(): void;                           // 清空错误
   clearResults(): void;                         // 清空结果
@@ -331,12 +340,12 @@ interface Props {
 interface AIUsageQuotaClientDTO {
   uuid: string;
   accountUuid: string;
-  quotaLimit: number;         // 配额上限（50）
-  currentUsage: number;       // 当前使用量
-  remainingQuota: number;     // 剩余额度
-  resetPeriod: 'DAILY';       // 重置周期
-  lastResetAt: string;        // 上次重置时间
-  nextResetAt: string;        // 下次重置时间
+  quotaLimit: number; // 配额上限（50）
+  currentUsage: number; // 当前使用量
+  remainingQuota: number; // 剩余额度
+  resetPeriod: 'DAILY'; // 重置周期
+  lastResetAt: string; // 上次重置时间
+  nextResetAt: string; // 下次重置时间
 }
 ```
 

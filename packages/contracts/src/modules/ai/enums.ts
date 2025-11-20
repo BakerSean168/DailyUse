@@ -73,3 +73,14 @@ export enum QuotaResetPeriod {
   WEEKLY = 'WEEKLY',
   MONTHLY = 'MONTHLY',
 }
+
+// ============ 任务相关枚举 ============
+
+/**
+ * 任务优先级
+ */
+export enum TaskPriority {
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW',
+}

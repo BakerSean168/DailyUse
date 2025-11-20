@@ -27,6 +27,7 @@ import editorRouter from './modules/editor/interface/http/routes/editorRoutes';
 import repositoryRouter from './modules/repository/interface/http/routes/repositoryRoutes';
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
 import aiGenerationRouter from './modules/ai/interface/http/aiGenerationRoutes';
+import aiConversationRouter from './modules/ai/interface/http/aiConversationRoutes';
 import dashboardRouter from './modules/dashboard/interface/routes';
 import crossModuleRouter from './shared/api/crossModuleRoutes';
 
@@ -114,7 +115,7 @@ api.use((req, res, next) => {
     baseUrl: req.baseUrl,
     fullUrl: req.originalUrl,
   });
-  
+
   // 检查是否匹配 SSE 路由
   if (req.path.startsWith('/sse')) {
     console.log('✅ [API Router] SSE 路由匹配检查:', {
@@ -123,7 +124,7 @@ api.use((req, res, next) => {
       registered: '/sse',
     });
   }
-  
+
   next();
 });
 
@@ -218,6 +219,8 @@ api.use('/cross-module', authMiddleware, crossModuleRouter);
  */
 // 挂载 AI 生成路由 - 需要认证
 api.use('/ai', aiGenerationRouter); // authMiddleware 在路由文件内部应用
+// 挂载 AI 对话路由 - 需要认证（包含 chat, conversations, quota）
+api.use('/ai', aiConversationRouter); // authMiddleware 在路由文件内部应用
 
 /**
  * theme 主题模块

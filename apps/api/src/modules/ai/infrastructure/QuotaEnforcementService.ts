@@ -13,7 +13,7 @@
  */
 
 import { AIContracts, QuotaResetPeriod } from '@dailyuse/contracts';
-import { AIQuotaExceededError } from '../errors/AIErrors';
+import { AIQuotaExceededError } from '@dailyuse/domain-server/ai';
 
 type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
 
@@ -43,7 +43,9 @@ export class QuotaEnforcementService {
       throw new AIQuotaExceededError(
         quota.quotaLimit,
         currentUsage,
-        new Date(needsReset ? this.calculateNextResetTime(now, quota.resetPeriod) : quota.nextResetAt),
+        new Date(
+          needsReset ? this.calculateNextResetTime(now, quota.resetPeriod) : quota.nextResetAt,
+        ),
       );
     }
   }
@@ -53,10 +55,7 @@ export class QuotaEnforcementService {
    *
    * @returns 更新后的配额 DTO（不持久化）
    */
-  public consumeQuota(
-    quota: AIUsageQuotaServerDTO,
-    amount: number = 1,
-  ): AIUsageQuotaServerDTO {
+  public consumeQuota(quota: AIUsageQuotaServerDTO, amount: number = 1): AIUsageQuotaServerDTO {
     const now = Date.now();
     const needsReset = now >= quota.nextResetAt;
 
@@ -64,7 +63,9 @@ export class QuotaEnforcementService {
       ...quota,
       currentUsage: needsReset ? amount : quota.currentUsage + amount,
       lastResetAt: needsReset ? now : quota.lastResetAt,
-      nextResetAt: needsReset ? this.calculateNextResetTime(now, quota.resetPeriod) : quota.nextResetAt,
+      nextResetAt: needsReset
+        ? this.calculateNextResetTime(now, quota.resetPeriod)
+        : quota.nextResetAt,
       updatedAt: now,
     };
   }
@@ -118,10 +119,10 @@ export class QuotaEnforcementService {
       used: currentUsage,
       limit: quota.quotaLimit,
       usagePercentage,
-      resetAt: new Date(needsReset ? this.calculateNextResetTime(now, quota.resetPeriod) : quota.nextResetAt),
+      resetAt: new Date(
+        needsReset ? this.calculateNextResetTime(now, quota.resetPeriod) : quota.nextResetAt,
+      ),
       needsReset,
     };
   }
 }
-
-

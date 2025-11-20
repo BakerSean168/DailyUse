@@ -132,7 +132,7 @@ export class GoalApiClient {
       goalUuid,
       ...request,
     };
-    
+
     const data = await apiClient.post(`${this.baseUrl}/${goalUuid}/key-results`, backendRequest);
     return data;
   }
@@ -169,15 +169,13 @@ export class GoalApiClient {
 
   /**
    * 获取目标进度分解详情
-   * 
+   *
    * 返回目标进度的详细计算信息，包括每个关键结果的贡献度
-   * 
+   *
    * @param goalUuid - 目标 UUID
    * @returns 进度分解详情
    */
-  async getProgressBreakdown(
-    goalUuid: string
-  ): Promise<GoalContracts.ProgressBreakdown> {
+  async getProgressBreakdown(goalUuid: string): Promise<GoalContracts.ProgressBreakdown> {
     const data = await apiClient.get(`${this.baseUrl}/${goalUuid}/progress-breakdown`);
     return data;
   }
@@ -265,6 +263,27 @@ export class GoalApiClient {
     },
   ): Promise<GoalContracts.GoalClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${goalUuid}/clone`, request);
+    return data;
+  }
+
+  // ===== AI Generation =====
+
+  /**
+   * AI 生成关键结果
+   * Epic 2 API: 使用 startDate/endDate 替代 category/importance/urgency
+   */
+  async generateKeyResults(request: {
+    goalTitle: string;
+    goalDescription?: string;
+    startDate: number;
+    endDate: number;
+    goalContext?: string;
+  }): Promise<{
+    keyResults: any[];
+    tokenUsage: any;
+    generatedAt: number;
+  }> {
+    const data = await apiClient.post('/ai/generate/key-results', request);
     return data;
   }
 

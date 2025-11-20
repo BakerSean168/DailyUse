@@ -1,6 +1,6 @@
 /**
  * AIKeyResultsSection Component Tests
- * 
+ *
  * 测试范围：
  * - 组件集成（按钮 + 列表）
  * - 完整工作流程（生成 → 预览 → 采纳）
@@ -29,7 +29,7 @@ vi.mock('../../../../shared/composables/useSnackbar', () => ({
 }));
 
 // Mock useAIGeneration
-vi.mock('../../../../modules/ai/composables/useAIGeneration', () => ({
+vi.mock('../../../../ai/presentation/composables/useAIGeneration', () => ({
   useAIGeneration: () => ({
     generateKeyResults: vi.fn(),
     loadQuotaStatus: vi.fn(),
@@ -55,7 +55,9 @@ describe('AIKeyResultsSection', () => {
   let wrapper: VueWrapper;
   let vuetify: ReturnType<typeof createVuetify>;
 
-  const mockGeneratedResults: Array<AIContracts.KeyResultSuggestion & { uuid?: string; selected?: boolean }> = [
+  const mockGeneratedResults: Array<
+    AIContracts.KeyResultSuggestion & { uuid?: string; selected?: boolean }
+  > = [
     {
       uuid: 'kr-1',
       title: 'KR 1',
@@ -115,20 +117,20 @@ describe('AIKeyResultsSection', () => {
   describe('组件渲染', () => {
     it('应该正确渲染标题', () => {
       wrapper = mountComponent();
-      
+
       expect(wrapper.text()).toContain('关键结果管理');
     });
 
     it('应该渲染 AI 生成按钮', () => {
       wrapper = mountComponent();
-      
+
       const button = wrapper.findComponent(AIGenerateKRButton);
       expect(button.exists()).toBe(true);
     });
 
     it('应该渲染预览列表', () => {
       wrapper = mountComponent();
-      
+
       const previewList = wrapper.findComponent(KRPreviewList);
       expect(previewList.exists()).toBe(true);
     });
@@ -138,7 +140,7 @@ describe('AIKeyResultsSection', () => {
         goalTitle: '自定义目标',
         goalDescription: '自定义描述',
       });
-      
+
       const button = wrapper.findComponent(AIGenerateKRButton);
       expect(button.props('initialGoalTitle')).toBe('自定义目标');
       expect(button.props('initialGoalDescription')).toBe('自定义描述');
@@ -148,7 +150,7 @@ describe('AIKeyResultsSection', () => {
   describe('提示信息', () => {
     it('初始状态应该显示使用提示', () => {
       wrapper = mountComponent();
-      
+
       const hint = wrapper.find('[data-testid="usage-hint"]');
       expect(hint.exists()).toBe(true);
       expect(hint.text()).toContain('点击"AI 生成关键结果"按钮');
@@ -156,7 +158,7 @@ describe('AIKeyResultsSection', () => {
 
     it('有生成结果后应该隐藏提示', async () => {
       wrapper = mountComponent();
-      
+
       // 模拟生成结果
       wrapper.vm.generatedResults = mockGeneratedResults;
       await wrapper.vm.$nextTick();
@@ -167,10 +169,10 @@ describe('AIKeyResultsSection', () => {
 
     it('点击关闭应该隐藏提示', async () => {
       wrapper = mountComponent();
-      
+
       const hint = wrapper.find('[data-testid="usage-hint"]');
       const closeBtn = hint.find('.v-btn');
-      
+
       await closeBtn.trigger('click');
       await wrapper.vm.$nextTick();
 
@@ -181,21 +183,21 @@ describe('AIKeyResultsSection', () => {
   describe('生成结果处理', () => {
     it('接收生成结果应该更新预览列表', async () => {
       wrapper = mountComponent();
-      
+
       const button = wrapper.findComponent(AIGenerateKRButton);
       button.vm.$emit('generated', mockGeneratedResults);
       await wrapper.vm.$nextTick();
 
       expect(wrapper.vm.generatedResults).toHaveLength(2);
-      
+
       const previewList = wrapper.findComponent(KRPreviewList);
       expect(previewList.props('results')).toHaveLength(2);
     });
 
     it('生成结果应该添加 uuid 和 selected 属性', async () => {
       wrapper = mountComponent();
-      
-      const resultsWithoutUuid = mockGeneratedResults.map(r => ({
+
+      const resultsWithoutUuid = mockGeneratedResults.map((r) => ({
         ...r,
         uuid: undefined,
       }));
@@ -204,7 +206,7 @@ describe('AIKeyResultsSection', () => {
       button.vm.$emit('generated', resultsWithoutUuid);
       await wrapper.vm.$nextTick();
 
-      wrapper.vm.generatedResults.forEach(result => {
+      wrapper.vm.generatedResults.forEach((result) => {
         expect(result.uuid).toBeTruthy();
         expect(typeof result.selected).toBe('boolean');
       });
@@ -212,23 +214,20 @@ describe('AIKeyResultsSection', () => {
 
     it('生成错误应该显示提示', async () => {
       wrapper = mountComponent();
-      
+
       const error = new Error('生成失败');
       const button = wrapper.findComponent(AIGenerateKRButton);
       button.vm.$emit('error', error);
       await wrapper.vm.$nextTick();
 
-      expect(mockShowSnackbar).toHaveBeenCalledWith(
-        expect.stringContaining('生成失败'),
-        'error'
-      );
+      expect(mockShowSnackbar).toHaveBeenCalledWith(expect.stringContaining('生成失败'), 'error');
     });
   });
 
   describe('采纳功能', () => {
     it('采纳选中项应该更新已采纳列表', async () => {
       wrapper = mountComponent();
-      
+
       // 先设置生成结果
       wrapper.vm.generatedResults = [...mockGeneratedResults];
       wrapper.vm.generatedResults[0].selected = true;
@@ -245,7 +244,7 @@ describe('AIKeyResultsSection', () => {
 
     it('采纳后应该从预览列表移除', async () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.generatedResults = [...mockGeneratedResults];
       wrapper.vm.generatedResults[0].selected = true;
       await wrapper.vm.$nextTick();
@@ -260,7 +259,7 @@ describe('AIKeyResultsSection', () => {
 
     it('采纳后应该触发 resultsUpdated 事件', async () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.generatedResults = [...mockGeneratedResults];
       await wrapper.vm.$nextTick();
 
@@ -279,7 +278,7 @@ describe('AIKeyResultsSection', () => {
   describe('编辑功能', () => {
     it('编辑应该更新结果', async () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.generatedResults = [...mockGeneratedResults];
       await wrapper.vm.$nextTick();
 
@@ -299,7 +298,7 @@ describe('AIKeyResultsSection', () => {
   describe('删除功能', () => {
     it('删除应该从列表移除', async () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.generatedResults = [...mockGeneratedResults];
       await wrapper.vm.$nextTick();
 
@@ -313,16 +312,16 @@ describe('AIKeyResultsSection', () => {
 
     it('从已采纳列表删除应该移除项', async () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.acceptedResults = [...mockGeneratedResults];
       await wrapper.vm.$nextTick();
 
       // 查找已采纳列表中的删除按钮
       const acceptedList = wrapper.find('[data-testid="accepted-results-list"]');
       const items = acceptedList.findAll('[data-testid="accepted-kr-item"]');
-      const deleteBtn = items[0].findAll('.v-btn').find(btn => 
-        btn.attributes('icon') === 'mdi-close'
-      );
+      const deleteBtn = items[0]
+        .findAll('.v-btn')
+        .find((btn) => btn.attributes('icon') === 'mdi-close');
 
       if (deleteBtn) {
         await deleteBtn.trigger('click');
@@ -336,10 +335,8 @@ describe('AIKeyResultsSection', () => {
   describe('手动添加', () => {
     it('点击手动添加应该触发 manualAdd 事件', async () => {
       wrapper = mountComponent();
-      
-      const manualAddBtn = wrapper.findAll('.v-btn').find(btn => 
-        btn.text().includes('手动添加')
-      );
+
+      const manualAddBtn = wrapper.findAll('.v-btn').find((btn) => btn.text().includes('手动添加'));
 
       if (manualAddBtn) {
         await manualAddBtn.trigger('click');
@@ -354,34 +351,32 @@ describe('AIKeyResultsSection', () => {
   describe('已采纳列表显示', () => {
     it('没有采纳项时不显示已采纳列表', () => {
       wrapper = mountComponent();
-      
+
       const acceptedList = wrapper.find('[data-testid="accepted-results-list"]');
       expect(acceptedList.exists()).toBe(false);
     });
 
     it('有采纳项时显示已采纳列表', async () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.acceptedResults = [...mockGeneratedResults];
       await wrapper.vm.$nextTick();
 
       const acceptedList = wrapper.find('[data-testid="accepted-results-list"]');
       expect(acceptedList.exists()).toBe(true);
-      
+
       const items = acceptedList.findAll('[data-testid="accepted-kr-item"]');
       expect(items).toHaveLength(2);
     });
 
     it('已采纳列表应该显示正确数量', async () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.acceptedResults = [...mockGeneratedResults];
       await wrapper.vm.$nextTick();
 
-      const chip = wrapper.findAll('.v-chip').find(c => 
-        c.text().includes('个')
-      );
-      
+      const chip = wrapper.findAll('.v-chip').find((c) => c.text().includes('个'));
+
       expect(chip?.text()).toContain('2 个');
     });
   });
@@ -389,7 +384,7 @@ describe('AIKeyResultsSection', () => {
   describe('完整工作流程', () => {
     it('应该完成完整的生成-采纳流程', async () => {
       wrapper = mountComponent();
-      
+
       // 1. 生成结果
       const button = wrapper.findComponent(AIGenerateKRButton);
       button.vm.$emit('generated', mockGeneratedResults);
@@ -416,21 +411,21 @@ describe('AIKeyResultsSection', () => {
   describe('暴露的方法', () => {
     it('应该暴露 getAcceptedResults 方法', () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.acceptedResults = [...mockGeneratedResults];
-      
+
       const results = wrapper.vm.getAcceptedResults();
       expect(results).toHaveLength(2);
     });
 
     it('应该暴露 clearAll 方法', () => {
       wrapper = mountComponent();
-      
+
       wrapper.vm.generatedResults = [...mockGeneratedResults];
       wrapper.vm.acceptedResults = [...mockGeneratedResults];
-      
+
       wrapper.vm.clearAll();
-      
+
       expect(wrapper.vm.generatedResults).toHaveLength(0);
       expect(wrapper.vm.acceptedResults).toHaveLength(0);
     });

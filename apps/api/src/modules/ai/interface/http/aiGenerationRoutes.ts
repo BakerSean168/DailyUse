@@ -11,6 +11,7 @@
 
 import { Router } from 'express';
 import { AIGenerationController } from './AIGenerationController';
+import { AIConversationController } from './AIConversationController';
 import { authMiddleware } from '../../../../shared/middlewares/authMiddleware';
 
 const router: Router = Router();
@@ -61,6 +62,109 @@ router.use(authMiddleware);
  *         description: 配额超限
  */
 router.post('/generate/key-results', AIGenerationController.generateKeyResults);
+
+/**
+ * @swagger
+ * /api/ai/generate/tasks:
+ *   post:
+ *     tags: [AI]
+ *     summary: 生成任务模板（Tasks）
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - keyResultTitle
+ *               - targetValue
+ *               - currentValue
+ *               - timeRemaining
+ *             properties:
+ *               keyResultTitle:
+ *                 type: string
+ *                 description: Key Result 标题
+ *                 example: "增加月活用户到 10000"
+ *               keyResultDescription:
+ *                 type: string
+ *                 description: Key Result 描述
+ *                 example: "通过优化用户体验和营销活动"
+ *               targetValue:
+ *                 type: number
+ *                 description: 目标值
+ *                 example: 10000
+ *               currentValue:
+ *                 type: number
+ *                 description: 当前值
+ *                 example: 2000
+ *               unit:
+ *                 type: string
+ *                 description: 单位（可选）
+ *                 example: "users"
+ *               timeRemaining:
+ *                 type: number
+ *                 description: 剩余天数
+ *                 example: 90
+ *     responses:
+ *       200:
+ *         description: 生成成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: number
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: "Tasks generated successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     tasks:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           title:
+ *                             type: string
+ *                           description:
+ *                             type: string
+ *                           estimatedHours:
+ *                             type: number
+ *                           priority:
+ *                             type: string
+ *                             enum: [HIGH, MEDIUM, LOW]
+ *                           dependencies:
+ *                             type: array
+ *                             items:
+ *                               type: number
+ *                           tags:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                     tokenUsage:
+ *                       type: object
+ *                       properties:
+ *                         promptTokens:
+ *                           type: number
+ *                         completionTokens:
+ *                           type: number
+ *                         totalTokens:
+ *                           type: number
+ *                     generatedAt:
+ *                       type: number
+ *       401:
+ *         description: 未授权
+ *       400:
+ *         description: 参数验证失败
+ *       429:
+ *         description: 配额超限
+ */
+router.post('/generate/tasks', AIConversationController.generateTasks);
 
 /**
  * @swagger

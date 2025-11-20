@@ -9,12 +9,7 @@ import type {
   AIUsageQuotaClientDTO,
   MessageClientDTO,
 } from './index';
-import type {
-  ConversationStatus,
-  GenerationTaskType,
-  AIProvider,
-  AIModel,
-} from './enums';
+import type { ConversationStatus, GenerationTaskType, AIProvider, AIModel } from './enums';
 
 // ============ Conversation Requests ============
 
@@ -103,6 +98,13 @@ export interface QuotaResponse {
 export interface UpdateQuotaLimitRequest {
   newLimit: number;
 }
+
+// ============ AI Generation Requests (Epic 2) ============
+
+export * from './api-requests/GenerateKeyResultsRequest';
+export * from './api-responses/GenerateKeyResultsResponse';
+export * from './api-requests/GenerateTasksRequest';
+export * from './api-responses/GenerateTasksResponse';
 
 // ============ Common List Request ============
 

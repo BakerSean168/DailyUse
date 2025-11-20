@@ -94,44 +94,44 @@
 
             <v-row>
               <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.category"
-                  label="目标类别（可选）"
-                  :items="categoryOptions"
+                <v-text-field
+                  v-model="formData.startDate"
+                  label="开始日期 *"
+                  type="date"
+                  :rules="[rules.required]"
                   variant="outlined"
                   density="comfortable"
-                  prepend-inner-icon="mdi-folder"
-                  clearable
+                  prepend-inner-icon="mdi-calendar-start"
                   :disabled="isGenerating"
-                  data-testid="category-select"
+                  data-testid="start-date-input"
                 />
               </v-col>
 
               <v-col cols="12" md="6">
-                <v-select
-                  v-model="formData.importance"
-                  label="重要程度（可选）"
-                  :items="importanceOptions"
+                <v-text-field
+                  v-model="formData.endDate"
+                  label="结束日期 *"
+                  type="date"
+                  :rules="[rules.required, rules.endAfterStart]"
                   variant="outlined"
                   density="comfortable"
-                  prepend-inner-icon="mdi-star"
-                  clearable
+                  prepend-inner-icon="mdi-calendar-end"
                   :disabled="isGenerating"
-                  data-testid="importance-select"
+                  data-testid="end-date-input"
                 />
               </v-col>
             </v-row>
 
-            <v-select
-              v-model="formData.urgency"
-              label="紧急程度（可选）"
-              :items="urgencyOptions"
+            <v-textarea
+              v-model="formData.goalContext"
+              label="额外上下文（可选）"
+              placeholder="提供额外的目标背景信息，帮助AI更好地生成关键结果..."
+              rows="2"
               variant="outlined"
               density="comfortable"
-              prepend-inner-icon="mdi-clock-alert"
-              clearable
+              prepend-inner-icon="mdi-information"
               :disabled="isGenerating"
-              data-testid="urgency-select"
+              data-testid="goal-context-input"
             />
           </v-form>
 
@@ -180,13 +180,15 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { useAIGeneration } from '@/modules/ai/composables/useAIGeneration';
+import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 // ===== Props & Emits =====
 interface Props {
   initialGoalTitle?: string;
   initialGoalDescription?: string;
+  initialStartDate?: number;  // timestamp
+  initialEndDate?: number;    // timestamp
 }
 
 const props = defineProps<Props>();
@@ -218,36 +220,28 @@ const formValid = ref(false);
 const formData = ref({
   goalTitle: '',
   goalDescription: '',
-  category: '',
-  importance: '',
-  urgency: '',
+  startDate: '',  // ISO date string (YYYY-MM-DD)
+  endDate: '',    // ISO date string (YYYY-MM-DD)
+  goalContext: '',
 });
-
-// ===== Options =====
-const categoryOptions = [
-  { title: '工作', value: 'work' },
-  { title: '个人', value: 'personal' },
-  { title: '学习', value: 'learning' },
-  { title: '健康', value: 'health' },
-  { title: '财务', value: 'finance' },
-];
-
-const importanceOptions = [
-  { title: '高', value: 'high' },
-  { title: '中', value: 'medium' },
-  { title: '低', value: 'low' },
-];
-
-const urgencyOptions = [
-  { title: '紧急', value: 'urgent' },
-  { title: '一般', value: 'normal' },
-  { title: '不急', value: 'low' },
-];
 
 // ===== Validation Rules =====
 const rules = {
   required: (v: string) => !!v || '此项为必填',
+  endAfterStart: (v: string) => {
+    if (!v || !formData.value.startDate) return true;
+    return new Date(v) >= new Date(formData.value.startDate) || '结束日期必须晚于或等于开始日期';
+  },
 };
+
+// ===== Helper Functions =====
+function dateToTimestamp(dateStr: string): number {
+  return new Date(dateStr).getTime();
+}
+
+function timestampToDateStr(timestamp: number): string {
+  return new Date(timestamp).toISOString().split('T')[0];
+}
 
 // ===== Methods =====
 async function openDialog() {
@@ -259,6 +253,18 @@ async function openDialog() {
   }
   if (props.initialGoalDescription) {
     formData.value.goalDescription = props.initialGoalDescription;
+  }
+  if (props.initialStartDate) {
+    formData.value.startDate = timestampToDateStr(props.initialStartDate);
+  } else {
+    // 默认：今天
+    formData.value.startDate = timestampToDateStr(Date.now());
+  }
+  if (props.initialEndDate) {
+    formData.value.endDate = timestampToDateStr(props.initialEndDate);
+  } else {
+    // 默认：30天后
+    formData.value.endDate = timestampToDateStr(Date.now() + 30 * 24 * 60 * 60 * 1000);
   }
   
   // 加载配额状态
@@ -280,9 +286,9 @@ function resetForm() {
   formData.value = {
     goalTitle: '',
     goalDescription: '',
-    category: '',
-    importance: '',
-    urgency: '',
+    startDate: '',
+    endDate: '',
+    goalContext: '',
   };
   clearError();
   formRef.value?.reset();
@@ -299,9 +305,9 @@ async function handleGenerate() {
     const result = await generateKeyResults({
       goalTitle: formData.value.goalTitle,
       goalDescription: formData.value.goalDescription || undefined,
-      category: formData.value.category || undefined,
-      importance: formData.value.importance || undefined,
-      urgency: formData.value.urgency || undefined,
+      startDate: dateToTimestamp(formData.value.startDate),
+      endDate: dateToTimestamp(formData.value.endDate),
+      goalContext: formData.value.goalContext || undefined,
     });
 
     console.log('✅ AI generation successful:', result);

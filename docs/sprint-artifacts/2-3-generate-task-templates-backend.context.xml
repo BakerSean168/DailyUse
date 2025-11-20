@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.3</storyId>
+    <title>Generate Task Templates Backend</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-20</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-3-generate-task-templates-backend.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>to get task suggestions for a Key Result</iWant>
+    <soThat>I can start executing immediately</soThat>
+    <tasks>
+      <task id="1" priority="high">Create Request/Response DTOs (GenerateTasksRequest, TaskTemplatePreview, GenerateTasksResponse)</task>
+      <task id="2" priority="high">Extend AIGenerationService with generateTasks() method</task>
+      <task id="3" priority="high">Implement Validation Logic for task output</task>
+      <task id="4" priority="high">Implement API Controller Handler for POST /api/ai/generate/tasks</task>
+      <task id="5" priority="medium">Add Route Configuration with Swagger docs</task>
+      <task id="6" priority="medium">Prompt Template Integration from epic-2-ai-prompts.md</task>
+      <task id="7" priority="medium">Error Handling & Resilience (timeout, retry, fallback)</task>
+      <task id="8" priority="high">Unit Tests for generateTasks with mock OpenAI</task>
+      <task id="9" priority="high">Integration Tests with MockAIAdapter</task>
+      <task id="10" priority="low">Manual Quality Verification (10 KRs, actionable tasks)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1" type="functional">Endpoint POST /api/ai/generate/tasks accepts valid request and returns 200 OK</criterion>
+    <criterion id="AC-2" type="functional">Response contains 5-10 TaskTemplatePreview objects</criterion>
+    <criterion id="AC-3" type="functional">Each task has title, description, estimatedHours (1-40), priority (HIGH/MEDIUM/LOW)</criterion>
+    <criterion id="AC-4" type="functional">Tasks are actionable (verb-led titles like "Audit...", "Implement...")</criterion>
+    <criterion id="AC-5" type="functional">Dependencies array present (empty or with task indices)</criterion>
+    <criterion id="AC-6" type="functional">Quota check and consumption same as Story 2-1</criterion>
+    <criterion id="AC-7" type="functional">Task descriptions include acceptance criteria or completion definition</criterion>
+    <criterion id="AC-8" type="technical">Uses same AIGenerationService and QuotaEnforcementService</criterion>
+    <criterion id="AC-9" type="technical">Prompt template from epic-2-ai-prompts.md (Task section)</criterion>
+    <criterion id="AC-10" type="technical">Validates estimatedHours range (1-40)</criterion>
+    <criterion id="AC-11" type="technical">Validates priority enum (HIGH|MEDIUM|LOW)</criterion>
+    <criterion id="AC-12" type="technical">Logs task generation events</criterion>
+    <criterion id="AC-13" type="technical">No controller business logic</criterion>
+    <criterion id="AC-14" type="quality">Unit tests for AIGenerationService.generateTasks()</criterion>
+    <criterion id="AC-15" type="quality">Integration test with MockAIAdapter</criterion>
+    <criterion id="AC-16" type="quality">Zero TypeScript errors</criterion>
+    <criterion id="AC-17" type="quality">Swagger/OpenAPI documented</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/sprint-artifacts/tech-spec-epic-2.md" title="Epic 2 Technical Specification" section="Task Generation Workflow">
+        Complete workflow for task generation (17 steps, 10-15s timing), validation rules, and API endpoint design for POST /api/ai/generate/tasks.
+      </doc>
+      <doc path="docs/sprint-artifacts/epic-2-ai-prompts.md" title="Epic 2 AI Prompts" section="Task Generation Prompt Template">
+        System and user prompt templates for Task generation with actionable task requirements, estimated hours guidance (1-40), priority levels, JSON output format, and example output with 7 tasks.
+      </doc>
+      <doc path="docs/sprint-artifacts/2-1-generate-key-results-backend.md" title="Story 2.1 Backend" section="Service Extension Strategy">
+        Similar backend pattern: extend AIGenerationService, share common helpers (tryParseJSON, buildPrompt, logGeneration), reuse QuotaEnforcementService integration.
+      </doc>
+      <doc path="docs/architecture-api.md" title="API Architecture" section="DDD Patterns">
+        DDD layers and error handling patterns - controllers delegate to services, map domain errors to HTTP status codes.
+      </doc>
+    </docs>
+    
+    <code>
+      <file path="packages/domain-server/src/ai/services/AIGenerationService.ts" kind="service" symbol="AIGenerationService" lines="109-132" reason="Domain service stub for generateTaskTemplate() at line 109 - implement complete logic following generateKeyResults() pattern"/>
+      <file path="packages/domain-server/src/ai/services/QuotaEnforcementService.ts" kind="service" symbol="QuotaEnforcementService" reason="Reuse checkQuota() and consumeQuota() methods - same pattern as Story 2-1"/>
+      <file path="packages/domain-server/src/ai/adapters/OpenAIAdapter.ts" kind="adapter" symbol="OpenAIAdapter" reason="Reuse generateText() method with 10s timeout and retry logic"/>
+      <file path="apps/api/src/modules/ai/interface/http/AIConversationController.ts" kind="controller" symbol="AIConversationController" reason="Add generateTasks() handler following established pattern: auth, validation, delegation, error mapping (max 20 lines)"/>
+      <file path="apps/api/src/modules/ai/interface/http/aiConversationRoutes.ts" kind="routes" symbol="aiConversationRoutes" reason="Add POST /api/ai/generate/tasks route with Swagger docs - follow KR generation route pattern"/>
+    </code>
+    
+    <dependencies>
+      <package name="ai" version="5.0.89" ecosystem="npm">Vercel AI SDK generateText() function</package>
+      <package name="@ai-sdk/openai" version="2.0.64" ecosystem="npm">OpenAI provider</package>
+      <package name="zod" version="4.1.12" ecosystem="npm">Request validation for GenerateTasksRequest</package>
+      <package name="@dailyuse/contracts" version="workspace:*" ecosystem="pnpm-workspace">DTOs (GenerateTasksRequest, GenerateTasksResponse, TaskTemplatePreview, TaskPriority enum)</package>
+      <package name="@dailyuse/domain-server" version="workspace:*" ecosystem="pnpm-workspace">AIGenerationService, QuotaEnforcementService, OpenAIAdapter</package>
+      <package name="@dailyuse/utils" version="workspace:*" ecosystem="pnpm-workspace">Logger, EventBus</package>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Extend existing AIGenerationService - DO NOT create new service class. Add generateTasks() method alongside generateKeyResults()</constraint>
+    <constraint type="architecture">Extend existing AIConversationController - add generateTasks() handler (max 20 lines, delegate to service)</constraint>
+    <constraint type="validation">Task output: 5-10 items, estimatedHours ∈ [1, 40], priority ∈ [HIGH, MEDIUM, LOW], title starts with action verb (regex: ^[A-Z][a-z]+\s)</constraint>
+    <constraint type="performance">API response time P95 ≤ 15 seconds, OpenAI call P95 ≤ 12 seconds</constraint>
+    <constraint type="error-handling">10-second timeout, JSON parse retry once, fallback for Markdown code block parsing (```json ... ```)</constraint>
+    <constraint type="logging">Log generation events: accountUuid, keyResultUuid, taskCount, tokenUsage, duration</constraint>
+    <constraint type="testing">Unit tests mock OpenAIAdapter, integration tests use MockAIAdapter (no real API calls)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="GenerateTasksRequest" kind="DTO" signature="{ keyResultTitle: string; keyResultDescription?: string; targetValue: number; currentValue: number; unit?: string; timeRemaining: number }" path="packages/contracts/src/modules/ai/requests/GenerateTasksRequest.ts"/>
+    <interface name="GenerateTasksResponse" kind="DTO" signature="{ tasks: TaskTemplatePreview[]; tokenUsage: TokenUsageServerDTO; generatedAt: number }" path="packages/contracts/src/modules/ai/responses/GenerateTasksResponse.ts"/>
+    <interface name="TaskTemplatePreview" kind="DTO" signature="{ title: string; description?: string; estimatedHours: number; priority: TaskPriority; dependencies: string[]; tags: string[] }" path="packages/contracts/src/modules/ai/responses/GenerateTasksResponse.ts"/>
+    <interface name="POST /api/ai/generate/tasks" kind="REST-API" signature="Authorization: Bearer {token}, Body: GenerateTasksRequest → Response: GenerateTasksResponse | 429 | 504 | 400 | 500" path="apps/api/src/modules/ai/interface/http/aiConversationRoutes.ts"/>
+    <interface name="AIGenerationService.generateTasks()" kind="domain-method" signature="async generateTasks(input: { krTitle, krDescription, targetValue, currentValue, unit, timeRemaining }, quota: AIUsageQuotaServerDTO): Promise&lt;{ result, updatedQuota, tokenUsage }&gt;" path="packages/domain-server/src/ai/services/AIGenerationService.ts"/>
+    <interface name="validateTasksOutput()" kind="helper-function" signature="validateTasksOutput(response: AIGenerationResponse): void (throws AIValidationError)" path="packages/domain-server/src/ai/services/AIGenerationService.ts"/>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing framework: Vitest 3.2.4 with mocking support. Unit tests: Mock OpenAIAdapter.generateText() to return valid task JSON, assert validation logic, quota consumption. Integration tests: Use MockAIAdapter, test full API flow with Supertest. Coverage target: ≥70% line coverage.
+    </standards>
+    <locations>
+      <location>packages/domain-server/src/ai/services/__tests__/AIGenerationService.test.ts</location>
+      <location>apps/api/src/modules/ai/__tests__/integration/generate-tasks.integration.test.ts</location>
+    </locations>
+    <ideas>
+      <idea criterion="AC-1">Integration test: POST /api/ai/generate/tasks with valid KR data → assert 200 OK</idea>
+      <idea criterion="AC-2">Unit test: Mock OpenAI to return 7 tasks → assert response.tasks.length === 7</idea>
+      <idea criterion="AC-3">Unit test: Validate task fields → assert estimatedHours ∈ [1, 40], priority ∈ [HIGH, MEDIUM, LOW]</idea>
+      <idea criterion="AC-4">Unit test: Assert task.title matches regex ^[A-Z][a-z]+\s (starts with verb)</idea>
+      <idea criterion="AC-6">Integration test: Mock quota=0 → assert 429 response</idea>
+      <idea criterion="AC-7">Unit test: Assert task.description.length ≥ 50 characters</idea>
+      <idea criterion="AC-10">Unit test: Mock task with hours=50 → assert AIValidationError thrown</idea>
+      <idea criterion="AC-11">Unit test: Mock task with priority="URGENT" → assert AIValidationError thrown</idea>
+      <idea criterion="AC-12">Unit test: Assert logger.info() called with {accountUuid, taskCount, tokenUsage}</idea>
+      <idea criterion="AC-16">CI check: Run `tsc --noEmit` → assert exit code 0</idea>
+    </ideas>
+  </tests>
+</story-context>
