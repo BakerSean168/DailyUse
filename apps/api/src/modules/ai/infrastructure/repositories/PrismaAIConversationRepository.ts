@@ -145,8 +145,6 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
     }
   }
 
-
-
   /**
    * 软删除对话
    */
@@ -190,7 +188,7 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
             role: msg.role,
             content: msg.content,
             tokenCount: msg.tokenUsage
-              ? (JSON.parse(msg.tokenUsage) as { totalTokens?: number }).totalTokens ?? null
+              ? ((JSON.parse(msg.tokenUsage) as { totalTokens?: number }).totalTokens ?? null)
               : null,
             createdAt: msg.createdAt.getTime(),
           }))

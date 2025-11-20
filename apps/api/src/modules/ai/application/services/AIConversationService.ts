@@ -34,10 +34,7 @@ export class AIConversationService {
   /**
    * 创建新对话
    */
-  async createConversation(
-    accountUuid: string,
-    title?: string,
-  ): Promise<AIConversationClientDTO> {
+  async createConversation(accountUuid: string, title?: string): Promise<AIConversationClientDTO> {
     try {
       // 创建聚合根
       const conversation = AIConversationServer.create({
@@ -220,9 +217,7 @@ export class AIConversationService {
         return dto.status === status;
       });
 
-      const conversations = filteredConversations.map((conversation) =>
-        conversation.toClientDTO(),
-      );
+      const conversations = filteredConversations.map((conversation) => conversation.toClientDTO());
 
       logger.info('Conversations retrieved by status', {
         accountUuid,

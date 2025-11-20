@@ -282,17 +282,15 @@ export class AIConversationController {
       const conversationService = AIConversationController.container.getConversationService();
       const result = await conversationService.listConversations(accountUuid, page, limit);
 
-      res
-        .status(200)
-        .json(
-          AIConversationController.responseBuilder.success(
-            {
-              conversations: result.conversations,
-              pagination: result.pagination,
-            },
-            'Conversations retrieved successfully',
-          ),
-        );
+      res.status(200).json(
+        AIConversationController.responseBuilder.success(
+          {
+            conversations: result.conversations,
+            pagination: result.pagination,
+          },
+          'Conversations retrieved successfully',
+        ),
+      );
     } catch (error) {
       AIConversationController.handleError(error, res);
     }
@@ -445,17 +443,15 @@ export class AIConversationController {
       // 执行软删除
       await conversationService.deleteConversation(id);
 
-      res
-        .status(200)
-        .json(
-          AIConversationController.responseBuilder.success(
-            {
-              deleted: true,
-              conversationUuid: id,
-            },
-            'Conversation deleted successfully',
-          ),
-        );
+      res.status(200).json(
+        AIConversationController.responseBuilder.success(
+          {
+            deleted: true,
+            conversationUuid: id,
+          },
+          'Conversation deleted successfully',
+        ),
+      );
     } catch (error) {
       AIConversationController.handleError(error, res);
     }
