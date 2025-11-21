@@ -54,7 +54,7 @@ development_status:
   3-1-conversation-message-management-backend: done
   3-2-chat-stream-backend: done
   3-3-chat-interface-ui: review
-  3-4-conversation-history-ui: in-progress
+  3-4-conversation-history-ui: review
   epic-3-retrospective: optional
 
   epic-4: backlog
