@@ -1,6 +1,6 @@
 # Story 4.1: Document Summarization Backend
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -257,7 +257,7 @@ So that I can get the key points quickly.
 
 ### Context Reference
 
-_Context file to be generated when story marked ready-for-dev_
+- `docs/sprint-artifacts/4-1-document-summarization-backend.context.xml`
 
 ### Agent Model Used
 
