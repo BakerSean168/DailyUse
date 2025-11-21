@@ -29,13 +29,24 @@
       style="display:none" />
     <AITasksQuickDialog ref="aiTasksRef" style="display:none" />
     <AIKnowledgeDocQuickDialog ref="aiKnowledgeRef" style="display:none" />
+    
+    <!-- Conversation History Sidebar -->
+    <ConversationHistorySidebar 
+      :isOpen="showHistory" 
+      @close="showHistory = false"
+      @conversation-selected="handleConversationSelected"
+    />
+    
     <transition name="chat-fade">
       <div v-if="showChat" class="ai-chat-drawer">
         <div class="drawer-header">
+          <button class="history-toggle-btn" @click="showHistory = !showHistory" title="历史对话">
+            📋
+          </button>
           <span>AI Chat</span>
           <button class="close-btn" @click="closeChat">×</button>
         </div>
-        <AIChatWindow />
+        <AIChatWindow :conversationUuid="activeConversationUuid" />
       </div>
     </transition>
   </v-app>
@@ -45,6 +56,7 @@
 import { onMounted, onUnmounted, ref, computed, defineAsyncComponent, shallowRef } from 'vue';
 import AIChatWindow from '@/modules/ai-chat/components/AIChatWindow.vue';
 import AIFloatingOrb from '@/modules/ai-chat/components/AIFloatingOrb.vue';
+import ConversationHistorySidebar from '@/modules/ai-chat/components/ConversationHistorySidebar.vue';
 import AIGenerateKRButton from '@/modules/goal/presentation/components/AIGenerateKRButton.vue';
 import AITasksQuickDialog from '@/modules/ai-chat/components/AITasksQuickDialog.vue';
 import AIKnowledgeDocQuickDialog from '@/modules/ai-chat/components/AIKnowledgeDocQuickDialog.vue';
@@ -67,6 +79,8 @@ const goals = ref<any[]>([]);
 const tasks = ref<any[]>([]);
 const reminders = ref<any[]>([]);
 const showChat = ref(false);
+const showHistory = ref(false);
+const activeConversationUuid = ref<string | null>(null);
 
 // 🔔 监听 Session 过期事件，显示友好提示
 const handleSessionExpired = (event: CustomEvent) => {
@@ -207,6 +221,14 @@ function handleGenerateKnowledge() {
   }
   aiKnowledgeRef.value.openDialog();
 }
+
+function handleConversationSelected(uuid: string | null) {
+  activeConversationUuid.value = uuid;
+  if (uuid) {
+    // Conversation selected, ensure chat is open
+    openChat();
+  }
+}
 </script>
 
 <style scoped>
@@ -310,6 +332,24 @@ body.theme-transition *::after {
   font-size: 15px;
   letter-spacing: 0.3px;
   box-shadow: 0 2px 8px rgba(74, 108, 247, 0.15);
+}
+
+.history-toggle-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: #fff;
+  transition: all 0.2s ease;
+  margin-right: 12px;
+}
+
+.history-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
 }
 
 .close-btn {

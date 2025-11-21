@@ -49,6 +49,7 @@ const wrapperClass = computed(() => [
         opacity: 0;
         transform: translateY(8px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -131,8 +132,15 @@ const wrapperClass = computed(() => [
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 0.2; }
+
+    0%,
+    100% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 0.2;
+    }
 }
 
 .error {

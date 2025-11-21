@@ -9,7 +9,8 @@
             </v-card-title>
             <v-divider />
             <v-card-text>
-                <v-alert v-if="quota" :type="hasQuota ? 'info' : 'warning'" variant="tonal" density="compact" class="mb-4">
+                <v-alert v-if="quota" :type="hasQuota ? 'info' : 'warning'" variant="tonal" density="compact"
+                    class="mb-4">
                     剩余额度：{{ quota.remainingQuota }}/{{ quota.quotaLimit }}
                 </v-alert>
                 <v-form ref="formRef" v-model="formValid">

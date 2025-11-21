@@ -18,10 +18,28 @@ import { useAIChat } from '../composables/useAIChat';
 import AIChatMessage from './AIChatMessage.vue';
 import AIChatInput from './AIChatInput.vue';
 
+interface Props {
+  conversationUuid?: string | null;
+}
+
+const props = defineProps<Props>();
+
 const { messages, isStreaming, error, sendMessage, abort } = useAIChat();
 
 const scrollRef = ref<HTMLDivElement | null>(null);
 const autoScrollEnabled = ref(true);
+
+// Watch for conversation changes and load history
+watch(() => props.conversationUuid, async (newUuid) => {
+  if (newUuid) {
+    // TODO: Load conversation messages from API
+    console.log('Loading conversation:', newUuid);
+    // messages would be populated by calling an API endpoint
+  } else {
+    // New conversation - clear messages
+    // messages.value = [];
+  }
+});
 
 function onUserScroll() {
     const el = scrollRef.value;
