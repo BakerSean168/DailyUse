@@ -1,6 +1,6 @@
 # Story 4.4: Knowledge Generation UI
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -400,7 +400,7 @@ async function pollProgress(taskUuid: string) {
 
 ### Context Reference
 
-_Context file to be generated when story marked ready-for-dev_
+- `docs/sprint-artifacts/4-4-knowledge-generation-ui.context.xml`
 
 ### Agent Model Used
 

@@ -1,0 +1,123 @@
+<story-context id="story-4-3-knowledge-generation-backend" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>4-3</storyId>
+    <title>Knowledge Generation Backend</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-21</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/4-3-knowledge-generation-backend.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>As a User</asA>
+    <iWant>I want to generate a series of knowledge docs</iWant>
+    <soThat>So that I can learn systematically.</soThat>
+    <tasks><![CDATA[
+Task 1: Database schema & entity + repository for KnowledgeGenerationTask
+Task 2: Request/Response DTOs (KnowledgeGenerationRequestDTO, KnowledgeGenerationTaskDTO)
+Task 3: Prompt template for knowledge series (progressive structure JSON array)
+Task 4: Extend AIGenerationService.generateKnowledgeSeries() (validation, quota, parsing, logging)
+Task 5: Asynchronous task management in AIGenerationApplicationService (create + background process)
+Task 6: Integrate DocumentApplicationService for persistence of generated documents
+Task 7: Task status endpoint handler (GET task, GET documents)
+Task 8: Task creation endpoint handler (POST) with 202 async response
+Task 9: Route configuration + Swagger docs (3 endpoints)
+Task 10: Partial success handling (FAILED docs continue processing)
+Task 11: Unit tests (service + repository)
+Task 12: Integration tests (async flow + error cases)
+Task 13: Manual quality verification of generated content
+    ]]></tasks>
+  </story>
+
+  <acceptanceCriteria><![CDATA[
+AC-1: POST /api/ai/generate/knowledge-series returns 202 Accepted
+AC-2: Returns taskUuid for tracking
+AC-3: Generates 3-7 distinct documents (default 5)
+AC-4: Each document title ≤60 chars, content 1000-1500 words, order present
+AC-5: Documents saved under /AI Generated/{topic} folder
+AC-6: GET /api/ai/generate/knowledge-series/:taskId returns task status
+AC-7: Status values: PENDING, GENERATING, COMPLETED, FAILED
+AC-8: Progress percent 0-100 updated incrementally
+AC-9: GET .../:taskId/documents returns generated docs
+AC-10: Partial success allowed (some FAILED docs)
+AC-11: Reuses AIGenerationService & QuotaEnforcementService
+AC-12: Prompt template progressive structure implemented
+AC-13: Integrates DocumentApplicationService for creation
+AC-14: Task persisted in PostgreSQL
+AC-15: Asynchronous processing (non-blocking HTTP)
+AC-16: Quota checked pre-start & consumed per document
+AC-17: Logs generation events (accountUuid, topic, tokenUsage)
+AC-18: Thin controller (delegates to application service)
+AC-19: Unit tests for generateKnowledgeSeries()
+AC-20: Integration test for async flow
+AC-21: Zero TypeScript errors
+AC-22: Swagger docs for all endpoints
+  ]]></acceptanceCriteria>
+
+  <artifacts>
+    <docs><![CDATA[
+{ "items": [
+  {"path": "docs/sprint-artifacts/tech-spec-epic-4.md", "title": "Epic 4 Tech Spec", "section": "API Design", "snippet": "Async knowledge series generation with polling pattern."},
+  {"path": "docs/architecture-api.md", "title": "API Architecture", "section": "Async Operations", "snippet": "Pattern: HTTP 202 + background processing + polling endpoints."},
+  {"path": "docs/epics.md", "title": "Epics File", "section": "Story 4.3 Definition", "snippet": "Defines endpoints & async generation scope."},
+  {"path": "docs/sprint-artifacts/4-1-document-summarization-backend.md", "title": "Story 4.1", "section": "Service Extension Pattern", "snippet": "Reference for extending AIGenerationService."}
+]}
+    ]]></docs>
+    <code><![CDATA[
+{ "items": [
+  {"path": "packages/domain-server/src/modules/ai/services/AIGenerationService.ts", "kind": "service", "symbol": "AIGenerationService", "reason": "Base service to extend (AC-11)."},
+  {"path": "packages/domain-server/src/modules/ai/services/QuotaEnforcementService.ts", "kind": "service", "symbol": "QuotaEnforcementService", "reason": "Quota checks (AC-16)."},
+  {"path": "apps/api/src/modules/ai/application/services/AIGenerationApplicationService.ts", "kind": "application-service", "symbol": "AIGenerationApplicationService", "reason": "Async orchestration."},
+  {"path": "apps/api/src/modules/document/application/services/DocumentApplicationService.ts", "kind": "application-service", "symbol": "DocumentApplicationService", "reason": "Document creation (AC-13)."},
+  {"path": "apps/api/src/modules/ai/interface/http/AIConversationController.ts", "kind": "controller", "symbol": "AIConversationController", "reason": "Add handlers (AC-18)."},
+  {"path": "vitest.config.ts", "kind": "config", "symbol": "vitest config", "reason": "Testing (AC-19,20)."}
+]}
+    ]]></code>
+    <dependencies><![CDATA[
+{ "runtime": [
+  {"name": "@dailyuse/domain-server", "version": "workspace:*", "reason": "Domain services & entities."},
+  {"name": "@dailyuse/contracts", "version": "workspace:*", "reason": "DTO definitions."},
+  {"name": "zod", "version": "^4.x", "reason": "Request validation."},
+  {"name": "swagger-jsdoc", "version": "^6.x", "reason": "API documentation."}
+], "dev": [
+  {"name": "vitest", "version": "^3.x", "reason": "Tests."},
+  {"name": "supertest", "version": "^6.x", "reason": "Integration endpoint tests."}
+]}
+    ]]></dependencies>
+  </artifacts>
+
+  <constraints><![CDATA[
+Must use async task pattern (HTTP 202 + background) not long-poll blocking request. Controller remains thin; business logic belongs in application/domain layers. Quota estimated before task creation; abort task creation if insufficient. Partial failures logged and do not abort remaining documents. Token usage aggregated for logging. No WebSocket introduction (scope creep) – polling only. Task persistence must survive server restarts.
+  ]]></constraints>
+
+  <interfaces><![CDATA[
+{ "rest": [
+  {"name": "Create Knowledge Series Task", "kind": "POST", "signature": "POST /api/ai/generate/knowledge-series { topic: string, documentCount?: number, targetAudience?: string, folderPath?: string } → 202 { taskUuid: string }"},
+  {"name": "Get Knowledge Series Task", "kind": "GET", "signature": "GET /api/ai/generate/knowledge-series/:taskId → 200 KnowledgeGenerationTaskDTO"},
+  {"name": "Get Generated Documents", "kind": "GET", "signature": "GET /api/ai/generate/knowledge-series/:taskId/documents → 200 GeneratedDocument[]"}
+]}
+    ]]></interfaces>
+
+  <tests>
+    <standards><![CDATA[
+Vitest for unit tests (service & repository). Supertest for integration of async endpoints with mocked AI adapter. Polling simulation uses retry loop with delays. Repository tests isolate database layer (may use test transaction or in-memory if available).
+    ]]></standards>
+    <locations><![CDATA[
+packages/domain-server/src/modules/ai/services/__tests__
+apps/api/src/modules/ai/interface/http/__tests__
+    ]]></locations>
+    <ideas><![CDATA[
+TC-AC-1: POST returns 202 & taskUuid.
+TC-AC-3: Request documentCount=7 generates 7 documents.
+TC-AC-4: Validate title length and word count (simulate too short/long content failure).
+TC-AC-5: Documents saved in correct folder path.
+TC-AC-7: Status transitions PENDING→GENERATING→COMPLETED.
+TC-AC-8: Progress increases monotonically.
+TC-AC-10: Simulate one document failing → task COMPLETED with mixed statuses.
+TC-AC-16: Insufficient quota pre-check returns 429, no task created.
+TC-AC-17: Log entry contains tokenUsage & documentCount.
+TC-AC-20: Full async flow integration test finishes under timeout threshold.
+    ]]></ideas>
+  </tests>
+</story-context>

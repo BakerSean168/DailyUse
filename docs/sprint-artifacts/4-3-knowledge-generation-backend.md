@@ -1,6 +1,6 @@
 # Story 4.3: Knowledge Generation Backend
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -392,7 +392,7 @@ model KnowledgeGenerationTask {
 
 ### Context Reference
 
-_Context file to be generated when story marked ready-for-dev_
+- `docs/sprint-artifacts/4-3-knowledge-generation-backend.context.xml`
 
 ### Agent Model Used
 

@@ -1,6 +1,6 @@
 # Story 4.2: Document Summarization UI
 
-Status: drafted
+Status: ready-for-dev
 
 ## Story
 
@@ -297,7 +297,7 @@ So that I can process information faster.
 
 ### Context Reference
 
-_Context file to be generated when story marked ready-for-dev_
+- `docs/sprint-artifacts/4-2-document-summarization-ui.context.xml`
 
 ### Agent Model Used
 

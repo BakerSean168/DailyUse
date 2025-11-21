@@ -59,7 +59,7 @@ development_status:
 
   epic-4: contexted
   4-1-document-summarization-backend: ready-for-dev
-  4-2-document-summarization-ui: drafted
-  4-3-knowledge-generation-backend: drafted
-  4-4-knowledge-generation-ui: drafted
+  4-2-document-summarization-ui: ready-for-dev
+  4-3-knowledge-generation-backend: ready-for-dev
+  4-4-knowledge-generation-ui: ready-for-dev
   epic-4-retrospective: optional
