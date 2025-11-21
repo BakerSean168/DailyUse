@@ -112,6 +112,47 @@ Return only the JSON array without any additional text.`;
   },
 };
 
+/**
+ * 文档摘要 Prompt
+ * Story 4.1 - 结构化摘要 (core, keyPoints, actionItems)
+ */
+export const SUMMARIZATION_PROMPT: PromptTemplate = {
+  system: `You are an expert summarization assistant. Your task is to create a structured summary of the provided text.
+
+Requirements:
+- core: 50-150 words capturing the essence in professional tone
+- keyPoints: 3-5 distinct bullet points (each 15-30 words)
+- actionItems: 0-3 practical suggestions ONLY if applicable (omit array or return [] if none)
+- Language MUST match the requested language code (zh-CN|en)
+- Output STRICT JSON object ONLY (no markdown, no code fences)
+
+Output JSON Schema:
+{
+  "core": "string",
+  "keyPoints": ["string", ... 3-5 items],
+  "actionItems": ["string" (0-3 items, optional)],
+  "_meta": { "rules": "Do not include this section in output. If appears remove." }
+}
+
+IMPORTANT: Return ONLY the JSON object with keys: core, keyPoints, actionItems (actionItems may be omitted if includeActions=false). No extra commentary.`,
+  user: (context) => {
+    const { inputText, language, includeActions } = context as {
+      inputText: string;
+      language: string;
+      includeActions: boolean;
+    };
+    const truncated = inputText.slice(0, 50000);
+    return `Language: ${language || 'zh-CN'}
+Include Action Items: ${includeActions ? 'true' : 'false'}
+
+SOURCE TEXT BEGIN:
+${truncated}
+SOURCE TEXT END.
+
+Generate structured summary now.`;
+  },
+};
+
 export function getPromptTemplate(taskType: GenerationTaskType): PromptTemplate {
   switch (taskType) {
     case GenerationTaskType.GOAL_KEY_RESULTS:

@@ -105,6 +105,9 @@ export * from './api-requests/GenerateKeyResultsRequest';
 export * from './api-responses/GenerateKeyResultsResponse';
 export * from './api-requests/GenerateTasksRequest';
 export * from './api-responses/GenerateTasksResponse';
+// Summarization (Epic 4 Story 4.1)
+export * from './api-requests/SummarizationRequestDTO';
+export * from './api-responses/SummarizationResultDTO';
 
 // ============ Common List Request ============
 

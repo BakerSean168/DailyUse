@@ -8,6 +8,7 @@
  * - GET /api/ai/conversations - 获取对话历史
  * - GET /api/ai/conversations/:id - 获取特定对话
  * - GET /api/ai/quota - 获取配额状态
+ * - POST /api/ai/summarize - 文档摘要
  */
 
 import { Router } from 'express';
@@ -342,6 +343,75 @@ router.delete('/conversations/:id', AIConversationController.deleteConversation)
  *         description: 未授权
  */
 router.get('/quota', AIConversationController.getQuotaStatus);
+
+/**
+ * @swagger
+ * /api/ai/summarize:
+ *   post:
+ *     tags: [AI Generation]
+ *     summary: 文档摘要生成
+ *     description: 根据输入长文本生成结构化摘要（core, keyPoints, actionItems）
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: 原始文本 (1-50,000 字符)
+ *               language:
+ *                 type: string
+ *                 enum: [zh-CN, en]
+ *                 description: 输出语言 (默认 zh-CN)
+ *               includeActions:
+ *                 type: boolean
+ *                 description: 是否包含行动建议 (默认 true)
+ *     responses:
+ *       200:
+ *         description: 摘要生成成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 summary:
+ *                   type: object
+ *                   properties:
+ *                     core:
+ *                       type: string
+ *                     keyPoints:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     actionItems:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                 metadata:
+ *                   type: object
+ *                   properties:
+ *                     tokensUsed:
+ *                       type: number
+ *                     generatedAt:
+ *                       type: number
+ *                     inputLength:
+ *                       type: number
+ *                     compressionRatio:
+ *                       type: number
+ *       400:
+ *         description: 参数验证失败
+ *       401:
+ *         description: 未授权
+ *       429:
+ *         description: 配额超限
+ */
+router.post('/summarize', AIConversationController.summarizeDocument);
 
 /**
  * @swagger

@@ -16,13 +16,8 @@ import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
 import type { AIGenerationResult } from '@dailyuse/domain-server';
-import {
-  QuotaExceededError,
-  ValidationError,
-  GenerationFailedError,
-  AIGenerationService,
-  QuotaEnforcementService,
-} from '@dailyuse/domain-server';
+import { QuotaExceededError, AIGenerationValidationService } from '@dailyuse/domain-server';
+import { z } from 'zod';
 
 const logger = createLogger('AIConversationController');
 
@@ -155,7 +150,7 @@ export class AIConversationController {
       res.write(`event: connected\ndata: ${JSON.stringify({ status: 'connected' })}\n\n`);
 
       // 调用 Domain Service
-      const service = AIConversationController.container.getGenerationService();
+      const service = AIConversationController.container.getApplicationService();
 
       await service.generateStream(
         {
@@ -480,8 +475,8 @@ export class AIConversationController {
       logger.info('Getting quota status', { accountUuid });
 
       // 调用 Domain Service
-      const quotaService = AIConversationController.container.getQuotaService();
-      const status = await quotaService.getQuotaStatus(accountUuid);
+      const appService = AIConversationController.container.getApplicationService();
+      const status = await appService.getQuotaStatus(accountUuid);
 
       res
         .status(200)
@@ -667,8 +662,8 @@ export class AIConversationController {
       const appService = AIConversationController.container.getApplicationService();
       const result = await appService.generateTasks({
         accountUuid,
-        keyResultTitle,
-        keyResultDescription,
+        krTitle: keyResultTitle,
+        krDescription: keyResultDescription,
         targetValue,
         currentValue,
         unit,
@@ -685,6 +680,72 @@ export class AIConversationController {
           'Tasks generated successfully',
         ),
       );
+    } catch (error) {
+      AIConversationController.handleError(error, res);
+    }
+  }
+
+  /**
+   * 文档摘要
+   * POST /api/ai/summarize
+   */
+  static async summarizeDocument(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      const schema = z.object({
+        text: z.string().min(1).max(50000),
+        language: z.enum(['zh-CN', 'en']).optional().default('zh-CN'),
+        includeActions: z.boolean().optional().default(true),
+      });
+      const parseResult = schema.safeParse(req.body);
+      if (!parseResult.success) {
+        res
+          .status(400)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              parseResult.error.issues.map((i) => i.message).join('; '),
+            ),
+          );
+        return;
+      }
+      const { text, language, includeActions } = parseResult.data;
+
+      logger.info('Summarizing document', {
+        accountUuid,
+        inputLength: text.length,
+        language,
+        includeActions,
+      });
+
+      const appService = AIConversationController.container.getApplicationService();
+      const result = await appService.summarizeDocument({
+        accountUuid,
+        text,
+        language,
+        includeActions,
+      });
+
+      res
+        .status(200)
+        .json(
+          AIConversationController.responseBuilder.success(
+            result,
+            'Summary generated successfully',
+          ),
+        );
     } catch (error) {
       AIConversationController.handleError(error, res);
     }
@@ -708,25 +769,14 @@ export class AIConversationController {
       return;
     }
 
-    if (error instanceof ValidationError) {
+    // Domain validation errors (using AIValidationError) get mapped to 400
+    if ((error as any)?.name === 'AIValidationError') {
       res
         .status(400)
         .json(
           AIConversationController.responseBuilder.error(
             ResponseCode.VALIDATION_ERROR,
-            error.message,
-          ),
-        );
-      return;
-    }
-
-    if (error instanceof GenerationFailedError) {
-      res
-        .status(500)
-        .json(
-          AIConversationController.responseBuilder.error(
-            ResponseCode.INTERNAL_ERROR,
-            error.message,
+            (error as Error).message,
           ),
         );
       return;

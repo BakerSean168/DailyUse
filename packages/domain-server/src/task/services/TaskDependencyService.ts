@@ -10,7 +10,7 @@
 
 import { TaskContracts } from '@dailyuse/contracts';
 import { TaskTemplate } from '../aggregates/TaskTemplate';
-import { TaskDependency } from '../entities/TaskDependency';
+import { TaskDependency } from '../aggregates/TaskDependency';
 
 // Type aliases for easier usage
 type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;

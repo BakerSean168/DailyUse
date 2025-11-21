@@ -34,6 +34,8 @@ export * from './schedule/index';
 
 // AI 模块 (新版 - DDD架构)
 export * from './modules/ai/index';
+// AI 验证服务（纯领域验证）
+export * from './ai/services/index';
 
 // Dashboard 模块
 export * from './dashboard/index';

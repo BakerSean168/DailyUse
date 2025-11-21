@@ -139,14 +139,17 @@ pnpm build:desktop    # 构建桌面应用
 
 ## 🤖 AI 辅助开发
 
-本项目已配置 GitHub Copilot + MCP 集成，提供：
+本项目已配置 GitHub Copilot Cloud Agent + MCP 集成，提供：
 
+- **☁️ 云端 AI 引擎**: 强大的 Cloud Agent 支持，提供更准确的代码建议
 - **智能代码补全**: 基于项目上下文的精准建议
-- **架构理解**: AI 理解 Nx Monorepo 结构
+- **架构理解**: AI 深度理解 Nx Monorepo 结构
 - **最佳实践**: Vue 3 + Electron + TypeScript 优化建议
 - **自动重构**: 智能代码重构和优化
+- **代码审查**: 自动检测 bug 和安全漏洞
+- **测试生成**: 自动生成单元测试和集成测试
 
-详细配置：[MCP 配置指南](docs/MCP-Configuration-Guide.md)
+详细使用：[GitHub Copilot Cloud Agent 完整指南](GITHUB_COPILOT_CLOUD_AGENT_GUIDE.md) | [MCP 配置指南](docs/MCP-Configuration-Guide.md)
 
 ## 📖 开发文档
 
@@ -206,6 +209,7 @@ pnpm build:desktop    # 构建桌面应用
 
 ### 🤖 AI 辅助开发
 
+- [GitHub Copilot Cloud Agent 完整指南](GITHUB_COPILOT_CLOUD_AGENT_GUIDE.md) - 🌟 详细的 Cloud Agent 使用教程
 - [MCP 配置指南](docs/MCP-Configuration-Guide.md) - AI 辅助开发设置
 - [pnpm 最佳实践](docs/pnpm-MCP-Best-Practices.md) - 包管理优化
 - [MCP 快速开始](docs/MCP-Quick-Start.md) - 5分钟设置指南
@@ -411,6 +415,7 @@ chore: 构建/工具变动
 4. 等待 3-5 分钟自动配置完成
 
 **包含内容**:
+
 - ✅ Node.js 22.20.0 + pnpm 10.18.3
 - ✅ Docker + Git + GitHub CLI
 - ✅ 所有 VS Code 扩展（Copilot, Nx Console, Vue Volar...）
@@ -442,4 +447,3 @@ pnpm exec nx graph
 ```
 
 更多信息: [Codespaces 快速入门](.devcontainer/QUICKSTART.md)
-

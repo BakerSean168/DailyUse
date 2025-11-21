@@ -4,6 +4,6 @@
  */
 
 export { QuotaEnforcementService } from './QuotaEnforcementService';
-export { AIGenerationService } from './AIGenerationService';
+export { AIGenerationValidationService } from './AIGenerationValidationService';
 export { getPromptTemplate } from './prompts/templates';
 export type { PromptTemplate } from './prompts/templates';

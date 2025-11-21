@@ -11,5 +11,4 @@ export {
 } from './QuotaEnforcementService';
 export type { QuotaCheckResult } from './QuotaEnforcementService';
 
-export { AIGenerationService, GenerationFailedError, ValidationError } from './AIGenerationService';
-export type { GenerationRequest, GenerationResponse } from './AIGenerationService';
+// Legacy AIGenerationService removed. Chat generation now handled in application layer.

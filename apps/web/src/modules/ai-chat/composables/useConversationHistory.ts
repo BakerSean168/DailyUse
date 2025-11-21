@@ -116,9 +116,7 @@ export function useConversationHistory() {
 
   async function deleteConversation(uuid: string) {
     try {
-      await api.delete<{ deleted: boolean; conversationUuid: string }>(
-        `/ai/conversations/${uuid}`,
-      );
+      await api.delete<{ deleted: boolean; conversationUuid: string }>(`/ai/conversations/${uuid}`);
       // Optimistic update
       conversations.value = conversations.value.filter((c) => c.conversationUuid !== uuid);
       if (activeConversationUuid.value === uuid) {
