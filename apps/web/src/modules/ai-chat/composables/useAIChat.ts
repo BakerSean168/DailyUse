@@ -68,20 +68,27 @@ export function useAIChat() {
   }
 
   function updateAssistantContent(id: string, chunk: string) {
-    const target = messages.value.find(m => m.id === id);
+    const target = messages.value.find((m) => m.id === id);
     if (target) target.content += chunk;
   }
 
   function markAssistantDone(id: string) {
-    const target = messages.value.find(m => m.id === id);
+    const target = messages.value.find((m) => m.id === id);
     if (target) target.isStreaming = false;
   }
 
+  function classifyError(raw: string): string {
+    if (/quota/i.test(raw)) return 'Quota exceeded. Please try later.';
+    if (/abort/i.test(raw)) return 'Generation stopped.';
+    if (/network|fetch|stream/i.test(raw)) return 'Network issue. Check connection.';
+    return raw;
+  }
+
   function markAssistantError(id: string, errMsg: string) {
-    const target = messages.value.find(m => m.id === id);
+    const target = messages.value.find((m) => m.id === id);
     if (target) {
       target.isStreaming = false;
-      target.error = errMsg;
+      target.error = classifyError(errMsg);
     }
   }
 
@@ -180,16 +187,16 @@ export function useAIChat() {
   }
 
   function abort() {
-    if (abortController.value && isStreaming.value) {
-      logger.info('Aborting stream');
-      abortController.value.abort();
-      isStreaming.value = false;
-      // Mark last assistant message truncated
-      const lastAssistant = [...messages.value].reverse().find(m => m.role === 'assistant' && m.isStreaming);
-      if (lastAssistant) {
-        lastAssistant.isStreaming = false;
-        lastAssistant.truncated = true;
-      }
+    if (!abortController.value || !isStreaming.value) return;
+    logger.info('Aborting stream');
+    abortController.value.abort();
+    isStreaming.value = false;
+    const lastAssistant = [...messages.value]
+      .reverse()
+      .find((m) => m.role === 'assistant' && m.isStreaming);
+    if (lastAssistant) {
+      lastAssistant.isStreaming = false;
+      lastAssistant.truncated = true;
     }
   }
 

@@ -95,10 +95,7 @@ describe('AI Chat Stream API 集成测试 (SSE)', () => {
       const message = 'Hello';
 
       // Act
-      const response = await request(app)
-        .post('/api/ai/chat/stream')
-        .send({ message })
-        .expect(401);
+      const response = await request(app).post('/api/ai/chat/stream').send({ message }).expect(401);
 
       // Assert
       expect(response.body.success).toBe(false);

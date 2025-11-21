@@ -59,7 +59,7 @@ describe('AIGenerationService - Streaming Tests', () => {
       quotaLimit: 1000,
       resetPeriod: 'daily' as any,
     });
-    
+
     // Consume some quota to simulate usage
     mockQuota.consume(100);
 
@@ -188,7 +188,7 @@ describe('AIGenerationService - Streaming Tests', () => {
         quotaLimit: 100,
         resetPeriod: 'daily' as any,
       });
-      
+
       // Consume all quota
       exhaustedQuota.consume(100);
 
