@@ -17,9 +17,10 @@ import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useAIChat } from '../composables/useAIChat';
 import AIChatMessage from './AIChatMessage.vue';
 import AIChatInput from './AIChatInput.vue';
+import { api } from '@/shared/api/instances';
 
 interface Props {
-  conversationUuid?: string | null;
+    conversationUuid?: string | null;
 }
 
 const props = defineProps<Props>();
@@ -28,17 +29,47 @@ const { messages, isStreaming, error, sendMessage, abort } = useAIChat();
 
 const scrollRef = ref<HTMLDivElement | null>(null);
 const autoScrollEnabled = ref(true);
+const isLoadingHistory = ref(false);
 
 // Watch for conversation changes and load history
 watch(() => props.conversationUuid, async (newUuid) => {
-  if (newUuid) {
-    // TODO: Load conversation messages from API
-    console.log('Loading conversation:', newUuid);
-    // messages would be populated by calling an API endpoint
-  } else {
-    // New conversation - clear messages
-    // messages.value = [];
-  }
+    if (newUuid) {
+        // Load conversation messages from API
+        isLoadingHistory.value = true;
+        try {
+            const data = await api.get<{
+                conversationUuid: string;
+                title: string;
+                messages: Array<{
+                    messageUuid: string;
+                    role: 'user' | 'assistant' | 'system';
+                    content: string;
+                    createdAt: number;
+                }>;
+            }>(`/ai/conversations/${newUuid}`);
+
+            // Transform backend messages to frontend format (filter out system messages)
+            messages.value = data.messages
+                .filter((msg) => msg.role === 'user' || msg.role === 'assistant')
+                .map((msg) => ({
+                    id: msg.messageUuid,
+                    role: msg.role as 'user' | 'assistant',
+                    content: msg.content,
+                    createdAt: msg.createdAt,
+                }));
+
+            await nextTick();
+            scrollToBottom();
+        } catch (e: any) {
+            console.error('Failed to load conversation history:', e);
+            error.value = e.message || 'Failed to load conversation history';
+        } finally {
+            isLoadingHistory.value = false;
+        }
+    } else {
+        // New conversation - clear messages
+        messages.value = [];
+    }
 });
 
 function onUserScroll() {

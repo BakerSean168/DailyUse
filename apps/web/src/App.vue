@@ -29,14 +29,11 @@
       style="display:none" />
     <AITasksQuickDialog ref="aiTasksRef" style="display:none" />
     <AIKnowledgeDocQuickDialog ref="aiKnowledgeRef" style="display:none" />
-    
+
     <!-- Conversation History Sidebar -->
-    <ConversationHistorySidebar 
-      :isOpen="showHistory" 
-      @close="showHistory = false"
-      @conversation-selected="handleConversationSelected"
-    />
-    
+    <ConversationHistorySidebar :isOpen="showHistory" @close="showHistory = false"
+      @conversation-selected="handleConversationSelected" />
+
     <transition name="chat-fade">
       <div v-if="showChat" class="ai-chat-drawer">
         <div class="drawer-header">

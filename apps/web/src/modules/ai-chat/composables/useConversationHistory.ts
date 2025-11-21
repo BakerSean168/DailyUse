@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
 import type { Conversation, ConversationGroup, DateGroup } from '../types/conversation';
+import { api } from '@/shared/api/instances';
 
 const conversations = ref<Conversation[]>([]);
 const activeConversationUuid = ref<string | null>(null);
@@ -57,15 +58,39 @@ function groupByDate(convs: Conversation[]): ConversationGroup[] {
 export function useConversationHistory() {
   const groupedConversations = computed(() => groupByDate(conversations.value));
 
-  async function fetchConversations() {
+  async function fetchConversations(page = 1, limit = 50) {
     isLoading.value = true;
     error.value = null;
     try {
-      // Mock data for now - replace with API call
-      const response = await fetch('/api/ai/conversations?page=1&pageSize=50');
-      if (!response.ok) throw new Error('Failed to fetch conversations');
-      const data = await response.json();
-      conversations.value = data.conversations || [];
+      const data = await api.get<{
+        conversations: Array<{
+          conversationUuid: string;
+          accountUuid: string;
+          title: string | null;
+          status: string;
+          messageCount: number;
+          lastMessageAt?: number;
+          createdAt: number;
+          updatedAt: number;
+        }>;
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          totalPages: number;
+        };
+      }>('/ai/conversations', { params: { page, limit } });
+
+      // Transform backend DTO to frontend Conversation type
+      conversations.value = data.conversations.map((conv) => ({
+        conversationUuid: conv.conversationUuid,
+        accountUuid: conv.accountUuid,
+        title: conv.title,
+        createdAt: conv.createdAt,
+        updatedAt: conv.lastMessageAt || conv.updatedAt,
+        messageCount: conv.messageCount,
+        lastMessagePreview: `${conv.messageCount} messages`,
+      }));
     } catch (e: any) {
       error.value = e.message || 'Failed to load conversations';
       console.error('fetchConversations error:', e);
@@ -82,10 +107,18 @@ export function useConversationHistory() {
     activeConversationUuid.value = null;
   }
 
+  function reset() {
+    conversations.value = [];
+    activeConversationUuid.value = null;
+    isLoading.value = false;
+    error.value = null;
+  }
+
   async function deleteConversation(uuid: string) {
     try {
-      const response = await fetch(`/api/ai/conversations/${uuid}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete');
+      await api.delete<{ deleted: boolean; conversationUuid: string }>(
+        `/ai/conversations/${uuid}`,
+      );
       // Optimistic update
       conversations.value = conversations.value.filter((c) => c.conversationUuid !== uuid);
       if (activeConversationUuid.value === uuid) {
@@ -107,5 +140,6 @@ export function useConversationHistory() {
     selectConversation,
     createNewConversation,
     deleteConversation,
+    reset,
   };
 }
