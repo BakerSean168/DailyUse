@@ -19,6 +19,12 @@ import type {
   IAIUsageQuotaRepository,
   IAIConversationRepository,
   AIGenerationValidationService,
+  IKnowledgeGenerationTaskRepository,
+  KnowledgeGenerationTask,
+  createKnowledgeGenerationTask,
+  updateTaskProgress,
+  completeTask,
+  failTask,
 } from '@dailyuse/domain-server';
 import type { AIContracts } from '@dailyuse/contracts';
 import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts';
@@ -54,6 +60,8 @@ export class AIGenerationApplicationService {
     private aiAdapter: BaseAIAdapter,
     private quotaRepository: IAIUsageQuotaRepository,
     private conversationRepository: IAIConversationRepository,
+    private taskRepository?: IKnowledgeGenerationTaskRepository,
+    private documentService?: any, // DocumentApplicationService - 可选依赖避免循环
   ) {
     this.quotaService = new QuotaEnforcementService();
   }
@@ -620,5 +628,320 @@ export class AIGenerationApplicationService {
         compressionRatio: Number(compressionRatio.toFixed(4)),
       },
     };
+  }
+
+  /**
+   * 生成知识系列文档（Story 4.3）
+   *
+   * 业务流程：
+   * 1. 验证输入参数
+   * 2. 获取并检查配额
+   * 3. 构建知识系列提示
+   * 4. 调用 AI Adapter 生成
+   * 5. 解析并验证输出
+   * 6. 消费配额
+   * 7. 返回文档数组
+   */
+  async generateKnowledgeSeries(params: {
+    accountUuid: string;
+    topic: string;
+    documentCount: number;
+    targetAudience?: string;
+  }): Promise<{
+    documents: Array<{
+      title: string;
+      content: string;
+      order: number;
+    }>;
+    metadata: {
+      tokensUsed: number;
+      generatedAt: number;
+      documentCount: number;
+    };
+  }> {
+    const { accountUuid, topic, documentCount, targetAudience } = params;
+
+    // 1. 验证输入
+    if (!topic || topic.length < 1 || topic.length > 100) {
+      throw new Error('Topic must be 1-100 characters');
+    }
+    if (documentCount < 3 || documentCount > 7) {
+      throw new Error('Document count must be 3-7');
+    }
+
+    // 2. 获取并检查配额
+    let quota = await this.quotaRepository.findByAccountUuid(accountUuid);
+    if (!quota) {
+      // 创建默认配额
+      quota = {
+        uuid: randomUUID(),
+        accountUuid,
+        quotaLimit: 100,
+        currentUsage: 0,
+        resetPeriod: 'MONTHLY' as any,
+        lastResetAt: Date.now(),
+        nextResetAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      await this.quotaRepository.save(quota as any);
+    }
+
+    // 估算 token 使用量：每个文档约 2000 tokens
+    const estimatedTokens = documentCount * 2000;
+    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, estimatedTokens);
+
+    // 3. 构建提示
+    const promptTemplate = getPromptTemplate('KNOWLEDGE_SERIES');
+    if (!promptTemplate) {
+      throw new Error('Knowledge series prompt template not found');
+    }
+
+    const context = {
+      topic,
+      documentCount: documentCount.toString(),
+      targetAudience: targetAudience || 'general audience',
+    };
+
+    const userPrompt = promptTemplate.user(context);
+    const systemPrompt = promptTemplate.system;
+
+    const request: AIGenerationRequest = {
+      conversationUuid: null,
+      accountUuid,
+      prompt: userPrompt,
+      systemPrompt,
+      temperature: 0.7,
+      maxTokens: estimatedTokens,
+      contextData: context,
+    };
+
+    // 4. 调用 Adapter
+    logger.info('Generating knowledge series', { accountUuid, topic, documentCount });
+    const response = await this.aiAdapter.generateText(request);
+
+    // 5. 解析输出
+    let parsed: any[];
+    try {
+      parsed = JSON.parse(response.content);
+    } catch (e) {
+      logger.error('Failed to parse knowledge series JSON', {
+        error: e,
+        content: response.content,
+      });
+      throw new Error('AI response JSON parse failed');
+    }
+
+    // 6. 验证输出
+    this.validationService.validateKnowledgeSeriesOutput(parsed, documentCount);
+
+    // 7. 消费配额
+    const tokensUsed = response.tokenUsage?.totalTokens ?? estimatedTokens;
+    const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, tokensUsed);
+    await this.quotaRepository.save(updatedQuota as any);
+
+    logger.info('Knowledge series generated', {
+      accountUuid,
+      topic,
+      documentCount,
+      tokensUsed,
+    });
+
+    return {
+      documents: parsed,
+      metadata: {
+        tokensUsed,
+        generatedAt: Date.now(),
+        documentCount: parsed.length,
+      },
+    };
+  }
+
+  /**
+   * 创建知识系列生成任务（Story 4.3）
+   * 异步任务模式：立即返回 taskUuid，后台处理生成
+   */
+  async createKnowledgeGenerationTask(params: {
+    accountUuid: string;
+    topic: string;
+    documentCount?: number;
+    targetAudience?: string;
+    folderPath?: string;
+  }): Promise<{ taskUuid: string }> {
+    if (!this.taskRepository) {
+      throw new Error('Task repository not configured');
+    }
+
+    const { accountUuid, topic, documentCount = 5, targetAudience, folderPath } = params;
+
+    // 验证输入
+    if (!topic || topic.length < 1 || topic.length > 100) {
+      throw new Error('Topic must be 1-100 characters');
+    }
+    if (documentCount < 3 || documentCount > 7) {
+      throw new Error('Document count must be 3-7');
+    }
+
+    // 创建任务
+    const taskUuid = randomUUID();
+    const task = createKnowledgeGenerationTask({
+      uuid: taskUuid,
+      accountUuid,
+      topic,
+      documentCount,
+      targetAudience,
+      folderPath: folderPath || `/AI Generated/${topic}`,
+    });
+
+    await this.taskRepository.create(task);
+
+    // 启动后台处理（不等待）
+    this.processKnowledgeGenerationTask(taskUuid).catch((error) => {
+      logger.error('Background task processing failed', { taskUuid, error });
+    });
+
+    return { taskUuid };
+  }
+
+  /**
+   * 后台处理知识系列生成任务
+   */
+  private async processKnowledgeGenerationTask(taskUuid: string): Promise<void> {
+    if (!this.taskRepository) {
+      return;
+    }
+
+    let task = await this.taskRepository.findByUuid(taskUuid);
+    if (!task) {
+      logger.error('Task not found', { taskUuid });
+      return;
+    }
+
+    try {
+      // 更新状态为 GENERATING
+      task = { ...task, status: 'GENERATING' };
+      await this.taskRepository.update(task);
+
+      // 生成文档
+      logger.info('Starting knowledge series generation', {
+        taskUuid,
+        topic: task.topic,
+        documentCount: task.documentCount,
+      });
+
+      const result = await this.generateKnowledgeSeries({
+        accountUuid: task.accountUuid,
+        topic: task.topic,
+        documentCount: task.documentCount,
+        targetAudience: task.targetAudience,
+      });
+
+      // 保存文档到 Document 模块
+      const documentUuids: string[] = [];
+      for (let i = 0; i < result.documents.length; i++) {
+        const doc = result.documents[i];
+        try {
+          if (this.documentService) {
+            const created = await this.documentService.create({
+              accountUuid: task.accountUuid,
+              title: doc.title,
+              content: doc.content,
+              folderPath: task.folderPath,
+              tags: ['AI Generated', task.topic],
+              metadata: {
+                generatedBy: 'AI',
+                generationTaskUuid: taskUuid,
+                order: doc.order,
+              },
+            });
+            documentUuids.push(created.uuid);
+          }
+
+          // 更新进度
+          task = updateTaskProgress(task, i + 1);
+          await this.taskRepository.update(task);
+        } catch (error) {
+          logger.error('Failed to create document', {
+            taskUuid,
+            documentIndex: i,
+            error,
+          });
+        }
+      }
+
+      // 标记为完成
+      task = completeTask(task, documentUuids);
+      await this.taskRepository.update(task);
+
+      logger.info('Knowledge series generation completed', {
+        taskUuid,
+        documentsGenerated: documentUuids.length,
+      });
+    } catch (error: any) {
+      logger.error('Knowledge series generation failed', {
+        taskUuid,
+        error: error.message,
+      });
+
+      // 标记为失败
+      task = failTask(task, error.message);
+      await this.taskRepository.update(task);
+    }
+  }
+
+  /**
+   * 获取任务状态
+   */
+  async getKnowledgeGenerationTask(params: {
+    taskUuid: string;
+    accountUuid: string;
+  }): Promise<KnowledgeGenerationTask | null> {
+    if (!this.taskRepository) {
+      throw new Error('Task repository not configured');
+    }
+
+    const task = await this.taskRepository.findByUuid(params.taskUuid);
+    if (!task) {
+      return null;
+    }
+
+    // 验证权限
+    if (task.accountUuid !== params.accountUuid) {
+      throw new Error('Unauthorized access to task');
+    }
+
+    return task;
+  }
+
+  /**
+   * 获取任务生成的文档列表
+   */
+  async getGeneratedDocuments(params: { taskUuid: string; accountUuid: string }): Promise<any[]> {
+    const task = await this.getKnowledgeGenerationTask(params);
+    if (!task) {
+      throw new Error('Task not found');
+    }
+
+    if (!this.documentService) {
+      return [];
+    }
+
+    // 获取文档详情
+    const documents = [];
+    for (const docUuid of task.generatedDocumentUuids) {
+      try {
+        const doc = await this.documentService.findByUuid({
+          uuid: docUuid,
+          accountUuid: params.accountUuid,
+        });
+        if (doc) {
+          documents.push(doc);
+        }
+      } catch (error) {
+        logger.error('Failed to fetch document', { docUuid, error });
+      }
+    }
+
+    return documents;
   }
 }

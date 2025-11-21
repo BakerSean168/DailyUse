@@ -156,4 +156,80 @@ export class AIGenerationValidationService {
       throw new AIValidationError('Summary validation failed', errors);
     }
   }
+
+  /**
+   * 验证知识系列文档输出 (Story 4.3)
+   * 业务规则：
+   * - 文档数量：3-7
+   * - 每个文档：title (max 60 chars), content (1000-1500 words Markdown), order
+   * - 顺序：1 到 N 连续
+   */
+  validateKnowledgeSeriesOutput(documents: any[], expectedCount: number): void {
+    const errors: string[] = [];
+
+    // 验证是否为数组
+    if (!Array.isArray(documents)) {
+      errors.push('Documents must be an array');
+      throw new AIValidationError('Invalid knowledge series structure', errors);
+    }
+
+    // 验证文档数量
+    if (documents.length !== expectedCount) {
+      errors.push(`Expected ${expectedCount} documents, got ${documents.length}`);
+    }
+
+    if (documents.length < 3 || documents.length > 7) {
+      errors.push(`Documents count must be 3-7, got ${documents.length}`);
+    }
+
+    // 验证每个文档
+    const orders = new Set<number>();
+    documents.forEach((doc: any, idx: number) => {
+      if (!doc || typeof doc !== 'object') {
+        errors.push(`Document[${idx}] must be an object`);
+        return;
+      }
+
+      const { title, content, order } = doc;
+
+      // 验证 title
+      if (!title || typeof title !== 'string') {
+        errors.push(`Document[${idx}] title missing or not string`);
+      } else if (title.length > 60) {
+        errors.push(`Document[${idx}] title max 60 chars, got ${title.length}`);
+      }
+
+      // 验证 content
+      if (!content || typeof content !== 'string') {
+        errors.push(`Document[${idx}] content missing or not string`);
+      } else {
+        const wordCount = content.trim().split(/\s+/).length;
+        if (wordCount < 1000 || wordCount > 1500) {
+          errors.push(`Document[${idx}] content must be 1000-1500 words, got ${wordCount}`);
+        }
+        // 验证是否为 Markdown 格式（至少包含一个标题）
+        if (!content.includes('##')) {
+          errors.push(`Document[${idx}] content must be Markdown with ## headings`);
+        }
+      }
+
+      // 验证 order
+      if (typeof order !== 'number') {
+        errors.push(`Document[${idx}] order must be number`);
+      } else if (order < 1 || order > documents.length) {
+        errors.push(`Document[${idx}] order must be 1-${documents.length}, got ${order}`);
+      } else {
+        orders.add(order);
+      }
+    });
+
+    // 验证顺序连续性
+    if (orders.size !== documents.length) {
+      errors.push('Document orders must be unique and consecutive');
+    }
+
+    if (errors.length > 0) {
+      throw new AIValidationError('Knowledge series validation failed', errors);
+    }
+  }
 }

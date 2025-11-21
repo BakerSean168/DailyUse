@@ -40,19 +40,11 @@ export enum TaskScheduleMode {
 // ============ 状态枚举 ============
 
 /**
- * 基础任务状态（一次性任务）
- * Task Status for One-time Tasks
- */
-export enum TaskStatus {
-  PENDING = 'PENDING', // 待办
-  IN_PROGRESS = 'IN_PROGRESS', // 进行中
-  BLOCKED = 'BLOCKED', // 被阻塞
-  COMPLETED = 'COMPLETED', // 已完成
-  CANCELLED = 'CANCELLED', // 已取消
-}
-
-/**
- * 任务模板状态（循环任务）
+ * 任务模板状态
+ * Task Template Status
+ * 
+ * 表示任务模板的管理状态（不包含执行状态）
+ * 执行状态由 TaskInstanceStatus 表示
  */
 export enum TaskTemplateStatus {
   ACTIVE = 'ACTIVE', // 激活

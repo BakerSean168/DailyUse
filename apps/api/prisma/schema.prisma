@@ -1424,6 +1424,28 @@ model aiUsageQuota {
   @@map("ai_usage_quotas")
 }
 
+/// 知识系列生成任务聚合根
+model knowledgeGenerationTask {
+  uuid                   String    @id
+  accountUuid            String    @map("account_uuid")
+  topic                  String
+  documentCount          Int       @default(5) @map("document_count")
+  targetAudience         String?   @map("target_audience")
+  folderPath             String    @map("folder_path")
+  status                 String // PENDING, GENERATING, COMPLETED, FAILED
+  progress               Int       @default(0) // 0-100
+  generatedDocumentUuids String[]  @map("generated_document_uuids") // Array of Document UUIDs
+  error                  String?   @db.Text
+  createdAt              DateTime  @default(now()) @map("created_at")
+  completedAt            DateTime? @map("completed_at")
+
+  // 索引
+  @@index([accountUuid])
+  @@index([status])
+  @@index([createdAt])
+  @@map("knowledge_generation_tasks")
+}
+
 /// Dashboard 配置聚合根（Widget 配置）
 model dashboardConfig {
   id           Int      @id @default(autoincrement())

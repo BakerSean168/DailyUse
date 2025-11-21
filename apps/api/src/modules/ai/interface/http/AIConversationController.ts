@@ -752,6 +752,211 @@ export class AIConversationController {
   }
 
   /**
+   * 创建知识系列生成任务（Story 4.3）
+   * POST /api/ai/generate/knowledge-series
+   */
+  static async createKnowledgeGenerationTask(
+    req: AuthenticatedRequest,
+    res: Response,
+  ): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      const schema = z.object({
+        topic: z.string().min(1).max(100),
+        documentCount: z.number().int().min(3).max(7).optional().default(5),
+        targetAudience: z.string().optional(),
+        folderPath: z.string().optional(),
+      });
+
+      const parseResult = schema.safeParse(req.body);
+      if (!parseResult.success) {
+        res
+          .status(400)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              parseResult.error.issues.map((i) => i.message).join('; '),
+            ),
+          );
+        return;
+      }
+
+      const { topic, documentCount, targetAudience, folderPath } = parseResult.data;
+
+      logger.info('Creating knowledge generation task', {
+        accountUuid,
+        topic,
+        documentCount,
+      });
+
+      const generationService = AIConversationController.container.getApplicationService();
+      const result = await generationService.createKnowledgeGenerationTask({
+        accountUuid,
+        topic,
+        documentCount,
+        targetAudience,
+        folderPath,
+      });
+
+      res
+        .status(202)
+        .json(
+          AIConversationController.responseBuilder.success(
+            result,
+            'Knowledge generation task created',
+          ),
+        );
+    } catch (error) {
+      AIConversationController.handleError(error, res);
+    }
+  }
+
+  /**
+   * 获取知识系列生成任务状态（Story 4.3）
+   * GET /api/ai/generate/knowledge-series/:taskId
+   */
+  static async getKnowledgeGenerationTask(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      const taskUuid = req.params.taskId;
+      if (!taskUuid) {
+        res
+          .status(400)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              'taskId is required',
+            ),
+          );
+        return;
+      }
+
+      logger.info('Getting knowledge generation task', { accountUuid, taskUuid });
+
+      const generationService = AIConversationController.container.getApplicationService();
+      const task = await generationService.getKnowledgeGenerationTask({
+        taskUuid,
+        accountUuid,
+      });
+
+      if (!task) {
+        res
+          .status(404)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.RESOURCE_NOT_FOUND,
+              'Task not found',
+            ),
+          );
+        return;
+      }
+
+      // 转换为 DTO
+      const taskDTO = {
+        taskUuid: task.uuid,
+        topic: task.topic,
+        documentCount: task.documentCount,
+        targetAudience: task.targetAudience,
+        status: task.status,
+        progress: task.progress,
+        generatedDocuments: task.generatedDocumentUuids.map((uuid) => ({
+          uuid,
+          title: '', // Will be filled when fetching documents
+          status: 'COMPLETED',
+        })),
+        error: task.error,
+        createdAt: task.createdAt,
+        completedAt: task.completedAt,
+      };
+
+      res
+        .status(200)
+        .json(
+          AIConversationController.responseBuilder.success(taskDTO, 'Task retrieved successfully'),
+        );
+    } catch (error) {
+      AIConversationController.handleError(error, res);
+    }
+  }
+
+  /**
+   * 获取知识系列生成的文档列表（Story 4.3）
+   * GET /api/ai/generate/knowledge-series/:taskId/documents
+   */
+  static async getGeneratedDocuments(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      const taskUuid = req.params.taskId;
+      if (!taskUuid) {
+        res
+          .status(400)
+          .json(
+            AIConversationController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              'taskId is required',
+            ),
+          );
+        return;
+      }
+
+      logger.info('Getting generated documents', { accountUuid, taskUuid });
+
+      const generationService = AIConversationController.container.getApplicationService();
+      const documents = await generationService.getGeneratedDocuments({
+        taskUuid,
+        accountUuid,
+      });
+
+      res
+        .status(200)
+        .json(
+          AIConversationController.responseBuilder.success(
+            { documents },
+            'Documents retrieved successfully',
+          ),
+        );
+    } catch (error) {
+      AIConversationController.handleError(error, res);
+    }
+  }
+
+  /**
    * 统一错误处理
    */
   private static handleError(error: unknown, res: Response): void {

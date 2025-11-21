@@ -524,4 +524,165 @@ router.post('/summarize', AIConversationController.summarizeDocument);
  */
 router.post('/generate/key-results', AIConversationController.generateKeyResults);
 
+/**
+ * @openapi
+ * /api/ai/generate/knowledge-series:
+ *   post:
+ *     tags: [AI Generation]
+ *     summary: 创建知识系列生成任务
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - topic
+ *             properties:
+ *               topic:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 100
+ *                 description: 主题
+ *                 example: "Weight Loss"
+ *               documentCount:
+ *                 type: integer
+ *                 minimum: 3
+ *                 maximum: 7
+ *                 default: 5
+ *                 description: 文档数量
+ *               targetAudience:
+ *                 type: string
+ *                 description: 目标受众
+ *                 example: "beginners"
+ *               folderPath:
+ *                 type: string
+ *                 description: 文档保存路径
+ *                 example: "/AI Generated/Weight Loss"
+ *     responses:
+ *       202:
+ *         description: 任务已创建，异步处理中
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 taskUuid:
+ *                   type: string
+ *                   format: uuid
+ *       400:
+ *         description: 参数验证失败
+ *       401:
+ *         description: 未授权
+ *       429:
+ *         description: 配额超限
+ *       500:
+ *         description: 服务器错误
+ */
+router.post('/generate/knowledge-series', AIConversationController.createKnowledgeGenerationTask);
+
+/**
+ * @openapi
+ * /api/ai/generate/knowledge-series/{taskId}:
+ *   get:
+ *     tags: [AI Generation]
+ *     summary: 获取知识系列生成任务状态
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: 任务状态
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 taskUuid:
+ *                   type: string
+ *                 topic:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                   enum: [PENDING, GENERATING, COMPLETED, FAILED]
+ *                 progress:
+ *                   type: integer
+ *                   minimum: 0
+ *                   maximum: 100
+ *                 generatedDocuments:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       uuid:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                 error:
+ *                   type: string
+ *                 createdAt:
+ *                   type: number
+ *                 completedAt:
+ *                   type: number
+ *       401:
+ *         description: 未授权
+ *       404:
+ *         description: 任务不存在
+ *       500:
+ *         description: 服务器错误
+ */
+router.get(
+  '/generate/knowledge-series/:taskId',
+  AIConversationController.getKnowledgeGenerationTask,
+);
+
+/**
+ * @openapi
+ * /api/ai/generate/knowledge-series/{taskId}/documents:
+ *   get:
+ *     tags: [AI Generation]
+ *     summary: 获取知识系列生成的文档列表
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: 文档列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 documents:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: 未授权
+ *       404:
+ *         description: 任务不存在
+ *       500:
+ *         description: 服务器错误
+ */
+router.get(
+  '/generate/knowledge-series/:taskId/documents',
+  AIConversationController.getGeneratedDocuments,
+);
+
 export default router;

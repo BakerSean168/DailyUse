@@ -13,6 +13,9 @@
  * - 领域错误（Domain Errors）
  */
 
+// ===== Entities =====
+export * from './entities/KnowledgeGenerationTask';
+
 // ===== Repositories =====
 export * from './repositories';
 

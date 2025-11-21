@@ -8,14 +8,14 @@ import type { TaskContracts } from '@dailyuse/contracts';
 
 type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
 type TaskType = TaskContracts.TaskType;
-type TaskStatus = TaskContracts.TaskStatus;
+type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
 
 /**
  * 任务查询过滤器
  */
 export interface TaskFilters {
   taskType?: TaskType;
-  status?: TaskStatus | TaskTemplateStatus;
+  status?: TaskInstanceStatus | TaskTemplateStatus;
   goalUuid?: string;
   parentTaskUuid?: string;
   isBlocked?: boolean;

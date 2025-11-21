@@ -19,6 +19,7 @@ import { AIGenerationApplicationService } from '../../application/services/AIGen
 import { AIConversationService } from '../../application/services/AIConversationService';
 import { PrismaAIUsageQuotaRepository } from '../repositories/PrismaAIUsageQuotaRepository';
 import { PrismaAIConversationRepository } from '../repositories/PrismaAIConversationRepository';
+import { KnowledgeGenerationTaskRepository } from '../repositories/KnowledgeGenerationTaskRepository';
 import { OpenAIAdapter } from '../adapters/OpenAIAdapter';
 import type { BaseAIAdapter } from '../adapters/BaseAIAdapter';
 
@@ -33,6 +34,7 @@ export class AIContainer {
   private validationService?: AIGenerationService;
   private conversationRepository?: PrismaAIConversationRepository;
   private quotaRepository?: PrismaAIUsageQuotaRepository;
+  private taskRepository?: KnowledgeGenerationTaskRepository;
   private aiAdapter?: BaseAIAdapter;
 
   private constructor() {
@@ -68,6 +70,16 @@ export class AIContainer {
       this.quotaRepository = new PrismaAIUsageQuotaRepository(this.prisma);
     }
     return this.quotaRepository;
+  }
+
+  /**
+   * 获取 Task Repository
+   */
+  getTaskRepository(): KnowledgeGenerationTaskRepository {
+    if (!this.taskRepository) {
+      this.taskRepository = new KnowledgeGenerationTaskRepository(this.prisma);
+    }
+    return this.taskRepository;
   }
 
   /**
@@ -111,6 +123,7 @@ export class AIContainer {
       const aiAdapter = this.getAIAdapter();
       const quotaRepository = this.getQuotaRepository();
       const conversationRepository = this.getConversationRepository();
+      const taskRepository = this.getTaskRepository();
 
       // 创建 Application Service
       this.applicationService = new AIGenerationApplicationService(
@@ -118,6 +131,8 @@ export class AIContainer {
         aiAdapter,
         quotaRepository,
         conversationRepository,
+        taskRepository,
+        null, // documentService - 避免循环依赖，稍后设置
       );
     }
 

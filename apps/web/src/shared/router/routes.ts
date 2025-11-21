@@ -15,8 +15,7 @@ import { settingRoutes } from '@/modules/setting/presentation/router';
 import { accountRoutes } from '@/modules/account/presentation/router';
 import { notificationRoutes } from '@/modules/notification/presentation/router';
 import { repositoryRoutes } from '@/modules/repository/presentation/router';
-
-
+import { aiToolsRoutes } from '@/modules/ai-tools/presentation/router';
 
 /**
  * 认证相关路由
@@ -115,6 +114,9 @@ export const appRoutes: RouteRecordRaw[] = [
 
       // 📚 Repository 模块路由
       ...repositoryRoutes,
+
+      // 🤖 AI Tools 模块路由
+      ...aiToolsRoutes,
 
       // ⚙️ Setting 模块路由
       ...settingRoutes,

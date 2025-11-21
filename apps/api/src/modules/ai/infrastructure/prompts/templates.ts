@@ -153,6 +153,95 @@ Generate structured summary now.`;
   },
 };
 
+/**
+ * 知识系列文档生成 Prompt
+ * Story 4.3 - 生成 3-7 个知识文档
+ */
+export const KNOWLEDGE_SERIES_PROMPT: PromptTemplate = {
+  system: `You are a professional content creator specializing in educational materials. Your task is to generate a series of distinct, interconnected documents on a given topic.
+
+Document Series Requirements:
+- Generate exactly N documents as requested (3-7)
+- Progressive structure: fundamentals → core concepts → practical applications → advanced topics → challenges
+- Each document must be standalone but reference others for context
+- Professional, educational tone suitable for the target audience
+- Clear, actionable content with practical examples
+
+Each Document Requirements:
+- Title: Max 60 characters, descriptive, includes topic
+- Content: 1000-1500 words in Markdown format
+- Structure: Use ## and ### headings for organization
+- Include: Introduction, main concepts, practical examples, summary
+- Cross-references: Link to other documents in the series where relevant
+
+Output Format (JSON Array):
+[
+  {
+    "title": "Document title (max 60 chars)",
+    "content": "Full Markdown content (1000-1500 words with ## headings)",
+    "order": 1
+  }
+]
+
+IMPORTANT: 
+- Return ONLY the JSON array
+- Content must be Markdown with proper formatting
+- Each document must have unique, sequential order (1 to N)
+- No extra commentary outside the JSON`,
+
+  user: (context) => {
+    const { topic, documentCount, targetAudience } = context as {
+      topic: string;
+      documentCount: number;
+      targetAudience?: string;
+    };
+
+    const audienceContext = targetAudience
+      ? `Target Audience: ${targetAudience}`
+      : 'Target Audience: General audience with beginner to intermediate knowledge';
+
+    return `Topic: ${topic}
+Document Count: ${documentCount}
+${audienceContext}
+
+Generate ${documentCount} distinct documents on "${topic}" following this progressive structure:
+
+1. Document 1: Fundamentals and Overview
+   - Introduction to the topic
+   - Basic concepts and terminology
+   - Why it matters
+
+2. Document 2: Core Concepts and Principles
+   - Key theories and frameworks
+   - Important principles
+   - Foundational knowledge
+
+3. Document 3: Practical Applications
+   - How-to guides and examples
+   - Real-world case studies
+   - Implementation strategies
+
+4. Document 4: Advanced Topics (if applicable)
+   - Optimization techniques
+   - Best practices
+   - Edge cases and considerations
+
+5. Document 5+: Common Challenges and Solutions
+   - FAQ and troubleshooting
+   - Common mistakes to avoid
+   - Resources for further learning
+
+Each document should:
+- Be 1000-1500 words
+- Use Markdown with ## and ### headings
+- Include practical examples
+- Reference other documents in the series (e.g., "See Document 2 for fundamentals")
+- End with key takeaways or action items
+
+Return the JSON array with ${documentCount} documents now.`;
+  },
+};
+
 export function getPromptTemplate(taskType: GenerationTaskType): PromptTemplate {
   switch (taskType) {
     case GenerationTaskType.GOAL_KEY_RESULTS:

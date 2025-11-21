@@ -16,6 +16,7 @@ import { TaskDependency } from '../aggregates/TaskDependency';
 type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
 type CircularDependencyValidationResult = TaskContracts.CircularDependencyValidationResult;
 type DependencyStatus = TaskContracts.DependencyStatus;
+type DependencyType = TaskContracts.DependencyType;
 
 export class TaskDependencyService {
   constructor() {}
@@ -133,7 +134,9 @@ export class TaskDependencyService {
     const tasks = predecessorTasks.filter(Boolean) as TaskTemplate[];
 
     // 检查是否有前置任务被阻塞
-    // 注意：这里假设 TaskTemplate 有 isBlocked 属性，如果没有需要调整
+    // TODO: 任务完成状态应该检查 TaskInstance 而不是 TaskTemplate
+    // TaskTemplate 只有管理状态 (ACTIVE/PAUSED/ARCHIVED/DELETED)
+    // TaskInstance 才有执行状态 (PENDING/IN_PROGRESS/COMPLETED 等)
     const anyBlocked = tasks.some((task: any) => task.isBlocked === true);
     if (anyBlocked) {
       const blockedTasks = tasks
@@ -147,6 +150,10 @@ export class TaskDependencyService {
       };
     }
 
+    // TODO: 以下逻辑需要重构
+    // 应该检查 TaskInstance 的状态，而不是 TaskTemplate
+    // 当前暂时返回 WAITING 状态
+    /*
     // 检查是否所有前置任务都已完成
     const allCompleted = tasks.every((task) => task.status === 'COMPLETED');
     if (allCompleted) {
@@ -161,11 +168,12 @@ export class TaskDependencyService {
       .filter((task) => task.status !== 'COMPLETED')
       .map((task) => task.title)
       .join(', ');
+    */
 
     return {
       status: 'WAITING' as DependencyStatus,
       isBlocked: true,
-      blockingReason: `等待前置任务完成: ${waitingFor}`,
+      blockingReason: `等待前置任务完成 (需要检查 TaskInstance 状态)`,
     };
   }
 
@@ -189,10 +197,9 @@ export class TaskDependencyService {
 
     // 2. 创建依赖关系实体
     return TaskDependency.create({
-      accountUuid,
       predecessorTaskUuid: predecessor.uuid,
       successorTaskUuid: successor.uuid,
-      dependencyType: 'FINISH_TO_START', // 默认类型
+      dependencyType: 'FINISH_TO_START' as DependencyType, // 默认类型
     });
   }
 
