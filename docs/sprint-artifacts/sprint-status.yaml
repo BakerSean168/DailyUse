@@ -57,9 +57,9 @@ development_status:
   3-4-conversation-history-ui: review
   epic-3-retrospective: optional
 
-  epic-4: backlog
-  4-1-document-summarization-backend: backlog
-  4-2-document-summarization-ui: backlog
-  4-3-knowledge-generation-backend: backlog
-  4-4-knowledge-generation-ui: backlog
+  epic-4: contexted
+  4-1-document-summarization-backend: drafted
+  4-2-document-summarization-ui: drafted
+  4-3-knowledge-generation-backend: drafted
+  4-4-knowledge-generation-ui: drafted
   epic-4-retrospective: optional
