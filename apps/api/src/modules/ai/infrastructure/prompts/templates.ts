@@ -248,6 +248,8 @@ export function getPromptTemplate(taskType: GenerationTaskType): PromptTemplate 
       return GENERATE_KEY_RESULTS_PROMPT;
     case GenerationTaskType.TASK_TEMPLATES:
       return GENERATE_TASKS_PROMPT;
+    case GenerationTaskType.KNOWLEDGE_DOCUMENTS:
+      return KNOWLEDGE_SERIES_PROMPT;
     default:
       return GENERATE_KEY_RESULTS_PROMPT;
   }

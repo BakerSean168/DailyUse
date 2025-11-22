@@ -26,6 +26,16 @@ export const aiToolsRoutes: RouteRecordRaw[] = [
           requiresAuth: true,
         },
       },
+      {
+        path: 'knowledge-generator',
+        name: 'knowledge-generator',
+        component: () => import('../../components/KnowledgeGenerationWizard.vue'),
+        meta: {
+          title: '知识库生成',
+          icon: 'mdi-brain',
+          requiresAuth: true,
+        },
+      },
     ],
   },
 ];

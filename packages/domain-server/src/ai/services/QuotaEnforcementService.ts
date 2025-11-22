@@ -56,7 +56,7 @@ export class QuotaEnforcementService {
     // Auto-reset if needed
     if (quota.shouldReset()) {
       quota.reset();
-      await this.quotaRepository.save(quota);
+      await this.quotaRepository.save(quota.toServerDTO());
     }
 
     const canConsume = quota.canConsume(requestedAmount);
@@ -95,7 +95,7 @@ export class QuotaEnforcementService {
       );
     }
 
-    await this.quotaRepository.save(quota);
+    await this.quotaRepository.save(quota.toServerDTO());
   }
 
   /**
@@ -104,7 +104,7 @@ export class QuotaEnforcementService {
   async resetQuota(accountUuid: string): Promise<void> {
     const quota = await this.getOrCreateQuota(accountUuid);
     quota.reset();
-    await this.quotaRepository.save(quota);
+    await this.quotaRepository.save(quota.toServerDTO());
   }
 
   /**
@@ -123,7 +123,7 @@ export class QuotaEnforcementService {
     // Auto-reset if needed
     if (quota.shouldReset()) {
       quota.reset();
-      await this.quotaRepository.save(quota);
+      await this.quotaRepository.save(quota.toServerDTO());
     }
 
     return {
@@ -142,7 +142,7 @@ export class QuotaEnforcementService {
   async updateQuotaLimit(accountUuid: string, newLimit: number): Promise<void> {
     const quota = await this.getOrCreateQuota(accountUuid);
     quota.updateLimit(newLimit);
-    await this.quotaRepository.save(quota);
+    await this.quotaRepository.save(quota.toServerDTO());
   }
 
   /**
@@ -150,19 +150,20 @@ export class QuotaEnforcementService {
    * Private helper method
    */
   private async getOrCreateQuota(accountUuid: string): Promise<AIUsageQuotaServer> {
-    let quota = await this.quotaRepository.findByAccountUuid(accountUuid);
+    const quotaDTO = await this.quotaRepository.findByAccountUuid(accountUuid);
 
-    if (!quota) {
+    if (!quotaDTO) {
       // Create default quota: 50 requests per day
-      quota = AIUsageQuotaServer.create({
+      const quota = AIUsageQuotaServer.create({
         accountUuid,
         quotaLimit: 50,
         resetPeriod: QuotaResetPeriodEnum.DAILY,
       });
-      await this.quotaRepository.save(quota);
+      await this.quotaRepository.save(quota.toServerDTO());
+      return quota;
     }
 
-    return quota;
+    return AIUsageQuotaServer.fromServerDTO(quotaDTO);
   }
 
   /**

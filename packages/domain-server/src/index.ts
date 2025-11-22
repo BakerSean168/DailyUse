@@ -32,11 +32,8 @@ export * from './editor/index';
 // Schedule 模块
 export * from './schedule/index';
 
-// AI 模块 (新版 - DDD架构)
-export * from './modules/ai/index';
-// AI 领域层 - Story 4.3 (知识生成)
-export * from './ai/entities/KnowledgeGenerationTask';
-export * from './ai/repositories/IKnowledgeGenerationTaskRepository';
+// AI 模块
+export * from './ai/index';
 
 // Dashboard 模块
 export * from './dashboard/index';

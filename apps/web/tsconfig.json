@@ -23,8 +23,8 @@
     // Composite 项目配置（Monorepo 关键）
     // ============================================================
 
-    // 启用项目引用模式（支持类型热更新）
-    "composite": true,
+    // 关闭 composite（统一改由 tsup 输出类型与产物）
+    "composite": false,
 
     // 生成类型声明文件
     "declaration": true,
@@ -75,18 +75,7 @@
   "include": ["src/**/*", "env.d.ts"],
 
   // 排除的文件
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 
-  // ============================================================
-  // 项目引用配置（依赖的包）
-  // ============================================================
-
-  // Web 应用依赖的包（客户端相关）
-  "references": [
-    { "path": "../../packages/contracts" },
-
-    { "path": "../../packages/domain-client" },
-    { "path": "../../packages/utils" },
-    { "path": "../../packages/ui" }
-  ]
+  // 取消 TS Project References；前端类型由各包的 tsup d.ts 提供
 }

@@ -13,7 +13,7 @@
  */
 
 import { AIContracts, QuotaResetPeriod } from '@dailyuse/contracts';
-import { AIQuotaExceededError } from '@dailyuse/domain-server/ai';
+import { AIQuotaExceededError } from '@dailyuse/domain-server';
 
 type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
 

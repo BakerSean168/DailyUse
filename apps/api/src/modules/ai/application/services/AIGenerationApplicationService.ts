@@ -21,6 +21,8 @@ import type {
   AIGenerationValidationService,
   IKnowledgeGenerationTaskRepository,
   KnowledgeGenerationTask,
+} from '@dailyuse/domain-server';
+import {
   createKnowledgeGenerationTask,
   updateTaskProgress,
   completeTask,
@@ -46,6 +48,7 @@ type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
 type AIGenerationTaskServerDTO = AIContracts.AIGenerationTaskServerDTO;
 type SummarizationRequestDTO = AIContracts.SummarizationRequestDTO;
 type SummarizationResultDTO = AIContracts.SummarizationResultDTO;
+type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
 
 const logger = createLogger('AIGenerationApplicationService');
 
@@ -312,16 +315,14 @@ export class AIGenerationApplicationService {
         createdAt: Date.now(),
         updatedAt: Date.now(),
       } as any;
-      await this.quotaRepository.save(quota);
+      await this.quotaRepository.save(quota as AIUsageQuotaServerDTO);
     }
     this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     // Conversation
     let conversation: AIConversationServer | null = null;
     if (conversationUuid) {
-      conversation = (await this.conversationRepository.findById(conversationUuid, {
-        includeChildren: true,
-      })) as any;
+      conversation = (await this.conversationRepository.findByUuid(conversationUuid, true)) as any;
     }
     if (!conversation) {
       const title = userMessage.length <= 50 ? userMessage : userMessage.slice(0, 47) + '...';
@@ -421,15 +422,13 @@ export class AIGenerationApplicationService {
         createdAt: Date.now(),
         updatedAt: Date.now(),
       } as any;
-      await this.quotaRepository.save(quota);
+      await this.quotaRepository.save(quota as AIUsageQuotaServerDTO);
     }
     this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
 
     let conversation: AIConversationServer | null = null;
     if (conversationUuid) {
-      conversation = (await this.conversationRepository.findById(conversationUuid, {
-        includeChildren: true,
-      })) as any;
+      conversation = (await this.conversationRepository.findByUuid(conversationUuid, true)) as any;
     }
     if (!conversation) {
       const title = userMessage.length <= 50 ? userMessage : userMessage.slice(0, 47) + '...';
@@ -460,34 +459,38 @@ export class AIGenerationApplicationService {
       };
 
       let full = '';
-      await this.aiAdapter.generateStream(aiReq, {
-        onStart: () => callbacks.onStart?.(),
-        onChunk: (chunk: string) => {
-          full += chunk;
-          callbacks.onChunk(chunk);
-        },
-        onComplete: (result: any) => {
-          try {
-            const assistantMsg = MessageServer.create({
-              conversationUuid: (conversation as any).uuid,
-              role: MessageRole.ASSISTANT,
-              content: full || result.content,
-            });
-            (conversation as any).addMessage(assistantMsg);
-            this.conversationRepository.save(conversation as any);
-            const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
-            this.quotaRepository.save(updatedQuota as any);
-            callbacks.onComplete(result);
-          } catch (e) {
-            callbacks.onError(e instanceof Error ? e : new Error('Stream completion save error'));
+      // Use streamText generator API
+      callbacks.onStart?.();
+      try {
+        let finalTokenUsage: TokenUsageServerDTO | undefined = undefined as any;
+        for await (const chunk of this.aiAdapter.streamText(aiReq)) {
+          if (chunk.delta) {
+            full += chunk.delta;
+            callbacks.onChunk(chunk.delta);
           }
-        },
-        onError: async (error: Error) => {
-          (conversation as any).softDelete?.();
-          await this.conversationRepository.save(conversation as any);
-          callbacks.onError(error);
-        },
-      });
+          if (chunk.isDone && chunk.tokenUsage) {
+            finalTokenUsage = chunk.tokenUsage;
+          }
+        }
+
+        // On completion, persist assistant message and consume quota
+        const assistantMsg = MessageServer.create({
+          conversationUuid: (conversation as any).uuid,
+          role: MessageRole.ASSISTANT,
+          content: full,
+        });
+        (conversation as any).addMessage(assistantMsg);
+        await this.conversationRepository.save(conversation as any);
+
+        const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
+        await this.quotaRepository.save(updatedQuota as any);
+
+        callbacks.onComplete({ content: full, tokenUsage: finalTokenUsage });
+      } catch (error) {
+        (conversation as any).softDelete?.();
+        await this.conversationRepository.save(conversation as any);
+        callbacks.onError(error as Error);
+      }
     } catch (err) {
       if (conversation) {
         (conversation as any).softDelete?.();
@@ -570,7 +573,7 @@ export class AIGenerationApplicationService {
         createdAt: Date.now(),
         updatedAt: Date.now(),
       } as any;
-      await this.quotaRepository.save(quota);
+      await this.quotaRepository.save(quota as AIUsageQuotaServerDTO);
     }
 
     // 2. 检查配额
@@ -692,7 +695,7 @@ export class AIGenerationApplicationService {
     this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, estimatedTokens);
 
     // 3. 构建提示
-    const promptTemplate = getPromptTemplate('KNOWLEDGE_SERIES');
+    const promptTemplate = getPromptTemplate(GenerationTaskType.KNOWLEDGE_DOCUMENTS);
     if (!promptTemplate) {
       throw new Error('Knowledge series prompt template not found');
     }
@@ -707,8 +710,7 @@ export class AIGenerationApplicationService {
     const systemPrompt = promptTemplate.system;
 
     const request: AIGenerationRequest = {
-      conversationUuid: null,
-      accountUuid,
+      taskType: GenerationTaskType.KNOWLEDGE_DOCUMENTS,
       prompt: userPrompt,
       systemPrompt,
       temperature: 0.7,

@@ -23,12 +23,9 @@
     // Composite 项目配置（Monorepo 关键）
     // ============================================================
 
-    // 启用项目引用模式（必须与 references 配合使用）
-    // 作用：
-    // 1. 生成 .tsbuildinfo 文件用于增量编译
-    // 2. 允许其他项目引用此项目的类型定义
-    // 3. 支持跨项目的类型热更新
-    "composite": true,
+    // 关闭 composite（改用 tsup 负责类型与构建）
+    // 说明：避免 TS Project References 带来的耦合与报错
+    "composite": false,
 
     // 生成类型声明文件（.d.ts）
     "declaration": true,
@@ -93,16 +90,8 @@
     "**/*.test.ts",
     "**/*.spec.ts",
     "src/**/__tests__/manual/**/*"
-  ],
-
-  // ============================================================
-  // 项目引用配置（依赖的包）
-  // ============================================================
-
-  // API 应用依赖的包（启用 composite 后恢复 references）
-  "references": [
-    { "path": "../../packages/contracts" },
-    { "path": "../../packages/domain-server" },
-    { "path": "../../packages/utils" }
   ]
+
+  // 取消 TS Project References，交由包自身的 tsup 构建与导出的 d.ts 提供类型
+  // 如需本地源码类型联调，请先运行对应包的构建或 watch
 }

@@ -42,7 +42,7 @@ export enum TaskScheduleMode {
 /**
  * 任务模板状态
  * Task Template Status
- * 
+ *
  * 表示任务模板的管理状态（不包含执行状态）
  * 执行状态由 TaskInstanceStatus 表示
  */
@@ -93,8 +93,8 @@ export enum DayOfWeek {
  * 重复规则结束条件类型
  */
 export enum RecurrenceEndConditionType {
-  NEVER = 'NEVER',           // 永不结束
-  END_DATE = 'END_DATE',     // 指定日期结束
+  NEVER = 'NEVER', // 永不结束
+  END_DATE = 'END_DATE', // 指定日期结束
   OCCURRENCES = 'OCCURRENCES', // 指定次数结束
 }
 

@@ -8,13 +8,25 @@
  * - 基础设施细节由 API 层的 infrastructure/ 处理
  *
  * 导出内容：
+ * - 聚合根（Aggregates）
+ * - 实体（Entities）
+ * - 值对象（Value Objects）
  * - 仓储接口（Repository Interfaces）
  * - 领域服务（Domain Services）
  * - 领域错误（Domain Errors）
  */
 
+// ===== Aggregates =====
+export * from './aggregates/AIConversationServer';
+export * from './aggregates/AIUsageQuotaServer';
+
 // ===== Entities =====
+export * from './entities/MessageServer';
 export * from './entities/KnowledgeGenerationTask';
+
+// ===== Value Objects =====
+export * from './value-objects/GenerationInput';
+export * from './value-objects/TokenUsage';
 
 // ===== Repositories =====
 export * from './repositories';

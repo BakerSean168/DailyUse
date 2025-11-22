@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
 import path from 'node:path';
 
 /**
@@ -154,12 +155,27 @@ export default defineConfig({
       },
       {
         extends: true,
+        resolve: {
+          alias: {
+            '@': path.resolve(__dirname, './apps/web/src'),
+            '@dailyuse/domain-client': path.resolve(__dirname, './packages/domain-client/src'),
+            '@dailyuse/contracts': path.resolve(__dirname, './packages/contracts/src'),
+            '@dailyuse/utils': path.resolve(__dirname, './packages/utils/src'),
+            '@dailyuse/ui': path.resolve(__dirname, './packages/ui/src'),
+          },
+        },
+        plugins: [vue()],
         test: {
           name: 'web',
           root: './apps/web',
           environment: 'happy-dom',
           include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
           exclude: ['node_modules', 'dist', '.git', '.cache'],
+          css: {
+            modules: {
+              classNameStrategy: 'non-scoped',
+            },
+          },
         },
       },
     ],
