@@ -26,8 +26,7 @@ import settingRouter from './modules/setting/interface/http/settingRoutes';
 import editorRouter from './modules/editor/interface/http/routes/editorRoutes';
 import repositoryRouter from './modules/repository/interface/http/routes/repositoryRoutes';
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
-import aiGenerationRouter from './modules/ai/interface/http/aiGenerationRoutes';
-import aiConversationRouter from './modules/ai/interface/http/aiConversationRoutes';
+import aiRouter from './modules/ai/interface/http/aiRoutes';
 import dashboardRouter from './modules/dashboard/interface/routes';
 import crossModuleRouter from './shared/api/crossModuleRoutes';
 
@@ -217,10 +216,8 @@ api.use('/cross-module', authMiddleware, crossModuleRouter);
 /**
  * ai AI生成模块
  */
-// 挂载 AI 生成路由 - 需要认证
-api.use('/ai', aiGenerationRouter); // authMiddleware 在路由文件内部应用
-// 挂载 AI 对话路由 - 需要认证（包含 chat, conversations, quota）
-api.use('/ai', aiConversationRouter); // authMiddleware 在路由文件内部应用
+// 挂载统一 AI 路由 - 需要认证（包含 chat, conversations, generation, quota）
+api.use('/ai', aiRouter); // authMiddleware 在路由文件内部应用
 
 /**
  * theme 主题模块
@@ -289,6 +286,8 @@ api.stack.forEach((layer: any, index: number) => {
   }
 });
 
+// Mount API routes at both /api (for backward compatibility) and /api/v1
+app.use('/api', api);
 app.use('/api/v1', api);
 
 // 404

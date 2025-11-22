@@ -44,22 +44,22 @@ development_status:
   epic-1-retrospective: done
 
   epic-2: contexted
-  2-1-generate-key-results-backend: review
-  2-2-generate-key-results-ui: review
-  2-3-generate-task-templates-backend: review
+  2-1-generate-key-results-backend: done
+  2-2-generate-key-results-ui: done
+  2-3-generate-task-templates-backend: done
   2-4-generate-task-templates-ui: done
   epic-2-retrospective: optional
 
   epic-3: contexted
   3-1-conversation-message-management-backend: done
   3-2-chat-stream-backend: done
-  3-3-chat-interface-ui: review
-  3-4-conversation-history-ui: review
+  3-3-chat-interface-ui: done
+  3-4-conversation-history-ui: done
   epic-3-retrospective: optional
 
   epic-4: contexted
-  4-1-document-summarization-backend: review
-  4-2-document-summarization-ui: review
-  4-3-knowledge-generation-backend: review
-  4-4-knowledge-generation-ui: review
+  4-1-document-summarization-backend: done
+  4-2-document-summarization-ui: done
+  4-3-knowledge-generation-backend: done
+  4-4-knowledge-generation-ui: done
   epic-4-retrospective: optional

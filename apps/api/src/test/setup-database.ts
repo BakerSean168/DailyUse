@@ -18,8 +18,8 @@ export async function setupTestDatabase() {
 
   console.log('🚀 初始化测试数据库...');
 
-  // 设置测试数据库 URL
-  const TEST_DATABASE_URL = 'postgresql://test_user:test_pass@localhost:5433/dailyuse_test';
+  // 设置测试数据库 URL (使用 127.0.0.1 避免 Windows Docker IPv6 解析问题)
+  const TEST_DATABASE_URL = 'postgresql://test_user:test_pass@127.0.0.1:5433/dailyuse_test';
   process.env.DATABASE_URL = TEST_DATABASE_URL;
 
   try {

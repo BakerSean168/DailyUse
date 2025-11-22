@@ -9,7 +9,7 @@ beforeEach(async () => {
   // 设置环境变量
   process.env.NODE_ENV = 'test';
   process.env.JWT_SECRET = 'test-jwt-secret-key';
-  process.env.DATABASE_URL = 'postgresql://test_user:test_pass@localhost:5433/dailyuse_test';
+  process.env.DATABASE_URL = 'postgresql://test_user:test_pass@127.0.0.1:5433/dailyuse_test';
 
   // 设置时区为 UTC
   process.env.TZ = 'UTC';
