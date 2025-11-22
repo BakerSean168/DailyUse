@@ -1,12 +1,9 @@
 /**
- * useAIChat composable
- * Streaming chat UI logic (Story 3.3)
+ * Full streaming chat composable migrated from legacy ai-chat module.
  */
 import { ref, computed } from 'vue';
-import { ChatMessage, SendOptions } from '../types/chat';
-import { createLogger } from '@dailyuse/utils';
-
-const logger = createLogger('useAIChat');
+import type { ChatMessage, SendOptions } from '../types/chat';
+import { httpAiConversationRepository } from '@dailyuse/domain-client';
 
 interface SSEEventPayload {
   content?: string;
@@ -40,7 +37,7 @@ function parseSSEChunk(buffer: string): SSEParsedEvent[] {
         const parsed: SSEEventPayload = JSON.parse(dataLine);
         events.push({ event: eventType, data: parsed });
       } catch (err) {
-        logger.warn('Failed to parse SSE data line', { dataLine });
+        // swallow parse errors; continue stream
       }
     }
   }
@@ -52,7 +49,6 @@ export function useAIChat() {
   const isStreaming = ref(false);
   const error = ref<string | null>(null);
   const abortController = ref<AbortController | null>(null);
-  const conversationUuid = ref<string | undefined>(undefined);
 
   const hasMessages = computed(() => messages.value.length > 0);
 
@@ -94,10 +90,8 @@ export function useAIChat() {
 
   async function sendMessage(content: string, opts: SendOptions = {}) {
     if (!content.trim()) return;
-    if (isStreaming.value) return; // block while streaming (initial approach)
+    if (isStreaming.value) return; // prevent overlapping streams
     error.value = null;
-
-    logger.info('Sending user message', { contentLength: content.length });
 
     const user: ChatMessage = {
       id: crypto.randomUUID(),
@@ -121,74 +115,36 @@ export function useAIChat() {
     abortController.value = new AbortController();
 
     try {
-      // POST SSE endpoint (cannot use EventSource for POST body) -> use fetch streaming.
-      const response = await fetch('/api/ai/chat/stream', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: content, conversationUuid: opts.conversationUuid }),
-        signal: abortController.value.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('Readable stream not available');
-      }
-
-      let buffered = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunkText = new TextDecoder().decode(value);
-        buffered += chunkText;
-
-        // Process complete events in buffer while keeping incomplete tail
-        const lastDoubleBreak = buffered.lastIndexOf('\n\n');
-        if (lastDoubleBreak !== -1) {
-          const processPart = buffered.slice(0, lastDoubleBreak + 2);
-          const remaining = buffered.slice(lastDoubleBreak + 2);
-          const events = parseSSEChunk(processPart);
-          for (const evt of events) {
-            switch (evt.event) {
-              case 'chunk':
-                if (evt.data.content) updateAssistantContent(assistantId, evt.data.content);
-                break;
-              case 'error':
-                markAssistantError(assistantId, evt.data.error || 'Stream error');
-                break;
-              case 'complete':
-                // Final payload may contain usage or final content fallback
-                markAssistantDone(assistantId);
-                break;
-            }
+      await httpAiConversationRepository.streamChat(
+        { message: content, conversationUuid: opts.conversationUuid },
+        (evt) => {
+          switch (evt.type) {
+            case 'chunk':
+              updateAssistantContent(assistantId, evt.content);
+              break;
+            case 'error':
+              markAssistantError(assistantId, evt.error);
+              break;
+            case 'complete':
+              markAssistantDone(assistantId);
+              break;
           }
-          buffered = remaining;
-        }
-      }
-
-      // After stream end ensure final completion state
+        },
+      );
       markAssistantDone(assistantId);
       isStreaming.value = false;
       abortController.value = null;
-      conversationUuid.value = opts.conversationUuid; // could be updated from server later
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown streaming error';
       error.value = msg;
       markAssistantError(assistantId, msg);
       isStreaming.value = false;
       abortController.value = null;
-      logger.error('Streaming failed', { error: msg });
     }
   }
 
   function abort() {
     if (!abortController.value || !isStreaming.value) return;
-    logger.info('Aborting stream');
     abortController.value.abort();
     isStreaming.value = false;
     const lastAssistant = [...messages.value]
@@ -200,13 +156,5 @@ export function useAIChat() {
     }
   }
 
-  return {
-    messages,
-    isStreaming,
-    error,
-    hasMessages,
-    sendMessage,
-    abort,
-    reset,
-  };
+  return { messages, isStreaming, error, hasMessages, sendMessage, abort, reset };
 }

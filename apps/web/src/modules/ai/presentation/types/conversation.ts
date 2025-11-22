@@ -7,17 +7,8 @@ export interface Conversation {
   messageCount?: number;
   lastMessagePreview?: string;
 }
-
-export interface ConversationListResponse {
-  conversations: Conversation[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
 export interface ConversationGroup {
   label: string;
   conversations: Conversation[];
 }
-
 export type DateGroup = 'today' | 'yesterday' | 'week' | 'month' | 'older';

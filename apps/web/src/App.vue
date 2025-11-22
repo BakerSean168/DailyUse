@@ -51,12 +51,12 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, computed, defineAsyncComponent, shallowRef } from 'vue';
-import AIChatWindow from '@/modules/ai-chat/components/AIChatWindow.vue';
-import AIFloatingOrb from '@/modules/ai-chat/components/AIFloatingOrb.vue';
-import ConversationHistorySidebar from '@/modules/ai-chat/components/ConversationHistorySidebar.vue';
+import AIChatWindow from '@/modules/ai/presentation/components/chat/AIChatWindow.vue';
+import AIFloatingOrb from '@/modules/ai/presentation/components/chat/AIFloatingOrb.vue';
+import ConversationHistorySidebar from '@/modules/ai/presentation/components/chat/ConversationHistorySidebar.vue';
 import AIGenerateKRButton from '@/modules/goal/presentation/components/AIGenerateKRButton.vue';
-import AITasksQuickDialog from '@/modules/ai-chat/components/AITasksQuickDialog.vue';
-import AIKnowledgeDocQuickDialog from '@/modules/ai-chat/components/AIKnowledgeDocQuickDialog.vue';
+import AITasksQuickDialog from '@/modules/ai/presentation/components/chat/AITasksQuickDialog.vue';
+import AIKnowledgeDocQuickDialog from '@/modules/ai/presentation/components/chat/AIKnowledgeDocQuickDialog.vue';
 import { useSettingStore } from '@/modules/setting/presentation/stores/settingStore';
 import { useSnackbarStore } from '@/shared/stores/snackbarStore';
 import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
