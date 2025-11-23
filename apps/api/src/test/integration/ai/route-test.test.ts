@@ -5,15 +5,34 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import { ApiTestHelpers } from '../../setup';
+import { getPrismaClient } from '../../setup-database';
 import type { Express } from 'express';
 
 describe('AI Routes Mount Test', () => {
   let app: Express;
   let userToken: string;
+  const testUserUuid = 'test-user-001';
 
   beforeEach(async () => {
     app = await ApiTestHelpers.createTestApp();
-    userToken = await ApiTestHelpers.createTestToken({ accountUuid: 'test-user-001' });
+    
+    // 创建测试账户
+    const prisma = getPrismaClient();
+    await prisma.account.create({
+      data: {
+        uuid: testUserUuid,
+        username: `testuser_${testUserUuid}`,
+        email: `${testUserUuid}@test.com`,
+        profile: JSON.stringify({}),
+        preferences: JSON.stringify({}),
+        storage: JSON.stringify({}),
+        security: JSON.stringify({}),
+        stats: JSON.stringify({}),
+        updatedAt: new Date(),
+      },
+    });
+    
+    userToken = await ApiTestHelpers.createTestToken({ accountUuid: testUserUuid });
   });
 
   it('should return 401 without auth on /api/ai/generate/key-results', async () => {

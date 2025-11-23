@@ -44,6 +44,7 @@ export class NotificationEventHandlers {
       return;
     }
 
+    console.log('[NotificationEventHandlers] 🚀 开始初始化事件监听器...');
     logger.info('开始初始化事件处理器');
 
     // 监听Schedule模块的提醒触发事件
@@ -56,6 +57,7 @@ export class NotificationEventHandlers {
     this.setupSystemEventListeners();
 
     this.isInitialized = true;
+    console.log('[NotificationEventHandlers] ✅ 事件处理器初始化完成');
     logger.info('事件处理器初始化完成', {
       scheduledListeners: true,
       internalListeners: true,
@@ -165,10 +167,13 @@ export class NotificationEventHandlers {
    * 设置系统事件监听器
    */
   private setupSystemEventListeners(): void {
+    console.log('[NotificationEventHandlers] 📋 设置系统事件监听器...');
     logger.debug('设置系统事件监听器');
 
-    // � 监听 SSE 推送的弹窗提醒事件
+    // 🔔 监听 SSE 推送的弹窗提醒事件
+    console.log('[NotificationEventHandlers] 注册 ui:show-popup-reminder 监听器');
     eventBus.on('ui:show-popup-reminder', (data: any) => {
+      console.log('[NotificationEventHandlers] 🔔 收到弹窗提醒事件！！！', data);
       logger.info('收到弹窗提醒事件', {
         accountUuid: data?.notification?.accountUuid,
         title: data?.notification?.title,
@@ -182,8 +187,10 @@ export class NotificationEventHandlers {
       });
     });
 
-    // �🔊 监听 SSE 推送的提醒音效播放事件
+    // 🔊 监听 SSE 推送的提醒音效播放事件
+    console.log('[NotificationEventHandlers] 注册 ui:play-reminder-sound 监听器');
     eventBus.on('ui:play-reminder-sound', (data: any) => {
+      console.log('[NotificationEventHandlers] 🔊 收到提醒音效播放事件！！！', data);
       logger.info('收到提醒音效播放事件', {
         accountUuid: data?.notification?.accountUuid,
         sound: data?.sound,

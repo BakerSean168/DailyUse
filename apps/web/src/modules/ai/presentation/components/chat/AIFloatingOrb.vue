@@ -1,13 +1,24 @@
 <template>
-    <div class="ai-orb-wrapper" :class="{ 'menu-open': showMenu }">
+    <div
+        class="ai-orb-wrapper"
+        :class="wrapperClasses"
+        :style="wrapperStyle"
+    >
         <transition name="hint-fade">
             <div v-if="showHint" class="ai-orb-hint" @click.stop="dismissHint">
                 <span>{{ currentHint }}</span>
                 <button class="close-hint" @click.stop="dismissHint" aria-label="关闭提示">×</button>
             </div>
         </transition>
-        <div class="ai-orb" @click="toggleMenu" @mouseenter="hovering = true" @mouseleave="hovering = false"
-            aria-label="AI 助手入口">
+        <div
+            class="ai-orb"
+            @click="toggleMenu"
+            @mouseenter="hovering = true"
+            @mouseleave="hovering = false"
+            @pointerdown="startDrag"
+            aria-label="AI 助手入口"
+            role="button"
+        >
             <img v-if="avatar" :src="avatar" alt="AI" class="ai-avatar" />
             <div v-else class="ai-fallback">🧠</div>
             <div class="pulse" />
@@ -33,44 +44,249 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { logo64 as avatar } from '@dailyuse/assets';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { logo48 as avatar } from '@dailyuse/assets';
+
+const emit = defineEmits<{
+    (e: 'open-chat'): void;
+    (e: 'create-key-result'): void;
+    (e: 'assist-goal'): void;
+    (e: 'generate-tasks'): void;
+    (e: 'generate-knowledge'): void;
+}>();
+
 const showMenu = ref(false);
 const showHint = ref(false);
 const hovering = ref(false);
 const currentHint = ref('我可以帮你创建关键结果');
 const emittedInitialHint = ref(false);
-function toggleMenu() { showMenu.value = !showMenu.value; if (showMenu.value) showHint.value = false; }
-function emitChat() { showMenu.value = false; showHint.value = false; emit('open-chat'); }
-function emitKeyResult() { showMenu.value = false; emit('create-key-result'); }
-function emitGoalAssist() { showMenu.value = false; emit('assist-goal'); }
-function emitTasks() { showMenu.value = false; emit('generate-tasks'); }
-function emitKnowledge() { showMenu.value = false; emit('generate-knowledge'); }
-function dismissHint() { showHint.value = false; }
-const emit = defineEmits<{ (e: 'open-chat'): void; (e: 'create-key-result'): void; (e: 'assist-goal'): void; (e: 'generate-tasks'): void; (e: 'generate-knowledge'): void }>();
-onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.value = true; emittedInitialHint.value = true; } }, 4000); });
+
+const dragMoved = ref(false);
+const isDragging = ref(false);
+const isDocked = ref(true);
+const dockingSide = ref<'left' | 'right'>('right');
+const position = ref({ x: 0, y: 0 });
+
+const defaultViewport = { width: 1440, height: 900 };
+const viewport = ref({ ...defaultViewport });
+
+const ORB_SIZE = 68;
+const EDGE_PADDING = 20;
+
+const dragOrigin = ref({ x: 0, y: 0 });
+const pointerOrigin = ref({ x: 0, y: 0 });
+const dragElement = ref<HTMLElement | null>(null);
+
+const wrapperStyle = computed(() => ({
+    transform: `translate3d(${position.value.x}px, ${position.value.y}px, 0)`
+}));
+
+const wrapperClasses = computed(() => ({
+    'menu-open': showMenu.value,
+    'is-dragging': isDragging.value,
+    'is-docked': isDocked.value,
+    'dock-left': dockingSide.value === 'left',
+    'dock-right': dockingSide.value === 'right',
+}));
+
+function updateViewportDimensions() {
+    if (typeof window === 'undefined') return;
+    viewport.value = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+    };
+}
+
+function clampValue(value: number, min: number, max: number) {
+    return Math.min(Math.max(value, min), max);
+}
+
+function clampPosition(x: number, y: number) {
+    const maxX = viewport.value.width - ORB_SIZE - EDGE_PADDING;
+    const maxY = viewport.value.height - ORB_SIZE - EDGE_PADDING;
+    return {
+        x: clampValue(x, EDGE_PADDING, Math.max(EDGE_PADDING, maxX)),
+        y: clampValue(y, EDGE_PADDING, Math.max(EDGE_PADDING, maxY)),
+    };
+}
+
+position.value = clampPosition(
+    viewport.value.width - ORB_SIZE - EDGE_PADDING,
+    viewport.value.height - ORB_SIZE - EDGE_PADDING,
+);
+
+function initializePosition() {
+    const initial = clampPosition(
+        viewport.value.width - ORB_SIZE - EDGE_PADDING,
+        viewport.value.height - ORB_SIZE - EDGE_PADDING,
+    );
+    position.value = initial;
+}
+
+function toggleMenu() {
+    if (dragMoved.value || isDragging.value) {
+        dragMoved.value = false;
+        return;
+    }
+    showMenu.value = !showMenu.value;
+    if (showMenu.value) {
+        showHint.value = false;
+        snapToEdge();
+    }
+}
+
+function emitChat() {
+    showMenu.value = false;
+    showHint.value = false;
+    emit('open-chat');
+}
+
+function emitKeyResult() {
+    showMenu.value = false;
+    emit('create-key-result');
+}
+
+function emitGoalAssist() {
+    showMenu.value = false;
+    emit('assist-goal');
+}
+
+function emitTasks() {
+    showMenu.value = false;
+    emit('generate-tasks');
+}
+
+function emitKnowledge() {
+    showMenu.value = false;
+    emit('generate-knowledge');
+}
+
+function dismissHint() {
+    showHint.value = false;
+}
+
+function startDrag(event: PointerEvent) {
+    if (event.button !== 0) return;
+    if (typeof window === 'undefined') return;
+    dragMoved.value = false;
+    isDragging.value = true;
+    showMenu.value = false;
+    pointerOrigin.value = { x: event.clientX, y: event.clientY };
+    dragOrigin.value = { ...position.value };
+    dragElement.value = event.currentTarget as HTMLElement;
+    dragElement.value?.setPointerCapture?.(event.pointerId);
+    window.addEventListener('pointermove', onDragMove);
+    window.addEventListener('pointerup', endDrag);
+}
+
+function onDragMove(event: PointerEvent) {
+    if (!isDragging.value) return;
+    const dx = event.clientX - pointerOrigin.value.x;
+    const dy = event.clientY - pointerOrigin.value.y;
+
+    if (!dragMoved.value && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+        dragMoved.value = true;
+    }
+
+    const next = clampPosition(dragOrigin.value.x + dx, dragOrigin.value.y + dy);
+    position.value = next;
+    isDocked.value = false;
+}
+
+function endDrag(event: PointerEvent) {
+    if (!isDragging.value) return;
+    dragElement.value?.releasePointerCapture?.(event.pointerId);
+    dragElement.value = null;
+    window.removeEventListener('pointermove', onDragMove);
+    window.removeEventListener('pointerup', endDrag);
+    isDragging.value = false;
+
+    if (dragMoved.value) {
+        snapToEdge();
+    }
+
+    if (typeof window !== 'undefined') {
+        window.requestAnimationFrame(() => {
+            dragMoved.value = false;
+        });
+    } else {
+        dragMoved.value = false;
+    }
+}
+
+function snapToEdge() {
+    const midpoint = position.value.x + ORB_SIZE / 2;
+    const viewportMid = viewport.value.width / 2;
+    const targetSide = midpoint < viewportMid ? 'left' : 'right';
+    dockingSide.value = targetSide;
+
+    const snappedX = targetSide === 'left'
+        ? EDGE_PADDING
+        : viewport.value.width - ORB_SIZE - EDGE_PADDING;
+
+    position.value = clampPosition(snappedX, position.value.y);
+    isDocked.value = true;
+}
+
+function handleResize() {
+    updateViewportDimensions();
+    position.value = clampPosition(position.value.x, position.value.y);
+    snapToEdge();
+}
+
+onMounted(() => {
+    if (typeof window !== 'undefined') {
+        updateViewportDimensions();
+        initializePosition();
+        window.addEventListener('resize', handleResize);
+        setTimeout(() => {
+            if (!emittedInitialHint.value) {
+                showHint.value = true;
+                emittedInitialHint.value = true;
+            }
+        }, 4000);
+    }
+});
+
+onBeforeUnmount(() => {
+    if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('pointermove', onDragMove);
+        window.removeEventListener('pointerup', endDrag);
+    }
+});
 </script>
 <style scoped>
-/* Styles copied from legacy component */
 .ai-orb-wrapper {
     position: fixed;
-    bottom: 28px;
-    right: 28px;
+    top: 0;
+    left: 0;
     z-index: 1200;
     display: flex;
     align-items: flex-end;
     gap: 12px;
+    transform: translate3d(0, 0, 0);
+    transition: transform .25s ease;
+}
+
+.ai-orb-wrapper.dock-left {
+    flex-direction: row-reverse;
+}
+
+.ai-orb-wrapper.is-dragging {
+    transition: none;
 }
 
 .ai-orb-hint {
-    background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-    border: 1px solid rgba(216, 218, 224, .6);
+    background: color-mix(in srgb, var(--v-theme-surface) 92%, transparent);
+    border: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 14%, transparent);
     border-radius: 14px;
     padding: 10px 14px;
     font-size: 13px;
     line-height: 1.5;
-    color: #333;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, .12), 0 2px 6px rgba(74, 108, 247, .08), inset 0 1px 0 rgba(255, 255, 255, .9);
+    color: var(--v-theme-on-surface);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--v-theme-on-surface) 12%, transparent),
+        0 2px 6px color-mix(in srgb, var(--v-theme-primary) 18%, transparent);
     max-width: 220px;
     position: relative;
     cursor: pointer;
@@ -81,7 +297,8 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
 
 .ai-orb-hint:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .15), 0 4px 8px rgba(74, 108, 247, .12);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--v-theme-on-surface) 18%, transparent),
+        0 4px 8px color-mix(in srgb, var(--v-theme-primary) 24%, transparent);
 }
 
 .ai-orb-hint::after {
@@ -91,10 +308,19 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
     bottom: 14px;
     width: 12px;
     height: 12px;
-    background: #fff;
-    border-left: 1px solid #d8dae0;
-    border-top: 1px solid #d8dae0;
+    background: color-mix(in srgb, var(--v-theme-surface) 95%, transparent);
+    border-left: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 14%, transparent);
+    border-top: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 14%, transparent);
     transform: rotate(45deg);
+}
+
+.ai-orb-wrapper.dock-left .ai-orb-hint::after {
+    left: -6px;
+    right: auto;
+    border-left: none;
+    border-top: none;
+    border-right: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 14%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 14%, transparent);
 }
 
 .close-hint {
@@ -105,31 +331,46 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
     border: none;
     font-size: 14px;
     cursor: pointer;
-    color: #555;
+    color: color-mix(in srgb, var(--v-theme-on-surface) 70%, transparent);
 }
 
 .close-hint:hover {
-    color: #c22;
+    color: color-mix(in srgb, var(--v-theme-primary) 80%, var(--v-theme-on-surface));
 }
 
 .ai-orb {
     width: 68px;
     height: 68px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #6dd5ed, #4a6cf7 50%, #3852d9 100%);
+    background: radial-gradient(circle at 30% 30%,
+            color-mix(in srgb, var(--v-theme-primary) 75%, white) 0%,
+            var(--v-theme-primary) 45%,
+            color-mix(in srgb, var(--v-theme-primary) 80%, black) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    box-shadow: 0 8px 24px rgba(74, 108, 247, .4), 0 4px 12px rgba(0, 0, 0, .15), inset 0 -2px 8px rgba(0, 0, 0, .15), inset 0 2px 8px rgba(255, 255, 255, .3);
-    cursor: pointer;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--v-theme-primary) 40%, transparent),
+        0 4px 12px color-mix(in srgb, var(--v-theme-on-surface) 20%, transparent),
+        inset 0 -2px 8px rgba(0, 0, 0, .15),
+        inset 0 2px 8px rgba(255, 255, 255, .25);
+    cursor: grab;
     overflow: hidden;
-    transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+    transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), box-shadow .3s ease;
+}
+
+.ai-orb-wrapper.is-dragging .ai-orb {
+    cursor: grabbing;
+    box-shadow: 0 16px 28px color-mix(in srgb, var(--v-theme-primary) 50%, transparent);
+}
+
+.ai-orb-wrapper.is-docked .ai-orb {
+    width: 58px;
+    height: 58px;
 }
 
 .ai-orb:hover {
     transform: scale(1.08);
-    box-shadow: 0 12px 32px rgba(74, 108, 247, .5), 0 6px 16px rgba(0, 0, 0, .2), inset 0 -2px 8px rgba(0, 0, 0, .2), inset 0 2px 8px rgba(255, 255, 255, .4);
 }
 
 .ai-orb:active {
@@ -176,10 +417,11 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
     bottom: 82px;
     right: 0;
     width: 260px;
-    background: rgba(255, 255, 255, .98);
-    border: 1px solid rgba(208, 211, 217, .6);
+    background: color-mix(in srgb, var(--v-theme-surface) 96%, transparent);
+    border: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 12%, transparent);
     border-radius: 18px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, .22), 0 8px 16px rgba(74, 108, 247, .12), inset 0 1px 0 rgba(255, 255, 255, .9);
+    box-shadow: 0 16px 40px color-mix(in srgb, var(--v-theme-on-surface) 26%, transparent),
+        0 8px 16px color-mix(in srgb, var(--v-theme-primary) 16%, transparent);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -187,13 +429,20 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
     -webkit-backdrop-filter: blur(12px);
 }
 
+.ai-orb-wrapper.dock-left .ai-orb-menu {
+    left: 0;
+    right: auto;
+    transform-origin: bottom left;
+}
+
 .menu-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
-    background: #f5f6fa;
-    border-bottom: 1px solid #e0e3e9;
+    background: color-mix(in srgb, var(--v-theme-surface) 90%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 10%, transparent);
+    color: var(--v-theme-on-surface);
 }
 
 .menu-header .title {
@@ -208,6 +457,11 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
     cursor: pointer;
     line-height: 1;
     padding: 2px 6px;
+    color: color-mix(in srgb, var(--v-theme-on-surface) 70%, transparent);
+}
+
+.menu-header .close:hover {
+    color: var(--v-theme-primary);
 }
 
 .actions {
@@ -227,7 +481,7 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
     display: flex;
     gap: 10px;
     align-items: center;
-    color: #2f3747;
+    color: color-mix(in srgb, var(--v-theme-on-surface) 88%, transparent);
     transition: all .15s ease;
     position: relative;
 }
@@ -239,25 +493,26 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(135deg, #4a6cf7, #6dd5ed);
-    transform: scaleY(0);
-    transition: transform .2s ease;
+    background: var(--v-theme-primary);
+    opacity: 0;
+    transition: opacity .2s ease;
 }
 
 .actions button:hover {
-    background: linear-gradient(90deg, #eef3ff 0%, #f8f9ff 100%);
-    color: #4a6cf7;
+    background: color-mix(in srgb, var(--v-theme-primary) 10%, transparent);
+    color: var(--v-theme-primary);
     padding-left: 22px;
 }
 
 .actions button:hover::before {
-    transform: scaleY(1);
+    opacity: 1;
 }
 
 .footer {
     padding: 6px 14px 10px;
-    border-top: 1px solid #eceef2;
-    background: #fafbfc;
+    border-top: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 10%, transparent);
+    background: color-mix(in srgb, var(--v-theme-surface) 92%, transparent);
+    color: color-mix(in srgb, var(--v-theme-on-surface) 70%, transparent);
 }
 
 .hint-fade-enter-active,
@@ -275,6 +530,11 @@ onMounted(() => { setTimeout(() => { if (!emittedInitialHint.value) { showHint.v
 .menu-scale-leave-active {
     transition: opacity .18s ease, transform .18s ease;
     transform-origin: bottom right;
+}
+
+.ai-orb-wrapper.dock-left .menu-scale-enter-active,
+.ai-orb-wrapper.dock-left .menu-scale-leave-active {
+    transform-origin: bottom left;
 }
 
 .menu-scale-enter-from,

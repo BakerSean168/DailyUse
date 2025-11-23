@@ -411,26 +411,31 @@ export class SSEClient {
   private handleNotificationEvent(eventType: string, data: string): void {
     try {
       const parsedData = JSON.parse(data);
-      console.log(`[SSE Client] 处理通知事件 ${eventType}:`, parsedData);
+      console.log(`[SSE Client] 🔥 处理通知事件 ${eventType}:`, parsedData);
+      console.log(`[SSE Client] 🔍 eventType 类型:`, typeof eventType, `值: "${eventType}"`);
 
       // 根据事件类型转发到前端事件总线
       switch (eventType) {
         case 'created':
+          console.log('[SSE Client] ✅ 匹配到 created case');
           eventBus.emit('notification:created', parsedData);
           break;
 
         case 'sent':
+          console.log('[SSE Client] ✅ 匹配到 sent case');
           eventBus.emit('notification:sent', parsedData);
           break;
 
         case 'popup-reminder':
+          console.log('[SSE Client] ✅ 匹配到 popup-reminder case');
           // 转发为前端通知事件
-          console.log('[SSE Client] 🔔 转发 popup-reminder 事件到 ui:show-popup-reminder');
+          console.log('[SSE Client] 🔔 >>>>转发 popup-reminder 事件到 ui:show-popup-reminder<<<<');
           eventBus.emit('ui:show-popup-reminder', parsedData);
           break;
 
         case 'sound-reminder':
-          console.log('[SSE Client] 🔊 转发 sound-reminder 事件到 ui:play-reminder-sound');
+          console.log('[SSE Client] ✅ 匹配到 sound-reminder case');
+          console.log('[SSE Client] 🔊 >>>>转发 sound-reminder 事件到 ui:play-reminder-sound<<<<');
           eventBus.emit('ui:play-reminder-sound', parsedData);
           break;
 

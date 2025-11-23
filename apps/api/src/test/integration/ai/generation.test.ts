@@ -13,6 +13,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { ApiTestHelpers } from '../../setup';
+import { getPrismaClient } from '../../setup-database';
 
 describe('AI Generation API 集成测试 (Epic 2)', () => {
   let app: Express;
@@ -22,6 +23,22 @@ describe('AI Generation API 集成测试 (Epic 2)', () => {
   beforeEach(async () => {
     // 创建测试应用
     app = await ApiTestHelpers.createTestApp();
+
+    // 创建测试账户（必须先创建，因为 ai_usage_quotas 表有外键约束）
+    const prisma = getPrismaClient();
+    await prisma.account.create({
+      data: {
+        uuid: userUuid,
+        username: `testuser_${userUuid}`,
+        email: `${userUuid}@test.com`,
+        profile: JSON.stringify({}),
+        preferences: JSON.stringify({}),
+        storage: JSON.stringify({}),
+        security: JSON.stringify({}),
+        stats: JSON.stringify({}),
+        updatedAt: new Date(),
+      },
+    });
 
     // 创建测试用户 token
     userToken = await ApiTestHelpers.createTestToken({ accountUuid: userUuid });
@@ -360,6 +377,22 @@ describe('AI Generation API 集成测试 (Epic 2)', () => {
     const userBUuid = 'generation-test-user-002';
 
     beforeEach(async () => {
+      // 创建用户B账户
+      const prisma = getPrismaClient();
+      await prisma.account.create({
+        data: {
+          uuid: userBUuid,
+          username: `testuser_${userBUuid}`,
+          email: `${userBUuid}@test.com`,
+          profile: JSON.stringify({}),
+          preferences: JSON.stringify({}),
+          storage: JSON.stringify({}),
+          security: JSON.stringify({}),
+          stats: JSON.stringify({}),
+          updatedAt: new Date(),
+        },
+      });
+      
       userBToken = await ApiTestHelpers.createTestToken({ accountUuid: userBUuid });
     });
 

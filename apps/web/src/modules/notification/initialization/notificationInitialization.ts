@@ -22,19 +22,19 @@ import { reminderNotificationHandler } from '../application/handlers/ReminderNot
 export function registerNotificationInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
 
-  // ========== APP_STARTUP 阶段：核心通知服务（不依赖登录态） ==========
+  // ========== USER_LOGIN 阶段：核心通知服务（在 SSE 连接之前） ==========
   const notificationInitTask: InitializationTask = {
     name: 'notification-core',
-    phase: InitializationPhase.APP_STARTUP,
-    priority: 15, // 在基础设施初始化后，在用户模块之前
+    phase: InitializationPhase.USER_LOGIN,
+    priority: 10, // 在 SSE 连接之前（SSE 是 priority 15）
     initialize: async () => {
-      console.log('🔔 [Notification] 开始初始化通知核心服务（APP_STARTUP）...');
+      console.log('🔔 [Notification] 开始初始化通知核心服务（USER_LOGIN）...');
 
       try {
         const notificationManager = NotificationInitializationManager.getInstance();
         await notificationManager.initializeNotificationModule();
 
-        console.log('✅ [Notification] 通知核心服务初始化完成（不依赖用户登录态）');
+        console.log('✅ [Notification] 通知核心服务初始化完成');
       } catch (error) {
         console.error('❌ [Notification] 通知核心服务初始化失败:', error);
         throw error;
