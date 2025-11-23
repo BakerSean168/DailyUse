@@ -506,14 +506,14 @@ Token 存储策略：...
 类型定义和接口契约包
 
 ## 安装
-\`\`\`bash
+```bash
 pnpm add @dailyuse/contracts
-\`\`\`
+```
 
 ## 使用
-\`\`\`typescript
+```typescript
 import { Task, User } from '@dailyuse/contracts';
-\`\`\`
+```
 
 ## API
 
@@ -541,7 +541,7 @@ import { Task, User } from '@dailyuse/contracts';
 
 ## 应用依赖关系
 
-\`\`\`mermaid
+```mermaid
 graph TD
   api[apps/api]
   web[apps/web]
@@ -570,12 +570,12 @@ graph TD
   domain-client --> contracts
   domain-server --> contracts
   ui --> contracts
-\`\`\`
+```
 
 ## 查看实时依赖图
-\`\`\`bash
+```bash
 pnpm nx graph
-\`\`\`
+```
 ```
 
 #### 6.4.2 Workspace 配置文档
@@ -588,22 +588,22 @@ pnpm nx graph
 ### 常用命令
 
 #### 运行应用
-\`\`\`bash
+```bash
 pnpm nx serve api
 pnpm nx serve web
-\`\`\`
+```
 
 #### 构建
-\`\`\`bash
+```bash
 pnpm nx build api
 pnpm nx build web --prod
-\`\`\`
+```
 
 #### 测试
-\`\`\`bash
+```bash
 pnpm nx test api
 pnpm nx affected:test  # 只测试受影响的项目
-\`\`\`
+```
 
 ### 更多信息
 - [Nx 配置详解](../configs/nx-configuration.md)
@@ -649,60 +649,60 @@ pnpm nx affected:test  # 只测试受影响的项目
 ## 3. 架构设计
 
 ### 3.1 模块结构
-\`\`\`
+```
 module/
 ├── entities/
 ├── repositories/
 ├── services/
 └── events/
-\`\`\`
+```
 
 ### 3.2 类图
-\`\`\`mermaid
+```mermaid
 classDiagram
     class Task {
         +id: string
         +title: string
         +complete(): void
     }
-\`\`\`
+```
 
 ### 3.3 时序图
-\`\`\`mermaid
+```mermaid
 sequenceDiagram
     User->>TaskService: createTask()
     TaskService->>Repository: save()
-\`\`\`
+```
 
 ## 4. API 设计
 
 ### 4.1 Public API
-\`\`\`typescript
+```typescript
 export class TaskService {
   createTask(dto: CreateTaskDto): Task
   updateTask(id: string, dto: UpdateTaskDto): Task
 }
-\`\`\`
+```
 
 ## 5. 数据模型
 
 ### 5.1 实体定义
-\`\`\`typescript
+```typescript
 interface Task {
   id: string;
   title: string;
   completed: boolean;
 }
-\`\`\`
+```
 
 ### 5.2 数据库 Schema
-\`\`\`prisma
+```prisma
 model Task {
   id        String   @id @default(uuid())
   title     String
   completed Boolean  @default(false)
 }
-\`\`\`
+```
 
 ## 6. 实现细节
 
@@ -755,23 +755,23 @@ model Task {
 **POST** `/api/resources`
 
 #### 请求
-\`\`\`json
+```json
 {
   "name": "string",
   "description": "string"
 }
-\`\`\`
+```
 
 #### 响应
 **Status**: 201 Created
-\`\`\`json
+```json
 {
   "id": "uuid",
   "name": "string",
   "description": "string",
   "createdAt": "2025-01-01T00:00:00Z"
 }
-\`\`\`
+```
 
 #### 错误码
 - `400 Bad Request` - 请求参数错误
@@ -779,12 +779,12 @@ model Task {
 - `409 Conflict` - 资源已存在
 
 #### 示例
-\`\`\`bash
+```bash
 curl -X POST https://api.example.com/api/resources \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name":"Example","description":"Test"}'
-\`\`\`
+```
 
 ### 获取资源列表
 **GET** `/api/resources`
@@ -807,9 +807,9 @@ curl -X POST https://api.example.com/api/resources \
 ## 诊断步骤
 
 ### 步骤 1：检查日志
-\`\`\`bash
+```bash
 tail -f logs/app.log
-\`\`\`
+```
 
 查找以下错误信息：
 - `ERROR: Connection refused`
@@ -880,15 +880,15 @@ Nx 是一个工具...它有很多功能...
 
 ```markdown
 <!-- 架构图 -->
-\`\`\`mermaid
+```mermaid
 graph LR
   A[Client] --> B[API Gateway]
   B --> C[Service A]
   B --> D[Service B]
-\`\`\`
+```
 
 <!-- 时序图 -->
-\`\`\`mermaid
+```mermaid
 sequenceDiagram
   participant U as User
   participant A as API
@@ -897,17 +897,17 @@ sequenceDiagram
   A->>D: Query
   D-->>A: Result
   A-->>U: Response
-\`\`\`
+```
 
 <!-- 流程图 -->
-\`\`\`mermaid
+```mermaid
 flowchart TD
   Start --> Decision{条件?}
   Decision -->|Yes| ActionA
   Decision -->|No| ActionB
   ActionA --> End
   ActionB --> End
-\`\`\`
+```
 ```
 
 #### 7.2.3 代码示例
@@ -919,7 +919,7 @@ flowchart TD
 
 ```markdown
 <!-- ✅ 好的代码示例 -->
-\`\`\`typescript
+```typescript
 // 创建任务并设置提醒
 const task = await taskService.create({
   title: "完成文档",
@@ -935,13 +935,13 @@ const reminder = await reminderService.create({
 
 console.log(`任务已创建：${task.id}`);
 // 输出：任务已创建：uuid-here
-\`\`\`
+```
 
 <!-- ❌ 不好的代码示例 -->
-\`\`\`typescript
+```typescript
 const task = create(data);
 const reminder = setReminder(task);
-\`\`\`
+```
 ```
 
 #### 7.2.4 链接策略
@@ -1130,13 +1130,13 @@ pnpm add -D typedoc
 2. 类型不安全
 
 ## 迁移示例
-\`\`\`typescript
+```typescript
 // ❌ 旧 API（已废弃）
 const task = oldApi.createTask(title);
 
 // ✅ 新 API
 const task = await newApi.tasks.create({ title });
-\`\`\`
+```
 ```
 
 ---
