@@ -1,3 +1,14 @@
+---
+tags:
+  - build
+  - troubleshooting
+  - typescript
+  - codespace
+description: TypeScript声明文件构建问题排查报告（Codespace环境）
+created: 2025-11-23T14:54:12
+updated: 2025-11-23T14:54:12
+---
+
 # TypeScript 声明文件构建问题报告
 
 **日期**: 2025-10-28  

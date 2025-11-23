@@ -1,3 +1,13 @@
+---
+tags:
+  - weight-system
+  - quick-reference
+  - guide
+description: 权重系统快速参考指南
+created: 2025-11-23T14:54:12
+updated: 2025-11-23T14:54:12
+---
+
 # Weight System - Quick Reference Guide
 
 ## 🎯 Current System Status: ✅ Production Ready

@@ -1,3 +1,13 @@
+---
+tags:
+  - schedule
+  - quick-guide
+  - event-driven
+description: 统一调度事件系统快速实施指南
+created: 2025-11-23T14:54:12
+updated: 2025-11-23T14:54:12
+---
+
 # 统一调度事件系统 - 快速实施指南
 
 ## ✅ 已完成的工作

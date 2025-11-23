@@ -1,3 +1,13 @@
+---
+tags:
+  - weight-system
+  - fix
+  - algorithm
+description: 权重生成策略修复：1-10 范围实现
+created: 2025-11-23T14:54:12
+updated: 2025-11-23T14:54:12
+---
+
 # Weight Strategies Fix - 1-10 Range Implementation
 
 **Date**: Current Session

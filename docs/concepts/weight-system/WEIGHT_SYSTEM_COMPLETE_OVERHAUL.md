@@ -1,3 +1,13 @@
+---
+tags:
+  - weight-system
+  - refactor
+  - architecture
+description: 权重系统从百分比模型到整数权重模型的完整重构总结
+created: 2025-11-23T14:54:12
+updated: 2025-11-23T14:54:12
+---
+
 # Weight System Complete Overhaul - Final Summary
 
 **Status**: ✅ **FULLY COMPLETED**

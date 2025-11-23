@@ -1,3 +1,13 @@
+---
+tags:
+  - fix
+  - compilation
+  - reminder
+description: 编译错误修复总结：UpcomingReminderCalculationService
+created: 2025-11-23T14:54:12
+updated: 2025-11-23T14:54:12
+---
+
 ## 🐛 编译错误修复总结
 
 ### 错误信息
