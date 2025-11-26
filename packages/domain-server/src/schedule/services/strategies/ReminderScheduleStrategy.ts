@@ -76,11 +76,12 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     const cronExpression = this.generateCronExpression(trigger, recurrence, type);
 
     // 创建调度配置
+    // 重构后：startDate/endDate 移除，生效控制由 status 字段负责
     const scheduleConfig = new ScheduleConfig({
       cronExpression,
       timezone: 'Asia/Shanghai', // 默认时区，后续可以从用户设置获取
-      startDate: activeTime.startDate,
-      endDate: activeTime.endDate ?? null,
+      startDate: activeTime.activatedAt, // 使用激活时间作为开始
+      endDate: null, // 不再使用 endDate，生效控制由 status 负责
       maxExecutions: type === 'ONE_TIME' ? 1 : null, // 一次性提醒只执行一次
     });
 

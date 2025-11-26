@@ -18,6 +18,9 @@ import type { IReminderTemplateRepository } from '../repositories/IReminderTempl
 import type { IReminderStatisticsRepository } from '../repositories/IReminderStatisticsRepository';
 import type { ReminderTriggerService, ITriggerReminderResult } from './ReminderTriggerService';
 import { ReminderContracts } from '@dailyuse/contracts';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('ReminderSchedulerService');
 
 /**
  * 调度结果
@@ -70,12 +73,23 @@ export class ReminderSchedulerService {
     const startTime = Date.now();
     const { accountUuid, beforeTime = Date.now(), maxCount = 100, concurrency = 10 } = options;
 
+    logger.debug('Starting reminder schedule scan', { accountUuid, beforeTime });
+
     // 获取待触发的提醒
     const pendingReminders = await this.triggerService.getPendingReminders(beforeTime, accountUuid);
 
     // 限制数量
     const remindersToProcess = pendingReminders.slice(0, maxCount);
     const totalCount = remindersToProcess.length;
+
+    if (totalCount > 0) {
+      logger.info(`Found ${totalCount} pending reminders to process`, {
+        uuids: remindersToProcess.map(r => r.uuid),
+        titles: remindersToProcess.map(r => r.title)
+      });
+    } else {
+      logger.debug('No pending reminders found');
+    }
 
     if (totalCount === 0) {
       return {
@@ -110,6 +124,13 @@ export class ReminderSchedulerService {
     const skippedCount = results.filter(
       (r) => r.result === ReminderContracts.TriggerResult.SKIPPED,
     ).length;
+
+    logger.info('Reminder schedule scan completed', {
+      successCount,
+      failedCount,
+      skippedCount,
+      duration: Date.now() - startTime
+    });
 
     return {
       successCount,

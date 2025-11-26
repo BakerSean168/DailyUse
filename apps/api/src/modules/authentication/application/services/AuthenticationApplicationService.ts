@@ -385,7 +385,7 @@ export class AuthenticationApplicationService {
   } {
     const secret = process.env.JWT_SECRET || 'default-secret';
     const accessTokenExpiresIn = 3600; // 1 hour in seconds
-    const refreshTokenExpiresIn = 7 * 24 * 3600; // 7 days in seconds
+    const refreshTokenExpiresIn = 30 * 24 * 3600; // 30 days in seconds（与 AuthSession 一致）
     const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds
 
     const now = Math.floor(Date.now() / 1000);

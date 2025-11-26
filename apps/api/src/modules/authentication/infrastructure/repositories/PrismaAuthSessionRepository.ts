@@ -34,7 +34,7 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
       lastActivityAt: data.lastAccessedAt.getTime(),
       history: data.history,
       createdAt: data.createdAt.getTime(),
-      expiresAt: data.accessTokenExpiresAt.getTime(), // Using accessTokenExpiresAt as the session expiry
+      expiresAt: data.refreshTokenExpiresAt.getTime(), // 🔥 修复：使用 refreshTokenExpiresAt（30天）而不是 accessTokenExpiresAt（15分钟）
       revokedAt: data.revokedAt?.getTime(),
     };
     return AuthSession.fromPersistenceDTO(persistenceDTO);

@@ -394,7 +394,7 @@ export class SessionManagementApplicationService {
   } {
     const secret = process.env.JWT_SECRET || 'default-secret';
     const accessTokenExpiresIn = 3600; // 1 hour in seconds
-    const refreshTokenExpiresIn = 7 * 24 * 3600; // 7 days in seconds
+    const refreshTokenExpiresIn = 30 * 24 * 3600; // 30 days in seconds（与 AuthSession 一致）
     const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds
 
     const now = Math.floor(Date.now() / 1000);
@@ -428,7 +428,7 @@ export class SessionManagementApplicationService {
   /**
    * 🔥 生成 Refresh Token（独立方法，支持自定义有效期）
    */
-  private generateRefreshToken(accountUuid: string, expiresIn: number = 7 * 24 * 3600): string {
+  private generateRefreshToken(accountUuid: string, expiresIn: number = 30 * 24 * 3600): string {
     const secret = process.env.JWT_SECRET || 'default-secret';
     const now = Math.floor(Date.now() / 1000);
 

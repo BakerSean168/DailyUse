@@ -91,8 +91,7 @@ export class UpcomingReminderCalculationService {
         status: reminder.status,
         nextTriggerAt: reminder.nextTriggerAt ? new Date(reminder.nextTriggerAt).toISOString() : null,
         activeTime: {
-          startDate: new Date(reminder.activeTime.startDate).toISOString(),
-          endDate: reminder.activeTime.endDate ? new Date(reminder.activeTime.endDate).toISOString() : null,
+          activatedAt: new Date(reminder.activeTime.activatedAt).toISOString(),
         },
       });
 
@@ -168,14 +167,11 @@ export class UpcomingReminderCalculationService {
 
       // 检查提醒是否在活跃期内
       const activeTime = reminder.activeTime;
-      if (afterTime < activeTime.startDate) {
-        // 还未到开始时间
-        return activeTime.startDate;
+      if (afterTime < activeTime.activatedAt) {
+        // 还未到激活时间
+        return activeTime.activatedAt;
       }
-      if (activeTime.endDate && afterTime > activeTime.endDate) {
-        // 已过结束时间
-        return null;
-      }
+      // 重构后：移除 endDate 检查，生效控制由 status 字段负责
 
       // 根据提醒类型计算
       if (reminder.type === 'ONE_TIME') {
@@ -202,8 +198,8 @@ export class UpcomingReminderCalculationService {
 
     if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
       // 一次性固定时间提醒
-      // 从 activeTime.startDate 的日期 + fixedTime 的时间
-      const dateObj = new Date(reminder.activeTime.startDate);
+      // 从 activeTime.activatedAt 的日期 + fixedTime 的时间
+      const dateObj = new Date(reminder.activeTime.activatedAt);
       const [hourStr, minuteStr] = trigger.fixedTime.time.split(':');
       dateObj.setHours(parseInt(hourStr, 10), parseInt(minuteStr, 10), 0, 0);
       const triggerTime = dateObj.getTime();
@@ -257,7 +253,7 @@ export class UpcomingReminderCalculationService {
       checkDate.setDate(checkDate.getDate() + daysOffset);
 
       // 检查该日期是否应该触发
-      if (this.shouldTriggerOnDate(checkDate, recurrence, reminder.activeTime.startDate)) {
+      if (this.shouldTriggerOnDate(checkDate, recurrence, reminder.activeTime.activatedAt)) {
         checkDate.setHours(targetHour, targetMinute, 0, 0);
         const triggerTime = checkDate.getTime();
 
@@ -345,7 +341,7 @@ export class UpcomingReminderCalculationService {
     afterTime: number,
   ): number | null {
     const intervalMs = interval.minutes * 60 * 1000;
-    const startTime = reminder.activeTime.startDate;
+    const startTime = reminder.activeTime.activatedAt;
 
     console.log(`🔢 [calculateNextIntervalTrigger] 计算间隔触发`, {
       title: reminder.title,
@@ -355,7 +351,7 @@ export class UpcomingReminderCalculationService {
       afterTime: new Date(afterTime).toISOString(),
     });
 
-    // 从开始时间开始，每隔 N 分钟触发一次
+    // 从激活时间开始，每隔 N 分钟触发一次
     const elapsed = afterTime - startTime;
     const nextIntervalCount = Math.ceil(elapsed / intervalMs);
     const nextTriggerTime = startTime + nextIntervalCount * intervalMs;
@@ -368,21 +364,11 @@ export class UpcomingReminderCalculationService {
       nextTriggerTimeMs: nextTriggerTime,
     });
 
-    // 检查是否在活跃期内
-    const endDate = reminder.activeTime.endDate;
-    if (!endDate || nextTriggerTime <= endDate) {
-      console.log(`✅ [calculateNextIntervalTrigger] 在活跃期内: ${reminder.title}`, {
-        nextTriggerTime: new Date(nextTriggerTime).toISOString(),
-        endDate: endDate ? new Date(endDate).toISOString() : 'null',
-      });
-      return nextTriggerTime;
-    }
-
-    console.log(`❌ [calculateNextIntervalTrigger] 超出活跃期: ${reminder.title}`, {
+    // 重构后：移除 endDate 检查，生效控制由 status 字段负责
+    console.log(`✅ [calculateNextIntervalTrigger] 返回下次触发时间: ${reminder.title}`, {
       nextTriggerTime: new Date(nextTriggerTime).toISOString(),
-      endDate: new Date(endDate).toISOString(),
     });
-    return null;
+    return nextTriggerTime;
   }
 
   /**
@@ -474,19 +460,13 @@ export class UpcomingReminderCalculationService {
       }
 
       // 检查提醒是否在活跃期内（今天）
-      if (reminder.activeTime.startDate > todayEnd) {
-        console.log(`⏭️  [calculateTodaySchedule] 提醒还未开始: ${reminder.title}`, {
-          startDate: new Date(reminder.activeTime.startDate).toISOString(),
+      if (reminder.activeTime.activatedAt > todayEnd) {
+        console.log(`⏭️  [calculateTodaySchedule] 提醒还未激活: ${reminder.title}`, {
+          activatedAt: new Date(reminder.activeTime.activatedAt).toISOString(),
         });
         continue;
       }
-
-      if (reminder.activeTime.endDate && reminder.activeTime.endDate < todayStart) {
-        console.log(`⏹️  [calculateTodaySchedule] 提醒已结束: ${reminder.title}`, {
-          endDate: new Date(reminder.activeTime.endDate).toISOString(),
-        });
-        continue;
-      }
+      // 重构后：移除 endDate 检查，生效控制由 status 字段负责
 
       // 计算该提醒在今天的所有触发时间
       const todayTriggerTimes = this.calculateReminderTriggerTimesToday(
@@ -579,7 +559,7 @@ export class UpcomingReminderCalculationService {
     checkDate.setUTCHours(0, 0, 0, 0);
 
     // 检查今天是否应该根据重复规则触发
-    if (this.shouldTriggerOnDate(checkDate, recurrence, reminder.activeTime.startDate)) {
+    if (this.shouldTriggerOnDate(checkDate, recurrence, reminder.activeTime.activatedAt)) {
       checkDate.setUTCHours(targetHour, targetMinute, 0, 0);
       const triggerTime = checkDate.getTime() - offset; // 转回 UTC 时间戳
 
@@ -609,7 +589,7 @@ export class UpcomingReminderCalculationService {
   ): UpcomingReminderDTO[] {
     const result: UpcomingReminderDTO[] = [];
     const intervalMs = interval.minutes * 60 * 1000;
-    const reminderStartTime = reminder.activeTime.startDate;
+    const reminderStartTime = reminder.activeTime.activatedAt;
 
     console.log(`⏰ [generateIntervalTriggersForToday] ${reminder.title}`, {
       intervalMinutes: interval.minutes,
