@@ -419,27 +419,31 @@ export class InterceptorManager {
             queueSize: this.failedQueue.length,
           });
 
-          // 🔥 发布 token 刷新请求事件（通过事件总线）
-          window.dispatchEvent(new CustomEvent('auth:token-refresh-requested', {
-            detail: { 
-              reason: '401 Unauthorized',
-              url: config.url 
-            }
-          }));
+          try {
+            // 直接调用刷新 Token 方法
+            const newToken = await this.refreshAccessToken();
+            
+            // 刷新成功，处理队列
+            this.processQueue(null, newToken);
 
-          // 将当前请求也加入队列，等待 token 刷新后重试
-          return new Promise((resolve, reject) => {
-            this.failedQueue.push({ resolve, reject, config });
-          }).then((token) => {
+            // 重试当前请求
             if (config.headers) {
-              config.headers.Authorization = `Bearer ${token}`;
+              config.headers.Authorization = `Bearer ${newToken}`;
             }
             LogManager.info('🔄 重试请求（原始请求）', { url: config.url });
             return this.instance(config);
-          }).catch((err) => {
-            LogManager.error('❌ 原始请求重试失败', { url: config.url, error: err });
-            throw err;
-          });
+          } catch (refreshError) {
+            // 刷新失败
+            LogManager.error('❌ Token 刷新失败', refreshError);
+            
+            // 清空队列并拒绝所有请求
+            this.processQueue(refreshError, null);
+            
+            // 处理未授权状态（清理 token，跳转登录页）
+            await this.handleUnauthorized(refreshError);
+            
+            return Promise.reject(refreshError);
+          }
         }
 
         // 处理其他错误状态
