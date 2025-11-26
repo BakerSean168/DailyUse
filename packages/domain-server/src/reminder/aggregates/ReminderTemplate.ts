@@ -562,11 +562,17 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
   /**
    * 启用模板
+   * 重构说明：启用时更新 activatedAt 为当前时间，作为循环提醒的计算基准
    */
   public enable(): void {
+    const now = Date.now();
     this._selfEnabled = true;
     this._status = ReminderContracts.ReminderStatus.ACTIVE;
-    this._updatedAt = Date.now();
+    
+    // 更新 activatedAt 为当前时间
+    this._activeTime = this._activeTime.with({ activatedAt: now });
+    
+    this._updatedAt = now;
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
     // 注意：如果有分组且分组控制模式为 GROUP，需要在应用层重新计算
@@ -581,6 +587,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       accountUuid: this._accountUuid,
       payload: {
         templateUuid: this.uuid,
+        activatedAt: now,
       },
     });
   }
@@ -677,21 +684,26 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
   /**
    * 计算下次触发时间
+   * 重构说明：使用 activatedAt 作为循环提醒的计算基准
    */
   public calculateNextTrigger(): number | null {
     // 这是一个简化版本，实际实现需要根据 trigger 和 recurrence 配置计算
     // 建议在领域服务中实现复杂的计算逻辑
     const now = Date.now();
 
-    // 检查是否在生效期内
-    if (now < this._activeTime.startDate) {
-      return this._activeTime.startDate;
-    }
-    if (this._activeTime.endDate && now > this._activeTime.endDate) {
+    // 检查模板状态，只有 ACTIVE 状态才触发
+    if (this._status !== ReminderContracts.ReminderStatus.ACTIVE) {
       return null;
     }
 
-    // 简化版本：返回1小时后
+    // 检查是否已激活（now >= activatedAt）
+    if (now < this._activeTime.activatedAt) {
+      // 尚未到激活时间，下次触发时间就是激活时间
+      return this._activeTime.activatedAt;
+    }
+
+    // 已激活，根据 recurrence 计算下次触发时间
+    // 简化版本：返回1小时后（实际应基于 activatedAt + interval）
     return now + 3600000;
   }
 
@@ -712,13 +724,16 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
 
   /**
    * 在指定时间是否活跃
+   * 重构说明：只检查 activatedAt 和 status，移除 endDate 检查
    */
   public isActiveAtTime(timestamp: number): boolean {
-    // 检查生效时间
-    if (timestamp < this._activeTime.startDate) {
+    // 检查状态
+    if (this._status !== ReminderContracts.ReminderStatus.ACTIVE) {
       return false;
     }
-    if (this._activeTime.endDate && timestamp > this._activeTime.endDate) {
+
+    // 检查是否已激活
+    if (timestamp < this._activeTime.activatedAt) {
       return false;
     }
 

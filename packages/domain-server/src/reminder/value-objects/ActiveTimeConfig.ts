@@ -1,6 +1,11 @@
 /**
  * ActiveTimeConfig 值对象
  * 生效时间配置 - 不可变值对象
+ * 
+ * 重构说明：
+ * - 移除 endDate 字段（生效控制改由 ReminderTemplate.status 负责）
+ * - startDate 重命名为 activatedAt（语义更清晰）
+ * - activatedAt 作为循环提醒的计算基准
  */
 
 import type {
@@ -17,16 +22,16 @@ import { ValueObject } from '@dailyuse/utils';
  * - 不可变（Immutable）
  * - 基于值的相等性
  * - 无标识符
+ * 
+ * @property activatedAt - 启动时间（最后一次启用的时间戳）
  */
 export class ActiveTimeConfig extends ValueObject implements ActiveTimeConfigServerDTO {
-  public readonly startDate: number;
-  public readonly endDate: number | null;
+  public readonly activatedAt: number;
 
-  constructor(params: { startDate: number; endDate?: number | null }) {
+  constructor(params: { activatedAt: number }) {
     super();
 
-    this.startDate = params.startDate;
-    this.endDate = params.endDate ?? null;
+    this.activatedAt = params.activatedAt;
 
     // 确保不可变
     Object.freeze(this);
@@ -37,13 +42,11 @@ export class ActiveTimeConfig extends ValueObject implements ActiveTimeConfigSer
    */
   public with(
     changes: Partial<{
-      startDate: number;
-      endDate: number | null;
+      activatedAt: number;
     }>,
   ): ActiveTimeConfig {
     return new ActiveTimeConfig({
-      startDate: changes.startDate ?? this.startDate,
-      endDate: changes.endDate !== undefined ? changes.endDate : this.endDate,
+      activatedAt: changes.activatedAt ?? this.activatedAt,
     });
   }
 
@@ -55,16 +58,15 @@ export class ActiveTimeConfig extends ValueObject implements ActiveTimeConfigSer
       return false;
     }
 
-    return this.startDate === other.startDate && this.endDate === other.endDate;
+    return this.activatedAt === other.activatedAt;
   }
 
   /**
-   * 转换为 DTO
+   * 转换为 Server DTO
    */
   public toServerDTO(): ActiveTimeConfigServerDTO {
     return {
-      startDate: this.startDate,
-      endDate: this.endDate,
+      activatedAt: this.activatedAt,
     };
   }
 
@@ -72,20 +74,20 @@ export class ActiveTimeConfig extends ValueObject implements ActiveTimeConfigSer
    * 转换为 Client DTO
    */
   public toClientDTO(): ActiveTimeConfigClientDTO {
-    const formatDate = (ts: number) => new Date(ts).toLocaleDateString();
-    let displayText = `从 ${formatDate(this.startDate)} 开始`;
-    if (this.endDate) {
-      displayText = `${formatDate(this.startDate)} 至 ${formatDate(this.endDate)}`;
-    }
-
-    const now = Date.now();
-    const isActive = now >= this.startDate && (!this.endDate || now <= this.endDate);
+    const formatDate = (ts: number) => {
+      const date = new Date(ts);
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    };
 
     return {
-      startDate: this.startDate,
-      endDate: this.endDate,
-      displayText,
-      isActive,
+      activatedAt: this.activatedAt,
+      displayText: `启动于 ${formatDate(this.activatedAt)}`,
     };
   }
 
@@ -94,8 +96,7 @@ export class ActiveTimeConfig extends ValueObject implements ActiveTimeConfigSer
    */
   public toPersistenceDTO(): ActiveTimeConfigPersistenceDTO {
     return {
-      startDate: this.startDate,
-      endDate: this.endDate,
+      activatedAt: this.activatedAt,
     };
   }
 
@@ -104,5 +105,14 @@ export class ActiveTimeConfig extends ValueObject implements ActiveTimeConfigSer
    */
   public static fromServerDTO(dto: ActiveTimeConfigServerDTO): ActiveTimeConfig {
     return new ActiveTimeConfig(dto);
+  }
+
+  /**
+   * 创建新的 ActiveTimeConfig（使用当前时间）
+   */
+  public static createNow(): ActiveTimeConfig {
+    return new ActiveTimeConfig({
+      activatedAt: Date.now(),
+    });
   }
 }

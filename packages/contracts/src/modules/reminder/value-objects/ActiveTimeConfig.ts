@@ -1,6 +1,11 @@
 /**
  * Active Time Config Value Object
  * 生效时间配置值对象
+ * 
+ * 重构说明：
+ * - 移除 endDate 字段（生效控制改由 status 字段负责）
+ * - startDate 重命名为 activatedAt（语义更清晰）
+ * - activatedAt 作为循环提醒的计算基准
  */
 
 // ============ 接口定义 ============
@@ -9,10 +14,8 @@
  * 生效时间配置 - Server 接口
  */
 export interface IActiveTimeConfigServer {
-  /** 生效开始日期 (epoch ms) */
-  startDate: number;
-  /** 生效结束日期 (epoch ms)（可选，无期限则为 null） */
-  endDate?: number | null;
+  /** 启动时间 (epoch ms) - 最后一次启用的时间戳 */
+  activatedAt: number;
 
   // 值对象方法
   equals(other: IActiveTimeConfigServer): boolean;
@@ -35,12 +38,11 @@ export interface IActiveTimeConfigServer {
  * 生效时间配置 - Client 接口
  */
 export interface IActiveTimeConfigClient {
-  startDate: number;
-  endDate?: number | null;
+  /** 启动时间 (epoch ms) */
+  activatedAt: number;
 
   // UI 辅助属性
-  displayText: string; // "2024-01-01 至 2024-12-31" | "从 2024-01-01 开始"
-  isActive: boolean; // 当前是否在生效期内
+  displayText: string; // "启动于 2024-01-01 10:30"
 
   // 值对象方法
   equals(other: IActiveTimeConfigClient): boolean;
@@ -55,26 +57,26 @@ export interface IActiveTimeConfigClient {
  * Active Time Config Server DTO
  */
 export interface ActiveTimeConfigServerDTO {
-  startDate: number;
-  endDate?: number | null;
+  /** 启动时间戳 */
+  activatedAt: number;
 }
 
 /**
  * Active Time Config Client DTO
  */
 export interface ActiveTimeConfigClientDTO {
-  startDate: number;
-  endDate?: number | null;
+  /** 启动时间戳 */
+  activatedAt: number;
+  /** 显示文本 */
   displayText: string;
-  isActive: boolean;
 }
 
 /**
  * Active Time Config Persistence DTO
  */
 export interface ActiveTimeConfigPersistenceDTO {
-  startDate: number;
-  endDate?: number | null;
+  /** 启动时间戳 */
+  activatedAt: number;
 }
 
 // ============ 类型导出 ============

@@ -446,10 +446,9 @@ const buildTriggerConfig = (): ReminderContracts.TriggerConfigServerDTO => {
 };
 
 const buildActiveTimeConfig = (): ReminderContracts.ActiveTimeConfigServerDTO => {
-  // 默认从现在开始，一年后结束
+  // 重构后：只需要 activatedAt（当前时间）
   return {
-    startDate: Date.now(),
-    endDate: Date.now() + 365 * 24 * 60 * 60 * 1000,
+    activatedAt: Date.now(),
   };
 };
 

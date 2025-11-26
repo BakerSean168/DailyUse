@@ -292,8 +292,7 @@ const createRecurringReminder = async () => {
         daysOfMonth: null,
       },
       activeTime: {
-        startDate: now,
-        endDate: null,
+        activatedAt: now,
       },
       activeHours: null,
       notificationConfig: {
