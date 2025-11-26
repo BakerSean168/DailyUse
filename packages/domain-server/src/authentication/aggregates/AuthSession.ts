@@ -36,7 +36,7 @@ export class AuthSession extends AggregateRoot implements IAuthSessionServer {
   private _lastActivityType: string | null;
   private _history: SessionHistory[];
   public readonly createdAt: number;
-  public readonly expiresAt: number;
+  private _expiresAt: number;
   private _revokedAt: number | null;
 
   constructor(params: {
@@ -74,7 +74,7 @@ export class AuthSession extends AggregateRoot implements IAuthSessionServer {
     this._lastActivityType = params.lastActivityType ?? null;
     this._history = params.history ?? [];
     this.createdAt = params.createdAt ?? Date.now();
-    this.expiresAt = params.expiresAt ?? Date.now() + 24 * 60 * 60 * 1000; // Default 24 hours
+    this._expiresAt = params.expiresAt ?? Date.now() + 30 * 24 * 60 * 60 * 1000; // Default 30 days (与 RefreshToken 一致)
     this._revokedAt = params.revokedAt ?? null;
   }
 
@@ -116,6 +116,10 @@ export class AuthSession extends AggregateRoot implements IAuthSessionServer {
 
   public get history(): SessionHistoryServer[] {
     return this._history as any;
+  }
+
+  public get expiresAt(): number {
+    return this._expiresAt;
   }
 
   public get revokedAt(): number | null {
@@ -251,6 +255,8 @@ export class AuthSession extends AggregateRoot implements IAuthSessionServer {
       token: newToken,
       expiresInDays: 30,
     });
+    // 🔥 修复：同时更新 Session 的 expiresAt（Sliding Window）
+    this._expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
     this._lastActivityAt = Date.now();
     this._addHistory('REFRESH_TOKEN_REFRESHED');
   }
@@ -264,8 +270,10 @@ export class AuthSession extends AggregateRoot implements IAuthSessionServer {
   }
 
   public isValid(): boolean {
+    // 检查三个条件：1. 状态为 ACTIVE；2. RefreshToken 未过期；3. Session 未过期
+    // expiresAt 会随 refreshRefreshToken() 自动续期（Sliding Window）
     return (
-      this._status === 'ACTIVE' && !this.isRefreshTokenExpired() && Date.now() < this.expiresAt
+      this._status === 'ACTIVE' && !this.isRefreshTokenExpired() && Date.now() < this._expiresAt
     );
   }
 
