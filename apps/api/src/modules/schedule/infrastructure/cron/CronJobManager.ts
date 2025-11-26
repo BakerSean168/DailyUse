@@ -105,22 +105,30 @@ export class CronJobManager {
         },
       );
 
-      // 根据 enabled 状态决定是否启动
-      if (task.enabled) {
+      // 根据状态决定是否启动
+      // 只有 ACTIVE 状态且 enabled=true 的任务才启动
+      if (task.isActive() && task.enabled) {
         job.start();
+        logger.info('✅ 任务注册并启动成功', {
+          taskUuid,
+          taskName: task.name,
+          cronExpression,
+          timezone: task.schedule.timezone,
+          status: task.status,
+        });
+      } else {
+        // 任务已注册但未启动（暂停状态）
+        logger.info('⏸️ 任务已注册但未启动（暂停或禁用）', {
+          taskUuid,
+          taskName: task.name,
+          status: task.status,
+          enabled: task.enabled,
+        });
       }
 
       // 保存到映射表
       this.jobs.set(taskUuid, job);
       this.cronExpressions.set(taskUuid, cronExpression);
-
-      logger.info('✅ 任务注册成功', {
-        taskUuid,
-        taskName: task.name,
-        cronExpression,
-        timezone: task.schedule.timezone,
-        enabled: task.enabled,
-      });
 
       return true;
     } catch (error) {

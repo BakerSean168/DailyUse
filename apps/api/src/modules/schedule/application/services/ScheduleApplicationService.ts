@@ -197,6 +197,10 @@ export class ScheduleApplicationService {
   async pauseScheduleTask(taskUuid: string): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.pauseScheduleTask(taskUuid);
+    
+    // 停止 Cron 任务
+    const { CronJobManager } = await import('../../infrastructure/cron/CronJobManager');
+    CronJobManager.getInstance().stopTask(taskUuid);
   }
 
   /**
@@ -205,6 +209,10 @@ export class ScheduleApplicationService {
   async resumeScheduleTask(taskUuid: string): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.resumeScheduleTask(taskUuid);
+    
+    // 启动 Cron 任务
+    const { CronJobManager } = await import('../../infrastructure/cron/CronJobManager');
+    CronJobManager.getInstance().startTask(taskUuid);
   }
 
   /**
@@ -213,6 +221,10 @@ export class ScheduleApplicationService {
   async completeScheduleTask(taskUuid: string, reason?: string): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.completeScheduleTask(taskUuid, reason);
+    
+    // 停止 Cron 任务
+    const { CronJobManager } = await import('../../infrastructure/cron/CronJobManager');
+    CronJobManager.getInstance().stopTask(taskUuid);
   }
 
   /**
@@ -221,6 +233,10 @@ export class ScheduleApplicationService {
   async cancelScheduleTask(taskUuid: string, reason?: string): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.cancelScheduleTask(taskUuid, reason);
+    
+    // 停止 Cron 任务
+    const { CronJobManager } = await import('../../infrastructure/cron/CronJobManager');
+    CronJobManager.getInstance().stopTask(taskUuid);
   }
 
   /**
@@ -229,6 +245,10 @@ export class ScheduleApplicationService {
   async failScheduleTask(taskUuid: string, reason: string): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.failScheduleTask(taskUuid, reason);
+    
+    // 停止 Cron 任务
+    const { CronJobManager } = await import('../../infrastructure/cron/CronJobManager');
+    CronJobManager.getInstance().stopTask(taskUuid);
   }
 
   /**
@@ -237,6 +257,10 @@ export class ScheduleApplicationService {
   async deleteScheduleTask(taskUuid: string): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.deleteScheduleTask(taskUuid);
+    
+    // 注销 Cron 任务
+    const { CronJobManager } = await import('../../infrastructure/cron/CronJobManager');
+    CronJobManager.getInstance().unregisterTask(taskUuid);
   }
 
   // ===== 任务配置更新 =====
@@ -288,6 +312,13 @@ export class ScheduleApplicationService {
   async deleteScheduleTasksBatch(taskUuids: string[]): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.deleteScheduleTasksBatch(taskUuids);
+    
+    // 批量注销 Cron 任务
+    const { CronJobManager } = await import('../../infrastructure/cron/CronJobManager');
+    const manager = CronJobManager.getInstance();
+    for (const uuid of taskUuids) {
+      manager.unregisterTask(uuid);
+    }
   }
 
   /**
@@ -296,6 +327,13 @@ export class ScheduleApplicationService {
   async pauseScheduleTasksBatch(taskUuids: string[]): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.pauseScheduleTasksBatch(taskUuids);
+    
+    // 批量停止 Cron 任务
+    const { CronJobManager } = await import('../../infrastructure/cron/CronJobManager');
+    const manager = CronJobManager.getInstance();
+    for (const uuid of taskUuids) {
+      manager.stopTask(uuid);
+    }
   }
 
   // ===== 跨模块集成 =====

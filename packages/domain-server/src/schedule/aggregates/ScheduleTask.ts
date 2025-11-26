@@ -275,6 +275,8 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
       throw new Error('Cannot pause a completed or cancelled task');
     }
     this._status = ScheduleTaskStatus.PAUSED;
+    // 自动禁用，保持状态一致性
+    this._enabled = false;
     this._updatedAt = Date.now();
 
     // 发布事件
@@ -300,6 +302,8 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
       throw new Error('Can only resume a paused task');
     }
     this._status = ScheduleTaskStatus.ACTIVE;
+    // 自动启用
+    this._enabled = true;
     this._updatedAt = Date.now();
 
     // 重新计算下次执行时间
@@ -646,6 +650,10 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
    */
   public enable(): void {
     this._enabled = true;
+    // 如果当前是暂停状态，自动切换为活跃
+    if (this._status === ScheduleTaskStatus.PAUSED) {
+      this._status = ScheduleTaskStatus.ACTIVE;
+    }
     this._updatedAt = Date.now();
   }
 
@@ -654,6 +662,10 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
    */
   public disable(): void {
     this._enabled = false;
+    // 如果当前是活跃状态，自动切换为暂停
+    if (this._status === ScheduleTaskStatus.ACTIVE) {
+      this._status = ScheduleTaskStatus.PAUSED;
+    }
     this._updatedAt = Date.now();
   }
 
