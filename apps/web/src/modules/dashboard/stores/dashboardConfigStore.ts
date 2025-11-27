@@ -5,7 +5,7 @@ import type { WidgetMetadata } from '../infrastructure/types/WidgetMetadata';
 import { DashboardConfigApiClient } from '../infrastructure/api/DashboardConfigApiClient';
 import { widgetRegistry } from '../infrastructure/WidgetRegistry';
 
-// 从 contracts 导入类型
+// 本地类型别名（无需导出，web 应用不生成 .d.ts）
 type WidgetConfigData = DashboardContracts.WidgetConfigData;
 type WidgetConfig = DashboardContracts.WidgetConfigDTO;
 

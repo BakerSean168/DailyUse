@@ -38,10 +38,11 @@ import type {
 } from '../../infrastructure/adapters/BaseAIAdapter';
 import { QuotaEnforcementService } from '../../infrastructure/QuotaEnforcementService';
 import { getPromptTemplate } from '../../infrastructure/prompts/templates';
-import { SUMMARIZATION_PROMPT } from '../../infrastructure/prompts/templates';
+import { SUMMARIZATION_PROMPT, GENERATE_GOAL_PROMPT } from '../../infrastructure/prompts/templates';
 import { MessageRole } from '@dailyuse/contracts';
 import { MessageServer } from '@dailyuse/domain-server';
 import { AIConversationServer } from '@dailyuse/domain-server';
+import { AIContainer } from '../../infrastructure/di/AIContainer';
 
 type AIUsageQuotaClientDTO = AIContracts.AIUsageQuotaClientDTO;
 type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
@@ -49,6 +50,8 @@ type AIGenerationTaskServerDTO = AIContracts.AIGenerationTaskServerDTO;
 type SummarizationRequestDTO = AIContracts.SummarizationRequestDTO;
 type SummarizationResultDTO = AIContracts.SummarizationResultDTO;
 type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
+type GeneratedGoalDraft = AIContracts.GeneratedGoalDraft;
+type GenerateGoalResponse = AIContracts.GenerateGoalResponse;
 
 const logger = createLogger('AIGenerationApplicationService');
 
@@ -67,6 +70,181 @@ export class AIGenerationApplicationService {
     private documentService?: any, // DocumentApplicationService - 可选依赖避免循环
   ) {
     this.quotaService = new QuotaEnforcementService();
+  }
+
+  /**
+   * 从用户想法生成 OKR 目标（Goal）
+   * Story AI-002 - AI Goal 全流程创建
+   *
+   * 业务流程：
+   * 1. 获取并检查用户配额
+   * 2. 获取 AI Provider（使用指定或默认）
+   * 3. 构建 GENERATE_GOAL_PROMPT
+   * 4. 调用 AI Adapter 生成
+   * 5. 解析并验证输出
+   * 6. 消费配额
+   * 7. 返回 GenerateGoalResponse
+   */
+  async generateGoal(params: {
+    accountUuid: string;
+    idea: string;
+    context?: string;
+    providerUuid?: string;
+    category?: string;
+    timeframe?: { startDate?: number; endDate?: number };
+  }): Promise<GenerateGoalResponse> {
+    const { accountUuid, idea, context, providerUuid, category, timeframe } = params;
+
+    // 1. 验证输入
+    if (!idea || idea.trim().length < 5) {
+      throw new Error('Idea must be at least 5 characters');
+    }
+    if (idea.length > 2000) {
+      throw new Error('Idea must be less than 2000 characters');
+    }
+
+    // 2. 获取配额
+    let quota = await this.quotaRepository.findByAccountUuid(accountUuid);
+    if (!quota) {
+      quota = {
+        uuid: randomUUID(),
+        accountUuid,
+        quotaLimit: 100,
+        currentUsage: 0,
+        resetPeriod: 'MONTHLY' as any,
+        lastResetAt: Date.now(),
+        nextResetAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      await this.quotaRepository.save(quota as any);
+    }
+    this.quotaService.checkQuota(quota as AIUsageQuotaServerDTO, 1);
+
+    // 3. 获取 AI Adapter
+    let adapter: BaseAIAdapter = this.aiAdapter;
+    let providerName = 'OpenAI (Default)';
+    let modelUsed = 'gpt-4o-mini';
+
+    if (providerUuid) {
+      try {
+        const container = AIContainer.getInstance();
+        adapter = await container
+          .getProviderConfigService()
+          .getAdapterForProvider(providerUuid, accountUuid);
+        const providerConfig = await container
+          .getProviderConfigRepository()
+          .findByUuid(providerUuid, accountUuid);
+        if (providerConfig) {
+          providerName = providerConfig.name;
+          modelUsed = providerConfig.models?.[0]?.modelId || modelUsed;
+        }
+      } catch (error) {
+        logger.warn('Failed to get custom provider, falling back to default', {
+          providerUuid,
+          error,
+        });
+      }
+    }
+
+    // 4. 构建 Prompt
+    const promptContext = {
+      idea: idea.trim(),
+      category,
+      timeframe,
+      additionalContext: context?.trim(),
+    };
+
+    const request: AIGenerationRequest = {
+      taskType: GenerationTaskType.GOAL_GENERATION,
+      prompt: GENERATE_GOAL_PROMPT.user(promptContext),
+      systemPrompt: GENERATE_GOAL_PROMPT.system,
+      temperature: 0.7,
+      maxTokens: 2000,
+      contextData: promptContext,
+    };
+
+    logger.info('Generating goal from idea', {
+      accountUuid,
+      ideaLength: idea.length,
+      hasContext: !!context,
+      providerUuid,
+      providerName,
+    });
+
+    // 5. 调用 AI Adapter 生成
+    const response = await adapter.generateText<GeneratedGoalDraft>(request);
+
+    // 6. 解析输出
+    let goalDraft: GeneratedGoalDraft;
+    try {
+      if (response.parsedContent) {
+        goalDraft = response.parsedContent;
+      } else {
+        goalDraft = JSON.parse(response.content);
+      }
+    } catch (error) {
+      logger.error('Failed to parse goal generation response', {
+        error,
+        content: response.content.substring(0, 500),
+      });
+      throw new Error('AI response JSON parse failed');
+    }
+
+    // 7. 验证输出
+    this.validateGoalDraft(goalDraft);
+
+    // 8. 消费配额
+    const updatedQuota = this.quotaService.consumeQuota(quota as AIUsageQuotaServerDTO, 1);
+    await this.quotaRepository.save(updatedQuota as any);
+
+    logger.info('Goal generated successfully', {
+      accountUuid,
+      goalTitle: goalDraft.title,
+      tokensUsed: response.tokenUsage.totalTokens,
+      providerName,
+    });
+
+    // 9. 返回结果
+    return {
+      goal: goalDraft,
+      tokenUsage: {
+        promptTokens: response.tokenUsage.promptTokens,
+        completionTokens: response.tokenUsage.completionTokens,
+        totalTokens: response.tokenUsage.totalTokens,
+      },
+      generatedAt: response.generatedAt.getTime(),
+      providerUsed: providerName,
+      modelUsed,
+    };
+  }
+
+  /**
+   * 验证生成的目标草稿
+   */
+  private validateGoalDraft(draft: GeneratedGoalDraft): void {
+    if (!draft.title || typeof draft.title !== 'string' || draft.title.length < 2) {
+      throw new Error('Generated goal must have a valid title');
+    }
+    if (
+      !draft.description ||
+      typeof draft.description !== 'string' ||
+      draft.description.length < 10
+    ) {
+      throw new Error('Generated goal must have a valid description');
+    }
+    if (!draft.category || typeof draft.category !== 'string') {
+      throw new Error('Generated goal must have a category');
+    }
+    if (typeof draft.importance !== 'number' || draft.importance < 1 || draft.importance > 4) {
+      throw new Error('Generated goal must have importance between 1-4');
+    }
+    if (typeof draft.urgency !== 'number' || draft.urgency < 1 || draft.urgency > 4) {
+      throw new Error('Generated goal must have urgency between 1-4');
+    }
+    if (!Array.isArray(draft.tags)) {
+      throw new Error('Generated goal must have tags array');
+    }
   }
 
   /**

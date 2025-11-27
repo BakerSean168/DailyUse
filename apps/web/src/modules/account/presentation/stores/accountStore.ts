@@ -2,14 +2,11 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { AccountContracts } from '@dailyuse/contracts';
 
-// 使用 DTO 类型（直接使用 contracts）
+// 本地类型别名（无需导出，web 应用不生成 .d.ts）
 type AccountDTO = AccountContracts.AccountDTO;
 type SubscriptionDTO = AccountContracts.SubscriptionDTO;
 type AccountHistoryDTO = AccountContracts.AccountHistoryServerDTO;
 type AccountStatsDTO = AccountContracts.AccountStatsResponseDTO;
-
-// 导入枚举
-const { AccountStatus, SubscriptionPlan } = AccountContracts;
 
 /**
  * Account Store - 状态管理
@@ -103,7 +100,7 @@ export const useAccountStore = defineStore('account', () => {
    * 当前订阅计划
    */
   const currentSubscriptionPlan = computed(
-    () => subscription.value?.plan ?? SubscriptionPlan.FREE,
+    () => subscription.value?.plan ?? AccountContracts.SubscriptionPlan.FREE,
   );
 
   /**
@@ -111,8 +108,8 @@ export const useAccountStore = defineStore('account', () => {
    */
   const isPremiumUser = computed(
     () =>
-      subscription.value?.plan === SubscriptionPlan.PRO ||
-      subscription.value?.plan === SubscriptionPlan.ENTERPRISE,
+      subscription.value?.plan === AccountContracts.SubscriptionPlan.PRO ||
+      subscription.value?.plan === AccountContracts.SubscriptionPlan.ENTERPRISE,
   );
 
   /**

@@ -111,6 +111,11 @@ export * from './api-responses/SummarizationResultDTO';
 // Knowledge Generation (Epic 4 Story 4.3)
 export * from './api-requests/KnowledgeGenerationRequestDTO';
 export * from './api-responses/KnowledgeGenerationTaskDTO';
+// Goal Generation (Story AI-002)
+export * from './api-requests/GenerateGoalRequest';
+export * from './api-responses/GenerateGoalResponse';
+// AI Provider Config (Story AI-002)
+export * from './api-requests/AIProviderConfigRequest';
 
 // ============ Common List Request ============
 

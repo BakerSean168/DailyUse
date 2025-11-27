@@ -17,8 +17,10 @@ import { PrismaClient } from '@prisma/client';
 import { AIGenerationService } from '@dailyuse/domain-server';
 import { AIGenerationApplicationService } from '../../application/services/AIGenerationApplicationService';
 import { AIConversationService } from '../../application/services/AIConversationService';
+import { AIProviderConfigService } from '../../application/services/AIProviderConfigService';
 import { PrismaAIUsageQuotaRepository } from '../repositories/PrismaAIUsageQuotaRepository';
 import { PrismaAIConversationRepository } from '../repositories/PrismaAIConversationRepository';
+import { PrismaAIProviderConfigRepository } from '../repositories/PrismaAIProviderConfigRepository';
 import { KnowledgeGenerationTaskRepository } from '../repositories/KnowledgeGenerationTaskRepository';
 import { OpenAIAdapter } from '../adapters/OpenAIAdapter';
 import type { BaseAIAdapter } from '../adapters/BaseAIAdapter';
@@ -31,9 +33,11 @@ export class AIContainer {
   private prisma: PrismaClient;
   private applicationService?: AIGenerationApplicationService;
   private conversationService?: AIConversationService;
+  private providerConfigService?: AIProviderConfigService;
   private validationService?: AIGenerationService;
   private conversationRepository?: PrismaAIConversationRepository;
   private quotaRepository?: PrismaAIUsageQuotaRepository;
+  private providerConfigRepository?: PrismaAIProviderConfigRepository;
   private taskRepository?: KnowledgeGenerationTaskRepository;
   private aiAdapter?: BaseAIAdapter;
 
@@ -83,13 +87,35 @@ export class AIContainer {
   }
 
   /**
+   * 获取 Provider Config Repository
+   */
+  getProviderConfigRepository(): PrismaAIProviderConfigRepository {
+    if (!this.providerConfigRepository) {
+      this.providerConfigRepository = new PrismaAIProviderConfigRepository(this.prisma);
+    }
+    return this.providerConfigRepository;
+  }
+
+  /**
    * 获取 AI Adapter（基础设施）
+   * @deprecated 使用 getProviderConfigService().getAdapterForProvider() 获取指定 Provider 的 Adapter
    */
   getAIAdapter(): BaseAIAdapter {
     if (!this.aiAdapter) {
       this.aiAdapter = new OpenAIAdapter();
     }
     return this.aiAdapter;
+  }
+
+  /**
+   * 获取 Provider Config Service（Provider CRUD + 适配器管理）
+   */
+  getProviderConfigService(): AIProviderConfigService {
+    if (!this.providerConfigService) {
+      const repository = this.getProviderConfigRepository();
+      this.providerConfigService = new AIProviderConfigService(repository);
+    }
+    return this.providerConfigService;
   }
 
   /**

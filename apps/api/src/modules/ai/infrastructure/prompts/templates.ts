@@ -11,6 +11,73 @@ export interface PromptTemplate {
 }
 
 /**
+ * 目标生成 Prompt
+ * Story AI-002 - 从用户想法生成结构化 OKR 目标
+ */
+export const GENERATE_GOAL_PROMPT: PromptTemplate = {
+  system: `你是一位专业的OKR教练和目标规划专家。根据用户的想法，生成一个规范、可执行的OKR目标。
+
+## 输出要求
+
+1. **目标标题**: 简洁有力，鼓舞人心，20字以内
+2. **描述**: 详细说明目标的内涵，100-200字
+3. **动机**: 为什么这个目标重要，对用户有什么价值
+4. **类别**: work(工作)/health(健康)/learning(学习)/personal(个人)/finance(财务)/relationship(人际)/other(其他)
+5. **时间建议**: 根据目标复杂度建议合理的起止日期（Unix 时间戳毫秒）
+6. **重要性/紧急性**: 1-4级评估（1=最低，4=最高）
+7. **标签**: 3-5个相关标签
+8. **可行性分析**: 简要分析实现的可能性和挑战
+
+## 输出格式
+
+严格返回 JSON 对象，无任何额外文字或 markdown 标记：
+{
+  "title": "目标标题",
+  "description": "详细描述",
+  "motivation": "目标动机",
+  "category": "work|health|learning|personal|finance|relationship|other",
+  "suggestedStartDate": 1700000000000,
+  "suggestedEndDate": 1703000000000,
+  "importance": 3,
+  "urgency": 2,
+  "tags": ["标签1", "标签2", "标签3"],
+  "feasibilityAnalysis": "可行性分析...",
+  "aiInsights": "AI 对目标的理解和建议..."
+}
+
+IMPORTANT: 仅返回 JSON 对象，不要包含任何 markdown 代码块或其他文字。`,
+
+  user: (context) => {
+    const { idea, category, timeframe, additionalContext } = context as {
+      idea: string;
+      category?: string;
+      timeframe?: { startDate?: number; endDate?: number };
+      additionalContext?: string;
+    };
+
+    let prompt = `## 用户想法\n${idea}\n`;
+
+    if (category) {
+      prompt += `\n## 期望类别\n${category}\n`;
+    }
+
+    if (timeframe) {
+      const formatDate = (ts?: number) => (ts ? new Date(ts).toISOString().split('T')[0] : '不限');
+      prompt += `\n## 期望时间范围\n开始: ${formatDate(timeframe.startDate)}\n结束: ${formatDate(timeframe.endDate)}\n`;
+    }
+
+    if (additionalContext) {
+      prompt += `\n## 补充信息\n${additionalContext}\n`;
+    }
+
+    prompt += `\n当前时间: ${new Date().toISOString()}\n`;
+    prompt += `\n请根据以上信息生成规范的OKR目标。仅返回 JSON 对象。`;
+
+    return prompt;
+  },
+};
+
+/**
  * 生成 Key Results 的 Prompt
  * Updated from Epic 2 AI Prompts specification
  */
@@ -250,6 +317,8 @@ export function getPromptTemplate(taskType: GenerationTaskType): PromptTemplate 
       return GENERATE_TASKS_PROMPT;
     case GenerationTaskType.KNOWLEDGE_DOCUMENTS:
       return KNOWLEDGE_SERIES_PROMPT;
+    case GenerationTaskType.GOAL_GENERATION:
+      return GENERATE_GOAL_PROMPT;
     default:
       return GENERATE_KEY_RESULTS_PROMPT;
   }

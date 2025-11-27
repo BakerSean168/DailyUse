@@ -59,6 +59,7 @@ model account {
   aiConversation                 aiConversation[]
   aiGenerationTask               aiGenerationTask[]
   aiUsageQuota                   aiUsageQuota?
+  aiProviderConfig               aiProviderConfig[]
   dashboardConfig                dashboardConfig?
 
   @@index([createdAt])
@@ -1422,6 +1423,33 @@ model aiUsageQuota {
   @@index([accountUuid])
   @@index([nextResetAt])
   @@map("ai_usage_quotas")
+}
+
+/// AI Provider 配置聚合根
+/// 存储用户自定义的 AI 服务提供商配置（如七牛云、自定义 OpenAI 兼容接口）
+model aiProviderConfig {
+  uuid            String   @id
+  accountUuid     String   @map("account_uuid")
+  name            String   // 配置名称（如 "我的七牛云"）
+  providerType    String   @map("provider_type") // OPENAI, QINIU, ANTHROPIC, CUSTOM_OPENAI_COMPATIBLE
+  baseUrl         String   @map("base_url") // API 基础地址
+  apiKeyEncrypted String   @map("api_key_encrypted") // AES-256-GCM 加密的 API Key
+  defaultModel    String?  @map("default_model") // 默认使用的模型 ID
+  availableModels String   @default("[]") @map("available_models") // 可用模型列表 JSON
+  isActive        Boolean  @default(true) @map("is_active")
+  isDefault       Boolean  @default(false) @map("is_default")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // 关系
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+
+  // 索引和约束
+  @@unique([accountUuid, name]) // 同一账户下名称唯一
+  @@index([accountUuid])
+  @@index([isDefault])
+  @@index([isActive])
+  @@map("ai_provider_configs")
 }
 
 /// 知识系列生成任务聚合根

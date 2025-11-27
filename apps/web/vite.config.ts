@@ -9,16 +9,13 @@ export default defineConfig(({ mode }) => {
   return {
     resolve: {
       alias: {
+        // 仅项目内部别名
         '@': path.resolve(__dirname, './src'),
-        '@dailyuse/utils': path.resolve(__dirname, '../../packages/utils/src'),
-        '@dailyuse/domain': path.resolve(__dirname, '../../packages/domain/src'),
-        '@dailyuse/contracts': path.resolve(__dirname, '../../packages/contracts/src'),
-        '@dailyuse/domain-client': path.resolve(__dirname, '../../packages/domain-client/src'),
-        '@dailyuse/domain-server': path.resolve(__dirname, '../../packages/domain-server/src'),
-        '@dailyuse/ui': path.resolve(__dirname, '../../packages/ui/src'),
-        '@dailyuse/assets': path.resolve(__dirname, '../../packages/assets/src'),
-        '@dailyuse/assets/images': path.resolve(__dirname, '../../packages/assets/src/images'),
-        '@dailyuse/assets/audio': path.resolve(__dirname, '../../packages/assets/src/audio'),
+        // 注意：所有 @dailyuse/* 包通过 node_modules 解析到各包的 dist 目录
+        // 不再使用指向源码的别名，这样可以：
+        // 1. 保持包边界清晰
+        // 2. 让 TypeScript 和 Vite 使用相同的解析策略
+        // 3. 确保类型声明正确生成
       },
     },
     plugins: [
@@ -31,13 +28,14 @@ export default defineConfig(({ mode }) => {
         },
       }),
       // 打包分析插件（仅生产模式）
-      !isDev && visualizer({
-        filename: './dist/stats.html', // 输出文件
-        open: true, // 构建后自动打开浏览器
-        gzipSize: true, // 显示 gzip 大小
-        brotliSize: true, // 显示 brotli 大小
-        template: 'treemap', // 使用树状图模式（可选：sunburst, treemap, network）
-      }),
+      !isDev &&
+        visualizer({
+          filename: './dist/stats.html', // 输出文件
+          open: true, // 构建后自动打开浏览器
+          gzipSize: true, // 显示 gzip 大小
+          brotliSize: true, // 显示 brotli 大小
+          template: 'treemap', // 使用树状图模式（可选：sunburst, treemap, network）
+        }),
     ].filter(Boolean),
     server: {
       port: 5173,

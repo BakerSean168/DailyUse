@@ -7,3 +7,4 @@ export * from './IAIConversationRepository';
 export * from './IAIGenerationTaskRepository';
 export * from './IAIUsageQuotaRepository';
 export * from './IKnowledgeGenerationTaskRepository';
+export * from './IAIProviderConfigRepository';

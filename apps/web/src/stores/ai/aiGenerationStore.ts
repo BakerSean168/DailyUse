@@ -18,10 +18,6 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AIContracts } from '@dailyuse/contracts';
 
-// 类型别名
-type AIUsageQuotaClientDTO = AIContracts.AIUsageQuotaClientDTO;
-type GenerationTaskType = AIContracts.GenerationTaskType;
-
 /**
  * AI Generation Store
  */
@@ -29,7 +25,7 @@ export const useAIGenerationStore = defineStore('aiGeneration', () => {
   // ============ State ============
 
   // 配额状态
-  const quota = ref<AIUsageQuotaClientDTO | null>(null);
+  const quota = ref<AIContracts.AIUsageQuotaClientDTO | null>(null);
 
   // 最近的生成结果缓存
   const recentKeyResults = ref<any[]>([]);

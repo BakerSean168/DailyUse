@@ -1,31 +1,102 @@
-// 导出响应系统类型定义
-export * from './response';
+/**
+ * @dailyuse/contracts
+ * 统一契约导出 - 根入口
+ *
+ * 🎨 子路径导出架构
+ *
+ * 使用方式：
+ * ```typescript
+ * // 方式 1: 从根路径导入常用类型（便捷）
+ * import { ApiResponse, GoalStatus, TaskType } from '@dailyuse/contracts';
+ *
+ * // 方式 2: 从子路径导入完整模块（推荐，极致 Tree-Shaking）
+ * import { GoalServerDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
+ * import { TaskTemplateServer } from '@dailyuse/contracts/task';
+ * import { AccountDTO } from '@dailyuse/contracts/account';
+ *
+ * // 方式 3: 导入整个模块命名空间（避免命名冲突）
+ * import * as GoalContracts from '@dailyuse/contracts/goal';
+ * import * as TaskContracts from '@dailyuse/contracts/task';
+ * ```
+ *
+ * 子路径列表：
+ * - @dailyuse/contracts/task
+ * - @dailyuse/contracts/goal
+ * - @dailyuse/contracts/reminder
+ * - @dailyuse/contracts/editor
+ * - @dailyuse/contracts/repository
+ * - @dailyuse/contracts/account
+ * - @dailyuse/contracts/authentication
+ * - @dailyuse/contracts/schedule
+ * - @dailyuse/contracts/setting
+ * - @dailyuse/contracts/notification
+ * - @dailyuse/contracts/document
+ * - @dailyuse/contracts/ai
+ * - @dailyuse/contracts/dashboard
+ * - @dailyuse/contracts/response
+ * - @dailyuse/contracts/shared
+ */
 
-// 导出共享的基础类型定义
-export * as sharedContracts from './shared/index';
-// 直接导出重要的枚举类型，方便其他包使用
+// ============================================================
+// 响应系统（最常用）
+// ============================================================
+export {
+  ResponseCode,
+  ResponseStatus,
+  ResponseSeverity,
+  ResponseBuilder,
+  createResponseBuilder,
+  getHttpStatusCode,
+  isClientError,
+  isServerError,
+} from './response';
+
+export type {
+  ErrorDetail,
+  PaginationInfo,
+  BaseResponse,
+  SuccessResponse,
+  ErrorResponse,
+  ApiErrorResponse,
+  ApiResponse,
+  TResponse,
+  ResponseBuilderOptions,
+  ListResponse,
+  BatchResponse,
+} from './response';
+
+// ============================================================
+// 共享基础类型
+// ============================================================
 export { ImportanceLevel } from './shared/importance';
 export { UrgencyLevel } from './shared/urgency';
 
-// 导出通用的调度生命周期事件（跨模块使用）
-export * from './modules/common/schedule-lifecycle-events';
+// ============================================================
+// 通用调度生命周期事件（跨模块使用）
+// ============================================================
+export {
+  ScheduleLifecycleAction,
+  buildScheduleEventType,
+  createScheduleLifecycleEvent,
+  isScheduleLifecycleEvent,
+  parseScheduleEventType,
+} from './modules/common/schedule-lifecycle-events';
 
-// 导出模块相关的类型定义（定义命名空间防止冲突）
-export * as TaskContracts from './modules/task';
-export * as GoalContracts from './modules/goal';
-export * as ReminderContracts from './modules/reminder';
-export * as EditorContracts from './modules/editor';
-export * as RepositoryContracts from './modules/repository';
-export * as AccountContracts from './modules/account';
-export * as AuthenticationContracts from './modules/authentication';
-export * as ScheduleContracts from './modules/schedule';
-export * as SettingContracts from './modules/setting';
-export * as NotificationContracts from './modules/notification';
-export * as DocumentContracts from './document.contracts';
-export * as AIContracts from './modules/ai';
-export * as DashboardContracts from './modules/dashboard';
+export type {
+  IUnifiedEvent,
+  EntityScheduleLifecyclePayload,
+  EntityCreatedForScheduleEvent,
+  EntityPausedForScheduleEvent,
+  EntityResumedForScheduleEvent,
+  EntityDeletedForScheduleEvent,
+  EntityScheduleChangedEvent,
+  ScheduleLifecycleEvent,
+  ScheduleLifecycleActionType,
+} from './modules/common/schedule-lifecycle-events';
 
-// 导出 Reminder 模块的常量和工具函数（运行时值不能通过命名空间导出）
+// ============================================================
+// Reminder 模块常量和工具函数（运行时值，需直接导出）
+// ============================================================
 export {
   ROOT_GROUP_CONFIG,
   isRootGroup,
@@ -33,6 +104,11 @@ export {
   isOnDesktop,
 } from './modules/reminder/constants';
 
+// ============================================================
+// 常用枚举（便捷访问，无需子路径导入）
+// ============================================================
+
+// Schedule
 export {
   ScheduleTaskStatus,
   ExecutionStatus,
@@ -40,28 +116,26 @@ export {
   SourceModule,
   Timezone,
 } from './modules/schedule/enums';
-
-// 旧枚举的类型别名（向后兼容，待迁移）
-// TODO: 逐步迁移使用旧枚举的代码到新枚举
 export { TaskPriority as SchedulePriority } from './modules/schedule/enums';
 
-// 导出 Goal 枚举（新的 DDD 架构）
+// Goal
 export { GoalStatus, KeyResultValueType, ReviewType, FolderType } from './modules/goal/enums';
 
-// 导出 AI 枚举（新的 DDD 架构）
+// AI
 export {
   ConversationStatus,
   MessageRole,
   GenerationTaskType,
   TaskStatus,
   AIProvider,
+  AIProviderType,
   AIModel,
   MetricType,
   QuotaResetPeriod,
   KnowledgeDocumentTemplateType,
 } from './modules/ai/enums';
 
-// 导出 Notification 枚举（新的 DDD 架构）
+// Notification
 export {
   NotificationType,
   NotificationCategory,
@@ -73,7 +147,7 @@ export {
   ContentType,
 } from './modules/notification/enums';
 
-// 导出 Repository 枚举
+// Repository
 export {
   ResourceType,
   ResourceStatus,
@@ -81,7 +155,7 @@ export {
   RepositoryType,
 } from './modules/repository/enums';
 
-// 导出 Setting 枚举（新的 DDD 架构）
+// Setting
 export {
   SettingValueType,
   SettingScope,
@@ -98,10 +172,10 @@ export {
   ProfileVisibility,
 } from './modules/setting/enums';
 
-// 导出 Dashboard 枚举（新的 DDD 架构）
+// Dashboard
 export { WidgetSize, WidgetSizeText } from './modules/dashboard/enums';
 
-// 导出 Task 枚举（常用的）
+// Task
 export {
   TaskTemplateStatus,
   TaskInstanceStatus,
@@ -114,8 +188,9 @@ export {
   ReminderType,
   ReminderTimeUnit,
 } from './modules/task/enums';
+export { TimeType as TaskTimeType } from './modules/task/enums';
 
-// 导出 Account 枚举（新的 DDD 架构）
+// Account
 export {
   AccountStatus,
   Gender,
@@ -126,7 +201,7 @@ export {
   StorageQuotaType,
 } from './modules/account/enums';
 
-// 导出 Authentication 枚举（新的 DDD 架构）
+// Authentication
 export {
   CredentialType,
   CredentialStatus,
@@ -139,5 +214,21 @@ export {
   DeviceType,
 } from './modules/authentication/enums';
 
-// 类型别名（向后兼容）
-export { TimeType as TaskTimeType } from './modules/task/enums';
+// ============================================================
+// 模块命名空间导出（向后兼容 + 避免命名冲突）
+// 推荐：使用子路径导入 import * as GoalContracts from '@dailyuse/contracts/goal'
+// ============================================================
+export * as TaskContracts from './modules/task';
+export * as GoalContracts from './modules/goal';
+export * as ReminderContracts from './modules/reminder';
+export * as EditorContracts from './modules/editor';
+export * as RepositoryContracts from './modules/repository';
+export * as AccountContracts from './modules/account';
+export * as AuthenticationContracts from './modules/authentication';
+export * as ScheduleContracts from './modules/schedule';
+export * as SettingContracts from './modules/setting';
+export * as NotificationContracts from './modules/notification';
+export * as DocumentContracts from './document.contracts';
+export * as AIContracts from './modules/ai';
+export * as DashboardContracts from './modules/dashboard';
+export * as sharedContracts from './shared/index';

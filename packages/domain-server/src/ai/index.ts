@@ -19,6 +19,7 @@
 // ===== Aggregates =====
 export * from './aggregates/AIConversationServer';
 export * from './aggregates/AIUsageQuotaServer';
+export * from './aggregates/AIProviderConfigServer';
 
 // ===== Entities =====
 export * from './entities/MessageServer';

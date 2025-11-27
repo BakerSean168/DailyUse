@@ -7,12 +7,68 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "development": {
-        "types": "./src/index.ts",
-        "import": "./src/index.ts"
-      },
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./task": {
+      "types": "./dist/modules/task/index.d.ts",
+      "import": "./dist/modules/task/index.js"
+    },
+    "./goal": {
+      "types": "./dist/modules/goal/index.d.ts",
+      "import": "./dist/modules/goal/index.js"
+    },
+    "./reminder": {
+      "types": "./dist/modules/reminder/index.d.ts",
+      "import": "./dist/modules/reminder/index.js"
+    },
+    "./editor": {
+      "types": "./dist/modules/editor/index.d.ts",
+      "import": "./dist/modules/editor/index.js"
+    },
+    "./repository": {
+      "types": "./dist/modules/repository/index.d.ts",
+      "import": "./dist/modules/repository/index.js"
+    },
+    "./account": {
+      "types": "./dist/modules/account/index.d.ts",
+      "import": "./dist/modules/account/index.js"
+    },
+    "./authentication": {
+      "types": "./dist/modules/authentication/index.d.ts",
+      "import": "./dist/modules/authentication/index.js"
+    },
+    "./schedule": {
+      "types": "./dist/modules/schedule/index.d.ts",
+      "import": "./dist/modules/schedule/index.js"
+    },
+    "./setting": {
+      "types": "./dist/modules/setting/index.d.ts",
+      "import": "./dist/modules/setting/index.js"
+    },
+    "./notification": {
+      "types": "./dist/modules/notification/index.d.ts",
+      "import": "./dist/modules/notification/index.js"
+    },
+    "./document": {
+      "types": "./dist/document.contracts.d.ts",
+      "import": "./dist/document.contracts.js"
+    },
+    "./ai": {
+      "types": "./dist/modules/ai/index.d.ts",
+      "import": "./dist/modules/ai/index.js"
+    },
+    "./dashboard": {
+      "types": "./dist/modules/dashboard/index.d.ts",
+      "import": "./dist/modules/dashboard/index.js"
+    },
+    "./response": {
+      "types": "./dist/response/index.d.ts",
+      "import": "./dist/response/index.js"
+    },
+    "./shared": {
+      "types": "./dist/shared/index.d.ts",
+      "import": "./dist/shared/index.js"
     }
   },
   "scripts": {
@@ -28,13 +84,5 @@
     "typescript": "^5.8.3",
     "rimraf": "^6.0.1",
     "concurrently": "^8.2.0"
-  },
-  "publishConfig": {
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
-      }
-    }
   }
 }

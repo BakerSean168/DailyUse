@@ -39,34 +39,17 @@
             <!-- 有子项的导航 -->
             <v-list-group v-if="item.children && item.children.length > 0" :value="item.key">
               <template #activator="{ props }">
-                <v-list-item
-                  v-bind="props"
-                  :prepend-icon="item.icon"
-                  :title="item.label"
-                  :active="isParentActive(item)"
-                />
+                <v-list-item v-bind="props" :prepend-icon="item.icon" :title="item.label"
+                  :active="isParentActive(item)" />
               </template>
 
-              <v-list-item
-                v-for="child in item.children"
-                :key="child.key"
-                :value="child.key"
-                :prepend-icon="child.icon"
-                :title="child.label"
-                :active="activeSection === child.key"
-                @click="scrollToSection(child.key)"
-              />
+              <v-list-item v-for="child in item.children" :key="child.key" :value="child.key" :prepend-icon="child.icon"
+                :title="child.label" :active="activeSection === child.key" @click="scrollToSection(child.key)" />
             </v-list-group>
 
             <!-- 无子项的导航 -->
-            <v-list-item
-              v-else
-              :value="item.key"
-              :prepend-icon="item.icon"
-              :title="item.label"
-              :active="activeSection === item.key"
-              @click="scrollToSection(item.key)"
-            />
+            <v-list-item v-else :value="item.key" :prepend-icon="item.icon" :title="item.label"
+              :active="activeSection === item.key" @click="scrollToSection(item.key)" />
           </template>
         </v-list>
       </aside>
@@ -155,6 +138,19 @@
 
           <v-divider class="my-8" />
 
+          <!-- AI 服务设置 -->
+          <section id="section-ai" class="settings-section mb-8">
+            <h3 class="text-h5 font-weight-bold mb-2">
+              {{ t('settings.nav.ai', 'AI 服务') }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis mb-4">
+              {{ t('settings.ai.description', '配置 AI 服务提供商以使用智能功能') }}
+            </p>
+            <AIProviderSettings />
+          </section>
+
+          <v-divider class="my-8" />
+
           <!-- 高级操作 -->
           <section id="section-advanced" class="settings-section mb-8">
             <h3 class="text-h5 font-weight-bold mb-2">
@@ -163,11 +159,7 @@
             <p class="text-body-2 text-medium-emphasis mb-4">
               {{ t('settings.advanced.description', '高级设置和数据管理') }}
             </p>
-            <SettingAdvancedActions
-              v-if="userSetting"
-              :settings="userSetting"
-              @update="handleSettingsUpdate"
-            />
+            <SettingAdvancedActions v-if="userSetting" :settings="userSetting" @update="handleSettingsUpdate" />
           </section>
         </v-container>
       </main>
@@ -190,15 +182,16 @@ import ShortcutSettings from '../components/ShortcutSettings.vue';
 import PrivacySettings from '../components/PrivacySettings.vue';
 import ExperimentalSettings from '../components/ExperimentalSettings.vue';
 import SettingAdvancedActions from '../components/SettingAdvancedActions.vue';
+import AIProviderSettings from '@/modules/ai/presentation/components/AIProviderSettings.vue';
 
 const router = useRouter();
 const { t } = useI18n();
 const authStore = useAuthenticationStore();
-const { 
+const {
   userSetting,
-  loading, 
-  error, 
-  initialize, 
+  loading,
+  error,
+  initialize,
   updateAppearance,
   updateLocale,
   updateWorkflow,
@@ -249,6 +242,11 @@ const navItems = computed<NavItem[]>(() => [
     icon: 'mdi-flask',
   },
   {
+    key: 'ai',
+    label: t('settings.nav.ai', 'AI 服务'),
+    icon: 'mdi-robot',
+  },
+  {
     key: 'advanced',
     label: t('settings.nav.advanced', '高级'),
     icon: 'mdi-cog-outline',
@@ -284,9 +282,9 @@ const handleScroll = () => {
   }).filter(Boolean);
 
   // 找到视口中最靠近顶部的section
-  const activeItem = sections.find(section => 
+  const activeItem = sections.find(section =>
     section && section.top >= 0 && section.top <= 200
-  ) || sections.find(section => 
+  ) || sections.find(section =>
     section && section.top <= 0 && section.bottom > 200
   );
 
@@ -376,30 +374,30 @@ onUnmounted(() => {
   overflow-y: auto;
   border-right: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   background-color: rgb(var(--v-theme-surface));
-  
+
   :deep(.v-list-item) {
     border-radius: 8px;
     margin: 2px 8px;
-    
+
     &.v-list-item--active {
       background-color: rgba(var(--v-theme-primary), 0.12);
       color: rgb(var(--v-theme-primary));
-      
+
       .v-icon {
         color: rgb(var(--v-theme-primary));
       }
     }
-    
+
     &:hover:not(.v-list-item--active) {
       background-color: rgba(var(--v-theme-on-surface), 0.04);
     }
   }
-  
+
   :deep(.v-list-group) {
     .v-list-item {
       padding-left: 16px !important;
     }
-    
+
     .v-list-group__items {
       .v-list-item {
         padding-left: 48px !important;
@@ -417,16 +415,19 @@ onUnmounted(() => {
 
 .settings-section {
   scroll-margin-top: 20px;
-  
+
   &:target {
     animation: highlight 1s ease-in-out;
   }
 }
 
 @keyframes highlight {
-  0%, 100% {
+
+  0%,
+  100% {
     background-color: transparent;
   }
+
   50% {
     background-color: rgba(var(--v-theme-primary), 0.05);
   }

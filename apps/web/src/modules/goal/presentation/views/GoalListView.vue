@@ -19,22 +19,15 @@
           </div>
 
           <div class="d-flex gap-2">
-            <v-btn
-              color="secondary"
-              size="large"
-              prepend-icon="mdi-compare"
-              variant="outlined"
-              @click="goToComparison"
-            >
+            <v-btn color="secondary" size="large" prepend-icon="mdi-compare" variant="outlined" @click="goToComparison">
               对比目标
             </v-btn>
-            <v-btn
-              color="primary"
-              size="large"
-              prepend-icon="mdi-plus"
-              variant="elevated"
-              @click="goalDialogRef?.openForCreate()"
-            >
+            <v-btn color="secondary" size="large" prepend-icon="mdi-robot" variant="tonal"
+              @click="aiGoalCreatorRef?.open()">
+              AI 创建
+            </v-btn>
+            <v-btn color="primary" size="large" prepend-icon="mdi-plus" variant="elevated"
+              @click="goalDialogRef?.openForCreate()">
               创建目标
             </v-btn>
           </div>
@@ -48,14 +41,10 @@
         <v-row no-gutters class="h-100">
           <!-- 侧边栏 - 目标分类 -->
           <v-col cols="12" md="3" class="pr-md-6 mb-6 mb-md-0 h-100">
-            <GoalFolderComponent
-              :goal-folders="GoalFolders"
-              @selected-goal-folder="onSelectedGoalFolder"
+            <GoalFolderComponent :goal-folders="GoalFolders" @selected-goal-folder="onSelectedGoalFolder"
               @create-goal-folder="GoalFolderDialogRef?.openForCreate"
-              @edit-goal-folder="GoalFolderDialogRef?.openForEdit"
-              @delete-goal-folder="handleDeleteFolder"
-              class="h-100"
-            />
+              @edit-goal-folder="GoalFolderDialogRef?.openForEdit" @delete-goal-folder="handleDeleteFolder"
+              class="h-100" />
           </v-col>
 
           <!-- 目标列表区域 -->
@@ -67,27 +56,13 @@
                   <h2 class="text-h6 font-weight-medium">目标列表</h2>
 
                   <!-- 状态标签 -->
-                  <v-chip-group
-                    v-model="selectedStatusIndex"
-                    selected-class="text-primary"
-                    mandatory
-                    class="status-tabs"
-                  >
-                    <v-chip
-                      v-for="(tab, index) in statusTabs"
-                      :key="tab.value"
-                      :value="index"
-                      variant="outlined"
-                      filter
-                      class="status-chip"
-                    >
+                  <v-chip-group v-model="selectedStatusIndex" selected-class="text-primary" mandatory
+                    class="status-tabs">
+                    <v-chip v-for="(tab, index) in statusTabs" :key="tab.value" :value="index" variant="outlined" filter
+                      class="status-chip">
                       {{ tab.label }}
-                      <v-badge
-                        :content="getGoalCountByStatus(tab.value)"
-                        :color="selectedStatusIndex === index ? 'primary' : 'surface-bright'"
-                        inline
-                        class="ml-2"
-                      />
+                      <v-badge :content="getGoalCountByStatus(tab.value)"
+                        :color="selectedStatusIndex === index ? 'primary' : 'surface-bright'" inline class="ml-2" />
                     </v-chip>
                   </v-chip-group>
                 </div>
@@ -106,30 +81,18 @@
                 <div v-else-if="filteredGoals?.length">
                   <v-row>
                     <v-col v-for="goal in filteredGoals" :key="goal.uuid" cols="12" lg="6" xl="4">
-                      <goal-card
-                        :goal="goal"
-                        @edit-goal="handleEditGoal"
-                        @delete-goal="confirmDeleteGoal"
-                        @toggle-status="onToggleGoalStatus"
-                      />
+                      <goal-card :goal="goal" @edit-goal="handleEditGoal" @delete-goal="confirmDeleteGoal"
+                        @toggle-status="onToggleGoalStatus" />
                     </v-col>
                   </v-row>
                 </div>
 
                 <!-- 空状态 -->
                 <div v-else class="d-flex align-center justify-center h-100">
-                  <v-empty-state
-                    icon="mdi-target"
-                    title="暂无目标"
-                    text="创建您的第一个目标，开始目标管理之旅"
-                  >
+                  <v-empty-state icon="mdi-target" title="暂无目标" text="创建您的第一个目标，开始目标管理之旅">
                     <template v-slot:actions>
-                      <v-btn
-                        color="primary"
-                        variant="elevated"
-                        prepend-icon="mdi-plus"
-                        @click="goalDialogRef?.openForCreate()"
-                      >
+                      <v-btn color="primary" variant="elevated" prepend-icon="mdi-plus"
+                        @click="goalDialogRef?.openForCreate()">
                         创建第一个目标
                       </v-btn>
                     </template>
@@ -157,6 +120,7 @@
 
     <GoalDialog ref="goalDialogRef" />
     <GoalFolderDialog ref="GoalFolderDialogRef" />
+    <AIGoalCreator ref="aiGoalCreatorRef" @goal-created="handleAIGoalCreated" />
   </v-container>
 </template>
 
@@ -174,6 +138,7 @@ import GoalCard from '../components/cards/GoalCard.vue';
 import GoalFolderComponent from '../components/GoalFolder.vue';
 import GoalDialog from '../components/dialogs/GoalDialog.vue';
 import GoalFolderDialog from '../components/dialogs/GoalFolderDialog.vue';
+import AIGoalCreator from '../../../../modules/ai/presentation/components/AIGoalCreator.vue';
 // composables
 
 const router = useRouter();
@@ -208,6 +173,7 @@ const selectedStatusIndex = ref(0);
 // dialogs
 const goalDialogRef = ref<InstanceType<typeof GoalDialog> | null>(null);
 const GoalFolderDialogRef = ref<InstanceType<typeof GoalFolderDialog> | null>(null);
+const aiGoalCreatorRef = ref<InstanceType<typeof AIGoalCreator> | null>(null);
 
 const deleteDialog = reactive({
   show: false,
@@ -272,7 +238,7 @@ const filteredGoals = computed(() => {
  */
 const goalCountByStatus = computed(() => {
   const goalsInFolder = goalsInSelectedFolder.value;
-  
+
   return {
     all: goalsInFolder.length,
     active: goalsInFolder.filter((goal: Goal) => goal.status === 'ACTIVE').length,
@@ -355,7 +321,17 @@ const handleDeleteFolder = async (folderUuid: string) => {
 /**
  * 切换目标状态
  */
-const onToggleGoalStatus = () => {};
+const onToggleGoalStatus = () => { };
+
+/**
+ * 处理 AI 创建的目标
+ */
+const handleAIGoalCreated = async (goalData: any) => {
+  console.log('AI 创建的目标数据:', goalData);
+  // 打开 GoalDialog 并预填充 AI 生成的数据
+  goalDialogRef.value?.openForCreate(goalData);
+  snackbar.showSuccess('AI 生成的目标已加载，请确认后保存');
+};
 
 /**
  * 显示提示消息
@@ -404,11 +380,9 @@ onMounted(async () => {
 }
 
 .goal-header {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.05),
-    rgba(var(--v-theme-surface), 1)
-  );
+  background: linear-gradient(135deg,
+      rgba(var(--v-theme-primary), 0.05),
+      rgba(var(--v-theme-surface), 1));
 }
 
 .goal-main {

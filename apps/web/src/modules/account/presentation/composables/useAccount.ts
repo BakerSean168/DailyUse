@@ -8,7 +8,7 @@
  * - 不包含复杂的业务规则
  */
 
-import { computed } from 'vue';
+import { computed, type ComputedRef } from 'vue';
 import { useAccountStore } from '../stores/accountStore';
 import {
   accountProfileApplicationService,
@@ -16,7 +16,61 @@ import {
 } from '../../application/services';
 import type { AccountContracts } from '@dailyuse/contracts';
 
-export function useAccount() {
+// 本地类型别名
+type AccountDTO = AccountContracts.AccountDTO;
+type SubscriptionDTO = AccountContracts.SubscriptionDTO;
+type AccountHistoryDTO = AccountContracts.AccountHistoryServerDTO;
+type AccountStatsDTO = AccountContracts.AccountStatsResponseDTO;
+
+// 返回类型接口（无需导出，web 应用不生成 .d.ts）
+interface UseAccountReturn {
+  // 响应式状态
+  currentAccount: ComputedRef<AccountDTO | null>;
+  subscription: ComputedRef<SubscriptionDTO | null>;
+  accountHistory: ComputedRef<AccountHistoryDTO[]>;
+  accountStats: ComputedRef<AccountStatsDTO | null>;
+  isLoading: ComputedRef<boolean>;
+  error: ComputedRef<string | null>;
+  savedAccounts: ComputedRef<AccountDTO[]>;
+
+  // 计算属性
+  isAuthenticated: ComputedRef<boolean>;
+  currentAccountUuid: ComputedRef<string | null>;
+  accountStatus: ComputedRef<AccountContracts.AccountStatus | null>;
+  isActiveAccount: ComputedRef<boolean>;
+  isDeactivatedAccount: ComputedRef<boolean>;
+  isSuspendedAccount: ComputedRef<boolean>;
+  isDeletedAccount: ComputedRef<boolean>;
+  isEmailVerified: ComputedRef<boolean>;
+  isPhoneVerified: ComputedRef<boolean>;
+  isTwoFactorEnabled: ComputedRef<boolean>;
+  currentSubscriptionPlan: ComputedRef<AccountContracts.SubscriptionPlan | null>;
+  isPremiumUser: ComputedRef<boolean>;
+  storageUsagePercentage: ComputedRef<number>;
+  rememberedAccounts: ComputedRef<AccountDTO[]>;
+
+  // 方法
+  updateProfile: (data: AccountContracts.UpdateAccountProfileRequestDTO) => Promise<boolean>;
+  updateEmail: (newEmail: string, password: string) => Promise<boolean>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  updateAvatar: (avatarUrl: string) => Promise<boolean>;
+  deactivateAccount: (reason?: string) => Promise<boolean>;
+  loadCurrentAccount: () => Promise<boolean>;
+  updateSubscription: (
+    plan: AccountContracts.SubscriptionPlan,
+    cycle?: AccountContracts.BillingCycle,
+  ) => Promise<boolean>;
+  cancelSubscription: (reason?: string) => Promise<boolean>;
+  loadSubscription: () => Promise<boolean>;
+  loadAccountHistory: (limit?: number) => Promise<boolean>;
+  loadAccountStats: () => Promise<boolean>;
+  addSavedAccount: (account: AccountDTO) => void;
+  removeSavedAccount: (accountUuid: string) => void;
+  clearSavedAccounts: () => void;
+  clearError: () => void;
+}
+
+export function useAccount(): UseAccountReturn {
   const accountStore = useAccountStore();
 
   // ===== 响应式状态 =====

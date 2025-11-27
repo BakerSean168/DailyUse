@@ -1,50 +1,29 @@
 <template>
   <v-dialog :model-value="visible" height="550" width="800" class="goal-dialog" persistent>
-    <v-card
-      :style="{ backgroundColor: 'rgb(var(--v-theme-surface))' }"
-      class="px-2 pb-2 d-flex flex-column"
-      style="height: 550px"
-    >
+    <v-card :style="{ backgroundColor: 'rgb(var(--v-theme-surface))' }" class="px-2 pb-2 d-flex flex-column"
+      style="height: 550px">
       <!-- 对话框头部 -->
       <v-card-title class="d-flex justify-space-between pa-4 flex-shrink-0">
         <v-btn variant="elevated" color="red-darken-3" @click="handleCancel">取消</v-btn>
         <span class="text-h5">{{ isEditing ? '编辑目标' : '新建目标' }}</span>
-        <v-btn
-          color="primary"
-          @click="handleSave"
-          :disabled="!isFormValid || loading"
-          :loading="loading"
-        >
+        <v-btn color="primary" @click="handleSave" :disabled="!isFormValid || loading" :loading="loading">
           完成
         </v-btn>
       </v-card-title>
 
       <!-- Tabs -->
-      <v-tabs
-        v-model="activeTab"
-        class="d-flex justify-center align-center flex-shrink-0 mb-2 pa-2"
-        :style="{ backgroundColor: 'rgb(var(--v-theme-surface))' }"
-      >
-        <v-tab
-          v-for="(tab, index) in tabs"
-          :key="index"
-          :value="index"
-          class="flex-grow-1"
-          :style="
-            activeTab === index
-              ? { backgroundColor: 'rgba(var(--v-theme-surface-light), 0.3)' }
-              : {}
-          "
-        >
+      <v-tabs v-model="activeTab" class="d-flex justify-center align-center flex-shrink-0 mb-2 pa-2"
+        :style="{ backgroundColor: 'rgb(var(--v-theme-surface))' }">
+        <v-tab v-for="(tab, index) in tabs" :key="index" :value="index" class="flex-grow-1" :style="activeTab === index
+            ? { backgroundColor: 'rgba(var(--v-theme-surface-light), 0.3)' }
+            : {}
+          ">
           <v-icon :icon="tab.icon" :color="tab.color" class="mr-2" />
           {{ tab.name }}
         </v-tab>
       </v-tabs>
 
-      <v-card-text
-        :style="{ backgroundColor: 'rgba(var(--v-theme-surface-light), 0.3)' }"
-        class="pa-0 scroll-area"
-      >
+      <v-card-text :style="{ backgroundColor: 'rgba(var(--v-theme-surface-light), 0.3)' }" class="pa-0 scroll-area">
         <v-window v-model="activeTab" class="h-100 w-90">
           <!-- 基本信息 -->
           <v-window-item :value="tabs.findIndex(t => t.name === '基本信息')">
@@ -53,12 +32,8 @@
               <v-alert v-if="!isEditing" type="info" variant="tonal" density="compact" class="mb-4">
                 <div class="d-flex align-center justify-space-between">
                   <span>快速开始：从专业模板创建目标</span>
-                  <v-btn
-                    variant="elevated"
-                    color="secondary"
-                    prepend-icon="mdi-lightbulb-outline"
-                    @click="templateBrowserRef?.open()"
-                  >
+                  <v-btn variant="elevated" color="secondary" prepend-icon="mdi-lightbulb-outline"
+                    @click="templateBrowserRef?.open()">
                     浏览模板
                   </v-btn>
                 </div>
@@ -66,37 +41,21 @@
 
               <v-row>
                 <v-col cols="11">
-                  <v-text-field
-                    v-model="goalName"
-                    :rules="nameRules"
-                    label="目标"
-                    placeholder="一段话来描述自己的目标"
-                    required
-                  />
+                  <v-text-field v-model="goalName" :rules="nameRules" label="目标" placeholder="一段话来描述自己的目标" required />
                 </v-col>
                 <v-col cols="1">
                   <v-menu>
                     <template v-slot:activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        :style="{ backgroundColor: goalColor }"
-                        class="color-btn mt-2"
-                        icon
-                      >
+                      <v-btn v-bind="props" :style="{ backgroundColor: goalColor }" class="color-btn mt-2" icon>
                         <v-icon color="white">mdi-palette</v-icon>
                       </v-btn>
                     </template>
                     <v-card min-width="200">
                       <v-card-text>
                         <div class="color-grid">
-                          <v-btn
-                            v-for="colorOption in predefinedColors"
-                            :key="colorOption"
-                            :style="{ backgroundColor: colorOption }"
-                            class="color-option"
-                            icon
-                            @click="goalColor = colorOption"
-                          />
+                          <v-btn v-for="colorOption in predefinedColors" :key="colorOption"
+                            :style="{ backgroundColor: colorOption }" class="color-option" icon
+                            @click="goalColor = colorOption" />
                         </div>
                       </v-card-text>
                     </v-card>
@@ -104,14 +63,8 @@
                 </v-col>
               </v-row>
 
-              <v-select
-                v-model="GoalFolderUuid"
-                :items="directoryOptions"
-                item-title="text"
-                item-value="value"
-                label="目标文件夹"
-                :disabled="directoryOptions.length === 0"
-              >
+              <v-select v-model="GoalFolderUuid" :items="directoryOptions" item-title="text" item-value="value"
+                label="目标文件夹" :disabled="directoryOptions.length === 0">
                 <template v-slot:prepend-inner>
                   <v-icon>mdi-folder</v-icon>
                 </template>
@@ -128,35 +81,16 @@
 
               <v-row>
                 <v-col cols="6">
-                  <v-text-field
-                    v-model="startTimeFormatted"
-                    label="开始时间"
-                    type="date"
-                    :rules="startTimeRules"
-                    @update:model-value="updateStartTime"
-                    :min="minDate"
-                    placeholder="默认：今天"
-                  />
+                  <v-text-field v-model="startTimeFormatted" label="开始时间" type="date" :rules="startTimeRules"
+                    @update:model-value="updateStartTime" :min="minDate" placeholder="默认：今天" />
                 </v-col>
                 <v-col cols="6">
-                  <v-text-field
-                    v-model="endTimeFormatted"
-                    label="结束时间"
-                    type="date"
-                    :rules="endTimeRules"
-                    :min="startTimeFormatted"
-                    @update:model-value="updateEndTime"
-                    placeholder="默认：3个月后"
-                  />
+                  <v-text-field v-model="endTimeFormatted" label="结束时间" type="date" :rules="endTimeRules"
+                    :min="startTimeFormatted" @update:model-value="updateEndTime" placeholder="默认：3个月后" />
                 </v-col>
               </v-row>
 
-              <v-textarea 
-                v-model="goalDescription" 
-                label="目标描述" 
-                placeholder="详细描述目标的具体内容和预期结果..."
-                rows="3" 
-              />
+              <v-textarea v-model="goalDescription" label="目标描述" placeholder="详细描述目标的具体内容和预期结果..." rows="3" />
             </v-form>
           </v-window-item>
 
@@ -171,14 +105,8 @@
                       目标动机
                     </v-card-title>
                     <v-card-text>
-                      <v-textarea
-                        v-model="goalMotive"
-                        placeholder="为什么要实现这个目标？它对你意味着什么？"
-                        variant="outlined"
-                        rows="6"
-                        density="comfortable"
-                        hide-details
-                      />
+                      <v-textarea v-model="goalMotive" placeholder="为什么要实现这个目标？它对你意味着什么？" variant="outlined" rows="6"
+                        density="comfortable" hide-details />
                     </v-card-text>
                   </v-card>
                 </v-col>
@@ -189,14 +117,8 @@
                       可行性分析
                     </v-card-title>
                     <v-card-text>
-                      <v-textarea
-                        v-model="goalFeasibility"
-                        placeholder="分析实现这个目标的可行性、所需资源和可能的挑战"
-                        variant="outlined"
-                        rows="6"
-                        density="comfortable"
-                        hide-details
-                      />
+                      <v-textarea v-model="goalFeasibility" placeholder="分析实现这个目标的可行性、所需资源和可能的挑战" variant="outlined"
+                        rows="6" density="comfortable" hide-details />
                     </v-card-text>
                   </v-card>
                 </v-col>
@@ -218,11 +140,8 @@
   <!-- 内嵌的关键结果对话框 -->
   <KeyResultDialog ref="keyResultDialogRef" />
   <!-- AI 权重推荐面板 -->
-  <WeightSuggestionPanel
-    ref="weightSuggestionRef"
-    :key-results="((goalModel?.keyResults || []) as KeyResult[])"
-    @apply="handleApplyWeightStrategy"
-  />
+  <WeightSuggestionPanel ref="weightSuggestionRef" :key-results="((goalModel?.keyResults || []) as KeyResult[])"
+    @apply="handleApplyWeightStrategy" />
   <!-- 目标模板浏览器 -->
   <TemplateBrowser ref="templateBrowserRef" @apply="handleApplyTemplate" />
 </template>
@@ -253,6 +172,15 @@ const goalStore = useGoalStore();
 
 const visible = ref(false);
 const propGoal = ref<Goal | null>(null);
+
+// AI 预填充数据
+const prefillData = ref<{
+  title?: string;
+  description?: string;
+  category?: string;
+  timeframe?: string;
+  keyResults?: Array<{ title: string; description?: string }>;
+} | null>(null);
 
 // 组件对象
 const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
@@ -380,14 +308,56 @@ watch(
       } else {
         // 创建模式：创建新 goal（accountUuid 在保存时注入）
         goalModel.value = Goal.forCreate();
-        
-        // 设置默认日期：今天开始，3个月后结束
+
+        // 设置默认日期
         const today = new Date();
-        const threeMonthsLater = new Date(today);
-        threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
-        
+        let endDate = new Date(today);
+
+        // 如果有 AI 预填充数据，使用其 timeframe
+        if (prefillData.value?.timeframe) {
+          switch (prefillData.value.timeframe) {
+            case 'week':
+              endDate.setDate(endDate.getDate() + 7);
+              break;
+            case 'month':
+              endDate.setMonth(endDate.getMonth() + 1);
+              break;
+            case 'quarter':
+              endDate.setMonth(endDate.getMonth() + 3);
+              break;
+            case 'year':
+              endDate.setFullYear(endDate.getFullYear() + 1);
+              break;
+            default:
+              endDate.setMonth(endDate.getMonth() + 3);
+          }
+        } else {
+          // 默认 3 个月
+          endDate.setMonth(endDate.getMonth() + 3);
+        }
+
         goalModel.value.updateStartDate(today.getTime());
-        goalModel.value.updateTargetDate(threeMonthsLater.getTime());
+        goalModel.value.updateTargetDate(endDate.getTime());
+
+        // 应用 AI 预填充数据
+        if (prefillData.value) {
+          if (prefillData.value.title) {
+            goalModel.value.updateTitle(prefillData.value.title);
+          }
+          if (prefillData.value.description) {
+            goalModel.value.updateDescription(prefillData.value.description);
+          }
+          // TODO: 可以添加更多字段的预填充，如 category 映射到 folder
+
+          // 如果有 keyResults，可以提示用户添加
+          if (prefillData.value.keyResults?.length) {
+            console.log(`[GoalDialog] AI 建议的 ${prefillData.value.keyResults.length} 个关键结果:`,
+              prefillData.value.keyResults);
+          }
+
+          // 清空预填充数据
+          prefillData.value = null;
+        }
       }
     }
   },
@@ -557,7 +527,7 @@ const isFormValid = computed(() => {
 // 保存和取消
 const handleSave = async () => {
   if (!isFormValid.value || !goalModel.value) return;
-  
+
   loading.value = true;
   try {
     if (isEditing.value) {
@@ -581,7 +551,7 @@ const handleSave = async () => {
     } else {
       // 创建模式：后端会从 token 自动注入 accountUuid，前端无需传递
       // 参考 Task 模块的实现方式
-      
+
       // 转换 KeyResults 为简化格式
       const keyResults = (goalModel.value.keyResults || []).map(kr => ({
         title: kr.title,
@@ -591,7 +561,7 @@ const handleSave = async () => {
         unit: kr.progress.unit ?? undefined,
         weight: kr.weight,
       }));
-      
+
       const createData: any = {
         // accountUuid 不传递，后端会从 req.user.accountUuid 或 JWT token 中获取
         title: goalModel.value.title,
@@ -609,7 +579,7 @@ const handleSave = async () => {
         parentGoalUuid: goalModel.value.parentGoalUuid ?? undefined,
         keyResults: keyResults.length > 0 ? keyResults : undefined,
       };
-      
+
       console.log('✅ 创建目标请求数据（accountUuid 由后端注入）:', createData);
       await createGoal(createData);
     }
@@ -640,9 +610,17 @@ const openDialog = (goal?: Goal) => {
 
 /**
  * 打开创建目标对话框
+ * @param data 预填充数据（可选，来自 AI 生成或模板）
  */
-const openForCreate = () => {
+const openForCreate = (data?: {
+  title?: string;
+  description?: string;
+  category?: string;
+  timeframe?: string;
+  keyResults?: Array<{ title: string; description?: string }>;
+}) => {
   propGoal.value = null;
+  prefillData.value = data || null;
   visible.value = true;
   activeTab.value = 0; // 定位到基本信息标签
 };
@@ -665,6 +643,7 @@ watch(visible, (newVal) => {
   if (!newVal) {
     // 重置表单
     propGoal.value = null;
+    prefillData.value = null;
     goalModel.value = null;
     activeTab.value = 0;
     loading.value = false;

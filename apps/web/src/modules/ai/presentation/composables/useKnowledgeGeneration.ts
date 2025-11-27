@@ -14,7 +14,7 @@ export function useKnowledgeGeneration() {
   const isGenerating = ref<boolean>(false);
   const error = ref<string | null>(null);
   const currentStep = ref<number>(1);
-  let pollingInterval: NodeJS.Timer | null = null;
+  let pollingInterval: ReturnType<typeof setInterval> | null = null;
   const documentCount = ref<number>(5);
   const targetAudience = ref<string>('Beginners');
 

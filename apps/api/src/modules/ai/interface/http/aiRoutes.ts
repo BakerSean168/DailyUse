@@ -3,14 +3,24 @@
  * AI 模块统一路由
  *
  * RESTful API 设计：
- * 
+ *
+ * === AI Provider 配置 ===
+ * - POST /api/ai/providers - 创建 AI Provider 配置
+ * - GET /api/ai/providers - 获取用户的 AI Provider 列表
+ * - GET /api/ai/providers/:uuid - 获取特定 Provider 详情
+ * - PUT /api/ai/providers/:uuid - 更新 Provider 配置
+ * - DELETE /api/ai/providers/:uuid - 删除 Provider 配置
+ * - POST /api/ai/providers/:uuid/test - 测试 Provider 连接
+ * - POST /api/ai/providers/:uuid/set-default - 设为默认 Provider
+ *
  * === AI 生成相关 ===
+ * - POST /api/ai/generate/goal - 生成 Goal（从用户想法）
  * - POST /api/ai/generate/key-results - 生成关键结果
  * - POST /api/ai/generate/tasks - 生成任务模板
  * - POST /api/ai/generate/task-template - 生成任务模板（旧版）
  * - POST /api/ai/generate/knowledge-document - 生成知识文档
  * - POST /api/ai/generate/knowledge-series - 创建知识系列生成任务
- * 
+ *
  * === AI 对话相关 ===
  * - POST /api/ai/chat - 发送消息（普通响应）
  * - POST /api/ai/chat/stream - 发送消息（流式响应）
@@ -18,7 +28,7 @@
  * - GET /api/ai/conversations - 获取对话历史
  * - GET /api/ai/conversations/:id - 获取特定对话
  * - DELETE /api/ai/conversations/:id - 删除对话
- * 
+ *
  * === 其他 ===
  * - GET /api/ai/quota - 获取配额状态
  * - POST /api/ai/summarize - 文档摘要
@@ -29,6 +39,7 @@
 import { Router } from 'express';
 import { AIGenerationController } from './AIGenerationController';
 import { AIConversationController } from './AIConversationController';
+import { AIProviderController } from './AIProviderController';
 import { authMiddleware } from '../../../../shared/middlewares/authMiddleware';
 
 const router: Router = Router();
@@ -36,7 +47,214 @@ const router: Router = Router();
 // 所有 AI 路由需要认证
 router.use(authMiddleware);
 
+// ==================== AI Provider 配置路由 ====================
+
+/**
+ * @swagger
+ * /api/ai/providers:
+ *   post:
+ *     tags: [AI Provider]
+ *     summary: 创建 AI Provider 配置
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - providerType
+ *               - apiKey
+ *             properties:
+ *               name:
+ *                 type: string
+ *               providerType:
+ *                 type: string
+ *                 enum: [OPENAI, ANTHROPIC, QINIU, DEEPSEEK, AZURE_OPENAI, CUSTOM]
+ *               baseUrl:
+ *                 type: string
+ *               apiKey:
+ *                 type: string
+ *               models:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *               isDefault:
+ *                 type: boolean
+ *     responses:
+ *       201:
+ *         description: Provider 创建成功
+ */
+router.post('/providers', AIProviderController.createProvider);
+
+/**
+ * @swagger
+ * /api/ai/providers:
+ *   get:
+ *     tags: [AI Provider]
+ *     summary: 获取用户的 AI Provider 列表
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ */
+router.get('/providers', AIProviderController.getProviders);
+
+/**
+ * @swagger
+ * /api/ai/providers/{uuid}:
+ *   get:
+ *     tags: [AI Provider]
+ *     summary: 获取特定 Provider 详情
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ */
+router.get('/providers/:uuid', AIProviderController.getProvider);
+
+/**
+ * @swagger
+ * /api/ai/providers/{uuid}:
+ *   put:
+ *     tags: [AI Provider]
+ *     summary: 更新 Provider 配置
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               baseUrl:
+ *                 type: string
+ *               apiKey:
+ *                 type: string
+ *               models:
+ *                 type: array
+ *               isDefault:
+ *                 type: boolean
+ *               isEnabled:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ */
+router.put('/providers/:uuid', AIProviderController.updateProvider);
+
+/**
+ * @swagger
+ * /api/ai/providers/{uuid}:
+ *   delete:
+ *     tags: [AI Provider]
+ *     summary: 删除 Provider 配置
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 删除成功
+ */
+router.delete('/providers/:uuid', AIProviderController.deleteProvider);
+
+/**
+ * @swagger
+ * /api/ai/providers/{uuid}/test:
+ *   post:
+ *     tags: [AI Provider]
+ *     summary: 测试 Provider 连接
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 测试成功
+ */
+router.post('/providers/:uuid/test', AIProviderController.testConnection);
+
+/**
+ * @swagger
+ * /api/ai/providers/{uuid}/set-default:
+ *   post:
+ *     tags: [AI Provider]
+ *     summary: 设为默认 Provider
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 设置成功
+ */
+router.post('/providers/:uuid/set-default', AIProviderController.setDefaultProvider);
+
 // ==================== AI 生成路由 ====================
+
+/**
+ * @swagger
+ * /api/ai/generate/goal:
+ *   post:
+ *     tags: [AI Generation]
+ *     summary: 从用户想法生成 Goal（包含 Key Results）
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idea
+ *             properties:
+ *               idea:
+ *                 type: string
+ *                 description: 用户的原始想法
+ *               context:
+ *                 type: string
+ *                 description: 额外上下文（可选）
+ *               providerUuid:
+ *                 type: string
+ *                 description: 指定使用的 AI Provider（可选，默认使用默认 Provider）
+ *     responses:
+ *       200:
+ *         description: 生成成功，返回 Goal 预览
+ */
+router.post('/generate/goal', AIGenerationController.generateGoal);
 
 /**
  * @swagger
@@ -402,10 +620,7 @@ router.post('/summarize', AIConversationController.summarizeDocument);
  *       200:
  *         description: 获取成功
  */
-router.get(
-  '/generation-tasks/:taskUuid',
-  AIConversationController.getKnowledgeGenerationTask,
-);
+router.get('/generation-tasks/:taskUuid', AIConversationController.getKnowledgeGenerationTask);
 
 /**
  * @swagger
@@ -425,9 +640,6 @@ router.get(
  *       200:
  *         description: 获取成功
  */
-router.get(
-  '/generation-tasks/:taskUuid/documents',
-  AIConversationController.getGeneratedDocuments,
-);
+router.get('/generation-tasks/:taskUuid/documents', AIConversationController.getGeneratedDocuments);
 
 export default router;

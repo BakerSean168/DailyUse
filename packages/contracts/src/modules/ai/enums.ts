@@ -25,6 +25,8 @@ export enum GenerationTaskType {
   DOCUMENT_SUMMARY = 'DOCUMENT_SUMMARY',
   KNOWLEDGE_DOCUMENTS = 'KNOWLEDGE_DOCUMENTS',
   GENERAL_CHAT = 'GENERAL_CHAT',
+  /** 目标生成（从想法到完整 Goal） */
+  GOAL_GENERATION = 'GOAL_GENERATION',
 }
 
 export enum TaskStatus {
@@ -40,6 +42,21 @@ export enum AIProvider {
   OPENAI = 'OPENAI',
   ANTHROPIC = 'ANTHROPIC',
   CUSTOM = 'CUSTOM',
+}
+
+/**
+ * AI 服务提供商类型
+ * 用于用户自定义 Provider 配置
+ */
+export enum AIProviderType {
+  /** OpenAI 官方 */
+  OPENAI = 'OPENAI',
+  /** 七牛云 AI (OpenAI 兼容) */
+  QINIU = 'QINIU',
+  /** Anthropic Claude */
+  ANTHROPIC = 'ANTHROPIC',
+  /** 自定义 OpenAI 兼容接口 */
+  CUSTOM_OPENAI_COMPATIBLE = 'CUSTOM_OPENAI_COMPATIBLE',
 }
 
 export enum AIModel {

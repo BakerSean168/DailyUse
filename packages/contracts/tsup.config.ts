@@ -1,15 +1,39 @@
 /**
  * @dailyuse/contracts 打包配置
  *
- * 包类型：纯类型定义库
+ * 包类型：纯类型定义库（支持子路径导出）
  * 打包工具：tsup (基于 esbuild)
  *
- * 选择原因：
- * - 纯类型定义包，无运行时依赖
- * - tsup 打包速度极快，支持 tree-shaking
- * - 无需处理 CSS/资源文件
+ * 子路径导出优势：
+ * - 极致的 Tree-Shaking
+ * - 防止大型循环依赖
+ * - 消费者只拉取需要的模块
  */
 
-import { baseLibraryConfig } from '../../tools/build/tsup.base.config';
+import { createTsupConfig } from '../../tools/build/tsup.base.config';
 
-export default baseLibraryConfig('@dailyuse/contracts');
+export default createTsupConfig({
+  packageName: '@dailyuse/contracts',
+  // 多入口：支持子路径导出
+  entry: [
+    // 根入口（精简版，只导出核心类型和常用枚举）
+    'src/index.ts',
+    // 模块入口（完整模块导出）
+    'src/modules/task/index.ts',
+    'src/modules/goal/index.ts',
+    'src/modules/reminder/index.ts',
+    'src/modules/editor/index.ts',
+    'src/modules/repository/index.ts',
+    'src/modules/account/index.ts',
+    'src/modules/authentication/index.ts',
+    'src/modules/schedule/index.ts',
+    'src/modules/setting/index.ts',
+    'src/modules/notification/index.ts',
+    'src/modules/ai/index.ts',
+    'src/modules/dashboard/index.ts',
+    // 其他模块入口
+    'src/document.contracts.ts',
+    'src/response/index.ts',
+    'src/shared/index.ts',
+  ],
+});

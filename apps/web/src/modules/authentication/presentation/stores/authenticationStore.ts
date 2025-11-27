@@ -3,7 +3,7 @@ import type { AuthenticationContracts, AccountContracts } from '@dailyuse/contra
 import { AuthManager } from '@/shared/api';
 import { AuthCredential, AuthSession } from '@dailyuse/domain-client';
 
-// 类型别名
+// 本地类型别名（无需导出，web 应用不生成 .d.ts）
 type AuthCredentialClientDTO = AuthenticationContracts.AuthCredentialClientDTO;
 type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
 type AccountClientDTO = AccountContracts.AccountClientDTO;

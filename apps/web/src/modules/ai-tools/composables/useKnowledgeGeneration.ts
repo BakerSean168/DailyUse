@@ -36,7 +36,7 @@ export function useKnowledgeGeneration() {
   const currentStep = ref<number>(1);
 
   /** Polling interval reference */
-  let pollingInterval: NodeJS.Timer | null = null;
+  let pollingInterval: ReturnType<typeof setInterval> | null = null;
 
   /** Document count selector for UI restoration */
   const documentCount = ref<number>(5);
