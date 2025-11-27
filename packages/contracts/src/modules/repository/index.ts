@@ -1,41 +1,131 @@
 /**
- * Repository Module Contracts
- * 导出所有契约定义
+ * Repository Module - Explicit Exports
+ * 仓库模块 - 显式导出
  */
 
-// 枚举
-export * from './enums';
+// ============ Enums ============
+export { RepositoryType, RepositoryStatus, ResourceType, ResourceStatus } from './enums';
 
-// 值对象
-export * from './value-objects';
+// ============ Value Objects - Server ============
+export type {
+  RepositoryConfigServerDTO,
+  RepositoryConfigServer,
+  RepositoryConfigServerStatic,
+} from './value-objects/RepositoryConfigServer';
 
-// 实体
-export * from './entities';
+export type {
+  RepositoryStatsServerDTO,
+  RepositoryStatsServer,
+  RepositoryStatsServerStatic,
+} from './value-objects/RepositoryStatsServer';
 
-// 聚合根
-export * from './aggregates';
+export type {
+  FolderMetadataServerDTO,
+  FolderMetadataServer,
+  FolderMetadataServerStatic,
+} from './value-objects/FolderMetadataServer';
 
-// DTOs (Story 11.1 - 文件树)
-export * from '../../repository/TreeNode';
+export type {
+  ResourceMetadataServerDTO,
+  ResourceMetadataServer,
+  ResourceMetadataServerStatic,
+} from './value-objects/ResourceMetadataServer';
 
-// DTOs (Story 11.2 - 搜索)
-export * from '../../repository/SearchContracts';
+export type {
+  ResourceStatsServerDTO,
+  ResourceStatsServer,
+  ResourceStatsServerStatic,
+} from './value-objects/ResourceStatsServer';
 
-// DTOs (Story 11.4 - 书签)
-export * from '../../repository/BookmarkContracts';
+// ============ Value Objects - Client ============
+export type {
+  RepositoryConfigClientDTO,
+  RepositoryConfigClient,
+  RepositoryConfigClientStatic,
+} from './value-objects/RepositoryConfigClient';
 
-// DTOs (Story 11.5 - 标签)
-export * from '../../repository/TagsContracts';
+export type {
+  RepositoryStatsClientDTO,
+  RepositoryStatsClient,
+  RepositoryStatsClientStatic,
+} from './value-objects/RepositoryStatsClient';
 
-// 命名空间导出（参考 Goal 模块）
-import * as RepositoryEnums from './enums';
-import * as RepositoryValueObjects from './value-objects';
-import * as RepositoryEntities from './entities';
-import * as RepositoryAggregates from './aggregates';
+export type {
+  FolderMetadataClientDTO,
+  FolderMetadataClient,
+  FolderMetadataClientStatic,
+} from './value-objects/FolderMetadataClient';
 
-export const RepositoryContracts = {
-  ...RepositoryEnums,
-  ...RepositoryValueObjects,
-  ...RepositoryEntities,
-  ...RepositoryAggregates,
-};
+export type {
+  ResourceMetadataClientDTO,
+  ResourceMetadataClient,
+  ResourceMetadataClientStatic,
+} from './value-objects/ResourceMetadataClient';
+
+export type {
+  ResourceStatsClientDTO,
+  ResourceStatsClient,
+  ResourceStatsClientStatic,
+} from './value-objects/ResourceStatsClient';
+
+// ============ Aggregates ============
+export type {
+  RepositoryServerDTO,
+  RepositoryPersistenceDTO,
+  RepositoryServer,
+  RepositoryServerStatic,
+} from './aggregates/RepositoryServer';
+
+export type {
+  RepositoryClientDTO,
+  RepositoryClient,
+  RepositoryClientStatic,
+} from './aggregates/RepositoryClient';
+
+// ============ Entities ============
+export type {
+  FolderServerDTO,
+  FolderPersistenceDTO,
+  FolderServer,
+  FolderServerStatic,
+} from './entities/FolderServer';
+
+export type { FolderClientDTO, FolderClient, FolderClientStatic } from './entities/FolderClient';
+
+export type {
+  ResourceServerDTO,
+  ResourcePersistenceDTO,
+  ResourceServer,
+  ResourceServerStatic,
+} from './entities/ResourceServer';
+
+export type {
+  ResourceClientDTO,
+  ResourceClient,
+  ResourceClientStatic,
+} from './entities/ResourceClient';
+
+// ============ DTOs (File Tree - Story 11.1) ============
+export type { TreeNodeType, TreeNode, FileTreeResponse } from '../../repository/TreeNode';
+
+// ============ DTOs (Search - Story 11.2) ============
+export type {
+  SearchMode,
+  SearchRequest,
+  SearchMatch,
+  MatchType,
+  SearchResultItem,
+  SearchResponse,
+} from '../../repository/SearchContracts';
+
+// ============ DTOs (Bookmark - Story 11.4) ============
+export type {
+  BookmarkTargetType,
+  Bookmark,
+  CreateBookmarkRequest,
+  UpdateBookmarkRequest,
+  BookmarkListResponse,
+} from '../../repository/BookmarkContracts';
+
+// ============ DTOs (Tags - Story 11.5) ============
+export type { TagStatisticsDto, TagResourceReferenceDto } from '../../repository/TagsContracts';

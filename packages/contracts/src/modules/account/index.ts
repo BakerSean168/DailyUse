@@ -1,19 +1,76 @@
 /**
  * Account Module Exports
+ * 账户模块 - 显式导出
  */
 
-// Aggregates
-export * from './aggregates/AccountServer';
-export * from './aggregates/AccountClient';
+// ============ Enums ============
+export {
+  AccountStatus,
+  Gender,
+  ThemeType,
+  ProfileVisibility,
+  SubscriptionPlan,
+  SubscriptionStatus,
+  BillingCycle,
+  StorageQuotaType,
+} from './enums';
 
-// Entities
-export * from './entities/SubscriptionServer';
-export * from './entities/SubscriptionClient';
-export * from './entities/AccountHistoryServer';
-export * from './entities/AccountHistoryClient';
+// ============ Aggregates ============
+export type {
+  AccountServerDTO,
+  AccountPersistenceDTO,
+  AccountServer,
+  AccountServerStatic,
+} from './aggregates/AccountServer';
 
-// Enums
-export * from './enums';
+export type {
+  AccountClientDTO,
+  AccountClient,
+  AccountClientStatic,
+} from './aggregates/AccountClient';
 
-// API Requests/Responses
-export * from './api-requests';
+// ============ Entities ============
+export type {
+  SubscriptionServerDTO,
+  SubscriptionPersistenceDTO,
+  SubscriptionServer,
+  SubscriptionServerStatic,
+} from './entities/SubscriptionServer';
+
+export type {
+  SubscriptionClientDTO,
+  SubscriptionClient,
+  SubscriptionClientStatic,
+} from './entities/SubscriptionClient';
+
+export type {
+  AccountHistoryServerDTO,
+  AccountHistoryPersistenceDTO,
+  AccountHistoryServer,
+  AccountHistoryServerStatic,
+} from './entities/AccountHistoryServer';
+
+export type {
+  AccountHistoryClientDTO,
+  AccountHistoryClient,
+  AccountHistoryClientStatic,
+} from './entities/AccountHistoryClient';
+
+// ============ API Requests/Responses ============
+export type {
+  AccountDTO,
+  AccountListResponseDTO,
+  SubscriptionDTO,
+  AccountHistoryListResponseDTO,
+  CreateAccountRequestDTO,
+  UpdateAccountProfileRequestDTO,
+  UpdateAccountPreferencesRequestDTO,
+  UpdateEmailRequestDTO,
+  VerifyEmailRequestDTO,
+  UpdatePhoneRequestDTO,
+  VerifyPhoneRequestDTO,
+  SubscribePlanRequestDTO,
+  CancelSubscriptionRequestDTO,
+  AccountQueryParams,
+  AccountStatsResponseDTO,
+} from './api-requests';

@@ -1,31 +1,233 @@
 /**
- * Notification Module - Contracts
- * 通知模块契约定义
- *
- * 统一导出所有 Notification 模块的契约定义
+ * Notification Module - Explicit Exports
+ * 通知模块 - 显式导出
  */
 
-// ============ 枚举 ============
-export * from './enums';
+// ============ Enums ============
+export {
+  ImportanceLevel,
+  UrgencyLevel,
+  NotificationType,
+  NotificationCategory,
+  NotificationStatus,
+  RelatedEntityType,
+  NotificationChannelType,
+  ChannelStatus,
+  NotificationActionType,
+  ContentType,
+} from './enums';
 
-// ============ 聚合根 ============
-export * from './aggregates/NotificationServer';
-export * from './aggregates/NotificationClient';
-export * from './aggregates/NotificationTemplateServer';
-export * from './aggregates/NotificationTemplateClient';
-export * from './aggregates/NotificationPreferenceServer';
-export * from './aggregates/NotificationPreferenceClient';
+// ============ Value Objects - Server ============
+export type {
+  INotificationActionServer,
+  NotificationActionServerDTO,
+  NotificationActionPersistenceDTO,
+  NotificationActionServer,
+} from './value-objects/NotificationActionServer';
 
-// ============ 实体 ============
-export * from './entities/NotificationChannelServer';
-export * from './entities/NotificationChannelClient';
-export * from './entities/NotificationHistoryServer';
-export * from './entities/NotificationHistoryClient';
+export type {
+  INotificationMetadataServer,
+  NotificationMetadataServerDTO,
+  NotificationMetadataPersistenceDTO,
+  NotificationMetadataServer,
+} from './value-objects/NotificationMetadataServer';
 
-// ============ 值对象 ============
-export * from './value-objects';
+export type {
+  ICategoryPreferenceServer,
+  CategoryPreferenceServerDTO,
+  CategoryPreferencePersistenceDTO,
+  CategoryPreferenceServer,
+  ChannelPreference,
+} from './value-objects/CategoryPreferenceServer';
 
-// ============ API 请求/响应类型 ============
-export * from './api-requests';
+export type {
+  IDoNotDisturbConfigServer,
+  DoNotDisturbConfigServerDTO,
+  DoNotDisturbConfigPersistenceDTO,
+  DoNotDisturbConfigServer,
+} from './value-objects/DoNotDisturbConfigServer';
 
-// 注意：领域事件已在聚合根文件中定义并导出
+export type {
+  IRateLimitServer,
+  RateLimitServerDTO,
+  RateLimitPersistenceDTO,
+  RateLimitServer,
+} from './value-objects/RateLimitServer';
+
+export type {
+  IChannelErrorServer,
+  ChannelErrorServerDTO,
+  ChannelErrorPersistenceDTO,
+  ChannelErrorServer,
+} from './value-objects/ChannelErrorServer';
+
+export type {
+  IChannelResponseServer,
+  ChannelResponseServerDTO,
+  ChannelResponsePersistenceDTO,
+  ChannelResponseServer,
+} from './value-objects/ChannelResponseServer';
+
+export type {
+  INotificationTemplateConfigServer,
+  NotificationTemplateConfigServerDTO,
+  NotificationTemplateConfigPersistenceDTO,
+  NotificationTemplateConfigServer,
+  TemplateContent,
+  EmailTemplateContent,
+  PushTemplateContent,
+  ChannelConfig,
+} from './value-objects/NotificationTemplateServer';
+
+// ============ Value Objects - Client ============
+export type {
+  INotificationActionClient,
+  NotificationActionClientDTO,
+  NotificationActionClient,
+} from './value-objects/NotificationActionClient';
+
+export type {
+  INotificationMetadataClient,
+  NotificationMetadataClientDTO,
+  NotificationMetadataClient,
+} from './value-objects/NotificationMetadataClient';
+
+export type {
+  ICategoryPreferenceClient,
+  CategoryPreferenceClientDTO,
+  CategoryPreferenceClient,
+} from './value-objects/CategoryPreferenceClient';
+
+export type {
+  IRateLimitClient,
+  RateLimitClientDTO,
+  RateLimitClient,
+} from './value-objects/RateLimitClient';
+
+export type {
+  IChannelErrorClient,
+  ChannelErrorClientDTO,
+  ChannelErrorClient,
+} from './value-objects/ChannelErrorClient';
+
+export type {
+  IChannelResponseClient,
+  ChannelResponseClientDTO,
+  ChannelResponseClient,
+} from './value-objects/ChannelResponseClient';
+
+export type {
+  INotificationTemplateConfigClient,
+  NotificationTemplateConfigClientDTO,
+  NotificationTemplateConfigClient,
+} from './value-objects/NotificationTemplateClient';
+
+// ============ Aggregates ============
+export type {
+  NotificationServerDTO,
+  NotificationPersistenceDTO,
+  NotificationCreatedEvent,
+  NotificationSentEvent,
+  NotificationReadEvent,
+  NotificationDeletedEvent,
+  NotificationStatusChangedEvent,
+  NotificationDomainEvent,
+  NotificationServer,
+  NotificationServerStatic,
+} from './aggregates/NotificationServer';
+
+export type {
+  NotificationClientDTO,
+  NotificationClient,
+  NotificationClientStatic,
+} from './aggregates/NotificationClient';
+
+export type {
+  NotificationTemplateAggregateServerDTO,
+  NotificationTemplateAggregatePersistenceDTO,
+  NotificationTemplateCreatedEvent,
+  NotificationTemplateUpdatedEvent,
+  NotificationTemplateActivationChangedEvent,
+  NotificationTemplateDomainEvent,
+  NotificationTemplateServer,
+  NotificationTemplateServerStatic,
+} from './aggregates/NotificationTemplateServer';
+
+export type {
+  NotificationTemplateAggregateClientDTO,
+  NotificationTemplateClient,
+  NotificationTemplateClientStatic,
+} from './aggregates/NotificationTemplateClient';
+
+export type {
+  NotificationPreferenceServerDTO,
+  NotificationPreferencePersistenceDTO,
+  NotificationPreferenceCreatedEvent,
+  NotificationPreferenceUpdatedEvent,
+  NotificationPreferenceDomainEvent,
+  NotificationPreferenceServer,
+  NotificationPreferenceServerStatic,
+  ChannelPreferences,
+  CategoryPreferences,
+} from './aggregates/NotificationPreferenceServer';
+
+export type {
+  NotificationPreferenceClientDTO,
+  NotificationPreferenceClient,
+  NotificationPreferenceClientStatic,
+} from './aggregates/NotificationPreferenceClient';
+
+// ============ Entities ============
+export type {
+  NotificationChannelServerDTO,
+  NotificationChannelPersistenceDTO,
+  NotificationChannelServer,
+  NotificationChannelServerStatic,
+} from './entities/NotificationChannelServer';
+
+export type {
+  NotificationChannelClientDTO,
+  NotificationChannelClient,
+  NotificationChannelClientStatic,
+} from './entities/NotificationChannelClient';
+
+export type {
+  NotificationHistoryServerDTO,
+  NotificationHistoryPersistenceDTO,
+  NotificationHistoryServer,
+  NotificationHistoryServerStatic,
+} from './entities/NotificationHistoryServer';
+
+export type {
+  NotificationHistoryClientDTO,
+  NotificationHistoryClient,
+  NotificationHistoryClientStatic,
+} from './entities/NotificationHistoryClient';
+
+// ============ API Requests ============
+export type {
+  NotificationDTO,
+  NotificationListResponseDTO,
+  NotificationStatsResponseDTO,
+  NotificationChannelDTO,
+  NotificationChannelListResponseDTO,
+  NotificationTemplateDTO,
+  NotificationTemplateListResponseDTO,
+  NotificationPreferenceDTO,
+  TemplateRenderResultDTO,
+  TemplateValidationResultDTO,
+  CreateNotificationRequestDTO,
+  UpdateNotificationRequestDTO,
+  NotificationQueryParamsDTO,
+  MarkAsReadBatchRequestDTO,
+  DeleteNotificationsBatchRequestDTO,
+  CleanupOldNotificationsRequestDTO,
+  CreateNotificationTemplateRequestDTO,
+  UpdateNotificationTemplateRequestDTO,
+  CreateNotificationFromTemplateRequestDTO,
+  RenderTemplateRequestDTO,
+  UpdateNotificationPreferenceRequestDTO,
+  SendNotificationRequestDTO,
+  RetryChannelRequestDTO,
+  ExecuteNotificationActionRequestDTO,
+} from './api-requests';

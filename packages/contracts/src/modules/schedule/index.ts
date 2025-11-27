@@ -1,33 +1,165 @@
 /**
- * Schedule Module - Contracts
- * 调度模块契约定义
- *
- * 统一导出所有 Schedule 模块的契约定义
+ * Schedule Module - Explicit Exports
+ * 调度模块 - 显式导出
  */
 
-// ============ 枚举 ============
-export * from './enums';
+// ============ Enums ============
+export {
+  ScheduleTaskStatus,
+  ExecutionStatus,
+  TaskPriority,
+  SourceModule,
+  Timezone,
+  ConflictSeverity,
+} from './enums';
 
-// ============ 值对象 ============
-export * from './value-objects';
+// ============ Value Objects ============
+export type {
+  IScheduleConfigServer,
+  IScheduleConfigClient,
+  ScheduleConfigServerDTO,
+  ScheduleConfigClientDTO,
+  ScheduleConfigPersistenceDTO,
+  ScheduleConfigServer,
+  ScheduleConfigClient,
+} from './value-objects/ScheduleConfig';
 
-// ============ 实体 ============
-export * from './entities/ScheduleExecutionServer';
-export * from './entities/ScheduleExecutionClient';
+export type {
+  IExecutionInfoServer,
+  IExecutionInfoClient,
+  ExecutionInfoServerDTO,
+  ExecutionInfoClientDTO,
+  ExecutionInfoPersistenceDTO,
+  ExecutionInfoServer,
+  ExecutionInfoClient,
+} from './value-objects/ExecutionInfo';
 
-// ============ 聚合根 ============
-export * from './aggregates/ScheduleTaskServer';
-export * from './aggregates/ScheduleTaskClient';
-export * from './aggregates/ScheduleStatisticsServer';
-export * from './aggregates/ScheduleStatisticsClient';
-export * from './aggregates/ScheduleServer'; // Story 9.1 - User-facing schedules with conflict detection
-export * from './aggregates/ScheduleClient'; // Story 9.1 - Client-side schedule DTO
+export type {
+  IRetryPolicyServer,
+  IRetryPolicyClient,
+  RetryPolicyServerDTO,
+  RetryPolicyClientDTO,
+  RetryPolicyPersistenceDTO,
+  RetryPolicyServer,
+  RetryPolicyClient,
+} from './value-objects/RetryPolicy';
 
-// ============ 冲突检测 ============
-// Story 9.1 (EPIC-SCHEDULE-001)
-export * from './ConflictDetectionResult';
+export type {
+  ITaskMetadataServer,
+  ITaskMetadataClient,
+  TaskMetadataServerDTO,
+  TaskMetadataClientDTO,
+  TaskMetadataPersistenceDTO,
+  TaskMetadataServer,
+  TaskMetadataClient,
+} from './value-objects/TaskMetadata';
 
-// ============ API 请求/响应 ============
-// 所有 DTO 已合并到 api-requests.ts
-export * from './api-requests';
+export type {
+  IModuleStatisticsServer,
+  IModuleStatisticsClient,
+  ModuleStatisticsServerDTO,
+  ModuleStatisticsClientDTO,
+  ModuleStatisticsPersistenceDTO,
+  ModuleStatisticsServer,
+  ModuleStatisticsClient,
+} from './value-objects/ModuleStatistics';
 
+// ============ Entities ============
+export type {
+  ScheduleExecutionServerDTO,
+  ScheduleExecutionPersistenceDTO,
+  ScheduleExecutionServer,
+  ScheduleExecutionServerStatic,
+} from './entities/ScheduleExecutionServer';
+
+export type {
+  ScheduleExecutionClientDTO,
+  ScheduleExecutionClient,
+  ScheduleExecutionClientStatic,
+} from './entities/ScheduleExecutionClient';
+
+// ============ Aggregates ============
+export type {
+  ScheduleTaskServerDTO,
+  ScheduleTaskPersistenceDTO,
+  ScheduleTaskCreatedEvent,
+  ScheduleTaskPausedEvent,
+  ScheduleTaskResumedEvent,
+  ScheduleTaskCompletedEvent,
+  ScheduleTaskCancelledEvent,
+  ScheduleTaskFailedEvent,
+  ScheduleTaskExecutedEvent,
+  ScheduleTaskScheduleUpdatedEvent,
+  ScheduleTaskDomainEvent,
+  ScheduleTaskServer,
+  ScheduleTaskServerStatic,
+} from './aggregates/ScheduleTaskServer';
+
+export type {
+  ScheduleTaskClientDTO,
+  ScheduleTaskClient,
+  ScheduleTaskClientStatic,
+} from './aggregates/ScheduleTaskClient';
+
+export type {
+  ScheduleStatisticsServerDTO,
+  ScheduleStatisticsPersistenceDTO,
+  ScheduleStatisticsCreatedEvent,
+  ScheduleStatisticsUpdatedEvent,
+  ScheduleStatisticsTaskCountChangedEvent,
+  ScheduleStatisticsExecutionRecordedEvent,
+  ScheduleStatisticsModuleUpdatedEvent,
+  ScheduleStatisticsDomainEvent,
+  ScheduleStatisticsServer,
+  ScheduleStatisticsServerStatic,
+} from './aggregates/ScheduleStatisticsServer';
+
+export type {
+  ScheduleStatisticsClientDTO,
+  ScheduleStatisticsClient,
+  ScheduleStatisticsClientStatic,
+} from './aggregates/ScheduleStatisticsClient';
+
+export type { ScheduleServerDTO } from './aggregates/ScheduleServer';
+
+export type { ScheduleClientDTO } from './aggregates/ScheduleClient';
+
+// ============ Conflict Detection (Story 9.1) ============
+export type {
+  ConflictDetectionResult,
+  ConflictDetail,
+  ConflictSuggestion,
+} from './ConflictDetectionResult';
+
+// ============ API Requests ============
+export { ResolutionStrategy } from './api-requests';
+
+export type {
+  CreateScheduleRequestDTO,
+  CreateScheduleResponseDTO,
+  UpdateScheduleRequestDTO,
+  DetectConflictsRequestDTO,
+  DetectConflictsResponseDTO,
+  GetSchedulesByTimeRangeRequestDTO,
+  ResolveConflictRequestDTO,
+  AppliedResolution,
+  ResolveConflictResponseDTO,
+  CreateScheduleTaskRequestDTO,
+  UpdateScheduleTaskRequestDTO,
+  UpdateScheduleConfigRequestDTO,
+  UpdateTaskMetadataRequestDTO,
+  ScheduleTaskQueryParamsDTO,
+  BatchScheduleTaskOperationRequestDTO,
+  ScheduleTaskDTO,
+  ScheduleTaskListResponseDTO,
+  BatchOperationResponseDTO,
+  ScheduleExecutionQueryParamsDTO,
+  ScheduleExecutionDTO,
+  ScheduleExecutionListResponseDTO,
+  ExecutionHistoryStatsDTO,
+  ScheduleStatisticsDTO,
+  ScheduleDashboardStatsDTO,
+  ModuleStatsResponseDTO,
+  ScheduleOperationSuccessResponseDTO,
+  ScheduleErrorResponseDTO,
+} from './api-requests';

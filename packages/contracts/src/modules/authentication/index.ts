@@ -1,33 +1,166 @@
 /**
  * Authentication Module Exports
+ * 认证模块 - 显式导出
  */
 
-// Aggregates
-export * from './aggregates/AuthCredentialServer';
-export * from './aggregates/AuthCredentialClient';
-export * from './aggregates/AuthSessionServer';
-export * from './aggregates/AuthSessionClient';
+// ============ Enums ============
+export {
+  CredentialType,
+  CredentialStatus,
+  PasswordAlgorithm,
+  TwoFactorMethod,
+  BiometricType,
+  ApiKeyStatus,
+  RememberMeTokenStatus,
+  DeviceType,
+  SessionStatus,
+} from './enums';
 
-// Entities
-export * from './entities/PasswordCredentialServer';
-export * from './entities/PasswordCredentialClient';
-export * from './entities/ApiKeyCredentialServer';
-export * from './entities/ApiKeyCredentialClient';
-export * from './entities/RememberMeTokenServer';
-export * from './entities/RememberMeTokenClient';
-export * from './entities/CredentialHistoryServer';
-export * from './entities/CredentialHistoryClient';
-export * from './entities/RefreshTokenServer';
-export * from './entities/RefreshTokenClient';
-export * from './entities/SessionHistoryServer';
-export * from './entities/SessionHistoryClient';
+// ============ Aggregates ============
+export type {
+  AuthCredentialServerDTO,
+  AuthCredentialPersistenceDTO,
+  AuthCredentialServer,
+  AuthCredentialServerStatic,
+} from './aggregates/AuthCredentialServer';
 
-// Value Objects
-export * from './value-objects/DeviceInfoServer';
-export * from './value-objects/DeviceInfoClient';
+export type {
+  AuthCredentialClientDTO,
+  AuthCredentialClient,
+  AuthCredentialClientStatic,
+} from './aggregates/AuthCredentialClient';
 
-// Enums
-export * from './enums';
+export type {
+  AuthSessionServerDTO,
+  AuthSessionPersistenceDTO,
+  AuthSessionServer,
+  AuthSessionServerStatic,
+} from './aggregates/AuthSessionServer';
 
-// API Requests/Responses
-export * from './api-requests';
+export type {
+  AuthSessionClientDTO,
+  AuthSessionClient,
+  AuthSessionClientStatic,
+} from './aggregates/AuthSessionClient';
+
+// ============ Entities ============
+export type {
+  PasswordCredentialServerDTO,
+  PasswordCredentialPersistenceDTO,
+  PasswordCredentialServer,
+  PasswordCredentialServerStatic,
+} from './entities/PasswordCredentialServer';
+
+export type {
+  PasswordCredentialClientDTO,
+  PasswordCredentialClient,
+  PasswordCredentialClientStatic,
+} from './entities/PasswordCredentialClient';
+
+export type {
+  ApiKeyCredentialServerDTO,
+  ApiKeyCredentialPersistenceDTO,
+  ApiKeyCredentialServer,
+  ApiKeyCredentialServerStatic,
+} from './entities/ApiKeyCredentialServer';
+
+export type {
+  ApiKeyCredentialClientDTO,
+  ApiKeyCredentialClient,
+  ApiKeyCredentialClientStatic,
+} from './entities/ApiKeyCredentialClient';
+
+export type {
+  RememberMeTokenServerDTO,
+  RememberMeTokenPersistenceDTO,
+  RememberMeTokenServer,
+  RememberMeTokenServerStatic,
+} from './entities/RememberMeTokenServer';
+
+export type {
+  RememberMeTokenClientDTO,
+  RememberMeTokenClient,
+  RememberMeTokenClientStatic,
+} from './entities/RememberMeTokenClient';
+
+export type {
+  CredentialHistoryServerDTO,
+  CredentialHistoryPersistenceDTO,
+  CredentialHistoryServer,
+  CredentialHistoryServerStatic,
+} from './entities/CredentialHistoryServer';
+
+export type {
+  CredentialHistoryClientDTO,
+  CredentialHistoryClient,
+  CredentialHistoryClientStatic,
+} from './entities/CredentialHistoryClient';
+
+export type {
+  RefreshTokenServerDTO,
+  RefreshTokenPersistenceDTO,
+  RefreshTokenServer,
+  RefreshTokenServerStatic,
+} from './entities/RefreshTokenServer';
+
+export type {
+  RefreshTokenClientDTO,
+  RefreshTokenClient,
+  RefreshTokenClientStatic,
+} from './entities/RefreshTokenClient';
+
+export type {
+  SessionHistoryServerDTO,
+  SessionHistoryPersistenceDTO,
+  SessionHistoryServer,
+  SessionHistoryServerStatic,
+} from './entities/SessionHistoryServer';
+
+export type {
+  SessionHistoryClientDTO,
+  SessionHistoryClient,
+  SessionHistoryClientStatic,
+} from './entities/SessionHistoryClient';
+
+// ============ Value Objects ============
+export type {
+  DeviceInfoServerDTO,
+  DeviceInfoServer,
+  DeviceInfoServerStatic,
+} from './value-objects/DeviceInfoServer';
+
+export type {
+  DeviceInfoClientDTO,
+  DeviceInfoClient,
+  DeviceInfoClientStatic,
+} from './value-objects/DeviceInfoClient';
+
+// ============ API Requests/Responses ============
+export type {
+  LoginRequestDTO,
+  LoginResponseDTO,
+  RegisterRequestDTO,
+  RefreshTokenRequestDTO,
+  RefreshTokenResponseDTO,
+  LogoutRequestDTO,
+  ChangePasswordRequestDTO,
+  ResetPasswordRequestDTO,
+  ForgotPasswordRequestDTO,
+  Enable2FARequestDTO,
+  Enable2FAResponseDTO,
+  Verify2FARequestDTO,
+  Disable2FARequestDTO,
+  CreateApiKeyRequestDTO,
+  CreateApiKeyResponseDTO,
+  RevokeApiKeyRequestDTO,
+  ApiKeyListResponseDTO,
+  GetActiveSessionsRequestDTO,
+  ActiveSessionsResponseDTO,
+  RevokeSessionRequestDTO,
+  RevokeAllSessionsRequestDTO,
+  TrustDeviceRequestDTO,
+  RevokeTrustedDeviceRequestDTO,
+  TrustedDevicesResponseDTO,
+  SessionQueryParams,
+  CredentialQueryParams,
+} from './api-requests';

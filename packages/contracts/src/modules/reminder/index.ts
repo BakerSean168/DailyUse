@@ -1,34 +1,230 @@
 /**
- * Reminder Module - Contracts
- * 提醒模块契约定义
- *
- * 统一导出所有 Reminder 模块的契约定义
+ * Reminder Module - Explicit Exports
+ * 提醒模块 - 显式导出
  */
 
-// ============ 常量 ============
-export * from './constants';
+// ============ Constants ============
+export { ROOT_GROUP_CONFIG, isRootGroup, getRootGroupUuid, isOnDesktop } from './constants';
 
-// ============ 枚举 ============
-export * from './enums';
+// ============ Enums ============
+export {
+  ReminderType,
+  TriggerType,
+  ReminderStatus,
+  RecurrenceType,
+  WeekDay,
+  ControlMode,
+  NotificationChannel,
+  NotificationAction,
+  TriggerResult,
+} from './enums';
 
-// ============ 值对象 ============
-export * from './value-objects';
+// ============ Value Objects ============
+export type {
+  IRecurrenceConfigServer,
+  IRecurrenceConfigClient,
+  RecurrenceConfigServerDTO,
+  RecurrenceConfigClientDTO,
+  RecurrenceConfigPersistenceDTO,
+  RecurrenceConfigServer,
+  RecurrenceConfigClient,
+  DailyRecurrence,
+  WeeklyRecurrence,
+  CustomDaysRecurrence,
+} from './value-objects/RecurrenceConfig';
 
-// ============ 实体 ============
-export * from './entities/ReminderHistoryServer';
-export * from './entities/ReminderHistoryClient';
-export * from './entities/ReminderResponseServer';
+export type {
+  INotificationConfigServer,
+  INotificationConfigClient,
+  NotificationConfigServerDTO,
+  NotificationConfigClientDTO,
+  NotificationConfigPersistenceDTO,
+  NotificationConfigServer,
+  NotificationConfigClient,
+  SoundConfig,
+  VibrationConfig,
+  NotificationActionConfig,
+} from './value-objects/NotificationConfig';
 
-// ============ 聚合根 ============
-export * from './aggregates/ReminderTemplateServer';
-export * from './aggregates/ReminderTemplateClient';
-export * from './aggregates/ReminderGroupServer';
-export * from './aggregates/ReminderGroupClient';
-export * from './aggregates/ReminderStatisticsServer';
-export * from './aggregates/ReminderStatisticsClient';
-export * from './aggregates/UserReminderPreferencesServer';
+export type {
+  ITriggerConfigServer,
+  ITriggerConfigClient,
+  TriggerConfigServerDTO,
+  TriggerConfigClientDTO,
+  TriggerConfigPersistenceDTO,
+  TriggerConfigServer,
+  TriggerConfigClient,
+  FixedTimeTrigger,
+  IntervalTrigger,
+} from './value-objects/TriggerConfig';
 
-// ============ API 请求/响应类型 ============
-export * from './api-requests';
+export type {
+  IActiveTimeConfigServer,
+  IActiveTimeConfigClient,
+  ActiveTimeConfigServerDTO,
+  ActiveTimeConfigClientDTO,
+  ActiveTimeConfigPersistenceDTO,
+  ActiveTimeConfigServer,
+  ActiveTimeConfigClient,
+} from './value-objects/ActiveTimeConfig';
 
-// 注意：领域事件已在聚合根文件中定义并导出
+export type {
+  IActiveHoursConfigServer,
+  IActiveHoursConfigClient,
+  ActiveHoursConfigServerDTO,
+  ActiveHoursConfigClientDTO,
+  ActiveHoursConfigPersistenceDTO,
+  ActiveHoursConfigServer,
+  ActiveHoursConfigClient,
+} from './value-objects/ActiveHoursConfig';
+
+export type {
+  IReminderStatsServer,
+  IReminderStatsClient,
+  ReminderStatsServerDTO,
+  ReminderStatsClientDTO,
+  ReminderStatsPersistenceDTO,
+  ReminderStatsServer,
+  ReminderStatsClient,
+} from './value-objects/ReminderStats';
+
+export type {
+  IGroupStatsServer,
+  IGroupStatsClient,
+  GroupStatsServerDTO,
+  GroupStatsClientDTO,
+  GroupStatsPersistenceDTO,
+  GroupStatsServer,
+  GroupStatsClient,
+} from './value-objects/GroupStats';
+
+export type {
+  ResponseMetricsServerDTO,
+  ResponseMetricsClientDTO,
+  ResponseMetricsServer,
+  ResponseMetricsServerStatic,
+} from './value-objects/ResponseMetricsServer';
+
+export type {
+  FrequencyAdjustmentServerDTO,
+  FrequencyAdjustmentClientDTO,
+  FrequencyAdjustmentServer,
+  FrequencyAdjustmentServerStatic,
+} from './value-objects/FrequencyAdjustmentServer';
+
+// ============ Entities ============
+export type {
+  ReminderHistoryServerDTO,
+  ReminderHistoryPersistenceDTO,
+  ReminderHistoryServer,
+  ReminderHistoryServerStatic,
+} from './entities/ReminderHistoryServer';
+
+export type {
+  ReminderHistoryClientDTO,
+  ReminderHistoryClient,
+  ReminderHistoryClientStatic,
+} from './entities/ReminderHistoryClient';
+
+export type {
+  ReminderResponseAction,
+  ReminderResponseServerDTO,
+  ReminderResponseClientDTO,
+  ReminderResponsePersistenceDTO,
+  ReminderResponseServer,
+  ReminderResponseServerStatic,
+} from './entities/ReminderResponseServer';
+
+// ============ Aggregates ============
+export type {
+  ReminderTemplateServerDTO,
+  ReminderTemplatePersistenceDTO,
+  ReminderTemplateCreatedEvent,
+  ReminderTemplateUpdatedEvent,
+  ReminderTemplateDeletedEvent,
+  ReminderTemplateEnabledEvent,
+  ReminderTemplatePausedEvent,
+  ReminderTemplateTriggeredEvent,
+  ReminderTemplateMovedEvent,
+  ReminderTemplateDomainEvent,
+  ReminderTemplateServer,
+  ReminderTemplateServerStatic,
+} from './aggregates/ReminderTemplateServer';
+
+export type {
+  ReminderTemplateClientDTO,
+  ReminderTemplateClient,
+  ReminderTemplateClientStatic,
+} from './aggregates/ReminderTemplateClient';
+
+export type {
+  ReminderGroupServerDTO,
+  ReminderGroupPersistenceDTO,
+  ReminderGroupCreatedEvent,
+  ReminderGroupUpdatedEvent,
+  ReminderGroupDeletedEvent,
+  ReminderGroupControlModeSwitchedEvent,
+  ReminderGroupEnabledEvent,
+  ReminderGroupPausedEvent,
+  ReminderGroupDomainEvent,
+  ReminderGroupServer,
+  ReminderGroupServerStatic,
+} from './aggregates/ReminderGroupServer';
+
+export type {
+  ReminderGroupClientDTO,
+  ReminderGroupClient,
+  ReminderGroupClientStatic,
+} from './aggregates/ReminderGroupClient';
+
+export type {
+  ReminderStatisticsServerDTO,
+  ReminderStatisticsPersistenceDTO,
+  ReminderStatisticsUpdatedEvent,
+  ReminderStatisticsDomainEvent,
+  ReminderStatisticsServer,
+  ReminderStatisticsServerStatic,
+  TemplateStatsInfo,
+  GroupStatsInfo,
+  TriggerStatsInfo,
+} from './aggregates/ReminderStatisticsServer';
+
+export type {
+  ReminderStatisticsClientDTO,
+  ReminderStatisticsClient,
+  ReminderStatisticsClientStatic,
+} from './aggregates/ReminderStatisticsClient';
+
+export type {
+  TimeSlotDTO,
+  UserReminderPreferencesServerDTO,
+  UserReminderPreferencesClientDTO,
+  UserReminderPreferencesPersistenceDTO,
+  UserReminderPreferencesServer,
+  UserReminderPreferencesServerStatic,
+} from './aggregates/UserReminderPreferencesServer';
+
+// ============ API Requests ============
+export type {
+  CreateReminderTemplateRequestDTO,
+  UpdateReminderTemplateRequestDTO,
+  QueryReminderTemplatesRequestDTO,
+  ReminderTemplateDTO,
+  ReminderTemplateListDTO,
+  CreateReminderGroupRequestDTO,
+  UpdateReminderGroupRequestDTO,
+  SwitchGroupControlModeRequestDTO,
+  BatchGroupTemplatesRequestDTO,
+  ReminderGroupDTO,
+  ReminderGroupListDTO,
+  ReminderHistoryDTO,
+  ReminderHistoryListDTO,
+  ReminderStatisticsDTO,
+  ReminderOperationResponseDTO,
+  ReminderTriggerResponseDTO,
+  BatchOperationResponseDTO,
+  TemplateScheduleStatusDTO,
+  UpcomingReminderItemDTO,
+  GetUpcomingRemindersRequestDTO,
+  UpcomingRemindersResponseDTO,
+} from './api-requests';
