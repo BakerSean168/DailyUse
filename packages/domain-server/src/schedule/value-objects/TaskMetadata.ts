@@ -4,15 +4,12 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
+import { ScheduleContracts } from '@dailyuse/contracts';
 
-type TaskPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
-
-interface ITaskMetadataDTO {
-  payload: Record<string, any>;
-  tags: string[];
-  priority: TaskPriority;
-  timeout: number | null;
-}
+type TaskPriority = ScheduleContracts.TaskPriority;
+type TaskMetadataServerDTO = ScheduleContracts.TaskMetadataServerDTO;
+type TaskMetadataClientDTO = ScheduleContracts.TaskMetadataClientDTO;
+type TaskMetadataPersistenceDTO = ScheduleContracts.TaskMetadataPersistenceDTO;
 
 /**
  * TaskMetadata 值对象
@@ -23,7 +20,7 @@ interface ITaskMetadataDTO {
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class TaskMetadata extends ValueObject implements ITaskMetadataDTO {
+export class TaskMetadata extends ValueObject implements ScheduleContracts.TaskMetadataServer {
   public readonly payload: Record<string, any>;
   public readonly tags: string[];
   public readonly priority: TaskPriority;
@@ -53,11 +50,11 @@ export class TaskMetadata extends ValueObject implements ITaskMetadataDTO {
 
     this.payload = safePayload;
     this.tags = params.tags ? [...params.tags] : [];
-    this.priority = params.priority || 'NORMAL';
+    this.priority = params.priority || ScheduleContracts.TaskPriority.NORMAL;
     this.timeout = params.timeout ?? null;
 
     // 验证配置
-    this.validate();
+    this.validateAndThrow();
 
     // 确保不可变
     Object.freeze(this);
@@ -68,16 +65,29 @@ export class TaskMetadata extends ValueObject implements ITaskMetadataDTO {
   /**
    * 验证元数据有效性
    */
-  private validate(): void {
+  public validate(): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
     if (this.timeout !== null && this.timeout <= 0) {
-      throw new Error('Timeout must be positive');
+      errors.push('Timeout must be positive');
     }
 
     // 验证标签
     for (const tag of this.tags) {
       if (typeof tag !== 'string' || tag.trim().length === 0) {
-        throw new Error('Tags must be non-empty strings');
+        errors.push('Tags must be non-empty strings');
       }
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  /**
+   * 验证并抛出异常（兼容旧代码）
+   */
+  private validateAndThrow(): void {
+    const result = this.validate();
+    if (!result.isValid) {
+      throw new Error(result.errors[0]);
     }
   }
 
@@ -161,9 +171,9 @@ export class TaskMetadata extends ValueObject implements ITaskMetadataDTO {
   }
 
   /**
-   * 转换为 DTO
+   * 转换为 Server DTO
    */
-  public toDTO(): ITaskMetadataDTO {
+  public toServerDTO(): TaskMetadataServerDTO {
     return {
       payload: { ...this.payload },
       tags: Array.from(this.tags),
@@ -173,9 +183,49 @@ export class TaskMetadata extends ValueObject implements ITaskMetadataDTO {
   }
 
   /**
-   * 从 DTO 创建值对象
+   * 转换为 Client DTO
    */
-  public static fromDTO(dto: ITaskMetadataDTO): TaskMetadata {
+  public toClientDTO(): TaskMetadataClientDTO {
+    return {
+      payload: { ...this.payload },
+      tags: Array.from(this.tags),
+      priority: this.priority,
+      timeout: this.timeout,
+      // UI 辅助属性
+      tagCount: this.tags.length,
+      priorityDisplay: this.priority, // TODO: 本地化
+      hasPayload: Object.keys(this.payload).length > 0,
+    };
+  }
+
+  /**
+   * 转换为持久化 DTO
+   */
+  public toPersistenceDTO(): TaskMetadataPersistenceDTO {
+    return {
+      payload: JSON.stringify(this.payload),
+      tags: JSON.stringify(this.tags),
+      priority: this.priority,
+      timeout: this.timeout,
+    };
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: TaskMetadataServerDTO): TaskMetadata {
+    return new TaskMetadata({
+      payload: dto.payload,
+      tags: dto.tags,
+      priority: dto.priority,
+      timeout: dto.timeout,
+    });
+  }
+
+  /**
+   * 从 DTO 创建值对象 (兼容旧代码)
+   */
+  public static fromDTO(dto: any): TaskMetadata {
     return new TaskMetadata(dto);
   }
 
@@ -186,7 +236,7 @@ export class TaskMetadata extends ValueObject implements ITaskMetadataDTO {
     return new TaskMetadata({
       payload: {},
       tags: [],
-      priority: 'NORMAL',
+      priority: ScheduleContracts.TaskPriority.NORMAL,
       timeout: null,
     });
   }

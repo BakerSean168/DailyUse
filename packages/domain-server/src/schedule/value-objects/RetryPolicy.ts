@@ -4,14 +4,11 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
+import { ScheduleContracts } from '@dailyuse/contracts';
 
-interface IRetryPolicyDTO {
-  enabled: boolean;
-  maxRetries: number;
-  retryDelay: number;
-  backoffMultiplier: number;
-  maxRetryDelay: number;
-}
+type RetryPolicyServerDTO = ScheduleContracts.RetryPolicyServerDTO;
+type RetryPolicyClientDTO = ScheduleContracts.RetryPolicyClientDTO;
+type RetryPolicyPersistenceDTO = ScheduleContracts.RetryPolicyPersistenceDTO;
 
 /**
  * RetryPolicy 值对象
@@ -22,7 +19,7 @@ interface IRetryPolicyDTO {
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class RetryPolicy extends ValueObject implements IRetryPolicyDTO {
+export class RetryPolicy extends ValueObject implements ScheduleContracts.RetryPolicyServer {
   public readonly enabled: boolean;
   public readonly maxRetries: number;
   public readonly retryDelay: number;
@@ -133,22 +130,67 @@ export class RetryPolicy extends ValueObject implements IRetryPolicyDTO {
   }
 
   /**
-   * 转换为 DTO
+   * 转换为 Server DTO
    */
-  public toDTO(): IRetryPolicyDTO {
+  public toServerDTO(): RetryPolicyServerDTO {
     return {
       enabled: this.enabled,
       maxRetries: this.maxRetries,
       retryDelay: this.retryDelay,
       backoffMultiplier: this.backoffMultiplier,
       maxRetryDelay: this.maxRetryDelay,
+      retryableStatuses: [], // TODO: 支持配置可重试状态
     };
   }
 
   /**
-   * 从 DTO 创建值对象
+   * 转换为 Client DTO
    */
-  public static fromDTO(dto: IRetryPolicyDTO): RetryPolicy {
+  public toClientDTO(): RetryPolicyClientDTO {
+    return {
+      enabled: this.enabled,
+      maxRetries: this.maxRetries,
+      retryDelay: this.retryDelay,
+      backoffMultiplier: this.backoffMultiplier,
+      maxRetryDelay: this.maxRetryDelay,
+      retryableStatuses: [],
+      // UI 辅助属性
+      summary: this.enabled 
+        ? `最多重试 ${this.maxRetries} 次，初始延迟 ${this.retryDelay}ms`
+        : '不重试',
+    };
+  }
+
+  /**
+   * 转换为持久化 DTO
+   */
+  public toPersistenceDTO(): RetryPolicyPersistenceDTO {
+    return {
+      enabled: this.enabled,
+      maxRetries: this.maxRetries,
+      retry_delay: this.retryDelay,
+      backoff_multiplier: this.backoffMultiplier,
+      max_retry_delay: this.maxRetryDelay,
+    };
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: RetryPolicyServerDTO): RetryPolicy {
+    return new RetryPolicy({
+      enabled: dto.enabled,
+      maxRetries: dto.maxRetries,
+      retryDelay: dto.retryDelay,
+      backoffMultiplier: dto.backoffMultiplier,
+      maxRetryDelay: dto.maxRetryDelay,
+    });
+  }
+
+  /**
+   * 从 DTO 创建值对象 (兼容旧代码)
+   */
+  public static fromDTO(dto: any): RetryPolicy {
     return new RetryPolicy(dto);
   }
 

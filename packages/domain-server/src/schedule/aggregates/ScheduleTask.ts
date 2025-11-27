@@ -23,28 +23,11 @@ import { TaskMetadata } from '../value-objects/TaskMetadata';
 import { ScheduleExecution } from '../entities/ScheduleExecution';
 
 // 使用 Contracts 中的 DTO 类型
+// Refreshed
 type IScheduleTaskServer = ScheduleContracts.ScheduleTaskServer;
 type ScheduleTaskServerDTO = ScheduleContracts.ScheduleTaskServerDTO;
 type ScheduleTaskClientDTO = ScheduleContracts.ScheduleTaskClientDTO;
 type ScheduleTaskPersistenceDTO = ScheduleContracts.ScheduleTaskPersistenceDTO;
-
-interface ScheduleTaskDTO {
-  uuid: string;
-  accountUuid: string;
-  name: string;
-  description: string | null;
-  sourceModule: SourceModule;
-  sourceEntityId: string;
-  status: ScheduleTaskStatus;
-  enabled: boolean;
-  schedule: any;
-  execution: any;
-  retryPolicy: any;
-  metadata: any;
-  createdAt: number;
-  updatedAt: number;
-  executions?: any[];
-}
 
 /**
  * ScheduleTask 聚合根
@@ -127,17 +110,17 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
   public get enabled(): boolean {
     return this._enabled;
   }
-  public get schedule(): any {
-    return this._schedule.toDTO();
+  public get schedule(): ScheduleConfig {
+    return this._schedule;
   }
-  public get execution(): any {
-    return this._execution.toDTO();
+  public get execution(): ExecutionInfo {
+    return this._execution;
   }
-  public get retryPolicy(): any {
-    return this._retryPolicy.toDTO();
+  public get retryPolicy(): RetryPolicy {
+    return this._retryPolicy;
   }
-  public get metadata(): any {
-    return this._metadata.toDTO();
+  public get metadata(): TaskMetadata {
+    return this._metadata;
   }
   public get createdAt(): number {
     return this._createdAt;
@@ -342,7 +325,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
         taskUuid: this._uuid,
         sourceModule: this._sourceModule,
         sourceEntityId: this._sourceEntityId,
-        totalExecutions: this._execution.toDTO().executionCount,
+        totalExecutions: this._execution.executionCount,
       },
     });
   }
@@ -390,7 +373,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
         sourceModule: this._sourceModule,
         sourceEntityId: this._sourceEntityId,
         error,
-        consecutiveFailures: this._execution.toDTO().consecutiveFailures,
+        consecutiveFailures: this._execution.consecutiveFailures,
       },
     });
   }
@@ -401,12 +384,12 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
    * 更新调度配置
    */
   public updateSchedule(schedule: Partial<any>): void {
-    const oldCron = this._schedule.toDTO().cronExpression;
+    const oldCron = this._schedule.cronExpression;
     this._schedule = this._schedule.with(schedule);
     this._updatedAt = Date.now();
 
     // 重新计算下次执行时间
-    const nextRunAt = this._schedule.calculateNextRun();
+    const nextRunAt = this._schedule.calculateNextRun(Date.now());
     this._execution = this._execution.with({ nextRunAt });
 
     // 发布事件
@@ -418,7 +401,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
       payload: {
         taskUuid: this._uuid,
         previousCronExpression: oldCron,
-        newCronExpression: this._schedule.toDTO().cronExpression,
+        newCronExpression: this._schedule.cronExpression,
         nextRunAt: nextRunAt ?? 0,
       },
     });
@@ -436,7 +419,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
    * 接口签名: calculateNextRun(): number
    */
   public calculateNextRun(): number {
-    const nextRun = this._schedule.calculateNextRun();
+    const nextRun = this._schedule.calculateNextRun(Date.now());
     // 如果计算失败，返回当前时间（作为兜底）
     return nextRun ?? Date.now();
   }
@@ -461,7 +444,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
 
     // 2. 发布领域事件（通知其他模块任务被触发）
     // 完整序列化 metadata DTO 以确保正确传递
-    const metadataDTO = this._metadata.toDTO();
+    const metadataDTO = this._metadata.toServerDTO();
     this.addDomainEvent({
       eventType: 'ScheduleTaskTriggered',
       aggregateId: this._uuid,
@@ -560,7 +543,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
         sourceEntityId: this._sourceEntityId,
         status,
         duration,
-        payload: this._metadata.toDTO().payload,
+        payload: this._metadata.toServerDTO().payload,
       },
     });
 
@@ -597,7 +580,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
    * 判断是否应该重试
    */
   public shouldRetry(): boolean {
-    const execInfo = this._execution.toDTO();
+    const execInfo = this._execution;
     return this._retryPolicy.shouldRetry(execInfo.consecutiveFailures);
   }
 
@@ -605,7 +588,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
    * 计算下次重试延迟
    */
   public calculateNextRetryDelay(): number {
-    const execInfo = this._execution.toDTO();
+    const execInfo = this._execution;
     return this._retryPolicy.calculateNextRetryDelay(execInfo.consecutiveFailures);
   }
 
@@ -805,9 +788,9 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
   // ===== 转换方法 =====
 
   /**
-   * 转换为 DTO
+   * 转换为 Server DTO
    */
-  public toDTO(includeChildren: boolean = false): ScheduleTaskDTO {
+  public toServerDTO(includeChildren: boolean = false): ScheduleTaskServerDTO {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
@@ -817,33 +800,36 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
       sourceEntityId: this._sourceEntityId,
       status: this._status,
       enabled: this._enabled,
-      schedule: this._schedule.toDTO(),
-      execution: this._execution.toDTO(),
-      retryPolicy: this._retryPolicy.toDTO(),
-      metadata: this._metadata.toDTO(),
+      schedule: this._schedule.toServerDTO(),
+      execution: this._execution.toServerDTO(),
+      retryPolicy: this._retryPolicy.toServerDTO(),
+      metadata: this._metadata.toServerDTO(),
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
-      executions: includeChildren ? this._executions.map((e) => e.toDTO()) : undefined,
+      executions: includeChildren ? this._executions.map((e) => e.toServerDTO()) : undefined,
     };
-  }
-
-  /**
-   * 转换为 Server DTO (用于 API 响应)
-   */
-  public toServerDTO(includeChildren: boolean = false): ScheduleTaskServerDTO {
-    // ServerDTO 和 DTO 结构相同
-    return this.toDTO(includeChildren) as unknown as ScheduleTaskServerDTO;
   }
 
   /**
    * 转换为 Client DTO (用于客户端)
    */
   public toClientDTO(includeChildren: boolean = false): ScheduleTaskClientDTO {
-    const baseDTO = this.toDTO(includeChildren);
-
-    // 添加 UI 辅助属性
     return {
-      ...baseDTO,
+      uuid: this._uuid,
+      accountUuid: this._accountUuid,
+      name: this._name,
+      description: this._description,
+      sourceModule: this._sourceModule,
+      sourceEntityId: this._sourceEntityId,
+      status: this._status,
+      enabled: this._enabled,
+      schedule: this._schedule.toClientDTO(),
+      execution: this._execution.toClientDTO(),
+      retryPolicy: this._retryPolicy.toClientDTO(),
+      metadata: this._metadata.toClientDTO(),
+      createdAt: this._createdAt,
+      updatedAt: this._updatedAt,
+      executions: includeChildren ? this._executions.map((e) => e.toClientDTO()) : undefined,
       // UI 辅助属性
       statusDisplay: this.getStatusDisplay(),
       statusColor: this.getStatusColor(),
@@ -857,10 +843,17 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
     };
   }
 
+
+
   /**
    * 转换为持久化 DTO（全部使用 camelCase）
    */
   public toPersistenceDTO(): ScheduleTaskPersistenceDTO {
+    const scheduleDTO = this._schedule.toServerDTO();
+    const executionDTO = this._execution.toServerDTO();
+    const retryPolicyDTO = this._retryPolicy.toServerDTO();
+    const metadataDTO = this._metadata.toServerDTO();
+
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
@@ -871,17 +864,17 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
       status: this._status,
       enabled: this._enabled,
       // ScheduleConfig (flattened)
-      cronExpression: this._schedule.cronExpression ?? null,
+      cronExpression: this._schedule.cronExpression,
       timezone: this._schedule.timezone,
-      startDate: this._schedule.startDate ?? null,
-      endDate: this._schedule.endDate ?? null,
-      maxExecutions: this._schedule.maxExecutions ?? null,
+      startDate: this._schedule.startDate, // 使用原始 number
+      endDate: this._schedule.endDate, // 使用原始 number
+      maxExecutions: this._schedule.maxExecutions,
       // ExecutionInfo (flattened，使用 camelCase)
-      nextRunAt: this._execution.nextRunAt ?? null,
-      lastRunAt: this._execution.lastRunAt ?? null,
+      nextRunAt: this._execution.nextRunAt,
+      lastRunAt: this._execution.lastRunAt,
       executionCount: this._execution.executionCount,
-      lastExecutionStatus: this._execution.lastExecutionStatus ?? null,
-      lastExecutionDuration: this._execution.lastExecutionDuration ?? null,
+      lastExecutionStatus: this._execution.lastExecutionStatus ? String(this._execution.lastExecutionStatus) : null,
+      lastExecutionDuration: this._execution.lastExecutionDuration,
       consecutiveFailures: this._execution.consecutiveFailures,
       // RetryPolicy (flattened，使用 camelCase)
       maxRetries: this._retryPolicy.maxRetries,
@@ -890,10 +883,10 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
       backoffMultiplier: this._retryPolicy.backoffMultiplier,
       retryableStatuses: '[]', // TODO: RetryPolicy 需要添加 retryableStatuses 字段
       // TaskMetadata (flattened)
-      payload: this._metadata.payload ?? null,
-      tags: JSON.stringify(this._metadata.tags),
-      priority: this._metadata.priority,
-      timeout: this._metadata.timeout ?? null,
+      payload: metadataDTO.payload,
+      tags: JSON.stringify(metadataDTO.tags),
+      priority: metadataDTO.priority,
+      timeout: metadataDTO.timeout,
       // Timestamps
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
@@ -945,7 +938,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
         name: params.name,
         sourceModule: params.sourceModule,
         sourceEntityId: params.sourceEntityId,
-        cronExpression: params.schedule.toDTO().cronExpression,
+        cronExpression: params.schedule.toServerDTO().cronExpression,
         nextRunAt: nextRunAt ?? 0,
       },
     });
@@ -954,9 +947,45 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
   }
 
   /**
-   * 从 DTO 创建
+   * 从 Server DTO 创建
    */
-  public static fromDTO(dto: ScheduleTaskDTO): ScheduleTask {
+  public static fromServerDTO(dto: ScheduleTaskServerDTO): ScheduleTask {
+    const task = new ScheduleTask({
+      uuid: dto.uuid,
+      accountUuid: dto.accountUuid,
+      name: dto.name,
+      description: dto.description,
+      sourceModule: dto.sourceModule,
+      sourceEntityId: dto.sourceEntityId,
+      status: dto.status,
+      enabled: dto.enabled,
+      schedule: ScheduleConfig.fromServerDTO(dto.schedule),
+      execution: ExecutionInfo.fromServerDTO(dto.execution),
+      retryPolicy: RetryPolicy.fromServerDTO(dto.retryPolicy),
+      metadata: TaskMetadata.fromServerDTO(dto.metadata),
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+    });
+
+    if (dto.executions) {
+      dto.executions.forEach((execDTO) => {
+        task.addExecution(ScheduleExecution.fromServerDTO(execDTO));
+      });
+    }
+
+    return task;
+  }
+
+  /**
+   * 从 DTO 创建 (兼容旧代码)
+   */
+  public static fromDTO(dto: any): ScheduleTask {
+    // 尝试判断是 ServerDTO 还是旧 DTO
+    if (dto.schedule && typeof dto.schedule.startDate === 'string') {
+      return this.fromServerDTO(dto);
+    }
+    
+    // 旧 DTO 处理
     const task = new ScheduleTask({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
@@ -975,7 +1004,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
     });
 
     if (dto.executions) {
-      dto.executions.forEach((execDTO) => {
+      dto.executions.forEach((execDTO: any) => {
         task.addExecution(ScheduleExecution.fromDTO(execDTO));
       });
     }
@@ -1007,20 +1036,20 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
         nextRunAt: dto.nextRunAt ?? null,
         lastRunAt: dto.lastRunAt ?? null,
         executionCount: dto.executionCount,
-        lastExecutionStatus: dto.lastExecutionStatus ?? null,
-        lastExecutionDuration: dto.last_execution_duration ?? null,
-        consecutiveFailures: dto.consecutive_failures,
+        lastExecutionStatus: dto.lastExecutionStatus as ExecutionStatus ?? null,
+        lastExecutionDuration: dto.lastExecutionDuration ?? dto.last_execution_duration ?? null,
+        consecutiveFailures: dto.consecutiveFailures ?? dto.consecutive_failures,
       }),
       retryPolicy: new RetryPolicy({
         enabled: dto.enabled,
         maxRetries: dto.maxRetries,
-        retryDelay: dto.retry_delay,
-        backoffMultiplier: dto.backoff_multiplier,
-        maxRetryDelay: dto.max_retry_delay,
+        retryDelay: dto.initialDelayMs ?? dto.retry_delay,
+        backoffMultiplier: dto.backoffMultiplier ?? dto.backoff_multiplier,
+        maxRetryDelay: dto.maxDelayMs ?? dto.max_retry_delay,
       }),
       metadata: new TaskMetadata({
         payload: dto.payload ?? {},
-        tags: dto.tags ? JSON.parse(dto.tags) : [],
+        tags: dto.tags ? (typeof dto.tags === 'string' ? JSON.parse(dto.tags) : dto.tags) : [],
         priority: dto.priority,
         timeout: dto.timeout,
       }),

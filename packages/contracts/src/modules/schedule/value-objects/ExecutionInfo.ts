@@ -12,10 +12,10 @@ import type { ExecutionStatus } from '../enums';
  */
 export interface IExecutionInfoServer {
   /** 下次执行时间 */
-  nextRunAt: Date | null;
+  nextRunAt: number | null;
 
   /** 上次执行时间 */
-  lastRunAt: Date | null;
+  lastRunAt: number | null;
 
   /** 已执行次数 */
   executionCount: number;
@@ -45,11 +45,12 @@ export interface IExecutionInfoServer {
       >
     >,
   ): IExecutionInfoServer;
-  updateAfterExecution(
-    status: ExecutionStatus,
-    duration: number,
-    nextRun: Date | null,
-  ): IExecutionInfoServer;
+  updateAfterExecution(params: {
+    executedAt: number;
+    status: ExecutionStatus;
+    duration: number;
+    nextRunAt: number | null;
+  }): IExecutionInfoServer;
   resetFailures(): IExecutionInfoServer;
 
   // DTO 转换方法

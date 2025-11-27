@@ -4,17 +4,12 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
+import { ScheduleContracts } from '@dailyuse/contracts';
 
-// 暂时使用本地类型定义，待 contracts 完善后再导入
-type Timezone = 'UTC' | 'Asia/Shanghai' | 'Asia/Tokyo' | 'America/New_York' | 'Europe/London';
-
-interface IScheduleConfigDTO {
-  cronExpression: string;
-  timezone: Timezone;
-  startDate: number | null;
-  endDate: number | null;
-  maxExecutions: number | null;
-}
+type Timezone = ScheduleContracts.Timezone;
+type ScheduleConfigServerDTO = ScheduleContracts.ScheduleConfigServerDTO;
+type ScheduleConfigClientDTO = ScheduleContracts.ScheduleConfigClientDTO;
+type ScheduleConfigPersistenceDTO = ScheduleContracts.ScheduleConfigPersistenceDTO;
 
 /**
  * ScheduleConfig 值对象
@@ -25,7 +20,7 @@ interface IScheduleConfigDTO {
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class ScheduleConfig extends ValueObject implements IScheduleConfigDTO {
+export class ScheduleConfig extends ValueObject implements ScheduleContracts.ScheduleConfigServer {
   public readonly cronExpression: string;
   public readonly timezone: Timezone;
   public readonly startDate: number | null;
@@ -48,7 +43,7 @@ export class ScheduleConfig extends ValueObject implements IScheduleConfigDTO {
     this.maxExecutions = params.maxExecutions ?? null;
 
     // 验证配置
-    this.validate();
+    this.validateAndThrow();
 
     // 确保不可变
     Object.freeze(this);
@@ -57,22 +52,41 @@ export class ScheduleConfig extends ValueObject implements IScheduleConfigDTO {
   /**
    * 验证配置有效性
    */
-  private validate(): void {
+  public validate(): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
     // 验证 cron 表达式基本格式（实际验证将在运行时由 cron 调度器完成）
     if (!this.cronExpression || this.cronExpression.trim().length === 0) {
-      throw new Error('Cron expression cannot be empty');
+      errors.push('Cron expression cannot be empty');
     }
 
     // 验证日期范围
     if (this.startDate !== null && this.endDate !== null) {
       if (this.startDate >= this.endDate) {
-        throw new Error('Start date must be before end date');
+        errors.push('Start date must be before end date');
       }
     }
 
     // 验证最大执行次数
     if (this.maxExecutions !== null && this.maxExecutions <= 0) {
-      throw new Error('Max executions must be greater than 0');
+      errors.push('Max executions must be greater than 0');
+    }
+
+    if (errors.length > 0) {
+      // 为了兼容旧代码，这里抛出异常，但接口要求返回对象
+      // 理想情况下应该只返回对象，不抛出异常
+      // throw new Error(errors[0]); 
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  /**
+   * 验证并抛出异常（兼容旧代码）
+   */
+  private validateAndThrow(): void {
+    const result = this.validate();
+    if (!result.isValid) {
+      throw new Error(result.errors[0]);
     }
   }
 
@@ -148,23 +162,78 @@ export class ScheduleConfig extends ValueObject implements IScheduleConfigDTO {
   }
 
   /**
-   * 转换为 DTO
+   * 转换为 Server DTO
    */
-  public toDTO(): IScheduleConfigDTO {
+  public toServerDTO(): ScheduleConfigServerDTO {
     return {
       cronExpression: this.cronExpression,
       timezone: this.timezone,
-      startDate: this.startDate,
-      endDate: this.endDate,
+      startDate: this.startDate ? new Date(this.startDate).toISOString() : null,
+      endDate: this.endDate ? new Date(this.endDate).toISOString() : null,
       maxExecutions: this.maxExecutions,
     };
   }
 
   /**
-   * 从 DTO 创建值对象
+   * 转换为 Client DTO
    */
-  public static fromDTO(dto: IScheduleConfigDTO): ScheduleConfig {
-    return new ScheduleConfig(dto);
+  public toClientDTO(): ScheduleConfigClientDTO {
+    return {
+      cronExpression: this.cronExpression,
+      timezone: this.timezone,
+      startDate: this.startDate ? new Date(this.startDate).toISOString() : null,
+      endDate: this.endDate ? new Date(this.endDate).toISOString() : null,
+      maxExecutions: this.maxExecutions,
+      // UI 辅助属性
+      cronDescription: this.cronExpression, // TODO: 解析 cron 表达式
+      timezoneDisplay: this.timezone, // TODO: 格式化时区
+      startDateFormatted: this.startDate ? new Date(this.startDate).toLocaleString() : null,
+      endDateFormatted: this.endDate ? new Date(this.endDate).toLocaleString() : null,
+      maxExecutionsFormatted: this.maxExecutions ? `${this.maxExecutions} 次` : '无限',
+    };
+  }
+
+  /**
+   * 转换为持久化 DTO
+   */
+  public toPersistenceDTO(): ScheduleConfigPersistenceDTO {
+    return {
+      cronExpression: this.cronExpression,
+      timezone: this.timezone,
+      startDate: this.startDate ? new Date(this.startDate).toISOString() : null,
+      endDate: this.endDate ? new Date(this.endDate).toISOString() : null,
+      maxExecutions: this.maxExecutions,
+    };
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: ScheduleConfigServerDTO): ScheduleConfig {
+    return new ScheduleConfig({
+      cronExpression: dto.cronExpression,
+      timezone: dto.timezone,
+      startDate: dto.startDate ? new Date(dto.startDate).getTime() : null,
+      endDate: dto.endDate ? new Date(dto.endDate).getTime() : null,
+      maxExecutions: dto.maxExecutions,
+    });
+  }
+
+  /**
+   * 从 DTO 创建值对象 (兼容旧代码)
+   */
+  public static fromDTO(dto: any): ScheduleConfig {
+    // 检查是否是 ServerDTO (string dates) 还是旧的 DTO (number dates)
+    const startDate = typeof dto.startDate === 'string' ? new Date(dto.startDate).getTime() : dto.startDate;
+    const endDate = typeof dto.endDate === 'string' ? new Date(dto.endDate).getTime() : dto.endDate;
+
+    return new ScheduleConfig({
+      cronExpression: dto.cronExpression,
+      timezone: dto.timezone,
+      startDate,
+      endDate,
+      maxExecutions: dto.maxExecutions,
+    });
   }
 
   /**

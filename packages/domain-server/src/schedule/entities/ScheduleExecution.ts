@@ -16,18 +16,6 @@ type ScheduleExecutionServerDTO = ScheduleContracts.ScheduleExecutionServerDTO;
 type ScheduleExecutionClientDTO = ScheduleContracts.ScheduleExecutionClientDTO;
 type ScheduleExecutionPersistenceDTO = ScheduleContracts.ScheduleExecutionPersistenceDTO;
 
-interface ScheduleExecutionDTO {
-  uuid: string;
-  taskUuid: string;
-  executionTime: number;
-  status: ExecutionStatus;
-  duration: number | null;
-  result: Record<string, any> | null;
-  error: string | null;
-  retryCount: number;
-  createdAt: number;
-}
-
 /**
  * ScheduleExecution 实体
  */
@@ -232,20 +220,10 @@ export class ScheduleExecution extends Entity implements IScheduleExecutionServe
   }
 
   /**
-   * 转换为 DTO（内部使用）
+   * 转换为 DTO（内部使用，兼容旧代码）
    */
-  public toDTO(): ScheduleExecutionDTO {
-    return {
-      uuid: this._uuid,
-      taskUuid: this._taskUuid,
-      executionTime: this._executionTime,
-      status: this._status,
-      duration: this._duration,
-      result: this._result ? { ...this._result } : null,
-      error: this._error,
-      retryCount: this._retryCount,
-      createdAt: this._createdAt,
-    };
+  public toDTO(): ScheduleExecutionServerDTO {
+    return this.toServerDTO();
   }
 
   /**
@@ -332,9 +310,26 @@ export class ScheduleExecution extends Entity implements IScheduleExecutionServe
   }
 
   /**
-   * 从 DTO 创建实体
+   * 从 Server DTO 创建实体
    */
-  public static fromDTO(dto: ScheduleExecutionDTO): ScheduleExecution {
+  public static fromServerDTO(dto: ScheduleExecutionServerDTO): ScheduleExecution {
+    return new ScheduleExecution({
+      uuid: dto.uuid,
+      taskUuid: dto.taskUuid,
+      executionTime: dto.executionTime,
+      status: dto.status,
+      duration: dto.duration,
+      result: dto.result,
+      error: dto.error,
+      retryCount: dto.retryCount,
+      createdAt: dto.createdAt,
+    });
+  }
+
+  /**
+   * 从 DTO 创建实体 (兼容旧代码)
+   */
+  public static fromDTO(dto: any): ScheduleExecution {
     return new ScheduleExecution(dto);
   }
 

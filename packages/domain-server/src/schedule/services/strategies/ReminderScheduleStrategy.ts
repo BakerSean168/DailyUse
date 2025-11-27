@@ -7,7 +7,7 @@
  * - 支持每日、每周、自定义日期重复
  */
 
-import { SourceModule } from '@dailyuse/contracts';
+import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts';
 import type { ReminderContracts } from '@dailyuse/contracts';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
@@ -79,7 +79,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
     // 重构后：startDate/endDate 移除，生效控制由 status 字段负责
     const scheduleConfig = new ScheduleConfig({
       cronExpression,
-      timezone: 'Asia/Shanghai', // 默认时区，后续可以从用户设置获取
+      timezone: Timezone.SHANGHAI, // 默认时区，后续可以从用户设置获取
       startDate: activeTime.activatedAt, // 使用激活时间作为开始
       endDate: null, // 不再使用 endDate，生效控制由 status 负责
       maxExecutions: type === 'ONE_TIME' ? 1 : null, // 一次性提醒只执行一次
@@ -251,22 +251,22 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    */
   private calculatePriority(
     reminder: ReminderContracts.ReminderTemplateServerDTO,
-  ): 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' {
+  ): TaskPriority {
     const { importanceLevel } = reminder;
 
     // 根据重要性级别映射
     switch (importanceLevel) {
       case 'vital':
-        return 'URGENT';
+        return TaskPriority.URGENT;
       case 'important':
-        return 'HIGH';
+        return TaskPriority.HIGH;
       case 'moderate':
-        return 'NORMAL';
+        return TaskPriority.NORMAL;
       case 'minor':
       case 'trivial':
-        return 'LOW';
+        return TaskPriority.LOW;
       default:
-        return 'NORMAL';
+        return TaskPriority.NORMAL;
     }
   }
 

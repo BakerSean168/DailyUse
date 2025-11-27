@@ -4,16 +4,11 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
-import { ExecutionStatus } from '@dailyuse/contracts';
+import { ScheduleContracts, ExecutionStatus } from '@dailyuse/contracts';
 
-interface IExecutionInfoDTO {
-  nextRunAt: number | null;
-  lastRunAt: number | null;
-  executionCount: number;
-  lastExecutionStatus: ExecutionStatus | null;
-  lastExecutionDuration: number | null;
-  consecutiveFailures: number;
-}
+type ExecutionInfoServerDTO = ScheduleContracts.ExecutionInfoServerDTO;
+type ExecutionInfoClientDTO = ScheduleContracts.ExecutionInfoClientDTO;
+type ExecutionInfoPersistenceDTO = ScheduleContracts.ExecutionInfoPersistenceDTO;
 
 /**
  * ExecutionInfo 值对象
@@ -24,7 +19,7 @@ interface IExecutionInfoDTO {
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class ExecutionInfo extends ValueObject implements IExecutionInfoDTO {
+export class ExecutionInfo extends ValueObject implements ScheduleContracts.ExecutionInfoServer {
   public readonly nextRunAt: number | null;
   public readonly lastRunAt: number | null;
   public readonly executionCount: number;
@@ -139,12 +134,12 @@ export class ExecutionInfo extends ValueObject implements IExecutionInfoDTO {
   }
 
   /**
-   * 转换为 DTO
+   * 转换为 Server DTO
    */
-  public toDTO(): IExecutionInfoDTO {
+  public toServerDTO(): ExecutionInfoServerDTO {
     return {
-      nextRunAt: this.nextRunAt,
-      lastRunAt: this.lastRunAt,
+      nextRunAt: this.nextRunAt ? new Date(this.nextRunAt).toISOString() : null,
+      lastRunAt: this.lastRunAt ? new Date(this.lastRunAt).toISOString() : null,
       executionCount: this.executionCount,
       lastExecutionStatus: this.lastExecutionStatus,
       lastExecutionDuration: this.lastExecutionDuration,
@@ -153,9 +148,56 @@ export class ExecutionInfo extends ValueObject implements IExecutionInfoDTO {
   }
 
   /**
-   * 从 DTO 创建值对象
+   * 转换为 Client DTO
    */
-  public static fromDTO(dto: IExecutionInfoDTO): ExecutionInfo {
+  public toClientDTO(): ExecutionInfoClientDTO {
+    return {
+      nextRunAt: this.nextRunAt ? new Date(this.nextRunAt).toISOString() : null,
+      lastRunAt: this.lastRunAt ? new Date(this.lastRunAt).toISOString() : null,
+      executionCount: this.executionCount,
+      lastExecutionStatus: this.lastExecutionStatus,
+      consecutiveFailures: this.consecutiveFailures,
+      // UI 辅助属性
+      nextRunAtFormatted: this.nextRunAt ? new Date(this.nextRunAt).toLocaleString() : '-',
+      lastRunAtFormatted: this.lastRunAt ? new Date(this.lastRunAt).toLocaleString() : '-',
+      lastExecutionDurationFormatted: this.lastExecutionDuration ? `${this.lastExecutionDuration}ms` : '-',
+      executionCountFormatted: `已执行 ${this.executionCount} 次`,
+      healthStatus: this.consecutiveFailures === 0 ? 'healthy' : this.consecutiveFailures < 3 ? 'warning' : 'critical',
+    };
+  }
+
+  /**
+   * 转换为持久化 DTO
+   */
+  public toPersistenceDTO(): ExecutionInfoPersistenceDTO {
+    return {
+      nextRunAt: this.nextRunAt ? new Date(this.nextRunAt).toISOString() : null,
+      lastRunAt: this.lastRunAt ? new Date(this.lastRunAt).toISOString() : null,
+      executionCount: this.executionCount,
+      lastExecutionStatus: this.lastExecutionStatus,
+      last_execution_duration: this.lastExecutionDuration,
+      consecutive_failures: this.consecutiveFailures,
+    };
+  }
+
+  /**
+   * 从 Server DTO 创建值对象
+   */
+  public static fromServerDTO(dto: ExecutionInfoServerDTO): ExecutionInfo {
+    return new ExecutionInfo({
+      nextRunAt: dto.nextRunAt ? new Date(dto.nextRunAt).getTime() : null,
+      lastRunAt: dto.lastRunAt ? new Date(dto.lastRunAt).getTime() : null,
+      executionCount: dto.executionCount,
+      lastExecutionStatus: dto.lastExecutionStatus,
+      lastExecutionDuration: dto.lastExecutionDuration,
+      consecutiveFailures: dto.consecutiveFailures,
+    });
+  }
+
+  /**
+   * 从 DTO 创建值对象 (兼容旧代码)
+   */
+  public static fromDTO(dto: any): ExecutionInfo {
     return new ExecutionInfo(dto);
   }
 

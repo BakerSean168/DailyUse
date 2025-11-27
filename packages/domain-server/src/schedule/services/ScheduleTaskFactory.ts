@@ -161,7 +161,7 @@ export class ScheduleTaskFactory {
     const strategyOutput = strategy.createSchedule(input);
 
     // 更新任务配置（使用聚合根提供的方法）
-    existingTask.updateSchedule(strategyOutput.scheduleConfig.toDTO());
+    existingTask.updateSchedule(strategyOutput.scheduleConfig.toServerDTO());
     
     // TODO: 添加更多更新方法到 ScheduleTask 聚合根
     // existingTask.updateMetadata(strategyOutput.metadata);

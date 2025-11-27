@@ -18,10 +18,10 @@ export interface IScheduleConfigServer {
   timezone: Timezone;
 
   /** 开始日期（可选，null 表示立即开始） */
-  startDate: Date | null;
+  startDate: number | null;
 
   /** 结束日期（可选，null 表示永不结束） */
-  endDate: Date | null;
+  endDate: number | null;
 
   /** 最大执行次数（可选，null 表示无限） */
   maxExecutions: number | null;
@@ -44,8 +44,8 @@ export interface IScheduleConfigServer {
     >,
   ): IScheduleConfigServer;
   validate(): { isValid: boolean; errors: string[] };
-  calculateNextRun(currentTime: Date): Date | null;
-  isExpired(currentTime: Date): boolean;
+  calculateNextRun(currentTime: number): number | null;
+  isExpired(currentTime: number): boolean;
 
   // DTO 转换方法
   toServerDTO(): ScheduleConfigServerDTO;
