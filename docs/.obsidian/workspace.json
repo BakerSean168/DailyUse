@@ -39,6 +39,18 @@
             "id": "cd4b19f0cf7ac69c",
             "type": "leaf",
             "state": {
+              "type": "release-notes",
+              "state": {
+                "currentVersion": "1.10.6"
+              },
+              "icon": "lucide-book-up",
+              "title": "Release Notes 1.10.6"
+            }
+          },
+          {
+            "id": "a922f50e013785a0",
+            "type": "leaf",
+            "state": {
               "type": "empty",
               "state": {},
               "icon": "lucide-file",
@@ -46,7 +58,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -203,7 +215,7 @@
       "bases:Create new base": false
     }
   },
-  "active": "cd4b19f0cf7ac69c",
+  "active": "a922f50e013785a0",
   "lastOpenFiles": [
     "modules/schedule/README.md",
     "business-flows/schedule-flow.md",
