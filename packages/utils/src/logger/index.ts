@@ -8,11 +8,14 @@ export * from './types';
 
 // Logger 实现
 export { Logger } from './Logger';
+// WinstonLogger 移至专门的入口点 '@dailyuse/utils/winston' 以避免污染浏览器环境
+// export { WinstonLogger } from './WinstonLogger';
 export { LoggerFactory, createLogger } from './LoggerFactory';
 
 // 传输器
 export { ConsoleTransport } from './transports/ConsoleTransport';
 export { FileTransport } from './transports/FileTransport';
+export { HttpTransport } from './transports/HttpTransport';
 
 // 便捷导出
 export { createLogger as default } from './LoggerFactory';

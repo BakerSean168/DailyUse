@@ -7,7 +7,7 @@
  * - 支持提醒时间偏移
  */
 
-import { SourceModule } from '@dailyuse/contracts';
+import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts';
 import type { TaskContracts } from '@dailyuse/contracts';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
@@ -78,7 +78,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
     // 创建调度配置
     const scheduleConfig = new ScheduleConfig({
       cronExpression,
-      timezone: 'Asia/Shanghai', // 默认时区，后续可以从用户设置获取
+      timezone: Timezone.SHANGHAI, // 默认时区，后续可以从用户设置获取
       startDate: timeConfig?.startDate ?? Date.now(),
       endDate: recurrenceRule.endDate ?? null, // 结束日期从重复规则获取，不再从 timeConfig 获取
       maxExecutions: recurrenceRule.occurrences ?? null,
@@ -253,12 +253,12 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 计算任务优先级
    * 基于 Task 的重要性和紧急程度
    */
-  private calculatePriority(task: TaskContracts.TaskTemplateServerDTO): 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' {
+  private calculatePriority(task: TaskContracts.TaskTemplateServerDTO): TaskPriority {
     const { importance, urgency } = task;
 
     // Vital + Critical/High = URGENT
     if (importance === 'vital' && (urgency === 'critical' || urgency === 'high')) {
-      return 'URGENT';
+      return TaskPriority.URGENT;
     }
 
     // Important + Critical/High = HIGH
@@ -267,7 +267,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
       (importance === 'important' && (urgency === 'critical' || urgency === 'high')) ||
       (importance === 'vital' && urgency === 'medium')
     ) {
-      return 'HIGH';
+      return TaskPriority.HIGH;
     }
 
     // Moderate + High/Medium = NORMAL
@@ -276,11 +276,11 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
       (importance === 'moderate' && (urgency === 'high' || urgency === 'medium')) ||
       (importance === 'important' && (urgency === 'medium' || urgency === 'low'))
     ) {
-      return 'NORMAL';
+      return TaskPriority.NORMAL;
     }
 
     // 其他情况 = LOW
-    return 'LOW';
+    return TaskPriority.LOW;
   }
 
   /**

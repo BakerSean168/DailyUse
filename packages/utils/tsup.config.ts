@@ -12,4 +12,11 @@
 
 import { baseLibraryConfig } from '../../tools/build/tsup.base.config';
 
-export default baseLibraryConfig('@dailyuse/utils');
+const config = baseLibraryConfig('@dailyuse/utils');
+
+export default {
+  ...config,
+  entry: ['src/index.ts', 'src/winston.ts'],
+  external: [...(config.external || []), 'winston', 'winston-daily-rotate-file'],
+};
+

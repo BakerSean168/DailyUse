@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./winston": {
+      "types": "./dist/winston.d.ts",
+      "import": "./dist/winston.js"
     }
   },
   "scripts": {
@@ -19,13 +23,15 @@
   "dependencies": {
     "date-fns": "^4.1.0",
     "mitt": "^3.0.1",
-    "uuid": "^11.0.5"
+    "uuid": "^11.0.5",
+    "winston": "3.18.3",
+    "winston-daily-rotate-file": "5.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.3.1",
+    "concurrently": "^8.2.0",
     "rimraf": "^6.0.1",
     "tsup": "^8.3.5",
-    "typescript": "^5.8.3",
-    "concurrently": "^8.2.0"
+    "typescript": "^5.8.3"
   }
 }

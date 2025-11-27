@@ -139,7 +139,6 @@ export class RetryPolicy extends ValueObject implements ScheduleContracts.RetryP
       retryDelay: this.retryDelay,
       backoffMultiplier: this.backoffMultiplier,
       maxRetryDelay: this.maxRetryDelay,
-      retryableStatuses: [], // TODO: 支持配置可重试状态
     };
   }
 
@@ -153,11 +152,14 @@ export class RetryPolicy extends ValueObject implements ScheduleContracts.RetryP
       retryDelay: this.retryDelay,
       backoffMultiplier: this.backoffMultiplier,
       maxRetryDelay: this.maxRetryDelay,
-      retryableStatuses: [],
+      
       // UI 辅助属性
-      summary: this.enabled 
-        ? `最多重试 ${this.maxRetries} 次，初始延迟 ${this.retryDelay}ms`
-        : '不重试',
+      enabledDisplay: this.enabled ? 'Enabled' : 'Disabled',
+      retryDelayFormatted: `${this.retryDelay}ms`,
+      maxRetryDelayFormatted: `${this.maxRetryDelay}ms`,
+      policyDescription: this.enabled 
+        ? `Retry up to ${this.maxRetries} times, starting at ${this.retryDelay}ms`
+        : 'No retry policy',
     };
   }
 

@@ -29,6 +29,7 @@ import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes
 import aiRouter from './modules/ai/interface/http/aiRoutes';
 import dashboardRouter from './modules/dashboard/interface/routes';
 import crossModuleRouter from './shared/api/crossModuleRoutes';
+import logsRouter from './modules/system/interface/http/logsRoutes';
 
 import { authMiddleware, optionalAuthMiddleware } from './shared/middlewares/index';
 import { setupSwagger } from './config/swagger';
@@ -136,6 +137,9 @@ api.use('/accounts', accountRouter);
 
 // 挂载认证路由到 api 路由器 (登录/登出/刷新等) - 不需要认证
 api.use('/auth', authenticationRouter);
+
+// 挂载日志路由 - 不需要认证 (允许记录登录前的错误)
+api.use('/logs', logsRouter);
 
 // 应用认证中间件到需要认证的路由
 // 注意：认证相关的路由（如登录、注册）应该放在认证中间件之前

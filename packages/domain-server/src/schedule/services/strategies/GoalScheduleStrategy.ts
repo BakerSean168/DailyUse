@@ -7,7 +7,7 @@
  * - 处理剩余天数触发器
  */
 
-import { SourceModule } from '@dailyuse/contracts';
+import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts';
 import type { GoalContracts } from '@dailyuse/contracts';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
@@ -69,7 +69,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
     // 创建调度配置
     const scheduleConfig = new ScheduleConfig({
       cronExpression,
-      timezone: 'Asia/Shanghai', // 默认时区，后续可以从用户设置获取
+      timezone: Timezone.SHANGHAI, // 默认时区，后续可以从用户设置获取
       startDate: goal.startDate ?? Date.now(),
       endDate: goal.targetDate ?? null,
       maxExecutions: null, // Goal 的提醒通常没有最大执行次数限制
@@ -208,13 +208,13 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 计算任务优先级
    * 基于 Goal 的重要性和紧急程度
    */
-  private calculatePriority(goal: GoalContracts.GoalServerDTO): 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' {
+  private calculatePriority(goal: GoalContracts.GoalServerDTO): TaskPriority {
     // 根据重要性和紧急程度映射到任务优先级
     const { importance, urgency } = goal;
 
     // Vital + Critical/High = URGENT
     if (importance === 'vital' && (urgency === 'critical' || urgency === 'high')) {
-      return 'URGENT';
+      return TaskPriority.URGENT;
     }
 
     // Important + Critical/High = HIGH
@@ -223,7 +223,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
       (importance === 'important' && (urgency === 'critical' || urgency === 'high')) ||
       (importance === 'vital' && urgency === 'medium')
     ) {
-      return 'HIGH';
+      return TaskPriority.HIGH;
     }
 
     // Moderate + High/Medium = NORMAL
@@ -232,11 +232,11 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
       (importance === 'moderate' && (urgency === 'high' || urgency === 'medium')) ||
       (importance === 'important' && (urgency === 'medium' || urgency === 'low'))
     ) {
-      return 'NORMAL';
+      return TaskPriority.NORMAL;
     }
 
     // 其他情况 = LOW
-    return 'LOW';
+    return TaskPriority.LOW;
   }
 
   /**

@@ -191,11 +191,26 @@ export class TaskMetadata extends ValueObject implements ScheduleContracts.TaskM
       tags: Array.from(this.tags),
       priority: this.priority,
       timeout: this.timeout,
+      
       // UI 辅助属性
-      tagCount: this.tags.length,
-      priorityDisplay: this.priority, // TODO: 本地化
-      hasPayload: Object.keys(this.payload).length > 0,
+      priorityDisplay: this.priority, // 暂时直接使用枚举值
+      priorityColor: this.getPriorityColor(),
+      tagsDisplay: this.tags.join(', '),
+      timeoutFormatted: this.timeout ? `${this.timeout}ms` : '无超时',
+      payloadSummary: Object.keys(this.payload).length > 0 
+        ? `${Object.keys(this.payload).length} items` 
+        : 'Empty',
     };
+  }
+
+  private getPriorityColor(): string {
+    switch (this.priority) {
+      case ScheduleContracts.TaskPriority.URGENT: return 'red';
+      case ScheduleContracts.TaskPriority.HIGH: return 'orange';
+      case ScheduleContracts.TaskPriority.NORMAL: return 'blue';
+      case ScheduleContracts.TaskPriority.LOW: return 'gray';
+      default: return 'default';
+    }
   }
 
   /**
