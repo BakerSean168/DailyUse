@@ -224,7 +224,7 @@
 import { ref, computed } from 'vue';
 import { useRepositoryStore } from '../../stores';
 import { repositoryApiClient } from '../../../infrastructure/api';
-import { Repository } from '@dailyuse/domain-client';
+import { Repository } from '@dailyuse/domain-client/repository';
 import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 // Props

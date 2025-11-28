@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { TaskTemplate, RecurrenceRule } from '@dailyuse/domain-client';
+import { TaskTemplate, RecurrenceRule } from '@dailyuse/domain-client/task';
 import { computed, ref, watch } from 'vue';
 import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';

@@ -39,9 +39,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { format } from 'date-fns';
-import type { TaskInstance } from '@dailyuse/domain-client';
+import type { TaskInstance } from '@dailyuse/domain-client/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
-import { Goal, KeyResult } from '@dailyuse/domain-client';
+import { Goal, KeyResult } from '@dailyuse/domain-client/goal';
 import { useTaskStore } from '../../stores/taskStore';
 
 // Props

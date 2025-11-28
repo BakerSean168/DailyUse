@@ -177,7 +177,7 @@ import { reminderGroupApplicationService } from '../../application/services';
 
 // 类型导入 - 使用 Contracts DTO
 import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
-import { ReminderTemplate as ReminderTemplateEntity } from '@dailyuse/domain-client';
+import { ReminderTemplate as ReminderTemplateEntity } from '@dailyuse/domain-client/reminder';
 
 // 类型别名
 type ReminderTemplate = ReminderTemplateClientDTO;

@@ -22,7 +22,7 @@
 import { ref } from 'vue';
 import FileExplorer from './FileExplorer.vue';
 import ResourceList from './ResourceList.vue';
-import type { Folder } from '@dailyuse/domain-client';
+import type { Folder } from '@dailyuse/domain-client/repository';
 
 // Props
 interface Props {

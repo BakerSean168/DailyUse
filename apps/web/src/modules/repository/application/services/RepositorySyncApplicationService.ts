@@ -2,7 +2,7 @@
 import { useRepositoryStore } from '../../presentation/stores/repositoryStore';
 import { useResourceStore } from '../../presentation/stores/resourceStore';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
-import { Repository, Resource } from '@dailyuse/domain-client';
+import { Repository, Resource } from '@dailyuse/domain-client/repository';
 
 /**
  * 仓库数据同步应用服务

@@ -258,7 +258,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRepositoryStore, useFolderStore } from '../stores';
 import { useResourceStore } from '../stores/resourceStore';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
-import { Repository, Folder } from '@dailyuse/domain-client';
+import { Repository, Folder } from '@dailyuse/domain-client/repository';
 import FilesPanel from '../components/FilesPanel.vue';
 import SearchPanel from '../components/SearchPanel.vue';
 import BookmarksPanel from '../components/BookmarksPanel.vue';

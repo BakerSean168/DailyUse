@@ -150,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
-import type { GoalFolder } from '@dailyuse/domain-client';
+import type { GoalFolder } from '@dailyuse/domain-client/goal';
 import { useGoalStore } from '../stores/goalStore';
 import { DuContextMenu, type ContextMenuItem } from '@/shared/components/context-menu';
 

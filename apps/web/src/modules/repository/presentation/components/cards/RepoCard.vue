@@ -118,7 +118,7 @@
 import { computed, ref, defineExpose } from 'vue';
 import { format } from 'date-fns';
 import { useRouter } from 'vue-router';
-import { Repository } from '@dailyuse/domain-client';
+import { Repository } from '@dailyuse/domain-client/repository';
 
 const router = useRouter();
 

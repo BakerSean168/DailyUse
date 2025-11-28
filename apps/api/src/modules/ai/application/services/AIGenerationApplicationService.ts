@@ -44,15 +44,6 @@ import { MessageServer } from '@dailyuse/domain-server';
 import { AIConversationServer } from '@dailyuse/domain-server';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
 
-type AIUsageQuotaClientDTO = AIUsageQuotaClientDTO;
-type AIUsageQuotaServerDTO = AIUsageQuotaServerDTO;
-type AIGenerationTaskServerDTO = AIGenerationTaskServerDTO;
-type SummarizationRequestDTO = SummarizationRequestDTO;
-type SummarizationResultDTO = SummarizationResultDTO;
-type TokenUsageServerDTO = TokenUsageServerDTO;
-type GeneratedGoalDraft = GeneratedGoalDraft;
-type GenerateGoalResponse = GenerateGoalResponse;
-
 const logger = createLogger('AIGenerationApplicationService');
 
 /**

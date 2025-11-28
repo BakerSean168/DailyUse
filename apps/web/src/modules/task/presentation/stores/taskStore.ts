@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 import { toDayStart } from '@dailyuse/utils';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 

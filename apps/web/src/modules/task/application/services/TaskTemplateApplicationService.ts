@@ -3,7 +3,7 @@
  * 任务模板应用服务 - 负责任务模板的 CRUD 操作
  */
 
-import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,

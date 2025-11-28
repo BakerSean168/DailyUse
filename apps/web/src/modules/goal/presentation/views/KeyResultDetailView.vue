@@ -250,7 +250,7 @@ import TaskAIGenerationDialog from '@/modules/task/presentation/components/TaskA
 // 引入 snackbar 和 message
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { useMessage } from '@dailyuse/ui';
-import type { KeyResult, Goal } from '@dailyuse/domain-client';
+import type { KeyResult, Goal } from '@dailyuse/domain-client/goal';
 import { useAuthStore } from '@/stores/auth/authStore';
 
 const router = useRouter();

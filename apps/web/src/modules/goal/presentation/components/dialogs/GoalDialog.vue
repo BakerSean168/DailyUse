@@ -155,7 +155,7 @@ import TemplateBrowser from '../template/TemplateBrowser.vue';
 import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
-import { Goal, KeyResult } from '@dailyuse/domain-client';
+import { Goal, KeyResult } from '@dailyuse/domain-client/goal';
 import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { useGoalManagement } from '../../composables/useGoalManagement';

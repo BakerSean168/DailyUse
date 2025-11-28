@@ -312,7 +312,7 @@ import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 import { useMessage } from '@dailyuse/ui';
 // domain
-import { Goal } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client/goal';
 
 // 组件
 import GoalDialog from '@/modules/goal/presentation/components/dialogs/GoalDialog.vue';

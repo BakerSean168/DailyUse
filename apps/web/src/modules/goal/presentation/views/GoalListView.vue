@@ -131,7 +131,7 @@ import { useGoalManagement } from '../composables/useGoalManagement';
 import { useGoalFolder } from '../composables/useGoalFolder';
 import { useGoalStore } from '../stores/goalStore';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
-import type { Goal, GoalFolder } from '@dailyuse/domain-client';
+import type { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
 
 // 组件导入
 import GoalCard from '../components/cards/GoalCard.vue';

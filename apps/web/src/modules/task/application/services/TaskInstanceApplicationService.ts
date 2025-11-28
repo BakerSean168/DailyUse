@@ -3,7 +3,7 @@
  * 任务实例应用服务 - 负责任务实例的 CRUD 操作和状态管理
  */
 
-import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskInstanceApiClient } from '../../infrastructure/api/taskApiClient';

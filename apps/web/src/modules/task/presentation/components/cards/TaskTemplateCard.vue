@@ -205,8 +205,8 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { UrgencyLevel } from '@dailyuse/contracts/shared';
 // types
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
-import type { TaskTemplate } from '@dailyuse/domain-client';
-import type { Goal, KeyResult } from '@dailyuse/domain-client';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { Goal, KeyResult } from '@dailyuse/domain-client/goal';
 
 // composables
 import { useTaskTemplate } from '../../composables/useTaskTemplate';

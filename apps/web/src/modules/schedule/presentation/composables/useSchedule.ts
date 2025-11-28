@@ -16,7 +16,7 @@ import type {
   CreateScheduleRequestDTO,
   ResolveConflictRequestDTO,
 } from '@dailyuse/contracts/schedule';
-import { ScheduleTask } from '@dailyuse/domain-client';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('useSchedule');

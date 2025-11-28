@@ -14,7 +14,7 @@
  */
 
 import type { CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
-import { ReminderTemplate } from '@dailyuse/domain-client';
+import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';

@@ -137,7 +137,7 @@
 import { computed, ref, defineExpose } from 'vue';
 import { format } from 'date-fns';
 
-import { Resource } from '@dailyuse/domain-client';
+import { Resource } from '@dailyuse/domain-client/repository';
 
 const props = defineProps<{
   resource: Resource;

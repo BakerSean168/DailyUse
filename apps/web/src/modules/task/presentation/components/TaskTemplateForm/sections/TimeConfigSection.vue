@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { TaskTemplate, TaskTimeConfig } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskTimeConfig } from '@dailyuse/domain-client/task';
 import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { TimeType } from '@dailyuse/contracts/task';

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Goal, GoalFolder } from '@dailyuse/domain-client';
+import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 // 类型定义

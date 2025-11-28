@@ -12,7 +12,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, generateText } from 'ai';
 import { AIProvider } from '@dailyuse/contracts/ai';
-import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
 import {
   BaseAIAdapter,
   type AIGenerationRequest,
@@ -20,8 +20,6 @@ import {
   type AIStreamChunk,
 } from './BaseAIAdapter';
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
-
-type TokenUsageServerDTO = TokenUsageServerDTO;
 
 /**
  * 自定义 Provider 配置

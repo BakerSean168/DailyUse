@@ -11,18 +11,38 @@
 
 import type { IAIProviderConfigRepository } from '@dailyuse/domain-server';
 import { AIProviderConfigServer } from '@dailyuse/domain-server';
-import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, AIProviderConfigClientDTO, AIModelInfo } from '@dailyuse/contracts/ai';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 import { AIAdapterFactory } from '../../infrastructure/adapters/AIAdapterFactory';
 
-type AIProviderConfigClientDTO = AIProviderConfigClientDTO;
-type AIProviderConfigServerDTO = AIProviderConfigServerDTO;
-type CreateAIProviderRequest = CreateAIProviderRequest;
-type UpdateAIProviderRequest = UpdateAIProviderRequest;
-type TestAIProviderConnectionRequest = TestAIProviderConnectionRequest;
-type TestAIProviderConnectionResponse = TestAIProviderConnectionResponse;
-type AIModelInfo = AIModelInfo;
+// 定义请求/响应 DTO（这些应该从 contracts 导入，如果存在）
+interface CreateAIProviderRequest {
+  providerType: AIProviderType;
+  name: string;
+  apiKey: string;
+  baseUrl?: string;
+  isDefault?: boolean;
+}
+
+interface UpdateAIProviderRequest {
+  name?: string;
+  apiKey?: string;
+  baseUrl?: string;
+  isDefault?: boolean;
+}
+
+interface TestAIProviderConnectionRequest {
+  providerType: AIProviderType;
+  apiKey: string;
+  baseUrl?: string;
+}
+
+interface TestAIProviderConnectionResponse {
+  success: boolean;
+  message: string;
+  availableModels?: AIModelInfo[];
+}
 
 const logger = createLogger('AIProviderConfigService');
 

@@ -3,7 +3,7 @@
  * 任务数据同步应用服务 - 负责任务数据的同步与缓存管理
  */
 
-import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';

@@ -8,10 +8,8 @@
  * - 标准化请求/响应格式
  */
 
-import type { GenerationTaskType, AIProvider, AIModel } from '@dailyuse/contracts/ai';
-import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
-
-type TokenUsageServerDTO = TokenUsageServerDTO;
+import type { GenerationTaskType, AIProvider, AIModel, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 
 /**
  * AI 生成请求接口

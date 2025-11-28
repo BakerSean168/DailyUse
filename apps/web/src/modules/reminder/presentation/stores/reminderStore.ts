@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ReminderTemplate, ReminderGroup, ReminderStatistics } from '@dailyuse/domain-client';
+import { ReminderTemplate, ReminderGroup, ReminderStatistics } from '@dailyuse/domain-client/reminder';
 import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
 
 type ReminderHistory = ReminderHistoryClientDTO;

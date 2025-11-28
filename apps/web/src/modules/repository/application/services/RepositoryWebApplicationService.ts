@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useRepositoryStore } from '../../presentation/stores/repositoryStore';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
-import { Repository, Resource } from '@dailyuse/domain-client';
+import { Repository, Resource } from '@dailyuse/domain-client/repository';
 import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { defineStore } from 'pinia';
-import { Repository, Resource, Folder } from '@dailyuse/domain-client';
+import { Repository, Resource, Folder } from '@dailyuse/domain-client/repository';
 import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**

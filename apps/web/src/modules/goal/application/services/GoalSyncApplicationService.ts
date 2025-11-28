@@ -1,5 +1,5 @@
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
-import { Goal, GoalFolder } from '@dailyuse/domain-client';
+import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
 import { goalApiClient, goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';

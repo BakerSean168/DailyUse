@@ -9,7 +9,7 @@
 
 import { eventBus } from '@dailyuse/utils';
 import { useTaskStore } from '../presentation/stores/taskStore';
-import { TaskInstance } from '@dailyuse/domain-client';
+import { TaskInstance } from '@dailyuse/domain-client/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { taskTemplateApiClient } from '../infrastructure/api/taskApiClient';
 

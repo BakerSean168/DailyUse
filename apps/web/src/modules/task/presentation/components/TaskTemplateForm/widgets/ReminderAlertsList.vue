@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
-import { TaskTemplate } from '@dailyuse/domain-client';
+import { TaskTemplate } from '@dailyuse/domain-client/task';
 
 interface Props {
   modelValue: ReminderAlert[];

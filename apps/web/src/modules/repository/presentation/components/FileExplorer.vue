@@ -123,7 +123,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useFolderStore } from '../stores';
 import { useBookmarkStore } from '../stores/bookmarkStore';
 import { repositoryApiClient } from '../../infrastructure/api';
-import { Folder } from '@dailyuse/domain-client';
+import { Folder } from '@dailyuse/domain-client/repository';
 
 // Props
 interface Props {

@@ -9,7 +9,7 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { UserPreferences } from '@dailyuse/domain-client';
+import type { UserPreferences } from '@dailyuse/domain-client/setting';
 import {
   userPreferencesApi,
   type UserPreferencesDTO,

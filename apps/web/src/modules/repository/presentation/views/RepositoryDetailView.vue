@@ -320,7 +320,7 @@
 import { computed, ref, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { format } from 'date-fns';
-import { Repository, Resource } from '@dailyuse/domain-client';
+import { Repository, Resource } from '@dailyuse/domain-client/repository';
 // 组件导入
 import RepoDialog from '../components/dialogs/RepoDialog.vue';
 import ResourceDialog from '../components/dialogs/ResourceDialog.vue';

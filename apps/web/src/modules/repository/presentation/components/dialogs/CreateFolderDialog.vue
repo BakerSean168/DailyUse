@@ -42,7 +42,7 @@
 import { ref, watch, computed } from 'vue';
 import { useFolderStore } from '../../stores';
 import { repositoryApiClient } from '../../../infrastructure/api';
-import { Folder } from '@dailyuse/domain-client';
+import { Folder } from '@dailyuse/domain-client/repository';
 
 // Props
 interface Props {

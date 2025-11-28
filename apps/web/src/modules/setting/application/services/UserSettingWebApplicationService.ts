@@ -5,7 +5,7 @@
 
 import * as userSettingApi from '../../infrastructure/api/userSettingApi';
 import { useUserSettingStore } from '../../presentation/stores/userSettingStore';
-import { UserSetting } from '@dailyuse/domain-client';
+import { UserSetting } from '@dailyuse/domain-client/setting';
 import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
 /**

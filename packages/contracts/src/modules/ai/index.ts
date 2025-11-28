@@ -132,3 +132,9 @@ export type {
   UpdateQuotaLimitRequest,
   ListRequest,
 } from './api-requests';
+
+export type {
+  GeneratedGoalDraft,
+  GenerateGoalResponse,
+  GenerateGoalWithKRsResponse,
+} from './api-responses/GenerateGoalResponse';

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import type { AuthTokens, LoginRequest } from '@dailyuse/contracts/authentication';
 import type { AccountServerDTO } from '@dailyuse/contracts/account';
 import { AuthManager } from '@/shared/api';
-import { AuthCredential, AuthSession } from '@dailyuse/domain-client';
+import { AuthCredential, AuthSession } from '@dailyuse/domain-client/authentication';
 
 // 本地类型别名（无需导出，web 应用不生成 .d.ts）
 type AuthCredentialClientDTO = AuthCredentialClientDTO;

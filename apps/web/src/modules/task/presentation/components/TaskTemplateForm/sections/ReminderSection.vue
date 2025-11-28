@@ -77,7 +77,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { TaskTemplate, TaskReminderConfig } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskReminderConfig } from '@dailyuse/domain-client/task';
 import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 

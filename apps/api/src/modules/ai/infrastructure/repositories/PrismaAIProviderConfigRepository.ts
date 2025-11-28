@@ -14,7 +14,7 @@
 
 import type { PrismaClient } from '@prisma/client';
 import type { IAIProviderConfigRepository } from '@dailyuse/domain-server';
-import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, AIModelInfo } from '@dailyuse/contracts/ai';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import crypto from 'crypto';
 
@@ -31,9 +31,6 @@ type PrismaClientWithAIProvider = PrismaClient & {
     updateMany: (args: any) => Promise<any>;
   };
 };
-
-type AIProviderConfigServerDTO = AIProviderConfigServerDTO;
-type AIModelInfo = AIModelInfo;
 
 // 加密配置
 const ENCRYPTION_ALGORITHM = 'aes-256-gcm';

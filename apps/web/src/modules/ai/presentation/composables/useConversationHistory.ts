@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
 import type { Conversation, ConversationGroup, DateGroup } from '../types/conversation';
-import { httpAiConversationRepository } from '@dailyuse/domain-client';
+import { httpAiConversationRepository } from '@dailyuse/domain-client/ai';
 
 // Conversation history management (migrated from legacy ai-chat module)
 const conversations = ref<Conversation[]>([]);

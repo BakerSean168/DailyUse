@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 import { computed, ref, defineExpose } from 'vue';
-import type { Goal, KeyResult } from '@dailyuse/domain-client';
+import type { Goal, KeyResult } from '@dailyuse/domain-client/goal';
 import { format } from 'date-fns';
 import { useRouter } from 'vue-router';
 import { useGoal } from '../../composables/useGoal';

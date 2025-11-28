@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Folder } from '@dailyuse/domain-client';
+import { Folder } from '@dailyuse/domain-client/repository';
 import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**

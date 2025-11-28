@@ -10,6 +10,27 @@
  * - 支持 ESM 格式，适合现代前端
  */
 
-import { domainConfig } from '../../tools/build/tsup.base.config';
+import { createTsupConfig } from '../../tools/build/tsup.base.config';
 
-export default domainConfig('@dailyuse/domain-client');
+export default createTsupConfig({
+  packageName: '@dailyuse/domain-client',
+  entry: [
+    // 根入口
+    'src/index.ts',
+    // 模块子路径入口
+    'src/task/index.ts',
+    'src/goal/index.ts',
+    'src/reminder/index.ts',
+    'src/schedule/index.ts',
+    'src/notification/index.ts',
+    'src/repository/index.ts',
+    'src/account/index.ts',
+    'src/authentication/index.ts',
+    'src/setting/index.ts',
+    'src/dashboard/index.ts',
+    'src/editor/index.ts',
+    'src/ai/index.ts',
+  ],
+  external: ['@dailyuse/contracts', '@dailyuse/utils'],
+});
+

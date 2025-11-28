@@ -115,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ScheduleTask } from '@dailyuse/domain-client';
+import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 // Props
 const props = defineProps<{

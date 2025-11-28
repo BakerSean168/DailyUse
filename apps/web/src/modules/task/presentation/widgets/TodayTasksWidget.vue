@@ -13,7 +13,7 @@ import { computed, onMounted, ref } from 'vue';
 import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useTaskInstance } from '@/modules/task/presentation/composables/useTaskInstance';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskInstance } from '@dailyuse/domain-client';
+import type { TaskInstance } from '@dailyuse/domain-client/task';
 
 // ===== Props =====
 interface Props {
