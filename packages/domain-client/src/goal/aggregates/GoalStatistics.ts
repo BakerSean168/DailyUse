@@ -4,13 +4,13 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import {
+import { TrendType } from '@dailyuse/contracts/goal';
+import type {
   ChartData,
   GoalStatisticsClient,
   GoalStatisticsClientDTO,
   GoalStatisticsServerDTO,
   TimelineData,
-  TrendType,
 } from '@dailyuse/contracts/goal';
 
 /**
@@ -18,7 +18,7 @@ import {
  */
 export class GoalStatistics
   extends AggregateRoot
-  implements GoalStatistics
+  implements GoalStatisticsClient
 {
   private _accountUuid: string;
   private _totalGoals: number;

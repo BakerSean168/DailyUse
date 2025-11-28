@@ -2,20 +2,20 @@
  * DashboardConfig 聚合根实现 (Client)
  */
 
-import {
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
+import type {
   DashboardConfigClient,
   DashboardConfigClientDTO,
   DashboardConfigServerDTO,
   WidgetConfigDTO,
   WidgetConfigData,
-  WidgetSize,
 } from '@dailyuse/contracts/dashboard';
 import { AggregateRoot } from '@dailyuse/utils';
 import { WidgetConfig } from '../value-objects';
 
 // 类型别名
 
-export class DashboardConfig extends AggregateRoot implements DashboardConfig {
+export class DashboardConfig extends AggregateRoot implements DashboardConfigClient {
   private _accountUuid: string;
   private _widgetConfig: Map<string, WidgetConfig>;
   private _createdAt: number;

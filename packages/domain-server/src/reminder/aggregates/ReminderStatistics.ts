@@ -3,7 +3,7 @@
  * 实现 ReminderStatisticsServer 接口
  */
 
-import {
+import type {
   GroupStatsInfo,
   ReminderStatisticsClientDTO,
   ReminderStatisticsPersistenceDTO,

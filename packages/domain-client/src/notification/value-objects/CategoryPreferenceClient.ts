@@ -3,16 +3,18 @@
  */
 
 import {
-  CategoryPreferenceClient,
+  ImportanceLevel,
+} from '@dailyuse/contracts/notification';
+import type {
+  CategoryPreferenceClient as ICategoryPreferenceClient,
   CategoryPreferenceClientDTO,
   CategoryPreferenceServerDTO,
   ChannelPreference,
-  ImportanceLevel,
 } from '@dailyuse/contracts/notification';
 
 
 
-export class CategoryPreferenceClient implements CategoryPreferenceClient {
+export class CategoryPreferenceClient implements ICategoryPreferenceClient {
   private readonly dto: CategoryPreferenceClientDTO;
 
   private constructor(dto: CategoryPreferenceClientDTO) {

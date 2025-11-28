@@ -3,11 +3,13 @@
  * 资源实体 - 客户端实现
  */
 import {
+  ResourceStatus,
+  ResourceType,
+} from '@dailyuse/contracts/repository';
+import type {
   ResourceClient,
   ResourceClientDTO,
   ResourceServerDTO,
-  ResourceStatus,
-  ResourceType,
 } from '@dailyuse/contracts/repository';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';

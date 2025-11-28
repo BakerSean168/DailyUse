@@ -2,18 +2,15 @@
  * GoalMetadata 值对象实现 (Client)
  */
 
-import {
+import type {
   GoalMetadataClient,
   GoalMetadataClientDTO,
   GoalMetadataServerDTO,
-  ImportanceLevel,
-  UrgencyLevel,
 } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { ValueObject } from '@dailyuse/utils';
 
-
-
-export class GoalMetadata extends ValueObject implements GoalMetadata {
+export class GoalMetadata extends ValueObject implements GoalMetadataClient {
   private _importance: ImportanceLevel;
   private _urgency: UrgencyLevel;
   private _category: string | null;

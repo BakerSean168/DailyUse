@@ -11,6 +11,12 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import {
+  GoalStatus,
+  ReminderTriggerType,
+  ReviewType,
+  SnapshotTrigger,
+} from '@dailyuse/contracts/goal';
+import type {
   GoalArchivedEvent,
   GoalClientDTO,
   GoalCompletedEvent,
@@ -24,7 +30,6 @@ import {
   GoalReviewServerDTO,
   GoalServer,
   GoalServerDTO,
-  GoalStatus,
   GoalStatusChangedEvent,
   GoalTimeRangeSummary,
   GoalUpdatedEvent,
@@ -35,9 +40,6 @@ import {
   KeyResultUpdatedEvent,
   ProgressBreakdown,
   ReminderTrigger,
-  ReminderTriggerType,
-  ReviewType,
-  SnapshotTrigger,
 } from '@dailyuse/contracts/goal';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { KeyResult } from '../entities/KeyResult';

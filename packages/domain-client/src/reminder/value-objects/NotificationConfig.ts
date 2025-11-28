@@ -3,8 +3,10 @@
  */
 
 import {
-  NotificationActionConfig,
   NotificationChannel,
+} from '@dailyuse/contracts/reminder';
+import type {
+  NotificationActionConfig,
   NotificationConfigClient,
   NotificationConfigClientDTO,
   NotificationConfigServerDTO,

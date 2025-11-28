@@ -5,7 +5,8 @@
  * 包含权重变化的完整上下文信息（谁、什么时候、为什么、怎么变的）。
  */
 
-import { KeyResultWeightSnapshotPersistenceDTO, KeyResultWeightSnapshotServerDTO, SnapshotTrigger } from '@dailyuse/contracts/goal';
+import { SnapshotTrigger } from '@dailyuse/contracts/goal';
+import type { KeyResultWeightSnapshotPersistenceDTO, KeyResultWeightSnapshotServerDTO } from '@dailyuse/contracts/goal';
 import { InvalidWeightError } from './KeyResultWeightSnapshotErrors';
 
 // 类型别名

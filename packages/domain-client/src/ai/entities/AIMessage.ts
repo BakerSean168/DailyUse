@@ -1,7 +1,7 @@
-import {
+import { MessageRole } from '@dailyuse/contracts/ai';
+import type {
   MessageClient,
   MessageClientDTO,
-  MessageRole,
   MessageServerDTO,
 } from '@dailyuse/contracts/ai';
 

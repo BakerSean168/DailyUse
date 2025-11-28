@@ -1,4 +1,4 @@
-import { TokenUsageClientDTO, TokenUsagePersistenceDTO, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
+import type { TokenUsageClientDTO, TokenUsagePersistenceDTO, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
 
 export class TokenUsage {
   public readonly promptTokens: number;

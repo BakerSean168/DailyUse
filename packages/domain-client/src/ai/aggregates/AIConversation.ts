@@ -1,10 +1,10 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import {
+import { ConversationStatus } from '@dailyuse/contracts/ai';
+import type {
   AIConversationClient,
   AIConversationClientDTO,
   AIConversationClientInstance,
   AIConversationServerDTO,
-  ConversationStatus,
   MessageClient,
 } from '@dailyuse/contracts/ai';
 import { AIMessage } from '../entities/AIMessage';

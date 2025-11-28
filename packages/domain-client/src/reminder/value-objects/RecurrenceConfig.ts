@@ -3,12 +3,14 @@
  */
 
 import {
+  RecurrenceType,
+} from '@dailyuse/contracts/reminder';
+import type {
   CustomDaysRecurrence,
   DailyRecurrence,
   RecurrenceConfigClient,
   RecurrenceConfigClientDTO,
   RecurrenceConfigServerDTO,
-  RecurrenceType,
   WeeklyRecurrence,
 } from '@dailyuse/contracts/reminder';
 

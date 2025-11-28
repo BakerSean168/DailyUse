@@ -3,11 +3,13 @@
  */
 
 import {
+  GoalStatus,
+} from '@dailyuse/contracts/goal';
+import type {
   GoalClient,
   GoalClientDTO,
   GoalRecordClientDTO,
   GoalServerDTO,
-  GoalStatus,
   GoalTimeRangeSummary,
 } from '@dailyuse/contracts/goal';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
@@ -18,7 +20,7 @@ import { KeyResult, GoalReview } from '../entities';
 const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_DURATION = 30 * DAY_MS;
 
-export class Goal extends AggregateRoot implements Goal {
+export class Goal extends AggregateRoot implements GoalClient {
   private _accountUuid: string;
   private _title: string;
   private _description?: string | null;
@@ -682,7 +684,7 @@ export class Goal extends AggregateRoot implements Goal {
     };
   }
 
-  public toClientDTO(includeChildren = false): GoalDTO {
+  public toClientDTO(includeChildren = false): GoalClientDTO {
     const recordsPayload = includeChildren ? this.records : undefined;
     return {
       uuid: this._uuid,
@@ -820,7 +822,7 @@ export class Goal extends AggregateRoot implements Goal {
     });
   }
 
-  public static fromClientDTO(dto: GoalDTO): Goal {
+  public static fromClientDTO(dto: GoalClientDTO): Goal {
     return new Goal({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,

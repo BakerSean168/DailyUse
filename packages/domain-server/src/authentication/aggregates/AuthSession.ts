@@ -3,7 +3,7 @@
  * 实现 AuthSessionServer 接口
  */
 
-import {
+import type {
   AuthSessionClientDTO,
   AuthSessionPersistenceDTO,
   AuthSessionServer,

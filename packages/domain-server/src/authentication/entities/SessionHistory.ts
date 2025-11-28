@@ -3,7 +3,7 @@
  * 实现 SessionHistoryServer 接口
  */
 
-import { SessionHistoryPersistenceDTO, SessionHistoryServer, SessionHistoryServerDTO } from '@dailyuse/contracts/authentication';
+import type { SessionHistoryPersistenceDTO, SessionHistoryServer, SessionHistoryServerDTO } from '@dailyuse/contracts/authentication';
 import { Entity, generateUUID } from '@dailyuse/utils';
 
 export class SessionHistory extends Entity implements SessionHistoryServer {

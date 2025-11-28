@@ -3,7 +3,7 @@
  * 实现 AccountHistoryServer 接口
  */
 
-import {
+import type {
   AccountHistoryClientDTO,
   AccountHistoryPersistenceDTO,
   AccountHistoryServer,

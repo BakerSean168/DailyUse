@@ -4,7 +4,7 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import {
+import type {
   GroupStatsInfo,
   ReminderStatisticsClient,
   ReminderStatisticsClientDTO,

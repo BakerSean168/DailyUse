@@ -1,4 +1,4 @@
-import { GoalReminderConfigServerDTO, GoalServerDTO } from '@dailyuse/contracts/goal';
+import type { GoalReminderConfigServerDTO, GoalServerDTO } from '@dailyuse/contracts/goal';
 import type { DomainEvent } from '@dailyuse/utils';
 
 /**

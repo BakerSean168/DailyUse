@@ -3,12 +3,14 @@
  */
 
 import {
+  TriggerType,
+} from '@dailyuse/contracts/reminder';
+import type {
   FixedTimeTrigger,
   IntervalTrigger,
   TriggerConfigClient,
   TriggerConfigClientDTO,
   TriggerConfigServerDTO,
-  TriggerType,
 } from '@dailyuse/contracts/reminder';
 
 export class TriggerConfig implements TriggerConfigClient {

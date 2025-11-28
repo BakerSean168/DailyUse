@@ -3,7 +3,7 @@
  * 实现 AuthCredentialServer 接口
  */
 
-import {
+import type {
   ApiKeyCredentialServer,
   AuthCredentialClientDTO,
   AuthCredentialPersistenceDTO,

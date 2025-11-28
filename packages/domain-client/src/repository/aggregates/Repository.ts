@@ -8,14 +8,16 @@
  * - 是事务边界
  */
 import {
+  RepositoryStatus,
+  RepositoryType,
+} from '@dailyuse/contracts/repository';
+import type {
   FolderClient,
   RepositoryClient,
   RepositoryClientDTO,
   RepositoryConfigServerDTO,
   RepositoryServerDTO,
   RepositoryStatsServerDTO,
-  RepositoryStatus,
-  RepositoryType,
 } from '@dailyuse/contracts/repository';
 import { AggregateRoot } from '@dailyuse/utils';
 import { RepositoryConfig, RepositoryStats } from '../value-objects';

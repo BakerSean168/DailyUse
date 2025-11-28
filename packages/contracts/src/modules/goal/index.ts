@@ -105,7 +105,27 @@ export type {
   GoalClient,
   GoalClientStatic,
   GoalClientInstance,
+  GoalTimeRangeSummary,
 } from './aggregates/GoalClient';
+
+// ============ Entities (Client) ============
+export type {
+  GoalRecordClientDTO,
+  GoalRecordClient,
+  GoalRecordClientStatic,
+} from './entities/GoalRecordClient';
+
+export type {
+  KeyResultClientDTO,
+  KeyResultClient,
+  KeyResultClientStatic,
+} from './entities/KeyResultClient';
+
+export type {
+  GoalReviewClientDTO,
+  GoalReviewClient,
+  GoalReviewClientStatic,
+} from './entities/GoalReviewClient';
 
 export type {
   GoalFolderServerDTO,

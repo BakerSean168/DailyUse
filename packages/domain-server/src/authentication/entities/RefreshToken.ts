@@ -3,7 +3,7 @@
  * 实现 RefreshTokenServer 接口
  */
 
-import { RefreshTokenPersistenceDTO, RefreshTokenServer, RefreshTokenServerDTO } from '@dailyuse/contracts/authentication';
+import type { RefreshTokenPersistenceDTO, RefreshTokenServer, RefreshTokenServerDTO } from '@dailyuse/contracts/authentication';
 import { Entity, generateUUID } from '@dailyuse/utils';
 
 export class RefreshToken extends Entity implements RefreshTokenServer {

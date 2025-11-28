@@ -1,14 +1,16 @@
 import { AggregateRoot } from '@dailyuse/utils';
 import {
+  QuotaResetPeriod,
+} from '@dailyuse/contracts/ai';
+import type {
   AIUsageQuotaClientDTO,
   AIUsageQuotaPersistenceDTO,
-  AIUsageQuotaServer,
+  AIUsageQuotaServer as IAIUsageQuotaServer,
   AIUsageQuotaServerDTO,
-  QuotaResetPeriod,
 } from '@dailyuse/contracts/ai';
 
 
-export class AIUsageQuotaServer extends AggregateRoot implements AIUsageQuotaServer {
+export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaServer {
   private _accountUuid: string;
   private _quotaLimit: number;
   private _currentUsage: number;

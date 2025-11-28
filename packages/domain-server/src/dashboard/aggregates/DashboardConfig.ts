@@ -10,12 +10,14 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import {
+  WidgetSize,
+} from '@dailyuse/contracts/dashboard';
+import type {
   DashboardConfigPersistenceDTO,
   DashboardConfigServer,
   DashboardConfigServerDTO,
   WidgetConfigDTO,
   WidgetConfigData,
-  WidgetSize,
 } from '@dailyuse/contracts/dashboard';
 import { WidgetConfig } from '../value-objects';
 

@@ -6,7 +6,7 @@
  * - 管理文件夹层级关系（子文件夹）
  * - 执行文件夹业务逻辑
  */
-import {
+import type {
   FolderClient,
   FolderClientDTO,
   FolderMetadataServerDTO,

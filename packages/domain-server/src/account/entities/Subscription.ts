@@ -3,7 +3,7 @@
  * 实现 SubscriptionServer 接口
  */
 
-import {
+import type {
   SubscriptionClientDTO,
   SubscriptionPersistenceDTO,
   SubscriptionServer,

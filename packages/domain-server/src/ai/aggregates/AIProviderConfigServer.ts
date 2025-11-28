@@ -10,10 +10,12 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import {
+  AIProviderType,
+} from '@dailyuse/contracts/ai';
+import type {
   AIModelInfo,
   AIProviderConfigClientDTO,
   AIProviderConfigServerDTO,
-  AIProviderType,
 } from '@dailyuse/contracts/ai';
 
 /**

@@ -3,7 +3,7 @@
  * 实现 DeviceInfoServer 接口
  */
 
-import { DeviceInfoClientDTO, DeviceInfoServer, DeviceInfoServerDTO } from '@dailyuse/contracts/authentication';
+import type { DeviceInfoClientDTO, DeviceInfoServer, DeviceInfoServerDTO } from '@dailyuse/contracts/authentication';
 import { ValueObject } from '@dailyuse/utils';
 import crypto from 'crypto';
 

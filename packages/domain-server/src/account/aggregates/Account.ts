@@ -3,7 +3,7 @@
  * 实现 AccountServer 接口
  */
 
-import {
+import type {
   AccountClientDTO,
   AccountPersistenceDTO,
   AccountServer,

@@ -4,11 +4,13 @@
  */
 
 import {
+  ProjectType,
+} from '@dailyuse/contracts/editor';
+import type {
   EditorWorkspaceClientDTO,
   EditorWorkspacePersistenceDTO,
   EditorWorkspaceServer,
   EditorWorkspaceServerDTO,
-  ProjectType,
   SessionLayoutServerDTO,
   WorkspaceLayoutServerDTO,
   WorkspaceSettingsServerDTO,

@@ -4,26 +4,28 @@
  */
 
 import {
+  NotificationChannel,
+  ReminderStatus,
+  ReminderType,
+  TriggerType,
+} from '@dailyuse/contracts/reminder';
+import type {
   ActiveHoursConfigClient,
   ActiveHoursConfigClientDTO,
   ActiveTimeConfigClient,
   ActiveTimeConfigClientDTO,
-  NotificationChannel,
   NotificationConfigClient,
   NotificationConfigClientDTO,
   RecurrenceConfigClient,
   RecurrenceConfigClientDTO,
   ReminderStatsClient,
   ReminderStatsClientDTO,
-  ReminderStatus,
   ReminderTemplateClient,
   ReminderTemplateClientDTO,
   ReminderTemplateDTO,
   ReminderTemplateServerDTO,
-  ReminderType,
   TriggerConfigClient,
   TriggerConfigClientDTO,
-  TriggerType,
 } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';

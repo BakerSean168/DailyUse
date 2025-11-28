@@ -1,7 +1,8 @@
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { Goal } from '../aggregates/Goal';
 import { GoalReminderConfig } from '../value-objects/GoalReminderConfig';
-import { GoalReminderConfigServerDTO, GoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalReminderConfigServerDTO } from '@dailyuse/contracts/goal';
 
 
 /**

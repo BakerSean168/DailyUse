@@ -1,4 +1,5 @@
-import { GenerationInputPersistenceDTO, GenerationInputServerDTO, GenerationTaskType } from '@dailyuse/contracts/ai';
+import { GenerationTaskType } from '@dailyuse/contracts/ai';
+import type { GenerationInputPersistenceDTO, GenerationInputServerDTO } from '@dailyuse/contracts/ai';
 
 export class GenerationInput {
   public readonly prompt: string;

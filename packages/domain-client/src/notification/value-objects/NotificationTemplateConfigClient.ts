@@ -2,17 +2,17 @@
  * NotificationTemplateConfig 值对象实现 (Client)
  */
 
-import {
+import type {
   ChannelConfig,
   EmailTemplateContent,
-  NotificationTemplateConfigClient,
+  NotificationTemplateConfigClient as INotificationTemplateConfigClient,
   NotificationTemplateConfigClientDTO,
   NotificationTemplateConfigServerDTO,
   PushTemplateContent,
   TemplateContent,
 } from '@dailyuse/contracts/notification';
 
-export class NotificationTemplateConfigClient implements NotificationTemplateConfigClient {
+export class NotificationTemplateConfigClient implements INotificationTemplateConfigClient {
   private readonly dto: NotificationTemplateConfigClientDTO;
 
   private constructor(dto: NotificationTemplateConfigClientDTO) {

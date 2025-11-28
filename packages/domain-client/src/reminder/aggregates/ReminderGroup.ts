@@ -4,10 +4,12 @@
 
 import {
   ControlMode,
+  ReminderStatus,
+} from '@dailyuse/contracts/reminder';
+import type {
   ReminderGroupClient,
   ReminderGroupClientDTO,
   ReminderGroupServerDTO,
-  ReminderStatus,
 } from '@dailyuse/contracts/reminder';
 import { AggregateRoot } from '@dailyuse/utils';
 import * as ValueObjects from '../value-objects';
@@ -15,7 +17,7 @@ import * as ValueObjects from '../value-objects';
 // 枚举常量使用 Enum 后缀，避免与类型名冲突
 
 export class ReminderGroup extends AggregateRoot 
-  implements ReminderGroup {
+  implements ReminderGroupClient {
   
   private _accountUuid: string;
   private _name: string;

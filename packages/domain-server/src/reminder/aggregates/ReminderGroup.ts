@@ -5,12 +5,14 @@
 
 import {
   ControlMode,
+  ReminderStatus,
+} from '@dailyuse/contracts/reminder';
+import type {
   GroupStatsServer,
   ReminderGroupClientDTO,
   ReminderGroupPersistenceDTO,
   ReminderGroupServer,
   ReminderGroupServerDTO,
-  ReminderStatus,
 } from '@dailyuse/contracts/reminder';
 import { AggregateRoot } from '@dailyuse/utils';
 import { GroupStats } from '../value-objects';
