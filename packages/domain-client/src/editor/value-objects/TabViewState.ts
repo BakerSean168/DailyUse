@@ -3,12 +3,8 @@
  * 标签页视图状态 - 客户端值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { ITabViewStateClient, TabViewStateClientDTO, TabViewStateServerDTO } from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type ITabViewStateClient = EditorContracts.ITabViewStateClient;
-type TabViewStateServerDTO = EditorContracts.TabViewStateServerDTO;
-type TabViewStateClientDTO = EditorContracts.TabViewStateClientDTO;
 
 /**
  * TabViewState 值对象
@@ -19,7 +15,7 @@ type TabViewStateClientDTO = EditorContracts.TabViewStateClientDTO;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class TabViewState extends ValueObject implements ITabViewStateClient {
+export class TabViewState extends ValueObject implements TabViewStateClient {
   public readonly scrollTop: number;
   public readonly scrollLeft: number;
   public readonly cursorPosition: {

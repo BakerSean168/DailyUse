@@ -4,12 +4,13 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
-import { ScheduleContracts } from '@dailyuse/contracts';
-
-type Timezone = ScheduleContracts.Timezone;
-type ScheduleConfigServerDTO = ScheduleContracts.ScheduleConfigServerDTO;
-type ScheduleConfigClientDTO = ScheduleContracts.ScheduleConfigClientDTO;
-type ScheduleConfigPersistenceDTO = ScheduleContracts.ScheduleConfigPersistenceDTO;
+import type {
+  ScheduleConfigClientDTO,
+  ScheduleConfigPersistenceDTO,
+  ScheduleConfigServer,
+  ScheduleConfigServerDTO,
+} from '@dailyuse/contracts/schedule';
+import { Timezone } from '@dailyuse/contracts/schedule';
 
 /**
  * ScheduleConfig 值对象
@@ -20,7 +21,7 @@ type ScheduleConfigPersistenceDTO = ScheduleContracts.ScheduleConfigPersistenceD
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class ScheduleConfig extends ValueObject implements ScheduleContracts.ScheduleConfigServer {
+export class ScheduleConfig extends ValueObject implements ScheduleConfigServer {
   public readonly cronExpression: string;
   public readonly timezone: Timezone;
   public readonly startDate: number | null;
@@ -74,9 +75,9 @@ export class ScheduleConfig extends ValueObject implements ScheduleContracts.Sch
     if (errors.length > 0) {
       // 为了兼容旧代码，这里抛出异常，但接口要求返回对象
       // 理想情况下应该只返回对象，不抛出异常
-      // throw new Error(errors[0]); 
+      // throw new Error(errors[0]);
     }
-    
+
     return { isValid: errors.length === 0, errors };
   }
 
@@ -224,7 +225,8 @@ export class ScheduleConfig extends ValueObject implements ScheduleContracts.Sch
    */
   public static fromDTO(dto: any): ScheduleConfig {
     // 检查是否是 ServerDTO (string dates) 还是旧的 DTO (number dates)
-    const startDate = typeof dto.startDate === 'string' ? new Date(dto.startDate).getTime() : dto.startDate;
+    const startDate =
+      typeof dto.startDate === 'string' ? new Date(dto.startDate).getTime() : dto.startDate;
     const endDate = typeof dto.endDate === 'string' ? new Date(dto.endDate).getTime() : dto.endDate;
 
     return new ScheduleConfig({

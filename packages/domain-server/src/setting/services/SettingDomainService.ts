@@ -11,13 +11,11 @@
 
 import type { ISettingRepository } from '../repositories/ISettingRepository';
 import { Setting } from '../aggregates/Setting';
-import type { SettingContracts } from '@dailyuse/contracts';
+import type { SyncConfigServer, UIConfigServer, ValidationRuleServer } from '@dailyuse/contracts/setting';
+import { SettingScope, SettingValueType } from '@dailyuse/contracts/setting';
 import { ValidationRule } from '../value-objects/ValidationRule';
 import { UIConfig } from '../value-objects/UIConfig';
 import { SyncConfig } from '../value-objects/SyncConfig';
-
-type SettingScope = SettingContracts.SettingScope;
-type SettingValueType = SettingContracts.SettingValueType;
 
 /**
  * SettingDomainService
@@ -48,12 +46,12 @@ export class SettingDomainService {
     accountUuid?: string;
     deviceId?: string;
     groupUuid?: string;
-    validation?: SettingContracts.ValidationRuleServer;
-    ui?: SettingContracts.UIConfigServer;
+    validation?: ValidationRuleServer;
+    ui?: UIConfigServer;
     isEncrypted?: boolean;
     isReadOnly?: boolean;
     isSystemSetting?: boolean;
-    syncConfig?: SettingContracts.SyncConfigServer;
+    syncConfig?: SyncConfigServer;
   }): Promise<Setting> {
     // 1. 验证：检查 key 是否已存在
     const exists = await this.settingRepo.existsByKey(

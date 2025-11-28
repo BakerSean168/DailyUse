@@ -2,14 +2,9 @@
  * TaskReminderConfig 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { ReminderTimeUnit, TaskReminderConfigClient, TaskReminderConfigClientDTO, TaskReminderConfigServerDTO } from '@dailyuse/contracts/task';
+import { ReminderType } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
-
-type ITaskReminderConfig = TaskContracts.TaskReminderConfigClient;
-type TaskReminderConfigDTO = TaskContracts.TaskReminderConfigClientDTO;
-type TaskReminderConfigServerDTO = TaskContracts.TaskReminderConfigServerDTO;
-type ReminderType = TaskContracts.ReminderType;
-type ReminderTimeUnit = TaskContracts.ReminderTimeUnit;
 
 interface ReminderTrigger {
   type: ReminderType;
@@ -18,7 +13,7 @@ interface ReminderTrigger {
   relativeUnit?: ReminderTimeUnit | null;
 }
 
-export class TaskReminderConfig extends ValueObject implements ITaskReminderConfig {
+export class TaskReminderConfig extends ValueObject implements TaskReminderConfig {
   private _enabled: boolean;
   private _triggers: ReminderTrigger[];
 

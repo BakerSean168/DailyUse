@@ -4,21 +4,21 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
-import type { GoalContracts } from '@dailyuse/contracts';
-
-type IGoalReminderConfigServerServer = GoalContracts.GoalReminderConfigServer;
-type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
-type GoalReminderConfigClientDTO = GoalContracts.GoalReminderConfigClientDTO;
-type GoalReminderConfigPersistenceDTO = GoalContracts.GoalReminderConfigPersistenceDTO;
-type ReminderTrigger = GoalContracts.ReminderTrigger;
-type ReminderTriggerType = GoalContracts.ReminderTriggerType;
+import type {
+  GoalReminderConfigClientDTO,
+  GoalReminderConfigPersistenceDTO,
+  GoalReminderConfigServer,
+  GoalReminderConfigServerDTO,
+  ReminderTrigger,
+  ReminderTriggerType,
+} from '@dailyuse/contracts/goal';
 
 /**
  * GoalReminderConfig 值对象 (Server)
  * 
  * 不可变值对象，所有修改操作返回新实例
  */
-export class GoalReminderConfig extends ValueObject implements GoalContracts.GoalReminderConfigServer {
+export class GoalReminderConfig extends ValueObject implements GoalReminderConfigServer {
   private readonly _enabled: boolean;
   private readonly _triggers: readonly ReminderTrigger[];
 
@@ -73,7 +73,7 @@ export class GoalReminderConfig extends ValueObject implements GoalContracts.Goa
   public with(
     updates: Partial<
       Omit<
-        GoalContracts.GoalReminderConfigServer,
+        GoalReminderConfigServer,
         'equals' | 'with' | 'toServerDTO' | 'toClientDTO' | 'toPersistenceDTO'
       >
     >

@@ -3,8 +3,9 @@
  * 任务模板 - 生成任务实例的模板
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
-import { ImportanceLevel, UrgencyLevel, TaskType, TimeType, TaskTemplateStatus } from '@dailyuse/contracts';
+import type { TaskTemplateClient, TaskTemplateClientDTO, TaskTemplateServerDTO } from '@dailyuse/contracts/task';
+import { TimeType, TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   TaskTimeConfig,
@@ -15,11 +16,7 @@ import {
 import { TaskTemplateHistory } from '../entities';
 import { TaskInstance } from './TaskInstance';
 
-type ITaskTemplate = TaskContracts.TaskTemplateClient;
-type TaskTemplateDTO = TaskContracts.TaskTemplateClientDTO;
-type TaskTemplateServerDTO = TaskContracts.TaskTemplateServerDTO;
-
-export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
+export class TaskTemplate extends AggregateRoot implements TaskTemplate {
   private _accountUuid: string;
   private _title: string;
   private _description?: string | null;
@@ -412,7 +409,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
 
     const now = Date.now();
     const currentDate = new Date();
-    
+
     // 根据不同的时间类型，初始化不同的时间数据
     switch (newTimeType) {
       case TimeType.ALL_DAY: {
@@ -663,9 +660,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       description: dto.description,
       taskType: dto.taskType,
       timeConfig: TaskTimeConfig.fromClientDTO(dto.timeConfig),
-      recurrenceRule: dto.recurrenceRule
-        ? RecurrenceRule.fromClientDTO(dto.recurrenceRule)
-        : null,
+      recurrenceRule: dto.recurrenceRule ? RecurrenceRule.fromClientDTO(dto.recurrenceRule) : null,
       reminderConfig: dto.reminderConfig
         ? TaskReminderConfig.fromClientDTO(dto.reminderConfig)
         : null,
@@ -705,9 +700,7 @@ export class TaskTemplate extends AggregateRoot implements ITaskTemplate {
       description: dto.description,
       taskType: dto.taskType,
       timeConfig: defaultTimeConfig,
-      recurrenceRule: dto.recurrenceRule
-        ? RecurrenceRule.fromServerDTO(dto.recurrenceRule)
-        : null,
+      recurrenceRule: dto.recurrenceRule ? RecurrenceRule.fromServerDTO(dto.recurrenceRule) : null,
       reminderConfig: dto.reminderConfig
         ? TaskReminderConfig.fromServerDTO(dto.reminderConfig)
         : null,

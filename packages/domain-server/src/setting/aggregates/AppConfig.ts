@@ -4,16 +4,18 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { SettingContracts } from '@dailyuse/contracts';
-
-type IAppConfigServer = SettingContracts.AppConfigServer;
-type AppEnvironment = SettingContracts.AppEnvironment;
-const AppEnvironment = SettingContracts.AppEnvironment;
+import type {
+  AppConfigClientDTO,
+  AppConfigPersistenceDTO,
+  AppConfigServer,
+  AppConfigServerDTO,
+} from '@dailyuse/contracts/setting';
+import { AppEnvironment } from '@dailyuse/contracts/setting';
 
 /**
  * 应用配置聚合根服务端实现
  */
-export class AppConfig extends AggregateRoot implements IAppConfigServer {
+export class AppConfig extends AggregateRoot implements AppConfigServer {
   private _version: string;
   private _app: {
     name: string;
@@ -194,7 +196,7 @@ export class AppConfig extends AggregateRoot implements IAppConfigServer {
 
   // ========== DTO 转换 ==========
 
-  toServerDTO(): SettingContracts.AppConfigServerDTO {
+  toServerDTO(): AppConfigServerDTO {
     return {
       uuid: this.uuid,
       version: this._version,
@@ -209,7 +211,7 @@ export class AppConfig extends AggregateRoot implements IAppConfigServer {
     };
   }
 
-  toClientDTO(): SettingContracts.AppConfigClientDTO {
+  toClientDTO(): AppConfigClientDTO {
     return {
       uuid: this.uuid,
       version: this._version,
@@ -225,7 +227,7 @@ export class AppConfig extends AggregateRoot implements IAppConfigServer {
     };
   }
 
-  toPersistenceDTO(): SettingContracts.AppConfigPersistenceDTO {
+  toPersistenceDTO(): AppConfigPersistenceDTO {
     return {
       uuid: this.uuid,
       version: this._version,
@@ -242,7 +244,7 @@ export class AppConfig extends AggregateRoot implements IAppConfigServer {
 
   // ========== 静态工厂方法 ==========
 
-  static create(params?: Partial<SettingContracts.AppConfigServer>): AppConfig {
+  static create(params?: Partial<AppConfigServer>): AppConfig {
     const now = Date.now();
 
     // 默认配置
@@ -344,7 +346,7 @@ export class AppConfig extends AggregateRoot implements IAppConfigServer {
     );
   }
 
-  static fromServerDTO(dto: SettingContracts.AppConfigServerDTO): AppConfig {
+  static fromServerDTO(dto: AppConfigServerDTO): AppConfig {
     return new AppConfig(
       dto.uuid,
       dto.version,
@@ -362,7 +364,7 @@ export class AppConfig extends AggregateRoot implements IAppConfigServer {
     );
   }
 
-  static fromPersistenceDTO(dto: SettingContracts.AppConfigPersistenceDTO): AppConfig {
+  static fromPersistenceDTO(dto: AppConfigPersistenceDTO): AppConfig {
     return new AppConfig(
       dto.uuid,
       dto.version,

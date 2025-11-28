@@ -2,14 +2,10 @@
  * KeyResultSnapshot 值对象实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { IKeyResultSnapshotClient, KeyResultSnapshotClientDTO, KeyResultSnapshotServerDTO } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-type IKeyResultSnapshot = GoalContracts.IKeyResultSnapshotClient;
-type KeyResultSnapshotDTO = GoalContracts.KeyResultSnapshotClientDTO;
-type KeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
-
-export class KeyResultSnapshot extends ValueObject implements IKeyResultSnapshot {
+export class KeyResultSnapshot extends ValueObject implements KeyResultSnapshot {
   private _keyResultUuid: string;
   private _title: string;
   private _targetValue: number;

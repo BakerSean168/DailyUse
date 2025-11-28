@@ -7,8 +7,8 @@
  * - 处理剩余天数触发器
  */
 
-import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts';
-import type { GoalContracts } from '@dailyuse/contracts';
+import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts/schedule';
+import type { GoalServerDTO, ReminderTrigger } from '@dailyuse/contracts/goal';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
 import type {
@@ -20,7 +20,7 @@ import type {
 /**
  * Goal 调度策略实现
  */
-export class GoalScheduleStrategy implements IScheduleStrategy {
+export class GoalScheduleStrategy implements ScheduleStrategy {
   /**
    * 支持 GOAL 源模块
    */
@@ -32,7 +32,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 判断 Goal 是否需要创建调度任务
    * 条件：有 reminderConfig 且已启用，且有活跃的触发器
    */
-  shouldCreateSchedule(sourceEntity: GoalContracts.GoalServerDTO): boolean {
+  shouldCreateSchedule(sourceEntity: GoalServerDTO): boolean {
     if (!sourceEntity.reminderConfig) {
       return false;
     }
@@ -47,7 +47,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 从 Goal 创建调度配置
    */
   createSchedule(input: ScheduleStrategyInput): ScheduleStrategyOutput {
-    const goal = input.sourceEntity as GoalContracts.GoalServerDTO;
+    const goal = input.sourceEntity as GoalServerDTO;
 
     if (!this.shouldCreateSchedule(goal)) {
       throw new Error(
@@ -110,7 +110,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * - 中期目标 (30-180天): 每天早上9点检查
    * - 长期目标 (>180天): 每周一早上9点检查
    */
-  private generateCronExpression(goal: GoalContracts.GoalServerDTO): string {
+  private generateCronExpression(goal: GoalServerDTO): string {
     const goalDuration = this.calculateGoalDuration(goal);
 
     // 根据目标时长选择检查频率
@@ -135,7 +135,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 计算目标持续天数
    * @returns 天数，如果无法计算则返回 null
    */
-  private calculateGoalDuration(goal: GoalContracts.GoalServerDTO): number | null {
+  private calculateGoalDuration(goal: GoalServerDTO): number | null {
     if (!goal.startDate || !goal.targetDate) {
       return null;
     }
@@ -149,8 +149,8 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 预计算触发器对应的关键日期，便于后续任务执行时参考
    */
   private calculateUpcomingTriggerDates(
-    goal: GoalContracts.GoalServerDTO,
-    triggers: GoalContracts.ReminderTrigger[],
+    goal: GoalServerDTO,
+    triggers: ReminderTrigger[],
   ): string[] {
     const upcomingDates: string[] = [];
 
@@ -177,8 +177,8 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 计算时间进度触发器对应的日期
    */
   private calculateTriggerDateForTimeProgress(
-    goal: GoalContracts.GoalServerDTO,
-    trigger: GoalContracts.ReminderTrigger,
+    goal: GoalServerDTO,
+    trigger: ReminderTrigger,
   ): Date | null {
     if (!goal.startDate || !goal.targetDate || !trigger.value) {
       return null;
@@ -193,8 +193,8 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 计算剩余天数触发器对应的日期
    */
   private calculateTriggerDateForRemainingDays(
-    goal: GoalContracts.GoalServerDTO,
-    trigger: GoalContracts.ReminderTrigger,
+    goal: GoalServerDTO,
+    trigger: ReminderTrigger,
   ): Date | null {
     if (!goal.targetDate || !trigger.value) {
       return null;
@@ -208,7 +208,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 计算任务优先级
    * 基于 Goal 的重要性和紧急程度
    */
-  private calculatePriority(goal: GoalContracts.GoalServerDTO): TaskPriority {
+  private calculatePriority(goal: GoalServerDTO): TaskPriority {
     // 根据重要性和紧急程度映射到任务优先级
     const { importance, urgency } = goal;
 
@@ -243,8 +243,8 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 生成任务标签
    */
   private generateTags(
-    goal: GoalContracts.GoalServerDTO,
-    triggers: GoalContracts.ReminderTrigger[],
+    goal: GoalServerDTO,
+    triggers: ReminderTrigger[],
   ): string[] {
     const tags: string[] = [
       'goal-reminder',
@@ -273,7 +273,7 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
   /**
    * 生成任务名称
    */
-  private generateTaskName(goal: GoalContracts.GoalServerDTO): string {
+  private generateTaskName(goal: GoalServerDTO): string {
     return `Goal Reminder: ${goal.title}`;
   }
 
@@ -281,8 +281,8 @@ export class GoalScheduleStrategy implements IScheduleStrategy {
    * 生成任务描述
    */
   private generateTaskDescription(
-    goal: GoalContracts.GoalServerDTO,
-    triggers: GoalContracts.ReminderTrigger[],
+    goal: GoalServerDTO,
+    triggers: ReminderTrigger[],
   ): string {
     const triggerDescriptions = triggers.map((trigger) => {
       if (trigger.type === 'TIME_PROGRESS_PERCENTAGE') {

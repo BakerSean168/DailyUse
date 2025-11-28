@@ -7,13 +7,9 @@ import type { IEditorSessionRepository } from '../repositories/IEditorSessionRep
 import type { IEditorWorkspaceRepository } from '../repositories/IEditorWorkspaceRepository';
 import type { IEditorGroupRepository } from '../repositories/IEditorGroupRepository';
 import type { IEditorTabRepository } from '../repositories/IEditorTabRepository';
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { CreateEditorSessionRequest, EditorSessionClientDTO, UpdateEditorSessionRequest } from '@dailyuse/contracts/editor';
 import { EditorSession } from '../entities/EditorSession';
 import { SessionLayout } from '../value-objects/SessionLayout';
-
-type CreateSessionRequest = EditorContracts.CreateEditorSessionRequest;
-type UpdateSessionRequest = EditorContracts.UpdateEditorSessionRequest;
-type SessionClientDTO = EditorContracts.EditorSessionClientDTO;
 
 /**
  * EditorSession 应用服务

@@ -3,14 +3,14 @@
  * 实现 UserReminderPreferencesServer 接口
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import type {
+  TimeSlotDTO,
+  UserReminderPreferencesClientDTO,
+  UserReminderPreferencesPersistenceDTO,
+  UserReminderPreferencesServer,
+  UserReminderPreferencesServerDTO,
+} from '@dailyuse/contracts/reminder';
 import { AggregateRoot } from '@dailyuse/utils';
-
-type IUserReminderPreferencesServer = ReminderContracts.UserReminderPreferencesServer;
-type UserReminderPreferencesServerDTO = ReminderContracts.UserReminderPreferencesServerDTO;
-type UserReminderPreferencesClientDTO = ReminderContracts.UserReminderPreferencesClientDTO;
-type UserReminderPreferencesPersistenceDTO = ReminderContracts.UserReminderPreferencesPersistenceDTO;
-type TimeSlotDTO = ReminderContracts.TimeSlotDTO;
 
 /**
  * UserReminderPreferences 聚合根
@@ -23,7 +23,7 @@ type TimeSlotDTO = ReminderContracts.TimeSlotDTO;
  */
 export class UserReminderPreferences
   extends AggregateRoot
-  implements IUserReminderPreferencesServer
+  implements UserReminderPreferencesServer
 {
   // ===== 私有字段 =====
   private _accountUuid: string;
@@ -293,12 +293,18 @@ export class UserReminderPreferences
   public toClientDTO(): UserReminderPreferencesClientDTO {
     // 生成最佳时间段文本
     const bestTimeSlotsText = this._bestTimeSlots
-      .map((slot) => `${String(slot.hourStart).padStart(2, '0')}:00-${String(slot.hourEnd).padStart(2, '0')}:00`)
+      .map(
+        (slot) =>
+          `${String(slot.hourStart).padStart(2, '0')}:00-${String(slot.hourEnd).padStart(2, '0')}:00`,
+      )
       .join(', ');
 
     // 生成最差时间段文本
     const worstTimeSlotsText = this._worstTimeSlots
-      .map((slot) => `${String(slot.hourStart).padStart(2, '0')}:00-${String(slot.hourEnd).padStart(2, '0')}:00`)
+      .map(
+        (slot) =>
+          `${String(slot.hourStart).padStart(2, '0')}:00-${String(slot.hourEnd).padStart(2, '0')}:00`,
+      )
       .join(', ');
 
     return {

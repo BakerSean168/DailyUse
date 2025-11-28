@@ -4,12 +4,8 @@
  * 实现 IRetryPolicyClient 接口
  */
 
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { IRetryPolicyClient, RetryPolicyClientDTO, RetryPolicyServerDTO } from '@dailyuse/contracts/schedule';
 import { ValueObject } from '@dailyuse/utils';
-
-type IRetryPolicyClient = ScheduleContracts.IRetryPolicyClient;
-type RetryPolicyServerDTO = ScheduleContracts.RetryPolicyServerDTO;
-type RetryPolicyClientDTO = ScheduleContracts.RetryPolicyClientDTO;
 
 /**
  * RetryPolicyClient 值对象
@@ -20,7 +16,7 @@ type RetryPolicyClientDTO = ScheduleContracts.RetryPolicyClientDTO;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class RetryPolicy extends ValueObject implements IRetryPolicyClient {
+export class RetryPolicy extends ValueObject implements RetryPolicyClient {
   public readonly enabled: boolean;
   public readonly maxRetries: number;
   public readonly retryDelay: number;

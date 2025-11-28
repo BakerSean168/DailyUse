@@ -16,7 +16,8 @@ import { TaskInstance } from '../TaskInstance';
 import { TaskTimeConfig } from '../../value-objects/TaskTimeConfig';
 import { CompletionRecord } from '../../value-objects/CompletionRecord';
 import { SkipRecord } from '../../value-objects/SkipRecord';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { CompletionRecordServerDTO, SkipRecordServerDTO, TaskInstancePersistenceDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
+import { TimeType } from '@dailyuse/contracts/task';
 
 describe('TaskInstance Aggregate', () => {
   // ==================== 测试数据 ====================
@@ -29,7 +30,7 @@ describe('TaskInstance Aggregate', () => {
    */
   const createTestTimeConfig = (): TaskTimeConfig => {
     return new TaskTimeConfig({
-      timeType: 'TIME_POINT' as TaskContracts.TimeType,
+      timeType: 'TIME_POINT' as TimeType,
       startDate: mockInstanceDate,
       endDate: mockInstanceDate + 86400000, // 1天后
       timePoint: mockInstanceDate,
@@ -102,7 +103,7 @@ describe('TaskInstance Aggregate', () => {
     describe('fromServerDTO()', () => {
       it('应该从 ServerDTO 正确恢复实例', () => {
         const now = Date.now();
-        const dto: TaskContracts.TaskInstanceServerDTO = {
+        const dto: TaskInstanceServerDTO = {
           uuid: 'test-uuid',
           templateUuid: mockTemplateUuid,
           accountUuid: mockAccountUuid,
@@ -127,7 +128,7 @@ describe('TaskInstance Aggregate', () => {
 
       it('应该正确恢复包含 completionRecord 的实例', () => {
         const now = Date.now();
-        const completionRecordDTO: TaskContracts.CompletionRecordServerDTO = {
+        const completionRecordDTO: CompletionRecordServerDTO = {
           completedAt: now,
           actualDuration: 3600000,
           note: 'Test note',
@@ -136,7 +137,7 @@ describe('TaskInstance Aggregate', () => {
           completionStatus: 'completed',
         };
 
-        const dto: TaskContracts.TaskInstanceServerDTO = {
+        const dto: TaskInstanceServerDTO = {
           uuid: 'test-uuid',
           templateUuid: mockTemplateUuid,
           accountUuid: mockAccountUuid,
@@ -162,12 +163,12 @@ describe('TaskInstance Aggregate', () => {
 
       it('应该正确恢复包含 skipRecord 的实例', () => {
         const now = Date.now();
-        const skipRecordDTO: TaskContracts.SkipRecordServerDTO = {
+        const skipRecordDTO: SkipRecordServerDTO = {
           skippedAt: now,
           reason: 'Too busy',
         };
 
-        const dto: TaskContracts.TaskInstanceServerDTO = {
+        const dto: TaskInstanceServerDTO = {
           uuid: 'test-uuid',
           templateUuid: mockTemplateUuid,
           accountUuid: mockAccountUuid,
@@ -196,7 +197,7 @@ describe('TaskInstance Aggregate', () => {
         const now = Date.now();
         const timeConfigDTO = createTestTimeConfig().toPersistenceDTO();
 
-        const dto: TaskContracts.TaskInstancePersistenceDTO = {
+        const dto: TaskInstancePersistenceDTO = {
           uuid: 'test-uuid',
           templateUuid: mockTemplateUuid,
           accountUuid: mockAccountUuid,
@@ -882,7 +883,7 @@ describe('TaskInstance Aggregate', () => {
   describe('Edge Cases', () => {
     it('应该处理全天任务', () => {
       const allDayTimeConfig = new TaskTimeConfig({
-        timeType: 'ALL_DAY' as TaskContracts.TimeType,
+        timeType: 'ALL_DAY' as TimeType,
         startDate: mockInstanceDate,
         endDate: mockInstanceDate + 86400000,
         timePoint: null,

@@ -16,10 +16,8 @@
 
 import { GoalStatistics } from '../aggregates/GoalStatistics';
 import type { Goal } from '../aggregates/Goal';
-import type { GoalContracts } from '@dailyuse/contracts';
-import { GoalStatus } from '@dailyuse/contracts';
-
-type GoalStatisticsUpdateEvent = GoalContracts.GoalStatisticsUpdateEvent;
+import type { GoalStatisticsUpdateEvent } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 
 /**
  * GoalStatisticsDomainService
@@ -118,7 +116,7 @@ export class GoalStatisticsDomainService {
           importance: goal.importance,
           urgency: goal.urgency,
           category: goal.category || undefined,
-          newStatus: goal.status as GoalContracts.GoalStatus,
+          newStatus: goal.status as GoalStatus,
         },
       };
       statistics.onGoalCreated(event);

@@ -7,7 +7,7 @@
  * - 封装业务规则到 cron 表达式的转换逻辑
  */
 
-import type { SourceModule } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
 import type { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import type { TaskMetadata } from '../../value-objects/TaskMetadata';
 

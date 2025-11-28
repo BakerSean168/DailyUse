@@ -2,14 +2,10 @@
  * GoalTimeRange 值对象实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalTimeRangeClient, GoalTimeRangeClientDTO, GoalTimeRangeServerDTO } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalTimeRange = GoalContracts.GoalTimeRangeClient;
-type GoalTimeRangeDTO = GoalContracts.GoalTimeRangeClientDTO;
-type GoalTimeRangeServerDTO = GoalContracts.GoalTimeRangeServerDTO;
-
-export class GoalTimeRange extends ValueObject implements IGoalTimeRange {
+export class GoalTimeRange extends ValueObject implements GoalTimeRange {
   private _startDate: number | null;
   private _targetDate: number | null;
   private _completedAt: number | null;

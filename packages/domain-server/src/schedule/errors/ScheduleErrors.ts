@@ -4,7 +4,7 @@
  */
 
 import { DomainError } from '@dailyuse/utils';
-import type { SourceModule } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
 
 /**
  * 调度策略未找到错误

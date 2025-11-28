@@ -3,18 +3,14 @@
  * 任务实例 - 从模板生成的具体任务
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskInstanceClient, TaskInstanceClientDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTimeConfig } from '../value-objects/TaskTimeConfig';
 import { CompletionRecord } from '../value-objects/CompletionRecord';
 import { SkipRecord } from '../value-objects/SkipRecord';
 
-type ITaskInstance = TaskContracts.TaskInstanceClient;
-type TaskInstanceDTO = TaskContracts.TaskInstanceClientDTO;
-type TaskInstanceServerDTO = TaskContracts.TaskInstanceServerDTO;
-type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
-
-export class TaskInstance extends AggregateRoot implements ITaskInstance {
+export class TaskInstance extends AggregateRoot implements TaskInstance {
   private _templateUuid: string;
   private _accountUuid: string;
   private _instanceDate: number;

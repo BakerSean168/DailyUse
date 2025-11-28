@@ -1,7 +1,5 @@
 import type { Repository } from '../aggregates/Repository';
-import { RepositoryContracts } from '@dailyuse/contracts';
-
-type RepositoryStatus = RepositoryContracts.RepositoryStatus;
+import { RepositoryStatus } from '@dailyuse/contracts/repository';
 
 export interface IRepositoryRepository {
   save(repository: Repository): Promise<void>;

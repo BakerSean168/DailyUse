@@ -3,16 +3,8 @@
  * 重复配置 - 不可变值对象
  */
 
-import type {
-  RecurrenceConfigServerDTO,
-  RecurrenceConfigClientDTO,
-  RecurrenceConfigPersistenceDTO,
-  RecurrenceType,
-  WeekDay,
-  DailyRecurrence,
-  WeeklyRecurrence,
-  CustomDaysRecurrence,
-} from '@dailyuse/contracts/src/modules/reminder';
+import type { RecurrenceConfigServerDTO, RecurrenceConfigClientDTO, RecurrenceConfigPersistenceDTO, DailyRecurrence, WeeklyRecurrence, CustomDaysRecurrence } from '@dailyuse/contracts/reminder';
+import { RecurrenceType, WeekDay } from '@dailyuse/contracts/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
 /**

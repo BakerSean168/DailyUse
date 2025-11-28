@@ -2,16 +2,11 @@
  * RecurrenceRule 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { RecurrenceRuleClient, RecurrenceRuleClientDTO, RecurrenceRuleServerDTO } from '@dailyuse/contracts/task';
+import { DayOfWeek, RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type IRecurrenceRule = TaskContracts.RecurrenceRuleClient;
-type RecurrenceRuleDTO = TaskContracts.RecurrenceRuleClientDTO;
-type RecurrenceRuleServerDTO = TaskContracts.RecurrenceRuleServerDTO;
-type RecurrenceFrequency = TaskContracts.RecurrenceFrequency;
-type DayOfWeek = TaskContracts.DayOfWeek;
-
-export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
+export class RecurrenceRule extends ValueObject implements RecurrenceRule {
   private _frequency: RecurrenceFrequency;
   private _interval: number;
   private _daysOfWeek: DayOfWeek[];

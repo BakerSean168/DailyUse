@@ -1,19 +1,21 @@
 /**
  * UpcomingReminderCalculationService - 即将到来的提醒计算服务
- * 
+ *
  * 职责：
  * - 计算指定时间范围内的提醒触发时间
  * - 支持各种类型的提醒（一次性、循环、间隔）
  * - 支持过滤和排序
- * 
+ *
  * @architecture
  * - 领域服务层（Domain Service）
  * - 纯函数式设计，无状态
  * - 与业务逻辑耦合最小化
  */
 
-import type { ReminderContracts } from '@dailyuse/contracts';
-import type { ImportanceLevel } from '@dailyuse/contracts';
+import { ReminderType } from '@dailyuse/contracts/task';
+import type { FixedTimeTrigger, IntervalTrigger, RecurrenceConfigServerDTO, ReminderTemplateServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
+import { WeekDay } from '@dailyuse/contracts/reminder';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 /**
  * 即将到来的提醒 DTO（前端友好）
@@ -23,22 +25,22 @@ export interface UpcomingReminderDTO {
   templateUuid: string;
   title: string;
   description?: string;
-  type: ReminderContracts.ReminderType;
+  type: ReminderType;
   triggerType: string;
   importanceLevel: ImportanceLevel;
-  
+
   // 触发时间
   nextTriggerAt: number; // epoch ms
   nextTriggerDisplay: string; // 人类可读的格式 "2025-11-18 16:30"
   daysUntilTrigger: number; // 距离现在的天数
-  
+
   // 显示属性
   icon: string;
   color: string;
-  
+
   // 通知配置
   notificationChannels: string[];
-  
+
   // 分组信息
   groupUuid?: string | null;
 }
@@ -49,13 +51,13 @@ export interface UpcomingReminderDTO {
 export class UpcomingReminderCalculationService {
   /**
    * 计算即将到来的提醒列表
-   * 
+   *
    * @param reminders 启用的提醒模板列表
    * @param options 计算选项
    * @returns 即将到来的提醒 DTO 数组（已排序）
    */
   static calculateUpcomingReminders(
-    reminders: ReminderContracts.ReminderTemplateServerDTO[],
+    reminders: ReminderTemplateServerDTO[],
     options: {
       days?: number; // 向后查看天数，默认 1（今天内）
       limit?: number; // 返回的最大条数，默认 50
@@ -89,40 +91,51 @@ export class UpcomingReminderCalculationService {
         triggerType: reminder.trigger.type,
         selfEnabled: reminder.selfEnabled,
         status: reminder.status,
-        nextTriggerAt: reminder.nextTriggerAt ? new Date(reminder.nextTriggerAt).toISOString() : null,
+        nextTriggerAt: reminder.nextTriggerAt
+          ? new Date(reminder.nextTriggerAt).toISOString()
+          : null,
         activeTime: {
           activatedAt: new Date(reminder.activeTime.activatedAt).toISOString(),
         },
       });
 
       // 检查该提醒是否已经有计算的 nextTriggerAt 且在范围内
-      if (reminder.nextTriggerAt && reminder.nextTriggerAt >= afterTime && reminder.nextTriggerAt <= endTime) {
-        console.log(`✅ [UpcomingReminderCalculation] 使用已有的 nextTriggerAt: ${reminder.title}`, {
-          nextTriggerAt: new Date(reminder.nextTriggerAt).toISOString(),
-        });
+      if (
+        reminder.nextTriggerAt &&
+        reminder.nextTriggerAt >= afterTime &&
+        reminder.nextTriggerAt <= endTime
+      ) {
+        console.log(
+          `✅ [UpcomingReminderCalculation] 使用已有的 nextTriggerAt: ${reminder.title}`,
+          {
+            nextTriggerAt: new Date(reminder.nextTriggerAt).toISOString(),
+          },
+        );
         const dto = this.convertToUpcomingDTO(reminder, afterTime);
         if (dto) {
           upcomingReminders.push(dto);
         }
       } else {
         // nextTriggerAt 不存在、已过期、或超出范围 -> 重新计算
-        const reason = !reminder.nextTriggerAt 
-          ? '没有 nextTriggerAt' 
-          : reminder.nextTriggerAt < afterTime 
-          ? 'nextTriggerAt 已过期' 
-          : 'nextTriggerAt 超出范围';
-        
+        const reason = !reminder.nextTriggerAt
+          ? '没有 nextTriggerAt'
+          : reminder.nextTriggerAt < afterTime
+            ? 'nextTriggerAt 已过期'
+            : 'nextTriggerAt 超出范围';
+
         console.log(`🔍 [UpcomingReminderCalculation] 重新计算触发时间: ${reminder.title}`, {
           reason,
-          oldNextTriggerAt: reminder.nextTriggerAt ? new Date(reminder.nextTriggerAt).toISOString() : null,
+          oldNextTriggerAt: reminder.nextTriggerAt
+            ? new Date(reminder.nextTriggerAt).toISOString()
+            : null,
         });
-        
+
         const nextTrigger = this.calculateNextTriggerTime(reminder, afterTime);
         console.log(`🔍 [UpcomingReminderCalculation] 计算结果: ${reminder.title}`, {
           nextTrigger: nextTrigger ? new Date(nextTrigger).toISOString() : null,
-          inRange: nextTrigger ? (nextTrigger >= afterTime && nextTrigger <= endTime) : false,
+          inRange: nextTrigger ? nextTrigger >= afterTime && nextTrigger <= endTime : false,
         });
-        
+
         if (nextTrigger && nextTrigger >= afterTime && nextTrigger <= endTime) {
           const dto = this.convertToUpcomingDTO(
             { ...reminder, nextTriggerAt: nextTrigger },
@@ -132,11 +145,14 @@ export class UpcomingReminderCalculationService {
             upcomingReminders.push(dto);
           }
         } else if (nextTrigger) {
-          console.log(`⚠️  [UpcomingReminderCalculation] 计算的 nextTrigger 也超出范围: ${reminder.title}`, {
-            nextTrigger: new Date(nextTrigger).toISOString(),
-            afterTime: new Date(afterTime).toISOString(),
-            endTime: new Date(endTime).toISOString(),
-          });
+          console.log(
+            `⚠️  [UpcomingReminderCalculation] 计算的 nextTrigger 也超出范围: ${reminder.title}`,
+            {
+              nextTrigger: new Date(nextTrigger).toISOString(),
+              afterTime: new Date(afterTime).toISOString(),
+              endTime: new Date(endTime).toISOString(),
+            },
+          );
         }
       }
     }
@@ -150,13 +166,13 @@ export class UpcomingReminderCalculationService {
 
   /**
    * 计算单个提醒的下一次触发时间
-   * 
+   *
    * @param reminder 提醒模板
    * @param afterTime 从这个时间之后开始查找，默认当前时间
    * @returns 下一次触发的时间戳（epoch ms），如果不需要触发则返回 null
    */
   static calculateNextTriggerTime(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
+    reminder: ReminderTemplateServerDTO,
     afterTime: number = Date.now(),
   ): number | null {
     try {
@@ -191,10 +207,10 @@ export class UpcomingReminderCalculationService {
    * 计算一次性提醒的触发时间
    */
   private static calculateOneTimeTrigger(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
+    reminder: ReminderTemplateServerDTO,
     afterTime: number,
   ): number | null {
-    const trigger = reminder.trigger as ReminderContracts.TriggerConfigServerDTO;
+    const trigger = reminder.trigger as TriggerConfigServerDTO;
 
     if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
       // 一次性固定时间提醒
@@ -216,10 +232,10 @@ export class UpcomingReminderCalculationService {
    * 计算循环提醒的触发时间
    */
   private static calculateRecurringTrigger(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
+    reminder: ReminderTemplateServerDTO,
     afterTime: number,
   ): number | null {
-    const trigger = reminder.trigger as ReminderContracts.TriggerConfigServerDTO;
+    const trigger = reminder.trigger as TriggerConfigServerDTO;
 
     if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
       return this.calculateNextFixedTimeTrigger(reminder, trigger.fixedTime, afterTime);
@@ -234,8 +250,8 @@ export class UpcomingReminderCalculationService {
    * 计算下一次固定时间触发
    */
   private static calculateNextFixedTimeTrigger(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
-    fixedTime: ReminderContracts.FixedTimeTrigger,
+    reminder: ReminderTemplateServerDTO,
+    fixedTime: FixedTimeTrigger,
     afterTime: number,
   ): number | null {
     const recurrence = reminder.recurrence;
@@ -271,7 +287,7 @@ export class UpcomingReminderCalculationService {
    */
   private static shouldTriggerOnDate(
     date: Date,
-    recurrence: ReminderContracts.RecurrenceConfigServerDTO | null | undefined,
+    recurrence: RecurrenceConfigServerDTO | null | undefined,
     reminderStartDate: number,
   ): boolean {
     // 如果没有重复规则，默认每天都应该触发
@@ -286,7 +302,9 @@ export class UpcomingReminderCalculationService {
           // 从提醒的开始日期开始计算间隔
           const startDate = new Date(reminderStartDate);
           startDate.setHours(0, 0, 0, 0);
-          const daysDiff = Math.floor((date.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
+          const daysDiff = Math.floor(
+            (date.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000),
+          );
           return daysDiff % recurrence.daily.interval === 0;
         }
         return true;
@@ -297,7 +315,7 @@ export class UpcomingReminderCalculationService {
           const dayOfWeek = date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
           // 转换为 MONDAY=0, TUESDAY=1, ..., SUNDAY=6
           const mappedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-          const weekDayMap: Record<ReminderContracts.WeekDay, number> = {
+          const weekDayMap: Record<WeekDay, number> = {
             MONDAY: 0,
             TUESDAY: 1,
             WEDNESDAY: 2,
@@ -316,7 +334,7 @@ export class UpcomingReminderCalculationService {
           const checkDate = new Date(date);
           checkDate.setHours(0, 0, 0, 0);
           const checkDateMs = checkDate.getTime();
-          
+
           // 比较日期（忽略时间）
           return recurrence.customDays.dates.some((dateMs) => {
             const d = new Date(dateMs);
@@ -336,8 +354,8 @@ export class UpcomingReminderCalculationService {
    * 计算下一次间隔触发
    */
   private static calculateNextIntervalTrigger(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
-    interval: ReminderContracts.IntervalTrigger,
+    reminder: ReminderTemplateServerDTO,
+    interval: IntervalTrigger,
     afterTime: number,
   ): number | null {
     const intervalMs = interval.minutes * 60 * 1000;
@@ -375,7 +393,7 @@ export class UpcomingReminderCalculationService {
    * 将 ReminderTemplate 转换为前端友好的 UpcomingReminder DTO
    */
   private static convertToUpcomingDTO(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
+    reminder: ReminderTemplateServerDTO,
     baseTime: number = Date.now(),
   ): UpcomingReminderDTO | null {
     if (!reminder.nextTriggerAt) {
@@ -419,25 +437,22 @@ export class UpcomingReminderCalculationService {
   /**
    * 计算今日内所有提醒的所有触发时间点（作息时间表）
    * 返回一个完整的今日时间表，包含所有提醒的触发时间
-   * 
+   *
    * @param reminders 启用的提醒模板列表
    * @param options 计算选项
    * @returns 今日内所有触发时间点的完整列表（按时间排序）
    */
   static calculateTodaySchedule(
-    reminders: ReminderContracts.ReminderTemplateServerDTO[],
+    reminders: ReminderTemplateServerDTO[],
     options: {
       maxItemsPerReminder?: number; // 每个提醒最多显示多少个触发点，默认 20
       includeExpired?: boolean; // 是否包含已过期的时间点，默认 false
     } = {},
   ): UpcomingReminderDTO[] {
-    const {
-      maxItemsPerReminder = 20,
-      includeExpired = false,
-    } = options;
+    const { maxItemsPerReminder = 20, includeExpired = false } = options;
 
     const now = Date.now();
-    
+
     // 获取今天的开始和结束时间
     const todayStart = this.getTodayStart(now);
     const todayEnd = this.getTodayEnd(now);
@@ -476,9 +491,12 @@ export class UpcomingReminderCalculationService {
         maxItemsPerReminder,
       );
 
-      console.log(`📍 [calculateTodaySchedule] ${reminder.title} 在今天的触发次数: ${todayTriggerTimes.length}`, {
-        times: todayTriggerTimes.map(dto => dto.nextTriggerDisplay),
-      });
+      console.log(
+        `📍 [calculateTodaySchedule] ${reminder.title} 在今天的触发次数: ${todayTriggerTimes.length}`,
+        {
+          times: todayTriggerTimes.map((dto) => dto.nextTriggerDisplay),
+        },
+      );
 
       allTriggerTimes.push(...todayTriggerTimes);
     }
@@ -490,7 +508,7 @@ export class UpcomingReminderCalculationService {
 
     // 如果不包含过期时间点，进行过滤
     if (!includeExpired) {
-      const filtered = allTriggerTimes.filter(item => item.nextTriggerAt >= now);
+      const filtered = allTriggerTimes.filter((item) => item.nextTriggerAt >= now);
       console.log(`🔄 [calculateTodaySchedule] 过滤过期时间点`, {
         总数: allTriggerTimes.length,
         过滤后: filtered.length,
@@ -505,13 +523,13 @@ export class UpcomingReminderCalculationService {
    * 计算单个提醒在今天的所有触发时间
    */
   private static calculateReminderTriggerTimesToday(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
+    reminder: ReminderTemplateServerDTO,
     todayStart: number,
     todayEnd: number,
     maxItems: number,
   ): UpcomingReminderDTO[] {
     const result: UpcomingReminderDTO[] = [];
-    const trigger = reminder.trigger as ReminderContracts.TriggerConfigServerDTO;
+    const trigger = reminder.trigger as TriggerConfigServerDTO;
 
     if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
       // 固定时间触发：在今天的特定时间触发
@@ -541,8 +559,8 @@ export class UpcomingReminderCalculationService {
    * 生成固定时间在今天的触发时间
    */
   private static generateFixedTimeTriggersForToday(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
-    fixedTime: ReminderContracts.FixedTimeTrigger,
+    reminder: ReminderTemplateServerDTO,
+    fixedTime: FixedTimeTrigger,
     todayStart: number,
     todayEnd: number,
   ): UpcomingReminderDTO[] {
@@ -581,8 +599,8 @@ export class UpcomingReminderCalculationService {
    * 生成间隔触发在今天的所有时间点
    */
   private static generateIntervalTriggersForToday(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
-    interval: ReminderContracts.IntervalTrigger,
+    reminder: ReminderTemplateServerDTO,
+    interval: IntervalTrigger,
     todayStart: number,
     todayEnd: number,
     maxItems: number,
@@ -626,9 +644,12 @@ export class UpcomingReminderCalculationService {
       currentIntervalCount++;
     }
 
-    console.log(`✅ [generateIntervalTriggersForToday] ${reminder.title} 生成 ${result.length} 个触发点`, {
-      times: result.map(r => r.nextTriggerDisplay),
-    });
+    console.log(
+      `✅ [generateIntervalTriggersForToday] ${reminder.title} 生成 ${result.length} 个触发点`,
+      {
+        times: result.map((r) => r.nextTriggerDisplay),
+      },
+    );
     return result;
   }
 

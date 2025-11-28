@@ -14,9 +14,7 @@
  */
 
 import type { FocusSession } from '../aggregates/FocusSession';
-import type { GoalContracts } from '@dailyuse/contracts';
-
-type FocusSessionStatus = GoalContracts.FocusSessionStatus;
+import type { FocusSessionStatus } from '@dailyuse/contracts/goal';
 
 /**
  * IFocusSessionRepository 仓储接口

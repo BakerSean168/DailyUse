@@ -1,5 +1,4 @@
 import type { AIConversation } from '../aggregates/AIConversation';
-import type { AIContracts } from '@dailyuse/contracts';
 
 export interface StreamEventChunk {
   type: 'chunk';

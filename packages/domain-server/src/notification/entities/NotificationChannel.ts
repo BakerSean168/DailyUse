@@ -3,24 +3,23 @@
  * 实现 NotificationChannelServer 接口
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
-import { ChannelStatus } from '@dailyuse/contracts';
+import type {
+  NotificationChannelType,
+  ChannelErrorServerDTO,
+  ChannelResponseServerDTO,
+  NotificationChannelPersistenceDTO,
+  NotificationChannelServer,
+  NotificationChannelServerDTO,
+} from '@dailyuse/contracts/notification';
+import { ChannelStatus } from '@dailyuse/contracts/notification';
 import { Entity } from '@dailyuse/utils';
 import { ChannelError } from '../value-objects/ChannelError';
 import { ChannelResponse } from '../value-objects/ChannelResponse';
 
-type INotificationChannelServer = NotificationContracts.NotificationChannelServer;
-type NotificationChannelServerDTO = NotificationContracts.NotificationChannelServerDTO;
-type NotificationChannelPersistenceDTO = NotificationContracts.NotificationChannelPersistenceDTO;
-type NotificationChannelType = NotificationContracts.NotificationChannelType;
-type ChannelStatusType = NotificationContracts.ChannelStatus;
-type ChannelErrorDTO = NotificationContracts.ChannelErrorServerDTO;
-type ChannelResponseDTO = NotificationContracts.ChannelResponseServerDTO;
-
 /**
  * NotificationChannel 实体
  */
-export class NotificationChannel extends Entity implements INotificationChannelServer {
+export class NotificationChannel extends Entity implements NotificationChannelServer {
   // ===== 私有字段 =====
   private _notificationUuid: string;
   private _channelType: NotificationChannelType;

@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EditorGroup } from './EditorGroup';
 import { EditorTab } from './EditorTab';
-import { EditorContracts } from '@dailyuse/contracts';
+import { TabType } from '@dailyuse/contracts/editor';
 
 describe('EditorGroup 实体', () => {
   let group: EditorGroup;
@@ -84,7 +84,7 @@ describe('EditorGroup 实体', () => {
     it('应该能够添加标签', () => {
       const tab = group.addTab({
         tabIndex: 0,
-        tabType: EditorContracts.TabType.DOCUMENT,
+        tabType: TabType.DOCUMENT,
         title: 'Test Tab',
         documentUuid: 'doc-123',
       });
@@ -97,9 +97,9 @@ describe('EditorGroup 实体', () => {
     });
 
     it('应该能够添加多个标签', () => {
-      group.addTab({ tabIndex: 0, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 1' });
-      group.addTab({ tabIndex: 1, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 2' });
-      group.addTab({ tabIndex: 2, tabType: EditorContracts.TabType.PREVIEW, title: 'Tab 3' });
+      group.addTab({ tabIndex: 0, tabType: TabType.DOCUMENT, title: 'Tab 1' });
+      group.addTab({ tabIndex: 1, tabType: TabType.DOCUMENT, title: 'Tab 2' });
+      group.addTab({ tabIndex: 2, tabType: TabType.PREVIEW, title: 'Tab 3' });
 
       expect(group.tabs).toHaveLength(3);
     });
@@ -107,7 +107,7 @@ describe('EditorGroup 实体', () => {
     it('应该能够获取指定标签', () => {
       const tab = group.addTab({
         tabIndex: 0,
-        tabType: EditorContracts.TabType.DOCUMENT,
+        tabType: TabType.DOCUMENT,
         title: 'Test Tab',
       });
 
@@ -126,7 +126,7 @@ describe('EditorGroup 实体', () => {
     it('应该能够移除标签', () => {
       const tab = group.addTab({
         tabIndex: 0,
-        tabType: EditorContracts.TabType.DOCUMENT,
+        tabType: TabType.DOCUMENT,
         title: 'Tab to Remove',
       });
 
@@ -156,9 +156,9 @@ describe('EditorGroup 实体', () => {
 
   describe('活动标签管理', () => {
     it('应该能够设置活动标签', () => {
-      group.addTab({ tabIndex: 0, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 1' });
-      group.addTab({ tabIndex: 1, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 2' });
-      group.addTab({ tabIndex: 2, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 3' });
+      group.addTab({ tabIndex: 0, tabType: TabType.DOCUMENT, title: 'Tab 1' });
+      group.addTab({ tabIndex: 1, tabType: TabType.DOCUMENT, title: 'Tab 2' });
+      group.addTab({ tabIndex: 2, tabType: TabType.DOCUMENT, title: 'Tab 3' });
 
       const beforeUpdated = group.updatedAt;
       vi.useFakeTimers();
@@ -173,7 +173,7 @@ describe('EditorGroup 实体', () => {
     });
 
     it('设置无效的活动标签索引应被忽略', () => {
-      group.addTab({ tabIndex: 0, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 1' });
+      group.addTab({ tabIndex: 0, tabType: TabType.DOCUMENT, title: 'Tab 1' });
 
       const beforeIndex = group.activeTabIndex;
       const beforeUpdated = group.updatedAt;
@@ -185,8 +185,8 @@ describe('EditorGroup 实体', () => {
     });
 
     it('应该能够验证标签索引是否有效', () => {
-      group.addTab({ tabIndex: 0, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 1' });
-      group.addTab({ tabIndex: 1, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 2' });
+      group.addTab({ tabIndex: 0, tabType: TabType.DOCUMENT, title: 'Tab 1' });
+      group.addTab({ tabIndex: 1, tabType: TabType.DOCUMENT, title: 'Tab 2' });
 
       expect(group.isValidTabIndex(0)).toBe(true);
       expect(group.isValidTabIndex(1)).toBe(true);
@@ -197,7 +197,7 @@ describe('EditorGroup 实体', () => {
 
   describe('DTO 转换', () => {
     it('应该能够转换为 Server DTO', () => {
-      group.addTab({ tabIndex: 0, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 1' });
+      group.addTab({ tabIndex: 0, tabType: TabType.DOCUMENT, title: 'Tab 1' });
 
       const dto = group.toServerDTO();
 
@@ -228,8 +228,8 @@ describe('EditorGroup 实体', () => {
     });
 
     it('应该能够从 Server DTO 重建（递归重建子实体）', () => {
-      group.addTab({ tabIndex: 0, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 1' });
-      group.addTab({ tabIndex: 1, tabType: EditorContracts.TabType.PREVIEW, title: 'Tab 2' });
+      group.addTab({ tabIndex: 0, tabType: TabType.DOCUMENT, title: 'Tab 1' });
+      group.addTab({ tabIndex: 1, tabType: TabType.PREVIEW, title: 'Tab 2' });
 
       const dto = group.toServerDTO();
       const rebuilt = EditorGroup.fromServerDTO(dto);
@@ -253,7 +253,7 @@ describe('EditorGroup 实体', () => {
 
   describe('业务规则验证', () => {
     it('tabs 属性应返回副本以防止外部修改', () => {
-      group.addTab({ tabIndex: 0, tabType: EditorContracts.TabType.DOCUMENT, title: 'Tab 1' });
+      group.addTab({ tabIndex: 0, tabType: TabType.DOCUMENT, title: 'Tab 1' });
       const tabs = group.tabs;
 
       tabs.push(null as any); // 尝试修改副本

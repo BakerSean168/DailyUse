@@ -2,30 +2,30 @@
  * Resource Entity - Server Implementation
  * 资源实体 - 服务端实现
  */
-import { RepositoryContracts, ResourceStatus, ResourceType } from '@dailyuse/contracts';
+import type {
+  ResourceClientDTO,
+  ResourceMetadataServerDTO,
+  ResourcePersistenceDTO,
+  ResourceServer,
+  ResourceServerDTO,
+  ResourceStatsServerDTO,
+} from '@dailyuse/contracts/repository';
+import { ResourceStatus, ResourceType } from '@dailyuse/contracts/repository';
 import { ResourceMetadata } from '../value-objects/ResourceMetadata';
 import { ResourceStats } from '../value-objects/ResourceStats';
-
-type ResourceServer = RepositoryContracts.ResourceServer;
-type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
-type ResourcePersistenceDTO = RepositoryContracts.ResourcePersistenceDTO;
-type ResourceTypeEnum = ResourceType;
-type ResourceStatusEnum = ResourceStatus;
-type ResourceMetadataServerDTO = RepositoryContracts.ResourceMetadataServerDTO;
-type ResourceStatsServerDTO = RepositoryContracts.ResourceStatsServerDTO;
 
 export class Resource implements ResourceServer {
   private _uuid: string;
   private _repositoryUuid: string;
   private _folderUuid?: string | null;
   private _name: string;
-  private _type: ResourceTypeEnum;
+  private _type: ResourceType;
   private _path: string;
   private _size: number;
   private _content?: string | null;
   private _metadata: ResourceMetadata;
   private _stats: ResourceStats;
-  private _status: ResourceStatusEnum;
+  private _status: ResourceStatus;
   private _createdAt: number;
   private _updatedAt: number;
 
@@ -33,14 +33,14 @@ export class Resource implements ResourceServer {
     uuid: string;
     repositoryUuid: string;
     name: string;
-    type: ResourceTypeEnum;
+    type: ResourceType;
     path: string;
     size: number;
     folderUuid?: string | null;
     content?: string | null;
     metadata: ResourceMetadata;
     stats: ResourceStats;
-    status: ResourceStatusEnum;
+    status: ResourceStatus;
     createdAt: number;
     updatedAt: number;
   }) {
@@ -76,7 +76,7 @@ export class Resource implements ResourceServer {
     return this._name;
   }
 
-  get type(): ResourceTypeEnum {
+  get type(): ResourceType {
     return this._type;
   }
 
@@ -100,7 +100,7 @@ export class Resource implements ResourceServer {
     return this._stats;
   }
 
-  get status(): ResourceStatusEnum {
+  get status(): ResourceStatus {
     return this._status;
   }
 
@@ -214,7 +214,7 @@ export class Resource implements ResourceServer {
     };
   }
 
-  toClientDTO(): RepositoryContracts.ResourceClientDTO {
+  toClientDTO(): ResourceClientDTO {
     // 状态判断
     const isDeleted = this._status === ResourceStatus.DELETED;
     const isArchived = this._status === ResourceStatus.ARCHIVED;
@@ -338,7 +338,7 @@ export class Resource implements ResourceServer {
     uuid: string;
     repositoryUuid: string;
     name: string;
-    type: ResourceTypeEnum;
+    type: ResourceType;
     path: string;
     folderUuid?: string | null;
     content?: string;

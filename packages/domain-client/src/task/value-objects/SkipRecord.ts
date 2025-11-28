@@ -2,14 +2,10 @@
  * SkipRecord 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { SkipRecordClient, SkipRecordClientDTO, SkipRecordServerDTO } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ISkipRecord = TaskContracts.SkipRecordClient;
-type SkipRecordDTO = TaskContracts.SkipRecordClientDTO;
-type SkipRecordServerDTO = TaskContracts.SkipRecordServerDTO;
-
-export class SkipRecord extends ValueObject implements ISkipRecord {
+export class SkipRecord extends ValueObject implements SkipRecord {
   private _skippedAt: number;
   private _reason: string | null;
 

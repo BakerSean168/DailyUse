@@ -3,33 +3,35 @@
  * 参考 GoalClient 架构
  */
 
-import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
+import {
+  ActiveHoursConfigClient,
+  ActiveHoursConfigClientDTO,
+  ActiveTimeConfigClient,
+  ActiveTimeConfigClientDTO,
+  ImportanceLevel,
+  NotificationChannel,
+  NotificationConfigClient,
+  NotificationConfigClientDTO,
+  RecurrenceConfigClient,
+  RecurrenceConfigClientDTO,
+  ReminderStatsClient,
+  ReminderStatsClientDTO,
+  ReminderStatus,
+  ReminderTemplateClient,
+  ReminderTemplateClientDTO,
+  ReminderTemplateDTO,
+  ReminderTemplateServerDTO,
+  ReminderType,
+  TriggerConfigClient,
+  TriggerConfigClientDTO,
+  TriggerType,
+} from '@dailyuse/contracts/reminder';
 import { AggregateRoot } from '@dailyuse/utils';
 import * as ValueObjects from '../value-objects';
 
 // 类型别名
-type ReminderTemplateClient = ReminderContracts.ReminderTemplateClient;
-type ReminderTemplateDTO = ReminderContracts.ReminderTemplateDTO;
-type ReminderTemplateClientDTO = ReminderContracts.ReminderTemplateClientDTO;
-type ReminderTemplateServerDTO = ReminderContracts.ReminderTemplateServerDTO;
-type ReminderType = ReminderContracts.ReminderType;
-type ReminderStatus = ReminderContracts.ReminderStatus;
-type TriggerConfig = ReminderContracts.TriggerConfigClient;
-type TriggerConfigDTO = ReminderContracts.TriggerConfigClientDTO;
-type RecurrenceConfig = ReminderContracts.RecurrenceConfigClient;
-type RecurrenceConfigDTO = ReminderContracts.RecurrenceConfigClientDTO;
-type ActiveTimeConfig = ReminderContracts.ActiveTimeConfigClient;
-type ActiveTimeConfigDTO = ReminderContracts.ActiveTimeConfigClientDTO;
-type ActiveHoursConfig = ReminderContracts.ActiveHoursConfigClient;
-type ActiveHoursConfigDTO = ReminderContracts.ActiveHoursConfigClientDTO;
-type NotificationConfig = ReminderContracts.NotificationConfigClient;
-type NotificationConfigDTO = ReminderContracts.NotificationConfigClientDTO;
-type ReminderStats = ReminderContracts.ReminderStatsClient;
-type ReminderStatsDTO = ReminderContracts.ReminderStatsClientDTO;
 
 // 枚举常量使用 Enum 后缀，避免与类型名冲突
-const ReminderTypeEnum = ReminderContracts.ReminderType;
-const ReminderStatusEnum = ReminderContracts.ReminderStatus;
 
 export class ReminderTemplate extends AggregateRoot 
   implements ReminderTemplateClient {
@@ -123,7 +125,7 @@ export class ReminderTemplate extends AggregateRoot
   public get notificationConfig(): NotificationConfig { return this._notificationConfig; }
   public get selfEnabled(): boolean { return this._selfEnabled; }
   public get status(): ReminderStatus { return this._status; }
-  public get effectiveEnabled(): boolean { return this._selfEnabled && this._status === ReminderStatusEnum.ACTIVE; }
+  public get effectiveEnabled(): boolean { return this._selfEnabled && this._status === ReminderStatus.ACTIVE; }
   public get groupUuid(): string | null | undefined { return this._groupUuid; }
   public get importanceLevel(): ImportanceLevel { return this._importanceLevel; }
   public get tags(): string[] { return [...this._tags]; }
@@ -143,7 +145,7 @@ export class ReminderTemplate extends AggregateRoot
   
   public get typeText(): string {
     // Reminder模块专注于循环提醒，单次任务由Task模块处理
-    return this._type === ReminderTypeEnum.ONE_TIME ? '一次性' : '循环提醒';
+    return this._type === ReminderType.ONE_TIME ? '一次性' : '循环提醒';
   }
   
   public get triggerText(): string {
@@ -155,7 +157,7 @@ export class ReminderTemplate extends AggregateRoot
   }
   
   public get statusText(): string {
-    return this._status === ReminderStatusEnum.ACTIVE ? '活跃' : '已暂停';
+    return this._status === ReminderStatus.ACTIVE ? '活跃' : '已暂停';
   }
   
   public get importanceText(): string {
@@ -179,11 +181,11 @@ export class ReminderTemplate extends AggregateRoot
   }
   
   public get isActive(): boolean {
-    return this._status === ReminderStatusEnum.ACTIVE && this._selfEnabled;
+    return this._status === ReminderStatus.ACTIVE && this._selfEnabled;
   }
   
   public get isPaused(): boolean {
-    return this._status === ReminderStatusEnum.PAUSED;
+    return this._status === ReminderStatus.PAUSED;
   }
   
   public get lastTriggeredText(): string | null | undefined {
@@ -201,7 +203,7 @@ export class ReminderTemplate extends AggregateRoot
   // ===== UI 业务方法 =====
   
   public getStatusBadge(): { text: string; color: string; icon: string } {
-    if (this._status === ReminderStatusEnum.ACTIVE) {
+    if (this._status === ReminderStatus.ACTIVE) {
       return { text: '活跃', color: 'success', icon: 'mdi-check-circle' };
     } else {
       return { text: '已暂停', color: 'warning', icon: 'mdi-pause-circle' };
@@ -225,7 +227,7 @@ export class ReminderTemplate extends AggregateRoot
   }
   
   public canPause(): boolean {
-    return this._selfEnabled && this._status === ReminderStatusEnum.ACTIVE;
+    return this._selfEnabled && this._status === ReminderStatus.ACTIVE;
   }
   
   public canEdit(): boolean {
@@ -277,25 +279,25 @@ export class ReminderTemplate extends AggregateRoot
   
   public toggleEnabled(): void {
     this._selfEnabled = !this._selfEnabled;
-    this._status = this._selfEnabled ? ReminderStatusEnum.ACTIVE : ReminderStatusEnum.PAUSED;
+    this._status = this._selfEnabled ? ReminderStatus.ACTIVE : ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
   }
   
   public enable(): void {
     this._selfEnabled = true;
-    this._status = ReminderStatusEnum.ACTIVE;
+    this._status = ReminderStatus.ACTIVE;
     this._updatedAt = Date.now();
   }
   
   public pause(): void {
     this._selfEnabled = false;
-    this._status = ReminderStatusEnum.PAUSED;
+    this._status = ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
   }
   
   public setEnabled(enabled: boolean): void {
     this._selfEnabled = enabled;
-    this._status = enabled ? ReminderStatusEnum.ACTIVE : ReminderStatusEnum.PAUSED;
+    this._status = enabled ? ReminderStatus.ACTIVE : ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
   }
   
@@ -475,9 +477,9 @@ export class ReminderTemplate extends AggregateRoot
       accountUuid: '', // 占位符
       title: '',
       description: null,
-      type: ReminderTypeEnum.RECURRING, // 默认为循环提醒
+      type: ReminderType.RECURRING, // 默认为循环提醒
       trigger: ValueObjects.TriggerConfig.fromClientDTO({
-        type: ReminderContracts.TriggerType.FIXED_TIME,
+        type: TriggerType.FIXED_TIME,
         fixedTime: { time: '09:00' },
         interval: null,
         displayText: '每天 09:00',
@@ -491,7 +493,7 @@ export class ReminderTemplate extends AggregateRoot
       }),
       activeHours: null,
       notificationConfig: ValueObjects.NotificationConfig.fromClientDTO({
-        channels: [ReminderContracts.NotificationChannel.IN_APP],
+        channels: [NotificationChannel.IN_APP],
         title: '',
         body: '',
         sound: null,
@@ -502,7 +504,7 @@ export class ReminderTemplate extends AggregateRoot
         hasVibrationEnabled: false,
       }),
       selfEnabled: true,
-      status: ReminderStatusEnum.ACTIVE,
+      status: ReminderStatus.ACTIVE,
       groupUuid: null,
       importanceLevel: ImportanceLevel.Moderate,
       tags: [],

@@ -2,20 +2,19 @@
  * GoalMetadata 值对象实现 (Client)
  */
 
-import { GoalContracts } from '@dailyuse/contracts';
+import {
+  GoalMetadataClient,
+  GoalMetadataClientDTO,
+  GoalMetadataServerDTO,
+  ImportanceLevel,
+  UrgencyLevel,
+} from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalMetadata = GoalContracts.GoalMetadataClient;
-type GoalMetadataDTO = GoalContracts.GoalMetadataClientDTO;
-type GoalMetadataServerDTO = GoalContracts.GoalMetadataServerDTO;
+const ImportanceLevel = ImportanceLevel;
+const UrgencyLevel = UrgencyLevel;
 
-type ImportanceLevel = GoalContracts.ImportanceLevel;
-type UrgencyLevel = GoalContracts.UrgencyLevel;
-
-const ImportanceLevel = GoalContracts.ImportanceLevel;
-const UrgencyLevel = GoalContracts.UrgencyLevel;
-
-export class GoalMetadata extends ValueObject implements IGoalMetadata {
+export class GoalMetadata extends ValueObject implements GoalMetadata {
   private _importance: ImportanceLevel;
   private _urgency: UrgencyLevel;
   private _category: string | null;

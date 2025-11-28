@@ -2,13 +2,9 @@
  * Resource Stats Value Object - Client Implementation
  * 资源统计值对象 - 客户端实现
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
+import { ResourceStatsClient, ResourceStatsClientDTO, ResourceStatsServerDTO } from '@dailyuse/contracts/repository';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-
-type ResourceStatsClient = RepositoryContracts.ResourceStatsClient;
-type ResourceStatsClientDTO = RepositoryContracts.ResourceStatsClientDTO;
-type ResourceStatsServerDTO = RepositoryContracts.ResourceStatsServerDTO;
 
 export class ResourceStats implements ResourceStatsClient {
   private readonly _viewCount: number;

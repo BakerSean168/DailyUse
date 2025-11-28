@@ -2,12 +2,9 @@
  * ActiveTimeConfig 值对象实现 (Client)
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ActiveTimeConfigClient, ActiveTimeConfigClientDTO, ActiveTimeConfigServerDTO } from '@dailyuse/contracts/reminder';
 
-type ActiveTimeConfigClientDTO = ReminderContracts.ActiveTimeConfigClientDTO;
-type ActiveTimeConfigServerDTO = ReminderContracts.ActiveTimeConfigServerDTO;
-
-export class ActiveTimeConfig implements ReminderContracts.ActiveTimeConfigClient {
+export class ActiveTimeConfig implements ActiveTimeConfigClient {
   private readonly _startDate: number;
   private readonly _endDate: number | null;
   private readonly _displayText: string;
@@ -43,7 +40,7 @@ export class ActiveTimeConfig implements ReminderContracts.ActiveTimeConfigClien
   }
 
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.ActiveTimeConfigClient): boolean {
+  public equals(other: ActiveTimeConfigClient): boolean {
     return (
       this._startDate === other.startDate &&
       this._endDate === other.endDate

@@ -9,33 +9,34 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { DashboardContracts } from '@dailyuse/contracts';
+import {
+  DashboardConfigPersistenceDTO,
+  DashboardConfigServer,
+  DashboardConfigServerDTO,
+  WidgetConfigDTO,
+  WidgetConfigData,
+  WidgetSize,
+} from '@dailyuse/contracts/dashboard';
 import { WidgetConfig } from '../value-objects';
 
 // 类型别名
-type IDashboardConfigServer = DashboardContracts.DashboardConfigServer;
-type DashboardConfigServerDTO = DashboardContracts.DashboardConfigServerDTO;
-type DashboardConfigPersistenceDTO = DashboardContracts.DashboardConfigPersistenceDTO;
-type WidgetConfigData = DashboardContracts.WidgetConfigData;
-type WidgetConfigDTO = DashboardContracts.WidgetConfigDTO;
-type WidgetSize = DashboardContracts.WidgetSize;
 
 /**
  * 默认 Widget 配置
  */
 const DEFAULT_WIDGET_CONFIG: WidgetConfigData = {
-  'task-stats': { visible: true, order: 1, size: DashboardContracts.WidgetSize.MEDIUM },
-  'goal-stats': { visible: true, order: 2, size: DashboardContracts.WidgetSize.MEDIUM },
-  'reminder-stats': { visible: true, order: 3, size: DashboardContracts.WidgetSize.SMALL },
-  'schedule-stats': { visible: true, order: 4, size: DashboardContracts.WidgetSize.SMALL },
-  'today-tasks': { visible: true, order: 5, size: DashboardContracts.WidgetSize.MEDIUM },
-  'goal-timeline': { visible: true, order: 6, size: DashboardContracts.WidgetSize.LARGE },
+  'task-stats': { visible: true, order: 1, size: WidgetSize.MEDIUM },
+  'goal-stats': { visible: true, order: 2, size: WidgetSize.MEDIUM },
+  'reminder-stats': { visible: true, order: 3, size: WidgetSize.SMALL },
+  'schedule-stats': { visible: true, order: 4, size: WidgetSize.SMALL },
+  'today-tasks': { visible: true, order: 5, size: WidgetSize.MEDIUM },
+  'goal-timeline': { visible: true, order: 6, size: WidgetSize.LARGE },
 };
 
 /**
  * DashboardConfig 聚合根
  */
-export class DashboardConfig extends AggregateRoot implements IDashboardConfigServer {
+export class DashboardConfig extends AggregateRoot implements DashboardConfigServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _widgetConfig: Map<string, WidgetConfig>;
@@ -191,7 +192,7 @@ export class DashboardConfig extends AggregateRoot implements IDashboardConfigSe
           WidgetConfig.fromDTO({
             visible: updateConfig.visible ?? true,
             order: updateConfig.order ?? this._widgetConfig.size + 1,
-            size: updateConfig.size ?? DashboardContracts.WidgetSize.MEDIUM,
+            size: updateConfig.size ?? WidgetSize.MEDIUM,
           }),
         );
       } else {

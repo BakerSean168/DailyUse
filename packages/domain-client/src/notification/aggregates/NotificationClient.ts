@@ -2,33 +2,26 @@
  * Notification 聚合根实现 (Client)
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
-import { NotificationContracts as NC } from '@dailyuse/contracts';
+import type {
+  NotificationClient as INotificationClient,
+  NotificationClientDTO,
+  NotificationServerDTO,
+  RelatedEntityType,
+} from '@dailyuse/contracts/notification';
+import {
+  ImportanceLevel,
+  NotificationCategory,
+  NotificationStatus,
+  NotificationType,
+  UrgencyLevel,
+} from '@dailyuse/contracts/notification';
 import { AggregateRoot } from '@dailyuse/utils';
 import { NotificationActionClient, NotificationMetadataClient } from '../value-objects';
-
-type INotificationClient = NotificationContracts.NotificationClient;
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
-type NotificationServerDTO = NotificationContracts.NotificationServerDTO;
-type NotificationType = NotificationContracts.NotificationType;
-type NotificationCategory = NotificationContracts.NotificationCategory;
-type NotificationStatus = NotificationContracts.NotificationStatus;
-type RelatedEntityType = NotificationContracts.RelatedEntityType;
-type ImportanceLevel = NotificationContracts.ImportanceLevel;
-type UrgencyLevel = NotificationContracts.UrgencyLevel;
-type NotificationActionClientDTO = NotificationContracts.NotificationActionClientDTO;
-type NotificationMetadataClientDTO = NotificationContracts.NotificationMetadataClientDTO;
-
-const NotificationType = NC.NotificationType;
-const NotificationCategory = NC.NotificationCategory;
-const NotificationStatus = NC.NotificationStatus;
-const ImportanceLevel = NC.ImportanceLevel;
-const UrgencyLevel = NC.UrgencyLevel;
 
 /**
  * Notification 聚合根 (Client)
  */
-export class NotificationClient extends AggregateRoot implements INotificationClient {
+export class NotificationClientImpl extends AggregateRoot implements INotificationClient {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _title: string;
@@ -407,8 +400,8 @@ export class NotificationClient extends AggregateRoot implements INotificationCl
     throw new Error('createHistory not implemented on client');
   }
 
-  public clone(): NotificationClient {
-    return new NotificationClient({
+  public clone(): NotificationClientImpl {
+    return new NotificationClientImpl({
       uuid: this._uuid,
       accountUuid: this._accountUuid,
       title: this._title,
@@ -435,7 +428,7 @@ export class NotificationClient extends AggregateRoot implements INotificationCl
 
   // ===== DTO 转换方法 =====
 
-  public toClientDTO(): NotificationClientDTO {
+  public toClientDTO(): NotificationClientImplDTO {
     return {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
@@ -507,8 +500,8 @@ export class NotificationClient extends AggregateRoot implements INotificationCl
 
   // ===== 静态工厂方法 =====
 
-  public static fromClientDTO(dto: NotificationClientDTO): NotificationClient {
-    return new NotificationClient({
+  public static fromClientDTO(dto: NotificationClientImplDTO): NotificationClientImpl {
+    return new NotificationClientImpl({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -533,8 +526,8 @@ export class NotificationClient extends AggregateRoot implements INotificationCl
     });
   }
 
-  public static fromServerDTO(dto: NotificationServerDTO): NotificationClient {
-    return new NotificationClient({
+  public static fromServerDTO(dto: NotificationServerDTO): NotificationClientImpl {
+    return new NotificationClientImpl({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,

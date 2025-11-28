@@ -2,22 +2,20 @@
  * ReminderGroup 聚合根实现 (Client)
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import {
+  ControlMode,
+  ReminderGroupClient,
+  ReminderGroupClientDTO,
+  ReminderGroupServerDTO,
+  ReminderStatus,
+} from '@dailyuse/contracts/reminder';
 import { AggregateRoot } from '@dailyuse/utils';
 import * as ValueObjects from '../value-objects';
 
-type IReminderGroup = ReminderContracts.ReminderGroupClient;
-type ReminderGroupDTO = ReminderContracts.ReminderGroupClientDTO;
-type ReminderGroupServerDTO = ReminderContracts.ReminderGroupServerDTO;
-type ControlMode = ReminderContracts.ControlMode;
-type ReminderStatus = ReminderContracts.ReminderStatus;
-
 // 枚举常量使用 Enum 后缀，避免与类型名冲突
-const ControlModeEnum = ReminderContracts.ControlMode;
-const ReminderStatusEnum = ReminderContracts.ReminderStatus;
 
 export class ReminderGroup extends AggregateRoot 
-  implements IReminderGroup {
+  implements ReminderGroup {
   
   private _accountUuid: string;
   private _name: string;
@@ -89,11 +87,11 @@ export class ReminderGroup extends AggregateRoot
   }
   
   public get controlModeText(): string {
-    return this._controlMode === ControlModeEnum.GROUP ? '组控制' : '个体控制';
+    return this._controlMode === ControlMode.GROUP ? '组控制' : '个体控制';
   }
   
   public get statusText(): string {
-    return this._status === ReminderStatusEnum.ACTIVE ? '活跃' : '已暂停';
+    return this._status === ReminderStatus.ACTIVE ? '活跃' : '已暂停';
   }
   
   public get templateCountText(): string {
@@ -105,7 +103,7 @@ export class ReminderGroup extends AggregateRoot
   }
   
   public get controlDescription(): string {
-    return this._controlMode === ControlModeEnum.GROUP 
+    return this._controlMode === ControlMode.GROUP 
       ? '所有提醒统一启用' 
       : '提醒独立控制';
   }
@@ -113,13 +111,13 @@ export class ReminderGroup extends AggregateRoot
   // ========== UI 业务方法 ==========
 
   public getStatusBadge(): { text: string; color: string } {
-    return this._status === ReminderStatusEnum.ACTIVE
+    return this._status === ReminderStatus.ACTIVE
       ? { text: '活跃', color: 'success' }
       : { text: '已暂停', color: 'warning' };
   }
 
   public getControlModeBadge(): { text: string; color: string; icon: string } {
-    return this._controlMode === ControlModeEnum.GROUP
+    return this._controlMode === ControlMode.GROUP
       ? { text: '组控制', color: 'primary', icon: 'mdi-group' }
       : { text: '个体控制', color: 'info', icon: 'mdi-account' };
   }
@@ -137,11 +135,11 @@ export class ReminderGroup extends AggregateRoot
   }
 
   public canEnableAll(): boolean {
-    return !this._enabled && this._controlMode === ControlModeEnum.GROUP;
+    return !this._enabled && this._controlMode === ControlMode.GROUP;
   }
 
   public canPauseAll(): boolean {
-    return this._enabled && this._controlMode === ControlModeEnum.GROUP;
+    return this._enabled && this._controlMode === ControlMode.GROUP;
   }
 
   public canEdit(): boolean {
@@ -157,7 +155,7 @@ export class ReminderGroup extends AggregateRoot
   }
 
   public isGroupControlled(): boolean {
-    return this._controlMode === ControlModeEnum.GROUP;
+    return this._controlMode === ControlMode.GROUP;
   }
 
   // ========== 修改方法 ==========
@@ -184,7 +182,7 @@ export class ReminderGroup extends AggregateRoot
   
   public setEnabled(enabled: boolean): void {
     this._enabled = enabled;
-    this._status = enabled ? ReminderStatusEnum.ACTIVE : ReminderStatusEnum.PAUSED;
+    this._status = enabled ? ReminderStatus.ACTIVE : ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
   }
   
@@ -194,27 +192,27 @@ export class ReminderGroup extends AggregateRoot
   }
   
   public switchControlMode(): void {
-    this._controlMode = this._controlMode === ControlModeEnum.GROUP 
-      ? ControlModeEnum.INDIVIDUAL 
-      : ControlModeEnum.GROUP;
+    this._controlMode = this._controlMode === ControlMode.GROUP 
+      ? ControlMode.INDIVIDUAL 
+      : ControlMode.GROUP;
     this._updatedAt = Date.now();
   }
   
   public enable(): void {
     this._enabled = true;
-    this._status = ReminderStatusEnum.ACTIVE;
+    this._status = ReminderStatus.ACTIVE;
     this._updatedAt = Date.now();
   }
   
   public pause(): void {
     this._enabled = false;
-    this._status = ReminderStatusEnum.PAUSED;
+    this._status = ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
   }
   
   public toggleEnabled(): void {
     this._enabled = !this._enabled;
-    this._status = this._enabled ? ReminderStatusEnum.ACTIVE : ReminderStatusEnum.PAUSED;
+    this._status = this._enabled ? ReminderStatus.ACTIVE : ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
   }
   

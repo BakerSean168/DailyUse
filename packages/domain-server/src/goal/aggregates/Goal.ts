@@ -10,47 +10,50 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalContracts } from '@dailyuse/contracts';
+import {
+  GoalArchivedEvent,
+  GoalClientDTO,
+  GoalCompletedEvent,
+  GoalCreatedEvent,
+  GoalDeletedEvent,
+  GoalPersistenceDTO,
+  GoalRecordClientDTO,
+  GoalReminderConfigPersistenceDTO,
+  GoalReminderConfigServerDTO,
+  GoalReviewAddedEvent,
+  GoalReviewServerDTO,
+  GoalServer,
+  GoalServerDTO,
+  GoalStatus,
+  GoalStatusChangedEvent,
+  GoalTimeRangeSummary,
+  GoalUpdatedEvent,
+  ImportanceLevel,
+  KeyResultAddedEvent,
+  KeyResultProgressServerDTO,
+  KeyResultServerDTO,
+  KeyResultSnapshotServerDTO,
+  KeyResultUpdatedEvent,
+  ProgressBreakdown,
+  ReminderTrigger,
+  ReminderTriggerType,
+  ReviewType,
+  SnapshotTrigger,
+  UrgencyLevel,
+} from '@dailyuse/contracts/goal';
 import { KeyResult } from '../entities/KeyResult';
 import { GoalReview } from '../entities/GoalReview';
 import { GoalReminderConfig, KeyResultWeightSnapshot, KeyResultNotFoundInGoalError } from '../value-objects';
 
 // 类型别名（从命名空间导入）
-type IGoalServer = GoalContracts.GoalServer;
-type GoalServerDTO = GoalContracts.GoalServerDTO;
-type GoalPersistenceDTO = GoalContracts.GoalPersistenceDTO;
-type GoalStatus = GoalContracts.GoalStatus;
-type ReviewType = GoalContracts.ReviewType;
-type KeyResultServerDTO = GoalContracts.KeyResultServerDTO;
-type GoalReviewServerDTO = GoalContracts.GoalReviewServerDTO;
-type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
-type GoalReminderConfigPersistenceDTO = GoalContracts.GoalReminderConfigPersistenceDTO;
-type KeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
-type KeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
-type GoalCreatedEvent = GoalContracts.GoalCreatedEvent;
-type GoalUpdatedEvent = GoalContracts.GoalUpdatedEvent;
-type GoalStatusChangedEvent = GoalContracts.GoalStatusChangedEvent;
-type GoalCompletedEvent = GoalContracts.GoalCompletedEvent;
-type GoalArchivedEvent = GoalContracts.GoalArchivedEvent;
-type GoalDeletedEvent = GoalContracts.GoalDeletedEvent;
-type KeyResultAddedEvent = GoalContracts.KeyResultAddedEvent;
-type KeyResultUpdatedEvent = GoalContracts.KeyResultUpdatedEvent;
-type GoalReviewAddedEvent = GoalContracts.GoalReviewAddedEvent;
-type ImportanceLevel = GoalContracts.ImportanceLevel;
-type UrgencyLevel = GoalContracts.UrgencyLevel;
-type GoalRecordClientDTO = GoalContracts.GoalRecordClientDTO;
-type GoalTimeRangeSummary = GoalContracts.GoalTimeRangeSummary;
 
 // 枚举值别名
-const GoalStatusEnum = GoalContracts.GoalStatus;
-const ImportanceLevelEnum = GoalContracts.ImportanceLevel;
-const UrgencyLevelEnum = GoalContracts.UrgencyLevel;
 const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_DURATION = 30 * DAY_MS;
 /**
  * Goal 聚合根
  */
-export class Goal extends AggregateRoot implements IGoalServer {
+export class Goal extends AggregateRoot implements GoalServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _title: string;
@@ -587,7 +590,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
    * 激活目标
    */
   public activate(): void {
-    this._status = GoalStatusEnum.ACTIVE;
+    this._status = GoalStatus.ACTIVE;
     this._updatedAt = Date.now();
   }
 
@@ -602,9 +605,9 @@ export class Goal extends AggregateRoot implements IGoalServer {
    * 标记为完成
    */
   public markAsCompleted(): void {
-    if (this._status === GoalStatusEnum.COMPLETED) return;
+    if (this._status === GoalStatus.COMPLETED) return;
 
-    this._status = GoalStatusEnum.COMPLETED;
+    this._status = GoalStatus.COMPLETED;
     this._completedAt = Date.now();
     this._updatedAt = this._completedAt;
 
@@ -627,7 +630,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
   public archive(): void {
     if (this._archivedAt) return;
 
-    this._status = GoalStatusEnum.ARCHIVED; // 更新状态
+    this._status = GoalStatus.ARCHIVED; // 更新状态
     this._archivedAt = Date.now();
     this._updatedAt = this._archivedAt;
 
@@ -735,7 +738,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
   /**
    * 添加提醒触发器
    */
-  public addReminderTrigger(trigger: GoalContracts.ReminderTrigger): void {
+  public addReminderTrigger(trigger: ReminderTrigger): void {
     if (!this._reminderConfig) {
       throw new Error('Reminder config not initialized');
     }
@@ -746,7 +749,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
   /**
    * 移除提醒触发器
    */
-  public removeReminderTrigger(type: GoalContracts.ReminderTriggerType, value: number): void {
+  public removeReminderTrigger(type: ReminderTriggerType, value: number): void {
     if (!this._reminderConfig) {
       throw new Error('Reminder config not initialized');
     }
@@ -985,7 +988,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
    * 
    * @returns 进度分解详情对象
    */
-  public getProgressBreakdown(): GoalContracts.ProgressBreakdown {
+  public getProgressBreakdown(): ProgressBreakdown {
     const totalWeight = this._keyResults.reduce((sum, kr) => sum + kr.weight, 0);
     const totalProgress = this.calculateProgress();
     
@@ -1036,7 +1039,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
     krUuid: string,
     oldWeight: number,
     newWeight: number,
-    trigger: GoalContracts.SnapshotTrigger,
+    trigger: SnapshotTrigger,
     operatorUuid: string,
     reason?: string,
   ): void {
@@ -1203,7 +1206,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
    * 是否为高优先级（高重要性 + 高紧急性）
    */
   public isHighPriority(): boolean {
-    return this._importance === ImportanceLevelEnum.Important && this._urgency === UrgencyLevelEnum.High;
+    return this._importance === ImportanceLevel.Important && this._urgency === UrgencyLevel.High;
   }
 
   /**
@@ -1228,19 +1231,19 @@ export class Goal extends AggregateRoot implements IGoalServer {
   public getPriorityScore(): number {
     // 根据重要性和紧急性计算优先级得分
     const importanceScores = {
-      [ImportanceLevelEnum.Vital]: 5,
-      [ImportanceLevelEnum.Important]: 4,
-      [ImportanceLevelEnum.Moderate]: 3,
-      [ImportanceLevelEnum.Minor]: 2,
-      [ImportanceLevelEnum.Trivial]: 1,
+      [ImportanceLevel.Vital]: 5,
+      [ImportanceLevel.Important]: 4,
+      [ImportanceLevel.Moderate]: 3,
+      [ImportanceLevel.Minor]: 2,
+      [ImportanceLevel.Trivial]: 1,
     };
 
     const urgencyScores = {
-      [UrgencyLevelEnum.Critical]: 5,
-      [UrgencyLevelEnum.High]: 4,
-      [UrgencyLevelEnum.Medium]: 3,
-      [UrgencyLevelEnum.Low]: 2,
-      [UrgencyLevelEnum.None]: 1,
+      [UrgencyLevel.Critical]: 5,
+      [UrgencyLevel.High]: 4,
+      [UrgencyLevel.Medium]: 3,
+      [UrgencyLevel.Low]: 2,
+      [UrgencyLevel.None]: 1,
     };
 
     const importanceScore = importanceScores[this._importance] || 0;
@@ -1255,7 +1258,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
   /**
    * 转换为 Client DTO
    */
-  public toClientDTO(includeChildren: boolean = false): GoalContracts.GoalClientDTO {
+  public toClientDTO(includeChildren: boolean = false): GoalClientDTO {
     const progress = this.calculateProgress();
     const timeProgressRatio = this.calculateTimeProgressRatio();
     const timeRangeSummary = this.buildTimeRangeSummary();
@@ -1292,7 +1295,7 @@ export class Goal extends AggregateRoot implements IGoalServer {
           ? this._reviews.map((r) => r.toClientDTO())
           : [],
       overallProgress: progress,
-      isCompleted: this._status === GoalStatusEnum.COMPLETED,
+      isCompleted: this._status === GoalStatus.COMPLETED,
       isArchived: !!this._archivedAt,
       isDeleted: !!this._deletedAt,
       isOverdue: this.isOverdue(),

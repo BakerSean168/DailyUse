@@ -3,7 +3,34 @@
  * 实现 ReminderTemplateServer 接口
  */
 
-import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
+import type {
+  ActiveHoursConfigServer,
+  ActiveHoursConfigServerDTO,
+  ActiveTimeConfigServer,
+  ActiveTimeConfigServerDTO,
+  FrequencyAdjustmentServer,
+  FrequencyAdjustmentServerDTO,
+  NotificationConfigServer,
+  NotificationConfigServerDTO,
+  RecurrenceConfigServer,
+  RecurrenceConfigServerDTO,
+  ReminderStatsServer,
+  ReminderTemplateClientDTO,
+  ReminderTemplatePersistenceDTO,
+  ReminderTemplateServer,
+  ReminderTemplateServerDTO,
+  ResponseMetricsServer,
+  ResponseMetricsServerDTO,
+  TriggerConfigServer,
+  TriggerConfigServerDTO,
+} from '@dailyuse/contracts/reminder';
+import {
+  NotificationChannel,
+  ReminderStatus,
+  ReminderType,
+  TriggerResult,
+} from '@dailyuse/contracts/reminder';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import {
   RecurrenceConfig,
@@ -17,15 +44,6 @@ import {
 } from '../value-objects';
 import { ReminderHistory } from '../entities';
 
-type ReminderTemplateClientDTO = ReminderContracts.ReminderTemplateClientDTO;
-type IReminderTemplateServer = ReminderContracts.ReminderTemplateServer;
-type ReminderTemplateServerDTO = ReminderContracts.ReminderTemplateServerDTO;
-type ReminderTemplatePersistenceDTO = ReminderContracts.ReminderTemplatePersistenceDTO;
-type ReminderType = ReminderContracts.ReminderType;
-type ReminderStatus = ReminderContracts.ReminderStatus;
-type TriggerResult = ReminderContracts.TriggerResult;
-type NotificationChannel = ReminderContracts.NotificationChannel;
-
 /**
  * ReminderTemplate 聚合根
  *
@@ -35,7 +53,7 @@ type NotificationChannel = ReminderContracts.NotificationChannel;
  * - 确保聚合内的一致性
  * - 是事务边界
  */
-export class ReminderTemplate extends AggregateRoot implements IReminderTemplateServer {
+export class ReminderTemplate extends AggregateRoot implements ReminderTemplateServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _title: string;
@@ -143,19 +161,19 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   public get type(): ReminderType {
     return this._type;
   }
-  public get trigger(): ReminderContracts.TriggerConfigServer {
+  public get trigger(): TriggerConfigServer {
     return this._trigger;
   }
-  public get recurrence(): ReminderContracts.RecurrenceConfigServer | null {
+  public get recurrence(): RecurrenceConfigServer | null {
     return this._recurrence;
   }
-  public get activeTime(): ReminderContracts.ActiveTimeConfigServer {
+  public get activeTime(): ActiveTimeConfigServer {
     return this._activeTime;
   }
-  public get activeHours(): ReminderContracts.ActiveHoursConfigServer | null {
+  public get activeHours(): ActiveHoursConfigServer | null {
     return this._activeHours;
   }
-  public get notificationConfig(): ReminderContracts.NotificationConfigServer {
+  public get notificationConfig(): NotificationConfigServer {
     return this._notificationConfig;
   }
   public get selfEnabled(): boolean {
@@ -182,7 +200,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   public get nextTriggerAt(): number | null {
     return this._nextTriggerAt;
   }
-  public get stats(): ReminderContracts.ReminderStatsServer {
+  public get stats(): ReminderStatsServer {
     return this._stats;
   }
   public get createdAt(): number {
@@ -200,11 +218,11 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   }
 
   // ===== 智能频率相关 Getter (Story 5-2) =====
-  public get responseMetrics(): ReminderContracts.ResponseMetricsServer | null {
+  public get responseMetrics(): ResponseMetricsServer | null {
     return this._responseMetrics;
   }
 
-  public get frequencyAdjustment(): ReminderContracts.FrequencyAdjustmentServer | null {
+  public get frequencyAdjustment(): FrequencyAdjustmentServer | null {
     return this._frequencyAdjustment;
   }
 
@@ -225,12 +243,12 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     accountUuid: string;
     title: string;
     type: ReminderType;
-    trigger: ReminderContracts.TriggerConfigServerDTO;
-    activeTime: ReminderContracts.ActiveTimeConfigServerDTO;
-    notificationConfig: ReminderContracts.NotificationConfigServerDTO;
+    trigger: TriggerConfigServerDTO;
+    activeTime: ActiveTimeConfigServerDTO;
+    notificationConfig: NotificationConfigServerDTO;
     description?: string;
-    recurrence?: ReminderContracts.RecurrenceConfigServerDTO;
-    activeHours?: ReminderContracts.ActiveHoursConfigServerDTO;
+    recurrence?: RecurrenceConfigServerDTO;
+    activeHours?: ActiveHoursConfigServerDTO;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
     color?: string;
@@ -267,7 +285,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
       activeHours,
       notificationConfig,
       selfEnabled: true, // 默认启用
-      status: ReminderContracts.ReminderStatus.ACTIVE,
+      status: ReminderStatus.ACTIVE,
       groupUuid: params.groupUuid,
       importanceLevel: params.importanceLevel || ImportanceLevel.Moderate,
       tags: params.tags,
@@ -486,11 +504,11 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   public update(updates: {
     title?: string;
     description?: string;
-    trigger?: ReminderContracts.TriggerConfigServerDTO;
-    activeTime?: ReminderContracts.ActiveTimeConfigServerDTO;
-    notificationConfig?: ReminderContracts.NotificationConfigServerDTO;
-    recurrence?: ReminderContracts.RecurrenceConfigServerDTO | null;
-    activeHours?: ReminderContracts.ActiveHoursConfigServerDTO | null;
+    trigger?: TriggerConfigServerDTO;
+    activeTime?: ActiveTimeConfigServerDTO;
+    notificationConfig?: NotificationConfigServerDTO;
+    recurrence?: RecurrenceConfigServerDTO | null;
+    activeHours?: ActiveHoursConfigServerDTO | null;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
     color?: string | null;
@@ -567,11 +585,11 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   public enable(): void {
     const now = Date.now();
     this._selfEnabled = true;
-    this._status = ReminderContracts.ReminderStatus.ACTIVE;
-    
+    this._status = ReminderStatus.ACTIVE;
+
     // 更新 activatedAt 为当前时间
     this._activeTime = this._activeTime.with({ activatedAt: now });
-    
+
     this._updatedAt = now;
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
@@ -597,7 +615,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
    */
   public pause(): void {
     this._selfEnabled = false;
-    this._status = ReminderContracts.ReminderStatus.PAUSED;
+    this._status = ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
 
     // selfEnabled 变化，需要重新计算 effectiveEnabled
@@ -692,7 +710,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     const now = Date.now();
 
     // 检查模板状态，只有 ACTIVE 状态才触发
-    if (this._status !== ReminderContracts.ReminderStatus.ACTIVE) {
+    if (this._status !== ReminderStatus.ACTIVE) {
       return null;
     }
 
@@ -728,7 +746,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
    */
   public isActiveAtTime(timestamp: number): boolean {
     // 检查状态
-    if (this._status !== ReminderContracts.ReminderStatus.ACTIVE) {
+    if (this._status !== ReminderStatus.ACTIVE) {
       return false;
     }
 
@@ -758,7 +776,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
     // 创建历史记录
     this.createHistory({
       triggeredAt: now,
-      result: ReminderContracts.TriggerResult.SUCCESS,
+      result: TriggerResult.SUCCESS,
     });
 
     // 更新统计
@@ -864,7 +882,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   /**
    * 更新响应指标
    */
-  public updateResponseMetrics(metrics: ReminderContracts.ResponseMetricsServerDTO): void {
+  public updateResponseMetrics(metrics: ResponseMetricsServerDTO): void {
     this._responseMetrics = ResponseMetrics.fromServerDTO(metrics);
     this._updatedAt = Date.now();
   }
@@ -872,9 +890,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   /**
    * 应用频率调整（自动调整或用户手动调整）
    */
-  public applyFrequencyAdjustment(
-    adjustment: ReminderContracts.FrequencyAdjustmentServerDTO,
-  ): void {
+  public applyFrequencyAdjustment(adjustment: FrequencyAdjustmentServerDTO): void {
     this._frequencyAdjustment = FrequencyAdjustment.fromServerDTO(adjustment);
     // 注意：实际的触发间隔调整应该在 Domain Service 或 Application Service 中处理
     // 这里只记录调整信息
@@ -929,7 +945,7 @@ export class ReminderTemplate extends AggregateRoot implements IReminderTemplate
   /**
    * 计算建议的频率调整
    */
-  public calculateSuggestedAdjustment(): ReminderContracts.FrequencyAdjustmentServerDTO | null {
+  public calculateSuggestedAdjustment(): FrequencyAdjustmentServerDTO | null {
     if (!this._responseMetrics || !this._smartFrequencyEnabled || !this._trigger) {
       return null;
     }

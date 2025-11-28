@@ -2,26 +2,15 @@
  * NotificationTemplate 聚合根实现 (Client)
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
-import { NotificationContracts as NC } from '@dailyuse/contracts';
+import type { NotificationTemplateAggregateClientDTO, NotificationTemplateAggregateServerDTO, NotificationTemplateClient as INotificationTemplateClient } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 import { AggregateRoot } from '@dailyuse/utils';
 import { NotificationTemplateConfigClient } from '../value-objects';
-
-type INotificationTemplateClient = NotificationContracts.NotificationTemplateClient;
-type NotificationTemplateAggregateClientDTO =
-  NotificationContracts.NotificationTemplateAggregateClientDTO;
-type NotificationTemplateAggregateServerDTO =
-  NotificationContracts.NotificationTemplateAggregateServerDTO;
-type NotificationType = NotificationContracts.NotificationType;
-type NotificationCategory = NotificationContracts.NotificationCategory;
-
-const NotificationType = NC.NotificationType;
-const NotificationCategory = NC.NotificationCategory;
 
 /**
  * NotificationTemplate 聚合根 (Client)
  */
-export class NotificationTemplateClient
+export class NotificationTemplateClientImpl
   extends AggregateRoot
   implements INotificationTemplateClient
 {
@@ -170,8 +159,8 @@ export class NotificationTemplateClient
     return !this._isSystemTemplate;
   }
 
-  public clone(): NotificationTemplateClient {
-    return new NotificationTemplateClient({
+  public clone(): NotificationTemplateClientImpl {
+    return new NotificationTemplateClientImpl({
       uuid: this._uuid,
       name: this._name,
       description: this._description,
@@ -231,8 +220,8 @@ export class NotificationTemplateClient
     template: NotificationTemplateConfigClient;
     description?: string;
     isSystemTemplate?: boolean;
-  }): NotificationTemplateClient {
-    return new NotificationTemplateClient({
+  }): NotificationTemplateClientImpl {
+    return new NotificationTemplateClientImpl({
       name: params.name,
       description: params.description,
       type: params.type,
@@ -245,8 +234,8 @@ export class NotificationTemplateClient
     });
   }
 
-  public static forCreate(): NotificationTemplateClient {
-    return new NotificationTemplateClient({
+  public static forCreate(): NotificationTemplateClientImpl {
+    return new NotificationTemplateClientImpl({
       name: '',
       description: '',
       type: NotificationType.INFO,
@@ -270,8 +259,8 @@ export class NotificationTemplateClient
 
   public static fromClientDTO(
     dto: NotificationTemplateAggregateClientDTO,
-  ): NotificationTemplateClient {
-    return new NotificationTemplateClient({
+  ): NotificationTemplateClientImpl {
+    return new NotificationTemplateClientImpl({
       uuid: dto.uuid,
       name: dto.name,
       description: dto.description,
@@ -287,8 +276,8 @@ export class NotificationTemplateClient
 
   public static fromServerDTO(
     dto: NotificationTemplateAggregateServerDTO,
-  ): NotificationTemplateClient {
-    return new NotificationTemplateClient({
+  ): NotificationTemplateClientImpl {
+    return new NotificationTemplateClientImpl({
       uuid: dto.uuid,
       name: dto.name,
       description: dto.description,

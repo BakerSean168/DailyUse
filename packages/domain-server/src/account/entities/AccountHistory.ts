@@ -3,15 +3,15 @@
  * 实现 AccountHistoryServer 接口
  */
 
-import { AccountContracts } from '@dailyuse/contracts';
+import {
+  AccountHistoryClientDTO,
+  AccountHistoryPersistenceDTO,
+  AccountHistoryServer,
+  AccountHistoryServerDTO,
+} from '@dailyuse/contracts/account';
 import { Entity } from '@dailyuse/utils';
 
-type IAccountHistoryServer = AccountContracts.AccountHistoryServer;
-type AccountHistoryServerDTO = AccountContracts.AccountHistoryServerDTO;
-type AccountHistoryClientDTO = AccountContracts.AccountHistoryClientDTO;
-type AccountHistoryPersistenceDTO = AccountContracts.AccountHistoryPersistenceDTO;
-
-export class AccountHistory extends Entity implements IAccountHistoryServer {
+export class AccountHistory extends Entity implements AccountHistoryServer {
   private _accountUuid: string;
   private _action: string;
   private _details: any | null;

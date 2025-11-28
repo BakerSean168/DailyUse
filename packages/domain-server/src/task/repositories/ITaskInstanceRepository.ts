@@ -4,9 +4,7 @@
  */
 
 import { TaskInstance } from '../aggregates';
-import type { TaskContracts } from '@dailyuse/contracts';
-
-type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
 /**
  * TaskInstance 仓储接口

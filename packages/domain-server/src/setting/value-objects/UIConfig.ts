@@ -3,18 +3,18 @@
  * 实现 UIConfigServer 接口
  */
 
-import type { SettingContracts } from '@dailyuse/contracts';
-
-type IUIConfigServer = SettingContracts.UIConfigServer;
-type UIConfigServerDTO = SettingContracts.UIConfigServerDTO;
-type UIConfigClientDTO = SettingContracts.UIConfigClientDTO;
-type UIInputType = SettingContracts.UIInputType;
+import type {
+  UIConfigClientDTO,
+  UIConfigServer,
+  UIConfigServerDTO,
+  UIInputType,
+} from '@dailyuse/contracts/setting';
 
 /**
  * UIConfig 值对象
  * 不可变的UI配置
  */
-export class UIConfig implements IUIConfigServer {
+export class UIConfig implements UIConfigServer {
   public readonly inputType: UIInputType;
   public readonly label: string;
   public readonly placeholder?: string | null;

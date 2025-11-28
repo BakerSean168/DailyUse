@@ -6,11 +6,8 @@
 
 import type { INotificationPreferenceRepository } from '../repositories/INotificationPreferenceRepository';
 import { NotificationPreference } from '../aggregates/NotificationPreference';
-import type { NotificationContracts } from '@dailyuse/contracts';
-
-type NotificationCategory = NotificationContracts.NotificationCategory;
-type CategoryPreferenceDTO = NotificationContracts.CategoryPreferenceServerDTO;
-type ChannelPreferences = NotificationContracts.ChannelPreferences;
+import type { CategoryPreferenceServerDTO, ChannelPreferences } from '@dailyuse/contracts/notification';
+import { NotificationCategory } from '@dailyuse/contracts/notification';
 
 /**
  * NotificationPreferenceDomainService

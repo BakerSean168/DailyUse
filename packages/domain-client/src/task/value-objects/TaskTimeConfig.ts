@@ -2,15 +2,11 @@
  * TaskTimeConfig 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTimeConfigClient, TaskTimeConfigClientDTO, TaskTimeConfigServerDTO } from '@dailyuse/contracts/task';
+import { TimeType } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskTimeConfig = TaskContracts.TaskTimeConfigClient;
-type TaskTimeConfigDTO = TaskContracts.TaskTimeConfigClientDTO;
-type TaskTimeConfigServerDTO = TaskContracts.TaskTimeConfigServerDTO;
-type TimeType = TaskContracts.TimeType;
-
-export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
+export class TaskTimeConfig extends ValueObject implements TaskTimeConfig {
   private _timeType: TimeType;
   private _startDate: number | null;
   // _endDate 已移除 - 结束日期属于重复规则

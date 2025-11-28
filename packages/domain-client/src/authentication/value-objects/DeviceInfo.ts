@@ -3,17 +3,15 @@
  * 兼容 DeviceInfoClient 接口
  */
 
-import { AuthenticationContracts, DeviceType } from '@dailyuse/contracts';
+import { DeviceInfoClient, DeviceInfoClientDTO, DeviceType } from '@dailyuse/contracts/authentication';
 import { ValueObject } from '@dailyuse/utils';
 
-type IDeviceInfoClient = AuthenticationContracts.DeviceInfoClient;
-type DeviceInfoClientDTO = AuthenticationContracts.DeviceInfoClientDTO;
 
 /**
  * DeviceInfo 值对象 (Client)
  * 设备信息值对象
  */
-export class DeviceInfo extends ValueObject implements IDeviceInfoClient {
+export class DeviceInfo extends ValueObject implements DeviceInfoClient {
   // ===== 私有字段 =====
   private _deviceId: string;
   private _deviceFingerprint: string;

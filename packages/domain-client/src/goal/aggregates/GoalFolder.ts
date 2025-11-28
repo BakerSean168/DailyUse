@@ -4,18 +4,19 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalContracts } from '@dailyuse/contracts';
+import {
+  FolderType,
+  GoalFolderClient,
+  GoalFolderClientDTO,
+  GoalFolderServerDTO,
+} from '@dailyuse/contracts/goal';
 
-type IGoalFolder = GoalContracts.GoalFolderClient;
-type GoalFolderDTO = GoalContracts.GoalFolderClientDTO;
-type GoalFolderServerDTO = GoalContracts.GoalFolderServerDTO;
-type FolderType = GoalContracts.FolderType;
-const FolderType = GoalContracts.FolderType;
+const FolderType = FolderType;
 
 /**
  * 目标文件夹聚合根客户端实现
  */
-export class GoalFolder extends AggregateRoot implements IGoalFolder {
+export class GoalFolder extends AggregateRoot implements GoalFolder {
   private _accountUuid: string;
   private _name: string;
   private _description?: string | null;

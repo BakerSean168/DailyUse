@@ -4,13 +4,13 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import type { SettingContracts } from '@dailyuse/contracts';
+import type {
+  SettingGroupClientDTO,
+  SettingGroupPersistenceDTO,
+  SettingGroupServer,
+  SettingGroupServerDTO,
+} from '@dailyuse/contracts/setting';
 import { SettingItem } from './SettingItem';
-
-type SettingGroupServerDTO = SettingContracts.SettingGroupServerDTO;
-type SettingGroupClientDTO = SettingContracts.SettingGroupClientDTO;
-type SettingGroupPersistenceDTO = SettingContracts.SettingGroupPersistenceDTO;
-type SettingGroupServer = SettingContracts.SettingGroupServer;
 
 /**
  * 设置分组实体

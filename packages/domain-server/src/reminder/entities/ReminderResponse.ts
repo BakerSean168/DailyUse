@@ -9,7 +9,7 @@ import type {
   ReminderResponseClientDTO,
   ReminderResponsePersistenceDTO,
   ReminderResponseAction,
-} from '@dailyuse/contracts/src/modules/reminder';
+} from '@dailyuse/contracts/reminder';
 import { Entity } from '@dailyuse/utils';
 
 /**

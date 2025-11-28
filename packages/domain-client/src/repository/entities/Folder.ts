@@ -6,14 +6,16 @@
  * - 管理文件夹层级关系（子文件夹）
  * - 执行文件夹业务逻辑
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
+import {
+  FolderClient,
+  FolderClientDTO,
+  FolderMetadataServerDTO,
+  FolderServerDTO,
+} from '@dailyuse/contracts/repository';
 import { Entity } from '@dailyuse/utils';
 import { FolderMetadata } from '../value-objects';
 
 // 类型别名
-type FolderClient = RepositoryContracts.FolderClient;
-type FolderClientDTO = RepositoryContracts.FolderClientDTO;
-type FolderServerDTO = RepositoryContracts.FolderServerDTO;
 
 export class Folder extends Entity {
   // ===== 私有字段 =====
@@ -143,7 +145,7 @@ export class Folder extends Entity {
     this._updatedAt = Date.now();
   }
 
-  updateMetadata(metadata: Partial<RepositoryContracts.FolderMetadataServerDTO>): void {
+  updateMetadata(metadata: Partial<FolderMetadataServerDTO>): void {
     const currentDTO = this._metadata.toServerDTO();
     const merged = { ...currentDTO, ...metadata };
     this._metadata = FolderMetadata.fromServerDTO(merged);

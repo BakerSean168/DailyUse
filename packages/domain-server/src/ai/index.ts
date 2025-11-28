@@ -17,12 +17,12 @@
  */
 
 // ===== Aggregates =====
-export * from './aggregates/AIConversationServer';
+export * from './aggregates/AIConversation';
 export * from './aggregates/AIUsageQuotaServer';
 export * from './aggregates/AIProviderConfigServer';
 
 // ===== Entities =====
-export * from './entities/MessageServer';
+export * from './entities/Message';
 export * from './entities/KnowledgeGenerationTask';
 
 // ===== Value Objects =====

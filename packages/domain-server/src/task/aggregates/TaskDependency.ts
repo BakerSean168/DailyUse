@@ -3,11 +3,9 @@
  * 任务依赖关系 - 聚合根
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import { DependencyType } from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
-
-type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
-type DependencyType = TaskContracts.DependencyType;
 
 /**
  * TaskDependency 构造函数参数

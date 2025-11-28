@@ -4,10 +4,7 @@
  */
 
 import type { LinkedResource } from '../entities/LinkedResource';
-import type { EditorContracts } from '@dailyuse/contracts';
-
-type LinkedSourceType = EditorContracts.LinkedSourceType;
-type LinkedTargetType = EditorContracts.LinkedTargetType;
+import type { LinkedSourceType, LinkedTargetType } from '@dailyuse/contracts/editor';
 
 /**
  * LinkedResource 仓储接口

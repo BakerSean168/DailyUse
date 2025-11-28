@@ -1,8 +1,5 @@
-import { GoalContracts } from '@dailyuse/contracts';
+import { GoalReminderConfigServerDTO, GoalServerDTO } from '@dailyuse/contracts/goal';
 import type { DomainEvent } from '@dailyuse/utils';
-
-type GoalServerDTO = GoalContracts.GoalServerDTO;
-type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
 
 /**
  * 当目标的计划时间（开始或结束日期）发生变化时触发

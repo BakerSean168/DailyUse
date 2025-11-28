@@ -15,20 +15,20 @@
 
 import { describe, it, expect } from 'vitest';
 import { TaskReminderConfig } from '../TaskReminderConfig';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { ReminderTrigger, TaskReminderConfigPersistenceDTO, TaskReminderConfigServerDTO } from '@dailyuse/contracts/task';
 
 describe('TaskReminderConfig Value Object', () => {
   // ==================== 测试数据 ====================
   const mockAbsoluteTime = Date.now() + 3600000; // 1小时后
   
-  const mockAbsoluteTrigger: TaskContracts.ReminderTrigger = {
+  const mockAbsoluteTrigger: ReminderTrigger = {
     type: 'ABSOLUTE',
     absoluteTime: mockAbsoluteTime,
     relativeValue: null,
     relativeUnit: null,
   };
 
-  const mockRelativeTrigger: TaskContracts.ReminderTrigger = {
+  const mockRelativeTrigger: ReminderTrigger = {
     type: 'RELATIVE',
     absoluteTime: null,
     relativeValue: 30,
@@ -421,21 +421,21 @@ describe('TaskReminderConfig Value Object', () => {
       });
 
       it('应该正确处理不同时间单位的相对触发器', () => {
-        const minutesTrigger: TaskContracts.ReminderTrigger = {
+        const minutesTrigger: ReminderTrigger = {
           type: 'RELATIVE',
           absoluteTime: null,
           relativeValue: 15,
           relativeUnit: 'MINUTES',
         };
 
-        const hoursTrigger: TaskContracts.ReminderTrigger = {
+        const hoursTrigger: ReminderTrigger = {
           type: 'RELATIVE',
           absoluteTime: null,
           relativeValue: 2,
           relativeUnit: 'HOURS',
         };
 
-        const daysTrigger: TaskContracts.ReminderTrigger = {
+        const daysTrigger: ReminderTrigger = {
           type: 'RELATIVE',
           absoluteTime: null,
           relativeValue: 1,
@@ -524,7 +524,7 @@ describe('TaskReminderConfig Value Object', () => {
   describe('Factory Methods', () => {
     describe('fromServerDTO()', () => {
       it('应该从 ServerDTO 正确恢复禁用的配置', () => {
-        const dto: TaskContracts.TaskReminderConfigServerDTO = {
+        const dto: TaskReminderConfigServerDTO = {
           enabled: false,
           triggers: [],
         };
@@ -536,7 +536,7 @@ describe('TaskReminderConfig Value Object', () => {
       });
 
       it('应该从 ServerDTO 正确恢复启用的配置', () => {
-        const dto: TaskContracts.TaskReminderConfigServerDTO = {
+        const dto: TaskReminderConfigServerDTO = {
           enabled: true,
           triggers: [mockAbsoluteTrigger],
         };
@@ -549,7 +549,7 @@ describe('TaskReminderConfig Value Object', () => {
       });
 
       it('应该从 ServerDTO 正确恢复多个触发器', () => {
-        const dto: TaskContracts.TaskReminderConfigServerDTO = {
+        const dto: TaskReminderConfigServerDTO = {
           enabled: true,
           triggers: [mockAbsoluteTrigger, mockRelativeTrigger],
         };
@@ -562,7 +562,7 @@ describe('TaskReminderConfig Value Object', () => {
 
     describe('fromPersistenceDTO()', () => {
       it('应该从 PersistenceDTO 正确恢复配置', () => {
-        const dto: TaskContracts.TaskReminderConfigPersistenceDTO = {
+        const dto: TaskReminderConfigPersistenceDTO = {
           enabled: true,
           triggers: JSON.stringify([mockAbsoluteTrigger]),
         };
@@ -575,7 +575,7 @@ describe('TaskReminderConfig Value Object', () => {
       });
 
       it('应该从 PersistenceDTO 正确恢复空触发器', () => {
-        const dto: TaskContracts.TaskReminderConfigPersistenceDTO = {
+        const dto: TaskReminderConfigPersistenceDTO = {
           enabled: false,
           triggers: JSON.stringify([]),
         };
@@ -586,7 +586,7 @@ describe('TaskReminderConfig Value Object', () => {
       });
 
       it('应该从 PersistenceDTO 正确恢复多个触发器', () => {
-        const dto: TaskContracts.TaskReminderConfigPersistenceDTO = {
+        const dto: TaskReminderConfigPersistenceDTO = {
           enabled: true,
           triggers: JSON.stringify([mockAbsoluteTrigger, mockRelativeTrigger]),
         };
@@ -625,7 +625,7 @@ describe('TaskReminderConfig Value Object', () => {
     });
 
     it('应该正确处理复杂配置的往返转换', () => {
-      const complexTriggers: TaskContracts.ReminderTrigger[] = [
+      const complexTriggers: ReminderTrigger[] = [
         mockAbsoluteTrigger,
         mockRelativeTrigger,
         {
@@ -733,7 +733,7 @@ describe('TaskReminderConfig Value Object', () => {
     });
 
     it('应该处理极大的相对值', () => {
-      const largeTrigger: TaskContracts.ReminderTrigger = {
+      const largeTrigger: ReminderTrigger = {
         type: 'RELATIVE',
         absoluteTime: null,
         relativeValue: 9999,
@@ -751,7 +751,7 @@ describe('TaskReminderConfig Value Object', () => {
 
     it('应该处理极远的未来时间', () => {
       const farFuture = Date.now() + 365 * 24 * 3600 * 1000 * 10; // 10年后
-      const futureTrigger: TaskContracts.ReminderTrigger = {
+      const futureTrigger: ReminderTrigger = {
         type: 'ABSOLUTE',
         absoluteTime: farFuture,
         relativeValue: null,

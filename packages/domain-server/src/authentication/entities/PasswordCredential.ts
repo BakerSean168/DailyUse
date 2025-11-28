@@ -3,15 +3,15 @@
  * 实现 PasswordCredentialServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import {
+  PasswordCredentialClientDTO,
+  PasswordCredentialPersistenceDTO,
+  PasswordCredentialServer,
+  PasswordCredentialServerDTO,
+} from '@dailyuse/contracts/authentication';
 import { Entity, generateUUID } from '@dailyuse/utils';
 
-type IPasswordCredentialServer = AuthenticationContracts.PasswordCredentialServer;
-type PasswordCredentialServerDTO = AuthenticationContracts.PasswordCredentialServerDTO;
-type PasswordCredentialClientDTO = AuthenticationContracts.PasswordCredentialClientDTO;
-type PasswordCredentialPersistenceDTO = AuthenticationContracts.PasswordCredentialPersistenceDTO;
-
-export class PasswordCredential extends Entity implements IPasswordCredentialServer {
+export class PasswordCredential extends Entity implements PasswordCredentialServer {
   public readonly credentialUuid: string;
   public readonly hashedPassword: string;
   public readonly salt: string;

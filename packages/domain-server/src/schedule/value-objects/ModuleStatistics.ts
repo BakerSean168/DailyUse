@@ -24,7 +24,7 @@ interface IModuleStatisticsDTO {
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class ModuleStatistics extends ValueObject implements IModuleStatisticsDTO {
+export class ModuleStatistics extends ValueObject implements ModuleStatisticsDTO {
   public readonly moduleName: string;
   public readonly totalTasks: number;
   public readonly activeTasks: number;

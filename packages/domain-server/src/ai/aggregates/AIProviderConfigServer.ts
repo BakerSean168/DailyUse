@@ -9,12 +9,12 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { AIContracts } from '@dailyuse/contracts';
-
-type AIProviderType = AIContracts.AIProviderType;
-type AIProviderConfigServerDTO = AIContracts.AIProviderConfigServerDTO;
-type AIProviderConfigClientDTO = AIContracts.AIProviderConfigClientDTO;
-type AIModelInfo = AIContracts.AIModelInfo;
+import {
+  AIModelInfo,
+  AIProviderConfigClientDTO,
+  AIProviderConfigServerDTO,
+  AIProviderType,
+} from '@dailyuse/contracts/ai';
 
 /**
  * AIProviderConfig 聚合根

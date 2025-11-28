@@ -14,7 +14,12 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import { EditorContracts } from '@dailyuse/contracts';
+import {
+  EditorSessionClientDTO,
+  EditorSessionPersistenceDTO,
+  EditorSessionServerDTO,
+  SessionLayoutServerDTO,
+} from '@dailyuse/contracts/editor';
 import { SessionLayout } from '../value-objects/SessionLayout';
 import { EditorGroup } from './EditorGroup';
 import * as crypto from 'crypto';
@@ -145,7 +150,7 @@ export class EditorSession extends Entity {
     accountUuid: string;
     name: string;
     description?: string;
-    layout?: Partial<EditorContracts.SessionLayoutServerDTO>;
+    layout?: Partial<SessionLayoutServerDTO>;
   }): EditorSession {
     const uuid = crypto.randomUUID();
     const now = Date.now();
@@ -255,7 +260,7 @@ export class EditorSession extends Entity {
   /**
    * 更新布局配置
    */
-  public updateLayout(layout: Partial<EditorContracts.SessionLayoutServerDTO>): void {
+  public updateLayout(layout: Partial<SessionLayoutServerDTO>): void {
     this._layout = this._layout.with(layout);
     this.updateTimestamp();
   }
@@ -293,7 +298,7 @@ export class EditorSession extends Entity {
   /**
    * 转换为 Server DTO (递归转换子实体)
    */
-  public toServerDTO(): EditorContracts.EditorSessionServerDTO {
+  public toServerDTO(): EditorSessionServerDTO {
     return {
       uuid: this.uuid,
       workspaceUuid: this._workspaceUuid,
@@ -313,7 +318,7 @@ export class EditorSession extends Entity {
   /**
    * 转换为 Client DTO (递归转换子实体)
    */
-  public toClientDTO(): EditorContracts.EditorSessionClientDTO {
+  public toClientDTO(): EditorSessionClientDTO {
     return {
       uuid: this.uuid,
       workspaceUuid: this._workspaceUuid,
@@ -334,7 +339,7 @@ export class EditorSession extends Entity {
   /**
    * 转换为 Persistence DTO (递归转换子实体)
    */
-  public toPersistenceDTO(): EditorContracts.EditorSessionPersistenceDTO {
+  public toPersistenceDTO(): EditorSessionPersistenceDTO {
     return {
       uuid: this.uuid,
       workspace_uuid: this._workspaceUuid,
@@ -354,7 +359,7 @@ export class EditorSession extends Entity {
   /**
    * 从 Server DTO 创建实体 (递归重建子实体)
    */
-  public static fromServerDTO(dto: EditorContracts.EditorSessionServerDTO): EditorSession {
+  public static fromServerDTO(dto: EditorSessionServerDTO): EditorSession {
     const session = new EditorSession({
       uuid: dto.uuid,
       workspaceUuid: dto.workspaceUuid,
@@ -378,7 +383,7 @@ export class EditorSession extends Entity {
   /**
    * 从 Client DTO 创建实体 (递归重建子实体)
    */
-  public static fromClientDTO(dto: EditorContracts.EditorSessionClientDTO): EditorSession {
+  public static fromClientDTO(dto: EditorSessionClientDTO): EditorSession {
     const session = new EditorSession({
       uuid: dto.uuid,
       workspaceUuid: dto.workspaceUuid,
@@ -403,7 +408,7 @@ export class EditorSession extends Entity {
    * 从 Persistence DTO 创建实体 (递归重建子实体)
    */
   public static fromPersistenceDTO(
-    dto: EditorContracts.EditorSessionPersistenceDTO,
+    dto: EditorSessionPersistenceDTO,
   ): EditorSession {
     const session = new EditorSession({
       uuid: dto.uuid,

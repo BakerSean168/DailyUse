@@ -3,12 +3,8 @@
  * 工作区布局 - 客户端值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { IWorkspaceLayoutClient, WorkspaceLayoutClientDTO, WorkspaceLayoutServerDTO } from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type IWorkspaceLayoutClient = EditorContracts.IWorkspaceLayoutClient;
-type WorkspaceLayoutServerDTO = EditorContracts.WorkspaceLayoutServerDTO;
-type WorkspaceLayoutClientDTO = EditorContracts.WorkspaceLayoutClientDTO;
 
 /**
  * WorkspaceLayout 值对象
@@ -19,7 +15,7 @@ type WorkspaceLayoutClientDTO = EditorContracts.WorkspaceLayoutClientDTO;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class WorkspaceLayout extends ValueObject implements IWorkspaceLayoutClient {
+export class WorkspaceLayout extends ValueObject implements WorkspaceLayoutClient {
   public readonly sidebarPosition: 'left' | 'right';
   public readonly sidebarWidth: number;
   public readonly panelPosition: 'bottom' | 'right';

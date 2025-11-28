@@ -9,7 +9,7 @@
  */
 
 import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**
  * IReminderTemplateRepository 仓储接口
@@ -120,6 +120,6 @@ export interface IReminderTemplateRepository {
    */
   count(
     accountUuid: string,
-    options?: { status?: ReminderContracts.ReminderStatus; includeDeleted?: boolean },
+    options?: { status?: ReminderStatus; includeDeleted?: boolean },
   ): Promise<number>;
 }

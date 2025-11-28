@@ -3,17 +3,13 @@
  * 渠道错误 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { ChannelErrorClientDTO, ChannelErrorPersistenceDTO, ChannelErrorServerDTO } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type IChannelError = NotificationContracts.ChannelErrorServerDTO;
-type ChannelErrorPersistenceDTO = NotificationContracts.ChannelErrorPersistenceDTO;
-type ChannelErrorClientDTO = NotificationContracts.ChannelErrorClientDTO;
 
 /**
  * ChannelError 值对象
  */
-export class ChannelError extends ValueObject implements IChannelError {
+export class ChannelError extends ValueObject implements ChannelError {
   public readonly code: string;
   public readonly message: string;
   public readonly details?: any;

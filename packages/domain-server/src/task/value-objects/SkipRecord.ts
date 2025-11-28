@@ -3,10 +3,13 @@
  * 跳过记录 - 不可变值对象
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type {
+  SkipRecordClientDTO,
+  SkipRecordPersistenceDTO,
+  SkipRecordServer,
+  SkipRecordServerDTO,
+} from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
-
-type ISkipRecord = TaskContracts.SkipRecordServerDTO;
 
 /**
  * SkipRecord 值对象
@@ -17,7 +20,7 @@ type ISkipRecord = TaskContracts.SkipRecordServerDTO;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class SkipRecord extends ValueObject implements ISkipRecord {
+export class SkipRecord extends ValueObject implements SkipRecordServer {
   public readonly skippedAt: number;
   public readonly reason: string | null;
 
@@ -60,14 +63,14 @@ export class SkipRecord extends ValueObject implements ISkipRecord {
   /**
    * DTO 转换
    */
-  public toServerDTO(): TaskContracts.SkipRecordServerDTO {
+  public toServerDTO(): SkipRecordServerDTO {
     return {
       skippedAt: this.skippedAt,
       reason: this.reason,
     };
   }
 
-  public toClientDTO(): TaskContracts.SkipRecordClientDTO {
+  public toClientDTO(): SkipRecordClientDTO {
     return {
       skippedAt: this.skippedAt,
       reason: this.reason,
@@ -77,7 +80,7 @@ export class SkipRecord extends ValueObject implements ISkipRecord {
     };
   }
 
-  public toPersistenceDTO(): TaskContracts.SkipRecordPersistenceDTO {
+  public toPersistenceDTO(): SkipRecordPersistenceDTO {
     return {
       skippedAt: this.skippedAt,
       reason: this.reason,
@@ -87,14 +90,14 @@ export class SkipRecord extends ValueObject implements ISkipRecord {
   /**
    * 静态工厂方法
    */
-  public static fromServerDTO(dto: TaskContracts.SkipRecordServerDTO): SkipRecord {
+  public static fromServerDTO(dto: SkipRecordServerDTO): SkipRecord {
     return new SkipRecord({
       skippedAt: dto.skippedAt,
       reason: dto.reason,
     });
   }
 
-  public static fromPersistenceDTO(dto: TaskContracts.SkipRecordPersistenceDTO): SkipRecord {
+  public static fromPersistenceDTO(dto: SkipRecordPersistenceDTO): SkipRecord {
     return new SkipRecord({
       skippedAt: dto.skippedAt,
       reason: dto.reason,

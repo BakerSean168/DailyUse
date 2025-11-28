@@ -17,7 +17,7 @@ import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
 import type { IReminderStatisticsRepository } from '../repositories/IReminderStatisticsRepository';
 import type { ReminderTriggerService, ITriggerReminderResult } from './ReminderTriggerService';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { TriggerResult } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderSchedulerService');
@@ -116,13 +116,13 @@ export class ReminderSchedulerService {
 
     // 统计结果
     const successCount = results.filter(
-      (r) => r.result === ReminderContracts.TriggerResult.SUCCESS,
+      (r) => r.result === TriggerResult.SUCCESS,
     ).length;
     const failedCount = results.filter(
-      (r) => r.result === ReminderContracts.TriggerResult.FAILED,
+      (r) => r.result === TriggerResult.FAILED,
     ).length;
     const skippedCount = results.filter(
-      (r) => r.result === ReminderContracts.TriggerResult.SKIPPED,
+      (r) => r.result === TriggerResult.SKIPPED,
     ).length;
 
     logger.info('Reminder schedule scan completed', {
@@ -280,7 +280,7 @@ export class ReminderSchedulerService {
 
           results.push({
             success: true,
-            result: ReminderContracts.TriggerResult.SKIPPED,
+            result: TriggerResult.SKIPPED,
             triggerTime: template.getNextTriggerTime() || Date.now(),
             nextTriggerTime,
             message: '过期跳过',
@@ -296,7 +296,7 @@ export class ReminderSchedulerService {
 
           results.push({
             success: true,
-            result: ReminderContracts.TriggerResult.SKIPPED,
+            result: TriggerResult.SKIPPED,
             triggerTime: Date.now(),
             nextTriggerTime,
             message: '重新调度',
@@ -306,13 +306,13 @@ export class ReminderSchedulerService {
     }
 
     const successCount = results.filter(
-      (r) => r.result === ReminderContracts.TriggerResult.SUCCESS,
+      (r) => r.result === TriggerResult.SUCCESS,
     ).length;
     const failedCount = results.filter(
-      (r) => r.result === ReminderContracts.TriggerResult.FAILED,
+      (r) => r.result === TriggerResult.FAILED,
     ).length;
     const skippedCount = results.filter(
-      (r) => r.result === ReminderContracts.TriggerResult.SKIPPED,
+      (r) => r.result === TriggerResult.SKIPPED,
     ).length;
 
     return {

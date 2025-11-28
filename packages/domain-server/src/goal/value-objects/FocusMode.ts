@@ -3,7 +3,7 @@
  * 专注周期聚焦模式领域对象
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { FocusModeClientDTO, FocusModeServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 
 /**
  * 聚焦模式值对象
@@ -27,7 +27,7 @@ export class FocusMode {
     readonly focusedGoalUuids: readonly string[],
     readonly startTime: number,
     readonly endTime: number,
-    readonly hiddenGoalsMode: GoalContracts.HiddenGoalsMode,
+    readonly hiddenGoalsMode: HiddenGoalsMode,
     readonly isActive: boolean,
     readonly actualEndTime: number | null,
     readonly createdAt: number,
@@ -130,7 +130,7 @@ export class FocusMode {
   /**
    * 转换为服务端 DTO
    */
-  toServerDTO(): GoalContracts.FocusModeServerDTO {
+  toServerDTO(): FocusModeServerDTO {
     return {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
@@ -148,7 +148,7 @@ export class FocusMode {
   /**
    * 转换为客户端 DTO
    */
-  toClientDTO(): GoalContracts.FocusModeClientDTO {
+  toClientDTO(): FocusModeClientDTO {
     return {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
@@ -164,7 +164,7 @@ export class FocusMode {
   /**
    * 从服务端 DTO 创建实例
    */
-  static fromServerDTO(dto: GoalContracts.FocusModeServerDTO): FocusMode {
+  static fromServerDTO(dto: FocusModeServerDTO): FocusMode {
     return new FocusMode(
       dto.uuid,
       dto.accountUuid,
@@ -193,7 +193,7 @@ export class FocusMode {
     accountUuid: string,
     focusedGoalUuids: string[],
     endTime: number,
-    hiddenGoalsMode: GoalContracts.HiddenGoalsMode = 'hide',
+    hiddenGoalsMode: HiddenGoalsMode = 'hide',
   ): FocusMode {
     const now = Date.now();
 

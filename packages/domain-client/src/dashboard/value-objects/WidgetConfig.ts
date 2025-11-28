@@ -1,16 +1,12 @@
 /**
  * WidgetConfig 值对象实现 (Client)
  */
-import { DashboardContracts } from '@dailyuse/contracts';
-
-type IWidgetConfigClient = DashboardContracts.WidgetConfigClient;
-type WidgetConfigDTO = DashboardContracts.WidgetConfigDTO;
-type WidgetSize = DashboardContracts.WidgetSize;
+import { WidgetConfigClient, WidgetConfigDTO, WidgetSize } from '@dailyuse/contracts/dashboard';
 
 /**
  * Widget 配置值对象 (Client)
  */
-export class WidgetConfig implements IWidgetConfigClient {
+export class WidgetConfig implements WidgetConfigClient {
   readonly visible: boolean;
   readonly order: number;
   readonly size: WidgetSize;
@@ -39,7 +35,7 @@ export class WidgetConfig implements IWidgetConfigClient {
    */
   static createDefault(
     order: number,
-    size: WidgetSize = DashboardContracts.WidgetSize.MEDIUM,
+    size: WidgetSize = WidgetSize.MEDIUM,
   ): WidgetConfig {
     return new WidgetConfig({
       visible: true,

@@ -2,16 +2,17 @@
  * CategoryPreference 值对象实现 (Client)
  */
 
-import { NotificationContracts } from '@dailyuse/contracts';
+import {
+  CategoryPreferenceClient,
+  CategoryPreferenceClientDTO,
+  CategoryPreferenceServerDTO,
+  ChannelPreference,
+  ImportanceLevel,
+} from '@dailyuse/contracts/notification';
 
-type CategoryPreferenceClientDTO = NotificationContracts.CategoryPreferenceClientDTO;
-type CategoryPreferenceServerDTO = NotificationContracts.CategoryPreferenceServerDTO;
-type ImportanceLevel = NotificationContracts.ImportanceLevel;
-type ChannelPreference = NotificationContracts.ChannelPreference;
+const ImportanceLevel = ImportanceLevel;
 
-const ImportanceLevel = NotificationContracts.ImportanceLevel;
-
-export class CategoryPreferenceClient implements NotificationContracts.CategoryPreferenceClient {
+export class CategoryPreferenceClient implements CategoryPreferenceClient {
   private readonly dto: CategoryPreferenceClientDTO;
 
   private constructor(dto: CategoryPreferenceClientDTO) {
@@ -25,7 +26,7 @@ export class CategoryPreferenceClient implements NotificationContracts.CategoryP
   get enabledChannelsList(): string[] { return this.dto.enabledChannelsList; }
   get importanceText(): string { return this.dto.importanceText; }
 
-  public equals(other: NotificationContracts.CategoryPreferenceClient): boolean {
+  public equals(other: CategoryPreferenceClient): boolean {
     return JSON.stringify(this.dto) === JSON.stringify((other as CategoryPreferenceClient).dto);
   }
 

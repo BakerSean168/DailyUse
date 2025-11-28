@@ -9,7 +9,7 @@
  */
 
 import type { ReminderGroup } from '../aggregates/ReminderGroup';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**
  * IReminderGroupRepository 仓储接口
@@ -58,7 +58,7 @@ export interface IReminderGroupRepository {
    */
   findByControlMode(
     accountUuid: string,
-    controlMode: ReminderContracts.ControlMode,
+    controlMode: ControlMode,
     options?: { includeDeleted?: boolean },
   ): Promise<ReminderGroup[]>;
 
@@ -121,6 +121,6 @@ export interface IReminderGroupRepository {
    */
   count(
     accountUuid: string,
-    options?: { status?: ReminderContracts.ReminderStatus; includeDeleted?: boolean },
+    options?: { status?: ReminderStatus; includeDeleted?: boolean },
   ): Promise<number>;
 }

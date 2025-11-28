@@ -1,15 +1,16 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import { AIContracts } from '@dailyuse/contracts';
+import {
+  AIConversationClient,
+  AIConversationClientDTO,
+  AIConversationClientInstance,
+  AIConversationServerDTO,
+  ConversationStatus,
+  MessageClient,
+} from '@dailyuse/contracts/ai';
 import { AIMessage } from '../entities/AIMessage';
 
 // Aliases & Types
-const ConversationStatus = AIContracts.ConversationStatus;
-type ConversationStatusEnum = AIContracts.ConversationStatus;
-type AIConversationClientDTO = AIContracts.AIConversationClientDTO;
-type AIConversationServerDTO = AIContracts.AIConversationServerDTO;
-type MessageClient = AIContracts.MessageClient;
-type AIConversationClient = AIContracts.AIConversationClient;
-type AIConversationClientInstance = AIContracts.AIConversationClientInstance;
+const ConversationStatus = ConversationStatus;
 
 export class AIConversation extends AggregateRoot implements AIConversationClientInstance {
   private _accountUuid: string;

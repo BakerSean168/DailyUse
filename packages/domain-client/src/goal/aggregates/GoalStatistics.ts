@@ -4,21 +4,21 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalContracts } from '@dailyuse/contracts';
-
-type IGoalStatistics = GoalContracts.GoalStatisticsClient;
-type GoalStatisticsDTO = GoalContracts.GoalStatisticsClientDTO;
-type GoalStatisticsServerDTO = GoalContracts.GoalStatisticsServerDTO;
-type TrendType = GoalContracts.TrendType;
-type ChartData = GoalContracts.ChartData;
-type TimelineData = GoalContracts.TimelineData;
+import {
+  ChartData,
+  GoalStatisticsClient,
+  GoalStatisticsClientDTO,
+  GoalStatisticsServerDTO,
+  TimelineData,
+  TrendType,
+} from '@dailyuse/contracts/goal';
 
 /**
  * 目标统计聚合根客户端实现
  */
 export class GoalStatistics
   extends AggregateRoot
-  implements IGoalStatistics
+  implements GoalStatistics
 {
   private _accountUuid: string;
   private _totalGoals: number;
@@ -322,7 +322,7 @@ export class GoalStatistics
 
   // ========== DTO 转换 ==========
 
-  toServerDTO(): GoalContracts.GoalStatisticsServerDTO {
+  toServerDTO(): GoalStatisticsServerDTO {
     return {
       accountUuid: this._accountUuid,
       totalGoals: this._totalGoals,
@@ -406,7 +406,7 @@ export class GoalStatistics
     );
   }
 
-  static fromServerDTO(dto: GoalContracts.GoalStatisticsServerDTO): GoalStatistics {
+  static fromServerDTO(dto: GoalStatisticsServerDTO): GoalStatistics {
     return new GoalStatistics(
       dto.accountUuid,
       dto.totalGoals,

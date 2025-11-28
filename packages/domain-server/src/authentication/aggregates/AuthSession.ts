@@ -3,22 +3,22 @@
  * 实现 AuthSessionServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import {
+  AuthSessionClientDTO,
+  AuthSessionPersistenceDTO,
+  AuthSessionServer,
+  AuthSessionServerDTO,
+  DeviceInfoServer,
+  RefreshTokenServer,
+  SessionHistoryServer,
+} from '@dailyuse/contracts/authentication';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import { RefreshToken } from '../entities/RefreshToken';
 import { SessionHistory } from '../entities/SessionHistory';
 import { DeviceInfo } from '../value-objects/DeviceInfo';
 import crypto from 'crypto';
 
-type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
-type IAuthSessionServer = AuthenticationContracts.AuthSessionServer;
-type AuthSessionServerDTO = AuthenticationContracts.AuthSessionServerDTO;
-type AuthSessionPersistenceDTO = AuthenticationContracts.AuthSessionPersistenceDTO;
-type RefreshTokenServer = AuthenticationContracts.RefreshTokenServer;
-type DeviceInfoServer = AuthenticationContracts.DeviceInfoServer;
-type SessionHistoryServer = AuthenticationContracts.SessionHistoryServer;
-
-export class AuthSession extends AggregateRoot implements IAuthSessionServer {
+export class AuthSession extends AggregateRoot implements AuthSessionServer {
   public readonly accountUuid: string;
   private _accessToken: string;
   private _accessTokenExpiresAt: number;

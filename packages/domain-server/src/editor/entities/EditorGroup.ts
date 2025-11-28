@@ -4,20 +4,22 @@
  * 作为 EditorSession 实体的子实体
  */
 
-import { EditorContracts } from '@dailyuse/contracts';
+import {
+  EditorGroupClientDTO,
+  EditorGroupPersistenceDTO,
+  EditorGroupServer,
+  EditorGroupServerDTO,
+  TabType,
+  TabViewStateServerDTO,
+} from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 import { EditorTab } from './EditorTab';
-
-type IEditorGroupServer = EditorContracts.EditorGroupServer;
-type EditorGroupServerDTO = EditorContracts.EditorGroupServerDTO;
-type EditorGroupClientDTO = EditorContracts.EditorGroupClientDTO;
-type EditorGroupPersistenceDTO = EditorContracts.EditorGroupPersistenceDTO;
 
 /**
  * EditorGroup 实体
  * 作为 EditorSession 实体的子实体
  */
-export class EditorGroup extends Entity implements IEditorGroupServer {
+export class EditorGroup extends Entity implements EditorGroupServer {
   // ===== 私有字段 =====
   private _sessionUuid: string; // 父实体外键
   private _workspaceUuid: string; // 聚合根外键
@@ -181,9 +183,9 @@ export class EditorGroup extends Entity implements IEditorGroupServer {
   public addTab(params: {
     documentUuid?: string | null;
     tabIndex: number;
-    tabType: EditorContracts.TabType;
+    tabType: TabType;
     title: string;
-    viewState?: Partial<EditorContracts.TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): EditorTab {
     const tab = EditorTab.create({

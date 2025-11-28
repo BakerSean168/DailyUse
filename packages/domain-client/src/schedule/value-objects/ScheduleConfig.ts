@@ -4,13 +4,9 @@
  * 实现 IScheduleConfigClient 接口
  */
 
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { IScheduleConfigClient, ScheduleConfigClientDTO, ScheduleConfigServerDTO } from '@dailyuse/contracts/schedule';
+import { Timezone } from '@dailyuse/contracts/schedule';
 import { ValueObject } from '@dailyuse/utils';
-
-type IScheduleConfigClient = ScheduleContracts.IScheduleConfigClient;
-type ScheduleConfigServerDTO = ScheduleContracts.ScheduleConfigServerDTO;
-type ScheduleConfigClientDTO = ScheduleContracts.ScheduleConfigClientDTO;
-type Timezone = ScheduleContracts.Timezone;
 
 /**
  * ScheduleConfigClient 值对象
@@ -21,7 +17,7 @@ type Timezone = ScheduleContracts.Timezone;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class ScheduleConfig extends ValueObject implements IScheduleConfigClient {
+export class ScheduleConfig extends ValueObject implements ScheduleConfigClient {
   public readonly cronExpression: string;
   public readonly timezone: Timezone;
   public readonly startDate: Date | null;

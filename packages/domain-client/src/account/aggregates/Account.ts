@@ -3,24 +3,18 @@
  * 兼容 AccountClient 接口
  */
 
-import type { AccountContracts } from '@dailyuse/contracts';
+import type { BillingCycle, AccountClient, AccountClientDTO, AccountServerDTO } from '@dailyuse/contracts/account';
+import { SubscriptionPlan, SubscriptionStatus } from '@dailyuse/contracts/account';
 import {
   AccountStatus,
   Gender,
   ThemeType,
   ProfileVisibility,
-  SubscriptionPlan,
-  SubscriptionStatus,
-  BillingCycle,
   StorageQuotaType,
-} from '@dailyuse/contracts';
+} from '@dailyuse/contracts/account';
 import { AggregateRoot } from '@dailyuse/utils';
 import { Subscription } from '../entities/Subscription';
 import { AccountHistory } from '../entities/AccountHistory';
-
-type IAccountClient = AccountContracts.AccountClient;
-type AccountClientDTO = AccountContracts.AccountClientDTO;
-type AccountServerDTO = AccountContracts.AccountServerDTO;
 
 import {
   EmailValidator,
@@ -42,7 +36,7 @@ import {
  * - 管理子实体（订阅、历史记录）
  * - 提供账户相关的业务逻辑
  */
-export class Account extends AggregateRoot implements IAccountClient {
+export class Account extends AggregateRoot implements AccountClient {
   // ===== 私有字段 =====
   private _username: string;
   private _email: string;
@@ -557,12 +551,12 @@ export class Account extends AggregateRoot implements IAccountClient {
       this._storage.quota,
       requiredBytes,
     );
-    
+
     if (!validation.isValid) {
       // 返回 false 而不是抛出异常，让调用方决定如何处理
       return false;
     }
-    
+
     return true;
   }
 

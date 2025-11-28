@@ -3,17 +3,18 @@
  * 实现 AccountServer 接口
  */
 
-import { AccountContracts } from '@dailyuse/contracts';
+import {
+  AccountClientDTO,
+  AccountPersistenceDTO,
+  AccountServer,
+  AccountServerDTO,
+  SubscriptionServer,
+} from '@dailyuse/contracts/account';
 import { AggregateRoot } from '@dailyuse/utils';
 import { Subscription } from '../entities/Subscription';
 import { AccountHistory } from '../entities/AccountHistory';
 
-type IAccountServer = AccountContracts.AccountServer;
-type AccountServerDTO = AccountContracts.AccountServerDTO;
-type AccountClientDTO = AccountContracts.AccountClientDTO;
-type AccountPersistenceDTO = AccountContracts.AccountPersistenceDTO;
-
-export class Account extends AggregateRoot implements IAccountServer {
+export class Account extends AggregateRoot implements AccountServer {
   // 基本信息
   private _username: string;
   private _email: string;
@@ -444,7 +445,7 @@ export class Account extends AggregateRoot implements IAccountServer {
   }
 
   // 订阅管理
-  public updateSubscription(subscription: AccountContracts.SubscriptionServer): void {
+  public updateSubscription(subscription: SubscriptionServer): void {
     this._subscription = Subscription.fromServerDTO(subscription);
     this._updatedAt = Date.now();
   }

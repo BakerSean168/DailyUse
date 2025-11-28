@@ -2,29 +2,30 @@
  * Goal 聚合根实现 (Client)
  */
 
-import { GoalContracts } from '@dailyuse/contracts';
+import {
+  GoalClient,
+  GoalClientDTO,
+  GoalRecordClientDTO,
+  GoalServerDTO,
+  GoalStatus,
+  GoalTimeRangeSummary,
+  ImportanceLevel,
+  UrgencyLevel,
+} from '@dailyuse/contracts/goal';
 import { AggregateRoot } from '@dailyuse/utils';
 import { GoalReminderConfig } from '../value-objects';
 import { KeyResult, GoalReview } from '../entities';
 
 // 类型别名（从命名空间导入）
-type IGoal = GoalContracts.GoalClient;
-type GoalDTO = GoalContracts.GoalClientDTO;
-type GoalServerDTO = GoalContracts.GoalServerDTO;
-type GoalStatus = GoalContracts.GoalStatus;
-type ImportanceLevel = GoalContracts.ImportanceLevel;
-type UrgencyLevel = GoalContracts.UrgencyLevel;
-type GoalRecordClientDTO = GoalContracts.GoalRecordClientDTO;
-type GoalTimeRangeSummary = GoalContracts.GoalTimeRangeSummary;
 
 // 枚举值别名
-const GoalStatus = GoalContracts.GoalStatus;
-const ImportanceLevel = GoalContracts.ImportanceLevel;
-const UrgencyLevel = GoalContracts.UrgencyLevel;
+const GoalStatus = GoalStatus;
+const ImportanceLevel = ImportanceLevel;
+const UrgencyLevel = UrgencyLevel;
 const DAY_MS = 1000 * 60 * 60 * 24;
 const DEFAULT_DURATION = 30 * DAY_MS;
 
-export class Goal extends AggregateRoot implements IGoal {
+export class Goal extends AggregateRoot implements Goal {
   private _accountUuid: string;
   private _title: string;
   private _description?: string | null;

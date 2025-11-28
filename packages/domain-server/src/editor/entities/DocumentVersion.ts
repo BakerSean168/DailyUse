@@ -3,19 +3,19 @@
  * 实现 DocumentVersionServer 接口
  */
 
-import { EditorContracts } from '@dailyuse/contracts';
+import {
+  DocumentVersionClientDTO,
+  DocumentVersionPersistenceDTO,
+  DocumentVersionServer,
+  DocumentVersionServerDTO,
+  VersionChangeType,
+} from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
-
-type IDocumentVersionServer = EditorContracts.DocumentVersionServer;
-type DocumentVersionServerDTO = EditorContracts.DocumentVersionServerDTO;
-type DocumentVersionClientDTO = EditorContracts.DocumentVersionClientDTO;
-type DocumentVersionPersistenceDTO = EditorContracts.DocumentVersionPersistenceDTO;
-type VersionChangeType = EditorContracts.VersionChangeType;
 
 /**
  * DocumentVersion 实体
  */
-export class DocumentVersion extends Entity implements IDocumentVersionServer {
+export class DocumentVersion extends Entity implements DocumentVersionServer {
   // ===== 私有字段 =====
   private _documentUuid: string;
   private _workspaceUuid: string; // 聚合根外键
@@ -192,14 +192,14 @@ export class DocumentVersion extends Entity implements IDocumentVersionServer {
    * 判断变更类型是否为编辑
    */
   public isEditChange(): boolean {
-    return this._changeType === EditorContracts.VersionChangeType.EDIT;
+    return this._changeType === VersionChangeType.EDIT;
   }
 
   /**
    * 判断变更类型是否为创建
    */
   public isCreateChange(): boolean {
-    return this._changeType === EditorContracts.VersionChangeType.CREATE;
+    return this._changeType === VersionChangeType.CREATE;
   }
 
   // ===== DTO 转换方法 =====

@@ -5,17 +5,11 @@
  * **严格参考 Repository 模块和 domain-server 规范**
  */
 
-import type { ScheduleContracts } from '@dailyuse/contracts';
-import { ScheduleContracts as SC } from '@dailyuse/contracts';
+import type { ExecutionInfoClientDTO, ScheduleTaskClient, ScheduleTaskClientDTO, ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
+import { ExecutionStatus, ScheduleTaskStatus, SourceModule, TaskPriority, Timezone } from '@dailyuse/contracts/schedule';
+import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { AggregateRoot } from '@dailyuse/utils';
 import { ScheduleConfig, RetryPolicy, ExecutionInfo, TaskMetadata } from '../value-objects';
-
-type IScheduleTaskClient = ScheduleContracts.ScheduleTaskClient;
-type ScheduleTaskClientDTO = ScheduleContracts.ScheduleTaskClientDTO;
-type ScheduleTaskServerDTO = ScheduleContracts.ScheduleTaskServerDTO;
-type ScheduleTaskStatus = ScheduleContracts.ScheduleTaskStatus;
-type SourceModule = ScheduleContracts.SourceModule;
-type ExecutionStatus = ScheduleContracts.ExecutionStatus;
 
 /**
  * ScheduleTask 聚合根 (Client)
@@ -26,7 +20,7 @@ type ExecutionStatus = ScheduleContracts.ExecutionStatus;
  * - 确保聚合内的一致性
  * - 是事务边界
  */
-export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
+export class ScheduleTask extends AggregateRoot implements ScheduleTaskClient {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _name: string;
@@ -134,34 +128,34 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
 
   public get statusDisplay(): string {
     const labels: Record<ScheduleTaskStatus, string> = {
-      [SC.ScheduleTaskStatus.ACTIVE]: '活跃',
-      [SC.ScheduleTaskStatus.PAUSED]: '已暂停',
-      [SC.ScheduleTaskStatus.COMPLETED]: '已完成',
-      [SC.ScheduleTaskStatus.FAILED]: '失败',
-      [SC.ScheduleTaskStatus.CANCELLED]: '已取消',
+      [ScheduleTaskStatus.ACTIVE]: '活跃',
+      [ScheduleTaskStatus.PAUSED]: '已暂停',
+      [ScheduleTaskStatus.COMPLETED]: '已完成',
+      [ScheduleTaskStatus.FAILED]: '失败',
+      [ScheduleTaskStatus.CANCELLED]: '已取消',
     };
     return labels[this._status] || this._status;
   }
 
   public get statusColor(): string {
     const colors: Record<ScheduleTaskStatus, string> = {
-      [SC.ScheduleTaskStatus.ACTIVE]: 'green',
-      [SC.ScheduleTaskStatus.PAUSED]: 'gray',
-      [SC.ScheduleTaskStatus.COMPLETED]: 'blue',
-      [SC.ScheduleTaskStatus.FAILED]: 'red',
-      [SC.ScheduleTaskStatus.CANCELLED]: 'orange',
+      [ScheduleTaskStatus.ACTIVE]: 'green',
+      [ScheduleTaskStatus.PAUSED]: 'gray',
+      [ScheduleTaskStatus.COMPLETED]: 'blue',
+      [ScheduleTaskStatus.FAILED]: 'red',
+      [ScheduleTaskStatus.CANCELLED]: 'orange',
     };
     return colors[this._status] || 'gray';
   }
 
   public get sourceModuleDisplay(): string {
     const labels: Record<SourceModule, string> = {
-      [SC.SourceModule.REMINDER]: '提醒模块',
-      [SC.SourceModule.TASK]: '任务模块',
-      [SC.SourceModule.GOAL]: '目标模块',
-      [SC.SourceModule.NOTIFICATION]: '通知模块',
-      [SC.SourceModule.SYSTEM]: '系统模块',
-      [SC.SourceModule.CUSTOM]: '自定义模块',
+      [SourceModule.REMINDER]: '提醒模块',
+      [SourceModule.TASK]: '任务模块',
+      [SourceModule.GOAL]: '目标模块',
+      [SourceModule.NOTIFICATION]: '通知模块',
+      [SourceModule.SYSTEM]: '系统模块',
+      [SourceModule.CUSTOM]: '自定义模块',
     };
     return labels[this._sourceModule] || this._sourceModule;
   }
@@ -215,31 +209,31 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
   // ===== 业务方法（⭐ 是方法，不是 getter）=====
 
   public isActive(): boolean {
-    return this._status === SC.ScheduleTaskStatus.ACTIVE && this._enabled;
+    return this._status === ScheduleTaskStatus.ACTIVE && this._enabled;
   }
 
   public isPaused(): boolean {
-    return this._status === SC.ScheduleTaskStatus.PAUSED || !this._enabled;
+    return this._status === ScheduleTaskStatus.PAUSED || !this._enabled;
   }
 
   public isCompleted(): boolean {
-    return this._status === SC.ScheduleTaskStatus.COMPLETED;
+    return this._status === ScheduleTaskStatus.COMPLETED;
   }
 
   public isFailed(): boolean {
-    return this._status === SC.ScheduleTaskStatus.FAILED;
+    return this._status === ScheduleTaskStatus.FAILED;
   }
 
   public isCancelled(): boolean {
-    return this._status === SC.ScheduleTaskStatus.CANCELLED;
+    return this._status === ScheduleTaskStatus.CANCELLED;
   }
 
   public canPause(): boolean {
-    return this._status === SC.ScheduleTaskStatus.ACTIVE;
+    return this._status === ScheduleTaskStatus.ACTIVE;
   }
 
   public canResume(): boolean {
-    return this._status === SC.ScheduleTaskStatus.PAUSED;
+    return this._status === ScheduleTaskStatus.PAUSED;
   }
 
   public canExecute(): boolean {
@@ -310,7 +304,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
       description: null,
       sourceModule,
       sourceEntityId: '',
-      status: SC.ScheduleTaskStatus.ACTIVE,
+      status: ScheduleTaskStatus.ACTIVE,
       enabled: true,
       schedule: ScheduleConfig.createDefault(),
       execution: ExecutionInfo.createDefault(),
@@ -339,7 +333,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
     sourceModule: SourceModule;
     sourceEntityId: string;
     cronExpression: string;
-    timezone?: ScheduleContracts.Timezone;
+    timezone?: Timezone;
     tags?: string[];
   }): ScheduleTask {
     const uuid = AggregateRoot.generateUUID();
@@ -347,7 +341,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
 
     const schedule = new ScheduleConfig({
       cronExpression: params.cronExpression,
-      timezone: (params.timezone || 'Asia/Shanghai') as ScheduleContracts.Timezone,
+      timezone: (params.timezone || 'Asia/Shanghai') as Timezone,
       startDate: null,
       endDate: null,
       maxExecutions: null,
@@ -357,7 +351,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
     const retryPolicy = RetryPolicy.createDefault();
     const metadata = new TaskMetadata({
       tags: params.tags || [],
-      priority: 'normal' as ScheduleContracts.TaskPriority,
+      priority: 'normal' as TaskPriority,
       timeout: null,
       payload: {},
     });
@@ -369,7 +363,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
       description: params.description,
       sourceModule: params.sourceModule,
       sourceEntityId: params.sourceEntityId,
-      status: SC.ScheduleTaskStatus.ACTIVE,
+      status: ScheduleTaskStatus.ACTIVE,
       enabled: true,
       schedule,
       execution,
@@ -390,7 +384,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
       throw new Error('当前状态无法暂停任务');
     }
     const cloned = this.clone();
-    cloned._status = SC.ScheduleTaskStatus.PAUSED;
+    cloned._status = ScheduleTaskStatus.PAUSED;
     cloned._updatedAt = Date.now();
     return cloned;
   }
@@ -403,7 +397,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
       throw new Error('只有暂停的任务才能恢复');
     }
     const cloned = this.clone();
-    cloned._status = SC.ScheduleTaskStatus.ACTIVE;
+    cloned._status = ScheduleTaskStatus.ACTIVE;
     cloned._updatedAt = Date.now();
     return cloned;
   }
@@ -413,13 +407,13 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
    */
   public cancel(): ScheduleTask {
     if (
-      this._status === SC.ScheduleTaskStatus.COMPLETED ||
-      this._status === SC.ScheduleTaskStatus.CANCELLED
+      this._status === ScheduleTaskStatus.COMPLETED ||
+      this._status === ScheduleTaskStatus.CANCELLED
     ) {
       throw new Error('已完成或已取消的任务不能再取消');
     }
     const cloned = this.clone();
-    cloned._status = SC.ScheduleTaskStatus.CANCELLED;
+    cloned._status = ScheduleTaskStatus.CANCELLED;
     cloned._enabled = false;
     cloned._updatedAt = Date.now();
     return cloned;
@@ -429,11 +423,11 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
    * 完成任务
    */
   public complete(): ScheduleTask {
-    if (this._status !== SC.ScheduleTaskStatus.ACTIVE) {
+    if (this._status !== ScheduleTaskStatus.ACTIVE) {
       throw new Error('只有活跃的任务才能标记为完成');
     }
     const cloned = this.clone();
-    cloned._status = SC.ScheduleTaskStatus.COMPLETED;
+    cloned._status = ScheduleTaskStatus.COMPLETED;
     cloned._enabled = false;
     cloned._updatedAt = Date.now();
     return cloned;
@@ -442,7 +436,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskClient {
   /**
    * 更新执行信息
    */
-  public updateExecution(execution: ScheduleContracts.ExecutionInfoClientDTO): ScheduleTask {
+  public updateExecution(execution: ExecutionInfoClientDTO): ScheduleTask {
     const cloned = this.clone();
     cloned._execution = ExecutionInfo.fromClientDTO(execution);
     cloned._updatedAt = Date.now();

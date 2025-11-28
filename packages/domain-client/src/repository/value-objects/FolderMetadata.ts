@@ -2,11 +2,7 @@
  * Folder Metadata Value Object - Client Implementation
  * 文件夹元数据值对象 - 客户端实现
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
-
-type FolderMetadataClient = RepositoryContracts.FolderMetadataClient;
-type FolderMetadataClientDTO = RepositoryContracts.FolderMetadataClientDTO;
-type FolderMetadataServerDTO = RepositoryContracts.FolderMetadataServerDTO;
+import { FolderMetadataClient, FolderMetadataClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
 
 export class FolderMetadata implements FolderMetadataClient {
   // ===== 私有字段 =====

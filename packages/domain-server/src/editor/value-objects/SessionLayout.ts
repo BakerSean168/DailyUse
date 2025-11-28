@@ -3,18 +3,18 @@
  * 会话布局配置 - 不可变值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type {
+  ISessionLayoutServer,
+  SessionLayoutClientDTO,
+  SessionLayoutPersistenceDTO,
+  SessionLayoutServerDTO,
+} from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type ISessionLayout = EditorContracts.ISessionLayoutServer;
-type SessionLayoutServerDTO = EditorContracts.SessionLayoutServerDTO;
-type SessionLayoutClientDTO = EditorContracts.SessionLayoutClientDTO;
-type SessionLayoutPersistenceDTO = EditorContracts.SessionLayoutPersistenceDTO;
 
 /**
  * SessionLayout 值对象
  */
-export class SessionLayout extends ValueObject implements ISessionLayout {
+export class SessionLayout extends ValueObject implements SessionLayout {
   public readonly splitType: 'horizontal' | 'vertical' | 'grid';
   public readonly groupCount: number;
   public readonly activeGroupIndex: number;

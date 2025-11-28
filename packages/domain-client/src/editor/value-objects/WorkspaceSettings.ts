@@ -3,12 +3,8 @@
  * 工作区设置 - 客户端值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { IWorkspaceSettingsClient, WorkspaceSettingsClientDTO, WorkspaceSettingsServerDTO } from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type IWorkspaceSettingsClient = EditorContracts.IWorkspaceSettingsClient;
-type WorkspaceSettingsServerDTO = EditorContracts.WorkspaceSettingsServerDTO;
-type WorkspaceSettingsClientDTO = EditorContracts.WorkspaceSettingsClientDTO;
 
 /**
  * WorkspaceSettings 值对象
@@ -19,7 +15,7 @@ type WorkspaceSettingsClientDTO = EditorContracts.WorkspaceSettingsClientDTO;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class WorkspaceSettings extends ValueObject implements IWorkspaceSettingsClient {
+export class WorkspaceSettings extends ValueObject implements WorkspaceSettingsClient {
   public readonly theme: string;
   public readonly fontSize: number;
   public readonly fontFamily: string;

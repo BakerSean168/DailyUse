@@ -3,17 +3,17 @@
  * 任务统计 - 聚合根
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type {
+  CompletionStatsInfo,
+  DistributionStatsInfo,
+  InstanceStatsInfo,
+  TaskStatisticsPersistenceDTO,
+  TaskStatisticsServer,
+  TaskStatisticsServerDTO,
+  TemplateStatsInfo,
+  TimeStatsInfo,
+} from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
-
-type ITaskStatistics = TaskContracts.TaskStatisticsServer;
-type TaskStatisticsServerDTO = TaskContracts.TaskStatisticsServerDTO;
-type TaskStatisticsPersistenceDTO = TaskContracts.TaskStatisticsPersistenceDTO;
-type TemplateStatsInfo = TaskContracts.TemplateStatsInfo;
-type InstanceStatsInfo = TaskContracts.InstanceStatsInfo;
-type CompletionStatsInfo = TaskContracts.CompletionStatsInfo;
-type TimeStatsInfo = TaskContracts.TimeStatsInfo;
-type DistributionStatsInfo = TaskContracts.DistributionStatsInfo;
 
 /**
  * TaskStatistics 构造函数参数
@@ -36,7 +36,7 @@ interface TaskStatisticsProps {
  * - 提供统计计算方法
  * - 是事务边界
  */
-export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
+export class TaskStatistics extends AggregateRoot implements TaskStatisticsServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _templateStats: TemplateStatsInfo;
@@ -491,9 +491,8 @@ export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
       allDayTasks: templates.filter((t) => t.timeConfig?.timeType === 'ALL_DAY').length,
       timePointTasks: templates.filter((t) => t.timeConfig?.timeType === 'TIME_POINT').length,
       timeRangeTasks: templates.filter((t) => t.timeConfig?.timeType === 'TIME_RANGE').length,
-      overdueInstances: instances.filter(
-        (i) => i.status === 'PENDING' && i.scheduledEndTime < now,
-      ).length,
+      overdueInstances: instances.filter((i) => i.status === 'PENDING' && i.scheduledEndTime < now)
+        .length,
       upcomingInstances: instances.filter(
         (i) =>
           i.status === 'PENDING' &&

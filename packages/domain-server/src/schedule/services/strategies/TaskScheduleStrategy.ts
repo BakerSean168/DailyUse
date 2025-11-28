@@ -7,8 +7,9 @@
  * - 支持提醒时间偏移
  */
 
-import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts';
-import type { TaskContracts } from '@dailyuse/contracts';
+import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts/schedule';
+import type { RecurrenceRuleServerDTO, ReminderTimeUnit, TaskReminderConfigServerDTO, TaskTemplateServerDTO, TaskTimeConfigServerDTO } from '@dailyuse/contracts/task';
+import { DayOfWeek, RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
 import type {
@@ -20,7 +21,7 @@ import type {
 /**
  * Task 调度策略实现
  */
-export class TaskScheduleStrategy implements IScheduleStrategy {
+export class TaskScheduleStrategy implements ScheduleStrategy {
   /**
    * 支持 TASK 源模块
    */
@@ -35,7 +36,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 2. 有 recurrenceRule
    * 3. 有 reminderConfig 且已启用
    */
-  shouldCreateSchedule(sourceEntity: TaskContracts.TaskTemplateServerDTO): boolean {
+  shouldCreateSchedule(sourceEntity: TaskTemplateServerDTO): boolean {
     // 只有循环任务需要调度
     if (sourceEntity.taskType !== 'RECURRING') {
       return false;
@@ -59,7 +60,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 从 Task 创建调度配置
    */
   createSchedule(input: ScheduleStrategyInput): ScheduleStrategyOutput {
-    const task = input.sourceEntity as TaskContracts.TaskTemplateServerDTO;
+    const task = input.sourceEntity as TaskTemplateServerDTO;
 
     if (!this.shouldCreateSchedule(task)) {
       throw new Error(
@@ -127,9 +128,9 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * - 默认：任务开始时间或 9:00
    */
   private generateCronExpression(
-    recurrenceRule: TaskContracts.RecurrenceRuleServerDTO,
-    reminderConfig: TaskContracts.TaskReminderConfigServerDTO,
-    timeConfig?: TaskContracts.TaskTimeConfigServerDTO | null,
+    recurrenceRule: RecurrenceRuleServerDTO,
+    reminderConfig: TaskReminderConfigServerDTO,
+    timeConfig?: TaskTimeConfigServerDTO | null,
   ): string {
     // 确定提醒时间（小时和分钟）
     const { hour, minute } = this.calculateReminderTime(reminderConfig, timeConfig);
@@ -173,8 +174,8 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 计算提醒时间
    */
   private calculateReminderTime(
-    reminderConfig: TaskContracts.TaskReminderConfigServerDTO,
-    timeConfig?: TaskContracts.TaskTimeConfigServerDTO | null,
+    reminderConfig: TaskReminderConfigServerDTO,
+    timeConfig?: TaskTimeConfigServerDTO | null,
   ): { hour: number; minute: number } {
     // 查找第一个触发器
     const firstTrigger = reminderConfig.triggers[0];
@@ -222,7 +223,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
   /**
    * 转换时间单位到分钟
    */
-  private convertToMinutes(value: number, unit: TaskContracts.ReminderTimeUnit): number {
+  private convertToMinutes(value: number, unit: ReminderTimeUnit): number {
     switch (unit) {
       case 'MINUTES':
         return value;
@@ -240,7 +241,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * DayOfWeek: 0=周日, 1=周一, ..., 6=周六
    * Cron: 0=周日, 1=周一, ..., 6=周六（相同）
    */
-  private convertDaysOfWeekToCron(daysOfWeek: TaskContracts.DayOfWeek[]): string {
+  private convertDaysOfWeekToCron(daysOfWeek: DayOfWeek[]): string {
     if (daysOfWeek.length === 0) {
       return '*'; // 每天
     }
@@ -253,7 +254,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 计算任务优先级
    * 基于 Task 的重要性和紧急程度
    */
-  private calculatePriority(task: TaskContracts.TaskTemplateServerDTO): TaskPriority {
+  private calculatePriority(task: TaskTemplateServerDTO): TaskPriority {
     const { importance, urgency } = task;
 
     // Vital + Critical/High = URGENT
@@ -286,7 +287,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
   /**
    * 生成任务标签
    */
-  private generateTags(task: TaskContracts.TaskTemplateServerDTO): string[] {
+  private generateTags(task: TaskTemplateServerDTO): string[] {
     const tags: string[] = [
       'task-reminder',
       `importance:${task.importance}`,
@@ -310,7 +311,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
   /**
    * 生成任务名称
    */
-  private generateTaskName(task: TaskContracts.TaskTemplateServerDTO): string {
+  private generateTaskName(task: TaskTemplateServerDTO): string {
     return `Task Reminder: ${task.title}`;
   }
 
@@ -318,8 +319,8 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
    * 生成任务描述
    */
   private generateTaskDescription(
-    task: TaskContracts.TaskTemplateServerDTO,
-    recurrenceRule: TaskContracts.RecurrenceRuleServerDTO,
+    task: TaskTemplateServerDTO,
+    recurrenceRule: RecurrenceRuleServerDTO,
   ): string {
     const frequencyText = this.getFrequencyText(recurrenceRule);
     const reminderCount = task.reminderConfig?.triggers.length ?? 0;
@@ -330,12 +331,12 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
   /**
    * 获取频率文本
    */
-  private getFrequencyText(recurrenceRule: TaskContracts.RecurrenceRuleServerDTO): string {
+  private getFrequencyText(recurrenceRule: RecurrenceRuleServerDTO): string {
     const interval = recurrenceRule.interval;
     const frequency = recurrenceRule.frequency;
 
     if (interval === 1) {
-      const map: Record<TaskContracts.RecurrenceFrequency, string> = {
+      const map: Record<RecurrenceFrequency, string> = {
         DAILY: '每天',
         WEEKLY: '每周',
         MONTHLY: '每月',
@@ -343,7 +344,7 @@ export class TaskScheduleStrategy implements IScheduleStrategy {
       };
       return map[frequency];
     } else {
-      const map: Record<TaskContracts.RecurrenceFrequency, string> = {
+      const map: Record<RecurrenceFrequency, string> = {
         DAILY: '天',
         WEEKLY: '周',
         MONTHLY: '月',

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { QuotaResetPeriod } from '@dailyuse/contracts';
+import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 import { AIUsageQuotaServer } from '../AIUsageQuotaServer';
 
 describe('AIUsageQuotaServer', () => {

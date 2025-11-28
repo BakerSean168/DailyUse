@@ -2,17 +2,17 @@
  * KeyResultProgress 值对象实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
-import { GoalContracts as GC } from '@dailyuse/contracts';
+import type {
+  AggregationMethod,
+  IKeyResultProgressClient,
+  KeyResultProgressClientDTO,
+  KeyResultProgressServerDTO,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
+import { AggregationMethod, KeyResultValueType } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-type IKeyResultProgress = GoalContracts.IKeyResultProgressClient;
-type KeyResultProgressDTO = GoalContracts.KeyResultProgressClientDTO;
-type KeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
-type KeyResultValueType = GoalContracts.KeyResultValueType;
-type AggregationMethod = GoalContracts.AggregationMethod;
-
-export class KeyResultProgress extends ValueObject implements IKeyResultProgress {
+export class KeyResultProgress extends ValueObject implements KeyResultProgress {
   private _valueType: KeyResultValueType;
   private _aggregationMethod: AggregationMethod;
   private _targetValue: number;
@@ -177,8 +177,8 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
 
   public static createDefault(): KeyResultProgress {
     return new KeyResultProgress({
-      valueType: GC.KeyResultValueType.INCREMENTAL,
-      aggregationMethod: GC.AggregationMethod.SUM,
+      valueType: KeyResultValueType.INCREMENTAL,
+      aggregationMethod: AggregationMethod.SUM,
       targetValue: 100,
       currentValue: 0,
       unit: '',

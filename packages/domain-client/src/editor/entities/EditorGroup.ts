@@ -3,13 +3,9 @@
  * 编辑器分组实体 - 客户端实现
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { EditorGroupClient, EditorGroupClientDTO, EditorGroupServerDTO } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 import { EditorTab } from './EditorTab';
-
-type IEditorGroupClient = EditorContracts.EditorGroupClient;
-type EditorGroupClientDTO = EditorContracts.EditorGroupClientDTO;
-type EditorGroupServerDTO = EditorContracts.EditorGroupServerDTO;
 
 /**
  * EditorGroup Entity (Client)
@@ -19,7 +15,7 @@ type EditorGroupServerDTO = EditorContracts.EditorGroupServerDTO;
  * - 管理 EditorTab 子实体集合
  * - 封装业务逻辑
  */
-export class EditorGroup extends Entity implements IEditorGroupClient {
+export class EditorGroup extends Entity implements EditorGroupClient {
   // ===== 私有字段 =====
   private _sessionUuid: string;
   private _workspaceUuid: string;

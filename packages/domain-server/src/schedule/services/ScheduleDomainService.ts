@@ -20,19 +20,15 @@ import { ScheduleTask } from '../aggregates/ScheduleTask';
 import type { ScheduleStatistics } from '../aggregates/ScheduleStatistics';
 import type { IScheduleTaskRepository } from '../repositories/IScheduleTaskRepository';
 import type { IScheduleStatisticsRepository } from '../repositories/IScheduleStatisticsRepository';
-import {
-  ScheduleContracts,
-  ScheduleTaskStatus,
-  ExecutionStatus,
-  SourceModule,
-} from '@dailyuse/contracts';
+import type {
+  RetryPolicyServerDTO,
+  ScheduleConfigServerDTO,
+  TaskMetadataServerDTO,
+} from '@dailyuse/contracts/schedule';
+import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleConfig } from '../value-objects/ScheduleConfig';
 import { RetryPolicy } from '../value-objects/RetryPolicy';
 import { TaskMetadata } from '../value-objects/TaskMetadata';
-
-type ScheduleConfigServerDTO = ScheduleContracts.ScheduleConfigServerDTO;
-type RetryPolicyServerDTO = ScheduleContracts.RetryPolicyServerDTO;
-type TaskMetadataServerDTO = ScheduleContracts.TaskMetadataServerDTO;
 
 /**
  * 创建任务参数

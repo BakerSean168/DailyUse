@@ -2,16 +2,16 @@
  * GoalReminderConfig 值对象实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type {
+  GoalReminderConfigClientDTO,
+  GoalReminderConfigServerDTO,
+  IGoalReminderConfigClient,
+  ReminderTrigger,
+  ReminderTriggerType,
+} from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalReminderConfig = GoalContracts.IGoalReminderConfigClient;
-type GoalReminderConfigDTO = GoalContracts.GoalReminderConfigClientDTO;
-type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
-type ReminderTrigger = GoalContracts.ReminderTrigger;
-type ReminderTriggerType = GoalContracts.ReminderTriggerType;
-
-export class GoalReminderConfig extends ValueObject implements IGoalReminderConfig {
+export class GoalReminderConfig extends ValueObject implements GoalReminderConfig {
   private _enabled: boolean;
   private _triggers: ReminderTrigger[];
 

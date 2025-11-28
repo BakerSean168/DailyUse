@@ -10,23 +10,24 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type {
+  FolderType,
+  GoalFolderClientDTO,
+  GoalFolderCreatedEvent,
+  GoalFolderDeletedEvent,
+  GoalFolderPersistenceDTO,
+  GoalFolderServer,
+  GoalFolderServerDTO,
+  GoalFolderStatsUpdatedEvent,
+  GoalFolderUpdatedEvent,
+} from '@dailyuse/contracts/goal';
 
 // 类型别名
-type IGoalFolderServer = GoalContracts.GoalFolderServer;
-type GoalFolderServerDTO = GoalContracts.GoalFolderServerDTO;
-type GoalFolderClientDTO = GoalContracts.GoalFolderClientDTO;
-type GoalFolderPersistenceDTO = GoalContracts.GoalFolderPersistenceDTO;
-type FolderType = GoalContracts.FolderType;
-type GoalFolderCreatedEvent = GoalContracts.GoalFolderCreatedEvent;
-type GoalFolderUpdatedEvent = GoalContracts.GoalFolderUpdatedEvent;
-type GoalFolderDeletedEvent = GoalContracts.GoalFolderDeletedEvent;
-type GoalFolderStatsUpdatedEvent = GoalContracts.GoalFolderStatsUpdatedEvent;
 
 /**
  * GoalFolder 聚合根
  */
-export class GoalFolder extends AggregateRoot implements IGoalFolderServer {
+export class GoalFolder extends AggregateRoot implements GoalFolderServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _name: string;

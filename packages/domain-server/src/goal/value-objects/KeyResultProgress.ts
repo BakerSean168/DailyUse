@@ -3,18 +3,17 @@
  * 关键成果进度 - 不可变值对象
  */
 
-import { GoalContracts } from '@dailyuse/contracts';
+import {
+  AggregationMethod,
+  KeyResultProgressPersistenceDTO,
+  KeyResultProgressServerDTO,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
 // 类型别名
-type KeyResultValueType = GoalContracts.KeyResultValueType;
-type AggregationMethod = GoalContracts.AggregationMethod;
-type KeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
-type KeyResultProgressPersistenceDTO = GoalContracts.KeyResultProgressPersistenceDTO;
 
 // 枚举别名
-const KeyResultValueTypeEnum = GoalContracts.KeyResultValueType;
-const AggregationMethodEnum = GoalContracts.AggregationMethod;
 
 /**
  * KeyResultProgress 值对象
@@ -216,8 +215,8 @@ export class KeyResultProgress extends ValueObject {
     unit: string | null = null,
   ): KeyResultProgress {
     return new KeyResultProgress({
-      valueType: KeyResultValueTypeEnum.INCREMENTAL,
-      aggregationMethod: AggregationMethodEnum.SUM,
+      valueType: KeyResultValueType.INCREMENTAL,
+      aggregationMethod: AggregationMethod.SUM,
       targetValue,
       currentValue: 0,
       unit,

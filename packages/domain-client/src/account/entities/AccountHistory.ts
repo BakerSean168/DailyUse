@@ -3,17 +3,14 @@
  * 兼容 AccountHistoryClient 接口
  */
 
-import { AccountContracts } from '@dailyuse/contracts';
+import { AccountHistoryClient, AccountHistoryClientDTO } from '@dailyuse/contracts/account';
 import { Entity } from '@dailyuse/utils';
-
-type IAccountHistoryClient = AccountContracts.AccountHistoryClient;
-type AccountHistoryClientDTO = AccountContracts.AccountHistoryClientDTO;
 
 /**
  * AccountHistory 实体 (Client)
  * 账户历史记录实体
  */
-export class AccountHistory extends Entity implements IAccountHistoryClient {
+export class AccountHistory extends Entity implements AccountHistoryClient {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _action: string;

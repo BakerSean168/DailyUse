@@ -3,15 +3,8 @@
  * 通知配置 - 不可变值对象
  */
 
-import type {
-  NotificationConfigServerDTO,
-  NotificationConfigClientDTO,
-  NotificationConfigPersistenceDTO,
-  NotificationChannel,
-  SoundConfig,
-  VibrationConfig,
-  NotificationActionConfig,
-} from '@dailyuse/contracts/src/modules/reminder';
+import type { NotificationConfigServerDTO, NotificationConfigClientDTO, NotificationConfigPersistenceDTO, SoundConfig, VibrationConfig, NotificationActionConfig } from '@dailyuse/contracts/reminder';
+import { NotificationChannel } from '@dailyuse/contracts/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
 /**

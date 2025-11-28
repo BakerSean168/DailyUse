@@ -1,8 +1,4 @@
-import { AIContracts } from '@dailyuse/contracts';
-
-type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
-type TokenUsagePersistenceDTO = AIContracts.TokenUsagePersistenceDTO;
-type TokenUsageClientDTO = AIContracts.TokenUsageClientDTO;
+import { TokenUsageClientDTO, TokenUsagePersistenceDTO, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
 
 export class TokenUsage {
   public readonly promptTokens: number;

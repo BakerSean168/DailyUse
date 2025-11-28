@@ -3,18 +3,18 @@
  * 实现 RememberMeTokenServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import {
+  DeviceInfoServer,
+  RememberMeTokenClientDTO,
+  RememberMeTokenPersistenceDTO,
+  RememberMeTokenServer,
+  RememberMeTokenServerDTO,
+} from '@dailyuse/contracts/authentication';
 import { Entity, generateUUID } from '@dailyuse/utils';
 import crypto from 'crypto';
 import { DeviceInfo } from '../value-objects/DeviceInfo';
 
-type IRememberMeTokenServer = AuthenticationContracts.RememberMeTokenServer;
-type RememberMeTokenServerDTO = AuthenticationContracts.RememberMeTokenServerDTO;
-type RememberMeTokenClientDTO = AuthenticationContracts.RememberMeTokenClientDTO;
-type RememberMeTokenPersistenceDTO = AuthenticationContracts.RememberMeTokenPersistenceDTO;
-type DeviceInfoServer = AuthenticationContracts.DeviceInfoServer;
-
-export class RememberMeToken extends Entity implements IRememberMeTokenServer {
+export class RememberMeToken extends Entity implements RememberMeTokenServer {
   public readonly credentialUuid: string;
   public readonly accountUuid: string;
   public readonly token: string;

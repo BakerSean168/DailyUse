@@ -5,7 +5,6 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EditorWorkspace } from './EditorWorkspace';
-import { EditorContracts } from '@dailyuse/contracts';
 
 describe('EditorWorkspace 聚合根', () => {
   let workspace: EditorWorkspace;

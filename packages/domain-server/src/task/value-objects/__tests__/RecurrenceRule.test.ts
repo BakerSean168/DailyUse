@@ -15,11 +15,12 @@
 
 import { describe, it, expect } from 'vitest';
 import { RecurrenceRule } from '../RecurrenceRule';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { RecurrenceRulePersistenceDTO, RecurrenceRuleServerDTO } from '@dailyuse/contracts/task';
+import { DayOfWeek, RecurrenceFrequency } from '@dailyuse/contracts/task';
 
 describe('RecurrenceRule Value Object', () => {
   // ==================== 测试数据 ====================
-  const mockDaysOfWeek: TaskContracts.DayOfWeek[] = [1, 3, 5]; // 周一、周三、周五
+  const mockDaysOfWeek: DayOfWeek[] = [1, 3, 5]; // 周一、周三、周五
 
   // ==================== 构造函数测试 ====================
   describe('Constructor', () => {
@@ -612,7 +613,7 @@ describe('RecurrenceRule Value Object', () => {
   describe('Factory Methods', () => {
     describe('fromServerDTO()', () => {
       it('应该从 ServerDTO 正确恢复规则', () => {
-        const dto: TaskContracts.RecurrenceRuleServerDTO = {
+        const dto: RecurrenceRuleServerDTO = {
           frequency: 'WEEKLY',
           interval: 2,
           daysOfWeek: [1, 3, 5],
@@ -631,7 +632,7 @@ describe('RecurrenceRule Value Object', () => {
 
       it('应该处理包含 endDate 的 DTO', () => {
         const futureDate = Date.now() + 86400000 * 30;
-        const dto: TaskContracts.RecurrenceRuleServerDTO = {
+        const dto: RecurrenceRuleServerDTO = {
           frequency: 'DAILY',
           interval: 1,
           daysOfWeek: [],
@@ -647,7 +648,7 @@ describe('RecurrenceRule Value Object', () => {
 
     describe('fromPersistenceDTO()', () => {
       it('应该从 PersistenceDTO 正确恢复规则', () => {
-        const dto: TaskContracts.RecurrenceRulePersistenceDTO = {
+        const dto: RecurrenceRulePersistenceDTO = {
           frequency: 'WEEKLY',
           interval: 2,
           daysOfWeek: JSON.stringify([1, 3, 5]),
@@ -664,7 +665,7 @@ describe('RecurrenceRule Value Object', () => {
       });
 
       it('应该处理空的 daysOfWeek 数组', () => {
-        const dto: TaskContracts.RecurrenceRulePersistenceDTO = {
+        const dto: RecurrenceRulePersistenceDTO = {
           frequency: 'DAILY',
           interval: 1,
           daysOfWeek: JSON.stringify([]),
@@ -714,7 +715,7 @@ describe('RecurrenceRule Value Object', () => {
   // ==================== 边界条件测试 ====================
   describe('Edge Cases', () => {
     it('应该处理所有星期的选择', () => {
-      const allDays: TaskContracts.DayOfWeek[] = [0, 1, 2, 3, 4, 5, 6];
+      const allDays: DayOfWeek[] = [0, 1, 2, 3, 4, 5, 6];
       const rule = new RecurrenceRule({
         frequency: 'WEEKLY',
         interval: 1,
@@ -766,7 +767,7 @@ describe('RecurrenceRule Value Object', () => {
     });
 
     it('应该正确处理不同频率的中文显示', () => {
-      const frequencies: TaskContracts.RecurrenceFrequency[] = [
+      const frequencies: RecurrenceFrequency[] = [
         'DAILY',
         'WEEKLY',
         'MONTHLY',
@@ -787,7 +788,7 @@ describe('RecurrenceRule Value Object', () => {
     });
 
     it('应该正确处理所有星期的中文名称', () => {
-      const allDays: TaskContracts.DayOfWeek[] = [0, 1, 2, 3, 4, 5, 6];
+      const allDays: DayOfWeek[] = [0, 1, 2, 3, 4, 5, 6];
       const expectedNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
       const rule = new RecurrenceRule({

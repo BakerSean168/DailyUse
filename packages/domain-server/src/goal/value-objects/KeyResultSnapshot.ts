@@ -3,12 +3,10 @@
  * 关键成果快照 - 不可变值对象（用于复盘记录）
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { KeyResultSnapshotPersistenceDTO, KeyResultSnapshotServerDTO } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
 // 类型别名
-type KeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
-type KeyResultSnapshotPersistenceDTO = GoalContracts.KeyResultSnapshotPersistenceDTO;
 
 /**
  * KeyResultSnapshot 值对象

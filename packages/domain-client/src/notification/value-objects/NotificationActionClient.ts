@@ -2,21 +2,21 @@
  * NotificationAction 值对象实现 (Client)
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
-import { NotificationContracts as NC } from '@dailyuse/contracts';
+import type {
+  INotificationActionClient,
+  NotificationActionClientDTO,
+  NotificationActionServerDTO,
+  NotificationActionType,
+} from '@dailyuse/contracts/notification';
+import { NotificationActionType } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
 
-type INotificationActionClient = NotificationContracts.INotificationActionClient;
-type NotificationActionClientDTO = NotificationContracts.NotificationActionClientDTO;
-type NotificationActionServerDTO = NotificationContracts.NotificationActionServerDTO;
-type NotificationActionType = NotificationContracts.NotificationActionType;
-
-const NotificationActionType = NC.NotificationActionType;
+const NotificationActionType = NotificationActionType;
 
 /**
  * NotificationAction 值对象 (Client)
  */
-export class NotificationActionClient extends ValueObject implements INotificationActionClient {
+export class NotificationActionClient extends ValueObject implements NotificationActionClient {
   public readonly id: string;
   public readonly label: string;
   public readonly type: NotificationActionType;

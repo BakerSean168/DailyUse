@@ -4,21 +4,20 @@
  */
 
 import {
-  AuthenticationContracts,
-  CredentialType,
-  CredentialStatus,
-  TwoFactorMethod,
+  AuthCredentialClient,
+  AuthCredentialClientDTO,
+  AuthCredentialServerDTO,
   BiometricType,
-} from '@dailyuse/contracts';
+  CredentialStatus,
+  CredentialType,
+  TwoFactorMethod,
+} from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils';
 import { PasswordCredential } from '../entities/PasswordCredential';
 import { ApiKeyCredential } from '../entities/ApiKeyCredential';
 import { RememberMeToken } from '../entities/RememberMeToken';
 import { CredentialHistory } from '../entities/CredentialHistory';
 
-type IAuthCredentialClient = AuthenticationContracts.AuthCredentialClient;
-type AuthCredentialClientDTO = AuthenticationContracts.AuthCredentialClientDTO;
-type AuthCredentialServerDTO = AuthenticationContracts.AuthCredentialServerDTO;
 
 /**
  * AuthCredential 聚合根 (Client)
@@ -28,7 +27,7 @@ type AuthCredentialServerDTO = AuthenticationContracts.AuthCredentialServerDTO;
  * - 管理子实体（密码凭证、API密钥、记住我令牌等）
  * - 提供认证相关的业务逻辑
  */
-export class AuthCredential extends AggregateRoot implements IAuthCredentialClient {
+export class AuthCredential extends AggregateRoot implements AuthCredentialClient {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _type: CredentialType;

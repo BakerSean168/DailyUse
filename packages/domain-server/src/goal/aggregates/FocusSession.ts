@@ -10,24 +10,25 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalContracts } from '@dailyuse/contracts';
+import {
+  FocusSessionCancelledEvent,
+  FocusSessionClientDTO,
+  FocusSessionCompletedEvent,
+  FocusSessionPausedEvent,
+  FocusSessionPersistenceDTO,
+  FocusSessionResumedEvent,
+  FocusSessionServer,
+  FocusSessionServerDTO,
+  FocusSessionStartedEvent,
+  FocusSessionStatus,
+} from '@dailyuse/contracts/goal';
 
 // 类型别名
-type IFocusSessionServer = GoalContracts.FocusSessionServer;
-type FocusSessionServerDTO = GoalContracts.FocusSessionServerDTO;
-type FocusSessionClientDTO = GoalContracts.FocusSessionClientDTO;
-type FocusSessionPersistenceDTO = GoalContracts.FocusSessionPersistenceDTO;
-type FocusSessionStatus = GoalContracts.FocusSessionStatus;
-type FocusSessionStartedEvent = GoalContracts.FocusSessionStartedEvent;
-type FocusSessionPausedEvent = GoalContracts.FocusSessionPausedEvent;
-type FocusSessionResumedEvent = GoalContracts.FocusSessionResumedEvent;
-type FocusSessionCompletedEvent = GoalContracts.FocusSessionCompletedEvent;
-type FocusSessionCancelledEvent = GoalContracts.FocusSessionCancelledEvent;
 
 /**
  * FocusSession 聚合根
  */
-export class FocusSession extends AggregateRoot implements IFocusSessionServer {
+export class FocusSession extends AggregateRoot implements FocusSessionServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _goalUuid: string | null;
@@ -160,7 +161,7 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
     return new FocusSession({
       accountUuid: params.accountUuid,
       goalUuid: params.goalUuid ?? null,
-      status: GoalContracts.FocusSessionStatus.DRAFT,
+      status: FocusSessionStatus.DRAFT,
       durationMinutes: params.durationMinutes,
       actualDurationMinutes: 0,
       description: params.description ?? null,
@@ -181,12 +182,12 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
    * 开始专注周期
    */
   public start(): void {
-    if (this._status !== GoalContracts.FocusSessionStatus.DRAFT) {
+    if (this._status !== FocusSessionStatus.DRAFT) {
       throw new Error('只能从草稿状态开始专注周期');
     }
 
     const now = Date.now();
-    this._status = GoalContracts.FocusSessionStatus.IN_PROGRESS;
+    this._status = FocusSessionStatus.IN_PROGRESS;
     this._startedAt = now;
     this._updatedAt = now;
 
@@ -208,12 +209,12 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
    * 暂停专注周期
    */
   public pause(): void {
-    if (this._status !== GoalContracts.FocusSessionStatus.IN_PROGRESS) {
+    if (this._status !== FocusSessionStatus.IN_PROGRESS) {
       throw new Error('只能暂停进行中的专注周期');
     }
 
     const now = Date.now();
-    this._status = GoalContracts.FocusSessionStatus.PAUSED;
+    this._status = FocusSessionStatus.PAUSED;
     this._pausedAt = now;
     this._pauseCount += 1;
     this._updatedAt = now;
@@ -235,7 +236,7 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
    * 恢复专注周期
    */
   public resume(): void {
-    if (this._status !== GoalContracts.FocusSessionStatus.PAUSED) {
+    if (this._status !== FocusSessionStatus.PAUSED) {
       throw new Error('只能恢复已暂停的专注周期');
     }
     if (this._pausedAt === null) {
@@ -248,7 +249,7 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
     const pauseDurationMs = now - this._pausedAt;
     const pauseDurationMinutes = Math.round(pauseDurationMs / 1000 / 60);
 
-    this._status = GoalContracts.FocusSessionStatus.IN_PROGRESS;
+    this._status = FocusSessionStatus.IN_PROGRESS;
     this._resumedAt = now;
     this._pausedDurationMinutes += pauseDurationMinutes;
     this._pausedAt = null; // 清除暂停时间
@@ -272,8 +273,8 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
    */
   public complete(): void {
     if (
-      this._status !== GoalContracts.FocusSessionStatus.IN_PROGRESS &&
-      this._status !== GoalContracts.FocusSessionStatus.PAUSED
+      this._status !== FocusSessionStatus.IN_PROGRESS &&
+      this._status !== FocusSessionStatus.PAUSED
     ) {
       throw new Error('只能完成进行中或已暂停的专注周期');
     }
@@ -284,7 +285,7 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
     const now = Date.now();
 
     // 如果处于暂停状态，先计算最后一次暂停的时长
-    if (this._status === GoalContracts.FocusSessionStatus.PAUSED && this._pausedAt !== null) {
+    if (this._status === FocusSessionStatus.PAUSED && this._pausedAt !== null) {
       const lastPauseDurationMs = now - this._pausedAt;
       const lastPauseDurationMinutes = Math.round(lastPauseDurationMs / 1000 / 60);
       this._pausedDurationMinutes += lastPauseDurationMinutes;
@@ -300,7 +301,7 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
       this._actualDurationMinutes = 0;
     }
 
-    this._status = GoalContracts.FocusSessionStatus.COMPLETED;
+    this._status = FocusSessionStatus.COMPLETED;
     this._completedAt = now;
     this._pausedAt = null; // 清除暂停时间
     this._updatedAt = now;
@@ -325,14 +326,14 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
    */
   public cancel(): void {
     if (
-      this._status === GoalContracts.FocusSessionStatus.COMPLETED ||
-      this._status === GoalContracts.FocusSessionStatus.CANCELLED
+      this._status === FocusSessionStatus.COMPLETED ||
+      this._status === FocusSessionStatus.CANCELLED
     ) {
       throw new Error('不能取消已完成或已取消的专注周期');
     }
 
     const now = Date.now();
-    this._status = GoalContracts.FocusSessionStatus.CANCELLED;
+    this._status = FocusSessionStatus.CANCELLED;
     this._cancelledAt = now;
     this._pausedAt = null; // 清除暂停时间
     this._updatedAt = now;
@@ -355,7 +356,7 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
    */
   public isActive(): boolean {
     return (
-      this._status === GoalContracts.FocusSessionStatus.IN_PROGRESS || this._status === GoalContracts.FocusSessionStatus.PAUSED
+      this._status === FocusSessionStatus.IN_PROGRESS || this._status === FocusSessionStatus.PAUSED
     );
   }
 
@@ -363,13 +364,13 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
    * 获取剩余时间（分钟）
    */
   public getRemainingMinutes(): number {
-    if (this._status === GoalContracts.FocusSessionStatus.DRAFT) {
+    if (this._status === FocusSessionStatus.DRAFT) {
       return this._durationMinutes;
     }
 
     if (
-      this._status === GoalContracts.FocusSessionStatus.COMPLETED ||
-      this._status === GoalContracts.FocusSessionStatus.CANCELLED
+      this._status === FocusSessionStatus.COMPLETED ||
+      this._status === FocusSessionStatus.CANCELLED
     ) {
       return 0;
     }
@@ -381,10 +382,10 @@ export class FocusSession extends AggregateRoot implements IFocusSessionServer {
     const now = Date.now();
     let elapsedMs: number;
 
-    if (this._status === GoalContracts.FocusSessionStatus.IN_PROGRESS) {
+    if (this._status === FocusSessionStatus.IN_PROGRESS) {
       // 进行中：当前时间 - 开始时间 - 累计暂停时长
       elapsedMs = now - this._startedAt;
-    } else if (this._status === GoalContracts.FocusSessionStatus.PAUSED && this._pausedAt !== null) {
+    } else if (this._status === FocusSessionStatus.PAUSED && this._pausedAt !== null) {
       // 已暂停：暂停时间 - 开始时间
       elapsedMs = this._pausedAt - this._startedAt;
     } else {

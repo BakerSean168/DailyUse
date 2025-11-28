@@ -15,7 +15,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CompletionRecord } from '../CompletionRecord';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { CompletionRecordPersistenceDTO, CompletionRecordServerDTO } from '@dailyuse/contracts/task';
 
 describe('CompletionRecord Value Object', () => {
   // ==================== 测试数据 ====================
@@ -150,7 +150,7 @@ describe('CompletionRecord Value Object', () => {
   describe('Factory Methods', () => {
     describe('fromServerDTO()', () => {
       it('应该从 ServerDTO 创建实例', () => {
-        const dto: TaskContracts.CompletionRecordServerDTO = {
+        const dto: CompletionRecordServerDTO = {
           completedAt: mockCompletedAt,
           note: 'Test note',
           rating: 4,
@@ -168,7 +168,7 @@ describe('CompletionRecord Value Object', () => {
       });
 
       it('应该支持自定义 completionStatus', () => {
-        const dto: TaskContracts.CompletionRecordServerDTO = {
+        const dto: CompletionRecordServerDTO = {
           completedAt: mockCompletedAt,
           note: null,
           rating: null,
@@ -181,7 +181,7 @@ describe('CompletionRecord Value Object', () => {
       });
 
       it('应该处理 null 值', () => {
-        const dto: TaskContracts.CompletionRecordServerDTO = {
+        const dto: CompletionRecordServerDTO = {
           completedAt: mockCompletedAt,
           note: null,
           rating: null,
@@ -198,7 +198,7 @@ describe('CompletionRecord Value Object', () => {
 
     describe('fromPersistenceDTO()', () => {
       it('应该从 PersistenceDTO 创建实例', () => {
-        const dto: TaskContracts.CompletionRecordPersistenceDTO = {
+        const dto: CompletionRecordPersistenceDTO = {
           taskUuid: mockTaskUuid,
           completedAt: mockCompletedAt,
           completionStatus: 'completed',
@@ -218,7 +218,7 @@ describe('CompletionRecord Value Object', () => {
       });
 
       it('应该处理 null 值', () => {
-        const dto: TaskContracts.CompletionRecordPersistenceDTO = {
+        const dto: CompletionRecordPersistenceDTO = {
           taskUuid: mockTaskUuid,
           completedAt: mockCompletedAt,
           completionStatus: 'completed',

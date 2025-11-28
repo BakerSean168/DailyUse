@@ -2,16 +2,17 @@
  * RecurrenceConfig 值对象实现 (Client)
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import {
+  CustomDaysRecurrence,
+  DailyRecurrence,
+  RecurrenceConfigClient,
+  RecurrenceConfigClientDTO,
+  RecurrenceConfigServerDTO,
+  RecurrenceType,
+  WeeklyRecurrence,
+} from '@dailyuse/contracts/reminder';
 
-type RecurrenceConfigClientDTO = ReminderContracts.RecurrenceConfigClientDTO;
-type RecurrenceConfigServerDTO = ReminderContracts.RecurrenceConfigServerDTO;
-type RecurrenceType = ReminderContracts.RecurrenceType;
-type DailyRecurrence = ReminderContracts.DailyRecurrence;
-type WeeklyRecurrence = ReminderContracts.WeeklyRecurrence;
-type CustomDaysRecurrence = ReminderContracts.CustomDaysRecurrence;
-
-export class RecurrenceConfig implements ReminderContracts.RecurrenceConfigClient {
+export class RecurrenceConfig implements RecurrenceConfigClient {
   private readonly _type: RecurrenceType;
   private readonly _daily: DailyRecurrence | null;
   private readonly _weekly: WeeklyRecurrence | null;
@@ -54,7 +55,7 @@ export class RecurrenceConfig implements ReminderContracts.RecurrenceConfigClien
   }
 
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.RecurrenceConfigClient): boolean {
+  public equals(other: RecurrenceConfigClient): boolean {
     return (
       this._type === other.type &&
       JSON.stringify(this._daily) === JSON.stringify(other.daily) &&
@@ -97,11 +98,11 @@ export class RecurrenceConfig implements ReminderContracts.RecurrenceConfigClien
   public static fromServerDTO(dto: RecurrenceConfigServerDTO): RecurrenceConfig {
     // 从 ServerDTO 转换，生成 displayText
     let displayText = '';
-    if (dto.type === ReminderContracts.RecurrenceType.DAILY && dto.daily) {
+    if (dto.type === RecurrenceType.DAILY && dto.daily) {
       displayText = dto.daily.interval === 1 ? '每天' : `每 ${dto.daily.interval} 天`;
-    } else if (dto.type === ReminderContracts.RecurrenceType.WEEKLY && dto.weekly) {
+    } else if (dto.type === RecurrenceType.WEEKLY && dto.weekly) {
       displayText = dto.weekly.interval === 1 ? '每周' : `每 ${dto.weekly.interval} 周`;
-    } else if (dto.type === ReminderContracts.RecurrenceType.CUSTOM_DAYS && dto.customDays) {
+    } else if (dto.type === RecurrenceType.CUSTOM_DAYS && dto.customDays) {
       displayText = `自定义 ${dto.customDays.dates.length} 个日期`;
     } else {
       displayText = '未设置';

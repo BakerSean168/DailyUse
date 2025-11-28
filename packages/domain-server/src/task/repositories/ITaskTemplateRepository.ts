@@ -4,11 +4,7 @@
  */
 
 import { TaskTemplate } from '../aggregates';
-import type { TaskContracts } from '@dailyuse/contracts';
-
-type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
-type TaskType = TaskContracts.TaskType;
-type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
+import { TaskInstanceStatus, TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
 
 /**
  * 任务查询过滤器

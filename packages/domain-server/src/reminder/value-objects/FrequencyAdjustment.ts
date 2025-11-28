@@ -6,7 +6,7 @@
 import type {
   FrequencyAdjustmentServerDTO,
   FrequencyAdjustmentClientDTO,
-} from '@dailyuse/contracts/src/modules/reminder';
+} from '@dailyuse/contracts/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
 /**

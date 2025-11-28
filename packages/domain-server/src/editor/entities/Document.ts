@@ -3,21 +3,22 @@
  * 实现 DocumentServer 接口
  */
 
-import { EditorContracts } from '@dailyuse/contracts';
+import {
+  DocumentClientDTO,
+  DocumentLanguage,
+  DocumentMetadataServerDTO,
+  DocumentPersistenceDTO,
+  DocumentServer,
+  DocumentServerDTO,
+  IndexStatus,
+} from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 import { DocumentMetadata } from '../value-objects/DocumentMetadata';
-
-type IDocumentServer = EditorContracts.DocumentServer;
-type DocumentServerDTO = EditorContracts.DocumentServerDTO;
-type DocumentClientDTO = EditorContracts.DocumentClientDTO;
-type DocumentPersistenceDTO = EditorContracts.DocumentPersistenceDTO;
-type DocumentLanguage = EditorContracts.DocumentLanguage;
-type IndexStatus = EditorContracts.IndexStatus;
 
 /**
  * Document 实体
  */
-export class Document extends Entity implements IDocumentServer {
+export class Document extends Entity implements DocumentServer {
   // ===== 私有字段 =====
   private _workspaceUuid: string; // 聚合根外键
   private _accountUuid: string;
@@ -91,7 +92,7 @@ export class Document extends Entity implements IDocumentServer {
   public get contentHash(): string {
     return this._contentHash;
   }
-  public get metadata(): EditorContracts.DocumentMetadataServerDTO {
+  public get metadata(): DocumentMetadataServerDTO {
     return this._metadata.toServerDTO();
   }
   public get indexStatus(): IndexStatus {
@@ -122,7 +123,7 @@ export class Document extends Entity implements IDocumentServer {
     name: string;
     language: DocumentLanguage;
     content: string;
-    metadata?: Partial<EditorContracts.DocumentMetadataServerDTO>;
+    metadata?: Partial<DocumentMetadataServerDTO>;
   }): Document {
     const uuid = crypto.randomUUID();
     const now = Date.now();
@@ -145,7 +146,7 @@ export class Document extends Entity implements IDocumentServer {
       content: params.content,
       contentHash,
       metadata,
-      indexStatus: EditorContracts.IndexStatus.NOT_INDEXED,
+      indexStatus: IndexStatus.NOT_INDEXED,
       createdAt: now,
       updatedAt: now,
     });
@@ -203,14 +204,14 @@ export class Document extends Entity implements IDocumentServer {
   public updateContent(content: string, contentHash: string): void {
     this._content = content;
     this._contentHash = contentHash;
-    this._indexStatus = EditorContracts.IndexStatus.OUTDATED;
+    this._indexStatus = IndexStatus.OUTDATED;
     this._updatedAt = Date.now();
   }
 
   /**
    * 更新元数据
    */
-  public updateMetadata(metadata: Partial<EditorContracts.DocumentMetadataServerDTO>): void {
+  public updateMetadata(metadata: Partial<DocumentMetadataServerDTO>): void {
     this._metadata = this._metadata.with(metadata);
     this._updatedAt = Date.now();
   }
@@ -235,7 +236,7 @@ export class Document extends Entity implements IDocumentServer {
    * 标记为已索引
    */
   public markIndexed(): void {
-    this._indexStatus = EditorContracts.IndexStatus.INDEXED;
+    this._indexStatus = IndexStatus.INDEXED;
     this._lastIndexedAt = Date.now();
     this._updatedAt = this._lastIndexedAt;
   }
@@ -244,7 +245,7 @@ export class Document extends Entity implements IDocumentServer {
    * 标记索引过期
    */
   public markIndexOutdated(): void {
-    this._indexStatus = EditorContracts.IndexStatus.OUTDATED;
+    this._indexStatus = IndexStatus.OUTDATED;
     this._updatedAt = Date.now();
   }
 
@@ -252,7 +253,7 @@ export class Document extends Entity implements IDocumentServer {
    * 标记索引失败
    */
   public markIndexFailed(): void {
-    this._indexStatus = EditorContracts.IndexStatus.FAILED;
+    this._indexStatus = IndexStatus.FAILED;
     this._updatedAt = Date.now();
   }
 
@@ -276,7 +277,7 @@ export class Document extends Entity implements IDocumentServer {
    * 判断是否为 Markdown 文档
    */
   public isMarkdown(): boolean {
-    return this._language === EditorContracts.DocumentLanguage.MARKDOWN;
+    return this._language === DocumentLanguage.MARKDOWN;
   }
 
   // ===== DTO 转换方法 =====

@@ -7,22 +7,23 @@
  * - 执行仓储业务逻辑
  * - 是事务边界
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
+import {
+  FolderClient,
+  RepositoryClient,
+  RepositoryClientDTO,
+  RepositoryConfigServerDTO,
+  RepositoryServerDTO,
+  RepositoryStatsServerDTO,
+  RepositoryStatus,
+  RepositoryType,
+} from '@dailyuse/contracts/repository';
 import { AggregateRoot } from '@dailyuse/utils';
 import { RepositoryConfig, RepositoryStats } from '../value-objects';
 import { Folder } from '../entities/Folder';
 
 // 类型别名
-type RepositoryType = RepositoryContracts.RepositoryType;
-type RepositoryStatus = RepositoryContracts.RepositoryStatus;
-type RepositoryClient = RepositoryContracts.RepositoryClient;
-type RepositoryClientDTO = RepositoryContracts.RepositoryClientDTO;
-type RepositoryServerDTO = RepositoryContracts.RepositoryServerDTO;
-type FolderClient = RepositoryContracts.FolderClient;
 
 // 枚举值
-const RepositoryStatusEnum = RepositoryContracts.RepositoryStatus;
-const RepositoryTypeEnum = RepositoryContracts.RepositoryType;
 
 export class Repository extends AggregateRoot implements RepositoryClient {
   // ===== 私有字段 =====
@@ -118,31 +119,31 @@ export class Repository extends AggregateRoot implements RepositoryClient {
 
   // ===== UI 计算属性 =====
   public get isDeleted(): boolean {
-    return this._status === RepositoryStatusEnum.DELETED;
+    return this._status === RepositoryStatus.DELETED;
   }
 
   public get isArchived(): boolean {
-    return this._status === RepositoryStatusEnum.ARCHIVED;
+    return this._status === RepositoryStatus.ARCHIVED;
   }
 
   public get isActive(): boolean {
-    return this._status === RepositoryStatusEnum.ACTIVE;
+    return this._status === RepositoryStatus.ACTIVE;
   }
 
   public get statusText(): string {
     const map = {
-      [RepositoryStatusEnum.ACTIVE]: 'Active',
-      [RepositoryStatusEnum.ARCHIVED]: 'Archived',
-      [RepositoryStatusEnum.DELETED]: 'Deleted',
+      [RepositoryStatus.ACTIVE]: 'Active',
+      [RepositoryStatus.ARCHIVED]: 'Archived',
+      [RepositoryStatus.DELETED]: 'Deleted',
     };
     return map[this._status];
   }
 
   public get typeText(): string {
     const map = {
-      [RepositoryTypeEnum.MARKDOWN]: 'Markdown',
-      [RepositoryTypeEnum.CODE]: 'Code',
-      [RepositoryTypeEnum.MIXED]: 'Mixed',
+      [RepositoryType.MARKDOWN]: 'Markdown',
+      [RepositoryType.CODE]: 'Code',
+      [RepositoryType.MIXED]: 'Mixed',
     };
     return map[this._type];
   }
@@ -172,14 +173,14 @@ export class Repository extends AggregateRoot implements RepositoryClient {
   }
 
   // ===== 业务方法 =====
-  updateConfig(config: Partial<RepositoryContracts.RepositoryConfigServerDTO>): void {
+  updateConfig(config: Partial<RepositoryConfigServerDTO>): void {
     const currentDTO = this._config.toServerDTO();
     const merged = { ...currentDTO, ...config };
     this._config = RepositoryConfig.fromServerDTO(merged);
     this._updatedAt = Date.now();
   }
 
-  updateStats(stats: Partial<RepositoryContracts.RepositoryStatsServerDTO>): void {
+  updateStats(stats: Partial<RepositoryStatsServerDTO>): void {
     const currentDTO = this._stats.toServerDTO();
     const merged = { ...currentDTO, ...stats };
     this._stats = RepositoryStats.fromServerDTO(merged);
@@ -187,24 +188,24 @@ export class Repository extends AggregateRoot implements RepositoryClient {
   }
 
   archive(): void {
-    if (this._status === RepositoryStatusEnum.ARCHIVED) {
+    if (this._status === RepositoryStatus.ARCHIVED) {
       throw new Error('Repository is already archived');
     }
-    if (this._status === RepositoryStatusEnum.DELETED) {
+    if (this._status === RepositoryStatus.DELETED) {
       throw new Error('Cannot archive a deleted repository');
     }
-    this._status = RepositoryStatusEnum.ARCHIVED;
+    this._status = RepositoryStatus.ARCHIVED;
     this._updatedAt = Date.now();
   }
 
   activate(): void {
-    if (this._status === RepositoryStatusEnum.ACTIVE) {
+    if (this._status === RepositoryStatus.ACTIVE) {
       throw new Error('Repository is already active');
     }
-    if (this._status === RepositoryStatusEnum.DELETED) {
+    if (this._status === RepositoryStatus.DELETED) {
       throw new Error('Cannot activate a deleted repository');
     }
-    this._status = RepositoryStatusEnum.ACTIVE;
+    this._status = RepositoryStatus.ACTIVE;
     this._updatedAt = Date.now();
   }
 

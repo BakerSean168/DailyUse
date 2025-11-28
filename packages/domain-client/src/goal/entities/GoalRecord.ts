@@ -2,14 +2,10 @@
  * GoalRecord 实体实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalRecordClient, GoalRecordClientDTO, GoalRecordServerDTO } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
 
-type IGoalRecord = GoalContracts.GoalRecordClient;
-type GoalRecordDTO = GoalContracts.GoalRecordClientDTO;
-type GoalRecordServerDTO = GoalContracts.GoalRecordServerDTO;
-
-export class GoalRecord extends Entity implements IGoalRecord {
+export class GoalRecord extends Entity implements GoalRecord {
   private _keyResultUuid: string;
   private _goalUuid: string;
   private _value: number;

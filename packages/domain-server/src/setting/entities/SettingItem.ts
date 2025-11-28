@@ -4,13 +4,14 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import { SettingContracts, SettingValueType } from '@dailyuse/contracts';
+import type {
+  SettingItemClientDTO,
+  SettingItemPersistenceDTO,
+  SettingItemServer,
+  SettingItemServerDTO,
+} from '@dailyuse/contracts/setting';
+import { SettingValueType } from '@dailyuse/contracts/setting';
 import { UIConfig } from '../value-objects/UIConfig';
-
-type SettingItemServerDTO = SettingContracts.SettingItemServerDTO;
-type SettingItemClientDTO = SettingContracts.SettingItemClientDTO;
-type SettingItemPersistenceDTO = SettingContracts.SettingItemPersistenceDTO;
-type SettingItemServer = SettingContracts.SettingItemServer;
 
 /**
  * 设置项实体
@@ -157,12 +158,12 @@ export class SettingItem extends Entity implements SettingItemServer {
       return '未设置';
     }
     switch (this._valueType) {
-      case SettingContracts.SettingValueType.BOOLEAN:
+      case SettingValueType.BOOLEAN:
         return this._value ? '是' : '否';
-      case SettingContracts.SettingValueType.PASSWORD:
+      case SettingValueType.PASSWORD:
         return '********';
-      case SettingContracts.SettingValueType.OBJECT:
-      case SettingContracts.SettingValueType.ARRAY:
+      case SettingValueType.OBJECT:
+      case SettingValueType.ARRAY:
         try {
           return JSON.stringify(this._value, null, 2);
         } catch {

@@ -2,14 +2,10 @@
  * TaskGoalBinding 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskGoalBindingClient, TaskGoalBindingClientDTO, TaskGoalBindingServerDTO } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskGoalBinding = TaskContracts.TaskGoalBindingClient;
-type TaskGoalBindingDTO = TaskContracts.TaskGoalBindingClientDTO;
-type TaskGoalBindingServerDTO = TaskContracts.TaskGoalBindingServerDTO;
-
-export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {
+export class TaskGoalBinding extends ValueObject implements TaskGoalBinding {
   private _goalUuid: string;
   private _keyResultUuid: string;
   private _incrementValue: number;

@@ -2,14 +2,10 @@
  * CompletionRecord 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { CompletionRecordClient, CompletionRecordClientDTO, CompletionRecordServerDTO } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ICompletionRecord = TaskContracts.CompletionRecordClient;
-type CompletionRecordDTO = TaskContracts.CompletionRecordClientDTO;
-type CompletionRecordServerDTO = TaskContracts.CompletionRecordServerDTO;
-
-export class CompletionRecord extends ValueObject implements ICompletionRecord {
+export class CompletionRecord extends ValueObject implements CompletionRecord {
   private _completedAt: number;
   private _actualDuration: number | null;
   private _note: string | null;

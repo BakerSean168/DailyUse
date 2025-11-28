@@ -3,16 +3,12 @@
  * 编辑器工作区聚合根 - 客户端实现
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
-import { EditorContracts as EC } from '@dailyuse/contracts';
+import type { EditorWorkspaceClient, EditorWorkspaceClientDTO, EditorWorkspaceServerDTO } from '@dailyuse/contracts/editor';
+import { ProjectType } from '@dailyuse/contracts/editor';
+import { ProjectType } from '@dailyuse/contracts/editor';
 import { AggregateRoot } from '@dailyuse/utils';
 import { WorkspaceLayoutClient, WorkspaceSettingsClient } from '../value-objects';
 import { EditorSessionClient } from '../entities';
-
-type IEditorWorkspaceClient = EditorContracts.EditorWorkspaceClient;
-type EditorWorkspaceClientDTO = EditorContracts.EditorWorkspaceClientDTO;
-type EditorWorkspaceServerDTO = EditorContracts.EditorWorkspaceServerDTO;
-type ProjectType = EditorContracts.ProjectType;
 
 /**
  * EditorWorkspace Aggregate Root (Client)
@@ -23,7 +19,7 @@ type ProjectType = EditorContracts.ProjectType;
  * - 确保聚合内的一致性
  * - 是事务边界
  */
-export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceClient {
+export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceClient {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _name: string;
@@ -163,10 +159,10 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceCl
    */
   public getProjectTypeLabel(): string {
     const labels: Record<ProjectType, string> = {
-      [EC.ProjectType.MARKDOWN]: 'Markdown',
-      [EC.ProjectType.CODE]: '代码',
-      [EC.ProjectType.MIXED]: '混合',
-      [EC.ProjectType.OTHER]: '其他',
+      [ProjectType.MARKDOWN]: 'Markdown',
+      [ProjectType.CODE]: '代码',
+      [ProjectType.MIXED]: '混合',
+      [ProjectType.OTHER]: '其他',
     };
     return labels[this._projectType] || this._projectType;
   }
@@ -204,7 +200,7 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceCl
       name: '',
       description: null,
       projectPath: '',
-      projectType: EC.ProjectType.MARKDOWN,
+      projectType: ProjectType.MARKDOWN,
       layout: WorkspaceLayoutClient.createDefault(),
       settings: WorkspaceSettingsClient.createDefault(),
       isActive: false,
@@ -242,7 +238,7 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceCl
       name: params.name,
       description: params.description,
       projectPath: params.projectPath,
-      projectType: params.projectType ?? EC.ProjectType.MARKDOWN,
+      projectType: params.projectType ?? ProjectType.MARKDOWN,
       layout: params.layout ?? WorkspaceLayoutClient.createDefault(),
       settings: params.settings ?? WorkspaceSettingsClient.createDefault(),
       isActive: false,

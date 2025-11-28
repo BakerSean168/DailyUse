@@ -2,16 +2,17 @@
  * NotificationTemplateConfig 值对象实现 (Client)
  */
 
-import { NotificationContracts } from '@dailyuse/contracts';
+import {
+  ChannelConfig,
+  EmailTemplateContent,
+  NotificationTemplateConfigClient,
+  NotificationTemplateConfigClientDTO,
+  NotificationTemplateConfigServerDTO,
+  PushTemplateContent,
+  TemplateContent,
+} from '@dailyuse/contracts/notification';
 
-type NotificationTemplateConfigClientDTO = NotificationContracts.NotificationTemplateConfigClientDTO;
-type NotificationTemplateConfigServerDTO = NotificationContracts.NotificationTemplateConfigServerDTO;
-type TemplateContent = NotificationContracts.TemplateContent;
-type ChannelConfig = NotificationContracts.ChannelConfig;
-type EmailTemplateContent = NotificationContracts.EmailTemplateContent;
-type PushTemplateContent = NotificationContracts.PushTemplateContent;
-
-export class NotificationTemplateConfigClient implements NotificationContracts.NotificationTemplateConfigClient {
+export class NotificationTemplateConfigClient implements NotificationTemplateConfigClient {
   private readonly dto: NotificationTemplateConfigClientDTO;
 
   private constructor(dto: NotificationTemplateConfigClientDTO) {
@@ -27,7 +28,7 @@ export class NotificationTemplateConfigClient implements NotificationContracts.N
   get hasEmailTemplate(): boolean { return this.dto.hasEmailTemplate; }
   get hasPushTemplate(): boolean { return this.dto.hasPushTemplate; }
 
-  public equals(other: NotificationContracts.NotificationTemplateConfigClient): boolean {
+  public equals(other: NotificationTemplateConfigClient): boolean {
     return JSON.stringify(this.dto) === JSON.stringify((other as NotificationTemplateConfigClient).dto);
   }
 

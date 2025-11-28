@@ -3,18 +3,18 @@
  * 实现 ReminderStatisticsServer 接口
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import {
+  GroupStatsInfo,
+  ReminderStatisticsClientDTO,
+  ReminderStatisticsPersistenceDTO,
+  ReminderStatisticsServer,
+  ReminderStatisticsServerDTO,
+  TemplateStatsInfo,
+  TriggerStatsInfo,
+} from '@dailyuse/contracts/reminder';
 import { AggregateRoot } from '@dailyuse/utils';
 
-type IReminderStatisticsServer = ReminderContracts.ReminderStatisticsServer;
-type ReminderStatisticsServerDTO = ReminderContracts.ReminderStatisticsServerDTO;
-type ReminderStatisticsClientDTO = ReminderContracts.ReminderStatisticsClientDTO;
-type ReminderStatisticsPersistenceDTO = ReminderContracts.ReminderStatisticsPersistenceDTO;
-type TemplateStatsInfo = ReminderContracts.TemplateStatsInfo;
-type GroupStatsInfo = ReminderContracts.GroupStatsInfo;
-type TriggerStatsInfo = ReminderContracts.TriggerStatsInfo;
-
-export class ReminderStatistics extends AggregateRoot implements IReminderStatisticsServer {
+export class ReminderStatistics extends AggregateRoot implements ReminderStatisticsServer {
   private _accountUuid: string;
   private _templateStats: TemplateStatsInfo;
   private _groupStats: GroupStatsInfo;

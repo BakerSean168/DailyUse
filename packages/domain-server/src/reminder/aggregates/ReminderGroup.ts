@@ -3,18 +3,19 @@
  * 实现 ReminderGroupServer 接口
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import {
+  ControlMode,
+  GroupStatsServer,
+  ReminderGroupClientDTO,
+  ReminderGroupPersistenceDTO,
+  ReminderGroupServer,
+  ReminderGroupServerDTO,
+  ReminderStatus,
+} from '@dailyuse/contracts/reminder';
 import { AggregateRoot } from '@dailyuse/utils';
 import { GroupStats } from '../value-objects';
 
-type IReminderGroupServer = ReminderContracts.ReminderGroupServer;
-type ReminderGroupServerDTO = ReminderContracts.ReminderGroupServerDTO;
-type ReminderGroupClientDTO = ReminderContracts.ReminderGroupClientDTO;
-type ReminderGroupPersistenceDTO = ReminderContracts.ReminderGroupPersistenceDTO;
-type ControlMode = ReminderContracts.ControlMode;
-type ReminderStatus = ReminderContracts.ReminderStatus;
-
-export class ReminderGroup extends AggregateRoot implements IReminderGroupServer {
+export class ReminderGroup extends AggregateRoot implements ReminderGroupServer {
   private _accountUuid: string;
   private _name: string;
   private _description: string | null;
@@ -91,7 +92,7 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
   public get icon(): string | null {
     return this._icon;
   }
-  public get stats(): ReminderContracts.GroupStatsServer {
+  public get stats(): GroupStatsServer {
     return this._stats;
   }
   public get createdAt(): number {
@@ -127,9 +128,9 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
       accountUuid: params.accountUuid,
       name: params.name,
       description: params.description,
-      controlMode: params.controlMode || ReminderContracts.ControlMode.INDIVIDUAL,
+      controlMode: params.controlMode || ControlMode.INDIVIDUAL,
       enabled: true,
-      status: ReminderContracts.ReminderStatus.ACTIVE,
+      status: ReminderStatus.ACTIVE,
       order: params.order || 0,
       color: params.color,
       icon: params.icon,
@@ -188,9 +189,9 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
   }
 
   public switchToGroupControl(): void {
-    if (this._controlMode === ReminderContracts.ControlMode.GROUP) return;
+    if (this._controlMode === ControlMode.GROUP) return;
     const oldMode = this._controlMode;
-    this._controlMode = ReminderContracts.ControlMode.GROUP;
+    this._controlMode = ControlMode.GROUP;
     this._updatedAt = Date.now();
     this.addDomainEvent({
       eventType: 'ReminderGroupControlModeSwitched',
@@ -200,15 +201,15 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
       payload: {
         groupUuid: this.uuid,
         previousMode: oldMode,
-        newMode: ReminderContracts.ControlMode.GROUP,
+        newMode: ControlMode.GROUP,
       },
     });
   }
 
   public switchToIndividualControl(): void {
-    if (this._controlMode === ReminderContracts.ControlMode.INDIVIDUAL) return;
+    if (this._controlMode === ControlMode.INDIVIDUAL) return;
     const oldMode = this._controlMode;
-    this._controlMode = ReminderContracts.ControlMode.INDIVIDUAL;
+    this._controlMode = ControlMode.INDIVIDUAL;
     this._updatedAt = Date.now();
     this.addDomainEvent({
       eventType: 'ReminderGroupControlModeSwitched',
@@ -218,13 +219,13 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
       payload: {
         groupUuid: this.uuid,
         previousMode: oldMode,
-        newMode: ReminderContracts.ControlMode.INDIVIDUAL,
+        newMode: ControlMode.INDIVIDUAL,
       },
     });
   }
 
   public toggleControlMode(): void {
-    if (this._controlMode === ReminderContracts.ControlMode.GROUP) {
+    if (this._controlMode === ControlMode.GROUP) {
       this.switchToIndividualControl();
     } else {
       this.switchToGroupControl();
@@ -233,7 +234,7 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
 
   public enable(): void {
     this._enabled = true;
-    this._status = ReminderContracts.ReminderStatus.ACTIVE;
+    this._status = ReminderStatus.ACTIVE;
     this._updatedAt = Date.now();
     this.addDomainEvent({
       eventType: 'ReminderGroupEnabled',
@@ -246,7 +247,7 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
 
   public pause(): void {
     this._enabled = false;
-    this._status = ReminderContracts.ReminderStatus.PAUSED;
+    this._status = ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
     this.addDomainEvent({
       eventType: 'ReminderGroupPaused',
@@ -266,7 +267,7 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
   }
 
   public async enableAllTemplates(): Promise<void> {
-    if (this._controlMode !== ReminderContracts.ControlMode.GROUP) {
+    if (this._controlMode !== ControlMode.GROUP) {
       throw new Error('只能在 GROUP 模式下批量启用模板');
     }
     this._enabled = true;
@@ -274,7 +275,7 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
   }
 
   public async pauseAllTemplates(): Promise<void> {
-    if (this._controlMode !== ReminderContracts.ControlMode.GROUP) {
+    if (this._controlMode !== ControlMode.GROUP) {
       throw new Error('只能在 GROUP 模式下批量暂停模板');
     }
     this._enabled = false;
@@ -304,14 +305,14 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
   }
 
   public activate(): void {
-    this._status = ReminderContracts.ReminderStatus.ACTIVE;
+    this._status = ReminderStatus.ACTIVE;
     this._deletedAt = null;
     this._updatedAt = Date.now();
   }
 
   public softDelete(): void {
     this._deletedAt = Date.now();
-    this._status = ReminderContracts.ReminderStatus.PAUSED;
+    this._status = ReminderStatus.PAUSED;
     this._updatedAt = Date.now();
     this.addDomainEvent({
       eventType: 'ReminderGroupDeleted',
@@ -324,7 +325,7 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
 
   public restore(): void {
     this._deletedAt = null;
-    this._status = ReminderContracts.ReminderStatus.ACTIVE;
+    this._status = ReminderStatus.ACTIVE;
     this._updatedAt = Date.now();
   }
 
@@ -349,10 +350,10 @@ export class ReminderGroup extends AggregateRoot implements IReminderGroupServer
 
   public toClientDTO(): ReminderGroupClientDTO {
     const controlModeText =
-      this.controlMode === ReminderContracts.ControlMode.GROUP ? '组控制' : '个体控制';
-    const statusText = this.status === ReminderContracts.ReminderStatus.ACTIVE ? '活跃' : '暂停';
+      this.controlMode === ControlMode.GROUP ? '组控制' : '个体控制';
+    const statusText = this.status === ReminderStatus.ACTIVE ? '活跃' : '暂停';
     const controlDescription =
-      this.controlMode === ReminderContracts.ControlMode.GROUP
+      this.controlMode === ControlMode.GROUP
         ? '所有提醒统一启用'
         : '提醒独立控制';
 

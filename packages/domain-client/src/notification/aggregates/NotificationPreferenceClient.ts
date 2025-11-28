@@ -2,24 +2,23 @@
  * NotificationPreference 聚合根实现 (Client)
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
-import { NotificationContracts as NC } from '@dailyuse/contracts';
+import type {
+  CategoryPreferences,
+  ChannelPreferences,
+  DoNotDisturbConfigClientDTO,
+  NotificationPreferenceClient as INotificationPreferenceClient,
+  NotificationPreferenceClientDTO,
+  NotificationPreferenceServerDTO,
+} from '@dailyuse/contracts/notification';
 import { AggregateRoot } from '@dailyuse/utils';
 import { CategoryPreferenceClient, RateLimitClient } from '../value-objects';
-
-type INotificationPreferenceClient = NotificationContracts.NotificationPreferenceClient;
-type NotificationPreferenceClientDTO = NotificationContracts.NotificationPreferenceClientDTO;
-type NotificationPreferenceServerDTO = NotificationContracts.NotificationPreferenceServerDTO;
-type DoNotDisturbConfigClientDTO = NotificationContracts.DoNotDisturbConfigClientDTO;
-type ChannelPreferences = NotificationContracts.ChannelPreferences;
-type CategoryPreferences = NotificationContracts.CategoryPreferences;
 
 /**
  * NotificationPreference 聚合根 (Client)
  */
 export class NotificationPreferenceClient
   extends AggregateRoot
-  implements INotificationPreferenceClient
+  implements NotificationPreferenceClient
 {
   // ===== 私有字段 =====
   private _accountUuid: string;

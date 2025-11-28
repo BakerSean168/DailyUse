@@ -3,18 +3,18 @@
  * 标签视图状态 - 不可变值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type {
+  ITabViewStateServer,
+  TabViewStateClientDTO,
+  TabViewStatePersistenceDTO,
+  TabViewStateServerDTO,
+} from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type ITabViewState = EditorContracts.ITabViewStateServer;
-type TabViewStateServerDTO = EditorContracts.TabViewStateServerDTO;
-type TabViewStateClientDTO = EditorContracts.TabViewStateClientDTO;
-type TabViewStatePersistenceDTO = EditorContracts.TabViewStatePersistenceDTO;
 
 /**
  * TabViewState 值对象
  */
-export class TabViewState extends ValueObject implements ITabViewState {
+export class TabViewState extends ValueObject implements TabViewState {
   public readonly scrollTop: number;
   public readonly scrollLeft: number;
   public readonly cursorPosition: { line: number; column: number };

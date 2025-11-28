@@ -3,13 +3,13 @@
  * 通知操作 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type {
+  NotificationActionClientDTO,
+  NotificationActionPersistenceDTO,
+  NotificationActionServerDTO,
+  NotificationActionType,
+} from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type INotificationAction = NotificationContracts.NotificationActionServerDTO;
-type NotificationActionPersistenceDTO = NotificationContracts.NotificationActionPersistenceDTO;
-type NotificationActionClientDTO = NotificationContracts.NotificationActionClientDTO;
-type NotificationActionType = NotificationContracts.NotificationActionType;
 
 /**
  * NotificationAction 值对象
@@ -20,7 +20,7 @@ type NotificationActionType = NotificationContracts.NotificationActionType;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class NotificationAction extends ValueObject implements INotificationAction {
+export class NotificationAction extends ValueObject implements NotificationAction {
   public readonly id: string;
   public readonly label: string;
   public readonly type: NotificationActionType;
@@ -76,7 +76,7 @@ export class NotificationAction extends ValueObject implements INotificationActi
   /**
    * 转换为 Server DTO
    */
-  public toServerDTO(): INotificationAction {
+  public toServerDTO(): NotificationActionServerDTO {
     return {
       id: this.id,
       label: this.label,
@@ -119,21 +119,21 @@ export class NotificationAction extends ValueObject implements INotificationActi
   /**
    * 转换为 Contract 接口 (兼容旧代码)
    */
-  public toContract(): INotificationAction {
+  public toContract(): NotificationActionServerDTO {
     return this.toServerDTO();
   }
 
   /**
    * 从 Server DTO 创建值对象
    */
-  public static fromServerDTO(dto: INotificationAction): NotificationAction {
+  public static fromServerDTO(dto: NotificationActionServerDTO): NotificationAction {
     return new NotificationAction(dto);
   }
 
   /**
    * 从 Contract 接口创建值对象 (兼容旧代码)
    */
-  public static fromContract(action: INotificationAction): NotificationAction {
+  public static fromContract(action: NotificationActionServerDTO): NotificationAction {
     return NotificationAction.fromServerDTO(action);
   }
 }

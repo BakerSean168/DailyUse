@@ -8,10 +8,8 @@
  * - 聚合根模式：级联保存/加载 AIMessage
  */
 
-import type { AIContracts } from '@dailyuse/contracts';
-
-type AIConversationServerDTO = AIContracts.AIConversationServerDTO;
-type ConversationStatus = AIContracts.ConversationStatus;
+import type { AIConversationServerDTO } from '@dailyuse/contracts/ai';
+import { ConversationStatus } from '@dailyuse/contracts/ai';
 
 /**
  * IAIConversationRepository 仓储接口

@@ -3,15 +3,15 @@
  * 实现 SubscriptionServer 接口
  */
 
-import { AccountContracts } from '@dailyuse/contracts';
+import {
+  SubscriptionClientDTO,
+  SubscriptionPersistenceDTO,
+  SubscriptionServer,
+  SubscriptionServerDTO,
+} from '@dailyuse/contracts/account';
 import { Entity } from '@dailyuse/utils';
 
-type ISubscriptionServer = AccountContracts.SubscriptionServer;
-type SubscriptionServerDTO = AccountContracts.SubscriptionServerDTO;
-type SubscriptionClientDTO = AccountContracts.SubscriptionClientDTO;
-type SubscriptionPersistenceDTO = AccountContracts.SubscriptionPersistenceDTO;
-
-export class Subscription extends Entity implements ISubscriptionServer {
+export class Subscription extends Entity implements SubscriptionServer {
   private _accountUuid: string;
   private _plan: 'FREE' | 'BASIC' | 'PRO' | 'ENTERPRISE';
   private _status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED';

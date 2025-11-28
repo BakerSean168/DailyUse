@@ -7,20 +7,18 @@
  * - 执行仓储业务逻辑
  * - 是事务边界
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type {
+  FolderServer,
+  RepositoryClientDTO,
+  RepositoryConfigServerDTO,
+  RepositoryPersistenceDTO,
+  RepositoryServer,
+  RepositoryServerDTO,
+  RepositoryStatsServerDTO,
+} from '@dailyuse/contracts/repository';
+import { RepositoryStatus, RepositoryType } from '@dailyuse/contracts/repository';
 import { AggregateRoot } from '@dailyuse/utils';
 import { RepositoryConfig, RepositoryStats } from '../value-objects';
-
-// 类型别名
-type RepositoryType = RepositoryContracts.RepositoryType;
-type RepositoryStatus = RepositoryContracts.RepositoryStatus;
-type RepositoryServer = RepositoryContracts.RepositoryServer;
-type RepositoryServerDTO = RepositoryContracts.RepositoryServerDTO;
-type RepositoryPersistenceDTO = RepositoryContracts.RepositoryPersistenceDTO;
-type FolderServer = RepositoryContracts.FolderServer;
-
-// 枚举值
-const RepositoryStatusEnum = RepositoryContracts.RepositoryStatus;
 
 export class Repository extends AggregateRoot implements RepositoryServer {
   // ===== 私有字段 =====
@@ -115,14 +113,14 @@ export class Repository extends AggregateRoot implements RepositoryServer {
   }
 
   // ===== 业务方法 =====
-  updateConfig(newConfig: Partial<RepositoryContracts.RepositoryConfigServerDTO>): void {
+  updateConfig(newConfig: Partial<RepositoryConfigServerDTO>): void {
     const currentDTO = this._config.toServerDTO();
     const merged = { ...currentDTO, ...newConfig };
     this._config = RepositoryConfig.fromServerDTO(merged);
     this._updatedAt = Date.now();
   }
 
-  updateStats(newStats: Partial<RepositoryContracts.RepositoryStatsServerDTO>): void {
+  updateStats(newStats: Partial<RepositoryStatsServerDTO>): void {
     const currentDTO = this._stats.toServerDTO();
     const merged = { ...currentDTO, ...newStats };
     this._stats = RepositoryStats.fromServerDTO(merged);
@@ -130,23 +128,23 @@ export class Repository extends AggregateRoot implements RepositoryServer {
   }
 
   archive(): void {
-    if (this._status === RepositoryStatusEnum.ARCHIVED) {
+    if (this._status === RepositoryStatus.ARCHIVED) {
       throw new Error('Repository is already archived');
     }
-    this._status = RepositoryStatusEnum.ARCHIVED;
+    this._status = RepositoryStatus.ARCHIVED;
     this._updatedAt = Date.now();
   }
 
   activate(): void {
-    if (this._status === RepositoryStatusEnum.ACTIVE) {
+    if (this._status === RepositoryStatus.ACTIVE) {
       throw new Error('Repository is already active');
     }
-    this._status = RepositoryStatusEnum.ACTIVE;
+    this._status = RepositoryStatus.ACTIVE;
     this._updatedAt = Date.now();
   }
 
   delete(): void {
-    this._status = RepositoryStatusEnum.DELETED;
+    this._status = RepositoryStatus.DELETED;
     this._updatedAt = Date.now();
   }
 
@@ -168,11 +166,11 @@ export class Repository extends AggregateRoot implements RepositoryServer {
     };
   }
 
-  toClientDTO(includeFolders = false): RepositoryContracts.RepositoryClientDTO {
+  toClientDTO(includeFolders = false): RepositoryClientDTO {
     // 状态判断
-    const isDeleted = this._status === RepositoryStatusEnum.DELETED;
-    const isArchived = this._status === RepositoryStatusEnum.ARCHIVED;
-    const isActive = this._status === RepositoryStatusEnum.ACTIVE;
+    const isDeleted = this._status === RepositoryStatus.DELETED;
+    const isArchived = this._status === RepositoryStatus.ARCHIVED;
+    const isActive = this._status === RepositoryStatus.ACTIVE;
 
     // 状态文本
     const statusText = isDeleted ? 'Deleted' : isArchived ? 'Archived' : 'Active';
@@ -253,7 +251,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
     type: RepositoryType;
     path: string;
     description?: string;
-    config?: Partial<RepositoryContracts.RepositoryConfigServerDTO>;
+    config?: Partial<RepositoryConfigServerDTO>;
   }): Repository {
     const config = RepositoryConfig.create(params.config);
     const stats = RepositoryStats.create();
@@ -267,7 +265,7 @@ export class Repository extends AggregateRoot implements RepositoryServer {
       description: params.description ?? null,
       config,
       stats,
-      status: RepositoryStatusEnum.ACTIVE,
+      status: RepositoryStatus.ACTIVE,
       createdAt: now,
       updatedAt: now,
       folders: null,

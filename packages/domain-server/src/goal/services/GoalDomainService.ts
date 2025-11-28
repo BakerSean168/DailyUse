@@ -1,12 +1,8 @@
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { Goal } from '../aggregates/Goal';
 import { GoalReminderConfig } from '../value-objects/GoalReminderConfig';
-import { GoalContracts } from '@dailyuse/contracts';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { GoalReminderConfigServerDTO, GoalStatus } from '@dailyuse/contracts/goal';
 
-type GoalStatus = GoalContracts.GoalStatus;
-type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
-
-const GoalStatusEnum = GoalContracts.GoalStatus;
 
 /**
  * Goal 领域服务
@@ -67,7 +63,7 @@ export class GoalDomainService {
 
     // 4. 验证父目标状态（复杂业务规则）
     if (parentGoal) {
-      if (parentGoal.status === GoalStatusEnum.ARCHIVED) {
+      if (parentGoal.status === GoalStatus.ARCHIVED) {
         throw new Error('Cannot create sub-goal under an archived goal');
       }
       if (parentGoal.deletedAt !== null && parentGoal.deletedAt !== undefined) {
@@ -146,7 +142,7 @@ export class GoalDomainService {
     if (goal.deletedAt !== null && goal.deletedAt !== undefined) {
       throw new Error('Cannot add key result to a deleted goal');
     }
-    if (goal.status === GoalStatusEnum.ARCHIVED) {
+    if (goal.status === GoalStatus.ARCHIVED) {
       throw new Error('Cannot add key result to an archived goal');
     }
 

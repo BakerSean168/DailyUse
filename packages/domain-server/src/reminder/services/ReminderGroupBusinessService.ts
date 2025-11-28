@@ -11,7 +11,7 @@
 
 import type { ReminderGroup } from '../aggregates/ReminderGroup';
 import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**
  * 分组统计数据
@@ -81,7 +81,7 @@ export class ReminderGroupBusinessService {
 
       totalTemplates++;
 
-      if (template.status === ReminderContracts.ReminderStatus.ACTIVE) {
+      if (template.status === ReminderStatus.ACTIVE) {
         activeTemplates++;
       } else {
         pausedTemplates++;
@@ -184,8 +184,8 @@ export class ReminderGroupBusinessService {
    * @returns 受影响的模板列表
    */
   public calculateControlModeChangeImpact(
-    oldControlMode: ReminderContracts.ControlMode,
-    newControlMode: ReminderContracts.ControlMode,
+    oldControlMode: ControlMode,
+    newControlMode: ControlMode,
     templates: ReminderTemplate[],
   ): ReminderTemplate[] {
     // 如果控制模式没变，无影响
@@ -211,7 +211,7 @@ export class ReminderGroupBusinessService {
     templates: ReminderTemplate[],
   ): ReminderTemplate[] {
     // 只有 GROUP 模式下才有影响
-    if (group.controlMode !== ReminderContracts.ControlMode.GROUP) {
+    if (group.controlMode !== ControlMode.GROUP) {
       return [];
     }
 

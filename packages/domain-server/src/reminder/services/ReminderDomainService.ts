@@ -1,3 +1,6 @@
+import type { ActiveHoursConfigServerDTO, ActiveTimeConfigServerDTO, NotificationConfigServerDTO, RecurrenceConfigServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
+import { ControlMode } from '@dailyuse/contracts/reminder';
+import { ReminderType } from '@dailyuse/contracts/task';
 import type {
   IReminderGroupRepository,
   IReminderStatisticsRepository,
@@ -6,8 +9,7 @@ import type {
 import { ReminderTemplate } from '../aggregates/ReminderTemplate';
 import { ReminderGroup } from '../aggregates/ReminderGroup';
 import { ReminderTemplateControlService } from './ReminderTemplateControlService';
-import type { ReminderContracts } from '@dailyuse/contracts';
-import { ImportanceLevel } from '@dailyuse/contracts';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 /**
  * Reminder Domain Service
@@ -48,13 +50,13 @@ export class ReminderDomainService {
   public async createReminderTemplate(params: {
     accountUuid: string;
     title: string;
-    type: ReminderContracts.ReminderType;
-    trigger: ReminderContracts.TriggerConfigServerDTO;
-    activeTime: ReminderContracts.ActiveTimeConfigServerDTO;
-    notificationConfig: ReminderContracts.NotificationConfigServerDTO;
+    type: ReminderType;
+    trigger: TriggerConfigServerDTO;
+    activeTime: ActiveTimeConfigServerDTO;
+    notificationConfig: NotificationConfigServerDTO;
     description?: string;
-    recurrence?: ReminderContracts.RecurrenceConfigServerDTO;
-    activeHours?: ReminderContracts.ActiveHoursConfigServerDTO;
+    recurrence?: RecurrenceConfigServerDTO;
+    activeHours?: ActiveHoursConfigServerDTO;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
     color?: string;
@@ -111,7 +113,7 @@ export class ReminderDomainService {
   public async createReminderGroup(params: {
     accountUuid: string;
     name: string;
-    controlMode?: ReminderContracts.ControlMode;
+    controlMode?: ControlMode;
     description?: string;
     color?: string;
     icon?: string;

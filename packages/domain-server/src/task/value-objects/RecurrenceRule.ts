@@ -3,12 +3,9 @@
  * 重复规则 - 不可变值对象
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { RecurrenceRuleClientDTO, RecurrenceRulePersistenceDTO, RecurrenceRuleServer, RecurrenceRuleServerDTO } from '@dailyuse/contracts/task';
+import { DayOfWeek, RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
-
-type IRecurrenceRule = TaskContracts.RecurrenceRuleServerDTO;
-type RecurrenceFrequency = TaskContracts.RecurrenceFrequency;
-type DayOfWeek = TaskContracts.DayOfWeek;
 
 /**
  * RecurrenceRule 值对象
@@ -19,7 +16,7 @@ type DayOfWeek = TaskContracts.DayOfWeek;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
+export class RecurrenceRule extends ValueObject implements RecurrenceRuleServer {
   public readonly frequency: RecurrenceFrequency;
   public readonly interval: number;
   public readonly daysOfWeek: DayOfWeek[];
@@ -147,7 +144,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   /**
    * DTO 转换
    */
-  public toServerDTO(): TaskContracts.RecurrenceRuleServerDTO {
+  public toServerDTO(): RecurrenceRuleServerDTO {
     return {
       frequency: this.frequency,
       interval: this.interval,
@@ -157,7 +154,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
     };
   }
 
-  public toClientDTO(): TaskContracts.RecurrenceRuleClientDTO {
+  public toClientDTO(): RecurrenceRuleClientDTO {
     return {
       frequency: this.frequency,
       interval: this.interval,
@@ -171,7 +168,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
     };
   }
 
-  public toPersistenceDTO(): TaskContracts.RecurrenceRulePersistenceDTO {
+  public toPersistenceDTO(): RecurrenceRulePersistenceDTO {
     return {
       frequency: this.frequency,
       interval: this.interval,
@@ -184,7 +181,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   /**
    * 静态工厂方法 - 从 DTO 恢复
    */
-  public static fromServerDTO(dto: TaskContracts.RecurrenceRuleServerDTO): RecurrenceRule {
+  public static fromServerDTO(dto: RecurrenceRuleServerDTO): RecurrenceRule {
     // 防御性检查：确保 daysOfWeek 是数组
     let daysOfWeek: DayOfWeek[];
     if (Array.isArray(dto.daysOfWeek)) {
@@ -268,7 +265,11 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   /**
    * 创建每周重复的规则（指定结束日期）
    */
-  public static weeklyUntil(daysOfWeek: DayOfWeek[], interval: number, endDate: number): RecurrenceRule {
+  public static weeklyUntil(
+    daysOfWeek: DayOfWeek[],
+    interval: number,
+    endDate: number,
+  ): RecurrenceRule {
     return new RecurrenceRule({
       frequency: 'WEEKLY' as RecurrenceFrequency,
       interval,
@@ -281,7 +282,11 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   /**
    * 创建每周重复的规则（指定重复次数）
    */
-  public static weeklyCount(daysOfWeek: DayOfWeek[], interval: number, occurrences: number): RecurrenceRule {
+  public static weeklyCount(
+    daysOfWeek: DayOfWeek[],
+    interval: number,
+    occurrences: number,
+  ): RecurrenceRule {
     return new RecurrenceRule({
       frequency: 'WEEKLY' as RecurrenceFrequency,
       interval,
@@ -369,9 +374,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
     });
   }
 
-  public static fromPersistenceDTO(
-    dto: TaskContracts.RecurrenceRulePersistenceDTO,
-  ): RecurrenceRule {
+  public static fromPersistenceDTO(dto: RecurrenceRulePersistenceDTO): RecurrenceRule {
     return new RecurrenceRule({
       frequency: dto.frequency as RecurrenceFrequency,
       interval: dto.interval,

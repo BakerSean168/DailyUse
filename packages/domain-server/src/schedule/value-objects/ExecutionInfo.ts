@@ -4,11 +4,13 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
-import { ScheduleContracts, ExecutionStatus } from '@dailyuse/contracts';
-
-type ExecutionInfoServerDTO = ScheduleContracts.ExecutionInfoServerDTO;
-type ExecutionInfoClientDTO = ScheduleContracts.ExecutionInfoClientDTO;
-type ExecutionInfoPersistenceDTO = ScheduleContracts.ExecutionInfoPersistenceDTO;
+import type {
+  ExecutionInfoClientDTO,
+  ExecutionInfoPersistenceDTO,
+  ExecutionInfoServer,
+  ExecutionInfoServerDTO,
+} from '@dailyuse/contracts/schedule';
+import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * ExecutionInfo 值对象
@@ -19,7 +21,7 @@ type ExecutionInfoPersistenceDTO = ScheduleContracts.ExecutionInfoPersistenceDTO
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class ExecutionInfo extends ValueObject implements ScheduleContracts.ExecutionInfoServer {
+export class ExecutionInfo extends ValueObject implements ExecutionInfoServer {
   public readonly nextRunAt: number | null;
   public readonly lastRunAt: number | null;
   public readonly executionCount: number;
@@ -160,9 +162,16 @@ export class ExecutionInfo extends ValueObject implements ScheduleContracts.Exec
       // UI 辅助属性
       nextRunAtFormatted: this.nextRunAt ? new Date(this.nextRunAt).toLocaleString() : '-',
       lastRunAtFormatted: this.lastRunAt ? new Date(this.lastRunAt).toLocaleString() : '-',
-      lastExecutionDurationFormatted: this.lastExecutionDuration ? `${this.lastExecutionDuration}ms` : '-',
+      lastExecutionDurationFormatted: this.lastExecutionDuration
+        ? `${this.lastExecutionDuration}ms`
+        : '-',
       executionCountFormatted: `已执行 ${this.executionCount} 次`,
-      healthStatus: this.consecutiveFailures === 0 ? 'healthy' : this.consecutiveFailures < 3 ? 'warning' : 'critical',
+      healthStatus:
+        this.consecutiveFailures === 0
+          ? 'healthy'
+          : this.consecutiveFailures < 3
+            ? 'warning'
+            : 'critical',
     };
   }
 

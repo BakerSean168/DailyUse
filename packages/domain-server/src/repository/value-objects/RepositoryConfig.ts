@@ -2,10 +2,7 @@
  * Repository Config Value Object - Server Implementation
  * 仓储配置值对象 - 服务端实现
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
-
-type RepositoryConfigServer = RepositoryContracts.RepositoryConfigServer;
-type RepositoryConfigServerDTO = RepositoryContracts.RepositoryConfigServerDTO;
+import type { RepositoryConfigServer, RepositoryConfigServerDTO } from '@dailyuse/contracts/repository';
 
 export class RepositoryConfig implements RepositoryConfigServer {
   // ===== 私有字段 =====

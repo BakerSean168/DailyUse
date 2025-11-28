@@ -3,17 +3,13 @@
  * 渠道响应 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { ChannelResponseClientDTO, ChannelResponsePersistenceDTO, ChannelResponseServerDTO } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type IChannelResponse = NotificationContracts.ChannelResponseServerDTO;
-type ChannelResponsePersistenceDTO = NotificationContracts.ChannelResponsePersistenceDTO;
-type ChannelResponseClientDTO = NotificationContracts.ChannelResponseClientDTO;
 
 /**
  * ChannelResponse 值对象
  */
-export class ChannelResponse extends ValueObject implements IChannelResponse {
+export class ChannelResponse extends ValueObject implements ChannelResponse {
   public readonly messageId?: string | null;
   public readonly statusCode?: number | null;
   public readonly data?: any;
@@ -64,7 +60,7 @@ export class ChannelResponse extends ValueObject implements IChannelResponse {
   /**
    * 转换为 Server DTO
    */
-  public toServerDTO(): IChannelResponse {
+  public toServerDTO(): ChannelResponseServerDTO {
     return {
       messageId: this.messageId,
       statusCode: this.statusCode,
@@ -91,15 +87,15 @@ export class ChannelResponse extends ValueObject implements IChannelResponse {
     };
   }
 
-  public toContract(): IChannelResponse {
+  public toContract(): ChannelResponseServerDTO {
     return this.toServerDTO();
   }
 
-  public static fromServerDTO(dto: IChannelResponse): ChannelResponse {
+  public static fromServerDTO(dto: ChannelResponseServerDTO): ChannelResponse {
     return new ChannelResponse(dto);
   }
 
-  public static fromContract(response: IChannelResponse): ChannelResponse {
+  public static fromContract(response: ChannelResponseServerDTO): ChannelResponse {
     return ChannelResponse.fromServerDTO(response);
   }
 }

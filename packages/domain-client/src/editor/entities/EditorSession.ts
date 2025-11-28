@@ -3,13 +3,10 @@
  * 编辑器会话实体 - 客户端实现
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { EditorSessionClientDTO, EditorSessionServerDTO, SessionLayoutClientDTO } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 import { SessionLayoutClient } from '../value-objects';
 import { EditorGroup } from './EditorGroup';
-
-type EditorSessionClientDTO = EditorContracts.EditorSessionClientDTO;
-type EditorSessionServerDTO = EditorContracts.EditorSessionServerDTO;
 
 /**
  * EditorSession Entity (Client)
@@ -88,7 +85,7 @@ export class EditorSession extends Entity {
   public get activeGroupIndex(): number {
     return this._activeGroupIndex;
   }
-  public get layout(): EditorContracts.SessionLayoutClientDTO {
+  public get layout(): SessionLayoutClientDTO {
     return this._layout.toClientDTO();
   }
   public get lastAccessedAt(): number | null {

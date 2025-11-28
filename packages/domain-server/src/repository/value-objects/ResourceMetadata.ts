@@ -2,10 +2,7 @@
  * Resource Metadata Value Object - Server Implementation
  * 资源元数据值对象 - 服务端实现
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
-
-type ResourceMetadataServer = RepositoryContracts.ResourceMetadataServer;
-type ResourceMetadataServerDTO = RepositoryContracts.ResourceMetadataServerDTO;
+import type { ResourceMetadataServer, ResourceMetadataServerDTO } from '@dailyuse/contracts/repository';
 
 export class ResourceMetadata implements ResourceMetadataServer {
   private readonly _wordCount?: number | null;

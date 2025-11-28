@@ -13,7 +13,8 @@ import { EditorWorkspace } from '../aggregates/EditorWorkspace';
 import { EditorSession } from '../entities/EditorSession';
 import { EditorGroup } from '../entities/EditorGroup';
 import { EditorTab } from '../entities/EditorTab';
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { SessionLayoutServerDTO, SplitDirection, TabViewStateServerDTO, WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '@dailyuse/contracts/editor';
+import { ProjectType, TabType } from '@dailyuse/contracts/editor';
 
 /**
  * EditorWorkspaceDomainService
@@ -40,9 +41,9 @@ export class EditorWorkspaceDomainService {
     name: string;
     description?: string;
     projectPath: string;
-    projectType: EditorContracts.ProjectType;
-    layout?: Partial<EditorContracts.WorkspaceLayoutServerDTO>;
-    settings?: Partial<EditorContracts.WorkspaceSettingsServerDTO>;
+    projectType: ProjectType;
+    layout?: Partial<WorkspaceLayoutServerDTO>;
+    settings?: Partial<WorkspaceSettingsServerDTO>;
   }): Promise<EditorWorkspace> {
     // 1. 创建聚合根（业务逻辑在聚合根中）
     const workspace = EditorWorkspace.create(params);
@@ -153,7 +154,7 @@ export class EditorWorkspaceDomainService {
   public async addSession(params: {
     workspaceUuid: string;
     name: string;
-    layout?: Partial<EditorContracts.SessionLayoutServerDTO>;
+    layout?: Partial<SessionLayoutServerDTO>;
   }): Promise<EditorSession> {
     const workspace = await this.workspaceRepo.findByUuid(params.workspaceUuid);
 
@@ -192,7 +193,7 @@ export class EditorWorkspaceDomainService {
     workspaceUuid: string;
     sessionUuid: string;
     name?: string;
-    layout?: Partial<EditorContracts.SessionLayoutServerDTO>;
+    layout?: Partial<SessionLayoutServerDTO>;
     isActive?: boolean;
   }): Promise<EditorSession> {
     const workspace = await this.workspaceRepo.findByUuid(params.workspaceUuid);
@@ -286,7 +287,7 @@ export class EditorWorkspaceDomainService {
     groupUuid: string;
     groupIndex?: number;
     name?: string;
-    splitDirection?: EditorContracts.SplitDirection;
+    splitDirection?: SplitDirection;
   }): Promise<EditorGroup> {
     const workspace = await this.workspaceRepo.findByUuid(params.workspaceUuid);
 
@@ -353,9 +354,9 @@ export class EditorWorkspaceDomainService {
     groupUuid: string;
     documentUuid?: string;
     tabIndex: number;
-    tabType: EditorContracts.TabType;
+    tabType: TabType;
     title: string;
-    viewState?: Partial<EditorContracts.TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): Promise<EditorTab> {
     const workspace = await this.workspaceRepo.findByUuid(params.workspaceUuid);
@@ -399,7 +400,7 @@ export class EditorWorkspaceDomainService {
     tabUuid: string;
     tabIndex?: number;
     title?: string;
-    viewState?: Partial<EditorContracts.TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): Promise<EditorTab> {
     const workspace = await this.workspaceRepo.findByUuid(params.workspaceUuid);

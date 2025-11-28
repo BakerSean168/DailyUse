@@ -2,16 +2,19 @@
  * KeyResult 实体实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type {
+  AggregationMethod,
+  GoalRecordClientDTO,
+  KeyResultClient,
+  KeyResultClientDTO,
+  KeyResultProgressClientDTO,
+  KeyResultServerDTO,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
 import { KeyResultProgress } from '../value-objects/KeyResultProgress';
 
-type IKeyResult = GoalContracts.KeyResultClient;
-type KeyResultDTO = GoalContracts.KeyResultClientDTO;
-type KeyResultServerDTO = GoalContracts.KeyResultServerDTO;
-type GoalRecordClientDTO = GoalContracts.GoalRecordClientDTO;
-
-export class KeyResult extends Entity implements IKeyResult {
+export class KeyResult extends Entity implements KeyResult {
   private _goalUuid: string;
   private _title: string;
   private _description?: string | null;
@@ -59,7 +62,7 @@ export class KeyResult extends Entity implements IKeyResult {
   public get description(): string | null | undefined {
     return this._description;
   }
-  public get progress(): GoalContracts.KeyResultProgressClientDTO {
+  public get progress(): KeyResultProgressClientDTO {
     return this._progress.toClientDTO();
   }
   public get weight(): number {
@@ -339,7 +342,7 @@ export class KeyResult extends Entity implements IKeyResult {
   /**
    * 更新值类型
    */
-  public updateValueType(valueType: GoalContracts.KeyResultValueType): void {
+  public updateValueType(valueType: KeyResultValueType): void {
     this._progress.updateValueType(valueType);
     this._updatedAt = Date.now();
   }
@@ -347,7 +350,7 @@ export class KeyResult extends Entity implements IKeyResult {
   /**
    * 更新聚合方法
    */
-  public updateAggregationMethod(method: GoalContracts.AggregationMethod): void {
+  public updateAggregationMethod(method: AggregationMethod): void {
     this._progress.updateAggregationMethod(method);
     this._updatedAt = Date.now();
   }
@@ -387,8 +390,8 @@ export class KeyResult extends Entity implements IKeyResult {
     currentValue?: number;
     targetValue?: number;
     unit?: string;
-    valueType?: GoalContracts.KeyResultValueType;
-    aggregationMethod?: GoalContracts.AggregationMethod;
+    valueType?: KeyResultValueType;
+    aggregationMethod?: AggregationMethod;
   }): void {
     if (params.initialValue !== undefined) {
       this._progress.updateInitialValue(params.initialValue);

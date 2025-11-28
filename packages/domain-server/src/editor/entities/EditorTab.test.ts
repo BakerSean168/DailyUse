@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EditorTab } from './EditorTab';
-import { EditorContracts } from '@dailyuse/contracts';
+import { TabType } from '@dailyuse/contracts/editor';
 
 describe('EditorTab 实体', () => {
   let tab: EditorTab;
@@ -22,7 +22,7 @@ describe('EditorTab 实体', () => {
       accountUuid,
       documentUuid: 'doc-123',
       tabIndex: 0,
-      tabType: EditorContracts.TabType.DOCUMENT,
+      tabType: TabType.DOCUMENT,
       title: 'Test Document',
     });
   });
@@ -61,7 +61,7 @@ describe('EditorTab 实体', () => {
         workspaceUuid,
         accountUuid,
         tabIndex: 1,
-        tabType: EditorContracts.TabType.PREVIEW,
+        tabType: TabType.PREVIEW,
         title: 'Preview Tab',
       });
 
@@ -200,7 +200,7 @@ describe('EditorTab 实体', () => {
         workspaceUuid,
         accountUuid,
         tabIndex: 1,
-        tabType: EditorContracts.TabType.PREVIEW,
+        tabType: TabType.PREVIEW,
         title: 'Preview',
       });
 
@@ -214,7 +214,7 @@ describe('EditorTab 实体', () => {
         workspaceUuid,
         accountUuid,
         tabIndex: 1,
-        tabType: EditorContracts.TabType.DOCUMENT,
+        tabType: TabType.DOCUMENT,
         title: 'Empty Doc',
         documentUuid: null,
       });
@@ -295,7 +295,7 @@ describe('EditorTab 实体', () => {
         accountUuid,
         documentUuid: 'doc-456',
         tabIndex: 0,
-        tabType: EditorContracts.TabType.DOCUMENT,
+        tabType: TabType.DOCUMENT,
         title: 'My Document.md',
       });
 
@@ -333,7 +333,7 @@ describe('EditorTab 实体', () => {
         workspaceUuid,
         accountUuid,
         tabIndex: 0,
-        tabType: EditorContracts.TabType.DOCUMENT,
+        tabType: TabType.DOCUMENT,
         title: 'Tab 1',
       });
 
@@ -343,7 +343,7 @@ describe('EditorTab 实体', () => {
         workspaceUuid,
         accountUuid,
         tabIndex: 1,
-        tabType: EditorContracts.TabType.DOCUMENT,
+        tabType: TabType.DOCUMENT,
         title: 'Tab 2',
       });
 

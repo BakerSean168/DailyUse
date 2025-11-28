@@ -2,14 +2,10 @@
  * TaskTemplateHistory 实体实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateHistoryClient, TaskTemplateHistoryClientDTO, TaskTemplateHistoryServerDTO } from '@dailyuse/contracts/task';
 import { Entity } from '@dailyuse/utils';
 
-type ITaskTemplateHistory = TaskContracts.TaskTemplateHistoryClient;
-type TaskTemplateHistoryDTO = TaskContracts.TaskTemplateHistoryClientDTO;
-type TaskTemplateHistoryServerDTO = TaskContracts.TaskTemplateHistoryServerDTO;
-
-export class TaskTemplateHistory extends Entity implements ITaskTemplateHistory {
+export class TaskTemplateHistory extends Entity implements TaskTemplateHistory {
   private _templateUuid: string;
   private _action: string;
   private _changes: any | null;
