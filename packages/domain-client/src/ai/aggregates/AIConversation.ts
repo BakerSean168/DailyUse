@@ -10,7 +10,7 @@ import {
 import { AIMessage } from '../entities/AIMessage';
 
 // Aliases & Types
-const ConversationStatus = ConversationStatus;
+
 
 export class AIConversation extends AggregateRoot implements AIConversationClientInstance {
   private _accountUuid: string;

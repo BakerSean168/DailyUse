@@ -5,46 +5,43 @@ import {
 } from '@dailyuse/domain-server';
 import { NotificationContainer } from '../../infrastructure/di/NotificationContainer';
 import { createLogger } from '@dailyuse/utils';
-import type { NotificationServerDTO, NotificationPreferenceServerDTO, CreateNotificationRequest } from '@dailyuse/contracts/notification';
+import type {
+  NotificationServerDTO,
+  NotificationPreferenceServerDTO,
+  CreateNotificationRequest,
+  NotificationClientDTO,
+  NotificationPreferenceClientDTO,
+  NotificationChannelServerDTO,
+  NotificationChannelClientDTO,
+  NotificationHistoryServerDTO,
+  NotificationHistoryClientDTO,
+  NotificationActionServerDTO,
+  NotificationActionClientDTO,
+  NotificationMetadataServerDTO,
+  NotificationMetadataClientDTO,
+  ChannelErrorServerDTO,
+  ChannelErrorClientDTO,
+  ChannelResponseServerDTO,
+  ChannelResponseClientDTO,
+  CategoryPreferenceServerDTO,
+  CategoryPreferenceClientDTO,
+  DoNotDisturbConfigServerDTO,
+  DoNotDisturbConfigClientDTO,
+  RateLimitServerDTO,
+  RateLimitClientDTO,
+  NotificationCategory,
+  NotificationType,
+  RelatedEntityType,
+} from '@dailyuse/contracts/notification';
+import { NotificationChannelType } from '@dailyuse/contracts/notification';
 import type {
   INotificationPreferenceRepository,
   NotificationRepository as INotificationRepository,
   NotificationRepository as INotificationTemplateRepository,
 } from '@dailyuse/domain-server';
 
-// =================================================================
-// Contract Type Aliases
-// =================================================================
-
-type NotificationClientDTO = NotificationClientDTO;
-type NotificationPreferenceClientDTO = NotificationPreferenceClientDTO;
-type NotificationServerDTO = NotificationServerDTO;
-type NotificationPreferenceServerDTO = NotificationPreferenceServerDTO;
-type NotificationChannelServerDTO = NotificationChannelServerDTO;
-type NotificationChannelClientDTO = NotificationChannelClientDTO;
-type NotificationHistoryServerDTO = NotificationHistoryServerDTO;
-type NotificationHistoryClientDTO = NotificationHistoryClientDTO;
-type NotificationActionServerDTO = NotificationActionServerDTO;
-type NotificationActionClientDTO = NotificationActionClientDTO;
-type NotificationMetadataServerDTO = NotificationMetadataServerDTO;
-type NotificationMetadataClientDTO = NotificationMetadataClientDTO;
-type ChannelErrorServerDTO = ChannelErrorServerDTO;
-type ChannelErrorClientDTO = ChannelErrorClientDTO;
-type ChannelResponseServerDTO = ChannelResponseServerDTO;
-type ChannelResponseClientDTO = ChannelResponseClientDTO;
-type CategoryPreferenceServerDTO = CategoryPreferenceServerDTO;
-type CategoryPreferenceClientDTO = CategoryPreferenceClientDTO;
-type DoNotDisturbConfigServerDTO = DoNotDisturbConfigServerDTO;
-type DoNotDisturbConfigClientDTO = DoNotDisturbConfigClientDTO;
-type RateLimitServerDTO = RateLimitServerDTO;
-type RateLimitClientDTO = RateLimitClientDTO;
-type NotificationChannelType = NotificationChannelType;
-type NotificationCategory = NotificationCategory;
-type NotificationType = NotificationType;
-type RelatedEntityType = RelatedEntityType;
-
-// 导入枚举用于比较
-const { NotificationChannelType: ChannelTypeEnum } = NotificationContracts;
+// 枚举别名用于比较
+const ChannelTypeEnum = NotificationChannelType;
 
 // =================================================================
 // TEMPORARY DTO CONVERTERS

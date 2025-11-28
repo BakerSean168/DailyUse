@@ -7,7 +7,6 @@
 
 import type { ExecutionInfoClientDTO, ScheduleTaskClient, ScheduleTaskClientDTO, ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
 import { ExecutionStatus, ScheduleTaskStatus, SourceModule, TaskPriority, Timezone } from '@dailyuse/contracts/schedule';
-import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { AggregateRoot } from '@dailyuse/utils';
 import { ScheduleConfig, RetryPolicy, ExecutionInfo, TaskMetadata } from '../value-objects';
 

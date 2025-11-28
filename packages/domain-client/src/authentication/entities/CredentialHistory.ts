@@ -3,7 +3,7 @@
  * 兼容 CredentialHistoryClient 接口
  */
 
-import { CredentialHistoryClient, CredentialHistoryClientDTO } from '@dailyuse/contracts/authentication';
+import type { CredentialHistoryClient, CredentialHistoryClientDTO } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 /**

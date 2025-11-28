@@ -73,6 +73,7 @@
   },
   "scripts": {
     "clean": "rm -rf dist",
+    "typecheck": "node ../../node_modules/typescript/lib/tsc.js --noEmit",
     "build": "node ../../node_modules/tsup/dist/cli-default.js",
     "dev": "node ../../node_modules/tsup/dist/cli-default.js --watch"
   },

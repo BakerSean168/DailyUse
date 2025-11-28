@@ -2,7 +2,7 @@
  * ReminderStats 值对象实现 (Client)
  */
 
-import { ReminderStatsClient, ReminderStatsClientDTO, ReminderStatsServerDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderStatsClient, ReminderStatsClientDTO, ReminderStatsServerDTO } from '@dailyuse/contracts/reminder';
 
 export class ReminderStats implements ReminderStatsClient {
   private readonly _totalTriggers: number;

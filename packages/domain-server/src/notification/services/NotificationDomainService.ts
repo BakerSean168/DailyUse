@@ -13,7 +13,8 @@ import type { INotificationTemplateRepository } from '../repositories/INotificat
 import type { INotificationPreferenceRepository } from '../repositories/INotificationPreferenceRepository';
 import { Notification } from '../aggregates/Notification';
 import type { NotificationActionServerDTO, NotificationMetadataServerDTO, RelatedEntityType } from '@dailyuse/contracts/notification';
-import { ImportanceLevel, NotificationCategory, NotificationType, UrgencyLevel } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('NotificationDomainService');

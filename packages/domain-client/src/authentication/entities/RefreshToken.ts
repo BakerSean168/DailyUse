@@ -3,7 +3,7 @@
  * 兼容 RefreshTokenClient 接口
  */
 
-import { RefreshTokenClient, RefreshTokenClientDTO } from '@dailyuse/contracts/authentication';
+import type { RefreshTokenClient, RefreshTokenClientDTO } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 /**

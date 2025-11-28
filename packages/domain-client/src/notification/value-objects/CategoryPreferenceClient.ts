@@ -10,7 +10,7 @@ import {
   ImportanceLevel,
 } from '@dailyuse/contracts/notification';
 
-const ImportanceLevel = ImportanceLevel;
+
 
 export class CategoryPreferenceClient implements CategoryPreferenceClient {
   private readonly dto: CategoryPreferenceClientDTO;

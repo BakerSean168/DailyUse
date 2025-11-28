@@ -2,7 +2,7 @@
  * GroupStats 值对象实现 (分组统计信息)
  */
 
-import { GroupStatsClientDTO, GroupStatsServerDTO, IGroupStatsClient } from '@dailyuse/contracts/reminder';
+import type { GroupStatsClientDTO, GroupStatsServerDTO, IGroupStatsClient } from '@dailyuse/contracts/reminder';
 
 export class GroupStats implements GroupStats {
   private readonly dto: GroupStatsDTO;

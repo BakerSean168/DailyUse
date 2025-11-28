@@ -16,24 +16,15 @@
     // 源码根目录：限制编译范围
     "rootDir": "./src",
 
-    // 生成输出文件
-    "noEmit": false,
-
     // ============================================================
-    // Composite 项目配置（Monorepo 库的核心）
+    // Vite 构建模式配置
     // ============================================================
 
-    // 启用项目引用模式（支持类型热更新）
-    "composite": true,
+    // 不使用 tsc 输出，由 vite 统一处理
+    "noEmit": true,
 
-    // 生成类型声明文件
-    "declaration": true,
-
-    // 生成声明文件的 source map
-    "declarationMap": true,
-
-    // 生成 JavaScript 的 source map
-    "sourceMap": true,
+    // 禁用增量编译（noEmit 时不能使用 incremental）
+    "incremental": false,
 
     // ============================================================
     // 库环境配置（UI 组件库）
@@ -65,12 +56,5 @@
   "include": ["src/**/*", "src/**/*.vue"],
 
   // 排除的文件
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-
-  // ============================================================
-  // 项目引用配置（依赖的包）
-  // ============================================================
-
-  // UI 组件库只依赖 utils 包
-  "references": [{ "path": "../utils" }]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

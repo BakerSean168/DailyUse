@@ -2,7 +2,7 @@
  * ActiveHoursConfig 值对象实现 (Client)
  */
 
-import { ActiveHoursConfigClient, ActiveHoursConfigClientDTO, ActiveHoursConfigServerDTO } from '@dailyuse/contracts/reminder';
+import type { ActiveHoursConfigClient, ActiveHoursConfigClientDTO, ActiveHoursConfigServerDTO } from '@dailyuse/contracts/reminder';
 
 export class ActiveHoursConfig implements ActiveHoursConfigClient {
   private readonly _enabled: boolean;

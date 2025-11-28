@@ -11,7 +11,7 @@ import type {
 import { NotificationActionType } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
 
-const NotificationActionType = NotificationActionType;
+
 
 /**
  * NotificationAction 值对象 (Client)

@@ -3,7 +3,8 @@
  * 兼容 PasswordCredentialClient 接口
  */
 
-import { PasswordAlgorithm, PasswordCredentialClient, PasswordCredentialClientDTO } from '@dailyuse/contracts/authentication';
+import type { PasswordCredentialClient, PasswordCredentialClientDTO } from '@dailyuse/contracts/authentication';
+import { PasswordAlgorithm } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 

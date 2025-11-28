@@ -3,7 +3,8 @@
  * 兼容 RememberMeTokenClient 接口
  */
 
-import { RememberMeTokenClient, RememberMeTokenClientDTO, RememberMeTokenStatus } from '@dailyuse/contracts/authentication';
+import type { RememberMeTokenClient, RememberMeTokenClientDTO } from '@dailyuse/contracts/authentication';
+import { RememberMeTokenStatus } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 import { DeviceInfo } from '../value-objects/DeviceInfo';
 

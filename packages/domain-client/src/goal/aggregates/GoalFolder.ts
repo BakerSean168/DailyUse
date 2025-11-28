@@ -11,7 +11,7 @@ import {
   GoalFolderServerDTO,
 } from '@dailyuse/contracts/goal';
 
-const FolderType = FolderType;
+
 
 /**
  * 目标文件夹聚合根客户端实现

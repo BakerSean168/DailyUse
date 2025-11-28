@@ -3,7 +3,7 @@
  * 目标元数据值对象
  */
 
-import type { ImportanceLevel, UrgencyLevel } from '../enums';
+import type { ImportanceLevel, UrgencyLevel } from '../../../shared/index';
 
 // ============ 接口定义 ============
 

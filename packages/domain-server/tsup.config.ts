@@ -32,4 +32,8 @@ export default createTsupConfig({
     'src/ai/index.ts',
   ],
   external: ['@dailyuse/contracts', '@dailyuse/utils'],
+  extraOptions: {
+    // 暂时禁用 DTS 生成，直到类型问题修复
+    dts: false,
+  },
 });

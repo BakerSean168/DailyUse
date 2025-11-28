@@ -7,7 +7,7 @@
  * - 基于值的相等性
  * - 无标识符
  */
-import { RepositoryStatsClientDTO, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryStatsClientDTO, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';
 import { ValueObject } from '@dailyuse/utils';
 
 export class RepositoryStats extends ValueObject {

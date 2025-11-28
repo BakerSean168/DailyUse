@@ -11,8 +11,7 @@ import {
 } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-const ImportanceLevel = ImportanceLevel;
-const UrgencyLevel = UrgencyLevel;
+
 
 export class GoalMetadata extends ValueObject implements GoalMetadata {
   private _importance: ImportanceLevel;

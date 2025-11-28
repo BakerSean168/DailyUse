@@ -28,9 +28,8 @@ import type {
   TaskTemplateStatus,
   TaskInstanceStatus,
   DependencyType,
-  ImportanceLevel,
-  UrgencyLevel,
 } from './enums';
+import type { ImportanceLevel, UrgencyLevel } from '../../shared/index';
 import type { BatchOperationResponseDTO } from '../../shared/dtos';
 
 // ============ TaskTemplate 请求/响应 ============

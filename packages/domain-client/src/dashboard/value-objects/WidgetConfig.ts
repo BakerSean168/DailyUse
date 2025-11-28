@@ -1,7 +1,8 @@
 /**
  * WidgetConfig 值对象实现 (Client)
  */
-import { WidgetConfigClient, WidgetConfigDTO, WidgetSize } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfigClient, WidgetConfigDTO } from '@dailyuse/contracts/dashboard';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 
 /**
  * Widget 配置值对象 (Client)

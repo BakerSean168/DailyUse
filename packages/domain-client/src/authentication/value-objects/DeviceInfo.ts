@@ -3,7 +3,8 @@
  * 兼容 DeviceInfoClient 接口
  */
 
-import { DeviceInfoClient, DeviceInfoClientDTO, DeviceType } from '@dailyuse/contracts/authentication';
+import type { DeviceInfoClient, DeviceInfoClientDTO } from '@dailyuse/contracts/authentication';
+import { DeviceType } from '@dailyuse/contracts/authentication';
 import { ValueObject } from '@dailyuse/utils';
 
 

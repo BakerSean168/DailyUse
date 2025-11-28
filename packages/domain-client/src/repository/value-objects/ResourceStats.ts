@@ -2,7 +2,7 @@
  * Resource Stats Value Object - Client Implementation
  * 资源统计值对象 - 客户端实现
  */
-import { ResourceStatsClient, ResourceStatsClientDTO, ResourceStatsServerDTO } from '@dailyuse/contracts/repository';
+import type { ResourceStatsClient, ResourceStatsClientDTO, ResourceStatsServerDTO } from '@dailyuse/contracts/repository';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

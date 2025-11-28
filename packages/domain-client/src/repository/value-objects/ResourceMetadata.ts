@@ -2,7 +2,7 @@
  * Resource Metadata Value Object - Client Implementation
  * 资源元数据值对象 - 客户端实现
  */
-import { ResourceMetadataClient, ResourceMetadataClientDTO, ResourceMetadataServerDTO } from '@dailyuse/contracts/repository';
+import type { ResourceMetadataClient, ResourceMetadataClientDTO, ResourceMetadataServerDTO } from '@dailyuse/contracts/repository';
 
 export class ResourceMetadata implements ResourceMetadataClient {
   private readonly _wordCount?: number | null;

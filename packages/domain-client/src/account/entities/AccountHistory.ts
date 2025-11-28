@@ -3,7 +3,7 @@
  * 兼容 AccountHistoryClient 接口
  */
 
-import { AccountHistoryClient, AccountHistoryClientDTO } from '@dailyuse/contracts/account';
+import type { AccountHistoryClient, AccountHistoryClientDTO } from '@dailyuse/contracts/account';
 import { Entity } from '@dailyuse/utils';
 
 /**

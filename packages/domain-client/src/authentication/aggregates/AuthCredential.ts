@@ -3,10 +3,12 @@
  * 兼容 AuthCredentialClient 接口
  */
 
-import {
+import type {
   AuthCredentialClient,
   AuthCredentialClientDTO,
   AuthCredentialServerDTO,
+} from '@dailyuse/contracts/authentication';
+import {
   BiometricType,
   CredentialStatus,
   CredentialType,

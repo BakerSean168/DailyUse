@@ -8,7 +8,6 @@ import {
   ActiveHoursConfigClientDTO,
   ActiveTimeConfigClient,
   ActiveTimeConfigClientDTO,
-  ImportanceLevel,
   NotificationChannel,
   NotificationConfigClient,
   NotificationConfigClientDTO,
@@ -26,6 +25,7 @@ import {
   TriggerConfigClientDTO,
   TriggerType,
 } from '@dailyuse/contracts/reminder';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import * as ValueObjects from '../value-objects';
 

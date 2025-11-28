@@ -3,7 +3,7 @@
  * {O}<�a - �7�
  */
 
-import type { ImportanceLevel } from '../enums';
+import type { ImportanceLevel } from '../../../shared/index';
 import type { ChannelPreference, CategoryPreferenceServerDTO } from './CategoryPreferenceServer';
 
 // ============ ��I ============

@@ -3,7 +3,8 @@
  * 兼容 AuthSessionClient 接口
  */
 
-import { AuthSessionClient, AuthSessionClientDTO, AuthSessionServerDTO, SessionStatus } from '@dailyuse/contracts/authentication';
+import type { AuthSessionClient, AuthSessionClientDTO, AuthSessionServerDTO } from '@dailyuse/contracts/authentication';
+import { SessionStatus } from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils';
 import { RefreshToken } from '../entities/RefreshToken';
 import { DeviceInfo } from '../value-objects/DeviceInfo';

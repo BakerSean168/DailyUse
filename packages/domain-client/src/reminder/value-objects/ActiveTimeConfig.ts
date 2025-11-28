@@ -2,7 +2,7 @@
  * ActiveTimeConfig 值对象实现 (Client)
  */
 
-import { ActiveTimeConfigClient, ActiveTimeConfigClientDTO, ActiveTimeConfigServerDTO } from '@dailyuse/contracts/reminder';
+import type { ActiveTimeConfigClient, ActiveTimeConfigClientDTO, ActiveTimeConfigServerDTO } from '@dailyuse/contracts/reminder';
 
 export class ActiveTimeConfig implements ActiveTimeConfigClient {
   private readonly _startDate: number;

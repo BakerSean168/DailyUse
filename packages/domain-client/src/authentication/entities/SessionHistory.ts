@@ -3,7 +3,7 @@
  * 兼容 SessionHistoryClient 接口
  */
 
-import { SessionHistoryClient, SessionHistoryClientDTO } from '@dailyuse/contracts/authentication';
+import type { SessionHistoryClient, SessionHistoryClientDTO } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 /**

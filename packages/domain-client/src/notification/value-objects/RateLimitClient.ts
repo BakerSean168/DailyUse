@@ -2,9 +2,13 @@
  * RateLimit 值对象实现 (Client)
  */
 
-import { RateLimitClient, RateLimitClientDTO, RateLimitServerDTO } from '@dailyuse/contracts/notification';
+import type {
+  RateLimitClient as IRateLimitClient,
+  RateLimitClientDTO,
+  RateLimitServerDTO,
+} from '@dailyuse/contracts/notification';
 
-export class RateLimitClient implements RateLimitClient {
+export class RateLimitClient implements IRateLimitClient {
   private readonly dto: RateLimitClientDTO;
 
   private constructor(dto: RateLimitClientDTO) {

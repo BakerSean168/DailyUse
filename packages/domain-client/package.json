@@ -74,9 +74,9 @@
     }
   },
   "scripts": {
-    "typecheck": "tsc --build",
-    "build": "pnpm typecheck && tsup",
-    "dev": "concurrently \"pnpm typecheck --watch\" \"tsup --watch\"",
+    "typecheck": "node ../../node_modules/typescript/lib/tsc.js --noEmit",
+    "build": "node ../../node_modules/tsup/dist/cli-default.js",
+    "dev": "node ../../node_modules/concurrently/dist/bin/concurrently.js \"pnpm typecheck --watch\" \"node ../../node_modules/tsup/dist/cli-default.js --watch\"",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",

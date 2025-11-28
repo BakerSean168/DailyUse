@@ -4,7 +4,6 @@
 
 import type { GoalReviewClient, GoalReviewClientDTO, GoalReviewServerDTO, KeyResultSnapshotClientDTO } from '@dailyuse/contracts/goal';
 import { ReviewType } from '@dailyuse/contracts/goal';
-import { ReviewType } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
 import { KeyResultSnapshot } from '../value-objects/KeyResultSnapshot';
 

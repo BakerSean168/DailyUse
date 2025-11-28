@@ -1,12 +1,12 @@
 /**
  * Notification Module - Explicit Exports
  * 通知模块 - 显式导出
+ *
+ * ImportanceLevel 和 UrgencyLevel 从 @dailyuse/contracts/shared 导入
  */
 
 // ============ Enums ============
 export {
-  ImportanceLevel,
-  UrgencyLevel,
   NotificationType,
   NotificationCategory,
   NotificationStatus,

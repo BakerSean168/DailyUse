@@ -15,9 +15,8 @@ import type {
   NotificationStatus,
   RelatedEntityType,
   NotificationChannelType,
-  ImportanceLevel,
-  UrgencyLevel,
 } from './enums';
+import type { ImportanceLevel, UrgencyLevel } from '../../shared/index';
 import type {
   NotificationActionServerDTO,
   NotificationMetadataServerDTO,

@@ -1,11 +1,9 @@
 /**
  * Task Module Enums
  * 任务模块枚举定义
+ *
+ * ImportanceLevel 和 UrgencyLevel 从 @dailyuse/contracts/shared 导入
  */
-
-// ============ 从 shared 导入并重新导出 ============
-import { ImportanceLevel, UrgencyLevel } from '../../shared/index';
-export { ImportanceLevel, UrgencyLevel };
 
 // ============ 任务类型枚举 ============
 

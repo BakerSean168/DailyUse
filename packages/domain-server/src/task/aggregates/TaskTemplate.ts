@@ -6,12 +6,11 @@
 import type { TaskTemplateClientDTO, TaskTemplatePersistenceDTO, TaskTemplateServer, TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 import { RecurrenceFrequency, TimeType } from '@dailyuse/contracts/task';
 import {
-  ImportanceLevel,
-  UrgencyLevel,
   TaskType,
   TaskTemplateStatus,
   RecurrenceEndConditionType,
 } from '@dailyuse/contracts/task';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot, calculatePriority } from '@dailyuse/utils';
 import {
   TaskTimeConfig,

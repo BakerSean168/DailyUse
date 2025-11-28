@@ -3,7 +3,8 @@
  * 兼容 ApiKeyCredentialClient 接口
  */
 
-import { ApiKeyCredentialClient, ApiKeyCredentialClientDTO, ApiKeyStatus } from '@dailyuse/contracts/authentication';
+import type { ApiKeyCredentialClient, ApiKeyCredentialClientDTO } from '@dailyuse/contracts/authentication';
+import { ApiKeyStatus } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
 

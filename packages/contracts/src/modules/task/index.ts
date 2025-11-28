@@ -1,12 +1,12 @@
 /**
  * Task Module - Explicit Exports
  * 任务模块 - 显式导出
+ *
+ * ImportanceLevel 和 UrgencyLevel 从 @dailyuse/contracts/shared 导入
  */
 
 // ============ Enums ============
 export {
-  ImportanceLevel,
-  UrgencyLevel,
   TaskType,
   TimeType,
   TaskScheduleMode,

@@ -4,7 +4,7 @@
  */
 
 import type { CategoryPreferenceClientDTO, CategoryPreferencePersistenceDTO, CategoryPreferenceServerDTO, ChannelPreference } from '@dailyuse/contracts/notification';
-import { ImportanceLevel } from '@dailyuse/contracts/notification';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ValueObject } from '@dailyuse/utils';
 
 /**

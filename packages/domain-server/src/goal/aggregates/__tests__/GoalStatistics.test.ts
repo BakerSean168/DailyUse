@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GoalStatistics } from '../GoalStatistics';
-import { GoalStatus, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
 describe('GoalStatistics aggregate event handlers', () => {
   it('increments totalGoals and activeGoals on goal.created', () => {

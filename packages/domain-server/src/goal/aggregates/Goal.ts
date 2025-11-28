@@ -28,7 +28,6 @@ import {
   GoalStatusChangedEvent,
   GoalTimeRangeSummary,
   GoalUpdatedEvent,
-  ImportanceLevel,
   KeyResultAddedEvent,
   KeyResultProgressServerDTO,
   KeyResultServerDTO,
@@ -39,8 +38,8 @@ import {
   ReminderTriggerType,
   ReviewType,
   SnapshotTrigger,
-  UrgencyLevel,
 } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { KeyResult } from '../entities/KeyResult';
 import { GoalReview } from '../entities/GoalReview';
 import { GoalReminderConfig, KeyResultWeightSnapshot, KeyResultNotFoundInGoalError } from '../value-objects';

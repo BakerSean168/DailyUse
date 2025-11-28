@@ -16,12 +16,11 @@ import { TaskTemplate } from '../TaskTemplate';
 import { TaskTimeConfig } from '../../value-objects/TaskTimeConfig';
 import { RecurrenceRule } from '../../value-objects/RecurrenceRule';
 import {
-  ImportanceLevel,
   RecurrenceFrequency,
   TaskType,
   TimeType,
-  UrgencyLevel,
 } from '@dailyuse/contracts/task';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import {
   InvalidTaskTemplateStateError,
   TaskTemplateArchivedError,

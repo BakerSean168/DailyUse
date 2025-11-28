@@ -17,7 +17,8 @@ import type {
   GoalRecordServerDTO,
   GoalRecordClientDTO,
 } from './entities';
-import type { GoalStatus, ImportanceLevel, UrgencyLevel, FolderType, KeyResultValueType, AggregationMethod } from './enums';
+import type { GoalStatus, FolderType, KeyResultValueType, AggregationMethod } from './enums';
+import type { ImportanceLevel, UrgencyLevel } from '../../shared/index';
 import type { BatchOperationResponseDTO } from '../../shared/dtos';
 
 // ============ Goal 请求/响应 ============

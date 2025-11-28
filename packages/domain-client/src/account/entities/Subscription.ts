@@ -3,13 +3,8 @@
  * 兼容 SubscriptionClient 接口
  */
 
-import {
-  BillingCycle,
-  SubscriptionClient,
-  SubscriptionClientDTO,
-  SubscriptionPlan,
-  SubscriptionStatus,
-} from '@dailyuse/contracts/account';
+import type { SubscriptionClient, SubscriptionClientDTO } from '@dailyuse/contracts/account';
+import { BillingCycle, SubscriptionPlan, SubscriptionStatus } from '@dailyuse/contracts/account';
 import { Entity } from '@dailyuse/utils';
 
 
