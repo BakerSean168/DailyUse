@@ -17,7 +17,7 @@ import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import AIKeyResultsSection from '../AIKeyResultsSection.vue';
-import type { AIContracts } from '@dailyuse/contracts';
+import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 // Mock useAIGeneration
 const mockGenerateKeyResults = vi.fn();
@@ -65,7 +65,7 @@ if (!global.crypto.randomUUID) {
 describe('AI Components Integration Tests', () => {
   let vuetify: ReturnType<typeof createVuetify>;
 
-  const mockGeneratedResults: AIContracts.KeyResultSuggestion[] = [
+  const mockGeneratedResults: KeyResultSuggestion[] = [
     {
       title: '关键结果 1',
       description: '描述 1',
@@ -331,3 +331,4 @@ describe('AI Components Integration Tests', () => {
  * - 详细的 UI 交互测试建议通过 E2E 测试（Cypress/Playwright）完成
  * - Store 和 Composable 已有完整单元测试（31个测试全部通过）
  */
+

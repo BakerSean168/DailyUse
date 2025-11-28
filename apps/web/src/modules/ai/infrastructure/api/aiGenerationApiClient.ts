@@ -9,10 +9,7 @@
  */
 
 import { apiClient } from '@/shared/api/instances';
-import type { AIContracts } from '@dailyuse/contracts';
-
-// 类型别名
-type AIUsageQuotaClientDTO = AIContracts.AIUsageQuotaClientDTO;
+import type { AIUsageQuotaClientDTO } from '@dailyuse/contracts/ai';
 
 /**
  * AI Generation API Client

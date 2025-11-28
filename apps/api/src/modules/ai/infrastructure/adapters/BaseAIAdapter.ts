@@ -8,10 +8,10 @@
  * - 标准化请求/响应格式
  */
 
-import type { GenerationTaskType, AIProvider, AIModel } from '@dailyuse/contracts';
-import type { AIContracts } from '@dailyuse/contracts';
+import type { GenerationTaskType, AIProvider, AIModel } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
-type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
+type TokenUsageServerDTO = TokenUsageServerDTO;
 
 /**
  * AI 生成请求接口
@@ -89,3 +89,7 @@ export abstract class BaseAIAdapter {
     return this.defaultModel;
   }
 }
+
+
+
+

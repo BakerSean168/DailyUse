@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useFocusMode } from '../useFocusMode';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 // Mock API client
 vi.mock('../../infrastructure/api/focusModeApiClient', () => ({
@@ -44,7 +44,7 @@ describe('useFocusMode', () => {
     it('hasActiveFocusMode 应该根据 activeFocusMode 正确计算', () => {
       expect(composable.hasActiveFocusMode.value).toBe(false);
 
-      const mockFocusMode: GoalContracts.FocusModeClientDTO = {
+      const mockFocusMode: FocusModeClientDTO = {
         uuid: 'test-uuid',
         accountUuid: 'account-uuid',
         focusedGoals: [],
@@ -63,7 +63,7 @@ describe('useFocusMode', () => {
     });
 
     it('isExpired 应该正确判断过期状态', () => {
-      const expiredFocusMode: GoalContracts.FocusModeClientDTO = {
+      const expiredFocusMode: FocusModeClientDTO = {
         uuid: 'test-uuid',
         accountUuid: 'account-uuid',
         focusedGoals: [],
@@ -82,7 +82,7 @@ describe('useFocusMode', () => {
     });
 
     it('remainingDays 应该返回正确的天数', () => {
-      const focusMode: GoalContracts.FocusModeClientDTO = {
+      const focusMode: FocusModeClientDTO = {
         uuid: 'test-uuid',
         accountUuid: 'account-uuid',
         focusedGoals: [],
@@ -129,3 +129,4 @@ describe('useFocusMode', () => {
     });
   });
 });
+

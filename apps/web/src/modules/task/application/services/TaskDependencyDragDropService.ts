@@ -7,15 +7,15 @@
  * @module TaskDependencyDragDropService
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 import { TaskDependencyValidationService } from './TaskDependencyValidationService';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 
-type TaskTemplateClientDTO = TaskContracts.TaskTemplateClientDTO;
-type CreateTaskDependencyRequest = TaskContracts.CreateTaskDependencyRequest;
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
-type DependencyType = TaskContracts.DependencyType;
+type TaskTemplateClientDTO = TaskTemplateClientDTO;
+type CreateTaskDependencyRequest = CreateTaskDependencyRequest;
+type TaskDependencyClientDTO = TaskDependencyClientDTO;
+type DependencyType = DependencyType;
 
 /**
  * Result of dependency creation
@@ -130,7 +130,7 @@ export class TaskDependencyDragDropService {
   ): Promise<{ isValid: boolean; reason?: string }> {
     try {
       // Use existing validation service
-      const validationRequest: TaskContracts.ValidateDependencyRequest = {
+      const validationRequest: ValidateDependencyRequest = {
         predecessorTaskUuid: targetTask.uuid,
         successorTaskUuid: sourceTask.uuid,
       };
@@ -195,3 +195,4 @@ export class TaskDependencyDragDropService {
     return true;
   }
 }
+

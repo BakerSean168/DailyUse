@@ -4,7 +4,7 @@
  */
 
 import { ref, type Ref } from 'vue';
-import { ScheduleContracts } from '@dailyuse/contracts';
+import type { ScheduleTaskClientDTO, ScheduleExecutionClientDTO } from '@dailyuse/contracts/schedule';
 import { scheduleTaskDetailService } from '../../application/services/ScheduleTaskDetailService';
 import { createLogger } from '@dailyuse/utils';
 
@@ -12,12 +12,12 @@ const logger = createLogger('useScheduleTaskDetail');
 
 export function useScheduleTaskDetail() {
   // 任务详情状态
-  const task: Ref<ScheduleContracts.ScheduleTaskClientDTO | null> = ref(null);
+  const task: Ref<ScheduleTaskClientDTO | null> = ref(null);
   const isLoading = ref(false);
   const error: Ref<string | null> = ref(null);
 
   // 执行历史状态
-  const executions: Ref<ScheduleContracts.ScheduleExecutionClientDTO[]> = ref([]);
+  const executions: Ref<ScheduleExecutionClientDTO[]> = ref([]);
   const isLoadingExecutions = ref(false);
 
   /**

@@ -10,8 +10,8 @@
  */
 
 import { getScheduleWebService } from '@/modules/schedule';
-import type { ScheduleContracts } from '@dailyuse/contracts';
-type CreateScheduleTaskRequest = any; // ScheduleContracts.CreateScheduleTaskRequestDTO;
+import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+type CreateScheduleTaskRequest = any; // CreateScheduleTaskRequestDTO;
 import { eventBus } from '@dailyuse/utils';
 
 /**
@@ -344,3 +344,4 @@ export class TaskScheduleIntegrationService {
 
 // 导出单例实例
 export const taskScheduleIntegrationService = TaskScheduleIntegrationService;
+

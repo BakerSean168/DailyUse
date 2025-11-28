@@ -1,7 +1,7 @@
 import type { IGoalRepository } from '@dailyuse/domain-server';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 import { GoalRecord } from '@dailyuse/domain-server';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { GoalEventPublisher } from './GoalEventPublisher';
 
 /**
@@ -55,7 +55,7 @@ export class GoalRecordApplicationService {
       note?: string;
       recordedAt?: number;
     },
-  ): Promise<GoalContracts.GoalRecordClientDTO> {
+  ): Promise<GoalRecordClientDTO> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -101,7 +101,7 @@ export class GoalRecordApplicationService {
       limit?: number;
       dateRange?: { start?: string; end?: string };
     },
-  ): Promise<GoalContracts.GoalRecordsResponse> {
+  ): Promise<GoalRecordsResponse> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -157,7 +157,7 @@ export class GoalRecordApplicationService {
       page?: number;
       limit?: number;
     },
-  ): Promise<GoalContracts.GoalRecordsResponse> {
+  ): Promise<GoalRecordsResponse> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -226,7 +226,7 @@ export class GoalRecordApplicationService {
    */
   async getGoalProgressBreakdown(
     goalUuid: string,
-  ): Promise<GoalContracts.ProgressBreakdown> {
+  ): Promise<ProgressBreakdown> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -276,3 +276,4 @@ export class GoalRecordApplicationService {
     };
   }
 }
+

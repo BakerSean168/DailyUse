@@ -4,16 +4,16 @@
  * Story 11.6: 高级搜索功能（property 模式）
  */
 
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 import { Resource } from '@dailyuse/domain-server';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
 
-type SearchRequest = RepositoryContracts.SearchRequest;
-type SearchResponse = RepositoryContracts.SearchResponse;
-type SearchResultItem = RepositoryContracts.SearchResultItem;
-type SearchMatch = RepositoryContracts.SearchMatch;
-type MatchType = RepositoryContracts.MatchType;
+type SearchRequest = SearchRequest;
+type SearchResponse = SearchResponse;
+type SearchResultItem = SearchResultItem;
+type SearchMatch = SearchMatch;
+type MatchType = MatchType;
 
 export class SearchApplicationService {
   private static instance: SearchApplicationService;
@@ -434,3 +434,5 @@ export class SearchApplicationService {
     return typeMap[mode] || 'content';
   }
 }
+
+

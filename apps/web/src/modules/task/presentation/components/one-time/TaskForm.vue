@@ -262,7 +262,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import type { TaskTemplateDTO } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO as TaskTemplateDTO } from '@dailyuse/contracts/task';
 
 interface FormData {
   title: string;
@@ -443,3 +443,4 @@ defineExpose({
 <style scoped lang="scss">
 // 可以添加自定义样式
 </style>
+

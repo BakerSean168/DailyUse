@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type {
   DocumentVersionServerDTO,
   DocumentVersionClientDTO,
-} from '@dailyuse/contracts';
+} from '@dailyuse/contracts/editor';
 
 export type ChangeType = 'initial' | 'major' | 'minor' | 'patch' | 'restore';
 
@@ -312,3 +312,7 @@ export class DocumentVersion {
     };
   }
 }
+
+
+
+

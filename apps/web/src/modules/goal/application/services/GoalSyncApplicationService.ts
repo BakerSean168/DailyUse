@@ -1,4 +1,4 @@
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { Goal, GoalFolder } from '@dailyuse/domain-client';
 import { goalApiClient, goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
@@ -210,3 +210,4 @@ export class GoalSyncApplicationService {
 }
 
 export const goalSyncApplicationService = GoalSyncApplicationService.getInstance();
+

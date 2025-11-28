@@ -4,7 +4,12 @@
  */
 
 import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type {
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  CreateTaskTemplateRequest,
+  UpdateTaskTemplateRequest,
+} from '@dailyuse/contracts/task';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
 
@@ -41,7 +46,7 @@ export class TaskTemplateApplicationService {
   /**
    * 创建任务模板
    */
-  async createTaskTemplate(request: any): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async createTaskTemplate(request: any): Promise<TaskTemplateClientDTO> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -73,7 +78,7 @@ export class TaskTemplateApplicationService {
     limit?: number;
     status?: string;
     goalUuid?: string;
-  }): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  }): Promise<TaskTemplateClientDTO[]> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -81,7 +86,7 @@ export class TaskTemplateApplicationService {
       const templates = await taskTemplateApiClient.getTaskTemplates(params);
 
       // 转换为实体对象并批量同步到 store
-      const entityTemplates = templates.map((dto: TaskContracts.TaskTemplateClientDTO) =>
+      const entityTemplates = templates.map((dto: TaskTemplateClientDTO) =>
         TaskTemplate.fromClientDTO(dto),
       );
       this.taskStore.setTaskTemplates(entityTemplates);
@@ -101,7 +106,7 @@ export class TaskTemplateApplicationService {
    */
   async getTaskTemplateById(
     uuid: string,
-  ): Promise<TaskContracts.TaskTemplateClientDTO | null> {
+  ): Promise<TaskTemplateClientDTO | null> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -129,7 +134,7 @@ export class TaskTemplateApplicationService {
    * 更新任务模板
    * @deprecated 后端 API 不支持部分更新，请使用具体的更新方法
    */
-  async updateTaskTemplate(uuid: string, request: any): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async updateTaskTemplate(uuid: string, request: any): Promise<TaskTemplateClientDTO> {
     throw new Error('updateTaskTemplate is not supported - use specific update methods instead');
   }
 
@@ -159,7 +164,7 @@ export class TaskTemplateApplicationService {
    */
   async activateTaskTemplate(
     uuid: string,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -203,7 +208,7 @@ export class TaskTemplateApplicationService {
   /**
    * 暂停任务模板
    */
-  async pauseTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async pauseTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -236,7 +241,7 @@ export class TaskTemplateApplicationService {
     urgency?: string;
     tags?: string[];
   }): Promise<{
-    data: TaskContracts.TaskTemplateClientDTO[];
+    data: TaskTemplateClientDTO[];
     total: number;
     page: number;
     limit: number;
@@ -250,3 +255,4 @@ export class TaskTemplateApplicationService {
  * 导出单例实例
  */
 export const taskTemplateApplicationService = TaskTemplateApplicationService.getInstance();
+

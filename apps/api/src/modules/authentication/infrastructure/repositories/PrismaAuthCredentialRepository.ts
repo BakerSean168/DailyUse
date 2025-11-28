@@ -5,7 +5,7 @@ import type {
   AuthCredentialPrismaTransactionClient as PrismaTransactionClient,
 } from '@dailyuse/domain-server';
 import { AuthCredential } from '@dailyuse/domain-server';
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { AuthTokens, LoginRequest, RegisterRequest } from '@dailyuse/contracts/authentication';
 
 export class PrismaAuthCredentialRepository implements IAuthCredentialRepository {
   constructor(private prisma: PrismaClient) {}
@@ -56,11 +56,11 @@ export class PrismaAuthCredentialRepository implements IAuthCredentialRepository
 
       // PersistenceDTO 中所有复杂对象字段都应该是 JSON 字符串
       // 这里需要将已解析的对象转回字符串
-      const persistenceDTO: AuthenticationContracts.AuthCredentialPersistenceDTO = {
+      const persistenceDTO: AuthCredentialPersistenceDTO = {
         ...rest,
         uuid: data.uuid,
         accountUuid: data.accountUuid,
-        type: data.type as AuthenticationContracts.CredentialType,
+        type: data.type as CredentialType,
         password_credential: ensureJsonString(parsedData.password_credential),
         api_key_credentials: ensureJsonString(parsedData.api_key_credentials, '[]') ?? '[]',
         remember_me_tokens: ensureJsonString(parsedData.remember_me_tokens, '[]') ?? '[]',
@@ -274,3 +274,4 @@ export class PrismaAuthCredentialRepository implements IAuthCredentialRepository
     return result.count;
   }
 }
+

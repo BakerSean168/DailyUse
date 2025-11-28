@@ -6,11 +6,11 @@
 
 import { Injectable } from '@nestjs/common';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
-type TagStatisticsDto = RepositoryContracts.TagStatisticsDto;
-type TagResourceReferenceDto = RepositoryContracts.TagResourceReferenceDto;
+type TagStatisticsDto = TagStatisticsDto;
+type TagResourceReferenceDto = TagResourceReferenceDto;
 
 @Injectable()
 export class TagsApplicationService {
@@ -173,3 +173,5 @@ export class TagsApplicationService {
     return metadata?.path || '/';
   }
 }
+
+

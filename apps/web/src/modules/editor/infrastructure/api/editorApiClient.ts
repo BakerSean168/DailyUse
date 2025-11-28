@@ -1,2 +1,3 @@
 import { apiClient } from '@/shared/api/instances';
-import { EditorContracts } from '@dailyuse/contracts';
+import type { EditorDocumentClientDTO } from '@dailyuse/contracts/editor';
+

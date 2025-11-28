@@ -224,7 +224,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { format } from 'date-fns';
-import { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 // ===================== 接口定义 =====================
 
@@ -233,7 +233,7 @@ interface GoalBinding {
   goalTitle: string;
   keyResultUuid: string;
   keyResultTitle: string;
-  aggregationMethod: GoalContracts.AggregationMethod;
+  aggregationMethod: AggregationMethod;
   currentValue: number;
   targetValue: number;
   unit?: string;
@@ -278,11 +278,11 @@ const quickValues = computed(() => {
   const { aggregationMethod, targetValue, currentValue } = props.goalBinding;
 
   switch (aggregationMethod) {
-    case GoalContracts.AggregationMethod.SUM:
+    case AggregationMethod.SUM:
       // 累加型：建议常用的增量值
       return [1, 5, 10, 20, 50];
 
-    case GoalContracts.AggregationMethod.MAX:
+    case AggregationMethod.MAX:
       // 最大值：建议接近目标的值
       const remaining = targetValue - currentValue;
       return [
@@ -293,7 +293,7 @@ const quickValues = computed(() => {
         targetValue,
       ].filter((v) => v > 0);
 
-    case GoalContracts.AggregationMethod.AVERAGE:
+    case AggregationMethod.AVERAGE:
       // 平均值：建议目标值附近的值
       return [
         Math.floor(targetValue * 0.8),
@@ -309,21 +309,21 @@ const quickValues = computed(() => {
 });
 
 // 根据 AggregationMethod 返回不同的标签
-const getInputLabel = (method?: GoalContracts.AggregationMethod) => {
+const getInputLabel = (method?: AggregationMethod) => {
   if (!props.goalBinding) {
     return '本次完成量';
   }
 
   switch (method) {
-    case GoalContracts.AggregationMethod.SUM:
+    case AggregationMethod.SUM:
       return '本次完成量（将累加到当前进度）';
-    case GoalContracts.AggregationMethod.MAX:
+    case AggregationMethod.MAX:
       return '本次达到的最高值';
-    case GoalContracts.AggregationMethod.AVERAGE:
+    case AggregationMethod.AVERAGE:
       return '本次的值（将计算平均值）';
-    case GoalContracts.AggregationMethod.MIN:
+    case AggregationMethod.MIN:
       return '本次的最小值';
-    case GoalContracts.AggregationMethod.LAST:
+    case AggregationMethod.LAST:
       return '最新的值（将覆盖当前值）';
     default:
       return '本次完成量';
@@ -331,7 +331,7 @@ const getInputLabel = (method?: GoalContracts.AggregationMethod) => {
 };
 
 // 输入提示
-const getInputHint = (method?: GoalContracts.AggregationMethod) => {
+const getInputHint = (method?: AggregationMethod) => {
   if (!props.goalBinding) {
     return '请输入本次完成的数量';
   }
@@ -339,15 +339,15 @@ const getInputHint = (method?: GoalContracts.AggregationMethod) => {
   const unit = props.goalBinding.unit || '单位';
 
   switch (method) {
-    case GoalContracts.AggregationMethod.SUM:
+    case AggregationMethod.SUM:
       return `例如：跑步 5 公里，输入 5`;
-    case GoalContracts.AggregationMethod.MAX:
+    case AggregationMethod.MAX:
       return `例如：考试分数 85 分，输入 85`;
-    case GoalContracts.AggregationMethod.AVERAGE:
+    case AggregationMethod.AVERAGE:
       return `例如：每日学习 2 小时，输入 2`;
-    case GoalContracts.AggregationMethod.MIN:
+    case AggregationMethod.MIN:
       return `输入本次的最小值`;
-    case GoalContracts.AggregationMethod.LAST:
+    case AggregationMethod.LAST:
       return `输入最新的值`;
     default:
       return '';
@@ -355,22 +355,22 @@ const getInputHint = (method?: GoalContracts.AggregationMethod) => {
 };
 
 // 步长
-const getInputStep = (method?: GoalContracts.AggregationMethod) => {
+const getInputStep = (method?: AggregationMethod) => {
   return 0.01;
 };
 
 // 图标
-const getAggregationMethodIcon = (method?: GoalContracts.AggregationMethod) => {
+const getAggregationMethodIcon = (method?: AggregationMethod) => {
   switch (method) {
-    case GoalContracts.AggregationMethod.SUM:
+    case AggregationMethod.SUM:
       return 'mdi-plus-circle';
-    case GoalContracts.AggregationMethod.MAX:
+    case AggregationMethod.MAX:
       return 'mdi-arrow-up-circle';
-    case GoalContracts.AggregationMethod.AVERAGE:
+    case AggregationMethod.AVERAGE:
       return 'mdi-chart-line';
-    case GoalContracts.AggregationMethod.MIN:
+    case AggregationMethod.MIN:
       return 'mdi-arrow-down-circle';
-    case GoalContracts.AggregationMethod.LAST:
+    case AggregationMethod.LAST:
       return 'mdi-update';
     default:
       return 'mdi-numeric';
@@ -378,17 +378,17 @@ const getAggregationMethodIcon = (method?: GoalContracts.AggregationMethod) => {
 };
 
 // 颜色
-const getAggregationMethodColor = (method?: GoalContracts.AggregationMethod) => {
+const getAggregationMethodColor = (method?: AggregationMethod) => {
   switch (method) {
-    case GoalContracts.AggregationMethod.SUM:
+    case AggregationMethod.SUM:
       return 'primary';
-    case GoalContracts.AggregationMethod.MAX:
+    case AggregationMethod.MAX:
       return 'success';
-    case GoalContracts.AggregationMethod.AVERAGE:
+    case AggregationMethod.AVERAGE:
       return 'info';
-    case GoalContracts.AggregationMethod.MIN:
+    case AggregationMethod.MIN:
       return 'warning';
-    case GoalContracts.AggregationMethod.LAST:
+    case AggregationMethod.LAST:
       return 'secondary';
     default:
       return 'grey';
@@ -396,17 +396,17 @@ const getAggregationMethodColor = (method?: GoalContracts.AggregationMethod) => 
 };
 
 // 文本
-const getAggregationMethodText = (method?: GoalContracts.AggregationMethod) => {
+const getAggregationMethodText = (method?: AggregationMethod) => {
   switch (method) {
-    case GoalContracts.AggregationMethod.SUM:
+    case AggregationMethod.SUM:
       return '累加型';
-    case GoalContracts.AggregationMethod.MAX:
+    case AggregationMethod.MAX:
       return '最大值';
-    case GoalContracts.AggregationMethod.AVERAGE:
+    case AggregationMethod.AVERAGE:
       return '平均值';
-    case GoalContracts.AggregationMethod.MIN:
+    case AggregationMethod.MIN:
       return '最小值';
-    case GoalContracts.AggregationMethod.LAST:
+    case AggregationMethod.LAST:
       return '最新值';
     default:
       return '未知';
@@ -447,16 +447,16 @@ const predictProgress = () => {
   let predictedValue = currentValue;
 
   switch (aggregationMethod) {
-    case GoalContracts.AggregationMethod.SUM:
+    case AggregationMethod.SUM:
       predictedValue = currentValue + recordValue.value;
       break;
-    case GoalContracts.AggregationMethod.MAX:
+    case AggregationMethod.MAX:
       predictedValue = Math.max(currentValue, recordValue.value);
       break;
-    case GoalContracts.AggregationMethod.LAST:
+    case AggregationMethod.LAST:
       predictedValue = recordValue.value;
       break;
-    case GoalContracts.AggregationMethod.AVERAGE:
+    case AggregationMethod.AVERAGE:
       // 简化：假设只有一个记录，实际应该从后端获取记录数
       predictedValue = (currentValue + recordValue.value) / 2;
       break;
@@ -543,3 +543,4 @@ const cancel = () => {
   font-weight: 500;
 }
 </style>
+

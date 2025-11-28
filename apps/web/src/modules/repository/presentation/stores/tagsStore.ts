@@ -6,11 +6,11 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 import axios from 'axios';
 
-type TagStatistics = RepositoryContracts.TagStatisticsDto;
-type TagResourceReference = RepositoryContracts.TagResourceReferenceDto;
+type TagStatistics = TagStatisticsDto;
+type TagResourceReference = TagResourceReferenceDto;
 
 export const useTagsStore = defineStore('tags', () => {
   // State
@@ -94,3 +94,4 @@ export const useTagsStore = defineStore('tags', () => {
     reset,
   };
 });
+

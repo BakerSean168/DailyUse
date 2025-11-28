@@ -53,12 +53,12 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import TaskTemplateCard from './TaskTemplateCard.vue';
 import { useDragAndDrop } from '@/shared/composables/useDragAndDrop';
 import { TaskDependencyDragDropService } from '@/modules/task/application/services/TaskDependencyDragDropService';
 
-type TaskTemplateClientDTO = TaskContracts.TaskTemplateClientDTO;
+type TaskTemplateClientDTO = TaskTemplateClientDTO;
 
 // Props
 interface Props {
@@ -286,3 +286,4 @@ const onDrop = async (event: DragEvent) => {
   animation: none !important;
 }
 </style>
+

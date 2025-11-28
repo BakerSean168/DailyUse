@@ -14,7 +14,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { SessionManagementApplicationService } from '../../application/services/SessionManagementApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SessionManagementController');
@@ -516,3 +516,5 @@ export class SessionManagementController {
     }
   }
 }
+
+

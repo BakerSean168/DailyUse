@@ -19,7 +19,7 @@ import { PrismaGoalStatisticsRepository } from '../infrastructure/repositories/P
 import { PrismaGoalRepository } from '../infrastructure/repositories/PrismaGoalRepository';
 import { getTestPrisma, createTestAccount } from '../../../test/helpers/database-helpers';
 import { GoalEventPublisher } from '../application/services/GoalEventPublisher';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
 describe('Goal Creation Integration Tests', () => {
   let statisticsService: GoalStatisticsApplicationService;
@@ -440,3 +440,4 @@ describe('Goal Creation Integration Tests', () => {
     });
   });
 });
+

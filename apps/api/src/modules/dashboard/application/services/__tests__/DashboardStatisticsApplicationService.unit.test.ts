@@ -12,7 +12,7 @@ import type {
   ScheduleStatistics,
 } from '@dailyuse/domain-server';
 import type { StatisticsCacheService } from '../../../infrastructure/services/StatisticsCacheService';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 
 describe('DashboardStatisticsApplicationService - Unit Tests', () => {
   let service: DashboardStatisticsApplicationService;
@@ -146,7 +146,7 @@ describe('DashboardStatisticsApplicationService - Unit Tests', () => {
   describe('getDashboardStatistics', () => {
     it('should return cached data if available', async () => {
       // Arrange
-      const cachedData: DashboardContracts.DashboardStatisticsClientDTO = {
+      const cachedData: DashboardStatisticsClientDTO = {
         task: {
           totalTaskTemplates: 10,
           totalTaskInstances: 25,
@@ -388,3 +388,4 @@ describe('DashboardStatisticsApplicationService - Unit Tests', () => {
     });
   });
 });
+

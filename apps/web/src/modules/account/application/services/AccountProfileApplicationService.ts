@@ -3,7 +3,7 @@
  * 账户资料应用服务 - 负责账户资料相关的用例
  */
 
-import type { AccountContracts } from '@dailyuse/contracts';
+import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
 import { useAccountStore } from '../../presentation/stores/accountStore';
 import { accountApiClient } from '../../infrastructure/api/accountApiClient';
 
@@ -42,7 +42,7 @@ export class AccountProfileApplicationService {
   /**
    * 获取当前用户资料
    */
-  async getMyProfile(): Promise<AccountContracts.AccountDTO> {
+  async getMyProfile(): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const account = await accountApiClient.getMyProfile();
@@ -60,8 +60,8 @@ export class AccountProfileApplicationService {
    * 更新当前用户资料
    */
   async updateMyProfile(
-    request: AccountContracts.UpdateAccountProfileRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountProfileRequestDTO,
+  ): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.updateMyProfile(request);
@@ -99,7 +99,7 @@ export class AccountProfileApplicationService {
   /**
    * 获取账户详情
    */
-  async getAccountById(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async getAccountById(accountId: string): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const account = await accountApiClient.getAccountById(accountId);
@@ -118,8 +118,8 @@ export class AccountProfileApplicationService {
    */
   async updateProfile(
     accountId: string,
-    request: AccountContracts.UpdateAccountProfileRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountProfileRequestDTO,
+  ): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.updateProfile(accountId, request);
@@ -138,8 +138,8 @@ export class AccountProfileApplicationService {
    */
   async updatePreferences(
     accountId: string,
-    request: AccountContracts.UpdateAccountPreferencesRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountPreferencesRequestDTO,
+  ): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.updatePreferences(accountId, request);
@@ -160,8 +160,8 @@ export class AccountProfileApplicationService {
    */
   async updateEmail(
     accountId: string,
-    request: AccountContracts.UpdateEmailRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateEmailRequestDTO,
+  ): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.updateEmail(accountId, request);
@@ -180,8 +180,8 @@ export class AccountProfileApplicationService {
    */
   async verifyEmail(
     accountId: string,
-    request: AccountContracts.VerifyEmailRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: VerifyEmailRequestDTO,
+  ): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.verifyEmail(accountId, request);
@@ -200,8 +200,8 @@ export class AccountProfileApplicationService {
    */
   async updatePhone(
     accountId: string,
-    request: AccountContracts.UpdatePhoneRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdatePhoneRequestDTO,
+  ): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.updatePhone(accountId, request);
@@ -220,8 +220,8 @@ export class AccountProfileApplicationService {
    */
   async verifyPhone(
     accountId: string,
-    request: AccountContracts.VerifyPhoneRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: VerifyPhoneRequestDTO,
+  ): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.verifyPhone(accountId, request);
@@ -240,7 +240,7 @@ export class AccountProfileApplicationService {
   /**
    * 停用账户
    */
-  async deactivateAccount(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async deactivateAccount(accountId: string): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.deactivateAccount(accountId);
@@ -257,7 +257,7 @@ export class AccountProfileApplicationService {
   /**
    * 激活账户
    */
-  async activateAccount(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async activateAccount(accountId: string): Promise<AccountDTO> {
     try {
       this.accountStore.setLoading(true);
       const updatedAccount = await accountApiClient.activateAccount(accountId);
@@ -295,7 +295,7 @@ export class AccountProfileApplicationService {
   async getAccountHistory(
     accountId: string,
     params?: { page?: number; limit?: number },
-  ): Promise<AccountContracts.AccountHistoryListResponseDTO> {
+  ): Promise<AccountHistoryListResponseDTO> {
     try {
       this.accountStore.setLoading(true);
       const history = await accountApiClient.getAccountHistory(accountId, params);
@@ -311,3 +311,4 @@ export class AccountProfileApplicationService {
 
 // 导出单例
 export const accountProfileApplicationService = AccountProfileApplicationService.getInstance();
+

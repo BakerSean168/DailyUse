@@ -3,7 +3,7 @@
  * 登录应用服务 - 负责登录相关的用例
  */
 
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
 import { useAccountStore } from '../../../account/presentation/stores/accountStore';
@@ -51,7 +51,7 @@ export class LoginApplicationService {
   /**
    * 用户登录
    */
-  async login(request: AuthenticationContracts.LoginRequestDTO): Promise<AuthenticationContracts.LoginResponseDTO> {
+  async login(request: LoginRequestDTO): Promise<LoginResponseDTO> {
     try {
       this.authStore.setLoading(true);
       this.authStore.clearError();
@@ -90,7 +90,7 @@ export class LoginApplicationService {
   /**
    * 用户登出
    */
-  async logout(request?: AuthenticationContracts.LogoutRequestDTO): Promise<void> {
+  async logout(request?: LogoutRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
 
@@ -151,3 +151,4 @@ export class LoginApplicationService {
 
 // 导出单例
 export const loginApplicationService = LoginApplicationService.getInstance();
+

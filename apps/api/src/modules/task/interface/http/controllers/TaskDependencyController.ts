@@ -6,7 +6,7 @@
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { TaskDependencyApplicationService } from '../../../../task/application/services/TaskDependencyApplicationService';
-import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts';
+import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('TaskDependencyController');

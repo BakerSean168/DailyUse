@@ -134,9 +134,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useBookmarkStore } from '../stores/bookmarkStore';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
-type Bookmark = RepositoryContracts.Bookmark;
+type Bookmark = Bookmark;
 
 // Props
 const props = defineProps<{
@@ -215,3 +215,4 @@ function isLast(bookmark: Bookmark): boolean {
 <style scoped>
 /* 使用 Vuetify 工具类，无需自定义样式 */
 </style>
+

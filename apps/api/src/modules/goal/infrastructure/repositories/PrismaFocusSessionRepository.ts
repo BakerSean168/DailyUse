@@ -1,9 +1,10 @@
 import type { PrismaClient, focusSession as PrismaFocusSession } from '@prisma/client';
 import type { IFocusSessionRepository } from '@dailyuse/domain-server';
 import { FocusSession } from '@dailyuse/domain-server';
-import { GoalContracts } from '@dailyuse/contracts';
+import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 
-type FocusSessionStatus = GoalContracts.FocusSessionStatus;
+type FocusSessionStatus = FocusSessionStatus;
 
 /**
  * PrismaFocusSessionRepository
@@ -99,8 +100,8 @@ export class PrismaFocusSessionRepository implements IFocusSessionRepository {
         accountUuid,
         status: {
           in: [
-            GoalContracts.FocusSessionStatus.IN_PROGRESS,
-            GoalContracts.FocusSessionStatus.PAUSED,
+            FocusSessionStatus.IN_PROGRESS,
+            FocusSessionStatus.PAUSED,
           ],
         },
       },
@@ -253,3 +254,4 @@ export class PrismaFocusSessionRepository implements IFocusSessionRepository {
     return this.prisma.focusSession.count({ where });
   }
 }
+

@@ -1,4 +1,4 @@
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -45,8 +45,8 @@ export class KeyResultApplicationService {
    */
   async createKeyResultForGoal(
     goalUuid: string,
-    request: Omit<GoalContracts.AddKeyResultRequest, 'goalUuid'>,
-  ): Promise<GoalContracts.KeyResultClientDTO> {
+    request: Omit<AddKeyResultRequest, 'goalUuid'>,
+  ): Promise<KeyResultClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -73,7 +73,7 @@ export class KeyResultApplicationService {
   /**
    * 获取目标的所有关键结果
    */
-  async getKeyResultsByGoal(goalUuid: string): Promise<GoalContracts.KeyResultsResponse> {
+  async getKeyResultsByGoal(goalUuid: string): Promise<KeyResultsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -97,8 +97,8 @@ export class KeyResultApplicationService {
   async updateKeyResultForGoal(
     goalUuid: string,
     keyResultUuid: string,
-    request: GoalContracts.UpdateKeyResultRequest,
-  ): Promise<GoalContracts.KeyResultClientDTO> {
+    request: UpdateKeyResultRequest,
+  ): Promise<KeyResultClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -159,7 +159,7 @@ export class KeyResultApplicationService {
         weight: number;
       }>;
     },
-  ): Promise<GoalContracts.KeyResultsResponse> {
+  ): Promise<KeyResultsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -184,7 +184,7 @@ export class KeyResultApplicationService {
   /**
    * 获取目标进度分解详情
    */
-  async getProgressBreakdown(goalUuid: string): Promise<GoalContracts.ProgressBreakdown> {
+  async getProgressBreakdown(goalUuid: string): Promise<ProgressBreakdown> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -228,3 +228,4 @@ export class KeyResultApplicationService {
 }
 
 export const keyResultApplicationService = KeyResultApplicationService.getInstance();
+

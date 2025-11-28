@@ -175,15 +175,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '@dailyuse/domain-client';
 import { useReminder } from '../../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { reminderGroupApplicationService } from '../../../application/services';
 import TemplateDesktopCard from './TemplateDesktopCard.vue';
 
-type ReminderGroupDTO = ReminderContracts.ReminderGroupClientDTO;
-type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
+type ReminderGroupDTO = ReminderGroupClientDTO;
+type ReminderTemplate = ReminderTemplateClientDTO;
 
 // Composables
 const { reminderTemplates, toggleTemplateStatus, getReminderGroupByUuid } = useReminder();
@@ -666,3 +666,4 @@ defineExpose({
   }
 }
 </style>
+

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { AccountApplicationService } from '../../application/services/AccountApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountController');
@@ -230,3 +230,5 @@ export class AccountController {
     }
   }
 }
+
+

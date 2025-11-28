@@ -7,10 +7,10 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { TaskDependencyDragDropService } from '../TaskDependencyDragDropService';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 
-type TaskClientDTO = TaskContracts.TaskTemplateClientDTO;
-type DependencyType = TaskContracts.DependencyType;
+type TaskClientDTO = TaskTemplateClientDTO;
+type DependencyType = DependencyType;
 vi.mock('../../../infrastructure/api/taskApiClient', () => ({
   taskDependencyApiClient: {
     validateDependency: vi.fn(),
@@ -246,3 +246,4 @@ describe('TaskDependencyDragDropService', () => {
     });
   });
 });
+

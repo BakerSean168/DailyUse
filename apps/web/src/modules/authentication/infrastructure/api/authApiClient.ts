@@ -1,5 +1,5 @@
 import { apiClient, publicApiClient } from '@/shared/api/instances';
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 
 /**
  * Authentication API 客户端
@@ -35,8 +35,8 @@ export class AuthApiClient {
    * 登录 (公开接口，不需要认证)
    */
   async login(
-    request: AuthenticationContracts.LoginRequestDTO,
-  ): Promise<AuthenticationContracts.LoginResponseDTO> {
+    request: LoginRequestDTO,
+  ): Promise<LoginResponseDTO> {
     const data = await publicApiClient.post(`${this.baseUrl}/login`, request);
     return data;
   }
@@ -48,7 +48,7 @@ export class AuthApiClient {
    * 因为注册接口返回的 message 包含重要提示信息
    */
   async register(
-    request: AuthenticationContracts.RegisterRequestDTO,
+    request: RegisterRequestDTO,
   ): Promise<{ account: any; message: string }> {
     const response = await publicApiClient.postWithMessage(`${this.baseUrl}/register`, request);
     return {
@@ -60,7 +60,7 @@ export class AuthApiClient {
   /**
    * 登出
    */
-  async logout(request?: AuthenticationContracts.LogoutRequestDTO): Promise<void> {
+  async logout(request?: LogoutRequestDTO): Promise<void> {
     await apiClient.post(`${this.baseUrl}/logout`, request);
   }
 
@@ -68,8 +68,8 @@ export class AuthApiClient {
    * 刷新令牌
    */
   async refreshToken(
-    request: AuthenticationContracts.RefreshTokenRequestDTO,
-  ): Promise<AuthenticationContracts.RefreshTokenResponseDTO> {
+    request: RefreshTokenRequestDTO,
+  ): Promise<RefreshTokenResponseDTO> {
     const data = await apiClient.post(`${this.baseUrl}/refresh-token`, request);
     return data;
   }
@@ -79,21 +79,21 @@ export class AuthApiClient {
   /**
    * 忘记密码（发送重置邮件）(公开接口，不需要认证)
    */
-  async forgotPassword(request: AuthenticationContracts.ForgotPasswordRequestDTO): Promise<void> {
+  async forgotPassword(request: ForgotPasswordRequestDTO): Promise<void> {
     await publicApiClient.post(`${this.baseUrl}/forgot-password`, request);
   }
 
   /**
    * 重置密码 (公开接口，不需要认证)
    */
-  async resetPassword(request: AuthenticationContracts.ResetPasswordRequestDTO): Promise<void> {
+  async resetPassword(request: ResetPasswordRequestDTO): Promise<void> {
     await publicApiClient.post(`${this.baseUrl}/reset-password`, request);
   }
 
   /**
    * 修改密码
    */
-  async changePassword(request: AuthenticationContracts.ChangePasswordRequestDTO): Promise<void> {
+  async changePassword(request: ChangePasswordRequestDTO): Promise<void> {
     await apiClient.post(`${this.baseUrl}/change-password`, request);
   }
 
@@ -103,8 +103,8 @@ export class AuthApiClient {
    * 启用两步验证
    */
   async enable2FA(
-    request: AuthenticationContracts.Enable2FARequestDTO,
-  ): Promise<AuthenticationContracts.Enable2FAResponseDTO> {
+    request: Enable2FARequestDTO,
+  ): Promise<Enable2FAResponseDTO> {
     const data = await apiClient.post(`${this.baseUrl}/2fa/enable`, request);
     return data;
   }
@@ -112,14 +112,14 @@ export class AuthApiClient {
   /**
    * 禁用两步验证
    */
-  async disable2FA(request: AuthenticationContracts.Disable2FARequestDTO): Promise<void> {
+  async disable2FA(request: Disable2FARequestDTO): Promise<void> {
     await apiClient.post(`${this.baseUrl}/2fa/disable`, request);
   }
 
   /**
    * 验证两步验证码
    */
-  async verify2FA(request: AuthenticationContracts.Verify2FARequestDTO): Promise<void> {
+  async verify2FA(request: Verify2FARequestDTO): Promise<void> {
     await apiClient.post(`${this.baseUrl}/2fa/verify`, request);
   }
 
@@ -129,8 +129,8 @@ export class AuthApiClient {
    * 创建 API Key
    */
   async createApiKey(
-    request: AuthenticationContracts.CreateApiKeyRequestDTO,
-  ): Promise<AuthenticationContracts.CreateApiKeyResponseDTO> {
+    request: CreateApiKeyRequestDTO,
+  ): Promise<CreateApiKeyResponseDTO> {
     const data = await apiClient.post(`${this.baseUrl}/api-keys`, request);
     return data;
   }
@@ -138,7 +138,7 @@ export class AuthApiClient {
   /**
    * 获取 API Key 列表
    */
-  async getApiKeys(): Promise<AuthenticationContracts.ApiKeyListResponseDTO> {
+  async getApiKeys(): Promise<ApiKeyListResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/api-keys`);
     return data;
   }
@@ -146,7 +146,7 @@ export class AuthApiClient {
   /**
    * 撤销 API Key
    */
-  async revokeApiKey(request: AuthenticationContracts.RevokeApiKeyRequestDTO): Promise<void> {
+  async revokeApiKey(request: RevokeApiKeyRequestDTO): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/api-keys/${request.apiKeyId}`);
   }
 
@@ -156,8 +156,8 @@ export class AuthApiClient {
    * 获取活跃会话列表
    */
   async getActiveSessions(
-    request?: AuthenticationContracts.GetActiveSessionsRequestDTO,
-  ): Promise<AuthenticationContracts.ActiveSessionsResponseDTO> {
+    request?: GetActiveSessionsRequestDTO,
+  ): Promise<ActiveSessionsResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/sessions`, { params: request });
     return data;
   }
@@ -165,7 +165,7 @@ export class AuthApiClient {
   /**
    * 撤销会话
    */
-  async revokeSession(request: AuthenticationContracts.RevokeSessionRequestDTO): Promise<void> {
+  async revokeSession(request: RevokeSessionRequestDTO): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/sessions/${request.sessionId}`);
   }
 
@@ -173,7 +173,7 @@ export class AuthApiClient {
    * 撤销所有会话
    */
   async revokeAllSessions(
-    request?: AuthenticationContracts.RevokeAllSessionsRequestDTO,
+    request?: RevokeAllSessionsRequestDTO,
   ): Promise<void> {
     await apiClient.post(`${this.baseUrl}/sessions/revoke-all`, request);
   }
@@ -183,7 +183,7 @@ export class AuthApiClient {
   /**
    * 信任设备
    */
-  async trustDevice(request: AuthenticationContracts.TrustDeviceRequestDTO): Promise<void> {
+  async trustDevice(request: TrustDeviceRequestDTO): Promise<void> {
     await apiClient.post(`${this.baseUrl}/devices/trust`, request);
   }
 
@@ -191,7 +191,7 @@ export class AuthApiClient {
    * 撤销设备信任
    */
   async revokeTrustedDevice(
-    request: AuthenticationContracts.RevokeTrustedDeviceRequestDTO,
+    request: RevokeTrustedDeviceRequestDTO,
   ): Promise<void> {
     await apiClient.delete(`${this.baseUrl}/devices/${request.deviceId}`);
   }
@@ -199,7 +199,7 @@ export class AuthApiClient {
   /**
    * 获取受信任设备列表
    */
-  async getTrustedDevices(): Promise<AuthenticationContracts.TrustedDevicesResponseDTO> {
+  async getTrustedDevices(): Promise<TrustedDevicesResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/devices/trusted`);
     return data;
   }
@@ -207,3 +207,4 @@ export class AuthApiClient {
 
 // 导出单例
 export const authApiClient = new AuthApiClient();
+

@@ -78,10 +78,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { TaskTemplate, TaskReminderConfig } from '@dailyuse/domain-client';
-import { TaskContracts } from '@dailyuse/contracts';
+import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 
-const ReminderType = TaskContracts.ReminderType;
-const ReminderTimeUnit = TaskContracts.ReminderTimeUnit;
+const ReminderType = ReminderType;
+const ReminderTimeUnit = ReminderTimeUnit;
 
 interface Props {
   modelValue: TaskTemplate;
@@ -120,7 +121,7 @@ const reminderEnabled = computed({
   set: (value: boolean) => {
     updateTemplate((template) => {
       const currentConfig = template.reminderConfig;
-      const newConfigDTO: TaskContracts.TaskReminderConfigClientDTO = {
+      const newConfigDTO: TaskReminderConfigClientDTO = {
         enabled: value,
         triggers: currentConfig?.triggers ?? [],
         hasTriggers: (currentConfig?.triggers ?? []).length > 0,
@@ -137,10 +138,10 @@ const reminderEnabled = computed({
 // 触发器列表
 const triggers = ref<
   Array<{
-    type: TaskContracts.ReminderType;
+    type: ReminderType;
     absoluteTime?: number | null;
     relativeValue?: number | null;
-    relativeUnit?: TaskContracts.ReminderTimeUnit | null;
+    relativeUnit?: ReminderTimeUnit | null;
   }>
 >([]);
 
@@ -202,7 +203,7 @@ const formatAbsoluteTime = (timestamp?: number | null): string => {
 // 更新触发器到模板
 const updateTriggers = () => {
   updateTemplate((template) => {
-    const newConfigDTO: TaskContracts.TaskReminderConfigClientDTO = {
+    const newConfigDTO: TaskReminderConfigClientDTO = {
       enabled: reminderEnabled.value,
       triggers: triggers.value.map((t) => ({ ...t })),
       hasTriggers: triggers.value.length > 0,
@@ -275,3 +276,4 @@ initializeTriggers();
   font-weight: 600;
 }
 </style>
+

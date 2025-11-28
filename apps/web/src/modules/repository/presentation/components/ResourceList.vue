@@ -96,7 +96,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 import { useResourceStore } from '../stores/resourceStore';
 import { useBookmarkStore } from '../stores/bookmarkStore';
 
@@ -116,7 +116,7 @@ const filteredResources = computed(() => resources.value);
 /**
  * 打开资源 (单击)
  */
-function openResource(resource: RepositoryContracts.ResourceClientDTO) {
+function openResource(resource: ResourceClientDTO) {
   // 选中但不打开编辑器
   resourceStore.selectedResource = resource;
 }
@@ -124,7 +124,7 @@ function openResource(resource: RepositoryContracts.ResourceClientDTO) {
 /**
  * 在新标签页打开资源 (双击 / 菜单)
  */
-async function openResourceInTab(resource: RepositoryContracts.ResourceClientDTO) {
+async function openResourceInTab(resource: ResourceClientDTO) {
   await resourceStore.openInTab(resource);
 }
 
@@ -148,7 +148,7 @@ function getResourceIcon(type: string): string {
 /**
  * 重命名资源
  */
-function renameResource(resource: RepositoryContracts.ResourceClientDTO) {
+function renameResource(resource: ResourceClientDTO) {
   const newName = prompt('请输入新名称:', resource.name);
   if (newName && newName !== resource.name) {
     // TODO: 实现重命名 API
@@ -159,7 +159,7 @@ function renameResource(resource: RepositoryContracts.ResourceClientDTO) {
 /**
  * 移动资源
  */
-function moveResource(resource: RepositoryContracts.ResourceClientDTO) {
+function moveResource(resource: ResourceClientDTO) {
   // TODO: 实现移动对话框
   console.log('Move resource:', resource.uuid);
 }
@@ -167,7 +167,7 @@ function moveResource(resource: RepositoryContracts.ResourceClientDTO) {
 /**
  * 删除资源
  */
-async function deleteResource(resource: RepositoryContracts.ResourceClientDTO) {
+async function deleteResource(resource: ResourceClientDTO) {
   const confirmed = confirm(`确定要删除 "${resource.name}" 吗？`);
   if (confirmed) {
     try {
@@ -184,7 +184,7 @@ async function deleteResource(resource: RepositoryContracts.ResourceClientDTO) {
 /**
  * 添加到书签
  */
-function addToBookmarks(resource: RepositoryContracts.ResourceClientDTO) {
+function addToBookmarks(resource: ResourceClientDTO) {
   if (bookmarkStore.hasBookmark(resource.uuid)) {
     // 已存在，不再添加
     return;
@@ -214,3 +214,4 @@ function addToBookmarks(resource: RepositoryContracts.ResourceClientDTO) {
   overflow-y: auto;
 }
 </style>
+

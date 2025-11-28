@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAIGenerationStore } from '../aiGenerationStore';
-import type { AIContracts } from '@dailyuse/contracts';
+import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
-type AIUsageQuotaClientDTO = AIContracts.AIUsageQuotaClientDTO;
+type AIUsageQuotaClientDTO = AIUsageQuotaClientDTO;
 
 describe('aiGenerationStore', () => {
   beforeEach(() => {
@@ -304,3 +304,4 @@ describe('aiGenerationStore', () => {
     });
   });
 });
+

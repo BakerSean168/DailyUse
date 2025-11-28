@@ -6,7 +6,7 @@
  */
 
 import { ref, computed, watch, type Ref } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import {
   generateTimelineFromGoal,
   interpolateSnapshots,
@@ -17,7 +17,7 @@ import {
 } from '../../application/services/GoalTimelineService';
 import { useWeightSnapshot } from './useWeightSnapshot';
 
-export function useGoalTimeline(goal: Ref<GoalContracts.GoalClientDTO | null>) {
+export function useGoalTimeline(goal: Ref<GoalClientDTO | null>) {
   // ==================== State ====================
 
   const timelineData = ref<TimelineData | null>(null);
@@ -79,7 +79,7 @@ export function useGoalTimeline(goal: Ref<GoalContracts.GoalClientDTO | null>) {
       await fetchGoalSnapshots(goalUuid, 1, 100); // 获取最近 100 个快照
 
       // 将 ServerDTO 转换为 ClientDTO（简化版本）
-      const clientSnapshots: GoalContracts.KeyResultWeightSnapshotClientDTO[] = snapshots.value.map(
+      const clientSnapshots: KeyResultWeightSnapshotClientDTO[] = snapshots.value.map(
         (s) => ({
           ...s,
           snapshotTimeText: new Date(s.snapshotTime).toLocaleString('zh-CN'),
@@ -271,3 +271,4 @@ export function useGoalTimeline(goal: Ref<GoalContracts.GoalClientDTO | null>) {
     }),
   };
 }
+

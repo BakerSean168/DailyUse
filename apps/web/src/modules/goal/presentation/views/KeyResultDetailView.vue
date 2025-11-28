@@ -241,7 +241,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useGoal } from '../composables/useGoal';
-import { GoalContracts } from '@dailyuse/contracts';
+import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
@@ -258,7 +259,7 @@ const { goals, getGoalRecordsByKeyResult, deleteKeyResultForGoal, fetchGoalById 
 const authStore = useAuthStore();
 
 const recordDialogRef = ref<InstanceType<typeof GoalRecordDialog> | null>(null);
-const records = ref<GoalContracts.GoalRecordClientDTO[]>([]);
+const records = ref<GoalRecordClientDTO[]>([]);
 const loading = ref(true);
 const error = ref('');
 
@@ -385,7 +386,7 @@ const loadRecords = async () => {
     // ✅ 安全地处理记录类型
     records.value = (response.records || []).filter(
       (record: any) => record.uuid
-    ) as GoalContracts.GoalRecordClientDTO[];
+    ) as GoalRecordClientDTO[];
   } catch (err) {
     console.error('加载进度记录失败', err);
   }
@@ -476,7 +477,7 @@ const timeRemainingDays = computed(() => {
 });
 
 // 计算当前记录相对于前一条记录的变化量
-const getChangeAmount = (record: GoalContracts.GoalRecordClientDTO, index: number): number => {
+const getChangeAmount = (record: GoalRecordClientDTO, index: number): number => {
   if (index === records.value.length - 1) {
     // 最后一条记录（最新的），没有后续记录
     return 0;
@@ -492,7 +493,7 @@ const getChangeAmount = (record: GoalContracts.GoalRecordClientDTO, index: numbe
 };
 
 // 获取变化量的颜色
-const getChangeColor = (record: GoalContracts.GoalRecordClientDTO, index: number): string => {
+const getChangeColor = (record: GoalRecordClientDTO, index: number): string => {
   const changeAmount = getChangeAmount(record, index);
   if (changeAmount > 0) return 'success';
   if (changeAmount < 0) return 'error';
@@ -500,7 +501,7 @@ const getChangeColor = (record: GoalContracts.GoalRecordClientDTO, index: number
 };
 
 // 获取变化量的图标
-const getChangeIcon = (record: GoalContracts.GoalRecordClientDTO, index: number): string => {
+const getChangeIcon = (record: GoalRecordClientDTO, index: number): string => {
   const changeAmount = getChangeAmount(record, index);
   if (changeAmount > 0) return 'mdi-plus';
   if (changeAmount < 0) return 'mdi-minus';
@@ -508,7 +509,7 @@ const getChangeIcon = (record: GoalContracts.GoalRecordClientDTO, index: number)
 };
 
 // 获取变化量的文本显示
-const getChangeAmountText = (record: GoalContracts.GoalRecordClientDTO, index: number): string => {
+const getChangeAmountText = (record: GoalRecordClientDTO, index: number): string => {
   const changeAmount = getChangeAmount(record, index);
   if (changeAmount > 0) return `+${changeAmount}`;
   if (changeAmount < 0) return `${changeAmount}`;
@@ -593,3 +594,4 @@ onMounted(() => {
   }
 }
 </style>
+

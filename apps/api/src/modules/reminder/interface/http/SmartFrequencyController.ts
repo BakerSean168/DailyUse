@@ -4,7 +4,7 @@ import { FrequencyAdjustmentService } from '../../application/services/Frequency
 import { ReminderResponseService } from '../../application/services/ReminderResponseService';
 import type { IReminderTemplateRepository } from '@dailyuse/domain-server';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SmartFrequencyController');
@@ -422,3 +422,5 @@ export class SmartFrequencyController {
     }
   }
 }
+
+

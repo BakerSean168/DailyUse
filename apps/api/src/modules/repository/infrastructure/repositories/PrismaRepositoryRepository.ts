@@ -1,9 +1,9 @@
 import type { PrismaClient, repository as PrismaRepository } from '@prisma/client';
 import type { IRepositoryRepository } from '@dailyuse/domain-server';
 import { Repository } from '@dailyuse/domain-server';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 
-type RepositoryStatus = RepositoryContracts.RepositoryStatus;
+type RepositoryStatus = RepositoryStatus;
 
 export class PrismaRepositoryRepository implements IRepositoryRepository {
   constructor(private prisma: PrismaClient) {}
@@ -17,7 +17,7 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
       uuid: data.uuid,
       accountUuid: data.accountUuid,
       name: data.name,
-      type: data.type as RepositoryContracts.RepositoryType,
+      type: data.type as RepositoryType,
       path: data.path,
       description: data.description,
       config: typeof data.config === 'string' ? data.config : JSON.stringify(data.config ?? {}),
@@ -107,3 +107,5 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
     return count > 0;
   }
 }
+
+

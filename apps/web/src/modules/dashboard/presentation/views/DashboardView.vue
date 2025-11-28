@@ -89,7 +89,8 @@ import { computed, onMounted, ref } from 'vue';
 import { useDashboardConfigStore } from '@/modules/dashboard/stores/dashboardConfigStore';
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 // ✅ Widget 注册现在由各业务模块初始化时完成，不需要在这里导入
-import { DashboardContracts } from '@dailyuse/contracts';
+import { WidgetType } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
 import WidgetSettingsPanel from '../components/WidgetSettingsPanel.vue';
 
 // ===== Store & Data =====
@@ -112,13 +113,13 @@ const visibleWidgets = computed(() => configStore.visibleWidgets);
 /**
  * 获取 Widget 网格布局类名（基于尺寸）
  */
-const getWidgetGridClasses = (size: DashboardContracts.WidgetSize): string => {
+const getWidgetGridClasses = (size: WidgetSize): string => {
   switch (size) {
-    case DashboardContracts.WidgetSize.SMALL:
+    case WidgetSize.SMALL:
       return 'col-span-1';
-    case DashboardContracts.WidgetSize.MEDIUM:
+    case WidgetSize.MEDIUM:
       return 'col-span-1 md:col-span-2';
-    case DashboardContracts.WidgetSize.LARGE:
+    case WidgetSize.LARGE:
       return 'col-span-1 md:col-span-2 lg:col-span-3';
     default:
       return 'col-span-1';
@@ -128,7 +129,7 @@ const getWidgetGridClasses = (size: DashboardContracts.WidgetSize): string => {
 /**
  * 获取 Widget 尺寸类名（传递给组件）
  */
-const getWidgetSizeClasses = (size: DashboardContracts.WidgetSize): string => {
+const getWidgetSizeClasses = (size: WidgetSize): string => {
   return `widget-size-${size}`;
 };
 
@@ -387,3 +388,4 @@ onMounted(() => {
   }
 }
 </style>
+

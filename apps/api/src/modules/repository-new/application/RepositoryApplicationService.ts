@@ -10,7 +10,7 @@
  */
 
 import { Repository, CreateRepositoryDTO } from '@dailyuse/domain-server';
-import type { RepositoryClientDTO, RepositoryServerDTO } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, RepositoryServerDTO } from '@dailyuse/contracts/repository';
 import type { IRepositoryRepository } from '../domain/IRepositoryRepository';
 
 // ==================== Application Service ====================
@@ -172,3 +172,5 @@ export class RepositoryApplicationService {
     return repository.toClientDTO();
   }
 }
+
+

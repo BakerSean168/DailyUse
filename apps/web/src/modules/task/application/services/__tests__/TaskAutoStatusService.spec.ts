@@ -5,9 +5,10 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { taskAutoStatusService } from '../TaskAutoStatusService';
-import { TaskContracts } from '@dailyuse/contracts';
+import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
+type TaskDependencyClientDTO = TaskDependencyClientDTO;
 
 // 简化的任务类型用于测试
 interface TestTask {
@@ -289,3 +290,4 @@ describe('TaskAutoStatusService', () => {
     });
   });
 });
+

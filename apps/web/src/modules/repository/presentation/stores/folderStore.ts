@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { Folder } from '@dailyuse/domain-client';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**
  * Folder Store
@@ -390,3 +390,4 @@ function buildTree(folders: Folder[]): Folder[] {
 }
 
 export type FolderStore = ReturnType<typeof useFolderStore>;
+

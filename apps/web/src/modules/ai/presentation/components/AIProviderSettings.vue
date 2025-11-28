@@ -216,10 +216,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useAIProviders } from '../composables/useAIProviders';
-import { AIProviderType } from '@dailyuse/contracts';
-import type { AIContracts } from '@dailyuse/contracts';
+import { AIProviderType } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
-type AIProviderConfigClientDTO = AIContracts.AIProviderConfigClientDTO;
+type AIProviderConfigClientDTO = AIProviderConfigClientDTO;
 
 // ===== Composables =====
 const {
@@ -434,3 +434,7 @@ onMounted(() => {
 <style scoped>
 /* Vuetify 组件自带样式，无需额外 CSS */
 </style>
+
+
+
+

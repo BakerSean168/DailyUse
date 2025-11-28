@@ -15,7 +15,7 @@
 
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 import { UpcomingReminderCalculationService, UpcomingReminderDTO } from '@dailyuse/domain-server';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderQueryApplicationService');
@@ -34,7 +34,7 @@ export interface UpcomingRemindersQueryParams {
   
   // 过滤选项
   groupUuid?: string | null; // 仅查看特定分组，null 表示未分组的提醒
-  importanceLevel?: ReminderContracts.ImportanceLevel; // 仅查看特定重要性级别
+  importanceLevel?: ImportanceLevel; // 仅查看特定重要性级别
 }
 
 /**
@@ -323,3 +323,4 @@ export class ReminderQueryApplicationService {
 
 // 导出单例实例
 export const reminderQueryApplicationService = ReminderQueryApplicationService.getInstance();
+

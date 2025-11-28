@@ -4,7 +4,7 @@ import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import ScheduleConflictAlert from '../ScheduleConflictAlert.vue';
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { ScheduleTaskClientDTO, ScheduleClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 
 // Create Vuetify instance for testing
 const vuetify = createVuetify({
@@ -13,7 +13,7 @@ const vuetify = createVuetify({
 });
 
 // Test fixtures
-const mockConflictResult: ScheduleContracts.ConflictDetectionResult = {
+const mockConflictResult: ConflictDetectionResult = {
   hasConflict: true,
   conflicts: [
     {
@@ -49,7 +49,7 @@ const mockConflictResult: ScheduleContracts.ConflictDetectionResult = {
   ],
 };
 
-const mockNoConflictResult: ScheduleContracts.ConflictDetectionResult = {
+const mockNoConflictResult: ConflictDetectionResult = {
   hasConflict: false,
   conflicts: [],
   suggestions: [],
@@ -279,7 +279,7 @@ describe('ScheduleConflictAlert', () => {
     });
 
     it('should handle empty conflicts array', () => {
-      const emptyResult: ScheduleContracts.ConflictDetectionResult = {
+      const emptyResult: ConflictDetectionResult = {
         hasConflict: false,
         conflicts: [],
         suggestions: [],
@@ -291,7 +291,7 @@ describe('ScheduleConflictAlert', () => {
     });
 
     it('should handle conflicts without suggestions', () => {
-      const noSuggestionsResult: ScheduleContracts.ConflictDetectionResult = {
+      const noSuggestionsResult: ConflictDetectionResult = {
         ...mockConflictResult,
         suggestions: [],
       };
@@ -305,7 +305,7 @@ describe('ScheduleConflictAlert', () => {
     });
 
     it('should handle single conflict', () => {
-      const singleConflictResult: ScheduleContracts.ConflictDetectionResult = {
+      const singleConflictResult: ConflictDetectionResult = {
         hasConflict: true,
         conflicts: [mockConflictResult.conflicts[0]],
         suggestions: mockConflictResult.suggestions,
@@ -353,3 +353,4 @@ describe('ScheduleConflictAlert', () => {
     });
   });
 });
+

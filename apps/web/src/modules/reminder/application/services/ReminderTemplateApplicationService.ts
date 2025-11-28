@@ -13,7 +13,7 @@
  * - 统一错误处理
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import type { CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '@dailyuse/domain-client';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
@@ -54,7 +54,7 @@ export class ReminderTemplateApplicationService {
    * 创建提醒模板
    */
   async createReminderTemplate(
-    request: ReminderContracts.CreateReminderTemplateRequestDTO,
+    request: CreateReminderTemplateRequestDTO,
   ): Promise<ReminderTemplate> {
     try {
       this.reminderStore.setLoading(true);
@@ -140,7 +140,7 @@ export class ReminderTemplateApplicationService {
    */
   async updateReminderTemplate(
     uuid: string,
-    request: Partial<ReminderContracts.CreateReminderTemplateRequestDTO>,
+    request: Partial<CreateReminderTemplateRequestDTO>,
   ): Promise<ReminderTemplate> {
     try {
       this.reminderStore.setLoading(true);
@@ -269,3 +269,4 @@ export class ReminderTemplateApplicationService {
 
 // 导出单例实例
 export const reminderTemplateApplicationService = ReminderTemplateApplicationService.getInstance();
+

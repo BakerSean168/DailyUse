@@ -5,7 +5,7 @@ import type {
 } from '@dailyuse/domain-server';
 import { TaskStatistics } from '@dailyuse/domain-server';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type * as TaskContracts from '@dailyuse/contracts/task';
 
 /**
  * TaskStatistics 应用服务

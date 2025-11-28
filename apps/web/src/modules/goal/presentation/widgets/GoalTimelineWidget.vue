@@ -9,17 +9,17 @@
  */
 
 import { computed, onMounted, ref } from 'vue';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useGoal } from '@/modules/goal/presentation/composables/useGoal';
-import { GoalStatus } from '@dailyuse/contracts';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 
 // ===== Props =====
 interface Props {
-    size?: DashboardContracts.WidgetSize;
+    size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    size: 'medium' as DashboardContracts.WidgetSize,
+    size: 'medium' as WidgetSize,
 });
 
 // ===== Composables =====
@@ -239,3 +239,5 @@ onMounted(async () => {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
+
+

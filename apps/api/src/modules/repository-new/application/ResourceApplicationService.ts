@@ -12,7 +12,8 @@
  */
 
 import { Resource, CreateResourceDTO } from '@dailyuse/domain-server';
-import type { ResourceClientDTO, ResourceType } from '@dailyuse/contracts';
+import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
+import { ResourceType } from '@dailyuse/contracts/repository';
 import type { IResourceRepository } from '../domain/IResourceRepository';
 import type { IRepositoryRepository } from '../domain/IRepositoryRepository';
 
@@ -407,3 +408,7 @@ export class ResourceApplicationService {
     return resource.toClientDTO();
   }
 }
+
+
+
+

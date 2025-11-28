@@ -6,11 +6,11 @@
 // @ts-nocheck - Some types not yet defined, needs refactoring
 import { ref, computed } from 'vue';
 import { notificationApiClient } from '../../infrastructure/api/notificationApiClient';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 import { useWebSocket } from './useWebSocket';
 
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
-type QueryNotificationsRequest = NotificationContracts.QueryNotificationsRequest;
+type NotificationClientDTO = NotificationClientDTO;
+type QueryNotificationsRequest = QueryNotificationsRequest;
 
 export function useNotification() {
   const notifications = ref<NotificationClientDTO[]>([]);
@@ -257,3 +257,4 @@ export function useNotification() {
     disconnect,
   };
 }
+

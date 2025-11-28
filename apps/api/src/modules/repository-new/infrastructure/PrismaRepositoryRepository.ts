@@ -6,7 +6,7 @@
 import { PrismaClient } from '@prisma/client';
 import { Repository } from '@dailyuse/domain-server';
 import type { IRepositoryRepository } from '../domain/IRepositoryRepository';
-import type { RepositoryPersistenceDTO } from '@dailyuse/contracts';
+import type { RepositoryPersistenceDTO } from '@dailyuse/contracts/repository';
 
 export class PrismaRepositoryRepository implements IRepositoryRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -130,3 +130,7 @@ export class PrismaRepositoryRepository implements IRepositoryRepository {
     return Repository.fromPersistenceDTO(persistenceDTO);
   }
 }
+
+
+
+

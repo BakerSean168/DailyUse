@@ -1,7 +1,8 @@
 // 这个文件提供 Express 集成，但 Express 是可选依赖
 // 使用者需要自己安装 Express 类型定义
 
-import { type ApiErrorResponse, getHttpStatusCode } from '@dailyuse/contracts';
+import { getHttpStatusCode } from '@dailyuse/contracts/response';
+import type { ApiErrorResponse } from '@dailyuse/contracts/response';
 import { createResponseBuilder, ResponseBuilder } from './responseBuilder';
 
 // 定义基础的 Response 接口以避免依赖 Express

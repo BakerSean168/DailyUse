@@ -2,7 +2,7 @@
 import type { Request, Response } from 'express';
 import { SettingApplicationService } from '../../application/services/SettingApplicationService';
 import { SettingCloudSyncService } from '../../application/services/SettingCloudSyncService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 
@@ -452,3 +452,5 @@ export class SettingController {
     }
   }
 }
+
+

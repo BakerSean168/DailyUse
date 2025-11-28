@@ -9,7 +9,7 @@
 import { ref, computed, watch } from 'vue';
 import { weightSnapshotWebApplicationService } from '../services/WeightSnapshotWebApplicationService';
 import { createLogger } from '@dailyuse/utils';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 
 const logger = createLogger('useWeightSnapshot');
 
@@ -27,10 +27,10 @@ export function useWeightSnapshot() {
   // ===== 状态 =====
 
   /** Goal 的权重快照列表 */
-  const goalSnapshots = ref<GoalContracts.KeyResultWeightSnapshotServerDTO[]>([]);
+  const goalSnapshots = ref<KeyResultWeightSnapshotServerDTO[]>([]);
 
   /** KeyResult 的权重快照历史 */
-  const krSnapshots = ref<GoalContracts.KeyResultWeightSnapshotServerDTO[]>([]);
+  const krSnapshots = ref<KeyResultWeightSnapshotServerDTO[]>([]);
 
   /** 权重趋势数据（用于图表） */
   const weightTrend = ref<{
@@ -507,3 +507,4 @@ export function useWeightSnapshot() {
     reset,
   };
 }
+

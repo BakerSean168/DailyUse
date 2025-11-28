@@ -1,9 +1,9 @@
 import { computed, watch } from 'vue';
 import { useDashboardConfigStore } from '../stores/dashboardConfigStore';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
 
 // 本地类型别名（无需导出，web 应用不生成 .d.ts）
-type WidgetConfig = DashboardContracts.WidgetConfigDTO;
+type WidgetConfig = WidgetConfigDTO;
 
 /**
  * Widget 配置管理 Composable
@@ -200,3 +200,4 @@ export function useWidgetConfig(
     watchConfig,
   };
 }
+

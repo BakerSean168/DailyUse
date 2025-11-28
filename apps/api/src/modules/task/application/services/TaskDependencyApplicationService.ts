@@ -14,14 +14,14 @@ import type {
   TaskDependencyService,
 } from '@dailyuse/domain-server';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
-import { TaskContracts } from '@dailyuse/contracts';
-
-type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
-type CreateTaskDependencyRequest = TaskContracts.CreateTaskDependencyRequest;
-type UpdateTaskDependencyRequest = TaskContracts.UpdateTaskDependencyRequest;
-type ValidateDependencyRequest = TaskContracts.ValidateDependencyRequest;
-type ValidateDependencyResponse = TaskContracts.ValidateDependencyResponse;
-type DependencyChainServerDTO = TaskContracts.DependencyChainServerDTO;
+import type {
+  TaskDependencyServerDTO,
+  CreateTaskDependencyRequest,
+  UpdateTaskDependencyRequest,
+  ValidateDependencyRequest,
+  ValidateDependencyResponse,
+  DependencyChainServerDTO,
+} from '@dailyuse/contracts/task';
 
 export class TaskDependencyApplicationService {
   private static instance: TaskDependencyApplicationService;

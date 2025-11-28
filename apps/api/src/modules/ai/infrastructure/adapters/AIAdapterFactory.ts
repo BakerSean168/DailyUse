@@ -8,13 +8,13 @@
  * - 支持动态切换用户自定义 Provider
  */
 
-import { AIProviderType, AIModel } from '@dailyuse/contracts';
-import type { AIContracts } from '@dailyuse/contracts';
+import { AIProviderType, AIModel } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 import { BaseAIAdapter } from './BaseAIAdapter';
 import { OpenAIAdapter } from './OpenAIAdapter';
 import { CustomOpenAICompatibleAdapter } from './CustomOpenAICompatibleAdapter';
 
-type AIProviderConfigServerDTO = AIContracts.AIProviderConfigServerDTO;
+type AIProviderConfigServerDTO = AIProviderConfigServerDTO;
 
 /**
  * 适配器缓存 Key 生成
@@ -215,3 +215,7 @@ export class AIAdapterFactory {
     }
   }
 }
+
+
+
+

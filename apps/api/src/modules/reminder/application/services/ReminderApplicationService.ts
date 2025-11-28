@@ -11,8 +11,8 @@ import type {
 } from '@dailyuse/domain-server';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 import { ReminderQueryApplicationService } from './ReminderQueryApplicationService';
-import type { ReminderContracts } from '@dailyuse/contracts';
-import { ImportanceLevel } from '@dailyuse/contracts';
+import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { 
   createLogger,
   eventBus,
@@ -25,10 +25,10 @@ import {
 const logger = createLogger('ReminderApplicationService');
 
 // 类型别名导出（统一在顶部）
-type ReminderTemplateClientDTO = ReminderContracts.ReminderTemplateClientDTO;
-type ReminderStatisticsClientDTO = ReminderContracts.ReminderStatisticsClientDTO;
-type ReminderType = ReminderContracts.ReminderType;
-type TriggerType = ReminderContracts.TriggerType;
+type ReminderTemplateClientDTO = ReminderTemplateClientDTO;
+type ReminderStatisticsClientDTO = ReminderStatisticsClientDTO;
+type ReminderType = ReminderType;
+type TriggerType = TriggerType;
 
 /**
  * Reminder 应用服务
@@ -112,12 +112,12 @@ export class ReminderApplicationService {
     accountUuid: string;
     title: string;
     type: ReminderType;
-    trigger: ReminderContracts.TriggerConfigServerDTO;
-    activeTime: ReminderContracts.ActiveTimeConfigServerDTO;
-    notificationConfig: ReminderContracts.NotificationConfigServerDTO;
+    trigger: TriggerConfigServerDTO;
+    activeTime: ActiveTimeConfigServerDTO;
+    notificationConfig: NotificationConfigServerDTO;
     description?: string;
-    recurrence?: ReminderContracts.RecurrenceConfigServerDTO;
-    activeHours?: ReminderContracts.ActiveHoursConfigServerDTO;
+    recurrence?: RecurrenceConfigServerDTO;
+    activeHours?: ActiveHoursConfigServerDTO;
     importanceLevel?: ImportanceLevel;
     tags?: string[];
     color?: string;
@@ -185,7 +185,7 @@ export class ReminderApplicationService {
    */
   async updateReminderTemplate(
     uuid: string,
-    updates: ReminderContracts.UpdateReminderTemplateRequestDTO,
+    updates: UpdateReminderTemplateRequestDTO,
   ): Promise<ReminderTemplateClientDTO> {
     const operationId = `update-template-${uuid}-${Date.now()}`;
     
@@ -521,7 +521,7 @@ export class ReminderApplicationService {
     importanceLevel?: ImportanceLevel;
     type?: ReminderType;
     accountUuid?: string; // 新增：从 token 获取
-  }): Promise<ReminderContracts.UpcomingRemindersResponseDTO> {
+  }): Promise<UpcomingRemindersResponseDTO> {
     try {
       const days = params.days || 1; // 默认今天内
       const limit = params.limit || 50;
@@ -584,7 +584,7 @@ export class ReminderApplicationService {
    */
   async getTemplateScheduleStatus(
     templateUuid: string,
-  ): Promise<ReminderContracts.TemplateScheduleStatusDTO> {
+  ): Promise<TemplateScheduleStatusDTO> {
     const template = await this.reminderTemplateRepository.findById(templateUuid);
 
     if (!template) {
@@ -621,7 +621,7 @@ export class ReminderApplicationService {
     description?: string;
     color?: string;
     icon?: string;
-  }): Promise<ReminderContracts.ReminderGroupClientDTO> {
+  }): Promise<ReminderGroupClientDTO> {
     const group = await this.domainService.createReminderGroup(params);
     return group.toClientDTO();
   }
@@ -629,7 +629,7 @@ export class ReminderApplicationService {
   /**
    * 获取分组详情
    */
-  async getReminderGroup(uuid: string): Promise<ReminderContracts.ReminderGroupClientDTO | null> {
+  async getReminderGroup(uuid: string): Promise<ReminderGroupClientDTO | null> {
     const group = await this.reminderGroupRepository.findById(uuid);
     return group ? group.toClientDTO() : null;
   }
@@ -639,7 +639,7 @@ export class ReminderApplicationService {
    */
   async getUserReminderGroups(
     accountUuid: string,
-  ): Promise<ReminderContracts.ReminderGroupClientDTO[]> {
+  ): Promise<ReminderGroupClientDTO[]> {
     const groups = await this.reminderGroupRepository.findByAccountUuid(accountUuid);
     return groups.map((g) => g.toClientDTO());
   }
@@ -654,7 +654,7 @@ export class ReminderApplicationService {
       description?: string;
       enabled?: boolean;
     },
-  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+  ): Promise<ReminderGroupClientDTO> {
     const group = await this.reminderGroupRepository.findById(uuid);
     if (!group) {
       throw new Error(`ReminderGroup not found: ${uuid}`);
@@ -693,7 +693,7 @@ export class ReminderApplicationService {
    */
   async toggleReminderGroupStatus(
     uuid: string,
-  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+  ): Promise<ReminderGroupClientDTO> {
     const group = await this.reminderGroupRepository.findById(uuid);
     if (!group) {
       throw new Error(`ReminderGroup not found: ${uuid}`);
@@ -709,7 +709,7 @@ export class ReminderApplicationService {
    */
   async toggleReminderGroupControlMode(
     uuid: string,
-  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+  ): Promise<ReminderGroupClientDTO> {
     const group = await this.reminderGroupRepository.findById(uuid);
     if (!group) {
       throw new Error(`ReminderGroup not found: ${uuid}`);
@@ -720,3 +720,4 @@ export class ReminderApplicationService {
     return group.toClientDTO();
   }
 }
+

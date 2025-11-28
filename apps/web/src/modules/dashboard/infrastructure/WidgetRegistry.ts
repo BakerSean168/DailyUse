@@ -1,6 +1,6 @@
 import type { WidgetMetadata } from './types/WidgetMetadata';
-import type { DashboardContracts } from '@dailyuse/contracts';
-import { WidgetSize } from '@dailyuse/contracts';
+import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 
 /**
  * Widget 注册表 (Singleton)
@@ -213,3 +213,6 @@ export class WidgetRegistry {
  * ```
  */
 export const widgetRegistry = WidgetRegistry.getInstance();
+
+
+

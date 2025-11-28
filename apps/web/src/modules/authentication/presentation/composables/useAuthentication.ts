@@ -3,10 +3,10 @@ import { useRouter } from 'vue-router';
 import { AuthApplicationService } from '../../application/services/AuthApplicationService';
 import { useAuthenticationStore } from '../stores/authenticationStore';
 import { AuthManager } from '@/shared/api';
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 
-type LoginRequestDTO = AuthenticationContracts.LoginRequestDTO;
-type ChangePasswordRequestDTO = AuthenticationContracts.ChangePasswordRequestDTO;
+type LoginRequestDTO = LoginRequestDTO;
+type ChangePasswordRequestDTO = ChangePasswordRequestDTO;
 
 /**
  * 认证模块 Composable
@@ -237,3 +237,4 @@ export function useAuthentication() {
 
 // 默认导出
 export default useAuthentication;
+

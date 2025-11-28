@@ -14,7 +14,7 @@
  */
 
 import type { DomainEvent } from '@dailyuse/utils';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type * as TaskContracts from '@dailyuse/contracts/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 
 interface ScheduleTaskTriggeredPayload {

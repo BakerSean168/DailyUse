@@ -11,7 +11,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 import { ResourceApiClient } from '../../infrastructure/api/ResourceApiClient';
 import { apiClient } from '@/shared/api/instances';
 
@@ -25,8 +25,8 @@ export interface ResourceTab {
 
 export const useResourceStore = defineStore('resource', () => {
   // State
-  const resources = ref<RepositoryContracts.ResourceClientDTO[]>([]);
-  const selectedResource = ref<RepositoryContracts.ResourceClientDTO | null>(null);
+  const resources = ref<ResourceClientDTO[]>([]);
+  const selectedResource = ref<ResourceClientDTO | null>(null);
   const openTabs = ref<ResourceTab[]>([]);
   const activeTabUuid = ref<string | null>(null);
   const isLoading = ref(false);
@@ -193,7 +193,7 @@ export const useResourceStore = defineStore('resource', () => {
   /**
    * 在新标签页中打开资源 (Story 10-2 AC #6)
    */
-  async function openInTab(resource: RepositoryContracts.ResourceClientDTO) {
+  async function openInTab(resource: ResourceClientDTO) {
     // 检查是否已打开
     const existingTab = openTabs.value.find((tab) => tab.uuid === resource.uuid);
     if (existingTab) {
@@ -359,3 +359,4 @@ export const useResourceStore = defineStore('resource', () => {
     reset,
   };
 });
+

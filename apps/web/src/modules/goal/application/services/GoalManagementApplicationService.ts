@@ -1,4 +1,4 @@
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { Goal } from '@dailyuse/domain-client';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
@@ -54,7 +54,7 @@ export class GoalManagementApplicationService {
   /**
    * 创建目标
    */
-  async createGoal(request: GoalContracts.CreateGoalRequest): Promise<GoalContracts.GoalClientDTO> {
+  async createGoal(request: CreateGoalRequest): Promise<GoalClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -87,7 +87,7 @@ export class GoalManagementApplicationService {
     dirUuid?: string;
     startDate?: string;
     endDate?: string;
-  }): Promise<GoalContracts.GoalsResponse> {
+  }): Promise<GoalsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -145,7 +145,7 @@ export class GoalManagementApplicationService {
    * ✅ 注意：始终使用 includeChildren=true 确保返回完整的 KeyResults
    * 这是必要的，因为 KeyResultDetailView 需要访问 keyResults 数组
    */
-  async getGoalById(uuid: string): Promise<GoalContracts.GoalClientDTO | null> {
+  async getGoalById(uuid: string): Promise<GoalClientDTO | null> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -200,8 +200,8 @@ export class GoalManagementApplicationService {
    */
   async updateGoal(
     uuid: string,
-    request: GoalContracts.UpdateGoalRequest,
-  ): Promise<GoalContracts.GoalClientDTO> {
+    request: UpdateGoalRequest,
+  ): Promise<GoalClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -253,7 +253,7 @@ export class GoalManagementApplicationService {
   /**
    * 激活目标
    */
-  async activateGoal(uuid: string): Promise<GoalContracts.GoalClientDTO> {
+  async activateGoal(uuid: string): Promise<GoalClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -279,7 +279,7 @@ export class GoalManagementApplicationService {
   /**
    * 暂停目标
    */
-  async pauseGoal(uuid: string): Promise<GoalContracts.GoalClientDTO> {
+  async pauseGoal(uuid: string): Promise<GoalClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -305,7 +305,7 @@ export class GoalManagementApplicationService {
   /**
    * 完成目标
    */
-  async completeGoal(uuid: string): Promise<GoalContracts.GoalClientDTO> {
+  async completeGoal(uuid: string): Promise<GoalClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -331,7 +331,7 @@ export class GoalManagementApplicationService {
   /**
    * 归档目标
    */
-  async archiveGoal(uuid: string): Promise<GoalContracts.GoalClientDTO> {
+  async archiveGoal(uuid: string): Promise<GoalClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -363,7 +363,7 @@ export class GoalManagementApplicationService {
     dirUuid?: string;
     page?: number;
     limit?: number;
-  }): Promise<GoalContracts.GoalsResponse> {
+  }): Promise<GoalsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -401,7 +401,7 @@ export class GoalManagementApplicationService {
   /**
    * 获取Goal聚合根的完整视图
    */
-  async getGoalAggregateView(goalUuid: string): Promise<GoalContracts.GoalAggregateViewResponse> {
+  async getGoalAggregateView(goalUuid: string): Promise<GoalAggregateViewResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -409,7 +409,7 @@ export class GoalManagementApplicationService {
       const data = await goalApiClient.getGoalAggregateView(goalUuid);
 
       // 将聚合根数据同步到store
-      const goal = Goal.fromClientDTO(data.goal as GoalContracts.GoalClientDTO);
+      const goal = Goal.fromClientDTO(data.goal as GoalClientDTO);
       this.goalStore.addOrUpdateGoal(goal);
 
       return data;
@@ -434,7 +434,7 @@ export class GoalManagementApplicationService {
       includeKeyResults?: boolean;
       includeRecords?: boolean;
     },
-  ): Promise<GoalContracts.GoalClientDTO> {
+  ): Promise<GoalClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -474,3 +474,4 @@ export class GoalManagementApplicationService {
 
 // 导出单例获取函数
 export const goalManagementApplicationService = GoalManagementApplicationService.getInstance();
+

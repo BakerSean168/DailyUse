@@ -107,7 +107,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { useFocusMode } from '../composables/useFocusMode';
 import { createLogger } from '@dailyuse/utils';
 
@@ -147,7 +147,7 @@ onMounted(async () => {
 /**
  * 获取状态颜色
  */
-const getStatusColor = (item: GoalContracts.FocusModeClientDTO): string => {
+const getStatusColor = (item: FocusModeClientDTO): string => {
   if (item.isActive) {
     if (isExpiredItem(item)) return 'error';
     return 'success';
@@ -159,7 +159,7 @@ const getStatusColor = (item: GoalContracts.FocusModeClientDTO): string => {
 /**
  * 获取状态图标
  */
-const getStatusIcon = (item: GoalContracts.FocusModeClientDTO): string => {
+const getStatusIcon = (item: FocusModeClientDTO): string => {
   if (item.isActive) {
     if (isExpiredItem(item)) return 'mdi-alert-circle';
     return 'mdi-check-circle';
@@ -171,7 +171,7 @@ const getStatusIcon = (item: GoalContracts.FocusModeClientDTO): string => {
 /**
  * 获取状态文本
  */
-const getStatusText = (item: GoalContracts.FocusModeClientDTO): string => {
+const getStatusText = (item: FocusModeClientDTO): string => {
   if (item.isActive) {
     if (isExpiredItem(item)) return '已过期';
     return '进行中';
@@ -183,7 +183,7 @@ const getStatusText = (item: GoalContracts.FocusModeClientDTO): string => {
 /**
  * 判断专注周期是否过期
  */
-const isExpiredItem = (item: GoalContracts.FocusModeClientDTO): boolean => {
+const isExpiredItem = (item: FocusModeClientDTO): boolean => {
   return Date.now() > item.endTime;
 };
 
@@ -203,7 +203,7 @@ const formatDate = (timestamp: number): string => {
 /**
  * 计算持续时间
  */
-const calculateDuration = (item: GoalContracts.FocusModeClientDTO): string => {
+const calculateDuration = (item: FocusModeClientDTO): string => {
   const duration = item.endTime - item.startTime;
   const days = Math.floor(duration / (24 * 60 * 60 * 1000));
   return `${days} 天`;
@@ -212,8 +212,8 @@ const calculateDuration = (item: GoalContracts.FocusModeClientDTO): string => {
 /**
  * 获取隐藏模式标签
  */
-const getHiddenModeLabel = (mode: GoalContracts.HiddenGoalsMode): string => {
-  const labels: Record<GoalContracts.HiddenGoalsMode, string> = {
+const getHiddenModeLabel = (mode: HiddenGoalsMode): string => {
+  const labels: Record<HiddenGoalsMode, string> = {
     hide_all: '隐藏所有',
     hide_folder: '隐藏文件夹',
     hide_none: '不隐藏',
@@ -238,7 +238,7 @@ const handleRefresh = async () => {
 /**
  * 延期专注周期
  */
-const handleExtend = (item: GoalContracts.FocusModeClientDTO) => {
+const handleExtend = (item: FocusModeClientDTO) => {
   // TODO: 打开延期对话框
   // 当前简化版：直接延期 7 天
   const newEndTime = item.endTime + 7 * 24 * 60 * 60 * 1000;
@@ -256,7 +256,7 @@ const handleExtend = (item: GoalContracts.FocusModeClientDTO) => {
 /**
  * 关闭专注周期
  */
-const handleDeactivate = (item: GoalContracts.FocusModeClientDTO) => {
+const handleDeactivate = (item: FocusModeClientDTO) => {
   if (!confirm(`确定要关闭专注周期"${item.focusedGoals.map((g) => g.title).join(', ')}"吗？`)) {
     return;
   }
@@ -281,3 +281,4 @@ const handleDeactivate = (item: GoalContracts.FocusModeClientDTO) => {
   gap: 8px;
 }
 </style>
+

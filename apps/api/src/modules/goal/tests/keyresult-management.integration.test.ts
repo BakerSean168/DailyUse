@@ -21,12 +21,14 @@ import { PrismaGoalStatisticsRepository } from '../infrastructure/repositories/P
 import { PrismaGoalRepository } from '../infrastructure/repositories/PrismaGoalRepository';
 import { getTestPrisma, createTestAccounts } from '../../../test/helpers/database-helpers';
 import { GoalEventPublisher } from '../application/services/GoalEventPublisher';
-import { GoalContracts, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 
 // 本地类型定义（用于测试）
 type AddKeyResultParams = {
   title: string;
-  valueType: GoalContracts.KeyResultValueType;
+  valueType: KeyResultValueType;
   targetValue: number;
   currentValue?: number;
   unit?: string;
@@ -89,7 +91,7 @@ describe('KeyResult Management Integration Tests', () => {
       // 添加关键结果
       const keyResultData: AddKeyResultParams = {
         title: '观看视频课程',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 20,
         currentValue: 0,
         unit: '个',
@@ -104,7 +106,7 @@ describe('KeyResult Management Integration Tests', () => {
       expect(updated.keyResults![0].progress.targetValue).toBe(20);
       expect(updated.keyResults![0].progress.currentValue).toBe(0);
       expect(updated.keyResults![0].progress.valueType).toBe(
-        GoalContracts.KeyResultValueType.INCREMENTAL,
+        KeyResultValueType.INCREMENTAL,
       );
     });
 
@@ -122,7 +124,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const keyResultData: AddKeyResultParams = {
         title: '代码覆盖率',
-        valueType: GoalContracts.KeyResultValueType.PERCENTAGE,
+        valueType: KeyResultValueType.PERCENTAGE,
         targetValue: 80,
         currentValue: 45,
         unit: '%',
@@ -133,7 +135,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       expect(updated.keyResults).toHaveLength(1);
       expect(updated.keyResults![0].progress.valueType).toBe(
-        GoalContracts.KeyResultValueType.PERCENTAGE,
+        KeyResultValueType.PERCENTAGE,
       );
       expect(updated.keyResults![0].progress.unit).toBe('%');
     });
@@ -152,7 +154,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const keyResultData: AddKeyResultParams = {
         title: '完成设计文档',
-        valueType: GoalContracts.KeyResultValueType.BINARY,
+        valueType: KeyResultValueType.BINARY,
         targetValue: 1,
         currentValue: 0,
         unit: '',
@@ -163,7 +165,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       expect(updated.keyResults).toHaveLength(1);
       expect(updated.keyResults![0].progress.valueType).toBe(
-        GoalContracts.KeyResultValueType.BINARY,
+        KeyResultValueType.BINARY,
       );
       expect(updated.keyResults![0].progress.targetValue).toBe(1);
     });
@@ -183,7 +185,7 @@ describe('KeyResult Management Integration Tests', () => {
       // 添加多个关键结果
       const kr1: AddKeyResultParams = {
         title: '每周跑步',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 3,
         currentValue: 0,
         unit: '次',
@@ -192,7 +194,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const kr2: AddKeyResultParams = {
         title: '每日步数',
-        valueType: GoalContracts.KeyResultValueType.ABSOLUTE,
+        valueType: KeyResultValueType.ABSOLUTE,
         targetValue: 10000,
         currentValue: 0,
         unit: '步',
@@ -201,7 +203,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const kr3: AddKeyResultParams = {
         title: '完成体检',
-        valueType: GoalContracts.KeyResultValueType.BINARY,
+        valueType: KeyResultValueType.BINARY,
         targetValue: 1,
         currentValue: 0,
         unit: '',
@@ -238,7 +240,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const keyResult: AddKeyResultParams = {
         title: '阅读书籍',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 12,
         currentValue: 0,
         unit: '本',
@@ -271,7 +273,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const keyResult: AddKeyResultParams = {
         title: '完成练习',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 0,
         unit: '题',
@@ -308,7 +310,7 @@ describe('KeyResult Management Integration Tests', () => {
       // 添加两个关键结果
       const kr1: AddKeyResultParams = {
         title: 'KR1',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 0,
         unit: '个',
@@ -317,7 +319,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const kr2: AddKeyResultParams = {
         title: 'KR2',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 0,
         unit: '个',
@@ -357,7 +359,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const keyResult: AddKeyResultParams = {
         title: '编写文档',
-        valueType: GoalContracts.KeyResultValueType.BINARY,
+        valueType: KeyResultValueType.BINARY,
         targetValue: 1,
         currentValue: 0,
         unit: '份',
@@ -390,7 +392,7 @@ describe('KeyResult Management Integration Tests', () => {
       // 添加 2 个关键结果
       const kr1: AddKeyResultParams = {
         title: 'KR1',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 0,
         unit: '个',
@@ -399,7 +401,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const kr2: AddKeyResultParams = {
         title: 'KR2',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 0,
         unit: '个',
@@ -441,7 +443,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const keyResult: AddKeyResultParams = {
         title: '待删除的 KR',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 0,
         unit: '个',
@@ -475,7 +477,7 @@ describe('KeyResult Management Integration Tests', () => {
       // 添加 3 个关键结果
       const kr1: AddKeyResultParams = {
         title: 'KR1',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 100, // 已完成
         unit: '个',
@@ -484,7 +486,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const kr2: AddKeyResultParams = {
         title: 'KR2',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 50, // 50% 完成
         unit: '个',
@@ -493,7 +495,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const kr3: AddKeyResultParams = {
         title: 'KR3',
-        valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+        valueType: KeyResultValueType.INCREMENTAL,
         targetValue: 100,
         currentValue: 0, // 未开始
         unit: '个',
@@ -530,7 +532,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const keyResult: AddKeyResultParams = {
         title: '目标体重',
-        valueType: GoalContracts.KeyResultValueType.ABSOLUTE,
+        valueType: KeyResultValueType.ABSOLUTE,
         targetValue: 65, // kg
         currentValue: 70, // kg
         unit: 'kg',
@@ -540,7 +542,7 @@ describe('KeyResult Management Integration Tests', () => {
       const updated = await goalService.addKeyResult(goal.uuid, keyResult);
 
       expect(updated.keyResults![0].progress.valueType).toBe(
-        GoalContracts.KeyResultValueType.ABSOLUTE,
+        KeyResultValueType.ABSOLUTE,
       );
       expect(updated.keyResults![0].progress.currentValue).toBe(70);
       expect(updated.keyResults![0].progress.targetValue).toBe(65);
@@ -560,7 +562,7 @@ describe('KeyResult Management Integration Tests', () => {
 
       const keyResult: AddKeyResultParams = {
         title: '完成度',
-        valueType: GoalContracts.KeyResultValueType.PERCENTAGE,
+        valueType: KeyResultValueType.PERCENTAGE,
         targetValue: 100,
         currentValue: 0,
         unit: '%',
@@ -570,7 +572,7 @@ describe('KeyResult Management Integration Tests', () => {
       const updated = await goalService.addKeyResult(goal.uuid, keyResult);
 
       expect(updated.keyResults![0].progress.valueType).toBe(
-        GoalContracts.KeyResultValueType.PERCENTAGE,
+        KeyResultValueType.PERCENTAGE,
       );
       expect(updated.keyResults![0].progress.targetValue).toBeLessThanOrEqual(100);
     });
@@ -593,7 +595,7 @@ describe('KeyResult Management Integration Tests', () => {
       const keyResults: AddKeyResultParams[] = [
         {
           title: 'KR1',
-          valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+          valueType: KeyResultValueType.INCREMENTAL,
           targetValue: 10,
           currentValue: 0,
           unit: '个',
@@ -601,7 +603,7 @@ describe('KeyResult Management Integration Tests', () => {
         },
         {
           title: 'KR2',
-          valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+          valueType: KeyResultValueType.INCREMENTAL,
           targetValue: 20,
           currentValue: 0,
           unit: '个',
@@ -609,7 +611,7 @@ describe('KeyResult Management Integration Tests', () => {
         },
         {
           title: 'KR3',
-          valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+          valueType: KeyResultValueType.INCREMENTAL,
           targetValue: 30,
           currentValue: 0,
           unit: '个',
@@ -617,7 +619,7 @@ describe('KeyResult Management Integration Tests', () => {
         },
         {
           title: 'KR4',
-          valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+          valueType: KeyResultValueType.INCREMENTAL,
           targetValue: 40,
           currentValue: 0,
           unit: '个',
@@ -625,7 +627,7 @@ describe('KeyResult Management Integration Tests', () => {
         },
         {
           title: 'KR5',
-          valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+          valueType: KeyResultValueType.INCREMENTAL,
           targetValue: 50,
           currentValue: 0,
           unit: '个',
@@ -651,3 +653,5 @@ describe('KeyResult Management Integration Tests', () => {
     });
   });
 });
+
+

@@ -8,7 +8,7 @@
 import type { Request, Response } from 'express';
 import { WeightSnapshotApplicationService } from '../../application/services/WeightSnapshotApplicationService';
 import { GoalApplicationService } from '../../application/services/GoalApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
 import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
@@ -504,3 +504,5 @@ export class WeightSnapshotController {
     });
   }
 }
+
+

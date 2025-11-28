@@ -5,7 +5,7 @@
  */
 
 import { defineStore } from 'pinia';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
 
 /**
@@ -14,7 +14,7 @@ import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClien
 export const useFileTreeStore = defineStore('fileTree', {
   state: () => ({
     // ===== 核心数据 =====
-    treeNodesByRepository: {} as Record<string, RepositoryContracts.TreeNode[]>, // 按仓储UUID索引的树节点
+    treeNodesByRepository: {} as Record<string, TreeNode[]>, // 按仓储UUID索引的树节点
     
     // ===== 状态管理 =====
     isLoading: false,
@@ -29,14 +29,14 @@ export const useFileTreeStore = defineStore('fileTree', {
     /**
      * 获取指定仓储的文件树
      */
-    getTreeByRepository: (state) => (repositoryUuid: string): RepositoryContracts.TreeNode[] => {
+    getTreeByRepository: (state) => (repositoryUuid: string): TreeNode[] => {
       return state.treeNodesByRepository[repositoryUuid] || [];
     },
 
     /**
      * 根据UUID获取树节点
      */
-    getNodeByUuid: (state) => (uuid: string, repositoryUuid: string): RepositoryContracts.TreeNode | null => {
+    getNodeByUuid: (state) => (uuid: string, repositoryUuid: string): TreeNode | null => {
       const tree = state.treeNodesByRepository[repositoryUuid] || [];
       return findNodeInTree(tree, uuid);
     },
@@ -44,7 +44,7 @@ export const useFileTreeStore = defineStore('fileTree', {
     /**
      * 获取当前选中的节点
      */
-    getSelectedNode(state): RepositoryContracts.TreeNode | null {
+    getSelectedNode(state): TreeNode | null {
       if (!state.selectedNodeUuid) return null;
       
       // 在所有仓储中查找
@@ -69,7 +69,7 @@ export const useFileTreeStore = defineStore('fileTree', {
     /**
      * 获取文件夹节点（type === 'folder'）
      */
-    getFolderNodes: (state) => (repositoryUuid: string): RepositoryContracts.TreeNode[] => {
+    getFolderNodes: (state) => (repositoryUuid: string): TreeNode[] => {
       const tree = state.treeNodesByRepository[repositoryUuid] || [];
       return filterNodesByType(tree, 'folder');
     },
@@ -77,7 +77,7 @@ export const useFileTreeStore = defineStore('fileTree', {
     /**
      * 获取文件节点（type === 'file'）
      */
-    getFileNodes: (state) => (repositoryUuid: string): RepositoryContracts.TreeNode[] => {
+    getFileNodes: (state) => (repositoryUuid: string): TreeNode[] => {
       const tree = state.treeNodesByRepository[repositoryUuid] || [];
       return filterNodesByType(tree, 'file');
     },
@@ -126,7 +126,7 @@ export const useFileTreeStore = defineStore('fileTree', {
     /**
      * 设置仓储的文件树
      */
-    setTreeForRepository(repositoryUuid: string, tree: RepositoryContracts.TreeNode[]) {
+    setTreeForRepository(repositoryUuid: string, tree: TreeNode[]) {
       this.treeNodesByRepository[repositoryUuid] = tree;
       console.log(`✅ [FileTreeStore] 已设置文件树: ${tree.length} 个节点 (仓储: ${repositoryUuid})`);
     },
@@ -134,7 +134,7 @@ export const useFileTreeStore = defineStore('fileTree', {
     /**
      * 添加节点到树中
      */
-    addNode(repositoryUuid: string, node: RepositoryContracts.TreeNode) {
+    addNode(repositoryUuid: string, node: TreeNode) {
       if (!this.treeNodesByRepository[repositoryUuid]) {
         this.treeNodesByRepository[repositoryUuid] = [];
       }
@@ -156,7 +156,7 @@ export const useFileTreeStore = defineStore('fileTree', {
     /**
      * 更新节点
      */
-    updateNode(repositoryUuid: string, uuid: string, updates: Partial<RepositoryContracts.TreeNode>) {
+    updateNode(repositoryUuid: string, uuid: string, updates: Partial<TreeNode>) {
       const tree = this.treeNodesByRepository[repositoryUuid];
       if (!tree) return;
 
@@ -291,7 +291,7 @@ export const useFileTreeStore = defineStore('fileTree', {
 /**
  * 在树中查找节点
  */
-function findNodeInTree(tree: RepositoryContracts.TreeNode[], uuid: string): RepositoryContracts.TreeNode | null {
+function findNodeInTree(tree: TreeNode[], uuid: string): TreeNode | null {
   for (const node of tree) {
     if (node.uuid === uuid) {
       return node;
@@ -307,7 +307,7 @@ function findNodeInTree(tree: RepositoryContracts.TreeNode[], uuid: string): Rep
 /**
  * 从树中移除节点
  */
-function removeNodeFromTree(tree: RepositoryContracts.TreeNode[], uuid: string): RepositoryContracts.TreeNode[] {
+function removeNodeFromTree(tree: TreeNode[], uuid: string): TreeNode[] {
   return tree
     .filter(node => node.uuid !== uuid)
     .map(node => ({
@@ -319,8 +319,8 @@ function removeNodeFromTree(tree: RepositoryContracts.TreeNode[], uuid: string):
 /**
  * 按类型过滤节点
  */
-function filterNodesByType(tree: RepositoryContracts.TreeNode[], type: 'folder' | 'file'): RepositoryContracts.TreeNode[] {
-  const result: RepositoryContracts.TreeNode[] = [];
+function filterNodesByType(tree: TreeNode[], type: 'folder' | 'file'): TreeNode[] {
+  const result: TreeNode[] = [];
   
   for (const node of tree) {
     if (node.type === type) {
@@ -335,3 +335,4 @@ function filterNodesByType(tree: RepositoryContracts.TreeNode[], type: 'folder' 
 }
 
 export type FileTreeStore = ReturnType<typeof useFileTreeStore>;
+

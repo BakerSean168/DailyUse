@@ -1,9 +1,9 @@
 import type { PrismaClient } from '@prisma/client';
 import { DashboardConfig } from '@dailyuse/domain-server';
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { DashboardConfigServerDTO, WidgetConfig } from '@dailyuse/contracts/dashboard';
 
-type DashboardConfigPersistenceDTO = DashboardContracts.DashboardConfigPersistenceDTO;
+type DashboardConfigPersistenceDTO = DashboardConfigPersistenceDTO;
 
 /**
  * Dashboard 配置仓储 Prisma 实现
@@ -72,3 +72,5 @@ export class DashboardConfigPrismaRepository implements IDashboardConfigReposito
     return count > 0;
   }
 }
+
+

@@ -12,7 +12,7 @@
  */
 
 import { createLogger, eventBus } from '@dailyuse/utils';
-import { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationServerDTO, NotificationPreferenceServerDTO, CreateNotificationRequest } from '@dailyuse/contracts/notification';
 import { NotificationApplicationService } from '../services/NotificationApplicationService';
 
 const logger = createLogger('ScheduleTaskTriggeredHandler');
@@ -64,16 +64,16 @@ export function registerScheduleEventListeners(): void {
       const content = payloadData.message || `任务"${event.payload?.taskName}"已触发`;
       
       // 解析通知渠道
-      let channels: NotificationContracts.NotificationChannelType[] = [
-        NotificationContracts.NotificationChannelType.IN_APP,
+      let channels: NotificationChannelType[] = [
+        NotificationChannelType.IN_APP,
       ];
       if (payloadData.notificationChannels && Array.isArray(payloadData.notificationChannels)) {
         channels = payloadData.notificationChannels
           .map((ch: string) => {
             // 转换为正确的枚举值
             const channelUpper = ch.toUpperCase();
-            return NotificationContracts.NotificationChannelType[
-              channelUpper as keyof typeof NotificationContracts.NotificationChannelType
+            return NotificationChannelType[
+              channelUpper as keyof typeof NotificationChannelType
             ];
           })
           .filter(Boolean); // 过滤掉无效值
@@ -91,9 +91,9 @@ export function registerScheduleEventListeners(): void {
         accountUuid: event.accountUuid,
         title,
         content,
-        type: NotificationContracts.NotificationType.REMINDER,
-        category: NotificationContracts.NotificationCategory.TASK,
-        relatedEntityType: event.payload?.sourceModule?.toUpperCase() as NotificationContracts.RelatedEntityType,
+        type: NotificationType.REMINDER,
+        category: NotificationCategory.TASK,
+        relatedEntityType: event.payload?.sourceModule?.toUpperCase() as RelatedEntityType,
         relatedEntityUuid: event.payload?.sourceEntityId,
         channels,
       });
@@ -121,4 +121,5 @@ export function registerScheduleEventListeners(): void {
 
   logger.info('✅ Schedule 事件监听器注册完成');
 }
+
 

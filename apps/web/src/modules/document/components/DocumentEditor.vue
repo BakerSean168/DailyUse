@@ -46,9 +46,9 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
+type DocumentClientDTO = DocumentClientDTO;
 
 interface Props {
   document?: DocumentClientDTO;
@@ -101,3 +101,4 @@ const handleSave = async () => {
   }
 };
 </script>
+

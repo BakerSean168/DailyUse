@@ -114,7 +114,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useUserSetting } from '../composables/useUserSetting';
-import { type SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest, ExperimentalFeatures } from '@dailyuse/contracts/setting';
 
 // ===== 实验性功能定义 =====
 interface ExperimentalFeature {
@@ -165,12 +165,12 @@ const props = defineProps<{
 const { userSetting, loading, updateExperimental, hasExperimentalFeature } = useUserSetting();
 
 // ===== 本地状态 =====
-const localExperimental = ref<SettingContracts.UpdateExperimentalRequest>({
+const localExperimental = ref<UpdateExperimentalRequest>({
   enabled: false,
   features: [],
 });
 
-const originalExperimental = ref<SettingContracts.UpdateExperimentalRequest>({});
+const originalExperimental = ref<UpdateExperimentalRequest>({});
 
 // ===== 计算属性 =====
 const hasChanges = computed(() => {
@@ -248,3 +248,4 @@ const handleReset = () => {
 <style scoped>
 /* Vuetify 组件自带样式，无需额外 CSS */
 </style>
+

@@ -3,7 +3,7 @@
  * 密码管理应用服务 - 负责密码相关的用例
  */
 
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
 
@@ -30,7 +30,7 @@ export class PasswordApplicationService {
 
   // ============ 密码管理用例 ============
 
-  async forgotPassword(request: AuthenticationContracts.ForgotPasswordRequestDTO): Promise<void> {
+  async forgotPassword(request: ForgotPasswordRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
       await authApiClient.forgotPassword(request);
@@ -42,7 +42,7 @@ export class PasswordApplicationService {
     }
   }
 
-  async resetPassword(request: AuthenticationContracts.ResetPasswordRequestDTO): Promise<void> {
+  async resetPassword(request: ResetPasswordRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
       await authApiClient.resetPassword(request);
@@ -54,7 +54,7 @@ export class PasswordApplicationService {
     }
   }
 
-  async changePassword(request: AuthenticationContracts.ChangePasswordRequestDTO): Promise<void> {
+  async changePassword(request: ChangePasswordRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
       await authApiClient.changePassword(request);
@@ -69,8 +69,8 @@ export class PasswordApplicationService {
   // ============ 两步验证管理 ============
 
   async enable2FA(
-    request: AuthenticationContracts.Enable2FARequestDTO,
-  ): Promise<AuthenticationContracts.Enable2FAResponseDTO> {
+    request: Enable2FARequestDTO,
+  ): Promise<Enable2FAResponseDTO> {
     try {
       this.authStore.setLoading(true);
       const response = await authApiClient.enable2FA(request);
@@ -93,7 +93,7 @@ export class PasswordApplicationService {
     }
   }
 
-  async disable2FA(request: AuthenticationContracts.Disable2FARequestDTO): Promise<void> {
+  async disable2FA(request: Disable2FARequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
       await authApiClient.disable2FA(request);
@@ -106,7 +106,7 @@ export class PasswordApplicationService {
     }
   }
 
-  async verify2FA(request: AuthenticationContracts.Verify2FARequestDTO): Promise<void> {
+  async verify2FA(request: Verify2FARequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
       await authApiClient.verify2FA(request);
@@ -120,3 +120,4 @@ export class PasswordApplicationService {
 }
 
 export const passwordApplicationService = PasswordApplicationService.getInstance();
+

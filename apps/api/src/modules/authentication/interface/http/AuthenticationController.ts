@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { AuthenticationApplicationService } from '../../application/services/AuthenticationApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AuthenticationController');
@@ -437,3 +437,5 @@ export class AuthenticationController {
     }
   }
 }
+
+

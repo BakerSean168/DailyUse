@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api/instances';
-import { type GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 /**
  * FocusMode API Client
@@ -20,9 +20,9 @@ export class FocusModeApiClient {
    * @returns 专注周期 DTO
    */
   async activateFocusMode(
-    request: GoalContracts.ActivateFocusModeRequest,
-  ): Promise<GoalContracts.FocusModeClientDTO> {
-    const data = await apiClient.post<GoalContracts.FocusModeClientDTO>(this.baseUrl, request);
+    request: ActivateFocusModeRequest,
+  ): Promise<FocusModeClientDTO> {
+    const data = await apiClient.post<FocusModeClientDTO>(this.baseUrl, request);
     return data;
   }
 
@@ -32,8 +32,8 @@ export class FocusModeApiClient {
    * @param uuid - 专注周期 UUID
    * @returns 失效后的专注周期 DTO
    */
-  async deactivateFocusMode(uuid: string): Promise<GoalContracts.FocusModeClientDTO> {
-    const data = await apiClient.delete<GoalContracts.FocusModeClientDTO>(`${this.baseUrl}/${uuid}`);
+  async deactivateFocusMode(uuid: string): Promise<FocusModeClientDTO> {
+    const data = await apiClient.delete<FocusModeClientDTO>(`${this.baseUrl}/${uuid}`);
     return data;
   }
 
@@ -46,9 +46,9 @@ export class FocusModeApiClient {
    */
   async extendFocusMode(
     uuid: string,
-    request: GoalContracts.ExtendFocusModeRequest,
-  ): Promise<GoalContracts.FocusModeClientDTO> {
-    const data = await apiClient.patch<GoalContracts.FocusModeClientDTO>(
+    request: ExtendFocusModeRequest,
+  ): Promise<FocusModeClientDTO> {
+    const data = await apiClient.patch<FocusModeClientDTO>(
       `${this.baseUrl}/${uuid}/extend`,
       request,
     );
@@ -60,8 +60,8 @@ export class FocusModeApiClient {
    *
    * @returns 活跃的专注周期 DTO，不存在则返回 null
    */
-  async getActiveFocusMode(): Promise<GoalContracts.FocusModeClientDTO | null> {
-    const data = await apiClient.get<GoalContracts.FocusModeClientDTO | null>(
+  async getActiveFocusMode(): Promise<FocusModeClientDTO | null> {
+    const data = await apiClient.get<FocusModeClientDTO | null>(
       `${this.baseUrl}/active`,
     );
     return data;
@@ -72,8 +72,8 @@ export class FocusModeApiClient {
    *
    * @returns 专注周期 DTO 列表（按创建时间倒序）
    */
-  async getFocusModeHistory(): Promise<GoalContracts.FocusModeClientDTO[]> {
-    const data = await apiClient.get<GoalContracts.FocusModeClientDTO[]>(
+  async getFocusModeHistory(): Promise<FocusModeClientDTO[]> {
+    const data = await apiClient.get<FocusModeClientDTO[]>(
       `${this.baseUrl}/history`,
     );
     return data;
@@ -84,3 +84,6 @@ export class FocusModeApiClient {
  * 导出单例实例
  */
 export const focusModeApiClient = new FocusModeApiClient();
+
+
+

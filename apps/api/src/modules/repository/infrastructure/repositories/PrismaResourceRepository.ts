@@ -5,9 +5,9 @@
 import { PrismaClient } from '@prisma/client';
 import { Resource } from '@dailyuse/domain-server';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 
-type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
+type ResourceServerDTO = ResourceServerDTO;
 
 export class PrismaResourceRepository implements IResourceRepository {
   constructor(private prisma: PrismaClient) {}
@@ -136,3 +136,5 @@ export class PrismaResourceRepository implements IResourceRepository {
     return count > 0;
   }
 }
+
+

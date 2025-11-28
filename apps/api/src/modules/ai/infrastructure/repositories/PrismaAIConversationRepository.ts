@@ -11,7 +11,7 @@
 import { PrismaClient } from '@prisma/client';
 import type { IAIConversationRepository } from '@dailyuse/domain-server';
 import { AIConversationServer, MessageServer } from '@dailyuse/domain-server';
-import { ConversationStatus } from '@dailyuse/contracts';
+import { ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('PrismaAIConversationRepository');
@@ -199,3 +199,7 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
     return AIConversationServer.fromServerDTO(dto);
   }
 }
+
+
+
+

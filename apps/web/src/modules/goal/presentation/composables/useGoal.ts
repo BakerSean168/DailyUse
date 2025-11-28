@@ -11,8 +11,9 @@
  */
 
 import { ref, computed, reactive } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
-import { GoalContracts as GC } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import { GoalStatus as GC_GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { useGoalManagement } from './useGoalManagement';
 import { useGoalFolder } from './useGoalFolder';
 import { useKeyResult } from './useKeyResult';
@@ -186,7 +187,7 @@ export function useGoal() {
   /**
    * 创建新目标
    */
-  const createGoal = async (data: GoalContracts.CreateGoalRequest) => {
+  const createGoal = async (data: CreateGoalRequest) => {
     try {
       const response = await goalManagementApplicationService.createGoal(data);
       showCreateDialog.value = false;
@@ -203,7 +204,7 @@ export function useGoal() {
   /**
    * 更新目标
    */
-  const updateGoal = async (uuid: string, data: GoalContracts.UpdateGoalRequest) => {
+  const updateGoal = async (uuid: string, data: UpdateGoalRequest) => {
     try {
       const response = await goalManagementApplicationService.updateGoal(uuid, data);
       showEditDialog.value = false;
@@ -299,7 +300,7 @@ export function useGoal() {
   /**
    * 创建目标目录
    */
-  const createGoalFolder = async (data: GoalContracts.CreateGoalFolderRequest) => {
+  const createGoalFolder = async (data: CreateGoalFolderRequest) => {
     try {
       const response = await goalFolderApplicationService.createGoalFolder(data);
       snackbar.showSuccess('目标目录创建成功');
@@ -313,7 +314,7 @@ export function useGoal() {
   /**
    * 更新目标目录
    */
-  const updateGoalFolder = async (uuid: string, data: GoalContracts.UpdateGoalFolderRequest) => {
+  const updateGoalFolder = async (uuid: string, data: UpdateGoalFolderRequest) => {
     try {
       const response = await goalFolderApplicationService.updateGoalFolder(uuid, data);
       snackbar.showSuccess('目标目录更新成功');
@@ -448,7 +449,7 @@ export function useGoal() {
    */
   const createKeyResultForGoal = async (
     goalUuid: string,
-    request: Omit<GoalContracts.AddKeyResultRequest, 'goalUuid'>,
+    request: Omit<AddKeyResultRequest, 'goalUuid'>,
   ) => {
     try {
       const response = await keyResultApplicationService.createKeyResultForGoal(goalUuid, request);
@@ -485,7 +486,7 @@ export function useGoal() {
   const updateKeyResultForGoal = async (
     goalUuid: string,
     keyResultUuid: string,
-    request: GoalContracts.UpdateKeyResultRequest,
+    request: UpdateKeyResultRequest,
   ) => {
     try {
       const response = await keyResultApplicationService.updateKeyResultForGoal(goalUuid, keyResultUuid, request);
@@ -537,7 +538,7 @@ export function useGoal() {
    * @param goalUuid - 目标 UUID
    * @returns 进度分解详情
    */
-  const fetchProgressBreakdown = async (goalUuid: string): Promise<GoalContracts.ProgressBreakdown> => {
+  const fetchProgressBreakdown = async (goalUuid: string): Promise<ProgressBreakdown> => {
     try {
       const breakdown = await keyResultApplicationService.getProgressBreakdown(goalUuid);
       return breakdown;
@@ -555,7 +556,7 @@ export function useGoal() {
   const createGoalRecord = async (
     goalUuid: string,
     keyResultUuid: string,
-    request: GoalContracts.CreateGoalRecordRequest,
+    request: CreateGoalRecordRequest,
   ) => {
     try {
       const response = await goalRecordApplicationService.createGoalRecord(goalUuid, keyResultUuid, request);
@@ -619,7 +620,7 @@ export function useGoal() {
    */
   const createGoalReview = async (
     goalUuid: string,
-    request: GoalContracts.CreateGoalReviewRequest,
+    request: CreateGoalReviewRequest,
   ) => {
     try {
       const response = await goalReviewApplicationService.createGoalReview(goalUuid, request);
@@ -650,7 +651,7 @@ export function useGoal() {
   const updateGoalReview = async (
     goalUuid: string,
     reviewUuid: string,
-    request: Partial<GoalContracts.UpdateGoalReviewRequest>,
+    request: Partial<UpdateGoalReviewRequest>,
   ) => {
     try {
       const response = await goalReviewApplicationService.updateGoalReview(goalUuid, reviewUuid, request);
@@ -1001,4 +1002,7 @@ export function useGoal() {
     clearCurrentEntityState,
   };
 }
+
+
+
 

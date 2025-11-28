@@ -139,7 +139,7 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../../stores/repositoryStore';
 import { useMessage } from '@dailyuse/ui';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TagClientDTO, BookmarkClientDTO } from '@dailyuse/contracts/repository';
 import { repositoryApplicationService } from '../../application/services/repositoryApplicationService';
 
 const props = defineProps<{
@@ -174,15 +174,15 @@ const currentRepositoryUuid = ref<string | null>(repositoryStore.selectedReposit
 const newRepository = ref({
   name: '',
   path: '',
-  type: RepositoryContracts.RepositoryType.LOCAL,
+  type: RepositoryType.LOCAL,
   description: '',
 });
 
 // 仓库类型选项
 const repositoryTypes = [
-  { title: '本地仓库', value: RepositoryContracts.RepositoryType.LOCAL },
-  { title: 'Git 仓库', value: RepositoryContracts.RepositoryType.GIT },
-  { title: '云端仓库', value: RepositoryContracts.RepositoryType.CLOUD },
+  { title: '本地仓库', value: RepositoryType.LOCAL },
+  { title: 'Git 仓库', value: RepositoryType.GIT },
+  { title: '云端仓库', value: RepositoryType.CLOUD },
 ];
 
 // 表单验证规则
@@ -192,13 +192,13 @@ const rules = {
 };
 
 // 获取仓库图标
-function getRepositoryIcon(type: RepositoryContracts.RepositoryType): string {
+function getRepositoryIcon(type: RepositoryType): string {
   switch (type) {
-    case RepositoryContracts.RepositoryType.LOCAL:
+    case RepositoryType.LOCAL:
       return 'mdi-folder';
-    case RepositoryContracts.RepositoryType.GIT:
+    case RepositoryType.GIT:
       return 'mdi-git';
-    case RepositoryContracts.RepositoryType.CLOUD:
+    case RepositoryType.CLOUD:
       return 'mdi-cloud';
     default:
       return 'mdi-folder';
@@ -206,13 +206,13 @@ function getRepositoryIcon(type: RepositoryContracts.RepositoryType): string {
 }
 
 // 获取仓库颜色
-function getRepositoryColor(type: RepositoryContracts.RepositoryType): string {
+function getRepositoryColor(type: RepositoryType): string {
   switch (type) {
-    case RepositoryContracts.RepositoryType.LOCAL:
+    case RepositoryType.LOCAL:
       return 'blue';
-    case RepositoryContracts.RepositoryType.GIT:
+    case RepositoryType.GIT:
       return 'orange';
-    case RepositoryContracts.RepositoryType.CLOUD:
+    case RepositoryType.CLOUD:
       return 'purple';
     default:
       return 'grey';
@@ -220,15 +220,15 @@ function getRepositoryColor(type: RepositoryContracts.RepositoryType): string {
 }
 
 // 获取状态颜色
-function getStatusColor(status: RepositoryContracts.RepositoryStatus): string {
+function getStatusColor(status: RepositoryStatus): string {
   switch (status) {
-    case RepositoryContracts.RepositoryStatus.ACTIVE:
+    case RepositoryStatus.ACTIVE:
       return 'success';
-    case RepositoryContracts.RepositoryStatus.ARCHIVED:
+    case RepositoryStatus.ARCHIVED:
       return 'grey';
-    case RepositoryContracts.RepositoryStatus.SYNCING:
+    case RepositoryStatus.SYNCING:
       return 'info';
-    case RepositoryContracts.RepositoryStatus.INACTIVE:
+    case RepositoryStatus.INACTIVE:
       return 'warning';
     default:
       return 'grey';
@@ -236,15 +236,15 @@ function getStatusColor(status: RepositoryContracts.RepositoryStatus): string {
 }
 
 // 获取状态文本
-function getStatusText(status: RepositoryContracts.RepositoryStatus): string {
+function getStatusText(status: RepositoryStatus): string {
   switch (status) {
-    case RepositoryContracts.RepositoryStatus.ACTIVE:
+    case RepositoryStatus.ACTIVE:
       return '活跃';
-    case RepositoryContracts.RepositoryStatus.ARCHIVED:
+    case RepositoryStatus.ARCHIVED:
       return '已归档';
-    case RepositoryContracts.RepositoryStatus.SYNCING:
+    case RepositoryStatus.SYNCING:
       return '同步中';
-    case RepositoryContracts.RepositoryStatus.INACTIVE:
+    case RepositoryStatus.INACTIVE:
       return '未激活';
     default:
       return '未知';
@@ -269,7 +269,7 @@ function closeCreateDialog() {
   newRepository.value = {
     name: '',
     path: '',
-    type: RepositoryContracts.RepositoryType.LOCAL,
+    type: RepositoryType.LOCAL,
     description: '',
   };
   createForm.value?.reset();
@@ -332,3 +332,4 @@ function close() {
   background-color: rgba(var(--v-theme-primary), 0.08);
 }
 </style>
+

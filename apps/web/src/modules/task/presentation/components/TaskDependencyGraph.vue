@@ -104,14 +104,14 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
 import { taskDependencyGraphService } from '@/modules/task/application/services/TaskDependencyGraphService';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 
-type TaskClientDTO = TaskContracts.TaskTemplateClientDTO;
+type TaskClientDTO = TaskTemplateClientDTO;
 
 // Props
 interface Props {
   tasks: TaskClientDTO[];
-  dependencies: TaskContracts.TaskDependencyClientDTO[];
+  dependencies: TaskDependencyClientDTO[];
   height?: number;
 }
 
@@ -249,3 +249,4 @@ onUnmounted(() => {
   gap: 8px;
 }
 </style>
+

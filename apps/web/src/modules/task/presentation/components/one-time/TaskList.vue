@@ -349,7 +349,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { TaskTemplateDTO } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO as TaskTemplateDTO } from '@dailyuse/contracts/task';
 import TaskCard from './TaskCard.vue';
 
 interface Props {
@@ -628,3 +628,4 @@ function formatDate(date: string): string {
   }
 }
 </style>
+

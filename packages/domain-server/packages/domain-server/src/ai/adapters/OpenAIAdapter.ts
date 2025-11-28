@@ -5,7 +5,7 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, generateText } from 'ai';
-import type { AIProvider, AIModel } from '@dailyuse/contracts';
+import type { AIProvider, AIModel } from '@dailyuse/contracts/ai';
 import {
   BaseAIAdapter,
   type AIGenerationRequest,

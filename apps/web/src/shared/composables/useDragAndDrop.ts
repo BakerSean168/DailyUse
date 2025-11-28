@@ -10,9 +10,7 @@
  */
 
 import { ref, computed, type Ref } from 'vue';
-import type { TaskContracts } from '@dailyuse/contracts';
-
-type TaskTemplateClientDTO = TaskContracts.TaskTemplateClientDTO;
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 /**
  * Drag operation type

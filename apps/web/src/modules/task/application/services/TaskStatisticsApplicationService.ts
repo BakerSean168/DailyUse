@@ -3,7 +3,7 @@
  * 任务统计应用服务 - 负责任务相关的数据统计与分析
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { taskStatisticsApiClient } from '../../infrastructure/api/taskApiClient';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
@@ -64,7 +64,7 @@ export class TaskStatisticsApplicationService {
   async getTaskStatistics(
     accountUuid?: string,
     forceRecalculate = false,
-  ): Promise<TaskContracts.TaskStatisticsServerDTO> {
+  ): Promise<TaskStatisticsServerDTO> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -92,7 +92,7 @@ export class TaskStatisticsApplicationService {
   async recalculateStatistics(
     accountUuid?: string,
     force = true,
-  ): Promise<TaskContracts.TaskStatisticsServerDTO> {
+  ): Promise<TaskStatisticsServerDTO> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -233,3 +233,4 @@ export class TaskStatisticsApplicationService {
  * 导出单例实例
  */
 export const taskStatisticsApplicationService = TaskStatisticsApplicationService.getInstance();
+

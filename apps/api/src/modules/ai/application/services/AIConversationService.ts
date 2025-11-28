@@ -15,13 +15,13 @@
 
 import type { IAIConversationRepository } from '@dailyuse/domain-server';
 import { AIConversationServer, MessageServer } from '@dailyuse/domain-server';
-import type { AIContracts } from '@dailyuse/contracts';
-import { MessageRole, ConversationStatus } from '@dailyuse/contracts';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import { MessageRole, ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 
-type AIConversationServerDTO = AIContracts.AIConversationServerDTO;
-type AIConversationClientDTO = AIContracts.AIConversationClientDTO;
-type MessageClientDTO = AIContracts.MessageClientDTO;
+type AIConversationServerDTO = AIConversationServerDTO;
+type AIConversationClientDTO = AIConversationClientDTO;
+type MessageClientDTO = MessageClientDTO;
 
 const logger = createLogger('AIConversationService');
 
@@ -256,3 +256,5 @@ export class AIConversationService {
     }
   }
 }
+
+

@@ -3,7 +3,7 @@
  * AI 提示词模板
  */
 
-import { GenerationTaskType } from '@dailyuse/contracts';
+import { GenerationTaskType } from '@dailyuse/contracts/ai';
 
 export interface PromptTemplate {
   system: string;
@@ -323,3 +323,7 @@ export function getPromptTemplate(taskType: GenerationTaskType): PromptTemplate 
       return GENERATE_KEY_RESULTS_PROMPT;
   }
 }
+
+
+
+

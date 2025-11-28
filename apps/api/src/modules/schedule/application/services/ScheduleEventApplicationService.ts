@@ -1,7 +1,6 @@
 import type { IScheduleRepository } from '@dailyuse/domain-server';
 import { Schedule } from '@dailyuse/domain-server';
-import { ScheduleContracts } from '@dailyuse/contracts';
-import type { ConflictDetectionResult } from '@dailyuse/contracts';
+import type { ScheduleClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '../../infrastructure/di/ScheduleContainer';
 import { createLogger } from '@dailyuse/utils';
 
@@ -57,7 +56,7 @@ export class ScheduleEventApplicationService {
     location?: string;
     attendees?: string[];
     autoDetectConflicts?: boolean; // 默认 true
-  }): Promise<ScheduleContracts.ScheduleClientDTO> {
+  }): Promise<ScheduleClientDTO> {
     logger.info('Creating schedule', { title: params.title, accountUuid: params.accountUuid });
 
     // 参数验证
@@ -101,7 +100,7 @@ export class ScheduleEventApplicationService {
    * @param uuid 日程UUID
    * @returns 日程事件 DTO，不存在则返回 null
    */
-  async getSchedule(uuid: string): Promise<ScheduleContracts.ScheduleClientDTO | null> {
+  async getSchedule(uuid: string): Promise<ScheduleClientDTO | null> {
     logger.debug('Fetching schedule', { uuid });
 
     const schedule = await this.scheduleRepository.findByUuid(uuid);
@@ -120,7 +119,7 @@ export class ScheduleEventApplicationService {
    * @param accountUuid 账户UUID
    * @returns 日程事件 DTO 列表
    */
-  async getSchedulesByAccount(accountUuid: string): Promise<ScheduleContracts.ScheduleClientDTO[]> {
+  async getSchedulesByAccount(accountUuid: string): Promise<ScheduleClientDTO[]> {
     logger.debug('Fetching schedules by account', { accountUuid });
 
     const schedules = await this.scheduleRepository.findByAccountUuid(accountUuid);
@@ -140,7 +139,7 @@ export class ScheduleEventApplicationService {
     accountUuid: string,
     startTime: number,
     endTime: number,
-  ): Promise<ScheduleContracts.ScheduleClientDTO[]> {
+  ): Promise<ScheduleClientDTO[]> {
     logger.debug('Fetching schedules by time range', { accountUuid, startTime, endTime });
 
     const schedules = await this.scheduleRepository.findByTimeRange(
@@ -171,7 +170,7 @@ export class ScheduleEventApplicationService {
       attendees?: string[];
       autoDetectConflicts?: boolean;
     },
-  ): Promise<ScheduleContracts.ScheduleClientDTO> {
+  ): Promise<ScheduleClientDTO> {
     logger.info('Updating schedule', { uuid, updates: Object.keys(params) });
 
     // 查询现有日程
@@ -357,3 +356,4 @@ export class ScheduleEventApplicationService {
     return conflictResult;
   }
 }
+

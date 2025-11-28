@@ -3,7 +3,7 @@
  * 注册应用服务 - 负责用户注册相关的用例
  */
 
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
 
@@ -48,7 +48,7 @@ export class RegistrationApplicationService {
    * @returns 包含账户信息和提示消息
    */
   async register(
-    request: AuthenticationContracts.RegisterRequestDTO,
+    request: RegisterRequestDTO,
   ): Promise<{ account: any; message: string }> {
     try {
       this.authStore.setLoading(true);
@@ -71,3 +71,4 @@ export class RegistrationApplicationService {
 
 // 导出单例
 export const registrationApplicationService = RegistrationApplicationService.getInstance();
+

@@ -5,7 +5,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { SearchApplicationService } from '../../../application/services';
-import type { SearchRequest, SearchMode } from '@dailyuse/contracts';
+import type { SearchRequest } from '@dailyuse/contracts/repository';
+import { SearchMode } from '@dailyuse/contracts/repository';
 
 export class SearchController {
   private searchService: SearchApplicationService;
@@ -75,3 +76,7 @@ export class SearchController {
     }
   };
 }
+
+
+
+

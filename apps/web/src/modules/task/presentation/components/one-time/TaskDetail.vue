@@ -382,7 +382,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TaskTemplateDTO } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO as TaskTemplateDTO } from '@dailyuse/contracts/task';
 
 interface TaskHistory {
   timestamp: string;
@@ -567,3 +567,4 @@ function toggleSubtask(uuid: string, completed: boolean) {
   opacity: 0.6;
 }
 </style>
+

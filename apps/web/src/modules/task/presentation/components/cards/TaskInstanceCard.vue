@@ -40,7 +40,7 @@
 import { computed } from 'vue';
 import { format } from 'date-fns';
 import type { TaskInstance } from '@dailyuse/domain-client';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import { Goal, KeyResult } from '@dailyuse/domain-client';
 import { useTaskStore } from '../../stores/taskStore';
 
@@ -188,3 +188,4 @@ const getKeyResultName = (binding: any) => {
   margin-top: 0.5rem;
 }
 </style>
+

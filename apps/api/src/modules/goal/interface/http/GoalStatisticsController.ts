@@ -8,7 +8,7 @@ import {
   ResponseCode,
   createResponseBuilder,
   getHttpStatusCode,
-} from '@dailyuse/contracts';
+} from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 // 创建 logger 实例
@@ -283,3 +283,7 @@ export class GoalStatisticsController {
     }
   }
 }
+
+
+
+

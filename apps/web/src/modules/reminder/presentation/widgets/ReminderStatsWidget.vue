@@ -3,15 +3,15 @@
  * ReminderStatsWidget - 提醒统计 Widget
  */
 import { computed } from 'vue';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useReminderStatistics } from '@/modules/notification/presentation/composables/useReminderStatistics';
 
 interface Props {
-  size?: DashboardContracts.WidgetSize;
+  size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  size: 'small' as DashboardContracts.WidgetSize,
+  size: 'small' as WidgetSize,
 });
 
 // ✅ 通过 composable 获取数据
@@ -60,3 +60,4 @@ const stats = computed(() => [
   height: 100%;
 }
 </style>
+

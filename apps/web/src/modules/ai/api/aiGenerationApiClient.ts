@@ -9,10 +9,10 @@
  */
 
 import { apiClient } from '@/shared/api/instances';
-import type { AIContracts } from '@dailyuse/contracts';
+import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 // 类型别名
-type AIUsageQuotaClientDTO = AIContracts.AIUsageQuotaClientDTO;
+type AIUsageQuotaClientDTO = AIUsageQuotaClientDTO;
 
 /**
  * AI Generation API Client
@@ -76,3 +76,4 @@ export class AIGenerationApiClient {
  * 导出单例实例
  */
 export const aiGenerationApiClient = new AIGenerationApiClient();
+

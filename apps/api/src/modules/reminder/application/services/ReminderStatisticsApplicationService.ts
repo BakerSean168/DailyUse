@@ -5,7 +5,7 @@ import type {
 } from '@dailyuse/domain-server';
 import { ReminderStatistics } from '@dailyuse/domain-server';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
 
 /**
  * ReminderStatistics 应用服务
@@ -74,7 +74,7 @@ export class ReminderStatisticsApplicationService {
   async getStatistics(
     accountUuid: string,
     forceRecalculate = false,
-  ): Promise<ReminderContracts.ReminderStatisticsServerDTO> {
+  ): Promise<ReminderStatisticsServerDTO> {
     // 1. 尝试从数据库获取现有统计数据
     let statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
 
@@ -221,3 +221,4 @@ export class ReminderStatisticsApplicationService {
     return statistics.getTriggerTrend();
   }
 }
+

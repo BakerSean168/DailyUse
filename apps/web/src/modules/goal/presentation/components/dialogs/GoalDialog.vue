@@ -156,7 +156,8 @@ import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
 import { Goal, KeyResult } from '@dailyuse/domain-client';
-import { GoalContracts } from '@dailyuse/contracts';
+import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
 import { useMessage } from '@dailyuse/ui';
@@ -452,15 +453,15 @@ const goalFeasibility = computed({
 });
 
 const importanceLevel = computed({
-  get: () => goalModel.value?.importance || GoalContracts.ImportanceLevel.Moderate,
-  set: (val: GoalContracts.ImportanceLevel) => {
+  get: () => goalModel.value?.importance || ImportanceLevel.Moderate,
+  set: (val: ImportanceLevel) => {
     goalModel.value?.updateImportance(val);
   },
 });
 
 const urgencyLevel = computed({
-  get: () => goalModel.value?.urgency || GoalContracts.UrgencyLevel.Medium,
-  set: (val: GoalContracts.UrgencyLevel) => {
+  get: () => goalModel.value?.urgency || UrgencyLevel.Medium,
+  set: (val: UrgencyLevel) => {
     goalModel.value?.updateUrgency(val);
   },
 });
@@ -793,3 +794,4 @@ defineExpose({
   }
 }
 </style>
+

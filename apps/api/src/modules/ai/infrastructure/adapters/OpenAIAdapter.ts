@@ -9,8 +9,8 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, generateText } from 'ai';
-import { AIProvider, AIModel } from '@dailyuse/contracts';
-import type { AIContracts } from '@dailyuse/contracts';
+import { AIProvider, AIModel } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 import {
   BaseAIAdapter,
   type AIGenerationRequest,
@@ -19,7 +19,7 @@ import {
 } from './BaseAIAdapter';
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
 
-type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
+type TokenUsageServerDTO = TokenUsageServerDTO;
 
 /**
  * OpenAI Adapter 实现
@@ -195,3 +195,7 @@ export class OpenAIAdapter extends BaseAIAdapter {
     }
   }
 }
+
+
+
+

@@ -6,7 +6,8 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { searchDataProvider } from '../SearchDataProvider';
-import type { GoalContracts, TaskContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 
 // Mock the services
 vi.mock('@/modules/goal/application/services');
@@ -79,3 +80,5 @@ describe('SearchDataProvider Integration', () => {
     });
   });
 });
+
+

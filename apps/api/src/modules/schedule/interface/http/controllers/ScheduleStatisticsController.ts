@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { ScheduleStatisticsApplicationService } from '../../../application/services/ScheduleStatisticsApplicationService';
-import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts';
+import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 // 创建 logger 实例

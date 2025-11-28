@@ -1,7 +1,7 @@
 import type { IGoalStatisticsRepository, IGoalRepository } from '@dailyuse/domain-server';
 import { GoalStatisticsDomainService } from '@dailyuse/domain-server';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 
 /**
  * GoalStatistics 应用服务
@@ -88,7 +88,7 @@ export class GoalStatisticsApplicationService {
   /**
    * 获取账户的统计信息（不存在则自动创建）
    */
-  async getOrCreateStatistics(accountUuid: string): Promise<GoalContracts.GoalStatisticsClientDTO> {
+  async getOrCreateStatistics(accountUuid: string): Promise<GoalStatisticsClientDTO> {
     // 1. 尝试获取现有统计
     let statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
 
@@ -107,7 +107,7 @@ export class GoalStatisticsApplicationService {
   /**
    * 获取账户的统计信息（不自动创建）
    */
-  async getStatistics(accountUuid: string): Promise<GoalContracts.GoalStatisticsClientDTO | null> {
+  async getStatistics(accountUuid: string): Promise<GoalStatisticsClientDTO | null> {
     const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
     return statistics ? statistics.toClientDTO() : null;
   }
@@ -116,8 +116,8 @@ export class GoalStatisticsApplicationService {
    * 初始化统计信息（从现有Goal数据计算）
    */
   async initializeStatistics(
-    request: GoalContracts.InitializeGoalStatisticsRequest,
-  ): Promise<GoalContracts.InitializeGoalStatisticsResponse> {
+    request: InitializeGoalStatisticsRequest,
+  ): Promise<InitializeGoalStatisticsResponse> {
     try {
       const accountUuid = request.accountUuid;
 
@@ -181,8 +181,8 @@ export class GoalStatisticsApplicationService {
    * 重新计算统计信息（修复数据不一致）
    */
   async recalculateStatistics(
-    request: GoalContracts.RecalculateGoalStatisticsRequest,
-  ): Promise<GoalContracts.RecalculateGoalStatisticsResponse> {
+    request: RecalculateGoalStatisticsRequest,
+  ): Promise<RecalculateGoalStatisticsResponse> {
     const { accountUuid, force = false } = request;
 
     try {
@@ -227,7 +227,7 @@ export class GoalStatisticsApplicationService {
   /**
    * 处理统计更新事件（增量更新）
    */
-  async handleStatisticsUpdateEvent(event: GoalContracts.GoalStatisticsUpdateEvent): Promise<void> {
+  async handleStatisticsUpdateEvent(event: GoalStatisticsUpdateEvent): Promise<void> {
     // 使用锁保护整个"读取-修改-保存"流程
     return this.withLock(event.accountUuid, async () => {
       // 1. 获取或创建统计
@@ -252,3 +252,4 @@ export class GoalStatisticsApplicationService {
     return await this.statisticsRepository.delete(accountUuid);
   }
 }
+

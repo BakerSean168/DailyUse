@@ -4,7 +4,13 @@
  */
 
 import { scheduleApiClient } from '../infrastructure/api';
-import { ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type {
+  ScheduleTaskClientDTO,
+  CreateScheduleTaskRequestDTO,
+  ScheduleStatisticsClientDTO,
+  ModuleStatisticsClientDTO,
+} from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/domain-client';
 import { createLogger } from '@dailyuse/utils';
 
@@ -19,7 +25,7 @@ export class ScheduleWebApplicationService {
    * 将客户端 DTO 转换为领域聚合
    */
   private toScheduleTaskAggregate(
-    task: ScheduleContracts.ScheduleTaskClientDTO,
+    task: ScheduleTaskClientDTO,
   ): ScheduleTask {
     return ScheduleTask.fromClientDTO(task);
   }
@@ -28,7 +34,7 @@ export class ScheduleWebApplicationService {
    * 将客户端 DTO 列表转换为领域聚合列表
    */
   private toScheduleTaskAggregateList(
-    tasks: ScheduleContracts.ScheduleTaskClientDTO[],
+    tasks: ScheduleTaskClientDTO[],
   ): ScheduleTask[] {
     return tasks.map((task) => this.toScheduleTaskAggregate(task));
   }
@@ -39,7 +45,7 @@ export class ScheduleWebApplicationService {
    * 创建调度任务
    */
   async createTask(
-    request: ScheduleContracts.CreateScheduleTaskRequestDTO,
+    request: CreateScheduleTaskRequestDTO,
   ): Promise<ScheduleTask> {
     try {
       logger.info('Creating schedule task', { name: request.name });
@@ -56,7 +62,7 @@ export class ScheduleWebApplicationService {
    * 批量创建调度任务
    */
   async createTasksBatch(
-    tasks: ScheduleContracts.CreateScheduleTaskRequestDTO[],
+    tasks: CreateScheduleTaskRequestDTO[],
   ): Promise<ScheduleTask[]> {
     try {
       logger.info('Creating schedule tasks batch', { count: tasks.length });
@@ -88,7 +94,7 @@ export class ScheduleWebApplicationService {
    * 根据模块获取任务
    */
   async getTasksByModule(
-    module: ScheduleContracts.SourceModule,
+    module: SourceModule,
   ): Promise<ScheduleTask[]> {
     try {
       logger.info('Fetching tasks by module', { module });
@@ -139,7 +145,7 @@ export class ScheduleWebApplicationService {
    * 根据来源获取任务
    */
   async getTaskBySource(
-    sourceModule: ScheduleContracts.SourceModule,
+    sourceModule: SourceModule,
     sourceEntityId: string,
   ): Promise<ScheduleTask[]> {
     try {
@@ -265,7 +271,7 @@ export class ScheduleWebApplicationService {
   /**
    * 获取统计信息
    */
-  async getStatistics(): Promise<ScheduleContracts.ScheduleStatisticsClientDTO> {
+  async getStatistics(): Promise<ScheduleStatisticsClientDTO> {
     try {
       logger.info('Fetching schedule statistics');
       const statistics = await scheduleApiClient.getStatistics();
@@ -281,8 +287,8 @@ export class ScheduleWebApplicationService {
    * 获取模块级别统计
    */
   async getModuleStatistics(
-    module: ScheduleContracts.SourceModule,
-  ): Promise<ScheduleContracts.ModuleStatisticsClientDTO> {
+    module: SourceModule,
+  ): Promise<ModuleStatisticsClientDTO> {
     try {
       logger.info('Fetching module statistics', { module });
       const statistics = await scheduleApiClient.getModuleStatistics(module);
@@ -298,7 +304,7 @@ export class ScheduleWebApplicationService {
    * 获取所有模块统计
    */
   async getAllModuleStatistics(): Promise<
-    Record<ScheduleContracts.SourceModule, ScheduleContracts.ModuleStatisticsClientDTO>
+    Record<SourceModule, ModuleStatisticsClientDTO>
   > {
     try {
       logger.info('Fetching all module statistics');
@@ -314,7 +320,7 @@ export class ScheduleWebApplicationService {
   /**
    * 重新计算统计信息
    */
-  async recalculateStatistics(): Promise<ScheduleContracts.ScheduleStatisticsClientDTO> {
+  async recalculateStatistics(): Promise<ScheduleStatisticsClientDTO> {
     try {
       logger.info('Recalculating statistics');
       const statistics = await scheduleApiClient.recalculateStatistics();
@@ -357,3 +363,4 @@ export class ScheduleWebApplicationService {
 
 // 导出单例实例
 export const scheduleWebApplicationService = new ScheduleWebApplicationService();
+

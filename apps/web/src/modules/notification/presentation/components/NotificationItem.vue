@@ -63,9 +63,9 @@
 import { computed } from 'vue';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
+type NotificationClientDTO = NotificationClientDTO;
 
 interface Props {
   notification: NotificationClientDTO;
@@ -156,3 +156,4 @@ function handleDelete() {
   background-color: rgba(0, 0, 0, 0.04);
 }
 </style>
+

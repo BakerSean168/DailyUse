@@ -10,18 +10,18 @@
  */
 
 import { computed, onMounted, ref } from 'vue';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
 const useTaskInstanceStore = useTaskStore; // 别名兼容
-import { TaskInstanceStatus } from '@dailyuse/contracts';
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
 // ===== Props =====
 interface Props {
-    size?: DashboardContracts.WidgetSize;
+    size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    size: 'medium' as DashboardContracts.WidgetSize,
+    size: 'medium' as WidgetSize,
 });
 
 // ===== Stores =====
@@ -258,3 +258,4 @@ onMounted(async () => {
     transform: translateX(4px);
 }
 </style>
+

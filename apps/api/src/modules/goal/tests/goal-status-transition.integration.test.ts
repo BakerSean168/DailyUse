@@ -21,7 +21,7 @@ import { PrismaGoalStatisticsRepository } from '../infrastructure/repositories/P
 import { PrismaGoalRepository } from '../infrastructure/repositories/PrismaGoalRepository';
 import { getTestPrisma, createTestAccounts } from '../../../test/helpers/database-helpers';
 import { GoalEventPublisher } from '../application/services/GoalEventPublisher';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
 describe('Goal Status Transition Integration Tests', () => {
   let statisticsService: GoalStatisticsApplicationService;
@@ -442,3 +442,4 @@ describe('Goal Status Transition Integration Tests', () => {
     });
   });
 });
+

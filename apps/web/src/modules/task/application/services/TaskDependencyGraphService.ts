@@ -5,12 +5,12 @@
  * 并提供关键路径计算、拓扑排序等图算法功能
  */
 
-import { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 
 // 类型别名，简化代码
 type TaskClientDTO = TaskForDAG;
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
+type TaskDependencyClientDTO = TaskDependencyClientDTO;
 
 /**
  * ECharts Graph 节点数据
@@ -534,3 +534,4 @@ export class TaskDependencyGraphService {
 
 // 导出单例
 export const taskDependencyGraphService = new TaskDependencyGraphService();
+

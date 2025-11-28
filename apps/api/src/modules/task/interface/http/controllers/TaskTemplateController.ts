@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { TaskTemplateApplicationService } from '../../../application/services/TaskTemplateApplicationService';
-import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts';
+import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import { isTaskError } from '@dailyuse/domain-server';
 

@@ -21,7 +21,7 @@
  * - 其他订阅者（邮件、统计等）：通过事件总线异步通知
  */
 
-import { AccountContracts } from '@dailyuse/contracts';
+import type { AccountServerDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
 import type { IAccountRepository, IAuthCredentialRepository } from '@dailyuse/domain-server';
 import { AccountDomainService, AuthenticationDomainService } from '@dailyuse/domain-server';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
@@ -51,7 +51,7 @@ export interface RegisterUserRequest {
  */
 export interface RegisterUserResponse {
   success: boolean;
-  account: AccountContracts.AccountClientDTO;
+  account: AccountClientDTO;
   message: string;
 }
 
@@ -337,3 +337,4 @@ export class RegistrationApplicationService {
     });
   }
 }
+

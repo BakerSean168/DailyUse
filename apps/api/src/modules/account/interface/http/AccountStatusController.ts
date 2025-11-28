@@ -14,7 +14,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { AccountStatusApplicationService } from '../../application/services/AccountStatusApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountStatusController');
@@ -363,3 +363,5 @@ export class AccountStatusController {
     }
   }
 }
+
+

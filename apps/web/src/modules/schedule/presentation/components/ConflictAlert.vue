@@ -28,10 +28,10 @@
 </template>
 
 <script setup lang="ts">
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 
 defineProps<{
-  conflictResult: ScheduleContracts.ConflictDetectionResult | null;
+  conflictResult: ConflictDetectionResult | null;
 }>();
 
 function formatDuration(ms: number): string {
@@ -43,7 +43,7 @@ function formatDuration(ms: number): string {
   return `${minutes}分钟`;
 }
 
-function formatSuggestion(suggestion: ScheduleContracts.ConflictSuggestion): string {
+function formatSuggestion(suggestion: ConflictSuggestion): string {
   const startTime = new Date(suggestion.newStartTime).toLocaleTimeString('zh-CN', { 
     hour: '2-digit', 
     minute: '2-digit' 
@@ -65,3 +65,4 @@ function formatSuggestion(suggestion: ScheduleContracts.ConflictSuggestion): str
   }
 }
 </script>
+

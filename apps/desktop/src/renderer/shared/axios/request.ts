@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import type { ApiResponse } from '@dailyuse/contracts';
+import type { ApiResponse } from '@dailyuse/contracts/response';
 import { TokenManager } from '@renderer/modules/Account/utils/tokenManagement';
 import type { InternalAxiosRequestConfig, AxiosRequestConfig } from 'axios';
 // 创建自定义的 axios 实例类型

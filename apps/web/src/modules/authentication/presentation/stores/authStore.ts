@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 
 // 使用 DTO 类型
-type SessionDTO = AuthenticationContracts.ActiveSessionsResponseDTO['sessions'][0];
-type ApiKeyDTO = AuthenticationContracts.ApiKeyListResponseDTO['keys'][0];
-type TrustedDeviceDTO = AuthenticationContracts.TrustedDevicesResponseDTO['devices'][0];
+type SessionDTO = ActiveSessionsResponseDTO['sessions'][0];
+type ApiKeyDTO = ApiKeyListResponseDTO['keys'][0];
+type TrustedDeviceDTO = TrustedDevicesResponseDTO['devices'][0];
 
 /**
  * Auth Store - 状态管理
@@ -397,3 +397,4 @@ export const useAuthStore = defineStore('auth', () => {
     restoreFromStorage,
   };
 });
+

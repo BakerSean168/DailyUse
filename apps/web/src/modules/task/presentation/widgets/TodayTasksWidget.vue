@@ -10,18 +10,18 @@
  */
 
 import { computed, onMounted, ref } from 'vue';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useTaskInstance } from '@/modules/task/presentation/composables/useTaskInstance';
-import { TaskInstanceStatus } from '@dailyuse/contracts';
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import type { TaskInstance } from '@dailyuse/domain-client';
 
 // ===== Props =====
 interface Props {
-    size?: DashboardContracts.WidgetSize;
+    size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    size: 'medium' as DashboardContracts.WidgetSize,
+    size: 'medium' as WidgetSize,
 });
 
 // ===== Composables =====
@@ -264,3 +264,4 @@ onMounted(async () => {
     transform: translateX(4px);
 }
 </style>
+

@@ -51,7 +51,7 @@ import { useRouter, useRoute } from 'vue-router';
 // import { TaskDetail, TaskForm } from '@/modules/task/presentation/components/one-time';
 // import { useOneTimeTask } from '@/modules/task/presentation/composables/useOneTimeTask';
 import { useNotification } from '@/modules/task/presentation/composables/useNotification';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 
 const router = useRouter();
 const route = useRoute();
@@ -72,9 +72,9 @@ const dialog = ref(false);
 const loading = ref(false);
 const operationLoading = ref(false);
 const error = ref<string>('');
-const task = ref<TaskContracts.OneTimeTaskClientDTO | null>(null);
-const subtasks = ref<TaskContracts.OneTimeTaskClientDTO[]>([]);
-const dependencies = ref<TaskContracts.OneTimeTaskClientDTO[]>([]);
+const task = ref<OneTimeTaskClientDTO | null>(null);
+const subtasks = ref<OneTimeTaskClientDTO[]>([]);
+const dependencies = ref<OneTimeTaskClientDTO[]>([]);
 const taskHistory = ref<any[]>([]);
 
 // Edit Dialog State
@@ -321,3 +321,4 @@ const handleToggleSubtask = async (subtaskUuid: string) => {
   }
 };
 </script>
+

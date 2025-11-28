@@ -237,7 +237,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TaskTemplateDTO } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO as TaskTemplateDTO } from '@dailyuse/contracts/task';
 
 interface Props {
   subtasks: TaskTemplateDTO[];
@@ -406,3 +406,4 @@ const emit = defineEmits<{
   min-width: 0; // 防止文本溢出
 }
 </style>
+

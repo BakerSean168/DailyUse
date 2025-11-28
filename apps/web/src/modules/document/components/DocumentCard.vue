@@ -36,9 +36,9 @@
 </template>
 
 <script setup lang="ts">
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
+type DocumentClientDTO = DocumentClientDTO;
 
 interface Props {
   document: DocumentClientDTO;
@@ -73,3 +73,4 @@ const getStatusText = (status: string) => {
   }
 };
 </script>
+

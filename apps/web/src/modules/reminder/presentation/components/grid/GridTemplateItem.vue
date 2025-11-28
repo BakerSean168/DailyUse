@@ -50,10 +50,11 @@
 
 <script setup lang="ts">
 import { inject, computed, ref } from 'vue';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderTemplateStatus, ReminderGroupType } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
 import { useReminderStore } from '../../stores/reminderStore';
 
-type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
+type ReminderTemplate = ReminderTemplateClientDTO;
 
 const reminderStore = useReminderStore();
 
@@ -201,3 +202,4 @@ const handleDeleteTemplate = () => {
   color: #f44336;
 }
 </style>
+

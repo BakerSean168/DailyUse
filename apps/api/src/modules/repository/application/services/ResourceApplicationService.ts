@@ -4,13 +4,13 @@
  */
 import { v4 as uuidv4 } from 'uuid';
 import { Resource } from '@dailyuse/domain-server';
-import { ResourceType } from '@dailyuse/contracts';
+import { ResourceType } from '@dailyuse/contracts/repository';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 
-type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
-type ResourceClientDTO = RepositoryContracts.ResourceClientDTO;
+type ResourceServerDTO = ResourceServerDTO;
+type ResourceClientDTO = ResourceClientDTO;
 
 /**
  * Resource 应用服务
@@ -108,3 +108,5 @@ export class ResourceApplicationService {
     await this.resourceRepository.save(resource);
   }
 }
+
+

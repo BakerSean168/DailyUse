@@ -1,5 +1,13 @@
 import { apiClient } from '@/shared/api/instances';
-import { type TaskContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type {
+  TaskTemplateClientDTO,
+  TaskInstanceClientDTO,
+  CreateTaskTemplateRequest,
+  UpdateTaskTemplateRequest,
+  GenerateInstancesRequest,
+  BindToGoalRequest,
+} from '@dailyuse/contracts/task';
 
 /**
  * Task Template API 客户端
@@ -26,8 +34,8 @@ export class TaskTemplateApiClient {
    * 创建任务模板
    */
   async createTaskTemplate(
-    request: TaskContracts.CreateTaskTemplateRequest,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    request: CreateTaskTemplateRequest,
+  ): Promise<TaskTemplateClientDTO> {
     const data = await apiClient.post(this.baseUrl, request);
     return data;
   }
@@ -44,7 +52,7 @@ export class TaskTemplateApiClient {
     importance?: string;
     urgency?: string;
     tags?: string[];
-  }): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  }): Promise<TaskTemplateClientDTO[]> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;
   }
@@ -55,7 +63,7 @@ export class TaskTemplateApiClient {
   async getTaskTemplateById(
     uuid: string,
     includeChildren = false,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${uuid}`, {
       params: { includeChildren },
     });
@@ -67,8 +75,8 @@ export class TaskTemplateApiClient {
    */
   async updateTaskTemplate(
     uuid: string,
-    request: TaskContracts.UpdateTaskTemplateRequest,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    request: UpdateTaskTemplateRequest,
+  ): Promise<TaskTemplateClientDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${uuid}`, request);
     return data;
   }
@@ -86,15 +94,15 @@ export class TaskTemplateApiClient {
    * 创建任务模板（别名）
    */
   async create(
-    request: TaskContracts.CreateTaskTemplateRequest,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    request: CreateTaskTemplateRequest,
+  ): Promise<TaskTemplateClientDTO> {
     return this.createTaskTemplate(request);
   }
 
   /**
    * 根据 UUID 获取任务模板（别名）
    */
-  async getByUuid(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async getByUuid(uuid: string): Promise<TaskTemplateClientDTO> {
     return this.getTaskTemplateById(uuid);
   }
 
@@ -103,8 +111,8 @@ export class TaskTemplateApiClient {
    */
   async update(
     uuid: string,
-    request: TaskContracts.UpdateTaskTemplateRequest,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    request: UpdateTaskTemplateRequest,
+  ): Promise<TaskTemplateClientDTO> {
     return this.updateTaskTemplate(uuid, request);
   }
 
@@ -113,7 +121,7 @@ export class TaskTemplateApiClient {
   /**
    * 激活任务模板
    */
-  async activateTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async activateTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/activate`);
     return data;
   }
@@ -121,7 +129,7 @@ export class TaskTemplateApiClient {
   /**
    * 暂停任务模板
    */
-  async pauseTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async pauseTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/pause`);
     return data;
   }
@@ -129,7 +137,7 @@ export class TaskTemplateApiClient {
   /**
    * 归档任务模板
    */
-  async archiveTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async archiveTaskTemplate(uuid: string): Promise<TaskTemplateClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/archive`);
     return data;
   }
@@ -142,8 +150,8 @@ export class TaskTemplateApiClient {
    */
   async generateInstances(
     templateUuid: string,
-    request: TaskContracts.GenerateInstancesRequest,
-  ): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+    request: GenerateInstancesRequest,
+  ): Promise<TaskInstanceClientDTO[]> {
     const data = await apiClient.post(`${this.baseUrl}/${templateUuid}/generate-instances`, request);
     return data;
   }
@@ -156,8 +164,8 @@ export class TaskTemplateApiClient {
    */
   async bindToGoal(
     templateUuid: string,
-    request: TaskContracts.BindToGoalRequest,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+    request: BindToGoalRequest,
+  ): Promise<TaskTemplateClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${templateUuid}/bind-goal`, request);
     return data;
   }
@@ -165,7 +173,7 @@ export class TaskTemplateApiClient {
   /**
    * 解除目标绑定
    */
-  async unbindFromGoal(templateUuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async unbindFromGoal(templateUuid: string): Promise<TaskTemplateClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${templateUuid}/unbind-goal`);
     return data;
   }
@@ -180,7 +188,7 @@ export class TaskTemplateApiClient {
     templateUuid: string,
     from: number,
     to: number
-  ): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+  ): Promise<TaskInstanceClientDTO[]> {
     const data = await apiClient.get(`${this.baseUrl}/${templateUuid}/instances`, {
       params: { from, to },
     });
@@ -216,7 +224,7 @@ export class TaskInstanceApiClient {
     status?: string;
     startDate?: number;
     endDate?: number;
-  }): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+  }): Promise<TaskInstanceClientDTO[]> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;
   }
@@ -224,7 +232,7 @@ export class TaskInstanceApiClient {
   /**
    * 获取任务实例详情
    */
-  async getTaskInstanceById(uuid: string): Promise<TaskContracts.TaskInstanceClientDTO> {
+  async getTaskInstanceById(uuid: string): Promise<TaskInstanceClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${uuid}`);
     return data;
   }
@@ -242,7 +250,7 @@ export class TaskInstanceApiClient {
    * 开始任务实例
    * 将任务实例状态从 PENDING 转换为 IN_PROGRESS
    */
-  async startTaskInstance(uuid: string): Promise<TaskContracts.TaskInstanceClientDTO> {
+  async startTaskInstance(uuid: string): Promise<TaskInstanceClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/start`);
     return data;
   }
@@ -252,8 +260,8 @@ export class TaskInstanceApiClient {
    */
   async completeTaskInstance(
     uuid: string,
-    request?: TaskContracts.CompleteTaskInstanceRequest,
-  ): Promise<TaskContracts.TaskInstanceClientDTO> {
+    request?: CompleteTaskInstanceRequest,
+  ): Promise<TaskInstanceClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/complete`, request);
     return data;
   }
@@ -263,8 +271,8 @@ export class TaskInstanceApiClient {
    */
   async skipTaskInstance(
     uuid: string,
-    request?: TaskContracts.SkipTaskInstanceRequest,
-  ): Promise<TaskContracts.TaskInstanceClientDTO> {
+    request?: SkipTaskInstanceRequest,
+  ): Promise<TaskInstanceClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/skip`, request);
     return data;
   }
@@ -274,7 +282,7 @@ export class TaskInstanceApiClient {
   /**
    * 检查并标记过期的任务实例
    */
-  async checkExpiredInstances(): Promise<{ count: number; instances: TaskContracts.TaskInstanceClientDTO[] }> {
+  async checkExpiredInstances(): Promise<{ count: number; instances: TaskInstanceClientDTO[] }> {
     const data = await apiClient.post(`${this.baseUrl}/check-expired`);
     return data;
   }
@@ -301,8 +309,8 @@ export class TaskDependencyApiClient {
    */
   async createDependency(
     taskUuid: string,
-    request: TaskContracts.CreateTaskDependencyRequest,
-  ): Promise<TaskContracts.TaskDependencyClientDTO> {
+    request: CreateTaskDependencyRequest,
+  ): Promise<TaskDependencyClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${taskUuid}/dependencies`, request);
     return data;
   }
@@ -310,7 +318,7 @@ export class TaskDependencyApiClient {
   /**
    * 获取任务的所有前置依赖
    */
-  async getDependencies(taskUuid: string): Promise<TaskContracts.TaskDependencyClientDTO[]> {
+  async getDependencies(taskUuid: string): Promise<TaskDependencyClientDTO[]> {
     const data = await apiClient.get(`${this.baseUrl}/${taskUuid}/dependencies`);
     return data;
   }
@@ -318,7 +326,7 @@ export class TaskDependencyApiClient {
   /**
    * 获取依赖此任务的所有任务（后续任务）
    */
-  async getDependents(taskUuid: string): Promise<TaskContracts.TaskDependencyClientDTO[]> {
+  async getDependents(taskUuid: string): Promise<TaskDependencyClientDTO[]> {
     const data = await apiClient.get(`${this.baseUrl}/${taskUuid}/dependents`);
     return data;
   }
@@ -326,7 +334,7 @@ export class TaskDependencyApiClient {
   /**
    * 获取任务的完整依赖链信息
    */
-  async getDependencyChain(taskUuid: string): Promise<TaskContracts.DependencyChainClientDTO> {
+  async getDependencyChain(taskUuid: string): Promise<DependencyChainClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${taskUuid}/dependency-chain`);
     return data;
   }
@@ -335,8 +343,8 @@ export class TaskDependencyApiClient {
    * 验证依赖关系（不实际创建）
    */
   async validateDependency(
-    request: TaskContracts.ValidateDependencyRequest,
-  ): Promise<TaskContracts.ValidateDependencyResponse> {
+    request: ValidateDependencyRequest,
+  ): Promise<ValidateDependencyResponse> {
     const data = await apiClient.post(`${this.baseUrl}/dependencies/validate`, request);
     return data;
   }
@@ -353,8 +361,8 @@ export class TaskDependencyApiClient {
    */
   async updateDependency(
     uuid: string,
-    request: TaskContracts.UpdateTaskDependencyRequest,
-  ): Promise<TaskContracts.TaskDependencyClientDTO> {
+    request: UpdateTaskDependencyRequest,
+  ): Promise<TaskDependencyClientDTO> {
     const data = await apiClient.put(`${this.baseUrl}/dependencies/${uuid}`, request);
     return data;
   }
@@ -386,7 +394,7 @@ export class TaskStatisticsApiClient {
   async getTaskStatistics(
     accountUuid: string,
     forceRecalculate = false,
-  ): Promise<TaskContracts.TaskStatisticsServerDTO> {
+  ): Promise<TaskStatisticsServerDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${accountUuid}`, {
       params: { forceRecalculate },
     });
@@ -399,7 +407,7 @@ export class TaskStatisticsApiClient {
   async recalculateTaskStatistics(
     accountUuid: string,
     force = true,
-  ): Promise<TaskContracts.TaskStatisticsServerDTO> {
+  ): Promise<TaskStatisticsServerDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${accountUuid}/recalculate`, { force });
     return data;
   }
@@ -466,3 +474,4 @@ export const taskTemplateApiClient = new TaskTemplateApiClient();
 export const taskInstanceApiClient = new TaskInstanceApiClient();
 export const taskDependencyApiClient = new TaskDependencyApiClient();
 export const taskStatisticsApiClient = new TaskStatisticsApiClient();
+

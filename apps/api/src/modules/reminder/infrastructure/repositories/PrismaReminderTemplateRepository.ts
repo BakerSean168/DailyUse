@@ -2,7 +2,8 @@
 import { PrismaClient } from '@prisma/client';
 import type { IReminderTemplateRepository } from '@dailyuse/domain-server';
 import { ReminderTemplate, ReminderHistory } from '@dailyuse/domain-server';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderTemplateStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
 
 /**
  * ReminderTemplate 聚合根 Prisma 仓储实现
@@ -248,7 +249,7 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
 
   async count(
     accountUuid: string,
-    options?: { status?: ReminderContracts.ReminderStatus; includeDeleted?: boolean },
+    options?: { status?: ReminderStatus; includeDeleted?: boolean },
   ): Promise<number> {
     return this.prisma.reminderTemplate.count({
       where: {
@@ -259,3 +260,4 @@ export class PrismaReminderTemplateRepository implements IReminderTemplateReposi
     });
   }
 }
+

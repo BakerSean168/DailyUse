@@ -3,7 +3,7 @@
  * 为其他模块提供目标和关键结果的查询服务
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 
 /**
  * 目标绑定选项（供任务模块使用）
@@ -12,7 +12,7 @@ export interface GoalBindingOption {
   uuid: string;
   title: string;
   description?: string | null;
-  status: GoalContracts.GoalStatus;
+  status: GoalStatus;
   targetDate?: number | null;
   progress?: number;
 }
@@ -55,7 +55,7 @@ export class GoalCrossModuleQueryService {
    */
   async getGoalsForTaskBinding(params: {
     accountUuid: string;
-    status?: GoalContracts.GoalStatus[];
+    status?: GoalStatus[];
   }): Promise<GoalBindingOption[]> {
     const { GoalContainer } = await import('../../infrastructure/di/GoalContainer');
     const container = GoalContainer.getInstance();
@@ -141,3 +141,4 @@ export class GoalCrossModuleQueryService {
     }
   }
 }
+

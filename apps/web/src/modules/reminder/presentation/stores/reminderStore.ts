@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { ReminderTemplate, ReminderGroup, ReminderStatistics } from '@dailyuse/domain-client';
-import { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
 
-type ReminderHistory = ReminderContracts.ReminderHistoryClientDTO;
+type ReminderHistory = ReminderHistoryClientDTO;
 
 // 类型定义
 interface ReminderStoreState {
@@ -172,7 +172,7 @@ export const useReminderStore = defineStore('reminder', {
      */
     getActiveReminderHistories(): ReminderHistory[] {
       return this.reminderHistories.filter(
-        (history) => history.result === ReminderContracts.TriggerResult.SUCCESS,
+        (history) => history.result === TriggerResult.SUCCESS,
       );
     },
 
@@ -269,7 +269,7 @@ export const useReminderStore = defineStore('reminder', {
     /**
      * 批量设置提醒模板
      */
-    setReminderTemplates(templates: Array<ReminderTemplate | ReminderContracts.ReminderTemplateClientDTO>) {
+    setReminderTemplates(templates: Array<ReminderTemplate | ReminderTemplateClientDTO>) {
       this.reminderTemplates = templates.map((template) =>
         template instanceof ReminderTemplate ? template : ReminderTemplate.fromClientDTO(template),
       );
@@ -280,7 +280,7 @@ export const useReminderStore = defineStore('reminder', {
     /**
      * 添加或更新提醒模板
      */
-    addOrUpdateReminderTemplate(template: ReminderTemplate | ReminderContracts.ReminderTemplateClientDTO) {
+    addOrUpdateReminderTemplate(template: ReminderTemplate | ReminderTemplateClientDTO) {
       const newEntity = template instanceof ReminderTemplate ? template : ReminderTemplate.fromClientDTO(template);
       const existing = this.reminderTemplates.find((t) => t.uuid === newEntity.uuid);
 
@@ -318,7 +318,7 @@ export const useReminderStore = defineStore('reminder', {
     /**
      * 批量设置提醒分组
      */
-    setReminderGroups(groups: Array<ReminderGroup | ReminderContracts.ReminderGroupClientDTO>) {
+    setReminderGroups(groups: Array<ReminderGroup | ReminderGroupClientDTO>) {
       this.reminderGroups = groups.map((group) =>
         group instanceof ReminderGroup ? group : ReminderGroup.fromClientDTO(group),
       );
@@ -329,7 +329,7 @@ export const useReminderStore = defineStore('reminder', {
     /**
      * 添加或更新提醒分组
      */
-    addOrUpdateReminderGroup(group: ReminderGroup | ReminderContracts.ReminderGroupClientDTO) {
+    addOrUpdateReminderGroup(group: ReminderGroup | ReminderGroupClientDTO) {
       const entity = group instanceof ReminderGroup ? group : ReminderGroup.fromClientDTO(group);
       const index = this.reminderGroups.findIndex((g) => g.uuid === entity.uuid);
       if (index >= 0) {
@@ -395,7 +395,7 @@ export const useReminderStore = defineStore('reminder', {
     /**
      * 设置统计数据
      */
-    setStatistics(stats: ReminderStatistics | ReminderContracts.ReminderStatisticsClientDTO) {
+    setStatistics(stats: ReminderStatistics | ReminderStatisticsClientDTO) {
       this.statistics = stats instanceof ReminderStatistics ? stats : ReminderStatistics.fromClientDTO(stats);
     },
 
@@ -608,3 +608,4 @@ export function getReminderStore(): ReminderStore {
   }
   return _reminderStoreInstance;
 }
+

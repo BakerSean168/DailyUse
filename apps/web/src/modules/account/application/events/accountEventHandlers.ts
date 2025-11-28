@@ -11,7 +11,7 @@ import {
 } from '../../../authentication/application/events/authEvents';
 import { useAccountStore } from '../../presentation/stores/accountStore';
 import { accountApiClient } from '../../infrastructure/api/accountApiClient';
-import { AccountContracts } from '@dailyuse/contracts';
+import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
 
 /**
  * 账户模块事件处理器类
@@ -159,3 +159,5 @@ export class AccountEventHandlers {
     return AccountEventHandlers.initialized;
   }
 }
+
+

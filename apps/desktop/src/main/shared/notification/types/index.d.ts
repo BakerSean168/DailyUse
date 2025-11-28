@@ -1,4 +1,4 @@
-import { ImportanceLevel } from '@dailyuse/contracts';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 export interface NotificationWindow {
   uuid: string;

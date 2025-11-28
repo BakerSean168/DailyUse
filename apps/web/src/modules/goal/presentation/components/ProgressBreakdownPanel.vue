@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { useGoal } from '../composables/useGoal';
 import { format } from 'date-fns';
 
@@ -148,7 +148,7 @@ const { fetchProgressBreakdown } = useGoal();
 // State
 const loading = ref(false);
 const error = ref<string | null>(null);
-const breakdown = ref<GoalContracts.ProgressBreakdown | null>(null);
+const breakdown = ref<ProgressBreakdown | null>(null);
 
 /**
  * 加载进度分解数据
@@ -225,3 +225,4 @@ onMounted(() => {
   word-break: break-word;
 }
 </style>
+

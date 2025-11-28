@@ -255,7 +255,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { Repository } from '@dailyuse/domain-client';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TagClientDTO, BookmarkClientDTO } from '@dailyuse/contracts/repository';
 // composables
 import { useRepository } from '../../composables/useRepository';
 
@@ -276,9 +276,9 @@ const repositoryData = ref<{
   uuid?: string;
   name: string;
   description?: string;
-  type: RepositoryContracts.RepositoryType;
+  type: RepositoryType;
   path: string;
-  status: RepositoryContracts.RepositoryStatus;
+  status: RepositoryStatus;
   relatedGoals: string[];
   config: {
     enableGit: boolean;
@@ -289,9 +289,9 @@ const repositoryData = ref<{
 }>({
   name: '',
   description: '',
-  type: RepositoryContracts.RepositoryType.LOCAL,
+  type: RepositoryType.LOCAL,
   path: '',
-  status: RepositoryContracts.RepositoryStatus.ACTIVE,
+  status: RepositoryStatus.ACTIVE,
   relatedGoals: [],
   config: {
     enableGit: false,
@@ -328,9 +328,9 @@ watch(
         repositoryData.value = {
           name: '',
           description: '',
-          type: RepositoryContracts.RepositoryType.LOCAL,
+          type: RepositoryType.LOCAL,
           path: '',
-          status: RepositoryContracts.RepositoryStatus.ACTIVE,
+          status: RepositoryStatus.ACTIVE,
           relatedGoals: [],
           config: {
             enableGit: false,
@@ -355,15 +355,15 @@ const tabs = [
 
 // 表单选项
 const repositoryTypeOptions = [
-  { text: '本地仓库', value: RepositoryContracts.RepositoryType.LOCAL },
-  { text: '远程仓库', value: RepositoryContracts.RepositoryType.REMOTE },
-  { text: '同步仓库', value: RepositoryContracts.RepositoryType.SYNCHRONIZED },
+  { text: '本地仓库', value: RepositoryType.LOCAL },
+  { text: '远程仓库', value: RepositoryType.REMOTE },
+  { text: '同步仓库', value: RepositoryType.SYNCHRONIZED },
 ];
 
 const statusOptions = [
-  { text: '活跃', value: RepositoryContracts.RepositoryStatus.ACTIVE },
-  { text: '停用', value: RepositoryContracts.RepositoryStatus.INACTIVE },
-  { text: '已归档', value: RepositoryContracts.RepositoryStatus.ARCHIVED },
+  { text: '活跃', value: RepositoryStatus.ACTIVE },
+  { text: '停用', value: RepositoryStatus.INACTIVE },
+  { text: '已归档', value: RepositoryStatus.ARCHIVED },
 ];
 
 // 校验规则
@@ -386,7 +386,7 @@ const repositoryDescription = computed({
 
 const repositoryType = computed({
   get: () => repositoryData.value.type,
-  set: (val: RepositoryContracts.RepositoryType) => {
+  set: (val: RepositoryType) => {
     repositoryData.value.type = val;
   },
 });
@@ -400,7 +400,7 @@ const repositoryLocation = computed({
 
 const repositoryStatus = computed({
   get: () => repositoryData.value.status,
-  set: (val: RepositoryContracts.RepositoryStatus) => {
+  set: (val: RepositoryStatus) => {
     repositoryData.value.status = val;
   },
 });
@@ -612,3 +612,4 @@ defineExpose({
   }
 }
 </style>
+

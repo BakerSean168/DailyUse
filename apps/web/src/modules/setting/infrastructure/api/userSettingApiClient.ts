@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api/instances';
-import { type SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
 /**
  * UserSetting API 客户端
@@ -14,8 +14,8 @@ export class UserSettingApiClient {
    * 创建用户设置
    */
   async createUserSetting(
-    request: SettingContracts.CreateUserSettingRequest,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+    request: CreateUserSettingRequest,
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.post(this.baseUrl, request);
     return data;
   }
@@ -23,7 +23,7 @@ export class UserSettingApiClient {
   /**
    * 根据UUID获取用户设置
    */
-  async getUserSettingByUuid(uuid: string): Promise<SettingContracts.UserSettingClientDTO> {
+  async getUserSettingByUuid(uuid: string): Promise<UserSettingClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${uuid}`);
     return data;
   }
@@ -33,7 +33,7 @@ export class UserSettingApiClient {
    */
   async getUserSettingByAccount(
     accountUuid: string,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.get(`${this.baseUrl}/account/${accountUuid}`);
     return data;
   }
@@ -43,7 +43,7 @@ export class UserSettingApiClient {
    */
   async getOrCreateUserSetting(
     accountUuid: string,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/get-or-create`, { accountUuid });
     return data;
   }
@@ -53,8 +53,8 @@ export class UserSettingApiClient {
    */
   async updateUserSetting(
     uuid: string,
-    request: SettingContracts.UpdateUserSettingRequest,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+    request: UpdateUserSettingRequest,
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${uuid}`, request);
     return data;
   }
@@ -73,8 +73,8 @@ export class UserSettingApiClient {
    */
   async updateAppearance(
     uuid: string,
-    appearance: SettingContracts.UpdateAppearanceRequest,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+    appearance: UpdateAppearanceRequest,
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}/appearance`, { appearance });
     return data;
   }
@@ -84,8 +84,8 @@ export class UserSettingApiClient {
    */
   async updateLocale(
     uuid: string,
-    locale: SettingContracts.UpdateLocaleRequest,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+    locale: UpdateLocaleRequest,
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}/locale`, { locale });
     return data;
   }
@@ -95,8 +95,8 @@ export class UserSettingApiClient {
    */
   async updateWorkflow(
     uuid: string,
-    workflow: SettingContracts.UpdateWorkflowRequest,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+    workflow: UpdateWorkflowRequest,
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}/workflow`, { workflow });
     return data;
   }
@@ -106,8 +106,8 @@ export class UserSettingApiClient {
    */
   async updatePrivacy(
     uuid: string,
-    privacy: SettingContracts.UpdatePrivacyRequest,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+    privacy: UpdatePrivacyRequest,
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}/privacy`, { privacy });
     return data;
   }
@@ -117,8 +117,8 @@ export class UserSettingApiClient {
    */
   async updateExperimental(
     uuid: string,
-    experimental: SettingContracts.UpdateExperimentalRequest,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+    experimental: UpdateExperimentalRequest,
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}/experimental`, { experimental });
     return data;
   }
@@ -128,7 +128,7 @@ export class UserSettingApiClient {
   /**
    * 快速切换主题
    */
-  async updateTheme(uuid: string, theme: string): Promise<SettingContracts.UserSettingClientDTO> {
+  async updateTheme(uuid: string, theme: string): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}/theme`, { theme });
     return data;
   }
@@ -139,7 +139,7 @@ export class UserSettingApiClient {
   async updateLanguage(
     uuid: string,
     language: string,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}/language`, { language });
     return data;
   }
@@ -153,7 +153,7 @@ export class UserSettingApiClient {
     uuid: string,
     action: string,
     shortcut: string,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/${uuid}/shortcuts/${action}`, {
       shortcut,
     });
@@ -166,7 +166,7 @@ export class UserSettingApiClient {
   async deleteShortcut(
     uuid: string,
     action: string,
-  ): Promise<SettingContracts.UserSettingClientDTO> {
+  ): Promise<UserSettingClientDTO> {
     const data = await apiClient.delete(`${this.baseUrl}/${uuid}/shortcuts/${action}`);
     return data;
   }
@@ -174,3 +174,4 @@ export class UserSettingApiClient {
 
 // 导出单例实例
 export const userSettingApiClient = new UserSettingApiClient();
+

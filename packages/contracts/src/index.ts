@@ -2,6 +2,9 @@
  * @dailyuse/contracts
  * 统一契约导出 - 根入口（极简版）
  *
+ * ⚠️ 此根入口仅导出最核心的响应系统类型。
+ * 所有业务模块请使用子路径导入以获得最佳 Tree-Shaking 效果。
+ *
  * 🎨 子路径导出架构（推荐使用子路径导入）
  *
  * ```typescript
@@ -16,25 +19,25 @@
  * ```
  *
  * 子路径列表：
- * - @dailyuse/contracts/task
- * - @dailyuse/contracts/goal
- * - @dailyuse/contracts/reminder
- * - @dailyuse/contracts/editor
- * - @dailyuse/contracts/repository
- * - @dailyuse/contracts/account
- * - @dailyuse/contracts/authentication
- * - @dailyuse/contracts/schedule
- * - @dailyuse/contracts/setting
- * - @dailyuse/contracts/notification
- * - @dailyuse/contracts/document
- * - @dailyuse/contracts/ai
- * - @dailyuse/contracts/dashboard
- * - @dailyuse/contracts/response
- * - @dailyuse/contracts/shared
+ * - @dailyuse/contracts/task       - 任务模块
+ * - @dailyuse/contracts/goal       - 目标模块
+ * - @dailyuse/contracts/reminder   - 提醒模块
+ * - @dailyuse/contracts/editor     - 编辑器模块
+ * - @dailyuse/contracts/repository - 仓库模块
+ * - @dailyuse/contracts/account    - 账户模块
+ * - @dailyuse/contracts/authentication - 认证模块
+ * - @dailyuse/contracts/schedule   - 调度模块
+ * - @dailyuse/contracts/setting    - 设置模块
+ * - @dailyuse/contracts/notification - 通知模块
+ * - @dailyuse/contracts/document   - 文档模块
+ * - @dailyuse/contracts/ai         - AI模块
+ * - @dailyuse/contracts/dashboard  - 仪表盘模块
+ * - @dailyuse/contracts/response   - 响应系统
+ * - @dailyuse/contracts/shared     - 共享类型
  */
 
 // ============================================================
-// 响应系统（最常用，保留在根入口）
+// 响应系统（最常用，保留在根入口以便快速访问）
 // ============================================================
 export {
   ResponseCode,
@@ -60,42 +63,3 @@ export type {
   ListResponse,
   BatchResponse,
 } from './response';
-
-// ============================================================
-// 共享基础类型
-// ============================================================
-export { ImportanceLevel } from './shared/importance';
-export { UrgencyLevel } from './shared/urgency';
-
-// ============================================================
-// 通用调度生命周期事件（跨模块使用）
-// ============================================================
-export {
-  ScheduleLifecycleAction,
-  buildScheduleEventType,
-  createScheduleLifecycleEvent,
-  isScheduleLifecycleEvent,
-  parseScheduleEventType,
-} from './modules/common/schedule-lifecycle-events';
-
-export type {
-  IUnifiedEvent,
-  EntityScheduleLifecyclePayload,
-  EntityCreatedForScheduleEvent,
-  EntityPausedForScheduleEvent,
-  EntityResumedForScheduleEvent,
-  EntityDeletedForScheduleEvent,
-  EntityScheduleChangedEvent,
-  ScheduleLifecycleEvent,
-  ScheduleLifecycleActionType,
-} from './modules/common/schedule-lifecycle-events';
-
-// ============================================================
-// Reminder 模块常量（运行时值，需直接导出）
-// ============================================================
-export {
-  ROOT_GROUP_CONFIG,
-  isRootGroup,
-  getRootGroupUuid,
-  isOnDesktop,
-} from './modules/reminder/constants';

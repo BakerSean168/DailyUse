@@ -11,16 +11,16 @@
  */
 
 import { computed } from 'vue';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useTaskStatistics } from '@/modules/task/presentation/composables/useTaskStatistics';
 
 // ===== Props =====
 interface Props {
-  size?: DashboardContracts.WidgetSize;
+  size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  size: 'medium' as DashboardContracts.WidgetSize,
+  size: 'medium' as WidgetSize,
 });
 
 // ===== Composables =====
@@ -151,3 +151,4 @@ const isLargeSize = computed(() => props.size === 'large');
   transform: translateY(-4px);
 }
 </style>
+

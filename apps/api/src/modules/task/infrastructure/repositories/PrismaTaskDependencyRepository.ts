@@ -6,11 +6,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import type { ITaskDependencyRepository } from '@dailyuse/domain-server';
-import { TaskContracts } from '@dailyuse/contracts';
-
-type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
-type CreateTaskDependencyRequest = TaskContracts.CreateTaskDependencyRequest;
-type UpdateTaskDependencyRequest = TaskContracts.UpdateTaskDependencyRequest;
+import type {
+  TaskDependencyServerDTO,
+  CreateTaskDependencyRequest,
+  UpdateTaskDependencyRequest,
+} from '@dailyuse/contracts/task';
 
 /**
  * Prisma 实现的任务依赖仓储

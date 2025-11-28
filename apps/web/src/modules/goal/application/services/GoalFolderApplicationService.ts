@@ -1,4 +1,4 @@
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { GoalFolder } from '@dailyuse/domain-client';
 import { goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
@@ -35,8 +35,8 @@ export class GoalFolderApplicationService {
    * 创建目标文件夹
    */
   async createGoalFolder(
-    request: GoalContracts.CreateGoalFolderRequest,
-  ): Promise<GoalContracts.GoalFolderClientDTO> {
+    request: CreateGoalFolderRequest,
+  ): Promise<GoalFolderClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -66,7 +66,7 @@ export class GoalFolderApplicationService {
     page?: number;
     limit?: number;
     parentUuid?: string | null;
-  }): Promise<GoalContracts.GoalFoldersResponse> {
+  }): Promise<GoalFoldersResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -93,8 +93,8 @@ export class GoalFolderApplicationService {
    */
   async updateGoalFolder(
     uuid: string,
-    request: GoalContracts.UpdateGoalFolderRequest,
-  ): Promise<GoalContracts.GoalFolderClientDTO> {
+    request: UpdateGoalFolderRequest,
+  ): Promise<GoalFolderClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -143,3 +143,4 @@ export class GoalFolderApplicationService {
 }
 
 export const goalFolderApplicationService = GoalFolderApplicationService.getInstance();
+

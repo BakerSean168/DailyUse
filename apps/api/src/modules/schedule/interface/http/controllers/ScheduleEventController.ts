@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts';
+import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleEventApplicationService } from '../../../application/services/ScheduleEventApplicationService';
 

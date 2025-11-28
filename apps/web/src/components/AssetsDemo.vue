@@ -160,7 +160,8 @@ import { logo, logo128, defaultAvatar } from '@dailyuse/assets/images';
 import { audioService, type SoundType } from '@/services/AudioService';
 import { AuthManager } from '@/shared/api';
 import { reminderApiClient } from '@/modules/reminder/infrastructure/api/reminderApiClient';
-import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { generateUUID } from '@dailyuse/utils';
 
 // 音频控制状态
@@ -274,19 +275,19 @@ const createRecurringReminder = async () => {
     const templateUuid = generateUUID();
     const now = Date.now();
 
-    const request: ReminderContracts.CreateReminderTemplateRequestDTO = {
+    const request: CreateReminderTemplateRequestDTO = {
       title: '测试提醒 - 每1分钟',
       description: '这是一个测试提醒，每分钟触发一次',
-      type: ReminderContracts.ReminderType.RECURRING,
+      type: ReminderType.RECURRING,
       trigger: {
-        type: ReminderContracts.TriggerType.FIXED_TIME,
+        type: TriggerType.FIXED_TIME,
         fixedTime: {
           time: '09:00',
         },
         interval: null,
       },
       recurrence: {
-        type: ReminderContracts.RecurrenceType.DAILY,
+        type: RecurrenceType.DAILY,
         interval: 1,
         daysOfWeek: null,
         daysOfMonth: null,
@@ -296,7 +297,7 @@ const createRecurringReminder = async () => {
       },
       activeHours: null,
       notificationConfig: {
-        channels: [ReminderContracts.NotificationChannel.IN_APP],
+        channels: [NotificationChannel.IN_APP],
         title: '测试提醒',
         body: '这是一个测试提醒，每分钟触发一次',
         sound: 'default',
@@ -340,3 +341,4 @@ const createRecurringReminder = async () => {
   padding: 16px;
 }
 </style>
+

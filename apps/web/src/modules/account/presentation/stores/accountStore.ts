@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { AccountContracts } from '@dailyuse/contracts';
+import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
 
 // 本地类型别名（无需导出，web 应用不生成 .d.ts）
-type AccountDTO = AccountContracts.AccountDTO;
-type SubscriptionDTO = AccountContracts.SubscriptionDTO;
-type AccountHistoryDTO = AccountContracts.AccountHistoryServerDTO;
-type AccountStatsDTO = AccountContracts.AccountStatsResponseDTO;
+type AccountDTO = AccountDTO;
+type SubscriptionDTO = SubscriptionDTO;
+type AccountHistoryDTO = AccountHistoryServerDTO;
+type AccountStatsDTO = AccountStatsResponseDTO;
 
 /**
  * Account Store - 状态管理
@@ -55,28 +55,28 @@ export const useAccountStore = defineStore('account', () => {
    * 是否为活跃账户
    */
   const isActiveAccount = computed(
-    () => currentAccount.value?.status === AccountContracts.AccountStatus.ACTIVE,
+    () => currentAccount.value?.status === AccountStatus.ACTIVE,
   );
 
   /**
    * 是否已停用
    */
   const isDeactivatedAccount = computed(
-    () => currentAccount.value?.status === AccountContracts.AccountStatus.INACTIVE,
+    () => currentAccount.value?.status === AccountStatus.INACTIVE,
   );
 
   /**
    * 是否已暂停
    */
   const isSuspendedAccount = computed(
-    () => currentAccount.value?.status === AccountContracts.AccountStatus.SUSPENDED,
+    () => currentAccount.value?.status === AccountStatus.SUSPENDED,
   );
 
   /**
    * 是否已删除
    */
   const isDeletedAccount = computed(
-    () => currentAccount.value?.status === AccountContracts.AccountStatus.DELETED,
+    () => currentAccount.value?.status === AccountStatus.DELETED,
   );
 
   /**
@@ -100,7 +100,7 @@ export const useAccountStore = defineStore('account', () => {
    * 当前订阅计划
    */
   const currentSubscriptionPlan = computed(
-    () => subscription.value?.plan ?? AccountContracts.SubscriptionPlan.FREE,
+    () => subscription.value?.plan ?? SubscriptionPlan.FREE,
   );
 
   /**
@@ -108,8 +108,8 @@ export const useAccountStore = defineStore('account', () => {
    */
   const isPremiumUser = computed(
     () =>
-      subscription.value?.plan === AccountContracts.SubscriptionPlan.PRO ||
-      subscription.value?.plan === AccountContracts.SubscriptionPlan.ENTERPRISE,
+      subscription.value?.plan === SubscriptionPlan.PRO ||
+      subscription.value?.plan === SubscriptionPlan.ENTERPRISE,
   );
 
   /**
@@ -307,3 +307,5 @@ export const useAccountStore = defineStore('account', () => {
     clearAll,
   };
 });
+
+

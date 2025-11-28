@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { defineStore } from 'pinia';
 import { Repository, Resource, Folder } from '@dailyuse/domain-client';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**
  * Repository Store - 新架构（支持 Folder）
@@ -199,7 +199,7 @@ export const useRepositoryStore = defineStore('repository', {
      */
     getRepositoriesByType:
       (state) =>
-      (type: RepositoryContracts.RepositoryType): Repository[] => {
+      (type: RepositoryType): Repository[] => {
         return state.repositories
           .filter((r) => r.type === type)
           .map((repo) => {
@@ -216,7 +216,7 @@ export const useRepositoryStore = defineStore('repository', {
      */
     getRepositoriesByStatus:
       (state) =>
-      (status: RepositoryContracts.RepositoryStatus): Repository[] => {
+      (status: RepositoryStatus): Repository[] => {
         return state.repositories
           .filter((r) => r.status === status)
           .map((repo) => {
@@ -233,7 +233,7 @@ export const useRepositoryStore = defineStore('repository', {
      */
     getActiveRepositories(state): Repository[] {
       return state.repositories
-        .filter((r) => r.status === RepositoryContracts.RepositoryStatus.ACTIVE)
+        .filter((r) => r.status === RepositoryStatus.ACTIVE)
         .map((repo) => {
           if (repo instanceof Repository) {
             return repo;
@@ -248,7 +248,7 @@ export const useRepositoryStore = defineStore('repository', {
      */
     getArchivedRepositories(state): Repository[] {
       return state.repositories
-        .filter((r) => r.status === RepositoryContracts.RepositoryStatus.ARCHIVED)
+        .filter((r) => r.status === RepositoryStatus.ARCHIVED)
         .map((repo) => {
           if (repo instanceof Repository) {
             return repo;
@@ -263,7 +263,7 @@ export const useRepositoryStore = defineStore('repository', {
      */
     getResourcesByType:
       (state) =>
-      (type: RepositoryContracts.ResourceType): Resource[] => {
+      (type: ResourceType): Resource[] => {
         return state.resources
           .filter((r) => r.type === type)
           .map((resource) => {
@@ -280,7 +280,7 @@ export const useRepositoryStore = defineStore('repository', {
      */
     getResourcesByStatus:
       (state) =>
-      (status: RepositoryContracts.ResourceStatus): Resource[] => {
+      (status: ResourceStatus): Resource[] => {
         return state.resources
           .filter((r) => r.status === status)
           .map((resource) => {
@@ -362,16 +362,16 @@ export const useRepositoryStore = defineStore('repository', {
     } {
       const total = state.repositories.length;
       const active = state.repositories.filter(
-        (r) => r.status === RepositoryContracts.RepositoryStatus.ACTIVE,
+        (r) => r.status === RepositoryStatus.ACTIVE,
       ).length;
       const archived = state.repositories.filter(
-        (r) => r.status === RepositoryContracts.RepositoryStatus.ARCHIVED,
+        (r) => r.status === RepositoryStatus.ARCHIVED,
       ).length;
       const syncing = state.repositories.filter(
-        (r) => r.status === RepositoryContracts.RepositoryStatus.SYNCING,
+        (r) => r.status === RepositoryStatus.SYNCING,
       ).length;
       const inactive = state.repositories.filter(
-        (r) => r.status === RepositoryContracts.RepositoryStatus.INACTIVE,
+        (r) => r.status === RepositoryStatus.INACTIVE,
       ).length;
 
       const byType: Record<string, number> = {};
@@ -396,13 +396,13 @@ export const useRepositoryStore = defineStore('repository', {
     } {
       const total = state.resources.length;
       const active = state.resources.filter(
-        (r) => r.status === RepositoryContracts.ResourceStatus.ACTIVE,
+        (r) => r.status === ResourceStatus.ACTIVE,
       ).length;
       const archived = state.resources.filter(
-        (r) => r.status === RepositoryContracts.ResourceStatus.ARCHIVED,
+        (r) => r.status === ResourceStatus.ARCHIVED,
       ).length;
       const draft = state.resources.filter(
-        (r) => r.status === RepositoryContracts.ResourceStatus.DRAFT,
+        (r) => r.status === ResourceStatus.DRAFT,
       ).length;
 
       const byType: Record<string, number> = {};
@@ -843,3 +843,4 @@ export const useRepositoryStore = defineStore('repository', {
 });
 
 export type RepositoryStore = ReturnType<typeof useRepositoryStore>;
+

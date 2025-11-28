@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { scheduleApiClient } from '../scheduleApiClient';
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { ScheduleTaskClientDTO, ScheduleClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 
 // Mock the apiClient module
 vi.mock('@/shared/api/instances', () => ({
@@ -21,7 +21,7 @@ describe('scheduleApiClient', () => {
 
   describe('detectConflicts()', () => {
     it('should call POST /schedules/detect-conflicts with correct params', async () => {
-      const mockResponse: ScheduleContracts.ConflictDetectionResult = {
+      const mockResponse: ConflictDetectionResult = {
         hasConflict: false,
         conflicts: [],
         suggestions: [],
@@ -46,7 +46,7 @@ describe('scheduleApiClient', () => {
     });
 
     it('should handle conflicts in response', async () => {
-      const mockResponse: ScheduleContracts.ConflictDetectionResult = {
+      const mockResponse: ConflictDetectionResult = {
         hasConflict: true,
         conflicts: [
           {
@@ -93,7 +93,7 @@ describe('scheduleApiClient', () => {
     });
 
     it('should pass excludeUuid parameter', async () => {
-      const mockResponse: ScheduleContracts.ConflictDetectionResult = {
+      const mockResponse: ConflictDetectionResult = {
         hasConflict: false,
         conflicts: [],
         suggestions: [],
@@ -118,7 +118,7 @@ describe('scheduleApiClient', () => {
   });
 
   describe('createSchedule()', () => {
-    const mockRequest: ScheduleContracts.CreateScheduleRequestDTO = {
+    const mockRequest: CreateScheduleRequestDTO = {
       accountUuid: 'user-123',
       title: 'New Meeting',
       description: 'Meeting description',
@@ -131,7 +131,7 @@ describe('scheduleApiClient', () => {
     };
 
     it('should call POST /schedules with correct data', async () => {
-      const mockSchedule: ScheduleContracts.ScheduleClient = {
+      const mockSchedule: ScheduleClient = {
         uuid: 'new-schedule-uuid',
         accountUuid: 'user-123',
         title: 'New Meeting',
@@ -148,7 +148,7 @@ describe('scheduleApiClient', () => {
         updatedAt: 5000,
       };
 
-      const mockResponse: ScheduleContracts.CreateScheduleResponseDTO = {
+      const mockResponse: CreateScheduleResponseDTO = {
         schedule: mockSchedule,
         conflicts: null,
       };
@@ -163,7 +163,7 @@ describe('scheduleApiClient', () => {
     });
 
     it('should return conflicts when autoDetectConflicts is true', async () => {
-      const mockSchedule: ScheduleContracts.ScheduleClient = {
+      const mockSchedule: ScheduleClient = {
         uuid: 'new-schedule-uuid',
         accountUuid: 'user-123',
         title: 'New Meeting',
@@ -180,7 +180,7 @@ describe('scheduleApiClient', () => {
         updatedAt: 5000,
       };
 
-      const mockConflicts: ScheduleContracts.ConflictDetectionResult = {
+      const mockConflicts: ConflictDetectionResult = {
         hasConflict: true,
         conflicts: [
           {
@@ -195,7 +195,7 @@ describe('scheduleApiClient', () => {
         suggestions: [],
       };
 
-      const mockResponse: ScheduleContracts.CreateScheduleResponseDTO = {
+      const mockResponse: CreateScheduleResponseDTO = {
         schedule: mockSchedule,
         conflicts: mockConflicts,
       };
@@ -224,13 +224,13 @@ describe('scheduleApiClient', () => {
   describe('resolveConflict()', () => {
     it('should call POST /schedules/:id/resolve-conflict with RESCHEDULE strategy', async () => {
       const scheduleUuid = 'schedule-123';
-      const mockRequest: ScheduleContracts.ResolveConflictRequestDTO = {
+      const mockRequest: ResolveConflictRequestDTO = {
         strategy: 'RESCHEDULE',
         newStartTime: 2000,
         newEndTime: 3000,
       };
 
-      const mockSchedule: ScheduleContracts.ScheduleClient = {
+      const mockSchedule: ScheduleClient = {
         uuid: scheduleUuid,
         accountUuid: 'user-123',
         title: 'Rescheduled Meeting',
@@ -247,7 +247,7 @@ describe('scheduleApiClient', () => {
         updatedAt: 6000,
       };
 
-      const mockResponse: ScheduleContracts.ResolveConflictResponseDTO = {
+      const mockResponse: ResolveConflictResponseDTO = {
         schedule: mockSchedule,
         conflicts: {
           hasConflict: false,
@@ -278,11 +278,11 @@ describe('scheduleApiClient', () => {
 
     it('should handle CANCEL strategy', async () => {
       const scheduleUuid = 'schedule-123';
-      const mockRequest: ScheduleContracts.ResolveConflictRequestDTO = {
+      const mockRequest: ResolveConflictRequestDTO = {
         strategy: 'CANCEL',
       };
 
-      const mockResponse: ScheduleContracts.ResolveConflictResponseDTO = {
+      const mockResponse: ResolveConflictResponseDTO = {
         schedule: null as any, // Schedule is deleted
         conflicts: {
           hasConflict: false,
@@ -308,12 +308,12 @@ describe('scheduleApiClient', () => {
 
     it('should handle ADJUST_DURATION strategy', async () => {
       const scheduleUuid = 'schedule-123';
-      const mockRequest: ScheduleContracts.ResolveConflictRequestDTO = {
+      const mockRequest: ResolveConflictRequestDTO = {
         strategy: 'ADJUST_DURATION',
         newDuration: 30,
       };
 
-      const mockSchedule: ScheduleContracts.ScheduleClient = {
+      const mockSchedule: ScheduleClient = {
         uuid: scheduleUuid,
         accountUuid: 'user-123',
         title: 'Shortened Meeting',
@@ -330,7 +330,7 @@ describe('scheduleApiClient', () => {
         updatedAt: 6000,
       };
 
-      const mockResponse: ScheduleContracts.ResolveConflictResponseDTO = {
+      const mockResponse: ResolveConflictResponseDTO = {
         schedule: mockSchedule,
         conflicts: {
           hasConflict: false,
@@ -354,11 +354,11 @@ describe('scheduleApiClient', () => {
 
     it('should handle IGNORE strategy', async () => {
       const scheduleUuid = 'schedule-123';
-      const mockRequest: ScheduleContracts.ResolveConflictRequestDTO = {
+      const mockRequest: ResolveConflictRequestDTO = {
         strategy: 'IGNORE',
       };
 
-      const mockSchedule: ScheduleContracts.ScheduleClient = {
+      const mockSchedule: ScheduleClient = {
         uuid: scheduleUuid,
         accountUuid: 'user-123',
         title: 'Meeting',
@@ -375,7 +375,7 @@ describe('scheduleApiClient', () => {
         updatedAt: 6000,
       };
 
-      const mockResponse: ScheduleContracts.ResolveConflictResponseDTO = {
+      const mockResponse: ResolveConflictResponseDTO = {
         schedule: mockSchedule,
         conflicts: {
           hasConflict: false,
@@ -405,3 +405,4 @@ describe('scheduleApiClient', () => {
     });
   });
 });
+

@@ -24,7 +24,7 @@ import type {
   AccountListResponseDTO,
   UpdateAccountProfileRequestDTO,
   AccountQueryParams,
-} from '@dailyuse/contracts';
+} from '@dailyuse/contracts/account';
 
 export class AccountApplicationService {
   private static instance: AccountApplicationService;
@@ -122,3 +122,7 @@ export class AccountApplicationService {
     // await this.statusService.deleteAccount({ accountUuid });
   }
 }
+
+
+
+

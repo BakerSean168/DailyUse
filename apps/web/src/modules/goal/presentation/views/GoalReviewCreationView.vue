@@ -205,7 +205,8 @@ import KrWeightDistributionChart from '../components/echarts/KrWeightDistributio
 import PeriodBarChart from '../components/echarts/PeriodBarChart.vue';
 import { GoalReview } from '@dailyuse/domain-client';
 import { Goal } from '@dailyuse/domain-client';
-import { GoalContracts } from '@dailyuse/contracts';
+import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
 
 // 路由和状态
@@ -272,8 +273,8 @@ const improvements = computed({
 
 // 计算属性 - 类型
 const reviewType = computed({
-  get: () => reviewModel.value?.type ?? GoalContracts.ReviewType.ADHOC,
-  set: (val: GoalContracts.ReviewType) => {
+  get: () => reviewModel.value?.type ?? ReviewType.ADHOC,
+  set: (val: ReviewType) => {
     reviewModel.value?.updateType(val);
   },
 });
@@ -531,3 +532,4 @@ onMounted(() => {
   font-size: 1.2rem;
 }
 </style>
+

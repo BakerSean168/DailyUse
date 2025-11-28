@@ -2,7 +2,7 @@
 import { useRepositoryStore } from '../../presentation/stores/repositoryStore';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
 import { Repository, Resource } from '@dailyuse/domain-client';
-import { type RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**
  * Repository Web 应用服务 - 新架构
@@ -24,8 +24,8 @@ export class RepositoryWebApplicationService {
    * 创建仓库
    */
   async createRepository(
-    request: RepositoryContracts.CreateRepositoryRequestDTO,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+    request: CreateRepositoryRequestDTO,
+  ): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -55,7 +55,7 @@ export class RepositoryWebApplicationService {
     type?: string;
     status?: string;
     goalUuid?: string;
-  }): Promise<RepositoryContracts.RepositoryListResponseDTO> {
+  }): Promise<RepositoryListResponseDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -86,7 +86,7 @@ export class RepositoryWebApplicationService {
   /**
    * 获取仓库详情
    */
-  async getRepositoryById(uuid: string): Promise<RepositoryContracts.RepositoryDTO | null> {
+  async getRepositoryById(uuid: string): Promise<RepositoryDTO | null> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -115,8 +115,8 @@ export class RepositoryWebApplicationService {
    */
   async updateRepository(
     uuid: string,
-    request: RepositoryContracts.UpdateRepositoryRequestDTO,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+    request: UpdateRepositoryRequestDTO,
+  ): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -163,7 +163,7 @@ export class RepositoryWebApplicationService {
   /**
    * 激活仓库
    */
-  async activateRepository(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async activateRepository(uuid: string): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -187,7 +187,7 @@ export class RepositoryWebApplicationService {
   /**
    * 归档仓库
    */
-  async archiveRepository(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async archiveRepository(uuid: string): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -216,7 +216,7 @@ export class RepositoryWebApplicationService {
   async linkGoalToRepository(
     repositoryUuid: string,
     goalUuid: string,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+  ): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -246,7 +246,7 @@ export class RepositoryWebApplicationService {
   async unlinkGoalFromRepository(
     repositoryUuid: string,
     goalUuid: string,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+  ): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -281,7 +281,7 @@ export class RepositoryWebApplicationService {
     limit?: number;
     type?: string;
     status?: string;
-  }): Promise<RepositoryContracts.RepositoryListResponseDTO> {
+  }): Promise<RepositoryListResponseDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -302,7 +302,7 @@ export class RepositoryWebApplicationService {
    */
   async getRepositoriesByGoal(
     goalUuid: string,
-  ): Promise<RepositoryContracts.RepositoryServerDTO[]> {
+  ): Promise<RepositoryServerDTO[]> {
     // 优先从缓存获取
     const cachedRepositories = this.repositoryStore.getRepositoriesByGoalUuid(goalUuid);
 
@@ -325,8 +325,8 @@ export class RepositoryWebApplicationService {
    * 获取所有资源列表
    */
   async getResources(
-    params?: RepositoryContracts.ResourceQueryParamsDTO,
-  ): Promise<RepositoryContracts.ResourceListResponseDTO> {
+    params?: ResourceQueryParamsDTO,
+  ): Promise<ResourceListResponseDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -352,8 +352,8 @@ export class RepositoryWebApplicationService {
    */
   async getRepositoryResources(
     repositoryUuid: string,
-    params?: RepositoryContracts.ResourceQueryParamsDTO,
-  ): Promise<RepositoryContracts.ResourceListResponseDTO> {
+    params?: ResourceQueryParamsDTO,
+  ): Promise<ResourceListResponseDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -378,8 +378,8 @@ export class RepositoryWebApplicationService {
    * 创建资源
    */
   async createResource(
-    request: RepositoryContracts.CreateResourceRequestDTO,
-  ): Promise<RepositoryContracts.ResourceDTO> {
+    request: CreateResourceRequestDTO,
+  ): Promise<ResourceDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -403,7 +403,7 @@ export class RepositoryWebApplicationService {
   /**
    * 获取资源详情
    */
-  async getResourceById(uuid: string): Promise<RepositoryContracts.ResourceDTO | null> {
+  async getResourceById(uuid: string): Promise<ResourceDTO | null> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -439,8 +439,8 @@ export class RepositoryWebApplicationService {
    */
   async updateResource(
     uuid: string,
-    request: RepositoryContracts.UpdateResourceRequestDTO,
-  ): Promise<RepositoryContracts.ResourceDTO> {
+    request: UpdateResourceRequestDTO,
+  ): Promise<ResourceDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -489,7 +489,7 @@ export class RepositoryWebApplicationService {
     query: string;
     repositoryUuid?: string;
     pagination?: { page: number; limit: number };
-  }): Promise<RepositoryContracts.ResourceListResponseDTO> {
+  }): Promise<ResourceListResponseDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -515,7 +515,7 @@ export class RepositoryWebApplicationService {
   /**
    * 获取Git状态
    */
-  async getGitStatus(repositoryUuid: string): Promise<RepositoryContracts.GitStatusResponseDTO> {
+  async getGitStatus(repositoryUuid: string): Promise<GitStatusResponseDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -538,7 +538,7 @@ export class RepositoryWebApplicationService {
     repositoryUuid: string,
     message: string,
     addAll = true,
-  ): Promise<RepositoryContracts.GitCommitDTO> {
+  ): Promise<GitCommitDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -653,3 +653,4 @@ export class RepositoryWebApplicationService {
     await this.syncAllRepositories();
   }
 }
+

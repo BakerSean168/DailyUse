@@ -11,18 +11,18 @@
 
 import type { IAIProviderConfigRepository } from '@dailyuse/domain-server';
 import { AIProviderConfigServer } from '@dailyuse/domain-server';
-import type { AIContracts } from '@dailyuse/contracts';
-import { AIProviderType } from '@dailyuse/contracts';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import { AIProviderType } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 import { AIAdapterFactory } from '../../infrastructure/adapters/AIAdapterFactory';
 
-type AIProviderConfigClientDTO = AIContracts.AIProviderConfigClientDTO;
-type AIProviderConfigServerDTO = AIContracts.AIProviderConfigServerDTO;
-type CreateAIProviderRequest = AIContracts.CreateAIProviderRequest;
-type UpdateAIProviderRequest = AIContracts.UpdateAIProviderRequest;
-type TestAIProviderConnectionRequest = AIContracts.TestAIProviderConnectionRequest;
-type TestAIProviderConnectionResponse = AIContracts.TestAIProviderConnectionResponse;
-type AIModelInfo = AIContracts.AIModelInfo;
+type AIProviderConfigClientDTO = AIProviderConfigClientDTO;
+type AIProviderConfigServerDTO = AIProviderConfigServerDTO;
+type CreateAIProviderRequest = CreateAIProviderRequest;
+type UpdateAIProviderRequest = UpdateAIProviderRequest;
+type TestAIProviderConnectionRequest = TestAIProviderConnectionRequest;
+type TestAIProviderConnectionResponse = TestAIProviderConnectionResponse;
+type AIModelInfo = AIModelInfo;
 
 const logger = createLogger('AIProviderConfigService');
 
@@ -373,3 +373,5 @@ export class AIProviderConfigService {
     }
   }
 }
+
+

@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api/instances';
-import type { AccountContracts } from '@dailyuse/contracts';
+import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
 
 /**
  * Account API 客户端
@@ -34,8 +34,8 @@ export class AccountApiClient {
    * 创建账户
    */
   async createAccount(
-    request: AccountContracts.CreateAccountRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: CreateAccountRequestDTO,
+  ): Promise<AccountDTO> {
     const data = await apiClient.post(this.baseUrl, request);
     return data;
   }
@@ -43,7 +43,7 @@ export class AccountApiClient {
   /**
    * 获取账户详情
    */
-  async getAccountById(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async getAccountById(accountId: string): Promise<AccountDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${accountId}`);
     return data;
   }
@@ -52,8 +52,8 @@ export class AccountApiClient {
    * 获取账户列表
    */
   async getAccounts(
-    params?: AccountContracts.AccountQueryParams,
-  ): Promise<AccountContracts.AccountListResponseDTO> {
+    params?: AccountQueryParams,
+  ): Promise<AccountListResponseDTO> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;
   }
@@ -70,8 +70,8 @@ export class AccountApiClient {
   /**
    * 获取当前用户资料
    */
-  async getMyProfile(): Promise<AccountContracts.AccountDTO> {
-    const data = await apiClient.get<AccountContracts.AccountDTO>(`${this.baseUrl}/me`);
+  async getMyProfile(): Promise<AccountDTO> {
+    const data = await apiClient.get<AccountDTO>(`${this.baseUrl}/me`);
     return data;
   }
 
@@ -79,8 +79,8 @@ export class AccountApiClient {
    * 更新当前用户资料
    */
   async updateMyProfile(
-    request: AccountContracts.UpdateAccountProfileRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountProfileRequestDTO,
+  ): Promise<AccountDTO> {
     const data = await apiClient.put(`${this.baseUrl}/me`, request);
     return data;
   }
@@ -103,8 +103,8 @@ export class AccountApiClient {
    */
   async updateProfile(
     accountId: string,
-    request: AccountContracts.UpdateAccountProfileRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountProfileRequestDTO,
+  ): Promise<AccountDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${accountId}/profile`, request);
     return data;
   }
@@ -114,8 +114,8 @@ export class AccountApiClient {
    */
   async updatePreferences(
     accountId: string,
-    request: AccountContracts.UpdateAccountPreferencesRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountPreferencesRequestDTO,
+  ): Promise<AccountDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${accountId}/preferences`, request);
     return data;
   }
@@ -127,8 +127,8 @@ export class AccountApiClient {
    */
   async updateEmail(
     accountId: string,
-    request: AccountContracts.UpdateEmailRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateEmailRequestDTO,
+  ): Promise<AccountDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${accountId}/email`, request);
     return data;
   }
@@ -138,8 +138,8 @@ export class AccountApiClient {
    */
   async verifyEmail(
     accountId: string,
-    request: AccountContracts.VerifyEmailRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: VerifyEmailRequestDTO,
+  ): Promise<AccountDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${accountId}/verify-email`, request);
     return data;
   }
@@ -149,8 +149,8 @@ export class AccountApiClient {
    */
   async updatePhone(
     accountId: string,
-    request: AccountContracts.UpdatePhoneRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdatePhoneRequestDTO,
+  ): Promise<AccountDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${accountId}/phone`, request);
     return data;
   }
@@ -160,8 +160,8 @@ export class AccountApiClient {
    */
   async verifyPhone(
     accountId: string,
-    request: AccountContracts.VerifyPhoneRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: VerifyPhoneRequestDTO,
+  ): Promise<AccountDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${accountId}/verify-phone`, request);
     return data;
   }
@@ -171,7 +171,7 @@ export class AccountApiClient {
   /**
    * 停用账户
    */
-  async deactivateAccount(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async deactivateAccount(accountId: string): Promise<AccountDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${accountId}/deactivate`);
     return data;
   }
@@ -179,7 +179,7 @@ export class AccountApiClient {
   /**
    * 暂停账户
    */
-  async suspendAccount(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async suspendAccount(accountId: string): Promise<AccountDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${accountId}/suspend`);
     return data;
   }
@@ -187,7 +187,7 @@ export class AccountApiClient {
   /**
    * 激活账户
    */
-  async activateAccount(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async activateAccount(accountId: string): Promise<AccountDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${accountId}/activate`);
     return data;
   }
@@ -197,7 +197,7 @@ export class AccountApiClient {
   /**
    * 获取订阅信息
    */
-  async getSubscription(accountId: string): Promise<AccountContracts.SubscriptionDTO> {
+  async getSubscription(accountId: string): Promise<SubscriptionDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${accountId}/subscription`);
     return data;
   }
@@ -207,8 +207,8 @@ export class AccountApiClient {
    */
   async subscribePlan(
     accountId: string,
-    request: AccountContracts.SubscribePlanRequestDTO,
-  ): Promise<AccountContracts.SubscriptionDTO> {
+    request: SubscribePlanRequestDTO,
+  ): Promise<SubscriptionDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${accountId}/subscribe`, request);
     return data;
   }
@@ -218,8 +218,8 @@ export class AccountApiClient {
    */
   async cancelSubscription(
     accountId: string,
-    request?: AccountContracts.CancelSubscriptionRequestDTO,
-  ): Promise<AccountContracts.SubscriptionDTO> {
+    request?: CancelSubscriptionRequestDTO,
+  ): Promise<SubscriptionDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${accountId}/subscription/cancel`, request);
     return data;
   }
@@ -232,7 +232,7 @@ export class AccountApiClient {
   async getAccountHistory(
     accountId: string,
     params?: { page?: number; limit?: number },
-  ): Promise<AccountContracts.AccountHistoryListResponseDTO> {
+  ): Promise<AccountHistoryListResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${accountId}/history`, { params });
     return data;
   }
@@ -242,7 +242,7 @@ export class AccountApiClient {
   /**
    * 获取账户统计
    */
-  async getAccountStats(): Promise<AccountContracts.AccountStatsResponseDTO> {
+  async getAccountStats(): Promise<AccountStatsResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/stats`);
     return data;
   }
@@ -250,3 +250,4 @@ export class AccountApiClient {
 
 // 导出单例
 export const accountApiClient = new AccountApiClient();
+

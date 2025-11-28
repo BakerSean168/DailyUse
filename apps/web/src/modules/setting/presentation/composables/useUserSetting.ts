@@ -7,7 +7,7 @@ import { ref, computed, onMounted } from 'vue';
 import { UserSettingWebApplicationService } from '../../application/services/UserSettingWebApplicationService';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { type SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
 /**
  * UserSetting 模块组合式函数
@@ -148,7 +148,7 @@ export function useUserSetting() {
    * @deprecated 后端不支持直接创建，请使用 getOrCreateUserSetting
    */
   const createUserSetting = async (
-    request: SettingContracts.CreateUserSettingRequest,
+    request: CreateUserSettingRequest,
   ): Promise<void> => {
     loading.value = true;
     error.value = '';
@@ -171,7 +171,7 @@ export function useUserSetting() {
    */
   const updateUserSetting = async (
     uuid: string,
-    request: SettingContracts.UpdateUserSettingRequest,
+    request: UpdateUserSettingRequest,
   ): Promise<void> => {
     loading.value = true;
     error.value = '';
@@ -195,7 +195,7 @@ export function useUserSetting() {
    * 更新外观设置
    */
   const updateAppearance = async (
-    appearance: SettingContracts.UpdateAppearanceRequest,
+    appearance: UpdateAppearanceRequest,
   ): Promise<void> => {
     if (!userSetting.value) {
       snackbar.showError('未找到用户设置');
@@ -221,7 +221,7 @@ export function useUserSetting() {
   /**
    * 更新本地化设置
    */
-  const updateLocale = async (locale: SettingContracts.UpdateLocaleRequest): Promise<void> => {
+  const updateLocale = async (locale: UpdateLocaleRequest): Promise<void> => {
     if (!userSetting.value) {
       snackbar.showError('未找到用户设置');
       return;
@@ -247,7 +247,7 @@ export function useUserSetting() {
    * 更新工作流设置
    */
   const updateWorkflow = async (
-    workflow: SettingContracts.UpdateWorkflowRequest,
+    workflow: UpdateWorkflowRequest,
   ): Promise<void> => {
     if (!userSetting.value) {
       snackbar.showError('未找到用户设置');
@@ -273,7 +273,7 @@ export function useUserSetting() {
   /**
    * 更新隐私设置
    */
-  const updatePrivacy = async (privacy: SettingContracts.UpdatePrivacyRequest): Promise<void> => {
+  const updatePrivacy = async (privacy: UpdatePrivacyRequest): Promise<void> => {
     if (!userSetting.value) {
       snackbar.showError('未找到用户设置');
       return;
@@ -299,7 +299,7 @@ export function useUserSetting() {
    * 更新实验性功能设置
    */
   const updateExperimental = async (
-    experimental: SettingContracts.UpdateExperimentalRequest,
+    experimental: UpdateExperimentalRequest,
   ): Promise<void> => {
     if (!userSetting.value) {
       snackbar.showError('未找到用户设置');
@@ -524,3 +524,4 @@ export function useUserSettingData() {
     customShortcuts: computed(() => userSettingStore.shortcuts.custom),
   };
 }
+

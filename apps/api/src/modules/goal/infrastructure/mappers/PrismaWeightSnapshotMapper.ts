@@ -7,9 +7,9 @@
 
 import { KeyResultWeightSnapshot } from '@dailyuse/domain-server';
 import type { Prisma } from '@prisma/client';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 
-type SnapshotTrigger = GoalContracts.SnapshotTrigger;
+type SnapshotTrigger = SnapshotTrigger;
 
 /**
  * Prisma Weight Snapshot 类型 (生成后可用)
@@ -120,3 +120,4 @@ export class PrismaWeightSnapshotMapper {
     return prismaSnapshots.map((snapshot) => this.toDomain(snapshot));
   }
 }
+

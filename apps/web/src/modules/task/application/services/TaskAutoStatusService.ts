@@ -8,7 +8,8 @@
  * - 发送通知事件
  */
 
-import { TaskContracts } from '@dailyuse/contracts';
+import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 import mitt, { type Emitter } from 'mitt';
@@ -103,7 +104,7 @@ export class TaskAutoStatusService {
   async updateTaskStatusOnDependencyChange(
     taskUuid: string,
     allTasks: TaskForDAG[],
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): Promise<StatusUpdateResult | null> {
     const task = allTasks.find((t) => t.uuid === taskUuid);
     if (!task) {
@@ -162,7 +163,7 @@ export class TaskAutoStatusService {
   calculateTaskStatus(
     task: TaskForDAG,
     allTasks: TaskForDAG[],
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): string {
     // 获取前置任务
     const predecessorDeps = dependencies.filter((dep) => dep.successorTaskUuid === task.uuid);
@@ -195,7 +196,7 @@ export class TaskAutoStatusService {
   async cascadeStatusUpdate(
     startingTaskUuid: string,
     allTasks: TaskForDAG[],
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): Promise<StatusUpdateResult[]> {
     const results: StatusUpdateResult[] = [];
     const visited = new Set<string>();
@@ -246,7 +247,7 @@ export class TaskAutoStatusService {
   analyzeTaskReadiness(
     task: TaskForDAG,
     allTasks: TaskForDAG[],
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): TaskReadinessAnalysis {
     // 获取前置任务
     const predecessorDeps = dependencies.filter((dep) => dep.successorTaskUuid === task.uuid);
@@ -283,7 +284,7 @@ export class TaskAutoStatusService {
    */
   batchCalculateTaskStatus(
     tasks: TaskForDAG[],
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): Map<string, string> {
     const statusMap = new Map<string, string>();
 
@@ -301,7 +302,7 @@ export class TaskAutoStatusService {
   getBlockingTasksInfo(
     taskUuid: string,
     allTasks: TaskForDAG[],
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): Array<{ uuid: string; title: string; status: string; estimatedMinutes?: number }> {
     const predecessorDeps = dependencies.filter((dep) => dep.successorTaskUuid === taskUuid);
 
@@ -326,7 +327,7 @@ export class TaskAutoStatusService {
   canTaskStart(
     taskUuid: string,
     allTasks: TaskForDAG[],
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): { canStart: boolean; reason?: string; blockingTasks?: string[] } {
     const task = allTasks.find((t) => t.uuid === taskUuid);
     if (!task) {
@@ -369,3 +370,4 @@ export class TaskAutoStatusService {
 
 // 导出单例
 export const taskAutoStatusService = new TaskAutoStatusService();
+

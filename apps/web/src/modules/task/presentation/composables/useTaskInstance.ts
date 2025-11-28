@@ -4,7 +4,7 @@
  */
 
 import { ref, computed, readonly } from 'vue';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client';
 import { taskInstanceApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
@@ -407,3 +407,4 @@ export function useTaskInstanceData() {
     })),
   };
 }
+

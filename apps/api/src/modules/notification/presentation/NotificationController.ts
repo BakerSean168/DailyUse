@@ -19,11 +19,11 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { NotificationApplicationService } from '../application/NotificationApplicationService';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type CreateNotificationRequest = NotificationContracts.CreateNotificationRequest;
-type QueryNotificationsRequest = NotificationContracts.QueryNotificationsRequest;
-type BatchDeleteNotificationsRequest = NotificationContracts.BatchDeleteNotificationsRequest;
+type CreateNotificationRequest = CreateNotificationRequest;
+type QueryNotificationsRequest = QueryNotificationsRequest;
+type BatchDeleteNotificationsRequest = BatchDeleteNotificationsRequest;
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -151,3 +151,4 @@ export class NotificationController {
     return this.notificationService.batchDeleteNotifications(body.uuids, accountUuid);
   }
 }
+

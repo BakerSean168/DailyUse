@@ -13,10 +13,10 @@
 
 import { PrismaClient } from '@prisma/client';
 import type { IAIGenerationTaskRepository } from '@dailyuse/domain-server';
-import type { AIContracts } from '@dailyuse/contracts';
-import { GenerationTaskType, TaskStatus } from '@dailyuse/contracts';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import { GenerationTaskType, TaskStatus } from '@dailyuse/contracts/ai';
 
-type AIGenerationTaskServerDTO = AIContracts.AIGenerationTaskServerDTO;
+type AIGenerationTaskServerDTO = AIGenerationTaskServerDTO;
 
 /**
  * PrismaAIGenerationTaskRepository 实现
@@ -207,3 +207,7 @@ export class PrismaAIGenerationTaskRepository implements IAIGenerationTaskReposi
     };
   }
 }
+
+
+
+

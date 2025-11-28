@@ -4,8 +4,9 @@
  */
 
 import { ref } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
-import { GoalContracts as GC } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import { GoalStatus as GC_GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { keyResultApplicationService } from '../../application/services';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 
@@ -46,17 +47,17 @@ export function useKeyResult() {
       currentValue?: number;
       unit?: string;
       weight: number;
-      valueType?: GoalContracts.KeyResultValueType;
-      aggregationMethod?: GoalContracts.AggregationMethod;
+      valueType?: KeyResultValueType;
+      aggregationMethod?: AggregationMethod;
     },
   ) => {
     try {
       // 构建符合 AddKeyResultRequest 的请求
-      const request: Omit<GoalContracts.AddKeyResultRequest, 'goalUuid'> = {
+      const request: Omit<AddKeyResultRequest, 'goalUuid'> = {
         title: data.title,
         description: data.description,
-        valueType: data.valueType || GC.KeyResultValueType.INCREMENTAL,
-        aggregationMethod: data.aggregationMethod || GC.AggregationMethod.LAST,
+        valueType: data.valueType || KeyResultValueType.INCREMENTAL,
+        aggregationMethod: data.aggregationMethod || AggregationMethod.LAST,
         targetValue: data.targetValue,
         currentValue: data.currentValue,
         unit: data.unit,
@@ -79,7 +80,7 @@ export function useKeyResult() {
   const updateKeyResult = async (
     goalUuid: string,
     keyResultUuid: string,
-    data: GoalContracts.UpdateKeyResultRequest,
+    data: UpdateKeyResultRequest,
   ) => {
     try {
       const response = await keyResultApplicationService.updateKeyResultForGoal(
@@ -124,3 +125,6 @@ export function useKeyResult() {
     deleteKeyResult,
   };
 }
+
+
+

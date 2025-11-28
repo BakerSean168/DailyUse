@@ -100,17 +100,18 @@ import { useTaskStore } from '../stores/taskStore';
 import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import TaskDAGVisualization from './dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from './dialogs/TaskTemplateDialog.vue';
-import { TaskContracts } from '@dailyuse/contracts';
+import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 // composables
 import { taskDependencyApiClient } from '../../infrastructure/api/taskApiClient';
 import { useTaskTemplate } from '../composables/useTaskTemplate';
 
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
-type TaskTemplateClientDTO = TaskContracts.TaskTemplateClientDTO;
+type TaskDependencyClientDTO = TaskDependencyClientDTO;
+type TaskTemplateClientDTO = TaskTemplateClientDTO;
 
 // 导入枚举类型
-const TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
-type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
+const TaskTemplateStatus = TaskTemplateStatus;
+type TaskTemplateStatus = TaskTemplateStatus;
 
 const taskStore = useTaskStore();
 const currentStatus = ref<TaskTemplateStatus>(TaskTemplateStatus.ACTIVE); // 使用枚举类型
@@ -379,3 +380,4 @@ const handleResumeTemplate = async (template: TaskTemplateClientDTO) => {
   }
 }
 </style>
+

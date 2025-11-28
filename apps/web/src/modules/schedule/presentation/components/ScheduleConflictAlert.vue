@@ -109,10 +109,11 @@
 </template>
 
 <script setup lang="ts">
-import { type ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 
-type ConflictDetectionResult = ScheduleContracts.ConflictDetectionResult;
-type ConflictSuggestion = ScheduleContracts.ConflictSuggestion;
+type ConflictDetectionResult = ConflictDetectionResult;
+type ConflictSuggestion = ConflictSuggestion;
 
 /**
  * Props for ScheduleConflictAlert component
@@ -278,3 +279,4 @@ const handleIgnore = (): void => {
   flex-wrap: wrap;
 }
 </style>
+

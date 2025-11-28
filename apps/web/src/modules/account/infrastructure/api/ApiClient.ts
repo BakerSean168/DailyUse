@@ -10,17 +10,17 @@ import type {
   PaginatedData,
   UploadOptions,
 } from '../../../../shared/api/core/types';
-import type { AccountContracts } from '@dailyuse/contracts';
+import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
 
 // 使用 AccountContracts 命名空间中的类型
-type AccountDTO = AccountContracts.AccountDTO;
-type CreateAccountRequestDTO = AccountContracts.CreateAccountRequestDTO;
-type UpdateAccountRequest = AccountContracts.UpdateAccountRequest;
-type VerifyEmailRequestDTO = AccountContracts.VerifyEmailRequestDTO;
-type VerifyPhoneRequestDTO = AccountContracts.VerifyPhoneRequestDTO;
-type AccountCreationResponse = AccountContracts.AccountCreationResponse;
-type AccountDetailResponse = AccountContracts.AccountDetailResponse;
-type AccountListResponseDTO = AccountContracts.AccountListResponseDTO;
+type AccountDTO = AccountDTO;
+type CreateAccountRequestDTO = CreateAccountRequestDTO;
+type UpdateAccountRequest = UpdateAccountRequest;
+type VerifyEmailRequestDTO = VerifyEmailRequestDTO;
+type VerifyPhoneRequestDTO = VerifyPhoneRequestDTO;
+type AccountCreationResponse = AccountCreationResponse;
+type AccountDetailResponse = AccountDetailResponse;
+type AccountListResponseDTO = AccountListResponseDTO;
 
 // 注册相关类型
 type RegistrationByUsernameAndPasswordRequestDTO = CreateAccountRequestDTO;
@@ -220,3 +220,4 @@ export class ApiClient {
     } as SuccessResponse<RegistrationResponseDTO>;
   }
 }
+

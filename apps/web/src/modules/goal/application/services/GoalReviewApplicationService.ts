@@ -1,4 +1,4 @@
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { Goal } from '@dailyuse/domain-client';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
@@ -39,8 +39,8 @@ export class GoalReviewApplicationService {
    */
   async createGoalReview(
     goalUuid: string,
-    request: GoalContracts.CreateGoalReviewRequest,
-  ): Promise<GoalContracts.GoalReviewClientDTO> {
+    request: CreateGoalReviewRequest,
+  ): Promise<GoalReviewClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -65,7 +65,7 @@ export class GoalReviewApplicationService {
   /**
    * 获取目标的所有复盘
    */
-  async getGoalReviewsByGoal(goalUuid: string): Promise<GoalContracts.GoalReviewsResponse> {
+  async getGoalReviewsByGoal(goalUuid: string): Promise<GoalReviewsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -89,8 +89,8 @@ export class GoalReviewApplicationService {
   async updateGoalReview(
     goalUuid: string,
     reviewUuid: string,
-    request: Partial<GoalContracts.GoalReviewClientDTO>,
-  ): Promise<GoalContracts.GoalReviewClientDTO> {
+    request: Partial<GoalReviewClientDTO>,
+  ): Promise<GoalReviewClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -183,3 +183,4 @@ export class GoalReviewApplicationService {
 }
 
 export const goalReviewApplicationService = GoalReviewApplicationService.getInstance();
+

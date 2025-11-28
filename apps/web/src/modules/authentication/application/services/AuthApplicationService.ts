@@ -1,4 +1,5 @@
-import { AuthenticationContracts, AccountContracts } from '@dailyuse/contracts';
+import type { AuthTokens, LoginRequest } from '@dailyuse/contracts/authentication';
+import type { AccountServerDTO } from '@dailyuse/contracts/account';
 import { AuthApiService } from '../../infrastructure/api/ApiClient';
 import { AuthManager } from '../../../../shared/api/core/interceptors';
 import { publishUserLoggedInEvent, publishUserLoggedOutEvent } from '../events/authEvents';
@@ -6,14 +7,14 @@ import { publishUserLoggedInEvent, publishUserLoggedOutEvent } from '../events/a
 import { useAuthenticationStore } from '../../presentation/stores/authenticationStore';
 
 // Type aliases for cleaner code
-type LoginRequestDTO = AuthenticationContracts.LoginRequestDTO;
-type LoginResponseDTO = AuthenticationContracts.LoginResponseDTO;
-type RefreshTokenRequestDTO = AuthenticationContracts.RefreshTokenRequestDTO;
-type RefreshTokenResponseDTO = AuthenticationContracts.RefreshTokenResponseDTO;
-type ChangePasswordRequestDTO = AuthenticationContracts.ChangePasswordRequestDTO;
-type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
-type DeviceInfoClientDTO = AuthenticationContracts.DeviceInfoClientDTO;
-type AccountClientDTO = AccountContracts.AccountClientDTO;
+type LoginRequestDTO = LoginRequestDTO;
+type LoginResponseDTO = LoginResponseDTO;
+type RefreshTokenRequestDTO = RefreshTokenRequestDTO;
+type RefreshTokenResponseDTO = RefreshTokenResponseDTO;
+type ChangePasswordRequestDTO = ChangePasswordRequestDTO;
+type AuthSessionClientDTO = AuthSessionClientDTO;
+type DeviceInfoClientDTO = DeviceInfoClientDTO;
+type AccountClientDTO = AccountClientDTO;
 
 /**
  * Authentication Application Service
@@ -378,3 +379,7 @@ export class AuthApplicationService {
     return this.authStore.hasRole(role);
   }
 }
+
+
+
+

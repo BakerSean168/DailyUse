@@ -3,7 +3,7 @@
  * 任务依赖关系图可视化专用类型定义
  */
 
-import { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 
 /**
  * 用于 DAG 可视化的任务数据类型
@@ -27,7 +27,7 @@ export interface TaskForDAG {
 /**
  * 将 TaskTemplateClientDTO 转换为 TaskForDAG
  */
-export function taskTemplateToDAG(template: TaskContracts.TaskTemplateClientDTO): TaskForDAG {
+export function taskTemplateToDAG(template: TaskTemplateClientDTO): TaskForDAG {
   return {
     uuid: template.uuid,
     title: template.title,
@@ -45,8 +45,8 @@ export function taskTemplateToDAG(template: TaskContracts.TaskTemplateClientDTO)
  * 将 TaskInstanceClientDTO 转换为 TaskForDAG
  */
 export function taskInstanceToDAG(
-  instance: TaskContracts.TaskInstanceClientDTO,
-  template?: TaskContracts.TaskTemplateClientDTO,
+  instance: TaskInstanceClientDTO,
+  template?: TaskTemplateClientDTO,
 ): TaskForDAG {
   return {
     uuid: instance.uuid,
@@ -100,3 +100,4 @@ function extractEstimatedMinutes(timeConfig: any): number | undefined {
   // 默认估算：如果有具体时间配置，估算为 30 分钟
   return 30;
 }
+

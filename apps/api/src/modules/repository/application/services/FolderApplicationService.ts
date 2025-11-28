@@ -1,6 +1,6 @@
 import type { IFolderRepository } from '@dailyuse/domain-server';
 import { Folder, FolderHierarchyService } from '@dailyuse/domain-server';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
 /**
@@ -52,8 +52,8 @@ export class FolderApplicationService {
     parentUuid?: string | null;
     name: string;
     order?: number;
-    metadata?: Partial<RepositoryContracts.FolderMetadataServerDTO>;
-  }): Promise<RepositoryContracts.FolderClientDTO> {
+    metadata?: Partial<FolderMetadataServerDTO>;
+  }): Promise<FolderClientDTO> {
     // 1. 如果有父文件夹，查询父路径
     let parentPath: string | null = null;
     if (params.parentUuid) {
@@ -84,7 +84,7 @@ export class FolderApplicationService {
   /**
    * 获取文件夹详情
    */
-  async getFolder(uuid: string): Promise<RepositoryContracts.FolderClientDTO | null> {
+  async getFolder(uuid: string): Promise<FolderClientDTO | null> {
     const folder = await this.folderRepository.findByUuid(uuid);
     return folder ? folder.toClientDTO() : null;
   }
@@ -92,7 +92,7 @@ export class FolderApplicationService {
   /**
    * 获取文件夹树（指定仓储）
    */
-  async getFolderTree(repositoryUuid: string): Promise<RepositoryContracts.FolderClientDTO[]> {
+  async getFolderTree(repositoryUuid: string): Promise<FolderClientDTO[]> {
     // 1. 查询所有文件夹
     const allFolders = await this.folderRepository.findByRepositoryUuid(repositoryUuid);
 
@@ -100,7 +100,7 @@ export class FolderApplicationService {
     const tree = this.hierarchyService.buildTree(allFolders);
 
     // 3. 转换 FolderTreeNode 为 ClientDTO（递归处理子节点）
-    const convertTreeNode = (node: any): RepositoryContracts.FolderClientDTO => {
+    const convertTreeNode = (node: any): FolderClientDTO => {
       const folder = node.folder as Folder;
       const clientDTO = folder.toClientDTO(false); // 先不包含子节点
 
@@ -118,7 +118,7 @@ export class FolderApplicationService {
   /**
    * 重命名文件夹
    */
-  async renameFolder(uuid: string, newName: string): Promise<RepositoryContracts.FolderClientDTO> {
+  async renameFolder(uuid: string, newName: string): Promise<FolderClientDTO> {
     // 1. 查询文件夹
     const folder = await this.folderRepository.findByUuid(uuid);
     if (!folder) {
@@ -148,7 +148,7 @@ export class FolderApplicationService {
   async moveFolder(
     uuid: string,
     newParentUuid: string | null,
-  ): Promise<RepositoryContracts.FolderClientDTO> {
+  ): Promise<FolderClientDTO> {
     // 1. 查询文件夹
     const folder = await this.folderRepository.findByUuid(uuid);
     if (!folder) {
@@ -228,3 +228,5 @@ export class FolderApplicationService {
     }
   }
 }
+
+

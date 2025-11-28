@@ -10,7 +10,7 @@
 import { eventBus } from '@dailyuse/utils';
 import { useTaskStore } from '../presentation/stores/taskStore';
 import { TaskInstance } from '@dailyuse/domain-client';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { taskTemplateApiClient } from '../infrastructure/api/taskApiClient';
 
 interface TaskInstanceGeneratedEvent {
@@ -22,7 +22,7 @@ interface TaskInstanceGeneratedEvent {
     to: number;
   };
   strategy: 'full' | 'summary'; // 混合策略标识
-  instances?: TaskContracts.TaskInstanceClientDTO[]; // strategy=full 时包含
+  instances?: TaskInstanceClientDTO[]; // strategy=full 时包含
   timestamp: string;
 }
 
@@ -173,7 +173,7 @@ export class TaskInstanceSyncService {
    * 更新 Store（批量，减少响应式触发）
    */
   private async updateStoreWithInstances(
-    instances: TaskContracts.TaskInstanceClientDTO[]
+    instances: TaskInstanceClientDTO[]
   ): Promise<void> {
     const taskStore = useTaskStore();
     
@@ -271,3 +271,4 @@ export class TaskInstanceSyncService {
 
 // 导出单例
 export const taskInstanceSyncService = TaskInstanceSyncService.getInstance();
+

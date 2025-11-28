@@ -2,10 +2,10 @@
 import { PrismaClient } from '@prisma/client';
 import type { NotificationRepository as INotificationTemplateRepository } from '@dailyuse/domain-server';
 import { NotificationTemplate } from '@dailyuse/domain-server';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type NotificationCategory = NotificationContracts.NotificationCategory;
-type NotificationType = NotificationContracts.NotificationType;
+type NotificationCategory = NotificationCategory;
+type NotificationType = NotificationType;
 
 /**
  * NotificationTemplate Prisma 仓储实现
@@ -19,7 +19,7 @@ export class PrismaNotificationTemplateRepository implements INotificationTempla
     if (!data) return null;
 
     // The 'data' object is from Prisma, map it to the Persistence DTO
-    const dto: NotificationContracts.NotificationTemplateAggregatePersistenceDTO = {
+    const dto: NotificationTemplateAggregatePersistenceDTO = {
       uuid: data.uuid,
       name: data.name,
       description: data.description,
@@ -170,3 +170,4 @@ export class PrismaNotificationTemplateRepository implements INotificationTempla
     return await this.prisma.notificationTemplate.count({ where });
   }
 }
+

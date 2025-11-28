@@ -201,13 +201,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { TaskContracts } from '@dailyuse/contracts';
+import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import DependencyManager from '@/modules/task/presentation/components/dependency/DependencyManager.vue';
 import TaskDAGVisualization from '@/modules/task/presentation/components/dag/TaskDAGVisualization.vue';
 import { taskAutoStatusService } from '@/modules/task/application/services/TaskAutoStatusService';
 
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
+type TaskDependencyClientDTO = TaskDependencyClientDTO;
 
 interface EventLogEntry {
   time: string;
@@ -452,3 +453,4 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 </style>
+

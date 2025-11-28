@@ -4,7 +4,7 @@
  */
 
 import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
 
@@ -60,7 +60,7 @@ export class TaskSyncApplicationService {
 
       // 转换模板为领域实体对象
       console.log('[TaskSync] Converting templates to entities:', templates.length);
-      const entityTemplates = templates.map((templateDTO: TaskContracts.TaskTemplateClientDTO) =>
+      const entityTemplates = templates.map((templateDTO: TaskTemplateClientDTO) =>
         TaskTemplate.fromClientDTO(templateDTO),
       );
 
@@ -267,3 +267,4 @@ export class TaskSyncApplicationService {
  * 导出单例实例
  */
 export const taskSyncApplicationService = TaskSyncApplicationService.getInstance();
+

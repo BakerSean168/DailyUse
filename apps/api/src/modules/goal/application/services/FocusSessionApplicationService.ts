@@ -18,10 +18,11 @@
 import type { IFocusSessionRepository, IGoalRepository } from '@dailyuse/domain-server';
 import { FocusSessionDomainService, FocusSession, Goal } from '@dailyuse/domain-server';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalContracts } from '@dailyuse/contracts';
+import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 
-type FocusSessionClientDTO = GoalContracts.FocusSessionClientDTO;
-type FocusSessionStatus = GoalContracts.FocusSessionStatus;
+type FocusSessionClientDTO = FocusSessionClientDTO;
+type FocusSessionStatus = FocusSessionStatus;
 
 /**
  * FocusSessionApplicationService
@@ -98,8 +99,8 @@ export class FocusSessionApplicationService {
     // 1. 查询已有活跃会话（验证单个活跃会话规则）
     const existingSessions = await this.sessionRepository.findByAccountUuid(accountUuid, {
       status: [
-        GoalContracts.FocusSessionStatus.IN_PROGRESS,
-        GoalContracts.FocusSessionStatus.PAUSED,
+        FocusSessionStatus.IN_PROGRESS,
+        FocusSessionStatus.PAUSED,
       ],
     });
 
@@ -368,3 +369,4 @@ export class FocusSessionApplicationService {
     return session.toClientDTO();
   }
 }
+

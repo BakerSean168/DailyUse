@@ -201,10 +201,10 @@
 import { computed, ref } from 'vue';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import { format } from 'date-fns';
-import { ImportanceLevel } from '@dailyuse/contracts';
-import { UrgencyLevel } from '@dailyuse/contracts';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { UrgencyLevel } from '@dailyuse/contracts/shared';
 // types
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import type { TaskTemplate } from '@dailyuse/domain-client';
 import type { Goal, KeyResult } from '@dailyuse/domain-client';
 
@@ -605,3 +605,4 @@ const handleResume = () => {
   }
 }
 </style>
+

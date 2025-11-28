@@ -7,12 +7,12 @@
  */
 
 import { apiClient } from '@/shared/api/instances';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentVersionClientDTO = DocumentContracts.DocumentVersionClientDTO;
-type DocumentVersionServerDTO = DocumentContracts.DocumentVersionServerDTO;
-type VersionComparisonDTO = DocumentContracts.VersionComparisonDTO;
-type VersionHistoryResponseDTO = DocumentContracts.VersionHistoryResponseDTO;
+type DocumentVersionClientDTO = DocumentVersionClientDTO;
+type DocumentVersionServerDTO = DocumentVersionServerDTO;
+type VersionComparisonDTO = VersionComparisonDTO;
+type VersionHistoryResponseDTO = VersionHistoryResponseDTO;
 
 export class DocumentVersionApiClient {
   /**
@@ -87,3 +87,4 @@ export class DocumentVersionApiClient {
 
 // Export singleton instance
 export const documentVersionApi = new DocumentVersionApiClient();
+

@@ -79,9 +79,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type VersionComparisonDTO = DocumentContracts.VersionComparisonDTO;
+type VersionComparisonDTO = VersionComparisonDTO;
 
 // ==================== Props ====================
 const props = defineProps<{
@@ -161,3 +161,4 @@ function formatDate(dateString: string): string {
   color: inherit;
 }
 </style>
+

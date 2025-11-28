@@ -5,12 +5,12 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 import { repositoryApiClient } from '@/modules/repository/infrastructure/api';
 
-type SearchMode = RepositoryContracts.SearchMode;
-type SearchResponse = RepositoryContracts.SearchResponse;
-type SearchResultItem = RepositoryContracts.SearchResultItem;
+type SearchMode = SearchMode;
+type SearchResponse = SearchResponse;
+type SearchResultItem = SearchResultItem;
 
 export const useSearchStore = defineStore('repository-search', () => {
   // State
@@ -178,3 +178,4 @@ export const useSearchStore = defineStore('repository-search', () => {
     clearHistory,
   };
 });
+

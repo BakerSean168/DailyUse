@@ -1,16 +1,17 @@
 import type { PrismaClient, goal as PrismaGoal } from '@prisma/client';
 import type { IGoalRepository } from '@dailyuse/domain-server';
 import { Goal, KeyResult, GoalReview } from '@dailyuse/domain-server';
-import { GoalContracts } from '@dailyuse/contracts';
+import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 
 // 类型别名（从命名空间导入）
-type GoalStatus = GoalContracts.GoalStatus;
-type ImportanceLevel = GoalContracts.ImportanceLevel;
-type UrgencyLevel = GoalContracts.UrgencyLevel;
+type GoalStatus = GoalStatus;
+type ImportanceLevel = ImportanceLevel;
+type UrgencyLevel = UrgencyLevel;
 
 // 枚举值别名
-const ImportanceLevel = GoalContracts.ImportanceLevel;
-const UrgencyLevel = GoalContracts.UrgencyLevel;
+const ImportanceLevel = ImportanceLevel;
+const UrgencyLevel = UrgencyLevel;
 
 export class PrismaGoalRepository implements IGoalRepository {
   constructor(private prisma: PrismaClient) {}
@@ -447,3 +448,4 @@ export class PrismaGoalRepository implements IGoalRepository {
     });
   }
 }
+

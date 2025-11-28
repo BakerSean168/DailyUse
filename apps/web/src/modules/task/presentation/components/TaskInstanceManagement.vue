@@ -211,7 +211,7 @@ import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import { format, startOfDay, isToday, isSameDay } from 'date-fns';
 // types
 import { TaskInstance, TaskTemplate } from '@dailyuse/domain-client';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import { Goal, KeyResult } from '@dailyuse/domain-client';
 
 // composables
@@ -987,3 +987,4 @@ onMounted(async () => {
   }
 }
 </style>
+

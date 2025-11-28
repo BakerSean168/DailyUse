@@ -7,7 +7,7 @@
  * 适用于：Goal、Task 等需要优先级排序的实体
  */
 
-import type { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import type { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
 /**
  * 重要性权重映射

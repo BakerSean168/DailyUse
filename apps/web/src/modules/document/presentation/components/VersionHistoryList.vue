@@ -101,9 +101,9 @@
 </template>
 
 <script setup lang="ts">
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentVersionClientDTO = DocumentContracts.DocumentVersionClientDTO;
+type DocumentVersionClientDTO = DocumentVersionClientDTO;
 
 // ==================== Props ====================
 defineProps<{
@@ -168,3 +168,4 @@ function formatDate(dateString: string): string {
   });
 }
 </script>
+

@@ -14,13 +14,13 @@ import {
   accountProfileApplicationService,
   accountSubscriptionApplicationService,
 } from '../../application/services';
-import type { AccountContracts } from '@dailyuse/contracts';
+import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
 
 // 本地类型别名
-type AccountDTO = AccountContracts.AccountDTO;
-type SubscriptionDTO = AccountContracts.SubscriptionDTO;
-type AccountHistoryDTO = AccountContracts.AccountHistoryServerDTO;
-type AccountStatsDTO = AccountContracts.AccountStatsResponseDTO;
+type AccountDTO = AccountDTO;
+type SubscriptionDTO = SubscriptionDTO;
+type AccountHistoryDTO = AccountHistoryServerDTO;
+type AccountStatsDTO = AccountStatsResponseDTO;
 
 // 返回类型接口（无需导出，web 应用不生成 .d.ts）
 interface UseAccountReturn {
@@ -36,7 +36,7 @@ interface UseAccountReturn {
   // 计算属性
   isAuthenticated: ComputedRef<boolean>;
   currentAccountUuid: ComputedRef<string | null>;
-  accountStatus: ComputedRef<AccountContracts.AccountStatus | null>;
+  accountStatus: ComputedRef<AccountStatus | null>;
   isActiveAccount: ComputedRef<boolean>;
   isDeactivatedAccount: ComputedRef<boolean>;
   isSuspendedAccount: ComputedRef<boolean>;
@@ -44,21 +44,21 @@ interface UseAccountReturn {
   isEmailVerified: ComputedRef<boolean>;
   isPhoneVerified: ComputedRef<boolean>;
   isTwoFactorEnabled: ComputedRef<boolean>;
-  currentSubscriptionPlan: ComputedRef<AccountContracts.SubscriptionPlan | null>;
+  currentSubscriptionPlan: ComputedRef<SubscriptionPlan | null>;
   isPremiumUser: ComputedRef<boolean>;
   storageUsagePercentage: ComputedRef<number>;
   rememberedAccounts: ComputedRef<AccountDTO[]>;
 
   // 方法
-  updateProfile: (data: AccountContracts.UpdateAccountProfileRequestDTO) => Promise<boolean>;
+  updateProfile: (data: UpdateAccountProfileRequestDTO) => Promise<boolean>;
   updateEmail: (newEmail: string, password: string) => Promise<boolean>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   updateAvatar: (avatarUrl: string) => Promise<boolean>;
   deactivateAccount: (reason?: string) => Promise<boolean>;
   loadCurrentAccount: () => Promise<boolean>;
   updateSubscription: (
-    plan: AccountContracts.SubscriptionPlan,
-    cycle?: AccountContracts.BillingCycle,
+    plan: SubscriptionPlan,
+    cycle?: BillingCycle,
   ) => Promise<boolean>;
   cancelSubscription: (reason?: string) => Promise<boolean>;
   loadSubscription: () => Promise<boolean>;
@@ -105,7 +105,7 @@ export function useAccount(): UseAccountReturn {
   /**
    * 获取当前用户资料
    */
-  async function getMyProfile(): Promise<AccountContracts.AccountDTO> {
+  async function getMyProfile(): Promise<AccountDTO> {
     return await accountProfileApplicationService.getMyProfile();
   }
 
@@ -113,8 +113,8 @@ export function useAccount(): UseAccountReturn {
    * 更新当前用户资料
    */
   async function updateMyProfile(
-    request: AccountContracts.UpdateAccountProfileRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountProfileRequestDTO,
+  ): Promise<AccountDTO> {
     return await accountProfileApplicationService.updateMyProfile(request);
   }
 
@@ -131,7 +131,7 @@ export function useAccount(): UseAccountReturn {
   /**
    * 获取账户详情
    */
-  async function getAccountById(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async function getAccountById(accountId: string): Promise<AccountDTO> {
     return await accountProfileApplicationService.getAccountById(accountId);
   }
 
@@ -140,8 +140,8 @@ export function useAccount(): UseAccountReturn {
    */
   async function updateProfile(
     accountId: string,
-    request: AccountContracts.UpdateAccountProfileRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountProfileRequestDTO,
+  ): Promise<AccountDTO> {
     return await accountProfileApplicationService.updateProfile(accountId, request);
   }
 
@@ -150,8 +150,8 @@ export function useAccount(): UseAccountReturn {
    */
   async function updatePreferences(
     accountId: string,
-    request: AccountContracts.UpdateAccountPreferencesRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateAccountPreferencesRequestDTO,
+  ): Promise<AccountDTO> {
     return await accountProfileApplicationService.updatePreferences(accountId, request);
   }
 
@@ -162,8 +162,8 @@ export function useAccount(): UseAccountReturn {
    */
   async function updateEmail(
     accountId: string,
-    request: AccountContracts.UpdateEmailRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdateEmailRequestDTO,
+  ): Promise<AccountDTO> {
     return await accountProfileApplicationService.updateEmail(accountId, request);
   }
 
@@ -172,8 +172,8 @@ export function useAccount(): UseAccountReturn {
    */
   async function verifyEmail(
     accountId: string,
-    request: AccountContracts.VerifyEmailRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: VerifyEmailRequestDTO,
+  ): Promise<AccountDTO> {
     return await accountProfileApplicationService.verifyEmail(accountId, request);
   }
 
@@ -182,8 +182,8 @@ export function useAccount(): UseAccountReturn {
    */
   async function updatePhone(
     accountId: string,
-    request: AccountContracts.UpdatePhoneRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: UpdatePhoneRequestDTO,
+  ): Promise<AccountDTO> {
     return await accountProfileApplicationService.updatePhone(accountId, request);
   }
 
@@ -192,8 +192,8 @@ export function useAccount(): UseAccountReturn {
    */
   async function verifyPhone(
     accountId: string,
-    request: AccountContracts.VerifyPhoneRequestDTO,
-  ): Promise<AccountContracts.AccountDTO> {
+    request: VerifyPhoneRequestDTO,
+  ): Promise<AccountDTO> {
     return await accountProfileApplicationService.verifyPhone(accountId, request);
   }
 
@@ -202,14 +202,14 @@ export function useAccount(): UseAccountReturn {
   /**
    * 停用账户
    */
-  async function deactivateAccount(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async function deactivateAccount(accountId: string): Promise<AccountDTO> {
     return await accountProfileApplicationService.deactivateAccount(accountId);
   }
 
   /**
    * 激活账户
    */
-  async function activateAccount(accountId: string): Promise<AccountContracts.AccountDTO> {
+  async function activateAccount(accountId: string): Promise<AccountDTO> {
     return await accountProfileApplicationService.activateAccount(accountId);
   }
 
@@ -225,7 +225,7 @@ export function useAccount(): UseAccountReturn {
   /**
    * 获取订阅信息
    */
-  async function getSubscription(accountId: string): Promise<AccountContracts.SubscriptionDTO> {
+  async function getSubscription(accountId: string): Promise<SubscriptionDTO> {
     return await accountSubscriptionApplicationService.getSubscription(accountId);
   }
 
@@ -234,8 +234,8 @@ export function useAccount(): UseAccountReturn {
    */
   async function subscribePlan(
     accountId: string,
-    request: AccountContracts.SubscribePlanRequestDTO,
-  ): Promise<AccountContracts.SubscriptionDTO> {
+    request: SubscribePlanRequestDTO,
+  ): Promise<SubscriptionDTO> {
     return await accountSubscriptionApplicationService.subscribePlan(accountId, request);
   }
 
@@ -244,8 +244,8 @@ export function useAccount(): UseAccountReturn {
    */
   async function cancelSubscription(
     accountId: string,
-    request?: AccountContracts.CancelSubscriptionRequestDTO,
-  ): Promise<AccountContracts.SubscriptionDTO> {
+    request?: CancelSubscriptionRequestDTO,
+  ): Promise<SubscriptionDTO> {
     return await accountSubscriptionApplicationService.cancelSubscription(accountId, request);
   }
 
@@ -257,14 +257,14 @@ export function useAccount(): UseAccountReturn {
   async function getAccountHistory(
     accountId: string,
     params?: { page?: number; limit?: number },
-  ): Promise<AccountContracts.AccountHistoryListResponseDTO> {
+  ): Promise<AccountHistoryListResponseDTO> {
     return await accountProfileApplicationService.getAccountHistory(accountId, params);
   }
 
   /**
    * 获取账户统计
    */
-  async function getAccountStats(): Promise<AccountContracts.AccountStatsResponseDTO> {
+  async function getAccountStats(): Promise<AccountStatsResponseDTO> {
     return await accountSubscriptionApplicationService.getAccountStats();
   }
 
@@ -273,7 +273,7 @@ export function useAccount(): UseAccountReturn {
   /**
    * 设置当前账户
    */
-  function setCurrentAccount(account: AccountContracts.AccountDTO | null) {
+  function setCurrentAccount(account: AccountDTO | null) {
     accountStore.setCurrentAccount(account);
   }
 
@@ -363,3 +363,4 @@ export function useAccount(): UseAccountReturn {
     clearAll,
   };
 }
+

@@ -3,7 +3,7 @@
  * API Key 管理应用服务 - 负责 API Key 相关的用例
  */
 
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
 
@@ -31,8 +31,8 @@ export class ApiKeyApplicationService {
   // ============ API Key 管理用例 ============
 
   async createApiKey(
-    request: AuthenticationContracts.CreateApiKeyRequestDTO,
-  ): Promise<AuthenticationContracts.CreateApiKeyResponseDTO> {
+    request: CreateApiKeyRequestDTO,
+  ): Promise<CreateApiKeyResponseDTO> {
     try {
       this.authStore.setLoading(true);
       const response = await authApiClient.createApiKey(request);
@@ -55,7 +55,7 @@ export class ApiKeyApplicationService {
     }
   }
 
-  async getApiKeys(): Promise<AuthenticationContracts.ApiKeyListResponseDTO> {
+  async getApiKeys(): Promise<ApiKeyListResponseDTO> {
     try {
       this.authStore.setLoading(true);
       const response = await authApiClient.getApiKeys();
@@ -69,7 +69,7 @@ export class ApiKeyApplicationService {
     }
   }
 
-  async revokeApiKey(request: AuthenticationContracts.RevokeApiKeyRequestDTO): Promise<void> {
+  async revokeApiKey(request: RevokeApiKeyRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
       await authApiClient.revokeApiKey(request);
@@ -84,3 +84,4 @@ export class ApiKeyApplicationService {
 }
 
 export const apiKeyApplicationService = ApiKeyApplicationService.getInstance();
+

@@ -5,7 +5,7 @@ import {
 } from '@dailyuse/domain-server';
 import { NotificationContainer } from '../../infrastructure/di/NotificationContainer';
 import { createLogger } from '@dailyuse/utils';
-import { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationServerDTO, NotificationPreferenceServerDTO, CreateNotificationRequest } from '@dailyuse/contracts/notification';
 import type {
   INotificationPreferenceRepository,
   NotificationRepository as INotificationRepository,
@@ -16,32 +16,32 @@ import type {
 // Contract Type Aliases
 // =================================================================
 
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
-type NotificationPreferenceClientDTO = NotificationContracts.NotificationPreferenceClientDTO;
-type NotificationServerDTO = NotificationContracts.NotificationServerDTO;
-type NotificationPreferenceServerDTO = NotificationContracts.NotificationPreferenceServerDTO;
-type NotificationChannelServerDTO = NotificationContracts.NotificationChannelServerDTO;
-type NotificationChannelClientDTO = NotificationContracts.NotificationChannelClientDTO;
-type NotificationHistoryServerDTO = NotificationContracts.NotificationHistoryServerDTO;
-type NotificationHistoryClientDTO = NotificationContracts.NotificationHistoryClientDTO;
-type NotificationActionServerDTO = NotificationContracts.NotificationActionServerDTO;
-type NotificationActionClientDTO = NotificationContracts.NotificationActionClientDTO;
-type NotificationMetadataServerDTO = NotificationContracts.NotificationMetadataServerDTO;
-type NotificationMetadataClientDTO = NotificationContracts.NotificationMetadataClientDTO;
-type ChannelErrorServerDTO = NotificationContracts.ChannelErrorServerDTO;
-type ChannelErrorClientDTO = NotificationContracts.ChannelErrorClientDTO;
-type ChannelResponseServerDTO = NotificationContracts.ChannelResponseServerDTO;
-type ChannelResponseClientDTO = NotificationContracts.ChannelResponseClientDTO;
-type CategoryPreferenceServerDTO = NotificationContracts.CategoryPreferenceServerDTO;
-type CategoryPreferenceClientDTO = NotificationContracts.CategoryPreferenceClientDTO;
-type DoNotDisturbConfigServerDTO = NotificationContracts.DoNotDisturbConfigServerDTO;
-type DoNotDisturbConfigClientDTO = NotificationContracts.DoNotDisturbConfigClientDTO;
-type RateLimitServerDTO = NotificationContracts.RateLimitServerDTO;
-type RateLimitClientDTO = NotificationContracts.RateLimitClientDTO;
-type NotificationChannelType = NotificationContracts.NotificationChannelType;
-type NotificationCategory = NotificationContracts.NotificationCategory;
-type NotificationType = NotificationContracts.NotificationType;
-type RelatedEntityType = NotificationContracts.RelatedEntityType;
+type NotificationClientDTO = NotificationClientDTO;
+type NotificationPreferenceClientDTO = NotificationPreferenceClientDTO;
+type NotificationServerDTO = NotificationServerDTO;
+type NotificationPreferenceServerDTO = NotificationPreferenceServerDTO;
+type NotificationChannelServerDTO = NotificationChannelServerDTO;
+type NotificationChannelClientDTO = NotificationChannelClientDTO;
+type NotificationHistoryServerDTO = NotificationHistoryServerDTO;
+type NotificationHistoryClientDTO = NotificationHistoryClientDTO;
+type NotificationActionServerDTO = NotificationActionServerDTO;
+type NotificationActionClientDTO = NotificationActionClientDTO;
+type NotificationMetadataServerDTO = NotificationMetadataServerDTO;
+type NotificationMetadataClientDTO = NotificationMetadataClientDTO;
+type ChannelErrorServerDTO = ChannelErrorServerDTO;
+type ChannelErrorClientDTO = ChannelErrorClientDTO;
+type ChannelResponseServerDTO = ChannelResponseServerDTO;
+type ChannelResponseClientDTO = ChannelResponseClientDTO;
+type CategoryPreferenceServerDTO = CategoryPreferenceServerDTO;
+type CategoryPreferenceClientDTO = CategoryPreferenceClientDTO;
+type DoNotDisturbConfigServerDTO = DoNotDisturbConfigServerDTO;
+type DoNotDisturbConfigClientDTO = DoNotDisturbConfigClientDTO;
+type RateLimitServerDTO = RateLimitServerDTO;
+type RateLimitClientDTO = RateLimitClientDTO;
+type NotificationChannelType = NotificationChannelType;
+type NotificationCategory = NotificationCategory;
+type NotificationType = NotificationType;
+type RelatedEntityType = RelatedEntityType;
 
 // 导入枚举用于比较
 const { NotificationChannelType: ChannelTypeEnum } = NotificationContracts;
@@ -565,12 +565,12 @@ export class NotificationApplicationService {
   async updatePreference(
     accountUuid: string,
     updates: Partial<{
-      channelPreferences: NotificationContracts.ChannelPreferences;
+      channelPreferences: ChannelPreferences;
       categoryPreferences: Record<
         NotificationCategory,
-        Partial<NotificationContracts.CategoryPreferenceServerDTO>
+        Partial<CategoryPreferenceServerDTO>
       >;
-      doNotDisturbConfig: Partial<NotificationContracts.DoNotDisturbConfigServerDTO>;
+      doNotDisturbConfig: Partial<DoNotDisturbConfigServerDTO>;
     }>,
   ): Promise<NotificationPreferenceClientDTO> {
     if (updates.channelPreferences) {
@@ -608,3 +608,4 @@ export class NotificationApplicationService {
     return toNotificationPreferenceClientDTO(preference.toServerDTO());
   }
 }
+

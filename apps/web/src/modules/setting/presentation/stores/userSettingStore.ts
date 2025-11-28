@@ -11,7 +11,7 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 import {
   getCurrentUserSettings,
   updateUserSettings,
@@ -26,8 +26,8 @@ import { getThemeService } from '../../application/services/ThemeService';
 // ==================== 类型定义 ====================
 
 // 类型别名
-type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
-type UpdateUserSettingRequest = SettingContracts.UpdateUserSettingRequest;
+type UserSettingClientDTO = UserSettingClientDTO;
+type UpdateUserSettingRequest = UpdateUserSettingRequest;
 
 /** 外观设置 */
 type AppearanceSettings = NonNullable<UpdateUserSettingRequest['appearance']>;
@@ -655,3 +655,4 @@ export const useUserSettingStore = defineStore(
     } as any, // 类型断言避免 Pinia persist plugin 的类型问题
   },
 );
+

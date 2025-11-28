@@ -7,9 +7,9 @@
 
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { useDragAndDrop } from '../useDragAndDrop';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 
-type TaskClientDTO = TaskContracts.TaskTemplateClientDTO;
+type TaskClientDTO = TaskTemplateClientDTO;
 
 describe('useDragAndDrop', () => {
   let mockTask1: TaskClientDTO;
@@ -338,3 +338,4 @@ describe('useDragAndDrop', () => {
     });
   });
 });
+

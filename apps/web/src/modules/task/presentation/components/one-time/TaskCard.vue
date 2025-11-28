@@ -241,7 +241,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { TaskTemplateDTO } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO as TaskTemplateDTO } from '@dailyuse/contracts/task';
 
 interface Props {
   task: TaskTemplateDTO;
@@ -437,3 +437,4 @@ const truncatedDescription = computed(() => {
   color: rgb(var(--v-theme-error));
 }
 </style>
+

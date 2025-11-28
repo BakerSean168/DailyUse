@@ -61,12 +61,12 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 import * as echarts from 'echarts';
 
-type LinkGraphResponseDTO = DocumentContracts.LinkGraphResponseDTO;
-type LinkGraphNodeDTO = DocumentContracts.LinkGraphNodeDTO;
-type LinkGraphEdgeDTO = DocumentContracts.LinkGraphEdgeDTO;
+type LinkGraphResponseDTO = LinkGraphResponseDTO;
+type LinkGraphNodeDTO = LinkGraphNodeDTO;
+type LinkGraphEdgeDTO = LinkGraphEdgeDTO;
 
 // ==================== Props ====================
 interface Props {
@@ -263,3 +263,4 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 </style>
+

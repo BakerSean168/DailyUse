@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
-import { type RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**
  * 仓库搜索应用服务
@@ -15,7 +15,7 @@ export class RepositorySearchApplicationService {
     type?: string;
     status?: string;
     goalUuid?: string;
-  }): Promise<RepositoryContracts.RepositoryDTO[]> {
+  }): Promise<RepositoryDTO[]> {
     try {
       const repositories = await repositoryApiClient.searchRepositories(params);
       return repositories;
@@ -34,7 +34,7 @@ export class RepositorySearchApplicationService {
     repositoryUuid?: string;
     type?: string;
     tags?: string[];
-  }): Promise<RepositoryContracts.ResourceDTO[]> {
+  }): Promise<ResourceDTO[]> {
     try {
       const resources = await repositoryApiClient.searchResources(params);
       return resources;
@@ -48,3 +48,4 @@ export class RepositorySearchApplicationService {
 
 // 导出单例
 export const repositorySearchService = new RepositorySearchApplicationService();
+

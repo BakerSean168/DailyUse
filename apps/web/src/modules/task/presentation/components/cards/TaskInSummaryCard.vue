@@ -99,7 +99,7 @@
 import { computed } from 'vue';
 import { useTaskStore } from '../../stores/taskStore';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import { useRouter } from 'vue-router';
 import type { TaskInstance, Goal } from '@dailyuse/domain-client';
 
@@ -310,3 +310,4 @@ const toggleTaskComplete = async (task: TaskInstance) => {
   }
 }
 </style>
+

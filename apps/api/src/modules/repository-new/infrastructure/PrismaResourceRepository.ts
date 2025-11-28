@@ -6,7 +6,8 @@
 import { PrismaClient } from '@prisma/client';
 import { Resource } from '@dailyuse/domain-server';
 import type { IResourceRepository, FindResourceOptions } from '../domain/IResourceRepository';
-import type { ResourcePersistenceDTO, ResourceType } from '@dailyuse/contracts';
+import type { ResourcePersistenceDTO } from '@dailyuse/contracts/repository';
+import { ResourceType } from '@dailyuse/contracts/repository';
 
 export class PrismaResourceRepository implements IResourceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -194,3 +195,7 @@ export class PrismaResourceRepository implements IResourceRepository {
     return Resource.fromPersistence(persistenceDTO);
   }
 }
+
+
+
+

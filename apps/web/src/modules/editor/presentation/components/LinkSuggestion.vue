@@ -65,9 +65,9 @@
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
+type DocumentClientDTO = DocumentClientDTO;
 
 // ==================== Props ====================
 interface Props {
@@ -225,3 +225,4 @@ onBeforeUnmount(() => {
   background-color: rgba(25, 118, 210, 0.12);
 }
 </style>
+

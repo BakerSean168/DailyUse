@@ -3,7 +3,7 @@
  * 内置状态更新规则
  */
 
-import { GoalStatus } from '@dailyuse/contracts';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 import type {
   StatusRule,
   RuleConditionType,
@@ -218,3 +218,6 @@ export const RULE_TEMPLATES = {
     },
   }),
 };
+
+
+

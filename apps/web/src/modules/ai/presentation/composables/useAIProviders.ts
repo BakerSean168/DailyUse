@@ -10,11 +10,11 @@
 
 import { ref, computed, type Ref, type ComputedRef } from 'vue';
 import { aiProviderApiClient } from '../../infrastructure/api/aiProviderApiClient';
-import type { AIContracts } from '@dailyuse/contracts';
-
-type AIProviderConfigClientDTO = AIContracts.AIProviderConfigClientDTO;
-type CreateAIProviderRequest = AIContracts.CreateAIProviderRequest;
-type UpdateAIProviderRequest = AIContracts.UpdateAIProviderRequest;
+import type {
+  AIProviderConfigClientDTO,
+  CreateAIProviderRequest,
+  UpdateAIProviderRequest,
+} from '@dailyuse/contracts/ai';
 
 interface TestConnectionResult {
   success: boolean;

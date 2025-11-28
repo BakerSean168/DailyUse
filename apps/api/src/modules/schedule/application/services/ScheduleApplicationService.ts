@@ -3,8 +3,14 @@ import type {
   IScheduleStatisticsRepository,
 } from '@dailyuse/domain-server';
 import { ScheduleDomainService } from '@dailyuse/domain-server';
-import type { ScheduleContracts } from '@dailyuse/contracts';
-import type { SourceModule, ScheduleTaskStatus } from '@dailyuse/contracts';
+import type {
+  ScheduleTaskClientDTO,
+  ScheduleConfigServerDTO,
+  RetryPolicyServerDTO,
+  ExecutionStatus,
+  SourceModule,
+  ScheduleTaskStatus,
+} from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '../../infrastructure/di/ScheduleContainer';
 
 /**
@@ -67,11 +73,11 @@ export class ScheduleApplicationService {
     description?: string;
     sourceModule: SourceModule;
     sourceEntityId: string;
-    schedule: ScheduleContracts.ScheduleConfigServerDTO;
-    retryConfig?: ScheduleContracts.RetryPolicyServerDTO;
+    schedule: ScheduleConfigServerDTO;
+    retryConfig?: RetryPolicyServerDTO;
     payload?: Record<string, unknown>;
     tags?: string[];
-  }): Promise<ScheduleContracts.ScheduleTaskClientDTO> {
+  }): Promise<ScheduleTaskClientDTO> {
     // 委托给领域服务处理业务逻辑
     const task = await this.domainService.createScheduleTask(params);
 
@@ -89,12 +95,12 @@ export class ScheduleApplicationService {
       description?: string;
       sourceModule: SourceModule;
       sourceEntityId: string;
-      schedule: ScheduleContracts.ScheduleConfigServerDTO;
-      retryConfig?: ScheduleContracts.RetryPolicyServerDTO;
+      schedule: ScheduleConfigServerDTO;
+      retryConfig?: RetryPolicyServerDTO;
       payload?: Record<string, unknown>;
       tags?: string[];
     }>,
-  ): Promise<ScheduleContracts.ScheduleTaskClientDTO[]> {
+  ): Promise<ScheduleTaskClientDTO[]> {
     // 委托给领域服务处理
     const tasks = await this.domainService.createScheduleTasksBatch(params);
 
@@ -107,7 +113,7 @@ export class ScheduleApplicationService {
   /**
    * 获取任务详情
    */
-  async getScheduleTask(taskUuid: string): Promise<ScheduleContracts.ScheduleTaskClientDTO | null> {
+  async getScheduleTask(taskUuid: string): Promise<ScheduleTaskClientDTO | null> {
     // 通过仓储查询
     const container = ScheduleContainer.getInstance();
     const repository = container.getScheduleTaskRepository();
@@ -121,7 +127,7 @@ export class ScheduleApplicationService {
    */
   async getScheduleTasksByAccount(
     accountUuid: string,
-  ): Promise<ScheduleContracts.ScheduleTaskClientDTO[]> {
+  ): Promise<ScheduleTaskClientDTO[]> {
     // 通过仓储查询
     const container = ScheduleContainer.getInstance();
     const repository = container.getScheduleTaskRepository();
@@ -137,7 +143,7 @@ export class ScheduleApplicationService {
   async getScheduleTaskBySource(
     sourceModule: SourceModule,
     sourceEntityId: string,
-  ): Promise<ScheduleContracts.ScheduleTaskClientDTO[]> {
+  ): Promise<ScheduleTaskClientDTO[]> {
     // 通过仓储查询
     const container = ScheduleContainer.getInstance();
     const repository = container.getScheduleTaskRepository();
@@ -152,7 +158,7 @@ export class ScheduleApplicationService {
   async findDueTasksForExecution(
     beforeTime: Date,
     limit?: number,
-  ): Promise<ScheduleContracts.ScheduleTaskClientDTO[]> {
+  ): Promise<ScheduleTaskClientDTO[]> {
     // 委托给领域服务处理
     const tasks = await this.domainService.findDueTasksForExecution(beforeTime, limit);
 
@@ -170,15 +176,15 @@ export class ScheduleApplicationService {
       taskUuid: string;
       actualStartedAt?: Date;
     },
-    executeFn: (task: ScheduleContracts.ScheduleTaskClientDTO) => Promise<{
+    executeFn: (task: ScheduleTaskClientDTO) => Promise<{
       executionUuid: string;
-      status: ScheduleContracts.ExecutionStatus;
+      status: ExecutionStatus;
       duration: number;
       errorMessage?: string;
     }>,
   ): Promise<{
     executionUuid: string;
-    status: ScheduleContracts.ExecutionStatus;
+    status: ExecutionStatus;
     duration: number;
     errorMessage?: string;
   }> {
@@ -270,7 +276,7 @@ export class ScheduleApplicationService {
    */
   async updateScheduleConfig(
     taskUuid: string,
-    newSchedule: ScheduleContracts.ScheduleConfigServerDTO,
+    newSchedule: ScheduleConfigServerDTO,
   ): Promise<void> {
     // 需要转换为值对象
     const { ScheduleConfig } = await import('@dailyuse/domain-server');

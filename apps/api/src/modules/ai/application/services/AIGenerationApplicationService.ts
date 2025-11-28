@@ -28,8 +28,8 @@ import {
   completeTask,
   failTask,
 } from '@dailyuse/domain-server';
-import type { AIContracts } from '@dailyuse/contracts';
-import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts/ai';
 import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
 import type {
@@ -39,19 +39,19 @@ import type {
 import { QuotaEnforcementService } from '../../infrastructure/QuotaEnforcementService';
 import { getPromptTemplate } from '../../infrastructure/prompts/templates';
 import { SUMMARIZATION_PROMPT, GENERATE_GOAL_PROMPT } from '../../infrastructure/prompts/templates';
-import { MessageRole } from '@dailyuse/contracts';
+import { MessageRole } from '@dailyuse/contracts/ai';
 import { MessageServer } from '@dailyuse/domain-server';
 import { AIConversationServer } from '@dailyuse/domain-server';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
 
-type AIUsageQuotaClientDTO = AIContracts.AIUsageQuotaClientDTO;
-type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
-type AIGenerationTaskServerDTO = AIContracts.AIGenerationTaskServerDTO;
-type SummarizationRequestDTO = AIContracts.SummarizationRequestDTO;
-type SummarizationResultDTO = AIContracts.SummarizationResultDTO;
-type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
-type GeneratedGoalDraft = AIContracts.GeneratedGoalDraft;
-type GenerateGoalResponse = AIContracts.GenerateGoalResponse;
+type AIUsageQuotaClientDTO = AIUsageQuotaClientDTO;
+type AIUsageQuotaServerDTO = AIUsageQuotaServerDTO;
+type AIGenerationTaskServerDTO = AIGenerationTaskServerDTO;
+type SummarizationRequestDTO = SummarizationRequestDTO;
+type SummarizationResultDTO = SummarizationResultDTO;
+type TokenUsageServerDTO = TokenUsageServerDTO;
+type GeneratedGoalDraft = GeneratedGoalDraft;
+type GenerateGoalResponse = GenerateGoalResponse;
 
 const logger = createLogger('AIGenerationApplicationService');
 
@@ -1125,3 +1125,7 @@ export class AIGenerationApplicationService {
     return documents;
   }
 }
+
+
+
+

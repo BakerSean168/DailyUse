@@ -53,8 +53,9 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { TaskTemplate, TaskTimeConfig } from '@dailyuse/domain-client';
-import { TaskContracts } from '@dailyuse/contracts';
-import { TimeType } from '@dailyuse/contracts';
+import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import { TimeType } from '@dailyuse/contracts/task';
 
 const props = defineProps<{
   modelValue: TaskTemplate;
@@ -66,7 +67,7 @@ const emit = defineEmits<{
 }>();
 
 // 表单数据
-const timeType = ref<TaskContracts.TimeType>(TimeType.ALL_DAY);
+const timeType = ref<TimeType>(TimeType.ALL_DAY);
 const startDate = ref<string>('');
 const timePoint = ref<string>('');
 const timeRangeStart = ref<string>('');
@@ -217,7 +218,7 @@ const updateTimeConfig = () => {
     validationError.value = '';
 
     // 构建新的时间配置
-    const newConfig: TaskContracts.TaskTimeConfigClientDTO = {
+    const newConfig: TaskTimeConfigClientDTO = {
       timeType: timeType.value,
       startDate: parseDateInput(startDate.value),
       endDate: null, // 时间配置不再包含结束日期
@@ -296,3 +297,4 @@ watch(
   margin-bottom: 16px;
 }
 </style>
+

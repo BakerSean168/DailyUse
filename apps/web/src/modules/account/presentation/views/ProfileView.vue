@@ -300,13 +300,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAccount } from '../composables/useAccount';
-import type { AccountContracts } from '@dailyuse/contracts';
+import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
 
 // Composables
 const { getMyProfile, updateMyProfile } = useAccount();
 
 // 状态管理
-const profile = ref<AccountContracts.AccountDTO | null>(null);
+const profile = ref<AccountDTO | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const isEditing = ref(false);
@@ -498,3 +498,4 @@ onMounted(() => {
   }
 }
 </style>
+

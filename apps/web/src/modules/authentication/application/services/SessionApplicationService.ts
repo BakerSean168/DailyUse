@@ -3,7 +3,7 @@
  * 会话管理应用服务 - 负责会话和设备管理相关的用例
  */
 
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
 
@@ -31,8 +31,8 @@ export class SessionApplicationService {
   // ============ 会话管理 ============
 
   async getActiveSessions(
-    request?: AuthenticationContracts.GetActiveSessionsRequestDTO,
-  ): Promise<AuthenticationContracts.ActiveSessionsResponseDTO> {
+    request?: GetActiveSessionsRequestDTO,
+  ): Promise<ActiveSessionsResponseDTO> {
     try {
       this.authStore.setLoading(true);
       const response = await authApiClient.getActiveSessions(request);
@@ -46,7 +46,7 @@ export class SessionApplicationService {
     }
   }
 
-  async revokeSession(request: AuthenticationContracts.RevokeSessionRequestDTO): Promise<void> {
+  async revokeSession(request: RevokeSessionRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
       await authApiClient.revokeSession(request);
@@ -60,7 +60,7 @@ export class SessionApplicationService {
   }
 
   async revokeAllSessions(
-    request?: AuthenticationContracts.RevokeAllSessionsRequestDTO,
+    request?: RevokeAllSessionsRequestDTO,
   ): Promise<void> {
     try {
       this.authStore.setLoading(true);
@@ -80,7 +80,7 @@ export class SessionApplicationService {
 
   // ============ 设备管理 ============
 
-  async getTrustedDevices(): Promise<AuthenticationContracts.TrustedDevicesResponseDTO> {
+  async getTrustedDevices(): Promise<TrustedDevicesResponseDTO> {
     try {
       this.authStore.setLoading(true);
       const response = await authApiClient.getTrustedDevices();
@@ -94,7 +94,7 @@ export class SessionApplicationService {
     }
   }
 
-  async trustDevice(request: AuthenticationContracts.TrustDeviceRequestDTO): Promise<void> {
+  async trustDevice(request: TrustDeviceRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
       await authApiClient.trustDevice(request);
@@ -109,7 +109,7 @@ export class SessionApplicationService {
   }
 
   async revokeTrustedDevice(
-    request: AuthenticationContracts.RevokeTrustedDeviceRequestDTO,
+    request: RevokeTrustedDeviceRequestDTO,
   ): Promise<void> {
     try {
       this.authStore.setLoading(true);
@@ -125,3 +125,4 @@ export class SessionApplicationService {
 }
 
 export const sessionApplicationService = SessionApplicationService.getInstance();
+

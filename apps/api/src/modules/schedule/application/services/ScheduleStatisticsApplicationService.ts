@@ -4,7 +4,7 @@ import type {
 } from '@dailyuse/domain-server';
 import { ScheduleStatisticsDomainService } from '@dailyuse/domain-server';
 import { ScheduleContainer } from '../../infrastructure/di/ScheduleContainer';
-import type { ScheduleContracts, SourceModule } from '@dailyuse/contracts';
+import type { SourceModule, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 
 /**
  * ScheduleStatistics 应用服务
@@ -63,7 +63,7 @@ export class ScheduleStatisticsApplicationService {
    */
   async getOrCreateStatistics(
     accountUuid: string,
-  ): Promise<ScheduleContracts.ScheduleStatisticsClientDTO> {
+  ): Promise<ScheduleStatisticsClientDTO> {
     // 委托给领域服务处理
     const statistics = await this.domainService.ensureStatisticsExists(accountUuid);
 
@@ -76,7 +76,7 @@ export class ScheduleStatisticsApplicationService {
    */
   async getStatistics(
     accountUuid: string,
-  ): Promise<ScheduleContracts.ScheduleStatisticsClientDTO | null> {
+  ): Promise<ScheduleStatisticsClientDTO | null> {
     // 委托给领域服务处理
     const statistics = await this.domainService.getStatistics(accountUuid);
 
@@ -127,7 +127,7 @@ export class ScheduleStatisticsApplicationService {
    */
   async recalculateStatistics(
     accountUuid: string,
-  ): Promise<ScheduleContracts.ScheduleStatisticsClientDTO> {
+  ): Promise<ScheduleStatisticsClientDTO> {
     // 委托给领域服务处理
     const statistics = await this.domainService.recalculateStatistics(accountUuid);
 
@@ -158,7 +158,7 @@ export class ScheduleStatisticsApplicationService {
    */
   async recalculateStatisticsBatch(
     accountUuids: string[],
-  ): Promise<ScheduleContracts.ScheduleStatisticsClientDTO[]> {
+  ): Promise<ScheduleStatisticsClientDTO[]> {
     // 委托给领域服务处理
     const statisticsList = await this.domainService.recalculateStatisticsBatch(accountUuids);
 
@@ -174,3 +174,4 @@ export class ScheduleStatisticsApplicationService {
     await this.domainService.resetStatisticsBatch(accountUuids);
   }
 }
+

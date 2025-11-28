@@ -39,9 +39,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import NotificationList from './NotificationList.vue';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
+type NotificationClientDTO = NotificationClientDTO;
 
 interface Props {
   modelValue: boolean;
@@ -77,3 +77,4 @@ const handleNotificationClick = (notification: NotificationClientDTO) => {
   close();
 };
 </script>
+

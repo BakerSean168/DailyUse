@@ -7,13 +7,12 @@
  * @module GlobalSearchService
  */
 
-import { GoalContracts, TaskContracts, ReminderContracts } from '@dailyuse/contracts';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { ReminderStatsClientDTO } from '@dailyuse/contracts/reminder';
 import { fuzzyMatch, fuzzyMatchMultiField, type TextMatch } from '@/shared/utils/fuzzySearch';
-
-// Type aliases for convenience
-type GoalClientDTO = GoalContracts.GoalClientDTO;
-type TaskTemplateClientDTO = TaskContracts.TaskTemplateClientDTO;
-type ReminderStatsClientDTO = ReminderContracts.ReminderStatsClientDTO;
 
 // Generic search item interface
 interface SearchableItem {
@@ -197,7 +196,7 @@ export class GlobalSearchService {
     includeCompleted: boolean,
   ): SearchResult[] {
     return goals
-      .filter((goal) => includeCompleted || goal.status !== GoalContracts.GoalStatus.COMPLETED)
+      .filter((goal) => includeCompleted || goal.status !== GoalStatus.COMPLETED)
       .map((goal) => {
         // Search in multiple fields with weights
         const result = fuzzyMatchMultiField(
@@ -241,7 +240,7 @@ export class GlobalSearchService {
   ): SearchResult[] {
     return tasks
       .filter(
-        (task) => includeCompleted || task.status !== TaskContracts.TaskTemplateStatus.ARCHIVED,
+        (task) => includeCompleted || task.status !== TaskTemplateStatus.ARCHIVED,
       )
       .map((task) => {
         // Search in multiple fields
@@ -530,3 +529,4 @@ export class GlobalSearchService {
 
 // Export singleton instance
 export const globalSearchService = GlobalSearchService.getInstance();
+

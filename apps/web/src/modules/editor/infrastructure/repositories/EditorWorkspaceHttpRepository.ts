@@ -4,12 +4,12 @@
  */
 
 import { apiClient } from '@/shared/api';
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { EditorDocumentClientDTO } from '@dailyuse/contracts/editor';
 
 // 类型别名
-type CreateWorkspaceRequest = EditorContracts.CreateEditorWorkspaceRequest;
-type UpdateWorkspaceRequest = EditorContracts.UpdateEditorWorkspaceRequest;
-type CreateSessionRequest = EditorContracts.CreateEditorSessionRequest;
+type CreateWorkspaceRequest = CreateEditorWorkspaceRequest;
+type UpdateWorkspaceRequest = UpdateEditorWorkspaceRequest;
+type CreateSessionRequest = CreateEditorSessionRequest;
 
 /**
  * EditorWorkspace Repository Interface (前端)
@@ -18,17 +18,17 @@ export interface IEditorWorkspaceHttpRepository {
   /**
    * 创建工作区
    */
-  createWorkspace(data: CreateWorkspaceRequest): Promise<EditorContracts.EditorWorkspaceClientDTO>;
+  createWorkspace(data: CreateWorkspaceRequest): Promise<EditorWorkspaceClientDTO>;
 
   /**
    * 获取工作区详情
    */
-  getWorkspace(uuid: string): Promise<EditorContracts.EditorWorkspaceClientDTO>;
+  getWorkspace(uuid: string): Promise<EditorWorkspaceClientDTO>;
 
   /**
    * 列出账户的所有工作区
    */
-  listWorkspaces(accountUuid: string): Promise<EditorContracts.EditorWorkspaceClientDTO[]>;
+  listWorkspaces(accountUuid: string): Promise<EditorWorkspaceClientDTO[]>;
 
   /**
    * 更新工作区
@@ -36,7 +36,7 @@ export interface IEditorWorkspaceHttpRepository {
   updateWorkspace(
     uuid: string,
     data: UpdateWorkspaceRequest,
-  ): Promise<EditorContracts.EditorWorkspaceClientDTO>;
+  ): Promise<EditorWorkspaceClientDTO>;
 
   /**
    * 删除工作区
@@ -49,12 +49,12 @@ export interface IEditorWorkspaceHttpRepository {
   addSession(
     workspaceUuid: string,
     data: CreateSessionRequest,
-  ): Promise<EditorContracts.EditorSessionClientDTO>;
+  ): Promise<EditorSessionClientDTO>;
 
   /**
    * 获取工作区的所有会话
    */
-  getSessions(workspaceUuid: string): Promise<EditorContracts.EditorSessionClientDTO[]>;
+  getSessions(workspaceUuid: string): Promise<EditorSessionClientDTO[]>;
 }
 
 /**
@@ -68,9 +68,9 @@ export class EditorWorkspaceHttpRepository implements IEditorWorkspaceHttpReposi
    */
   async createWorkspace(
     data: CreateWorkspaceRequest,
-  ): Promise<EditorContracts.EditorWorkspaceClientDTO> {
+  ): Promise<EditorWorkspaceClientDTO> {
     // apiClient.post 会自动从 { success, data } 中提取 data 字段
-    return await apiClient.post<EditorContracts.EditorWorkspaceClientDTO>(
+    return await apiClient.post<EditorWorkspaceClientDTO>(
       `${this.baseUrl}/workspaces`,
       data,
     );
@@ -79,8 +79,8 @@ export class EditorWorkspaceHttpRepository implements IEditorWorkspaceHttpReposi
   /**
    * 获取工作区详情
    */
-  async getWorkspace(uuid: string): Promise<EditorContracts.EditorWorkspaceClientDTO> {
-    return await apiClient.get<EditorContracts.EditorWorkspaceClientDTO>(
+  async getWorkspace(uuid: string): Promise<EditorWorkspaceClientDTO> {
+    return await apiClient.get<EditorWorkspaceClientDTO>(
       `${this.baseUrl}/workspaces/${uuid}`,
     );
   }
@@ -88,8 +88,8 @@ export class EditorWorkspaceHttpRepository implements IEditorWorkspaceHttpReposi
   /**
    * 列出账户的所有工作区
    */
-  async listWorkspaces(accountUuid: string): Promise<EditorContracts.EditorWorkspaceClientDTO[]> {
-    return await apiClient.get<EditorContracts.EditorWorkspaceClientDTO[]>(
+  async listWorkspaces(accountUuid: string): Promise<EditorWorkspaceClientDTO[]> {
+    return await apiClient.get<EditorWorkspaceClientDTO[]>(
       `${this.baseUrl}/accounts/${accountUuid}/workspaces`,
     );
   }
@@ -100,8 +100,8 @@ export class EditorWorkspaceHttpRepository implements IEditorWorkspaceHttpReposi
   async updateWorkspace(
     uuid: string,
     data: UpdateWorkspaceRequest,
-  ): Promise<EditorContracts.EditorWorkspaceClientDTO> {
-    return await apiClient.put<EditorContracts.EditorWorkspaceClientDTO>(
+  ): Promise<EditorWorkspaceClientDTO> {
+    return await apiClient.put<EditorWorkspaceClientDTO>(
       `${this.baseUrl}/workspaces/${uuid}`,
       data,
     );
@@ -120,8 +120,8 @@ export class EditorWorkspaceHttpRepository implements IEditorWorkspaceHttpReposi
   async addSession(
     workspaceUuid: string,
     data: CreateSessionRequest,
-  ): Promise<EditorContracts.EditorSessionClientDTO> {
-    return await apiClient.post<EditorContracts.EditorSessionClientDTO>(
+  ): Promise<EditorSessionClientDTO> {
+    return await apiClient.post<EditorSessionClientDTO>(
       `${this.baseUrl}/workspaces/${workspaceUuid}/sessions`,
       data,
     );
@@ -130,8 +130,8 @@ export class EditorWorkspaceHttpRepository implements IEditorWorkspaceHttpReposi
   /**
    * 获取工作区的所有会话
    */
-  async getSessions(workspaceUuid: string): Promise<EditorContracts.EditorSessionClientDTO[]> {
-    return await apiClient.get<EditorContracts.EditorSessionClientDTO[]>(
+  async getSessions(workspaceUuid: string): Promise<EditorSessionClientDTO[]> {
+    return await apiClient.get<EditorSessionClientDTO[]>(
       `${this.baseUrl}/workspaces/${workspaceUuid}/sessions`,
     );
   }
@@ -141,3 +141,4 @@ export class EditorWorkspaceHttpRepository implements IEditorWorkspaceHttpReposi
  * 单例实例
  */
 export const editorWorkspaceHttpRepository = new EditorWorkspaceHttpRepository();
+

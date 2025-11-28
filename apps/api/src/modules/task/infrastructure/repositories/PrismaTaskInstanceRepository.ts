@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server';
 import { TaskInstance } from '@dailyuse/domain-server';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type * as TaskContracts from '@dailyuse/contracts/task';
 
 type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
 

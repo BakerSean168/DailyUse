@@ -8,7 +8,7 @@
 
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { defineAsyncComponent } from 'vue';
-import { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, WidgetType } from '@dailyuse/contracts/dashboard';
 
 /**
  * 注册 Reminder 模块的所有 Widgets
@@ -24,10 +24,11 @@ export function registerReminderWidgets(): void {
     component: defineAsyncComponent(() => import('./ReminderStatsWidget.vue')),
     defaultVisible: true,
     defaultOrder: 3,
-    defaultSize: DashboardContracts.WidgetSize.SMALL,
+    defaultSize: WidgetSize.SMALL,
     icon: 'i-heroicons-bell',
     category: 'reminder',
   });
 
   console.log('[Reminder] Reminder widgets registered successfully');
 }
+

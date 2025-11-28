@@ -19,7 +19,7 @@ import {
   type IScheduleExecutionRepository,
   ScheduleExecution,
 } from '@dailyuse/domain-server';
-import { ExecutionStatus } from '@dailyuse/contracts';
+import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * Bree 执行引擎配置

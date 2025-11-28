@@ -2,12 +2,12 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { DocumentApplicationService } from '../application/DocumentApplicationService';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentServerDTO, DocumentVersionServerDTO, DocumentLinkServerDTO } from '@dailyuse/contracts/editor';
 
-type CreateDocumentDTO = DocumentContracts.CreateDocumentDTO;
-type UpdateDocumentDTO = DocumentContracts.UpdateDocumentDTO;
-type FindDocumentsQueryDTO = DocumentContracts.FindDocumentsQueryDTO;
-type SaveDocumentDTO = DocumentContracts.SaveDocumentDTO;
+type CreateDocumentDTO = CreateDocumentDTO;
+type UpdateDocumentDTO = UpdateDocumentDTO;
+type FindDocumentsQueryDTO = FindDocumentsQueryDTO;
+type SaveDocumentDTO = SaveDocumentDTO;
 
 interface AuthRequest extends Request {
   user: { accountUuid: string };
@@ -123,3 +123,5 @@ export class DocumentController {
     return { success: true, message: 'Link repaired successfully' };
   }
 }
+
+

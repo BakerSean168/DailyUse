@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { apiClient } from '@/shared/api/instances';
-import { type RepositoryContracts, type SearchRequest } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, SearchRequest } from '@dailyuse/contracts/repository';
 
 /**
  * Repository API 客户端
@@ -14,8 +14,8 @@ export class RepositoryApiClient {
    * 创建仓库
    */
   async createRepository(
-    request: RepositoryContracts.CreateRepositoryRequestDTO,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+    request: CreateRepositoryRequestDTO,
+  ): Promise<RepositoryDTO> {
     const data = await apiClient.post(this.baseUrl, request);
     return data;
   }
@@ -30,7 +30,7 @@ export class RepositoryApiClient {
     status?: string;
     goalUuid?: string;
     search?: string;
-  }): Promise<RepositoryContracts.RepositoryListResponseDTO> {
+  }): Promise<RepositoryListResponseDTO> {
     const data = await apiClient.get(this.baseUrl, { params });
     return data;
   }
@@ -38,7 +38,7 @@ export class RepositoryApiClient {
   /**
    * 获取仓库详情
    */
-  async getRepositoryById(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async getRepositoryById(uuid: string): Promise<RepositoryDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${uuid}`);
     return data;
   }
@@ -48,8 +48,8 @@ export class RepositoryApiClient {
    */
   async updateRepository(
     uuid: string,
-    request: RepositoryContracts.UpdateRepositoryRequestDTO,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+    request: UpdateRepositoryRequestDTO,
+  ): Promise<RepositoryDTO> {
     const data = await apiClient.put(`${this.baseUrl}/${uuid}`, request);
     return data;
   }
@@ -66,7 +66,7 @@ export class RepositoryApiClient {
   /**
    * 激活仓库
    */
-  async activateRepository(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async activateRepository(uuid: string): Promise<RepositoryDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/activate`);
     return data;
   }
@@ -74,7 +74,7 @@ export class RepositoryApiClient {
   /**
    * 归档仓库
    */
-  async archiveRepository(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async archiveRepository(uuid: string): Promise<RepositoryDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/archive`);
     return data;
   }
@@ -82,7 +82,7 @@ export class RepositoryApiClient {
   /**
    * 暂停仓库
    */
-  async pauseRepository(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async pauseRepository(uuid: string): Promise<RepositoryDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/pause`);
     return data;
   }
@@ -90,7 +90,7 @@ export class RepositoryApiClient {
   /**
    * 恢复仓库
    */
-  async resumeRepository(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async resumeRepository(uuid: string): Promise<RepositoryDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${uuid}/resume`);
     return data;
   }
@@ -103,7 +103,7 @@ export class RepositoryApiClient {
   async linkGoalToRepository(
     repositoryUuid: string,
     goalUuid: string,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+  ): Promise<RepositoryDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${repositoryUuid}/goals/${goalUuid}`);
     return data;
   }
@@ -114,7 +114,7 @@ export class RepositoryApiClient {
   async unlinkGoalFromRepository(
     repositoryUuid: string,
     goalUuid: string,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+  ): Promise<RepositoryDTO> {
     const data = await apiClient.delete(`${this.baseUrl}/${repositoryUuid}/goals/${goalUuid}`);
     return data;
   }
@@ -125,7 +125,7 @@ export class RepositoryApiClient {
   async batchLinkGoalsToRepository(
     repositoryUuid: string,
     goalUuids: string[],
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+  ): Promise<RepositoryDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${repositoryUuid}/goals/batch`, {
       goalUuids,
     });
@@ -146,8 +146,8 @@ export class RepositoryApiClient {
    * 获取所有资源列表
    */
   async getResources(
-    params?: RepositoryContracts.ResourceQueryParamsDTO,
-  ): Promise<RepositoryContracts.ResourceListResponseDTO> {
+    params?: ResourceQueryParamsDTO,
+  ): Promise<ResourceListResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/resources`, { params });
     return data;
   }
@@ -157,8 +157,8 @@ export class RepositoryApiClient {
    */
   async getRepositoryResources(
     repositoryUuid: string,
-    params?: RepositoryContracts.ResourceQueryParamsDTO,
-  ): Promise<RepositoryContracts.ResourceListResponseDTO> {
+    params?: ResourceQueryParamsDTO,
+  ): Promise<ResourceListResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${repositoryUuid}/resources`, { params });
     return data;
   }
@@ -166,7 +166,7 @@ export class RepositoryApiClient {
   /**
    * 获取资源详情
    */
-  async getResourceById(resourceUuid: string): Promise<RepositoryContracts.ResourceDTO> {
+  async getResourceById(resourceUuid: string): Promise<ResourceDTO> {
     const data = await apiClient.get(`${this.baseUrl}/resources/${resourceUuid}`);
     return data;
   }
@@ -175,8 +175,8 @@ export class RepositoryApiClient {
    * 创建资源
    */
   async createResource(
-    request: RepositoryContracts.CreateResourceRequestDTO,
-  ): Promise<RepositoryContracts.ResourceDTO> {
+    request: CreateResourceRequestDTO,
+  ): Promise<ResourceDTO> {
     const data = await apiClient.post(`${this.baseUrl}/resources`, request);
     return data;
   }
@@ -186,8 +186,8 @@ export class RepositoryApiClient {
    */
   async updateResource(
     resourceUuid: string,
-    request: RepositoryContracts.UpdateResourceRequestDTO,
-  ): Promise<RepositoryContracts.ResourceDTO> {
+    request: UpdateResourceRequestDTO,
+  ): Promise<ResourceDTO> {
     const data = await apiClient.put(`${this.baseUrl}/resources/${resourceUuid}`, request);
     return data;
   }
@@ -203,8 +203,8 @@ export class RepositoryApiClient {
    * 批量操作资源
    */
   async batchOperateResources(
-    request: RepositoryContracts.BatchOperationRequestDTO,
-  ): Promise<RepositoryContracts.BatchOperationResponseDTO> {
+    request: BatchOperationRequestDTO,
+  ): Promise<BatchOperationResponseDTO> {
     const data = await apiClient.post(`${this.baseUrl}/resources/batch`, request);
     return data;
   }
@@ -214,7 +214,7 @@ export class RepositoryApiClient {
   /**
    * 获取Git状态
    */
-  async getGitStatus(repositoryUuid: string): Promise<RepositoryContracts.GitStatusResponseDTO> {
+  async getGitStatus(repositoryUuid: string): Promise<GitStatusResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${repositoryUuid}/git/status`);
     return data;
   }
@@ -229,7 +229,7 @@ export class RepositoryApiClient {
       offset?: number;
       branch?: string;
     },
-  ): Promise<RepositoryContracts.GitLogResponseDTO> {
+  ): Promise<GitLogResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/${repositoryUuid}/git/log`, { params });
     return data;
   }
@@ -240,7 +240,7 @@ export class RepositoryApiClient {
   async gitCommit(
     repositoryUuid: string,
     request: { message: string; addAll?: boolean },
-  ): Promise<RepositoryContracts.GitCommitDTO> {
+  ): Promise<GitCommitDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${repositoryUuid}/git/commit`, request);
     return data;
   }
@@ -276,8 +276,8 @@ export class RepositoryApiClient {
    */
   async syncRepository(
     repositoryUuid: string,
-    request?: RepositoryContracts.SyncRepositoryRequestDTO,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+    request?: SyncRepositoryRequestDTO,
+  ): Promise<RepositoryDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${repositoryUuid}/sync`, request || {});
     return data;
   }
@@ -293,7 +293,7 @@ export class RepositoryApiClient {
   /**
    * 强制同步
    */
-  async forceSyncRepository(repositoryUuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async forceSyncRepository(repositoryUuid: string): Promise<RepositoryDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${repositoryUuid}/force-sync`);
     return data;
   }
@@ -324,7 +324,7 @@ export class RepositoryApiClient {
     type?: string;
     status?: string;
     tags?: string[];
-  }): Promise<RepositoryContracts.RepositoryListResponseDTO> {
+  }): Promise<RepositoryListResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/search`, { params });
     return data;
   }
@@ -337,7 +337,7 @@ export class RepositoryApiClient {
     repositoryUuid?: string;
     page?: number;
     limit?: number;
-  }): Promise<RepositoryContracts.SearchResultResponseDTO> {
+  }): Promise<SearchResultResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/search/content`, { params });
     return data;
   }
@@ -347,7 +347,7 @@ export class RepositoryApiClient {
    */
   async getRepositoriesByGoal(
     goalUuid: string,
-  ): Promise<RepositoryContracts.RepositoryListResponseDTO> {
+  ): Promise<RepositoryListResponseDTO> {
     const data = await apiClient.get(this.baseUrl, {
       params: { goalUuid, limit: 1000 },
     });
@@ -365,7 +365,7 @@ export class RepositoryApiClient {
   /**
    * 获取标签云
    */
-  async getTagCloud(repositoryUuid?: string): Promise<RepositoryContracts.TagCloudResponseDTO> {
+  async getTagCloud(repositoryUuid?: string): Promise<TagCloudResponseDTO> {
     const params = repositoryUuid ? { repositoryUuid } : {};
     const data = await apiClient.get(`${this.baseUrl}/tags/cloud`, { params });
     return data;
@@ -375,8 +375,8 @@ export class RepositoryApiClient {
    * 添加关联内容
    */
   async addLinkedContent(
-    request: RepositoryContracts.AddLinkedContentRequestDTO,
-  ): Promise<RepositoryContracts.LinkedContentDTO> {
+    request: AddLinkedContentRequestDTO,
+  ): Promise<LinkedContentDTO> {
     const data = await apiClient.post(`${this.baseUrl}/linked-content`, request);
     return data;
   }
@@ -386,7 +386,7 @@ export class RepositoryApiClient {
    */
   async getLinkedContents(
     resourceUuid: string,
-  ): Promise<RepositoryContracts.LinkedContentListResponseDTO> {
+  ): Promise<LinkedContentListResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/resources/${resourceUuid}/linked-content`);
     return data;
   }
@@ -395,8 +395,8 @@ export class RepositoryApiClient {
    * 创建资源引用
    */
   async createResourceReference(
-    request: RepositoryContracts.CreateResourceReferenceRequestDTO,
-  ): Promise<RepositoryContracts.ResourceReferenceDTO> {
+    request: CreateResourceReferenceRequestDTO,
+  ): Promise<ResourceReferenceDTO> {
     const data = await apiClient.post(`${this.baseUrl}/resource-references`, request);
     return data;
   }
@@ -406,7 +406,7 @@ export class RepositoryApiClient {
    */
   async getResourceReferences(
     resourceUuid: string,
-  ): Promise<RepositoryContracts.ResourceReferenceListResponseDTO> {
+  ): Promise<ResourceReferenceListResponseDTO> {
     const data = await apiClient.get(`${this.baseUrl}/resources/${resourceUuid}/references`);
     return data;
   }
@@ -428,8 +428,8 @@ export class RepositoryApiClient {
    */
   async createFolder(
     repositoryUuid: string,
-    request: RepositoryContracts.CreateFolderRequestDTO,
-  ): Promise<RepositoryContracts.FolderDTO> {
+    request: CreateFolderRequestDTO,
+  ): Promise<FolderDTO> {
     const data = await apiClient.post(`${this.baseUrl}/${repositoryUuid}/folders`, request);
     return data;
   }
@@ -437,7 +437,7 @@ export class RepositoryApiClient {
   /**
    * 获取文件夹树
    */
-  async getFolderTree(repositoryUuid: string): Promise<RepositoryContracts.FolderDTO[]> {
+  async getFolderTree(repositoryUuid: string): Promise<FolderDTO[]> {
     const data = await apiClient.get(`${this.baseUrl}/${repositoryUuid}/folders/tree`);
     return data;
   }
@@ -445,7 +445,7 @@ export class RepositoryApiClient {
   /**
    * 获取文件夹详情
    */
-  async getFolder(uuid: string): Promise<RepositoryContracts.FolderDTO> {
+  async getFolder(uuid: string): Promise<FolderDTO> {
     const data = await apiClient.get(`${this.baseUrl}/folders/${uuid}`);
     return data;
   }
@@ -453,7 +453,7 @@ export class RepositoryApiClient {
   /**
    * 重命名文件夹
    */
-  async renameFolder(uuid: string, name: string): Promise<RepositoryContracts.FolderDTO> {
+  async renameFolder(uuid: string, name: string): Promise<FolderDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/folders/${uuid}/rename`, { name });
     return data;
   }
@@ -464,7 +464,7 @@ export class RepositoryApiClient {
   async moveFolder(
     uuid: string,
     request: { parentFolderUuid?: string | null },
-  ): Promise<RepositoryContracts.FolderDTO> {
+  ): Promise<FolderDTO> {
     const data = await apiClient.patch(`${this.baseUrl}/folders/${uuid}/move`, request);
     return data;
   }
@@ -479,3 +479,5 @@ export class RepositoryApiClient {
 
 // 导出单例实例
 export const repositoryApiClient = new RepositoryApiClient();
+
+

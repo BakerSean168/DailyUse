@@ -40,9 +40,9 @@ import { ref, onMounted } from 'vue';
 import { useDocument } from '../composables/useDocument';
 import DocumentList from '../components/DocumentList.vue';
 import DocumentEditor from '../components/DocumentEditor.vue';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
+type DocumentClientDTO = DocumentClientDTO;
 
 const { documents, loading, pagination, loadDocuments, createDocument, updateDocument, deleteDocument } = useDocument();
 
@@ -92,3 +92,4 @@ const closeEditor = () => {
   editingDocument.value = undefined;
 };
 </script>
+

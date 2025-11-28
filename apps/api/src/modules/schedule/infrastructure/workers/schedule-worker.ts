@@ -23,7 +23,7 @@ import {
   NotificationType,
   NotificationCategory,
   RelatedEntityType,
-} from '@dailyuse/contracts';
+} from '@dailyuse/contracts/notification';
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import { registerAllInitializationTasks } from '../../../../shared/initialization/initializer';
 

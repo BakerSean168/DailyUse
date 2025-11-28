@@ -5,7 +5,7 @@
 
 import type { Response } from 'express';
 import { createResponseBuilder, createExpressResponseHelper } from '@dailyuse/utils';
-import type { ResponseBuilderOptions } from '@dailyuse/contracts';
+import type { ResponseBuilderOptions } from '@dailyuse/contracts/response';
 
 /**
  * 创建响应助手，用于API路由

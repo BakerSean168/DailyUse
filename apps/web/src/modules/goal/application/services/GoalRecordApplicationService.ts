@@ -1,4 +1,4 @@
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { Goal } from '@dailyuse/domain-client';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
@@ -51,8 +51,8 @@ export class GoalRecordApplicationService {
   async createGoalRecord(
     goalUuid: string,
     keyResultUuid: string,
-    request: GoalContracts.CreateGoalRecordRequest,
-  ): Promise<GoalContracts.GoalRecordClientDTO> {
+    request: CreateGoalRecordRequest,
+  ): Promise<GoalRecordClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -99,7 +99,7 @@ export class GoalRecordApplicationService {
       limit?: number;
       dateRange?: { start?: string; end?: string };
     },
-  ): Promise<GoalContracts.GoalRecordsResponse> {
+  ): Promise<GoalRecordsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -127,7 +127,7 @@ export class GoalRecordApplicationService {
       limit?: number;
       dateRange?: { start?: string; end?: string };
     },
-  ): Promise<GoalContracts.GoalRecordsResponse> {
+  ): Promise<GoalRecordsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -171,3 +171,4 @@ export class GoalRecordApplicationService {
 }
 
 export const goalRecordApplicationService = GoalRecordApplicationService.getInstance();
+

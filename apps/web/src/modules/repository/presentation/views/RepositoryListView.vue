@@ -140,7 +140,7 @@ import RepoDialog from '../components/dialogs/RepoDialog.vue';
 import { useRepository } from '../composables/useRepository';
 // types
 import { Repository } from '@dailyuse/domain-client';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TagClientDTO, BookmarkClientDTO } from '@dailyuse/contracts/repository';
 
 // component refs
 const repoDialogRef = ref<InstanceType<typeof RepoDialog> | null>(null);
@@ -157,10 +157,10 @@ const selectedStatusIndex = ref(0);
 // 状态标签配置
 const statusTabs = [
   { label: '全部', value: 'all' },
-  { label: '活跃', value: RepositoryContracts.RepositoryStatus.ACTIVE },
-  { label: '归档', value: RepositoryContracts.RepositoryStatus.ARCHIVED },
-  { label: '不活跃', value: RepositoryContracts.RepositoryStatus.INACTIVE },
-  { label: '同步中', value: RepositoryContracts.RepositoryStatus.SYNCING },
+  { label: '活跃', value: RepositoryStatus.ACTIVE },
+  { label: '归档', value: RepositoryStatus.ARCHIVED },
+  { label: '不活跃', value: RepositoryStatus.INACTIVE },
+  { label: '同步中', value: RepositoryStatus.SYNCING },
 ];
 
 // ===== 计算属性 =====
@@ -187,13 +187,13 @@ const repoCountByStatus = computed(() => {
   const repos = repositories.value || [];
   return {
     all: repos.length,
-    active: repos.filter((repo) => repo.status === RepositoryContracts.RepositoryStatus.ACTIVE)
+    active: repos.filter((repo) => repo.status === RepositoryStatus.ACTIVE)
       .length,
-    archived: repos.filter((repo) => repo.status === RepositoryContracts.RepositoryStatus.ARCHIVED)
+    archived: repos.filter((repo) => repo.status === RepositoryStatus.ARCHIVED)
       .length,
-    inactive: repos.filter((repo) => repo.status === RepositoryContracts.RepositoryStatus.INACTIVE)
+    inactive: repos.filter((repo) => repo.status === RepositoryStatus.INACTIVE)
       .length,
-    syncing: repos.filter((repo) => repo.status === RepositoryContracts.RepositoryStatus.SYNCING)
+    syncing: repos.filter((repo) => repo.status === RepositoryStatus.SYNCING)
       .length,
   };
 });
@@ -300,3 +300,4 @@ onMounted(() => {
   }
 }
 </style>
+

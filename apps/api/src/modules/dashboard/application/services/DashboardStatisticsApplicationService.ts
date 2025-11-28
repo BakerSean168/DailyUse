@@ -21,13 +21,15 @@ import type {
   ReminderStatistics,
   ScheduleStatistics,
 } from '@dailyuse/domain-server';
-import { DashboardContracts } from '@dailyuse/contracts';
 import type {
-  TaskContracts,
-  GoalContracts,
-  ReminderContracts,
-  ScheduleContracts,
-} from '@dailyuse/contracts';
+  DashboardConfigServerDTO,
+  WidgetConfigDTO,
+  DashboardStatisticsClientDTO,
+} from '@dailyuse/contracts/dashboard';
+import type { TaskStatisticsClientDTO } from '@dailyuse/contracts/task';
+import type { GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
+import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
+import type { ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 import { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
 import type { StatisticsCacheService } from '../../infrastructure/services/StatisticsCacheService';
 
@@ -87,7 +89,7 @@ export class DashboardStatisticsApplicationService {
    */
   async getDashboardStatistics(
     accountUuid: string,
-  ): Promise<DashboardContracts.DashboardStatisticsClientDTO> {
+  ): Promise<DashboardStatisticsClientDTO> {
     const startTime = Date.now();
     console.log(`[Dashboard] 开始获取账户 ${accountUuid} 的统计数据`);
 
@@ -128,7 +130,7 @@ export class DashboardStatisticsApplicationService {
    */
   private async aggregateStatistics(
     accountUuid: string,
-  ): Promise<DashboardContracts.DashboardStatisticsClientDTO> {
+  ): Promise<DashboardStatisticsClientDTO> {
     // 并行查询 4 个模块的统计数据
     const [taskStats, goalStats, reminderStats, scheduleStats] = await Promise.all([
       this.getOrCreateTaskStatistics(accountUuid),
@@ -226,10 +228,10 @@ export class DashboardStatisticsApplicationService {
   // ===== 计算方法 =====
 
   private calculateOverallCompletionRate(stats: {
-    taskStatsDto: TaskContracts.TaskStatisticsClientDTO;
-    goalStatsDto: GoalContracts.GoalStatisticsClientDTO;
-    reminderStatsDto: ReminderContracts.ReminderStatisticsClientDTO;
-    scheduleStatsDto: ScheduleContracts.ScheduleStatisticsClientDTO;
+    taskStatsDto: TaskStatisticsClientDTO;
+    goalStatsDto: GoalStatisticsClientDTO;
+    reminderStatsDto: ReminderStatisticsClientDTO;
+    scheduleStatsDto: ScheduleStatisticsClientDTO;
   }): number {
     const rates: number[] = [];
 
@@ -272,8 +274,8 @@ export class DashboardStatisticsApplicationService {
   // ===== DTO 映射方法 =====
 
   private mapTaskStatistics(
-    stats: TaskContracts.TaskStatisticsClientDTO,
-  ): DashboardContracts.DashboardStatisticsClientDTO['taskStatistics'] {
+    stats: TaskStatisticsClientDTO,
+  ): DashboardStatisticsClientDTO['taskStatistics'] {
     return {
       totalTasks: stats.totalTasks,
       completedTasks: stats.completedTasks,
@@ -286,8 +288,8 @@ export class DashboardStatisticsApplicationService {
   }
 
   private mapGoalStatistics(
-    stats: GoalContracts.GoalStatisticsClientDTO,
-  ): DashboardContracts.DashboardStatisticsClientDTO['goalStatistics'] {
+    stats: GoalStatisticsClientDTO,
+  ): DashboardStatisticsClientDTO['goalStatistics'] {
     return {
       totalGoals: stats.totalGoals,
       activeGoals: stats.totalGoals - stats.completedGoals - stats.archivedGoals,
@@ -298,8 +300,8 @@ export class DashboardStatisticsApplicationService {
   }
 
   private mapReminderStatistics(
-    stats: ReminderContracts.ReminderStatisticsClientDTO,
-  ): DashboardContracts.DashboardStatisticsClientDTO['reminderStatistics'] {
+    stats: ReminderStatisticsClientDTO,
+  ): DashboardStatisticsClientDTO['reminderStatistics'] {
     return {
       totalReminders: stats.templateStats.totalTemplates,
       activeReminders: stats.templateStats.activeTemplates,
@@ -313,8 +315,8 @@ export class DashboardStatisticsApplicationService {
   }
 
   private mapScheduleStatistics(
-    stats: ScheduleContracts.ScheduleStatisticsClientDTO,
-  ): DashboardContracts.DashboardStatisticsClientDTO['scheduleStatistics'] {
+    stats: ScheduleStatisticsClientDTO,
+  ): DashboardStatisticsClientDTO['scheduleStatistics'] {
     return {
       totalSchedules: stats.totalTasks,
       activeSchedules: stats.activeTasks,
@@ -325,3 +327,7 @@ export class DashboardStatisticsApplicationService {
     };
   }
 }
+
+
+
+

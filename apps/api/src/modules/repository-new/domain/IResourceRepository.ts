@@ -4,7 +4,7 @@
  */
 
 import type { Resource } from '@dailyuse/domain-server';
-import type { ResourceType, ResourceStatus } from '@dailyuse/contracts';
+import { ResourceType, ResourceStatus } from '@dailyuse/contracts/repository';
 
 export interface FindResourceOptions {
   type?: ResourceType;
@@ -51,3 +51,7 @@ export interface IResourceRepository {
    */
   findByType(repositoryUuid: string, type: ResourceType): Promise<Resource[]>;
 }
+
+
+
+

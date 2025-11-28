@@ -8,7 +8,7 @@
 
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { defineAsyncComponent } from 'vue';
-import { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, WidgetType } from '@dailyuse/contracts/dashboard';
 
 /**
  * 注册 Schedule 模块的所有 Widgets
@@ -24,10 +24,11 @@ export function registerScheduleWidgets(): void {
     component: defineAsyncComponent(() => import('./ScheduleStatsWidget.vue')),
     defaultVisible: true,
     defaultOrder: 4,
-    defaultSize: DashboardContracts.WidgetSize.SMALL,
+    defaultSize: WidgetSize.SMALL,
     icon: 'i-heroicons-calendar-days',
     category: 'schedule',
   });
 
   console.log('[Schedule] Schedule widgets registered successfully');
 }
+

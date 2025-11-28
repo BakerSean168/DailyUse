@@ -25,9 +25,9 @@
 
 <script setup lang="ts">
 import NotificationItem from './NotificationItem.vue';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
+type NotificationClientDTO = NotificationClientDTO;
 
 interface Props {
   notifications: NotificationClientDTO[];
@@ -44,3 +44,4 @@ defineEmits<{
   delete: [uuid: string];
 }>();
 </script>
+

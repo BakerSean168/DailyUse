@@ -4,7 +4,7 @@ import type {
 } from '@dailyuse/domain-server';
 import { RepositoryStatisticsDomainService } from '@dailyuse/domain-server';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 
 /**
  * RepositoryStatistics 应用服务
@@ -66,7 +66,7 @@ export class RepositoryStatisticsApplicationService {
    */
   async getOrCreateStatistics(
     accountUuid: string,
-  ): Promise<RepositoryContracts.RepositoryStatisticsServerDTO> {
+  ): Promise<RepositoryStatisticsServerDTO> {
     // 委托给领域服务处理
     const statistics = await this.domainService.getOrCreateStatistics(accountUuid);
 
@@ -79,7 +79,7 @@ export class RepositoryStatisticsApplicationService {
    */
   async getStatistics(
     accountUuid: string,
-  ): Promise<RepositoryContracts.RepositoryStatisticsServerDTO | null> {
+  ): Promise<RepositoryStatisticsServerDTO | null> {
     // 委托给领域服务处理
     const statistics = await this.domainService.getStatistics(accountUuid);
 
@@ -91,7 +91,7 @@ export class RepositoryStatisticsApplicationService {
    */
   async initializeStatistics(
     accountUuid: string,
-  ): Promise<RepositoryContracts.RepositoryStatisticsServerDTO> {
+  ): Promise<RepositoryStatisticsServerDTO> {
     // 委托给领域服务处理
     const statistics = await this.domainService.initializeStatistics(accountUuid);
 
@@ -103,8 +103,8 @@ export class RepositoryStatisticsApplicationService {
    * 重新计算统计信息
    */
   async recalculateStatistics(
-    request: RepositoryContracts.RecalculateStatisticsRequest,
-  ): Promise<RepositoryContracts.RecalculateStatisticsResponse> {
+    request: RecalculateStatisticsRequest,
+  ): Promise<RecalculateStatisticsResponse> {
     // 委托给领域服务处理（Response 已经是 DTO 格式）
     return await this.domainService.recalculateStatistics(request);
   }
@@ -113,7 +113,7 @@ export class RepositoryStatisticsApplicationService {
    * 处理统计更新事件
    */
   async handleStatisticsUpdateEvent(
-    event: RepositoryContracts.StatisticsUpdateEvent,
+    event: StatisticsUpdateEvent,
   ): Promise<void> {
     // 委托给领域服务处理
     await this.domainService.handleStatisticsUpdateEvent(event);
@@ -132,7 +132,7 @@ export class RepositoryStatisticsApplicationService {
    */
   async getStatisticsByAccountUuids(
     accountUuids: string[],
-  ): Promise<RepositoryContracts.RepositoryStatisticsServerDTO[]> {
+  ): Promise<RepositoryStatisticsServerDTO[]> {
     // 委托给领域服务处理
     const statisticsList = await this.domainService.getStatisticsByAccountUuids(accountUuids);
 
@@ -146,7 +146,7 @@ export class RepositoryStatisticsApplicationService {
   async getAllStatistics(options?: {
     skip?: number;
     take?: number;
-  }): Promise<RepositoryContracts.RepositoryStatisticsServerDTO[]> {
+  }): Promise<RepositoryStatisticsServerDTO[]> {
     // 委托给领域服务处理
     const statisticsList = await this.domainService.getAllStatistics(options);
 
@@ -162,3 +162,5 @@ export class RepositoryStatisticsApplicationService {
     return await this.domainService.countStatistics();
   }
 }
+
+

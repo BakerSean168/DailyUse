@@ -1,15 +1,15 @@
 // @ts-nocheck
 import { apiClient } from '@/shared/api/instances';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
-type CreateDocumentDTO = DocumentContracts.CreateDocumentDTO;
-type UpdateDocumentDTO = DocumentContracts.UpdateDocumentDTO;
-type FindDocumentsQueryDTO = DocumentContracts.FindDocumentsQueryDTO;
-type BacklinksResponseDTO = DocumentContracts.BacklinksResponseDTO;
-type LinkGraphResponseDTO = DocumentContracts.LinkGraphResponseDTO;
-type BrokenLinksResponseDTO = DocumentContracts.BrokenLinksResponseDTO;
-type RepairLinkRequestDTO = DocumentContracts.RepairLinkRequestDTO;
+type DocumentClientDTO = DocumentClientDTO;
+type CreateDocumentDTO = CreateDocumentDTO;
+type UpdateDocumentDTO = UpdateDocumentDTO;
+type FindDocumentsQueryDTO = FindDocumentsQueryDTO;
+type BacklinksResponseDTO = BacklinksResponseDTO;
+type LinkGraphResponseDTO = LinkGraphResponseDTO;
+type BrokenLinksResponseDTO = BrokenLinksResponseDTO;
+type RepairLinkRequestDTO = RepairLinkRequestDTO;
 
 interface PaginatedResult<T> {
   items: T[];
@@ -99,3 +99,4 @@ class DocumentApiClient {
 }
 
 export const documentApiClient = new DocumentApiClient();
+

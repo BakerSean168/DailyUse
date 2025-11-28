@@ -121,14 +121,14 @@
 import { ref, reactive, watch, computed } from 'vue';
 import { useScheduleEvent } from '../composables/useScheduleEvent';
 import type { CreateScheduleEventRequest, UpdateScheduleEventRequest } from '../../infrastructure/api/scheduleEventApiClient';
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 
 // ===== Composables =====
 const { createSchedule, updateSchedule, isLoading } = useScheduleEvent();
 
 // ===== State =====
 const visible = ref(false);
-const editingSchedule = ref<ScheduleContracts.ScheduleClientDTO | null>(null);
+const editingSchedule = ref<ScheduleClientDTO | null>(null);
 
 const isEditing = computed(() => !!editingSchedule.value);
 
@@ -268,7 +268,7 @@ function openForCreate() {
 /**
  * 打开编辑对话框
  */
-function openForEdit(schedule: ScheduleContracts.ScheduleClientDTO) {
+function openForEdit(schedule: ScheduleClientDTO) {
   if (!schedule) {
     console.error('[CreateScheduleDialog] openForEdit: schedule is required');
     return;
@@ -298,7 +298,7 @@ function openForEdit(schedule: ScheduleContracts.ScheduleClientDTO) {
 /**
  * 通用打开方法（向后兼容）
  */
-function openDialog(schedule?: ScheduleContracts.ScheduleClientDTO) {
+function openDialog(schedule?: ScheduleClientDTO) {
   if (schedule) {
     openForEdit(schedule);
   } else {
@@ -328,3 +328,4 @@ defineExpose({
   background-color: rgba(var(--v-theme-primary), 0.1);
 }
 </style>
+

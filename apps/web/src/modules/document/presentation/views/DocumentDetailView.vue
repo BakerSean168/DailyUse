@@ -207,10 +207,10 @@ import { marked } from 'marked';
 import VersionHistoryList from '../components/VersionHistoryList.vue';
 import VersionDiffViewer from '../components/VersionDiffViewer.vue';
 import { useDocumentVersion } from '../composables/useDocumentVersion';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
-type DocumentVersionClientDTO = DocumentContracts.DocumentVersionClientDTO;
+type DocumentClientDTO = DocumentClientDTO;
+type DocumentVersionClientDTO = DocumentVersionClientDTO;
 
 const route = useRoute();
 const router = useRouter();
@@ -448,3 +448,4 @@ onMounted(() => {
   padding: 0;
 }
 </style>
+

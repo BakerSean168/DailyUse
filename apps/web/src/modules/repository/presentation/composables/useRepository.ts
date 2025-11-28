@@ -2,10 +2,10 @@
 import { ref, computed, onMounted, onBeforeUnmount, readonly } from 'vue';
 import { RepositoryWebApplicationService } from '../../application/services/RepositoryWebApplicationService';
 import { useRepositoryStore } from '../stores/repositoryStore';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TagClientDTO, BookmarkClientDTO } from '@dailyuse/contracts/repository';
 
-type RepositoryType = RepositoryContracts.RepositoryType;
-type RepositoryStatus = RepositoryContracts.RepositoryStatus;
+type RepositoryType = RepositoryType;
+type RepositoryStatus = RepositoryStatus;
 
 /**
  * Repository 模块组合式函数 - 新架构
@@ -213,7 +213,7 @@ export function useRepository() {
   /**
    * 创建资源
    */
-  async function createResource(request: RepositoryContracts.CreateResourceRequestDTO) {
+  async function createResource(request: CreateResourceRequestDTO) {
     try {
       isOperating.value = true;
       operationError.value = null;
@@ -253,7 +253,7 @@ export function useRepository() {
    */
   async function updateResource(
     uuid: string,
-    request: RepositoryContracts.UpdateResourceRequestDTO,
+    request: UpdateResourceRequestDTO,
   ) {
     try {
       isOperating.value = true;
@@ -293,7 +293,7 @@ export function useRepository() {
    */
   async function fetchRepositoryResources(
     repositoryUuid: string,
-    params?: RepositoryContracts.ResourceQueryParamsDTO,
+    params?: ResourceQueryParamsDTO,
   ) {
     try {
       isOperating.value = true;
@@ -612,3 +612,4 @@ export function useRepositoryData() {
     statistics: computed(() => repositoryStore.getRepositoryStatistics),
   };
 }
+

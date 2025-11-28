@@ -6,7 +6,7 @@
 import * as userSettingApi from '../../infrastructure/api/userSettingApi';
 import { useUserSettingStore } from '../../presentation/stores/userSettingStore';
 import { UserSetting } from '@dailyuse/domain-client';
-import { type SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
 /**
  * UserSetting Web 应用服务
@@ -82,7 +82,7 @@ export class UserSettingWebApplicationService {
    * 最佳实践：API 返回轻量级响应，更新后重新加载完整设置
    */
   public async updateUserSettings(
-    request: SettingContracts.UpdateUserSettingRequest,
+    request: UpdateUserSettingRequest,
   ): Promise<ReturnType<typeof UserSetting.fromClientDTO>> {
     try {
       // 1. 调用 API 更新设置（返回轻量级响应）
@@ -122,7 +122,7 @@ export class UserSettingWebApplicationService {
    * 更新外观设置
    */
   public async updateAppearance(
-    appearance: SettingContracts.UpdateAppearanceRequest,
+    appearance: UpdateAppearanceRequest,
   ): Promise<ReturnType<typeof UserSetting.fromClientDTO>> {
     try {
       const currentSettings = this.userSettingStore.settings;
@@ -130,7 +130,7 @@ export class UserSettingWebApplicationService {
         throw new Error('No current settings found');
       }
 
-      const request: SettingContracts.UpdateUserSettingRequest = {
+      const request: UpdateUserSettingRequest = {
         uuid: currentSettings.uuid,
         appearance,
       };
@@ -145,7 +145,7 @@ export class UserSettingWebApplicationService {
    * 更新本地化设置
    */
   public async updateLocale(
-    locale: SettingContracts.UpdateLocaleRequest,
+    locale: UpdateLocaleRequest,
   ): Promise<ReturnType<typeof UserSetting.fromClientDTO>> {
     try {
       const currentSettings = this.userSettingStore.settings;
@@ -153,7 +153,7 @@ export class UserSettingWebApplicationService {
         throw new Error('No current settings found');
       }
 
-      const request: SettingContracts.UpdateUserSettingRequest = {
+      const request: UpdateUserSettingRequest = {
         uuid: currentSettings.uuid,
         locale,
       };
@@ -168,7 +168,7 @@ export class UserSettingWebApplicationService {
    * 更新工作流设置
    */
   public async updateWorkflow(
-    workflow: SettingContracts.UpdateWorkflowRequest,
+    workflow: UpdateWorkflowRequest,
   ): Promise<ReturnType<typeof UserSetting.fromClientDTO>> {
     try {
       const currentSettings = this.userSettingStore.settings;
@@ -176,7 +176,7 @@ export class UserSettingWebApplicationService {
         throw new Error('No current settings found');
       }
 
-      const request: SettingContracts.UpdateUserSettingRequest = {
+      const request: UpdateUserSettingRequest = {
         uuid: currentSettings.uuid,
         workflow,
       };
@@ -191,7 +191,7 @@ export class UserSettingWebApplicationService {
    * 更新隐私设置
    */
   public async updatePrivacy(
-    privacy: SettingContracts.UpdatePrivacyRequest,
+    privacy: UpdatePrivacyRequest,
   ): Promise<ReturnType<typeof UserSetting.fromClientDTO>> {
     try {
       const currentSettings = this.userSettingStore.settings;
@@ -199,7 +199,7 @@ export class UserSettingWebApplicationService {
         throw new Error('No current settings found');
       }
 
-      const request: SettingContracts.UpdateUserSettingRequest = {
+      const request: UpdateUserSettingRequest = {
         uuid: currentSettings.uuid,
         privacy,
       };
@@ -214,7 +214,7 @@ export class UserSettingWebApplicationService {
    * 更新实验性功能设置
    */
   public async updateExperimental(
-    experimental: SettingContracts.UpdateExperimentalRequest,
+    experimental: UpdateExperimentalRequest,
   ): Promise<ReturnType<typeof UserSetting.fromClientDTO>> {
     try {
       const currentSettings = this.userSettingStore.settings;
@@ -222,7 +222,7 @@ export class UserSettingWebApplicationService {
         throw new Error('No current settings found');
       }
 
-      const request: SettingContracts.UpdateUserSettingRequest = {
+      const request: UpdateUserSettingRequest = {
         uuid: currentSettings.uuid,
         experimental,
       };
@@ -277,7 +277,7 @@ export class UserSettingWebApplicationService {
         [action]: shortcut,
       };
 
-      const request: SettingContracts.UpdateUserSettingRequest = {
+      const request: UpdateUserSettingRequest = {
         uuid: currentSettings.uuid,
         shortcuts: {
           custom: updatedCustom,
@@ -306,7 +306,7 @@ export class UserSettingWebApplicationService {
       const updatedCustom = { ...currentSettings.shortcuts.custom };
       delete updatedCustom[action];
 
-      const request: SettingContracts.UpdateUserSettingRequest = {
+      const request: UpdateUserSettingRequest = {
         uuid: currentSettings.uuid,
         shortcuts: {
           custom: updatedCustom,
@@ -350,3 +350,4 @@ export class UserSettingWebApplicationService {
     }
   }
 }
+
