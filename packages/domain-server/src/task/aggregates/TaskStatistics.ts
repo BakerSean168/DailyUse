@@ -7,6 +7,7 @@ import type {
   CompletionStatsInfo,
   DistributionStatsInfo,
   InstanceStatsInfo,
+  TaskStatisticsClientDTO,
   TaskStatisticsPersistenceDTO,
   TaskStatisticsServer,
   TaskStatisticsServerDTO,
@@ -555,6 +556,54 @@ export class TaskStatistics extends AggregateRoot implements TaskStatisticsServe
       distributionStats: this._distributionStats,
       calculatedAt: this._calculatedAt,
     };
+  }
+
+  /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): TaskStatisticsClientDTO {
+    const todayCompleted = this._completionStats.todayCompleted;
+    const todayTotal = this._instanceStats.todayInstances;
+    const weekCompleted = this._completionStats.weekCompleted;
+    const weekTotal = this._instanceStats.weekInstances;
+    const completionRate = this._completionStats.completionRate;
+    const overdueCount = this._timeStats.overdueInstances;
+
+    return {
+      uuid: this._uuid,
+      accountUuid: this._accountUuid,
+      templateStats: this._templateStats,
+      instanceStats: this._instanceStats,
+      completionStats: this._completionStats,
+      timeStats: this._timeStats,
+      distributionStats: this._distributionStats,
+      calculatedAt: this._calculatedAt,
+      // UI 扩展字段
+      todayCompletionText: `今日完成 ${todayCompleted}/${todayTotal}`,
+      weekCompletionText: `本周完成 ${weekCompleted}/${weekTotal}`,
+      completionRateText: `完成率 ${Math.round(completionRate)}%`,
+      overdueText: overdueCount > 0 ? `${overdueCount} 个逾期` : '无逾期',
+      efficiencyTrendText: this.getEfficiencyTrendText(),
+    };
+  }
+
+  /**
+   * 获取效率趋势文本
+   */
+  private getEfficiencyTrendText(): string {
+    const todayRate = this._instanceStats.todayInstances > 0
+      ? this._completionStats.todayCompleted / this._instanceStats.todayInstances
+      : 0;
+    const weekRate = this._instanceStats.weekInstances > 0
+      ? this._completionStats.weekCompleted / this._instanceStats.weekInstances
+      : 0;
+
+    if (todayRate > weekRate * 1.1) {
+      return '效率提升';
+    } else if (todayRate < weekRate * 0.9) {
+      return '效率下降';
+    }
+    return '保持稳定';
   }
 
   /**

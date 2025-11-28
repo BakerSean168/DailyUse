@@ -19,9 +19,6 @@
     // 生成输出文件
     "noEmit": false,
 
-    // 禁用增量编译（与 tsup 的 DTS 生成冲突）
-    "incremental": false,
-
     // 生成类型声明文件
     "declaration": true,
 
@@ -30,6 +27,9 @@
 
     // 生成 JavaScript 的 source map
     "sourceMap": true,
+
+    // 禁用增量编译（与 tsup 的 DTS 生成冲突）
+    "incremental": false,
 
     // ============================================================
     // 库环境配置（Domain Client 包）
