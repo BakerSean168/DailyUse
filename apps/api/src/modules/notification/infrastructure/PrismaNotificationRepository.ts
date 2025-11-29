@@ -10,7 +10,6 @@ import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse
 import { Notification } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type NotificationPersistenceDTO = NotificationPersistenceDTO;
 
 @Injectable()
 export class PrismaNotificationRepository implements NotificationRepository {

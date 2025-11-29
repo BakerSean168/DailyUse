@@ -106,7 +106,7 @@ export interface TemplateValidationResultDTO {
 /**
  * 创建通知请求
  */
-export interface CreateNotificationRequestDTO {
+export interface CreateNotificationRequest {
   accountUuid: string;
   title: string;
   content: string;
@@ -126,7 +126,7 @@ export interface CreateNotificationRequestDTO {
 /**
  * 更新通知请求
  */
-export interface UpdateNotificationRequestDTO {
+export interface UpdateNotificationRequest {
   title?: string;
   content?: string;
   status?: NotificationStatus;
@@ -159,21 +159,21 @@ export interface NotificationQueryParamsDTO {
 /**
  * 批量标记已读请求
  */
-export interface MarkAsReadBatchRequestDTO {
+export interface MarkAsReadBatchRequest {
   notificationUuids: string[];
 }
 
 /**
  * 批量删除请求
  */
-export interface DeleteNotificationsBatchRequestDTO {
+export interface DeleteNotificationsBatchRequest {
   notificationUuids: string[];
 }
 
 /**
  * 清理旧通知请求
  */
-export interface CleanupOldNotificationsRequestDTO {
+export interface CleanupOldNotificationsRequest {
   accountUuid: string;
   beforeDays: number; // 删除多少天前的通知
   category?: NotificationCategory;
@@ -182,7 +182,7 @@ export interface CleanupOldNotificationsRequestDTO {
 /**
  * 创建通知模板请求
  */
-export interface CreateNotificationTemplateRequestDTO {
+export interface CreateNotificationTemplateRequest {
   name: string;
   type: NotificationType;
   category: NotificationCategory;
@@ -215,7 +215,7 @@ export interface CreateNotificationTemplateRequestDTO {
 /**
  * 更新通知模板请求
  */
-export interface UpdateNotificationTemplateRequestDTO {
+export interface UpdateNotificationTemplateRequest {
   name?: string;
   description?: string;
   template?: {
@@ -235,7 +235,7 @@ export interface UpdateNotificationTemplateRequestDTO {
 /**
  * 从模板创建通知请求
  */
-export interface CreateNotificationFromTemplateRequestDTO {
+export interface CreateNotificationFromTemplateRequest {
   templateUuid: string;
   accountUuid: string;
   variables: Record<string, any>;
@@ -246,7 +246,7 @@ export interface CreateNotificationFromTemplateRequestDTO {
 /**
  * 渲染模板请求
  */
-export interface RenderTemplateRequestDTO {
+export interface RenderTemplateRequest {
   templateUuid: string;
   variables: Record<string, any>;
 }
@@ -254,7 +254,7 @@ export interface RenderTemplateRequestDTO {
 /**
  * 更新通知偏好请求
  */
-export interface UpdateNotificationPreferenceRequestDTO {
+export interface UpdateNotificationPreferenceRequest {
   enabled?: boolean;
   channels?: {
     inApp?: boolean;
@@ -286,7 +286,7 @@ export interface UpdateNotificationPreferenceRequestDTO {
 /**
  * 发送通知请求
  */
-export interface SendNotificationRequestDTO {
+export interface SendNotificationRequest {
   notificationUuid: string;
   channels?: NotificationChannelType[]; // 指定渠道，不指定则使用默认渠道
 }
@@ -294,14 +294,14 @@ export interface SendNotificationRequestDTO {
 /**
  * 重试渠道请求
  */
-export interface RetryChannelRequestDTO {
+export interface RetryChannelRequest {
   channelUuid: string;
 }
 
 /**
  * 执行通知操作请求
  */
-export interface ExecuteNotificationActionRequestDTO {
+export interface ExecuteNotificationActionRequest {
   notificationUuid: string;
   actionId: string;
 }

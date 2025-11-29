@@ -18,7 +18,8 @@
 import type { IFocusSessionRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { FocusSessionDomainService, FocusSession, Goal } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalStatus, GoalPriority, FocusSessionStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus, FocusSessionStatus } from '@dailyuse/contracts/goal';
+import { PriorityLevel } from '@dailyuse/contracts/shared';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest, FocusSessionClientDTO } from '@dailyuse/contracts/goal';
 
 /**

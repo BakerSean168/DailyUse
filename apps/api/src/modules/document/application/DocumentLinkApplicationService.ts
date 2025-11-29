@@ -6,12 +6,6 @@ import { DocumentRepository, DOCUMENT_REPOSITORY } from '../domain/DocumentRepos
 import { LinkParser, ParsedLink } from '../infrastructure/LinkParser';
 import type { DocumentServerDTO, DocumentVersionServerDTO, DocumentLinkServerDTO } from '@dailyuse/contracts/editor';
 
-type BacklinkDTO = BacklinkDTO;
-type BacklinksResponseDTO = BacklinksResponseDTO;
-type LinkGraphNodeDTO = LinkGraphNodeDTO;
-type LinkGraphEdgeDTO = LinkGraphEdgeDTO;
-type LinkGraphResponseDTO = LinkGraphResponseDTO;
-type BrokenLinksResponseDTO = BrokenLinksResponseDTO;
 
 @Injectable()
 export class DocumentLinkApplicationService {

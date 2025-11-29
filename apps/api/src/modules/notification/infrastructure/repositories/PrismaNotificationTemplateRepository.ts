@@ -4,8 +4,6 @@ import type { NotificationRepository as INotificationTemplateRepository } from '
 import { NotificationTemplate } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type NotificationCategory = NotificationCategory;
-type NotificationType = NotificationType;
 
 /**
  * NotificationTemplate Prisma 仓储实现

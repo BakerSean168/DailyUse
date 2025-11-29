@@ -4,10 +4,6 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { DocumentApplicationService } from '../application/DocumentApplicationService';
 import type { DocumentServerDTO, DocumentVersionServerDTO, DocumentLinkServerDTO } from '@dailyuse/contracts/editor';
 
-type CreateDocumentDTO = CreateDocumentDTO;
-type UpdateDocumentDTO = UpdateDocumentDTO;
-type FindDocumentsQueryDTO = FindDocumentsQueryDTO;
-type SaveDocumentDTO = SaveDocumentDTO;
 
 interface AuthRequest extends Request {
   user: { accountUuid: string };

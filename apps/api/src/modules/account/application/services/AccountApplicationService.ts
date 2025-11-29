@@ -19,10 +19,10 @@ import { AccountProfileApplicationService } from './AccountProfileApplicationSer
 import { AccountStatusApplicationService } from './AccountStatusApplicationService';
 import { AccountEmailApplicationService } from './AccountEmailApplicationService';
 import type {
-  CreateAccountRequestDTO,
+  CreateAccountRequest,
   AccountDTO,
   AccountListResponseDTO,
-  UpdateAccountProfileRequestDTO,
+  UpdateAccountProfileRequest,
   AccountQueryParams,
 } from '@dailyuse/contracts/account';
 
@@ -58,7 +58,7 @@ export class AccountApplicationService {
    * 创建账户 - 委托给 RegistrationApplicationService
    * TODO: 需要重构以匹配子服务的实际方法签名
    */
-  async createAccount(request: CreateAccountRequestDTO): Promise<AccountDTO> {
+  async createAccount(request: CreateAccountRequest): Promise<AccountDTO> {
     throw new Error('Method not implemented. Use RegistrationApplicationService directly.');
     // return this.registrationService.registerUser(request);
   }
@@ -90,7 +90,7 @@ export class AccountApplicationService {
    * 更新账户资料 - 委托给 ProfileApplicationService
    * TODO: 需要重构以匹配子服务的实际方法签名
    */
-  async updateProfile(request: UpdateAccountProfileRequestDTO): Promise<AccountDTO> {
+  async updateProfile(request: UpdateAccountProfileRequest): Promise<AccountDTO> {
     throw new Error('Method not implemented. Use AccountProfileApplicationService directly.');
     // return this.profileService.updateProfile(request);
   }

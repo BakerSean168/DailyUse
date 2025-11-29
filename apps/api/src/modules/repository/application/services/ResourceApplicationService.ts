@@ -9,8 +9,6 @@ import type { IResourceRepository } from '../../domain/repositories/IResourceRep
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 
-type ResourceServerDTO = ResourceServerDTO;
-type ResourceClientDTO = ResourceClientDTO;
 
 /**
  * Resource 应用服务

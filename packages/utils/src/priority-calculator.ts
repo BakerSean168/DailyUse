@@ -7,7 +7,7 @@
  * 适用于：Goal、Task 等需要优先级排序的实体
  */
 
-import type { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { type ImportanceLevel, type UrgencyLevel, PriorityLevel } from '@dailyuse/contracts/shared';
 
 /**
  * 重要性权重映射
@@ -58,7 +58,7 @@ export interface PriorityCalculationResult {
   /** 最终权重（基础权重 + 时间权重） */
   totalWeight: number;
   /** 优先级等级 */
-  level: 'HIGH' | 'MEDIUM' | 'LOW';
+  level: PriorityLevel;
   /** 优先级分数（0-100） */
   score: number;
 }
@@ -131,14 +131,18 @@ export function calculatePriority(
   // 3. 计算最终权重
   const totalWeight = baseWeight + timeWeight;
 
-  // 4. 确定优先级等级
-  let level: 'HIGH' | 'MEDIUM' | 'LOW';
-  if (totalWeight >= 12) {
-    level = 'HIGH';
+  // 4. 确定优先级等级（5级系统）
+  let level: PriorityLevel;
+  if (totalWeight >= 14) {
+    level = PriorityLevel.Critical;
+  } else if (totalWeight >= 11) {
+    level = PriorityLevel.High;
   } else if (totalWeight >= 8) {
-    level = 'MEDIUM';
+    level = PriorityLevel.Medium;
+  } else if (totalWeight >= 5) {
+    level = PriorityLevel.Low;
   } else {
-    level = 'LOW';
+    level = PriorityLevel.None;
   }
 
   // 5. 计算分数（0-100）
@@ -156,11 +160,13 @@ export function calculatePriority(
 /**
  * 获取优先级徽章颜色
  */
-export function getPriorityBadgeColor(level: 'HIGH' | 'MEDIUM' | 'LOW'): string {
-  const colorMap: Record<'HIGH' | 'MEDIUM' | 'LOW', string> = {
-    HIGH: 'red',
-    MEDIUM: 'orange',
-    LOW: 'blue',
+export function getPriorityBadgeColor(level: PriorityLevel): string {
+  const colorMap: Record<PriorityLevel, string> = {
+    [PriorityLevel.Critical]: 'red',
+    [PriorityLevel.High]: 'orange',
+    [PriorityLevel.Medium]: 'yellow',
+    [PriorityLevel.Low]: 'blue',
+    [PriorityLevel.None]: 'gray',
   };
   return colorMap[level];
 }
@@ -168,11 +174,13 @@ export function getPriorityBadgeColor(level: 'HIGH' | 'MEDIUM' | 'LOW'): string 
 /**
  * 获取优先级文本
  */
-export function getPriorityText(level: 'HIGH' | 'MEDIUM' | 'LOW'): string {
-  const textMap: Record<'HIGH' | 'MEDIUM' | 'LOW', string> = {
-    HIGH: '高优先级',
-    MEDIUM: '中优先级',
-    LOW: '低优先级',
+export function getPriorityText(level: PriorityLevel): string {
+  const textMap: Record<PriorityLevel, string> = {
+    [PriorityLevel.Critical]: '紧急',
+    [PriorityLevel.High]: '高优先级',
+    [PriorityLevel.Medium]: '中优先级',
+    [PriorityLevel.Low]: '低优先级',
+    [PriorityLevel.None]: '无优先级',
   };
   return textMap[level];
 }

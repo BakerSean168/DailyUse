@@ -26,7 +26,7 @@ import type {
 /**
  * Request DTO for creating a new schedule with automatic conflict detection
  */
-export interface CreateScheduleRequestDTO {
+export interface CreateScheduleRequest {
   accountUuid: string;
   title: string;
   description?: string;
@@ -50,7 +50,7 @@ export interface CreateScheduleResponseDTO {
 /**
  * Request DTO for updating a schedule
  */
-export interface UpdateScheduleRequestDTO {
+export interface UpdateScheduleRequest {
   title?: string;
   description?: string;
   startTime?: number;
@@ -64,7 +64,7 @@ export interface UpdateScheduleRequestDTO {
 /**
  * Request DTO for detecting schedule conflicts for a given time range
  */
-export interface DetectConflictsRequestDTO {
+export interface DetectConflictsRequest {
   userId: string;
   startTime: number;
   endTime: number;
@@ -81,7 +81,7 @@ export interface DetectConflictsResponseDTO {
 /**
  * Request DTO for getting schedules within a time range
  */
-export interface GetSchedulesByTimeRangeRequestDTO {
+export interface GetSchedulesByTimeRangeRequest {
   startTime: number;
   endTime: number;
   accountUuid?: string;
@@ -100,7 +100,7 @@ export enum ResolutionStrategy {
 /**
  * Request DTO for resolving a schedule conflict
  */
-export interface ResolveConflictRequestDTO {
+export interface ResolveConflictRequest {
   resolution: ResolutionStrategy;
   newStartTime?: number;
   newEndTime?: number;
@@ -131,7 +131,7 @@ export interface ResolveConflictResponseDTO {
 /**
  * 创建调度任务请求
  */
-export interface CreateScheduleTaskRequestDTO {
+export interface CreateScheduleTaskRequest {
   readonly name: string;
   readonly sourceModule: SourceModule;
   readonly sourceEntityId: string;
@@ -145,7 +145,7 @@ export interface CreateScheduleTaskRequestDTO {
 /**
  * 更新调度任务请求
  */
-export interface UpdateScheduleTaskRequestDTO {
+export interface UpdateScheduleTaskRequest {
   readonly name?: string;
   readonly description?: string;
   readonly schedule?: Partial<ScheduleConfigServerDTO>;
@@ -157,7 +157,7 @@ export interface UpdateScheduleTaskRequestDTO {
 /**
  * 更新任务调度配置请求
  */
-export interface UpdateScheduleConfigRequestDTO {
+export interface UpdateScheduleConfigRequest {
   readonly cronExpression?: string;
   readonly timezone?: Timezone;
   readonly startDate?: number | null;
@@ -168,7 +168,7 @@ export interface UpdateScheduleConfigRequestDTO {
 /**
  * 更新任务元数据请求
  */
-export interface UpdateTaskMetadataRequestDTO {
+export interface UpdateTaskMetadataRequest {
   readonly payload?: Record<string, any>;
   readonly tags?: string[];
   readonly priority?: TaskPriority;
@@ -193,7 +193,7 @@ export interface ScheduleTaskQueryParamsDTO {
 /**
  * 批量操作请求
  */
-export interface BatchScheduleTaskOperationRequestDTO {
+export interface BatchScheduleTaskOperationRequest {
   readonly taskUuids: readonly string[];
   readonly operation: 'pause' | 'resume' | 'cancel' | 'enable' | 'disable';
   readonly reason?: string;

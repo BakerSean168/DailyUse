@@ -1,11 +1,11 @@
 import type { PrismaClient, goalFolder as PrismaGoalFolder } from '@prisma/client';
 import type { IGoalFolderRepository } from '@dailyuse/domain-server/goal';
 import { GoalFolder } from '@dailyuse/domain-server/goal';
-import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import { GoalStatus, FolderType } from '@dailyuse/contracts/goal';
+import { PriorityLevel } from '@dailyuse/contracts/shared';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 
 // 类型别名
-type FolderType = FolderType;
 
 /**
  * GoalFolder Prisma 仓储实现

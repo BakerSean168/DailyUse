@@ -14,7 +14,6 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type NotificationClientDTO = NotificationClientDTO;
 
 @WebSocketGateway({
   namespace: 'notifications',

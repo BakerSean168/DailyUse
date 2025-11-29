@@ -7,12 +7,6 @@ import type { DocumentVersionRepository } from '../domain/DocumentVersionReposit
 import { DocumentVersion } from '../domain/DocumentVersion';
 import type { DocumentServerDTO, DocumentVersionServerDTO, DocumentLinkServerDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentClientDTO;
-type CreateDocumentDTO = CreateDocumentDTO;
-type UpdateDocumentDTO = UpdateDocumentDTO;
-type FindDocumentsQueryDTO = FindDocumentsQueryDTO;
-type SaveDocumentDTO = SaveDocumentDTO;
-type SaveDocumentResponseDTO = SaveDocumentResponseDTO;
 
 @Injectable()
 export class DocumentApplicationService {

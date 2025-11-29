@@ -125,13 +125,13 @@ export namespace DocumentContracts {
   }
 
   // Compare versions request
-  export interface CompareVersionsRequestDTO {
+  export interface CompareVersionsRequest {
     fromVersion: number;
     toVersion: number;
   }
 
   // Restore version request
-  export interface RestoreVersionRequestDTO {
+  export interface RestoreVersionRequest {
     versionNumber: number;
   }
 
@@ -237,7 +237,7 @@ export namespace DocumentContracts {
   }
 
   // Repair link request
-  export interface RepairLinkRequestDTO {
+  export interface RepairLinkRequest {
     newTargetUuid: string;
   }
 }

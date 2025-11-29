@@ -3,7 +3,6 @@ import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import type { DashboardConfigServerDTO, WidgetConfig } from '@dailyuse/contracts/dashboard';
 
-type DashboardConfigPersistenceDTO = DashboardConfigPersistenceDTO;
 
 /**
  * Dashboard 配置仓储 Prisma 实现

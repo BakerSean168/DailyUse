@@ -9,11 +9,6 @@ import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer
 import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
 
-type SearchRequest = SearchRequest;
-type SearchResponse = SearchResponse;
-type SearchResultItem = SearchResultItem;
-type SearchMatch = SearchMatch;
-type MatchType = MatchType;
 
 export class SearchApplicationService {
   private static instance: SearchApplicationService;

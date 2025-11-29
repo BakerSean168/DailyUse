@@ -2,8 +2,6 @@
 import { randomUUID } from 'crypto';
 import type { DocumentServerDTO, DocumentVersionServerDTO, DocumentLinkServerDTO } from '@dailyuse/contracts/editor';
 
-type DocumentServerDTO = DocumentServerDTO;
-type DocumentClientDTO = DocumentClientDTO;
 
 type Result<T> = 
   | { isSuccess: true; isFailure: false; getValue: () => T }

@@ -10,10 +10,6 @@ import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
-type NotificationClientDTO = NotificationClientDTO;
-type CreateNotificationRequest = CreateNotificationRequest;
-type QueryNotificationsRequest = QueryNotificationsRequest;
-type NotificationListResponse = NotificationListResponse;
 
 @Injectable()
 export class NotificationApplicationService {

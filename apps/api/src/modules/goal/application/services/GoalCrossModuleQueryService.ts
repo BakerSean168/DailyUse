@@ -4,6 +4,7 @@
  */
 
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 
 /**
  * 目标绑定选项（供任务模块使用）

@@ -2,13 +2,12 @@ import type { Response } from 'express';
 import type { AuthenticatedRequest } from '@/shared/middlewares/authMiddleware';
 import { FocusSessionApplicationService } from '../../application/services/FocusSessionApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
-import { GoalStatus } from '@dailyuse/contracts/goal';
+import { GoalStatus, FocusSessionStatus } from '@dailyuse/contracts/goal';
 import type { GoalServerDTO } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FocusSessionController');
 
-type FocusSessionStatus = FocusSessionStatus;
 
 /**
  * FocusSession 控制器

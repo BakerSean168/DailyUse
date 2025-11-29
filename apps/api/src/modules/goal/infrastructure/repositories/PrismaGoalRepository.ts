@@ -1,7 +1,8 @@
 import type { PrismaClient, goal as PrismaGoal } from '@prisma/client';
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal, KeyResult, GoalReview } from '@dailyuse/domain-server/goal';
-import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import { PriorityLevel } from '@dailyuse/contracts/shared';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 

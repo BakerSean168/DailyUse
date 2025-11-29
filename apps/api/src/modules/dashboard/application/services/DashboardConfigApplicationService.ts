@@ -2,7 +2,6 @@ import type { DashboardContainer } from '../../infrastructure/di/DashboardContai
 import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
 import type { DashboardConfigServerDTO, WidgetConfig } from '@dailyuse/contracts/dashboard';
 
-type WidgetConfigData = WidgetConfigData;
 
 /**
  * Dashboard 配置应用服务

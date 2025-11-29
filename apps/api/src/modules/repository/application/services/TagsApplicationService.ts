@@ -9,8 +9,6 @@ import type { IResourceRepository } from '../../domain/repositories/IResourceRep
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
-type TagStatisticsDto = TagStatisticsDto;
-type TagResourceReferenceDto = TagResourceReferenceDto;
 
 @Injectable()
 export class TagsApplicationService {

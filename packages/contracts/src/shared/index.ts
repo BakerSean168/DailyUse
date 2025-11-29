@@ -8,6 +8,8 @@
 export * from './importance';
 // 重新导出紧急性级别类型
 export * from './urgency';
+// 重新导出优先级级别类型
+export * from './priority';
 // 重新导出共享的类型
 export * from './shared';
 // 重新导出共享的DTOs

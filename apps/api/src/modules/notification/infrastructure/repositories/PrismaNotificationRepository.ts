@@ -5,8 +5,6 @@ import type { NotificationRepository as INotificationRepository } from '@dailyus
 import { Notification, NotificationChannel, NotificationHistory } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type NotificationStatus = NotificationStatus;
-type NotificationCategory = NotificationCategory;
 
 /**
  * Notification 聚合根 Prisma 仓储实现

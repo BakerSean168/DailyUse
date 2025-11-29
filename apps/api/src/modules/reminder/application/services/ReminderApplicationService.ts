@@ -11,7 +11,23 @@ import type {
 } from '@dailyuse/domain-server/reminder';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 import { ReminderQueryApplicationService } from './ReminderQueryApplicationService';
-import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
+import type { 
+  ReminderTemplateServerDTO, 
+  ReminderGroupServerDTO,
+  ReminderTemplateClientDTO,
+  ReminderStatisticsClientDTO,
+  ReminderGroupClientDTO,
+  ReminderType,
+  TriggerType,
+  UpdateReminderTemplateRequest,
+  TriggerConfigServerDTO,
+  ActiveTimeConfigServerDTO,
+  NotificationConfigServerDTO,
+  RecurrenceConfigServerDTO,
+  ActiveHoursConfigServerDTO,
+  UpcomingRemindersResponseDTO,
+  TemplateScheduleStatusDTO,
+} from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { 
   createLogger,
@@ -23,12 +39,6 @@ import {
 } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderApplicationService');
-
-// 类型别名导出（统一在顶部）
-type ReminderTemplateClientDTO = ReminderTemplateClientDTO;
-type ReminderStatisticsClientDTO = ReminderStatisticsClientDTO;
-type ReminderType = ReminderType;
-type TriggerType = TriggerType;
 
 /**
  * Reminder 应用服务
@@ -185,7 +195,7 @@ export class ReminderApplicationService {
    */
   async updateReminderTemplate(
     uuid: string,
-    updates: UpdateReminderTemplateRequestDTO,
+    updates: UpdateReminderTemplateRequest,
   ): Promise<ReminderTemplateClientDTO> {
     const operationId = `update-template-${uuid}-${Date.now()}`;
     

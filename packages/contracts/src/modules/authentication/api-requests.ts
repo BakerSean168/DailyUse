@@ -10,7 +10,7 @@ import { DeviceType, SessionStatus, CredentialType, TwoFactorMethod } from './en
 /**
  * 登录请求
  */
-export interface LoginRequestDTO {
+export interface LoginRequest {
   /** 用户名或邮箱 */
   identifier: string;
   /** 密码 */
@@ -49,7 +49,7 @@ export interface LoginResponseDTO {
 /**
  * 注册请求
  */
-export interface RegisterRequestDTO {
+export interface RegisterRequest {
   /** 用户名 */
   username: string;
   /** 邮箱 */
@@ -72,7 +72,7 @@ export interface RegisterRequestDTO {
 /**
  * 刷新令牌请求
  */
-export interface RefreshTokenRequestDTO {
+export interface RefreshTokenRequest {
   /** 刷新令牌 */
   refreshToken: string;
 }
@@ -94,7 +94,7 @@ export interface RefreshTokenResponseDTO {
 /**
  * 登出请求
  */
-export interface LogoutRequestDTO {
+export interface LogoutRequest {
   /** 会话 ID (可选，如果不提供则登出当前会话) */
   sessionId?: string;
   /** 是否登出所有会话 */
@@ -104,7 +104,7 @@ export interface LogoutRequestDTO {
 /**
  * 修改密码请求
  */
-export interface ChangePasswordRequestDTO {
+export interface ChangePasswordRequest {
   /** 旧密码 */
   oldPassword: string;
   /** 新密码 */
@@ -116,7 +116,7 @@ export interface ChangePasswordRequestDTO {
 /**
  * 重置密码请求
  */
-export interface ResetPasswordRequestDTO {
+export interface ResetPasswordRequest {
   /** 重置令牌 */
   token: string;
   /** 新密码 */
@@ -128,7 +128,7 @@ export interface ResetPasswordRequestDTO {
 /**
  * 忘记密码请求
  */
-export interface ForgotPasswordRequestDTO {
+export interface ForgotPasswordRequest {
   /** 邮箱 */
   email: string;
 }
@@ -138,7 +138,7 @@ export interface ForgotPasswordRequestDTO {
 /**
  * 启用两步验证请求
  */
-export interface Enable2FARequestDTO {
+export interface Enable2FARequest {
   /** 两步验证方法 */
   method: TwoFactorMethod;
   /** 密码确认 */
@@ -160,7 +160,7 @@ export interface Enable2FAResponseDTO {
 /**
  * 验证两步验证码请求
  */
-export interface Verify2FARequestDTO {
+export interface Verify2FARequest {
   /** 验证码 */
   code: string;
   /** 会话 ID */
@@ -170,7 +170,7 @@ export interface Verify2FARequestDTO {
 /**
  * 禁用两步验证请求
  */
-export interface Disable2FARequestDTO {
+export interface Disable2FARequest {
   /** 密码确认 */
   password: string;
   /** 验证码 */
@@ -182,7 +182,7 @@ export interface Disable2FARequestDTO {
 /**
  * 创建 API Key 请求
  */
-export interface CreateApiKeyRequestDTO {
+export interface CreateApiKeyRequest {
   /** API Key 名称 */
   name: string;
   /** 描述 */
@@ -212,7 +212,7 @@ export interface CreateApiKeyResponseDTO {
 /**
  * 撤销 API Key 请求
  */
-export interface RevokeApiKeyRequestDTO {
+export interface RevokeApiKeyRequest {
   /** API Key ID */
   apiKeyId: string;
 }
@@ -237,7 +237,7 @@ export interface ApiKeyListResponseDTO {
 /**
  * 获取活跃会话请求
  */
-export interface GetActiveSessionsRequestDTO {
+export interface GetActiveSessionsRequest {
   /** 页码 */
   page?: number;
   /** 每页数量 */
@@ -268,7 +268,7 @@ export interface ActiveSessionsResponseDTO {
 /**
  * 撤销会话请求
  */
-export interface RevokeSessionRequestDTO {
+export interface RevokeSessionRequest {
   /** 会话 ID */
   sessionId: string;
 }
@@ -276,7 +276,7 @@ export interface RevokeSessionRequestDTO {
 /**
  * 撤销所有会话请求（除当前会话外）
  */
-export interface RevokeAllSessionsRequestDTO {
+export interface RevokeAllSessionsRequest {
   /** 是否包含当前会话 */
   includeCurrent?: boolean;
 }
@@ -286,7 +286,7 @@ export interface RevokeAllSessionsRequestDTO {
 /**
  * 信任设备请求
  */
-export interface TrustDeviceRequestDTO {
+export interface TrustDeviceRequest {
   /** 设备 ID */
   deviceId: string;
   /** 设备名称 */
@@ -296,7 +296,7 @@ export interface TrustDeviceRequestDTO {
 /**
  * 撤销设备信任请求
  */
-export interface RevokeTrustedDeviceRequestDTO {
+export interface RevokeTrustedDeviceRequest {
   /** 设备 ID */
   deviceId: string;
 }

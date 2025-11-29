@@ -3,7 +3,6 @@ import { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
 import { DashboardConfigApplicationService } from '../../application/services/DashboardConfigApplicationService';
 import type { DashboardConfigServerDTO, WidgetConfig } from '@dailyuse/contracts/dashboard';
 
-type WidgetConfigData = WidgetConfigData;
 
 /**
  * Dashboard 配置控制器

@@ -21,9 +21,6 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { NotificationApplicationService } from '../application/NotificationApplicationService';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type CreateNotificationRequest = CreateNotificationRequest;
-type QueryNotificationsRequest = QueryNotificationsRequest;
-type BatchDeleteNotificationsRequest = BatchDeleteNotificationsRequest;
 
 @ApiTags('Notifications')
 @ApiBearerAuth()

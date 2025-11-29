@@ -206,15 +206,15 @@ export type {
 
 // ============ API Requests ============
 export type {
-  CreateReminderTemplateRequestDTO,
-  UpdateReminderTemplateRequestDTO,
-  QueryReminderTemplatesRequestDTO,
+  CreateReminderTemplateRequest,
+  UpdateReminderTemplateRequest,
+  QueryReminderTemplatesRequest,
   ReminderTemplateDTO,
   ReminderTemplateListDTO,
-  CreateReminderGroupRequestDTO,
-  UpdateReminderGroupRequestDTO,
-  SwitchGroupControlModeRequestDTO,
-  BatchGroupTemplatesRequestDTO,
+  CreateReminderGroupRequest,
+  UpdateReminderGroupRequest,
+  SwitchGroupControlModeRequest,
+  BatchGroupTemplatesRequest,
   ReminderGroupDTO,
   ReminderGroupListDTO,
   ReminderHistoryDTO,
@@ -225,6 +225,6 @@ export type {
   BatchOperationResponseDTO,
   TemplateScheduleStatusDTO,
   UpcomingReminderItemDTO,
-  GetUpcomingRemindersRequestDTO,
+  GetUpcomingRemindersRequest,
   UpcomingRemindersResponseDTO,
 } from './api-requests';
