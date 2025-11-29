@@ -230,7 +230,7 @@ export class ReminderQueryApplicationService {
       const container = ReminderContainer.getInstance();
       const reminderRepo = container.getReminderTemplateRepository();
 
-      const reminder = await reminderRepo.findByUuid(templateUuid);
+      const reminder = await reminderRepo.findById(templateUuid);
       if (!reminder) {
         logger.warn('提醒模板不存在', { accountUuid, templateUuid });
         return null;

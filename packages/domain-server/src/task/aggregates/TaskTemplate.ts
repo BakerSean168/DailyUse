@@ -10,7 +10,7 @@ import {
   TaskTemplateStatus,
   RecurrenceEndConditionType,
 } from '@dailyuse/contracts/task';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { ImportanceLevel, UrgencyLevel, PriorityLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot, calculatePriority } from '@dailyuse/utils';
 import {
   TaskTimeConfig,
@@ -1057,9 +1057,9 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   /**
    * 获取优先级 (使用 utils 中的计算器)
    */
-  public getPriority(): { level: 'HIGH' | 'MEDIUM' | 'LOW'; score: number } {
+  public getPriority(): { level: PriorityLevel; score: number } {
     if (this._taskType !== TaskType.ONE_TIME) {
-      return { level: 'LOW', score: 0 };
+      return { level: PriorityLevel.Low, score: 0 };
     }
     const result = calculatePriority({
       importance: this._importance,
@@ -1079,7 +1079,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplateServer {
   /**
    * 获取优先级等级
    */
-  public getPriorityLevel(): 'HIGH' | 'MEDIUM' | 'LOW' {
+  public getPriorityLevel(): PriorityLevel {
     return this.getPriority().level;
   }
 

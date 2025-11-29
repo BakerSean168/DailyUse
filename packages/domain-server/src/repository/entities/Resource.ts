@@ -175,6 +175,108 @@ export class Resource implements ResourceServer {
     this._updatedAt = Date.now();
   }
 
+  /**
+   * 记录访问时间
+   */
+  recordAccess(): void {
+    this._stats.incrementViewCount();
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 检查是否可以编辑
+   */
+  canEdit(): boolean {
+    return this._status !== ResourceStatus.DELETED && this._status !== ResourceStatus.ARCHIVED;
+  }
+
+  /**
+   * 更新资源名称
+   */
+  updateName(name: string): void {
+    if (!name || name.trim().length === 0) {
+      throw new Error('Resource name cannot be empty');
+    }
+    this._name = name.trim();
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新资源描述
+   */
+  updateDescription(description: string | null): void {
+    this._metadata = ResourceMetadata.create({
+      ...this._metadata.toServerDTO(),
+      description,
+    });
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 设置资源分类
+   */
+  setCategory(category: string): void {
+    this._metadata = ResourceMetadata.create({
+      ...this._metadata.toServerDTO(),
+      category,
+    });
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 添加标签
+   */
+  addTag(tag: string): void {
+    const metadataDTO = this._metadata.toServerDTO();
+    const currentTags: string[] = Array.isArray(metadataDTO.tags) ? metadataDTO.tags : [];
+    if (!currentTags.includes(tag)) {
+      this._metadata = ResourceMetadata.create({
+        ...metadataDTO,
+        tags: [...currentTags, tag],
+      });
+      this._updatedAt = Date.now();
+    }
+  }
+
+  /**
+   * 软删除
+   */
+  softDelete(): void {
+    this._status = ResourceStatus.DELETED;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 检查是否为 Markdown 资源
+   */
+  isMarkdown(): boolean {
+    return this._type === ResourceType.MARKDOWN;
+  }
+
+  /**
+   * 切换收藏状态
+   */
+  toggleFavorite(): void {
+    const metadataDTO = this._metadata.toServerDTO();
+    const isFavorite = metadataDTO.isFavorite ?? false;
+    this._metadata = ResourceMetadata.create({
+      ...metadataDTO,
+      isFavorite: !isFavorite,
+    });
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 发布资源（从草稿变为激活状态）
+   */
+  publish(): void {
+    if (this._status !== ResourceStatus.DRAFT) {
+      throw new Error('Only draft resources can be published');
+    }
+    this._status = ResourceStatus.ACTIVE;
+    this._updatedAt = Date.now();
+  }
+
   // ===== 私有辅助方法 =====
   private calculateWordCount(content: string): number {
     // 移除 Markdown 语法，计算纯文本字数

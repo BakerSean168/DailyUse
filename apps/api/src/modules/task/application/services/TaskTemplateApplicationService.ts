@@ -232,7 +232,7 @@ export class TaskTemplateApplicationService {
   private async createScheduleTaskForTemplate(template: TaskTemplate): Promise<void> {
     try {
       const { ScheduleTaskFactory } = await import('@dailyuse/domain-server');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       const { ScheduleContainer } = await import(
         '../../../schedule/infrastructure/di/ScheduleContainer'
       );

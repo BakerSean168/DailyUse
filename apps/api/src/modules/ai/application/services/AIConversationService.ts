@@ -63,7 +63,7 @@ export class AIConversationService {
     includeMessages: boolean = true,
   ): Promise<AIConversationServer | null> {
     try {
-      const conversation = await this.conversationRepository.findById(conversationUuid, {
+      const conversation = await this.conversationRepository.findByUuid(conversationUuid, {
         includeChildren: includeMessages,
       });
       if (!conversation) {
@@ -136,7 +136,7 @@ export class AIConversationService {
   async deleteConversation(conversationUuid: string): Promise<void> {
     try {
       // 检查对话是否存在（接口中无exists方法）
-      const conversation = await this.conversationRepository.findById(conversationUuid);
+      const conversation = await this.conversationRepository.findByUuid(conversationUuid);
       if (!conversation) {
         throw new Error('Conversation not found');
       }
@@ -162,7 +162,7 @@ export class AIConversationService {
   ): Promise<MessageClientDTO> {
     try {
       // 获取对话聚合根
-      const conversation = await this.conversationRepository.findById(conversationUuid, {
+      const conversation = await this.conversationRepository.findByUuid(conversationUuid, {
         includeChildren: true,
       });
       if (!conversation) {
@@ -236,7 +236,7 @@ export class AIConversationService {
     status: ConversationStatus,
   ): Promise<void> {
     try {
-      const conversation = await this.conversationRepository.findById(conversationUuid);
+      const conversation = await this.conversationRepository.findByUuid(conversationUuid);
       if (!conversation) {
         throw new Error('Conversation not found');
       }

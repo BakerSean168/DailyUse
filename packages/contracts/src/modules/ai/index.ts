@@ -140,3 +140,13 @@ export type {
 } from './api-responses/GenerateGoalResponse';
 
 export type { SummarizationResultDTO } from './api-responses/SummarizationResultDTO';
+
+export type {
+  CreateAIProviderRequest,
+  UpdateAIProviderRequest,
+  TestAIProviderConnectionRequest,
+  TestAIProviderConnectionResponse,
+  SetDefaultProviderRequest,
+  RefreshProviderModelsRequest,
+  RefreshProviderModelsResponse,
+} from './api-requests/AIProviderConfigRequest';

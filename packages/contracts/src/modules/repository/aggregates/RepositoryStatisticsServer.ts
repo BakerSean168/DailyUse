@@ -62,6 +62,7 @@ export interface RecalculateStatisticsResponse {
   success: boolean;
   statistics: RepositoryStatisticsServerDTO;
   recalculatedAt: number;
+  message?: string;
 }
 
 /**

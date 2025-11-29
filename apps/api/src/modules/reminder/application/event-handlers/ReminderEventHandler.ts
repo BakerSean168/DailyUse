@@ -294,7 +294,7 @@ export class ReminderEventHandler {
 
     try {
       const { ScheduleTaskFactory } = await import('@dailyuse/domain-server');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
       
       // 创建 ScheduleTaskFactory
@@ -346,7 +346,7 @@ export class ReminderEventHandler {
     
     try {
       const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
@@ -385,7 +385,7 @@ export class ReminderEventHandler {
     
     try {
       const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
@@ -424,7 +424,7 @@ export class ReminderEventHandler {
     
     try {
       const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
@@ -434,7 +434,7 @@ export class ReminderEventHandler {
       
       if (scheduleTasks && scheduleTasks.length > 0) {
         for (const scheduleTask of scheduleTasks) {
-          await repository.delete(scheduleTask.uuid);
+          await repository.deleteByUuid(scheduleTask.uuid);
           
           logger.info('✅ [ReminderEventHandler] 删除了 ScheduleTask', {
             reminderUuid,

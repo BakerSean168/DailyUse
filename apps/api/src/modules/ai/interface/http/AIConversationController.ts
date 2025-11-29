@@ -868,7 +868,7 @@ export class AIConversationController {
           .status(404)
           .json(
             AIConversationController.responseBuilder.error(
-              ResponseCode.RESOURCE_NOT_FOUND,
+              ResponseCode.NOT_FOUND,
               'Task not found',
             ),
           );

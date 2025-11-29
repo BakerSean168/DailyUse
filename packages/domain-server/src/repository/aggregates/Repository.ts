@@ -20,6 +20,18 @@ import { RepositoryStatus, RepositoryType } from '@dailyuse/contracts/repository
 import { AggregateRoot } from '@dailyuse/utils';
 import { RepositoryConfig, RepositoryStats } from '../value-objects';
 
+/**
+ * 创建仓库 DTO
+ */
+export interface CreateRepositoryDTO {
+  accountUuid: string;
+  name: string;
+  type: RepositoryType;
+  path: string;
+  description?: string;
+  config?: Partial<RepositoryConfigServerDTO>;
+}
+
 export class Repository extends AggregateRoot implements RepositoryServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
@@ -146,6 +158,69 @@ export class Repository extends AggregateRoot implements RepositoryServer {
   delete(): void {
     this._status = RepositoryStatus.DELETED;
     this._updatedAt = Date.now();
+  }
+
+  /**
+   * 检查仓库是否属于指定账户
+   */
+  isOwnedBy(accountUuid: string): boolean {
+    return this._accountUuid === accountUuid;
+  }
+
+  /**
+   * 记录访问时间
+   */
+  recordAccess(): void {
+    this._updatedAt = Date.now();
+    // 可以在这里增加访问计数等
+  }
+
+  /**
+   * 更新仓库名称
+   */
+  updateName(name: string): void {
+    if (!name || name.trim().length === 0) {
+      throw new Error('Repository name cannot be empty');
+    }
+    this._name = name.trim();
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新仓库描述
+   */
+  updateDescription(description: string | null): void {
+    this._description = description;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新仓库路径
+   */
+  updatePath(path: string): void {
+    if (!path || path.trim().length === 0) {
+      throw new Error('Repository path cannot be empty');
+    }
+    this._path = path.trim();
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 添加关联目标
+   * 注意：这个方法可能需要在配置中添加 relatedGoals 字段
+   */
+  addRelatedGoal(goalUuid: string): void {
+    // 暂时只更新时间戳，实际实现需要在 config 中添加 relatedGoals 字段
+    this._updatedAt = Date.now();
+    // TODO: 在 RepositoryConfig 中添加 relatedGoals 支持
+  }
+
+  /**
+   * 检查用户是否可以执行指定操作
+   */
+  canPerformOperation(accountUuid: string, _operation: string): boolean {
+    // 基本实现：只有所有者可以执行操作
+    return this.isOwnedBy(accountUuid);
   }
 
   // ===== DTO 转换方法 =====

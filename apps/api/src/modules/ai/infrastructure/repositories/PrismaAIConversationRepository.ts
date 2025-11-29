@@ -86,7 +86,7 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
   /**
    * 根据UUID查找对话
    */
-  async findById(
+  async findByUuid(
     uuid: string,
     options?: { includeChildren?: boolean },
   ): Promise<AIConversationServer | null> {

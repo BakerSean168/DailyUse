@@ -200,10 +200,10 @@ export class WeightSnapshotController {
         {
           snapshots,
           pagination: {
-            total: result.total,
+            total: result.pagination.total,
             page,
             pageSize,
-            totalPages: Math.ceil(result.total / pageSize),
+            totalPages: Math.ceil(result.pagination.total / pageSize),
           },
         },
         'Snapshots retrieved successfully',
@@ -237,10 +237,10 @@ export class WeightSnapshotController {
         {
           snapshots,
           pagination: {
-            total: result.total,
+            total: result.pagination.total,
             page,
             pageSize,
-            totalPages: Math.ceil(result.total / pageSize),
+            totalPages: Math.ceil(result.pagination.total / pageSize),
           },
         },
         'KeyResult snapshots retrieved successfully',

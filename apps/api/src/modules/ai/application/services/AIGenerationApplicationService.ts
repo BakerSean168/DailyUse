@@ -128,7 +128,7 @@ export class AIGenerationApplicationService {
           .findByUuid(providerUuid, accountUuid);
         if (providerConfig) {
           providerName = providerConfig.name;
-          modelUsed = providerConfig.models?.[0]?.modelId || modelUsed;
+          modelUsed = providerConfig.availableModels?.[0]?.id || providerConfig.defaultModel || modelUsed;
         }
       } catch (error) {
         logger.warn('Failed to get custom provider, falling back to default', {
