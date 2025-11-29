@@ -5,7 +5,7 @@ import { GoalRecordApplicationService } from '../../application/services/GoalRec
 import { GoalReviewApplicationService } from '../../application/services/GoalReviewApplicationService';
 import { WeightSnapshotApplicationService } from '../../application/services/WeightSnapshotApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
-import type { GoalServerDTO } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, GoalClientDTO, GoalAggregateViewResponse } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';

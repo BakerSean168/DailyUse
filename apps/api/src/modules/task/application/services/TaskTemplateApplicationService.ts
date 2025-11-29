@@ -21,6 +21,7 @@ import type {
   TaskInstanceServerDTO,
   TaskTemplateClientDTO,
   TaskTemplateHistoryServerDTO,
+  TaskInstanceClientDTO,
 } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';

@@ -4,7 +4,15 @@ import type {
 } from '@dailyuse/domain-server/repository';
 import { RepositoryStatisticsDomainService } from '@dailyuse/domain-server/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
-import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
+import type { 
+  RepositoryServerDTO, 
+  ResourceServerDTO, 
+  FolderServerDTO,
+  RepositoryStatisticsServerDTO,
+  RecalculateStatisticsRequest,
+  RecalculateStatisticsResponse,
+  StatisticsUpdateEvent,
+} from '@dailyuse/contracts/repository';
 
 /**
  * RepositoryStatistics 应用服务

@@ -1,7 +1,7 @@
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 import { GoalRecord } from '@dailyuse/domain-server/goal';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalRecordClientDTO, GoalRecordsResponse, ProgressBreakdown } from '@dailyuse/contracts/goal';
 import { GoalEventPublisher } from './GoalEventPublisher';
 
 /**

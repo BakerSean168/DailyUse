@@ -1,6 +1,7 @@
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
 import { Repository } from '@dailyuse/domain-server/repository';
-import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, RepositoryClientDTO, RepositoryConfigServerDTO, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';
+import { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
 /**

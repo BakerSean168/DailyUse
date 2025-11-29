@@ -1,7 +1,8 @@
 import type { PrismaClient, repository as PrismaRepository } from '@prisma/client';
 import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
 import { Repository } from '@dailyuse/domain-server/repository';
-import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO } from '@dailyuse/contracts/repository';
+import { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
 
 
 export class PrismaRepositoryRepository implements IRepositoryRepository {

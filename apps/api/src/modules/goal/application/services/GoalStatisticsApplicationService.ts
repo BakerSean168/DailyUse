@@ -1,7 +1,17 @@
 import type { IGoalStatisticsRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalStatisticsDomainService } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
+import type { 
+  GoalServerDTO, 
+  GoalClientDTO, 
+  KeyResultServerDTO, 
+  GoalStatisticsClientDTO,
+  InitializeGoalStatisticsRequest,
+  InitializeGoalStatisticsResponse,
+  RecalculateGoalStatisticsRequest,
+  RecalculateGoalStatisticsResponse,
+  GoalStatisticsUpdateEvent,
+} from '@dailyuse/contracts/goal';
 
 /**
  * GoalStatistics 应用服务

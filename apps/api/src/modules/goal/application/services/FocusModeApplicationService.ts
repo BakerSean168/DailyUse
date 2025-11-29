@@ -7,7 +7,7 @@
 
 import type { IFocusModeRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { FocusMode } from '@dailyuse/domain-server/goal';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode, FocusModeClientDTO } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 
 /**

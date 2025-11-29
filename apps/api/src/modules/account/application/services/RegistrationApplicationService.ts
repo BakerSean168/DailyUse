@@ -21,7 +21,7 @@
  * - 其他订阅者（邮件、统计等）：通过事件总线异步通知
  */
 
-import type { AccountServerDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
+import type { AccountServerDTO, AccountClientDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
 import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import { AccountDomainService } from '@dailyuse/domain-server/account';

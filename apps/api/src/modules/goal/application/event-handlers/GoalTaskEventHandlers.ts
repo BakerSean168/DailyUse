@@ -4,7 +4,7 @@
  */
 
 import { eventBus } from '@dailyuse/utils';
-import type { TaskTemplateServerDTO, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateServerDTO, TaskInstanceServerDTO, TaskInstanceCompletedEvent } from '@dailyuse/contracts/task';
 import { GoalRecordApplicationService } from '../services/GoalRecordApplicationService';
 import { createLogger } from '@dailyuse/utils';
 

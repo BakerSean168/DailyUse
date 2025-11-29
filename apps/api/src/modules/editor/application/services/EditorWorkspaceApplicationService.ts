@@ -1,7 +1,18 @@
 import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server/editor';
 import { EditorContainer } from '../../infrastructure/di/EditorContainer';
 import { EditorWorkspaceDomainService } from '@dailyuse/domain-server/editor';
-import type { EditorDocumentClientDTO } from '@dailyuse/contracts/editor';
+import type { 
+  EditorDocumentClientDTO,
+  EditorWorkspaceServerDTO,
+  WorkspaceLayoutServerDTO,
+  WorkspaceSettingsServerDTO,
+  EditorSessionServerDTO,
+  SessionLayoutServerDTO,
+  EditorGroupServerDTO,
+  EditorTabServerDTO,
+  TabViewStateServerDTO,
+} from '@dailyuse/contracts/editor';
+import { ProjectType, SplitDirection, TabType } from '@dailyuse/contracts/editor';
 
 /**
  * EditorWorkspace 应用服务

@@ -4,7 +4,7 @@
  * Story 11.6: 高级搜索功能（property 模式）
  */
 
-import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, SearchRequest, SearchResponse, SearchResultItem, MatchType } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';

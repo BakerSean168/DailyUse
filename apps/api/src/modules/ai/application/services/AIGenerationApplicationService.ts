@@ -28,7 +28,7 @@ import {
   completeTask,
   failTask,
 } from '@dailyuse/domain-server/ai';
-import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIUsageQuotaClientDTO, AIConversationServerDTO, GeneratedGoalDraft, GenerateGoalResponse, TokenUsageServerDTO, SummarizationResultDTO } from '@dailyuse/contracts/ai';
 import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts/ai';
 import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';

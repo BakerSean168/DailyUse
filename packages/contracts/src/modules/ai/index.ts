@@ -138,3 +138,5 @@ export type {
   GenerateGoalResponse,
   GenerateGoalWithKRsResponse,
 } from './api-responses/GenerateGoalResponse';
+
+export type { SummarizationResultDTO } from './api-responses/SummarizationResultDTO';

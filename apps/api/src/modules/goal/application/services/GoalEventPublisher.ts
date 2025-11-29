@@ -2,6 +2,7 @@ import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import type { Goal } from '@dailyuse/domain-server/goal';
 
 /**

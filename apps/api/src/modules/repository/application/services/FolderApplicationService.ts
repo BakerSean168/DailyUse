@@ -1,6 +1,6 @@
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
 import { Folder, FolderHierarchyService } from '@dailyuse/domain-server/repository';
-import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, FolderClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
 /**

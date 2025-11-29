@@ -5,7 +5,7 @@ import type {
 } from '@dailyuse/domain-server/reminder';
 import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
-import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO, ReminderStatisticsServerDTO } from '@dailyuse/contracts/reminder';
 
 /**
  * ReminderStatistics 应用服务

@@ -5,7 +5,8 @@ import type {
   AuthCredentialPrismaTransactionClient as PrismaTransactionClient,
 } from '@dailyuse/domain-server/authentication';
 import { AuthCredential } from '@dailyuse/domain-server/authentication';
-import type { AuthTokens, LoginRequest, RegisterRequest } from '@dailyuse/contracts/authentication';
+import type { LoginRequest, RegisterRequest, AuthCredentialPersistenceDTO } from '@dailyuse/contracts/authentication';
+import { CredentialType } from '@dailyuse/contracts/authentication';
 
 export class PrismaAuthCredentialRepository implements IAuthCredentialRepository {
   constructor(private prisma: PrismaClient) {}

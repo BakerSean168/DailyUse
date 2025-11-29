@@ -7,7 +7,7 @@ import { Resource } from '@dailyuse/domain-server/repository';
 import { ResourceType } from '@dailyuse/contracts/repository';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
-import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 
 /**

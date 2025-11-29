@@ -14,7 +14,7 @@
  * - Repository：数据访问层，接收事务上下文 tx（待更新）
  */
 
-import type { AccountServerDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
+import type { AccountServerDTO, AccountClientDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AccountDomainService } from '@dailyuse/domain-server/account';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';

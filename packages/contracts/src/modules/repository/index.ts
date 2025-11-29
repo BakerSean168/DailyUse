@@ -82,6 +82,16 @@ export type {
   RepositoryClientStatic,
 } from './aggregates/RepositoryClient';
 
+export type {
+  RepositoryStatisticsServerDTO,
+  RepositoryStatisticsPersistenceDTO,
+  RepositoryStatisticsServer,
+  RepositoryStatisticsServerStatic,
+  RecalculateStatisticsRequest,
+  RecalculateStatisticsResponse,
+  StatisticsUpdateEvent,
+} from './aggregates/RepositoryStatisticsServer';
+
 // ============ Entities ============
 export type {
   FolderServerDTO,
