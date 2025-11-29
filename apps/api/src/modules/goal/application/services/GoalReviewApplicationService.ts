@@ -1,6 +1,6 @@
-import type { IGoalRepository } from '@dailyuse/domain-server';
+import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalDomainService } from '@dailyuse/domain-server';
+import { GoalDomainService } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { GoalEventPublisher } from './GoalEventPublisher';
 

@@ -21,13 +21,13 @@ import type {
   AIGenerationValidationService,
   IKnowledgeGenerationTaskRepository,
   KnowledgeGenerationTask,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/ai';
 import {
   createKnowledgeGenerationTask,
   updateTaskProgress,
   completeTask,
   failTask,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/ai';
 import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIConversationServerDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts/ai';
 import { randomUUID } from 'crypto';
@@ -40,8 +40,8 @@ import { QuotaEnforcementService } from '../../infrastructure/QuotaEnforcementSe
 import { getPromptTemplate } from '../../infrastructure/prompts/templates';
 import { SUMMARIZATION_PROMPT, GENERATE_GOAL_PROMPT } from '../../infrastructure/prompts/templates';
 import { MessageRole } from '@dailyuse/contracts/ai';
-import { MessageServer } from '@dailyuse/domain-server';
-import { AIConversationServer } from '@dailyuse/domain-server';
+import { MessageServer } from '@dailyuse/domain-server/ai';
+import { AIConversationServer } from '@dailyuse/domain-server/ai';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
 
 const logger = createLogger('AIGenerationApplicationService');

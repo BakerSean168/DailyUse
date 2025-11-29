@@ -1,4 +1,4 @@
-import type { IRepositoryRepository, IResourceRepository, IFolderRepository } from '@dailyuse/domain-server';
+import type { IRepositoryRepository, IResourceRepository, IFolderRepository } from '@dailyuse/domain-server/repository';
 import { PrismaRepositoryRepository } from '../repositories/PrismaRepositoryRepository';
 import { PrismaResourceRepository } from '../repositories/PrismaResourceRepository';
 import { PrismaFolderRepository } from '../repositories/PrismaFolderRepository';

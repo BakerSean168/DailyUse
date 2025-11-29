@@ -11,7 +11,7 @@
  * 注意：此服务重构自 DocumentApplicationService
  */
 
-import { Resource, CreateResourceDTO } from '@dailyuse/domain-server';
+import { Resource, CreateResourceDTO } from '@dailyuse/domain-server/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { ResourceType } from '@dailyuse/contracts/repository';
 import type { IResourceRepository } from '../domain/IResourceRepository';

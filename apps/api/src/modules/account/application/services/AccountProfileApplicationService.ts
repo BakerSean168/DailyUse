@@ -15,8 +15,8 @@
  */
 
 import type { AccountServerDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
-import type { IAccountRepository, Account } from '@dailyuse/domain-server';
-import { AccountDomainService } from '@dailyuse/domain-server';
+import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
+import { AccountDomainService } from '@dailyuse/domain-server/account';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
 import prisma from '../../../../shared/db/prisma';
 import { eventBus, createLogger } from '@dailyuse/utils';

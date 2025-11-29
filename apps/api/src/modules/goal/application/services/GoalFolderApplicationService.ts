@@ -1,7 +1,7 @@
-import type { IGoalFolderRepository, IGoalRepository } from '@dailyuse/domain-server';
+import type { IGoalFolderRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalFolderDomainService, GoalFolder, Goal } from '@dailyuse/domain-server';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import { GoalFolderDomainService, GoalFolder, Goal } from '@dailyuse/domain-server/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 /**
  * GoalFolder 应用服务

@@ -3,8 +3,8 @@ import type { authSession as PrismaAuthSession } from '@prisma/client';
 import type {
   IAuthSessionRepository,
   AuthSessionPrismaTransactionClient as PrismaTransactionClient,
-} from '@dailyuse/domain-server';
-import { AuthSession } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/authentication';
+import { AuthSession } from '@dailyuse/domain-server/authentication';
 import type { AuthTokens, LoginRequest, RegisterRequest } from '@dailyuse/contracts/authentication';
 
 export class PrismaAuthSessionRepository implements IAuthSessionRepository {

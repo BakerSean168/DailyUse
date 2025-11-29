@@ -14,7 +14,7 @@
  */
 
 import { createLogger } from '@dailyuse/utils';
-import { ScheduleTask } from '@dailyuse/domain-server';
+import { ScheduleTask } from '@dailyuse/domain-server/schedule';
 import { PrismaScheduleTaskRepository } from '../../infrastructure/repositories/PrismaScheduleTaskRepository';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleMonitor } from '../../infrastructure/monitoring/ScheduleMonitor';

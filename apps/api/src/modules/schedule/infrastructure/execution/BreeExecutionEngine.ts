@@ -18,7 +18,7 @@ import {
   ScheduleTask,
   type IScheduleExecutionRepository,
   ScheduleExecution,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**

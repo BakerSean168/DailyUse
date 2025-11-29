@@ -2,7 +2,7 @@ import type {
   ITaskInstanceRepository,
   ITaskTemplateRepository,
   TaskFilters,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
 import {
   TaskTemplate,
   TaskInstance,
@@ -10,7 +10,7 @@ import {
   TaskTimeConfig,
   RecurrenceRule,
   TaskReminderConfig,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 import { TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
 import type {

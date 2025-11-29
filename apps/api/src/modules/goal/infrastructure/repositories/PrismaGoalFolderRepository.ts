@@ -1,6 +1,6 @@
 import type { PrismaClient, goalFolder as PrismaGoalFolder } from '@prisma/client';
-import type { IGoalFolderRepository } from '@dailyuse/domain-server';
-import { GoalFolder } from '@dailyuse/domain-server';
+import type { IGoalFolderRepository } from '@dailyuse/domain-server/goal';
+import { GoalFolder } from '@dailyuse/domain-server/goal';
 import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 

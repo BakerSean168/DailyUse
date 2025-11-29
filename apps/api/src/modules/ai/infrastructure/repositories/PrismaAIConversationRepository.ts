@@ -9,8 +9,8 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import type { IAIConversationRepository } from '@dailyuse/domain-server';
-import { AIConversationServer, MessageServer } from '@dailyuse/domain-server';
+import type { IAIConversationRepository } from '@dailyuse/domain-server/ai';
+import { AIConversationServer, MessageServer } from '@dailyuse/domain-server/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 

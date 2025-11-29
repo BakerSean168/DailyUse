@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
-import type { NotificationRepository as INotificationTemplateRepository } from '@dailyuse/domain-server';
-import { NotificationTemplate } from '@dailyuse/domain-server';
+import type { NotificationRepository as INotificationTemplateRepository } from '@dailyuse/domain-server/notification';
+import { NotificationTemplate } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
 type NotificationCategory = NotificationCategory;

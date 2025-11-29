@@ -10,7 +10,7 @@
  * 架构位置：应用层（Application Layer）
  */
 
-import { ScheduleTask } from '@dailyuse/domain-server';
+import { ScheduleTask } from '@dailyuse/domain-server/schedule';
 import { BreeExecutionEngine } from '../../infrastructure/execution/BreeExecutionEngine';
 import { ScheduleContainer } from '../../infrastructure/di/ScheduleContainer';
 import path from 'path';

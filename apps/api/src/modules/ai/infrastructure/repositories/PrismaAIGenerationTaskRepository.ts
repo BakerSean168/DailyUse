@@ -12,7 +12,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import type { IAIGenerationTaskRepository } from '@dailyuse/domain-server';
+import type { IAIGenerationTaskRepository } from '@dailyuse/domain-server/ai';
 import type { AIGenerationTaskServerDTO } from '@dailyuse/contracts/ai';
 import { GenerationTaskType, TaskStatus } from '@dailyuse/contracts/ai';
 

@@ -1,5 +1,5 @@
-import type { IScheduleRepository } from '@dailyuse/domain-server';
-import { Schedule } from '@dailyuse/domain-server';
+import type { IScheduleRepository } from '@dailyuse/domain-server/schedule';
+import { Schedule } from '@dailyuse/domain-server/schedule';
 import type { ScheduleClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
 import { ScheduleContainer } from '../../infrastructure/di/ScheduleContainer';
 import { createLogger } from '@dailyuse/utils';

@@ -9,7 +9,7 @@
  * 4. 事务管理
  */
 
-import { Repository, CreateRepositoryDTO } from '@dailyuse/domain-server';
+import { Repository, CreateRepositoryDTO } from '@dailyuse/domain-server/repository';
 import type { RepositoryClientDTO, RepositoryServerDTO } from '@dailyuse/contracts/repository';
 import type { IRepositoryRepository } from '../domain/IRepositoryRepository';
 

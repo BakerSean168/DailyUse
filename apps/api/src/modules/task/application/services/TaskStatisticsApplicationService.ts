@@ -2,8 +2,8 @@ import type {
   ITaskStatisticsRepository,
   ITaskTemplateRepository,
   ITaskInstanceRepository,
-} from '@dailyuse/domain-server';
-import { TaskStatistics } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
+import { TaskStatistics } from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 import type * as TaskContracts from '@dailyuse/contracts/task';
 

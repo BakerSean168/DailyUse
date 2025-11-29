@@ -2,8 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import type {
   IAccountRepository,
   AccountPrismaTransactionClient as PrismaTransactionClient,
-} from '@dailyuse/domain-server';
-import { Account } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/account';
+import { Account } from '@dailyuse/domain-server/account';
 import type { AccountServerDTO } from '@dailyuse/contracts/account';
 
 /**

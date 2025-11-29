@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { Repository } from '@dailyuse/domain-server';
+import { Repository } from '@dailyuse/domain-server/repository';
 import type { IRepositoryRepository } from '../domain/IRepositoryRepository';
 import type { RepositoryPersistenceDTO } from '@dailyuse/contracts/repository';
 

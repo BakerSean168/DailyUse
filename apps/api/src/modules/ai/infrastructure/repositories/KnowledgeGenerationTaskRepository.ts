@@ -7,7 +7,7 @@ import type { PrismaClient } from '@prisma/client';
 import type {
   IKnowledgeGenerationTaskRepository,
   KnowledgeGenerationTask,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/ai';
 
 export class KnowledgeGenerationTaskRepository implements IKnowledgeGenerationTaskRepository {
   constructor(private prisma: PrismaClient) {}

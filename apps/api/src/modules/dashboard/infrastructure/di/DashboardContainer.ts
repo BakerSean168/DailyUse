@@ -1,9 +1,15 @@
 import type {
   ITaskStatisticsRepository,
+} from '@dailyuse/domain-server/task';
+import type {
   IGoalStatisticsRepository,
+} from '@dailyuse/domain-server/goal';
+import type {
   IReminderStatisticsRepository,
+} from '@dailyuse/domain-server/reminder';
+import type {
   IScheduleStatisticsRepository,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import { TaskContainer } from '@/modules/task/infrastructure/di/TaskContainer';
 import { GoalContainer } from '@/modules/goal/infrastructure/di/GoalContainer';
 import { ReminderContainer } from '@/modules/reminder/infrastructure/di/ReminderContainer';

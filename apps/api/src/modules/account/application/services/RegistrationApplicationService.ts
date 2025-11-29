@@ -22,8 +22,10 @@
  */
 
 import type { AccountServerDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
-import type { IAccountRepository, IAuthCredentialRepository } from '@dailyuse/domain-server';
-import { AccountDomainService, AuthenticationDomainService } from '@dailyuse/domain-server';
+import type { IAccountRepository } from '@dailyuse/domain-server/account';
+import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
+import { AccountDomainService } from '@dailyuse/domain-server/account';
+import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
 import { AuthenticationContainer } from '../../../authentication/infrastructure/di/AuthenticationContainer';
 import prisma from '../../../../shared/db/prisma';

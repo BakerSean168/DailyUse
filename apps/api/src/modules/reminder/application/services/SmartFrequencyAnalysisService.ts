@@ -1,5 +1,5 @@
-import type { IReminderTemplateRepository } from '@dailyuse/domain-server';
-import { ResponseMetrics } from '@dailyuse/domain-server';
+import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
+import { ResponseMetrics } from '@dailyuse/domain-server/reminder';
 import type { PrismaClient } from '@prisma/client';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 

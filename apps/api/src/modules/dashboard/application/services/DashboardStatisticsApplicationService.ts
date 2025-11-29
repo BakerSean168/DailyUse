@@ -13,16 +13,28 @@
 
 import type {
   ITaskStatisticsRepository,
+} from '@dailyuse/domain-server/task';
+import type {
   IGoalStatisticsRepository,
+} from '@dailyuse/domain-server/goal';
+import type {
   IReminderStatisticsRepository,
+} from '@dailyuse/domain-server/reminder';
+import type {
   IScheduleStatisticsRepository,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import {
   TaskStatistics,
+} from '@dailyuse/domain-server/task';
+import {
   GoalStatistics,
+} from '@dailyuse/domain-server/goal';
+import {
   ReminderStatistics,
+} from '@dailyuse/domain-server/reminder';
+import {
   ScheduleStatistics,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import type {
   DashboardStatisticsClientDTO,
 } from '@dailyuse/contracts/dashboard';

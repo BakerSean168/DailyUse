@@ -16,7 +16,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import { randomUUID } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import { ScheduleTask } from '@dailyuse/domain-server';
+import { ScheduleTask } from '@dailyuse/domain-server/schedule';
 import { SourceModule, Timezone } from '@dailyuse/contracts/schedule';
 import type { ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleApplicationService } from '../ScheduleApplicationService';

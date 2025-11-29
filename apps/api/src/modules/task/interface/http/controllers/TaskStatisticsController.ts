@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { TaskStatisticsApplicationService } from '../../../application/services/TaskStatisticsApplicationService';
 import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
-import { isTaskError } from '@dailyuse/domain-server';
+import { isTaskError } from '@dailyuse/domain-server/task';
 
 // 创建 logger 实例
 const logger = createLogger('TaskStatisticsController');

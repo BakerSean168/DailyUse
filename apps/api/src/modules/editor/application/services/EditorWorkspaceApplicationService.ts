@@ -1,6 +1,6 @@
-import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server';
+import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server/editor';
 import { EditorContainer } from '../../infrastructure/di/EditorContainer';
-import { EditorWorkspaceDomainService } from '@dailyuse/domain-server';
+import { EditorWorkspaceDomainService } from '@dailyuse/domain-server/editor';
 import type { EditorDocumentClientDTO } from '@dailyuse/contracts/editor';
 
 /**

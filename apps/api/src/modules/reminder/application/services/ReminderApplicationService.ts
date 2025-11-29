@@ -3,12 +3,12 @@ import {
   ReminderGroup,
   ReminderTemplateBusinessService,
   ReminderGroupBusinessService,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/reminder';
 import type {
   IReminderTemplateRepository,
   IReminderGroupRepository,
   IReminderStatisticsRepository,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/reminder';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 import { ReminderQueryApplicationService } from './ReminderQueryApplicationService';
 import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';

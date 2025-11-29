@@ -12,7 +12,7 @@ import type {
   ITaskDependencyRepository,
   ITaskTemplateRepository,
   TaskDependencyService,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 import type {
   TaskDependencyServerDTO,

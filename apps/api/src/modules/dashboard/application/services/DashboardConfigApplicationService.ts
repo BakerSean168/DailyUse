@@ -1,5 +1,5 @@
 import type { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
-import { DashboardConfig } from '@dailyuse/domain-server';
+import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
 import type { DashboardConfigServerDTO, WidgetConfig } from '@dailyuse/contracts/dashboard';
 
 type WidgetConfigData = WidgetConfigData;

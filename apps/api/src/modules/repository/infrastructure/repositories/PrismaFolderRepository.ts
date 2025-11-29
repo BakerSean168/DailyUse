@@ -1,6 +1,6 @@
 import type { PrismaClient, folder as PrismaFolder } from '@prisma/client';
-import type { IFolderRepository } from '@dailyuse/domain-server';
-import { Folder } from '@dailyuse/domain-server';
+import type { IFolderRepository } from '@dailyuse/domain-server/repository';
+import { Folder } from '@dailyuse/domain-server/repository';
 
 export class PrismaFolderRepository implements IFolderRepository {
   constructor(private prisma: PrismaClient) {}

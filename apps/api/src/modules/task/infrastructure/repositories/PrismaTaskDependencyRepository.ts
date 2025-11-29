@@ -5,7 +5,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import type { ITaskDependencyRepository } from '@dailyuse/domain-server';
+import type { ITaskDependencyRepository } from '@dailyuse/domain-server/task';
 import type {
   TaskDependencyServerDTO,
   CreateTaskDependencyRequest,

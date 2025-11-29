@@ -1,7 +1,7 @@
 // @ts-nocheck
-import type { IUserSettingRepository } from '@dailyuse/domain-server';
+import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { SettingContainer } from '../../infrastructure/di/SettingContainer';
-import { UserSetting } from '@dailyuse/domain-server';
+import { UserSetting } from '@dailyuse/domain-server/setting';
 import type { UserSettingServerDTO } from '@dailyuse/contracts/setting';
 
 /**

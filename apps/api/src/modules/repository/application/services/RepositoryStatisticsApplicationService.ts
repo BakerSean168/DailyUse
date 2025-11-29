@@ -1,8 +1,8 @@
 import type {
   IRepositoryStatisticsRepository,
   IRepositoryRepository,
-} from '@dailyuse/domain-server';
-import { RepositoryStatisticsDomainService } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/repository';
+import { RepositoryStatisticsDomainService } from '@dailyuse/domain-server/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 

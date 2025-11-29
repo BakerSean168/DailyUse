@@ -2,7 +2,7 @@ import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
-import type { Goal } from '@dailyuse/domain-server';
+import type { Goal } from '@dailyuse/domain-server/goal';
 
 /**
  * Goal 领域事件发布器

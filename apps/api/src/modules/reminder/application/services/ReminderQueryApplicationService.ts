@@ -14,7 +14,7 @@
  */
 
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
-import { UpcomingReminderCalculationService, UpcomingReminderDTO } from '@dailyuse/domain-server';
+import { UpcomingReminderCalculationService, UpcomingReminderDTO } from '@dailyuse/domain-server/reminder';
 import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
 import { createLogger } from '@dailyuse/utils';
 

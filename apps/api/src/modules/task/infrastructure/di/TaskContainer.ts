@@ -3,8 +3,8 @@ import type {
   ITaskTemplateRepository,
   ITaskDependencyRepository,
   ITaskStatisticsRepository,
-} from '@dailyuse/domain-server';
-import { TaskDependencyService } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
+import { TaskDependencyService } from '@dailyuse/domain-server/task';
 import { PrismaTaskInstanceRepository } from '../repositories/PrismaTaskInstanceRepository';
 import { PrismaTaskTemplateRepository } from '../repositories/PrismaTaskTemplateRepository';
 import { PrismaTaskDependencyRepository } from '../repositories/PrismaTaskDependencyRepository';

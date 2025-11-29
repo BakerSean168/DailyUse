@@ -15,14 +15,11 @@
  * - DomainService 不注入 Repository，由 ApplicationService 查询后传入
  */
 
-import type { IFocusSessionRepository, IGoalRepository } from '@dailyuse/domain-server';
-import { FocusSessionDomainService, FocusSession, Goal } from '@dailyuse/domain-server';
+import type { IFocusSessionRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
+import { FocusSessionDomainService, FocusSession, Goal } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
-
-type FocusSessionClientDTO = FocusSessionClientDTO;
-type FocusSessionStatus = FocusSessionStatus;
+import { GoalStatus, GoalPriority, FocusSessionStatus } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest, FocusSessionClientDTO } from '@dailyuse/contracts/goal';
 
 /**
  * FocusSessionApplicationService

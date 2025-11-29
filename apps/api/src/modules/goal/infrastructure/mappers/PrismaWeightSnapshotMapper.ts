@@ -5,7 +5,7 @@
  * 负责在 Domain 对象和 Prisma 模型之间进行转换。
  */
 
-import { KeyResultWeightSnapshot } from '@dailyuse/domain-server';
+import { KeyResultWeightSnapshot } from '@dailyuse/domain-server/goal';
 import type { Prisma } from '@prisma/client';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 

@@ -3,7 +3,7 @@
  * Resource 实体的 Prisma 仓储实现
  */
 import { PrismaClient } from '@prisma/client';
-import { Resource } from '@dailyuse/domain-server';
+import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 

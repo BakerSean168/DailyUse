@@ -3,7 +3,7 @@
  * 仓储仓储接口 - DDD Repository Pattern
  */
 
-import type { Repository } from '@dailyuse/domain-server';
+import type { Repository } from '@dailyuse/domain-server/repository';
 
 export interface IRepositoryRepository {
   /**

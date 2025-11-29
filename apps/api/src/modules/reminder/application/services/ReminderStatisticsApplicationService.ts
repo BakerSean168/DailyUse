@@ -2,8 +2,8 @@ import type {
   IReminderStatisticsRepository,
   IReminderTemplateRepository,
   IReminderGroupRepository,
-} from '@dailyuse/domain-server';
-import { ReminderStatistics } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/reminder';
+import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
 

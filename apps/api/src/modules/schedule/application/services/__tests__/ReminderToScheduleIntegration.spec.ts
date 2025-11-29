@@ -31,7 +31,7 @@ import {
   ScheduleStrategyNotFoundError,
   SourceEntityNoScheduleRequiredError,
   ScheduleTaskCreationError,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 
 const logger = createLogger('ReminderToScheduleIntegrationTest');
 

@@ -3,7 +3,7 @@
  * 资源仓储接口 - DDD Repository Pattern
  */
 
-import type { Resource } from '@dailyuse/domain-server';
+import type { Resource } from '@dailyuse/domain-server/repository';
 import { ResourceType, ResourceStatus } from '@dailyuse/contracts/repository';
 
 export interface FindResourceOptions {

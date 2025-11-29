@@ -13,8 +13,8 @@
  * - AIConversationServer（领域聚合根）
  */
 
-import type { IAIConversationRepository } from '@dailyuse/domain-server';
-import { AIConversationServer, MessageServer } from '@dailyuse/domain-server';
+import type { IAIConversationRepository } from '@dailyuse/domain-server/ai';
+import { AIConversationServer, MessageServer } from '@dailyuse/domain-server/ai';
 import type { AIConversationServerDTO, AIConversationClientDTO, MessageClientDTO } from '@dailyuse/contracts/ai';
 import { MessageRole, ConversationStatus } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';

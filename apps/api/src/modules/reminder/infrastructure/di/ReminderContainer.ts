@@ -4,13 +4,13 @@ import type {
   IReminderGroupRepository,
   IReminderStatisticsRepository,
   ReminderTemplateControlService,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/reminder';
 import {
   PrismaReminderTemplateRepository,
   PrismaReminderGroupRepository,
   PrismaReminderStatisticsRepository,
 } from '../repositories';
-import { ReminderTemplateControlService as ControlServiceImpl } from '@dailyuse/domain-server';
+import { ReminderTemplateControlService as ControlServiceImpl } from '@dailyuse/domain-server/reminder';
 
 /**
  * Reminder 模块依赖注入容器

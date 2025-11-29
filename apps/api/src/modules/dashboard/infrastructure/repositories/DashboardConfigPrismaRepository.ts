@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
-import { DashboardConfig } from '@dailyuse/domain-server';
-import type { IDashboardConfigRepository } from '@dailyuse/domain-server';
+import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
+import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import type { DashboardConfigServerDTO, WidgetConfig } from '@dailyuse/contracts/dashboard';
 
 type DashboardConfigPersistenceDTO = DashboardConfigPersistenceDTO;

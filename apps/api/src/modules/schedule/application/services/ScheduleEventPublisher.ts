@@ -1,11 +1,11 @@
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
-import type { ScheduleTask } from '@dailyuse/domain-server';
+import type { ScheduleTask } from '@dailyuse/domain-server/schedule';
 import {
   ScheduleTaskFactory,
   ScheduleStrategyNotFoundError,
   SourceEntityNoScheduleRequiredError,
   ScheduleTaskCreationError,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import { ScheduleApplicationService } from './ScheduleApplicationService';
 import type { GoalServerDTO } from '@dailyuse/contracts/goal';
 import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';

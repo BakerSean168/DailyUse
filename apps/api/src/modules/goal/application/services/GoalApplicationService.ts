@@ -1,11 +1,10 @@
-import type { IGoalRepository } from '@dailyuse/domain-server';
+import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalDomainService, Goal } from '@dailyuse/domain-server';
-import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { GoalEventPublisher } from './GoalEventPublisher';
 import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
-
-type GoalStatisticsClientDTO = GoalStatisticsClientDTO;
 
 /**
  * Goal 应用服务

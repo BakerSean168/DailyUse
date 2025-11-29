@@ -3,14 +3,20 @@ import { DashboardStatisticsApplicationService } from '../DashboardStatisticsApp
 import { DashboardContainer } from '../../../infrastructure/di/DashboardContainer';
 import type {
   ITaskStatisticsRepository,
-  IGoalStatisticsRepository,
-  IReminderStatisticsRepository,
-  IScheduleStatisticsRepository,
   TaskStatistics,
+} from '@dailyuse/domain-server/task';
+import type {
+  IGoalStatisticsRepository,
   GoalStatistics,
+} from '@dailyuse/domain-server/goal';
+import type {
+  IReminderStatisticsRepository,
   ReminderStatistics,
+} from '@dailyuse/domain-server/reminder';
+import type {
+  IScheduleStatisticsRepository,
   ScheduleStatistics,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import type { StatisticsCacheService } from '../../../infrastructure/services/StatisticsCacheService';
 import type { WidgetConfig, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 

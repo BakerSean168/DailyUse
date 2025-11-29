@@ -15,8 +15,8 @@ import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/respons
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
-import type { AIGenerationResult } from '@dailyuse/domain-server';
-import { QuotaExceededError, AIGenerationValidationService } from '@dailyuse/domain-server';
+import type { AIGenerationResult } from '@dailyuse/domain-server/ai';
+import { QuotaExceededError, AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import { z } from 'zod';
 
 const logger = createLogger('AIConversationController');

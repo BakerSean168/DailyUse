@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { ReminderGroup } from '@dailyuse/domain-server';
-import type { IReminderGroupRepository } from '@dailyuse/domain-server';
+import { ReminderGroup } from '@dailyuse/domain-server/reminder';
+import type { IReminderGroupRepository } from '@dailyuse/domain-server/reminder';
 import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
 
 /**

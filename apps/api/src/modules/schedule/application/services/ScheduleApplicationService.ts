@@ -1,8 +1,8 @@
 import type {
   IScheduleTaskRepository,
   IScheduleStatisticsRepository,
-} from '@dailyuse/domain-server';
-import { ScheduleDomainService } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
+import { ScheduleDomainService } from '@dailyuse/domain-server/schedule';
 import type {
   ScheduleTaskClientDTO,
   ScheduleConfigServerDTO,

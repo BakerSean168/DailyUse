@@ -14,13 +14,15 @@
 
 import type {
   IAccountRepository,
+  Account,
+} from '@dailyuse/domain-server/account';
+import type {
   IAuthCredentialRepository,
   IAuthSessionRepository,
-  Account,
   AuthCredential,
   AuthSession,
-} from '@dailyuse/domain-server';
-import { AuthenticationDomainService } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/authentication';
+import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
 import { AuthenticationContainer } from '../../../authentication/infrastructure/di/AuthenticationContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';

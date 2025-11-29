@@ -1,6 +1,6 @@
 import type { PrismaClient, focusSession as PrismaFocusSession } from '@prisma/client';
-import type { IFocusSessionRepository } from '@dailyuse/domain-server';
-import { FocusSession } from '@dailyuse/domain-server';
+import type { IFocusSessionRepository } from '@dailyuse/domain-server/goal';
+import { FocusSession } from '@dailyuse/domain-server/goal';
 import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 

@@ -9,8 +9,8 @@
  * - DTO 转换
  */
 
-import type { IAIProviderConfigRepository } from '@dailyuse/domain-server';
-import { AIProviderConfigServer } from '@dailyuse/domain-server';
+import type { IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
+import { AIProviderConfigServer } from '@dailyuse/domain-server/ai';
 import type { AIProviderConfigServerDTO, AIProviderConfigClientDTO, AIModelInfo } from '@dailyuse/contracts/ai';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';

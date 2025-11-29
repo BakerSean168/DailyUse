@@ -2,8 +2,8 @@ import type {
   ITaskInstanceRepository,
   ITaskTemplateRepository,
   TaskInstance,
-} from '@dailyuse/domain-server';
-import { TaskExpirationService } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
+import { TaskExpirationService } from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 import type * as TaskContracts from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';

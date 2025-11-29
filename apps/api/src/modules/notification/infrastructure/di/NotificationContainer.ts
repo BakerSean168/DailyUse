@@ -3,7 +3,7 @@ import type {
   NotificationRepository as INotificationRepository,
   NotificationRepository as INotificationTemplateRepository,
   INotificationPreferenceRepository,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/notification';
 import { PrismaNotificationRepository } from '../repositories/PrismaNotificationRepository';
 import { PrismaNotificationTemplateRepository } from '../repositories/PrismaNotificationTemplateRepository';
 import { PrismaNotificationPreferenceRepository } from '../repositories/PrismaNotificationPreferenceRepository';

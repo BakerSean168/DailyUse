@@ -13,7 +13,7 @@
  */
 
 import type { PrismaClient } from '@prisma/client';
-import type { IAIProviderConfigRepository } from '@dailyuse/domain-server';
+import type { IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
 import type { AIProviderConfigServerDTO, AIModelInfo } from '@dailyuse/contracts/ai';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import crypto from 'crypto';

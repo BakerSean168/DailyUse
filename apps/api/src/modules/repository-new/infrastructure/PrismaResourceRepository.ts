@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { Resource } from '@dailyuse/domain-server';
+import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository, FindResourceOptions } from '../domain/IResourceRepository';
 import type { ResourcePersistenceDTO } from '@dailyuse/contracts/repository';
 import { ResourceType } from '@dailyuse/contracts/repository';

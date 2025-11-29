@@ -6,7 +6,7 @@
 
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagServerDTO } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
-import { Resource } from '@dailyuse/domain-server';
+import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
 
 type SearchRequest = SearchRequest;

@@ -14,7 +14,7 @@
 
 import cron from 'node-cron';
 import { createLogger } from '@dailyuse/utils';
-import { ScheduleTask } from '@dailyuse/domain-server';
+import { ScheduleTask } from '@dailyuse/domain-server/schedule';
 import { ScheduleTaskExecutor } from '../../application/services/ScheduleTaskExecutor';
 import { ScheduleMonitor } from '../monitoring/ScheduleMonitor';
 

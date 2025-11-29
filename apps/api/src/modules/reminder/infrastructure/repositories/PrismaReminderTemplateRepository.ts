@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
-import type { IReminderTemplateRepository } from '@dailyuse/domain-server';
-import { ReminderTemplate, ReminderHistory } from '@dailyuse/domain-server';
+import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
+import { ReminderTemplate, ReminderHistory } from '@dailyuse/domain-server/reminder';
 import { ReminderTemplateStatus } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
 

@@ -4,7 +4,7 @@ import type {
   IFocusSessionRepository,
   IGoalStatisticsRepository,
   IFocusModeRepository,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/goal';
 import { PrismaGoalRepository } from '../repositories/PrismaGoalRepository';
 import { PrismaFocusSessionRepository } from '../repositories/PrismaFocusSessionRepository';
 import { PrismaGoalStatisticsRepository } from '../repositories/PrismaGoalStatisticsRepository';

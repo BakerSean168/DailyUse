@@ -2,7 +2,7 @@
 import {
   NotificationDomainService,
   NotificationPreferenceDomainService,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/notification';
 import { NotificationContainer } from '../../infrastructure/di/NotificationContainer';
 import { createLogger } from '@dailyuse/utils';
 import type {
@@ -38,7 +38,7 @@ import type {
   INotificationPreferenceRepository,
   NotificationRepository as INotificationRepository,
   NotificationRepository as INotificationTemplateRepository,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/notification';
 
 // 枚举别名用于比较
 const ChannelTypeEnum = NotificationChannelType;

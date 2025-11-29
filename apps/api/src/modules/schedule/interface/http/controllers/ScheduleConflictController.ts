@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
 import type { ScheduleServerDTO } from '@dailyuse/contracts/schedule';
 import { ResolutionStrategy } from '@dailyuse/contracts/schedule';
-import { Schedule as DomainSchedule } from '@dailyuse/domain-server';
+import { Schedule as DomainSchedule } from '@dailyuse/domain-server/schedule';
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleConflictDetectionService } from '../../../application/services/ScheduleConflictDetectionService';
 import { ScheduleContainer } from '../../../infrastructure/di/ScheduleContainer';
