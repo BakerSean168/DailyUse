@@ -112,7 +112,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 import { useFocusMode } from '../composables/useFocusMode';
 import { createLogger } from '@dailyuse/utils';
 

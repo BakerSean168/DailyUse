@@ -24,7 +24,7 @@ export class ScheduleApiClient {
    * 创建调度任务
    */
   async createTask(
-    request: CreateScheduleTaskRequestDTO,
+    request: CreateScheduleTaskRequest,
   ): Promise<ScheduleTaskClientDTO> {
     const data = await apiClient.post(`${this.baseUrl}/tasks`, request);
     return data;
@@ -34,7 +34,7 @@ export class ScheduleApiClient {
    * 批量创建调度任务
    */
   async createTasksBatch(
-    tasks: CreateScheduleTaskRequestDTO[],
+    tasks: CreateScheduleTaskRequest[],
   ): Promise<ScheduleTaskClientDTO[]> {
     const data = await apiClient.post(`${this.baseUrl}/tasks/batch`, { tasks });
     return data;
@@ -217,7 +217,7 @@ export class ScheduleApiClient {
    * @returns 创建的日程和冲突检测结果
    */
   async createSchedule(
-    request: CreateScheduleRequestDTO,
+    request: CreateScheduleRequest,
   ): Promise<{
     schedule: ScheduleClientDTO;
     conflicts?: ConflictDetectionResult;

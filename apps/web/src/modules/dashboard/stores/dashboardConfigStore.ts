@@ -1,12 +1,9 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfig, DashboardConfigClientDTO, WidgetConfigData, WidgetConfigDTO } from '@dailyuse/contracts/dashboard';
 import type { WidgetMetadata } from '../infrastructure/types/WidgetMetadata';
 import { DashboardConfigApiClient } from '../infrastructure/api/DashboardConfigApiClient';
 import { widgetRegistry } from '../infrastructure/WidgetRegistry';
-
-// 本地类型别名（无需导出，web 应用不生成 .d.ts）
-type WidgetConfig = WidgetConfigDTO;
 
 /**
  * Dashboard Widget 配置管理 Store

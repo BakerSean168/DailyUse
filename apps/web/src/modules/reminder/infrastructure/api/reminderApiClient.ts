@@ -22,14 +22,14 @@ export const reminderApiClient = {
    * 创建提醒模板
    */
   async createTemplate(
-    data: CreateReminderTemplateRequestDTO,
+    data: CreateReminderTemplateRequest,
   ): Promise<ReminderTemplateClientDTO> {
     return apiClient.post<ReminderTemplateClientDTO>('/reminders/templates', data);
   },
 
   // 别名方法（兼容应用服务）
   createReminderTemplate(
-    data: CreateReminderTemplateRequestDTO,
+    data: CreateReminderTemplateRequest,
   ): Promise<ReminderTemplateClientDTO> {
     return this.createTemplate(data);
   },

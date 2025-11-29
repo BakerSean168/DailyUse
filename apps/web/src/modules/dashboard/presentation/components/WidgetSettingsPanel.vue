@@ -113,7 +113,7 @@ import { computed, ref, watch } from 'vue';
 import { useDashboardConfigStore } from '@/modules/dashboard/stores/dashboardConfigStore';
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { WidgetType, WidgetSize } from '@dailyuse/contracts/dashboard';
-import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfig, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 
 interface Props {
   isOpen: boolean;

@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
 
 defineProps<{
   conflictResult: ConflictDetectionResult | null;

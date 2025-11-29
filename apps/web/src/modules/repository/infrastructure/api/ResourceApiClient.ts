@@ -3,7 +3,7 @@
  * Epic 10 Story 10-2: Resource CRUD + Markdown 编辑器
  */
 import type { IApiClient } from '@/shared/api/core/types';
-import type { RepositoryServerDTO, ResourceServerDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryServerDTO, ResourceServerDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 
 export interface CreateResourceDTO {

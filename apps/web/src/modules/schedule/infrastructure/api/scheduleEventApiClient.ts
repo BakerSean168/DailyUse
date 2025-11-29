@@ -1,5 +1,5 @@
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 import { apiClient } from '@/shared/api/instances';
 
 /**
@@ -18,7 +18,7 @@ class ScheduleEventApiClient {
   /**
    * 创建日程事件
    */
-  async createSchedule(data: CreateScheduleRequestDTO): Promise<ScheduleClientDTO> {
+  async createSchedule(data: CreateScheduleRequest): Promise<ScheduleClientDTO> {
     const response = await apiClient.post<ScheduleClientDTO>(this.baseUrl, data);
     return response;
   }

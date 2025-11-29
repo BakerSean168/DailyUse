@@ -17,7 +17,11 @@ import {
   passwordApplicationService,
   apiKeyApplicationService,
 } from '../../application/services';
-import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+import type { LoginRequest, RegisterRequest, AuthTokens, LoginResponse } from '@dailyuse/contracts/authentication';
+
+// Type aliases for DTO naming convention
+type LoginRequestDTO = LoginRequest;
+type LoginResponseDTO = LoginResponse;
 
 export function useAuth() {
   const authStore = useAuthStore();

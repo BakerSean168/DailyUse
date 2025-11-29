@@ -111,7 +111,7 @@ export function useSchedule() {
    * 创建任务
    */
   async function createTask(
-    request: CreateScheduleTaskRequestDTO,
+    request: CreateScheduleTaskRequest,
   ): Promise<ScheduleTask> {
     isLoading.value = true;
     error.value = null;
@@ -255,7 +255,7 @@ export function useSchedule() {
    * 
    * @param request 创建日程请求
    */
-  async function createSchedule(request: CreateScheduleRequestDTO) {
+  async function createSchedule(request: CreateScheduleRequest) {
     isCreatingSchedule.value = true;
     createScheduleError.value = null;
 

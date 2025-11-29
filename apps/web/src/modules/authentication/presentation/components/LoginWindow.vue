@@ -98,6 +98,8 @@
 import { computed, ref } from 'vue';
 // types
 import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+// Type alias
+type LoginRequestDTO = LoginRequest;
 // components
 import { useAuthentication } from '../composables/useAuthentication';
 import { useSnackbar } from '@/shared/composables/useSnackbar';

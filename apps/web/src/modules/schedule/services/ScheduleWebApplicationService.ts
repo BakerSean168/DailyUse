@@ -45,7 +45,7 @@ export class ScheduleWebApplicationService {
    * 创建调度任务
    */
   async createTask(
-    request: CreateScheduleTaskRequestDTO,
+    request: CreateScheduleTaskRequest,
   ): Promise<ScheduleTask> {
     try {
       logger.info('Creating schedule task', { name: request.name });
@@ -62,7 +62,7 @@ export class ScheduleWebApplicationService {
    * 批量创建调度任务
    */
   async createTasksBatch(
-    tasks: CreateScheduleTaskRequestDTO[],
+    tasks: CreateScheduleTaskRequest[],
   ): Promise<ScheduleTask[]> {
     try {
       logger.info('Creating schedule tasks batch', { count: tasks.length });

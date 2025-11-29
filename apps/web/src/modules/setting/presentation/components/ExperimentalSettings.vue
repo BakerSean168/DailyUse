@@ -114,7 +114,12 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useUserSetting } from '../composables/useUserSetting';
-import type { UserSettingClientDTO, UpdateUserSettingRequest, ExperimentalFeatures } from '@dailyuse/contracts/setting';
+import type {
+  UserSettingClientDTO,
+  UpdateUserSettingRequest,
+  ExperimentalFeatures,
+  UpdateExperimentalRequest,
+} from '@dailyuse/contracts/setting';
 
 // ===== 实验性功能定义 =====
 interface ExperimentalFeature {

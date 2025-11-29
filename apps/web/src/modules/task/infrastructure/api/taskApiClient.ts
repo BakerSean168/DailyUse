@@ -7,6 +7,8 @@ import type {
   UpdateTaskTemplateRequest,
   GenerateInstancesRequest,
   BindToGoalRequest,
+  TaskDependencyClientDTO,
+  TaskStatisticsServerDTO,
 } from '@dailyuse/contracts/task';
 
 /**

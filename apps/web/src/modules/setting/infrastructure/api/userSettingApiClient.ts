@@ -1,5 +1,14 @@
 import { apiClient } from '@/shared/api/instances';
-import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
+import type {
+  UserSettingClientDTO,
+  UpdateUserSettingRequest,
+  CreateUserSettingRequest,
+  UpdateAppearanceRequest,
+  UpdateLocaleRequest,
+  UpdateWorkflowRequest,
+  UpdatePrivacyRequest,
+  UpdateExperimentalRequest,
+} from '@dailyuse/contracts/setting';
 
 /**
  * UserSetting API 客户端

@@ -54,7 +54,7 @@ export class ReminderTemplateApplicationService {
    * 创建提醒模板
    */
   async createReminderTemplate(
-    request: CreateReminderTemplateRequestDTO,
+    request: CreateReminderTemplateRequest,
   ): Promise<ReminderTemplate> {
     try {
       this.reminderStore.setLoading(true);
@@ -140,7 +140,7 @@ export class ReminderTemplateApplicationService {
    */
   async updateReminderTemplate(
     uuid: string,
-    request: Partial<CreateReminderTemplateRequestDTO>,
+    request: Partial<CreateReminderTemplateRequest>,
   ): Promise<ReminderTemplate> {
     try {
       this.reminderStore.setLoading(true);

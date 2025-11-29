@@ -7,7 +7,15 @@ import { ref, computed, onMounted } from 'vue';
 import { UserSettingWebApplicationService } from '../../application/services/UserSettingWebApplicationService';
 import { useUserSettingStore } from '../stores/userSettingStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
-import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
+import type {
+  UserSettingClientDTO,
+  UpdateUserSettingRequest,
+  UpdateAppearanceRequest,
+  UpdateLocaleRequest,
+  UpdateWorkflowRequest,
+  UpdatePrivacyRequest,
+  UpdateExperimentalRequest,
+} from '@dailyuse/contracts/setting';
 
 /**
  * UserSetting 模块组合式函数

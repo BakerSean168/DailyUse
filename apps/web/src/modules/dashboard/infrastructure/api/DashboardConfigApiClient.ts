@@ -1,7 +1,5 @@
-import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfig, DashboardConfigClientDTO, WidgetConfigData, WidgetConfigDTO } from '@dailyuse/contracts/dashboard';
 import { apiClient } from '@/shared/api';
-
-type WidgetConfig = WidgetConfigDTO;
 
 /**
  * Dashboard Widget 配置 API 端点

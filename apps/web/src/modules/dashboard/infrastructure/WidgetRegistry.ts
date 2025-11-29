@@ -1,5 +1,5 @@
 import type { WidgetMetadata } from './types/WidgetMetadata';
-import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfig, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 import { WidgetSize } from '@dailyuse/contracts/dashboard';
 
 /**

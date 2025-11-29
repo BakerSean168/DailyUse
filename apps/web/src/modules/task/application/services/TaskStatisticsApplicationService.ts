@@ -3,7 +3,7 @@
  * 任务统计应用服务 - 负责任务相关的数据统计与分析
  */
 
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
 import { taskStatisticsApiClient } from '../../infrastructure/api/taskApiClient';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';

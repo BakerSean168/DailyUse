@@ -6,7 +6,15 @@
 import * as userSettingApi from '../../infrastructure/api/userSettingApi';
 import { useUserSettingStore } from '../../presentation/stores/userSettingStore';
 import { UserSetting } from '@dailyuse/domain-client/setting';
-import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
+import type {
+  UserSettingClientDTO,
+  UpdateUserSettingRequest,
+  UpdateAppearanceRequest,
+  UpdateLocaleRequest,
+  UpdateWorkflowRequest,
+  UpdatePrivacyRequest,
+  UpdateExperimentalRequest,
+} from '@dailyuse/contracts/setting';
 
 /**
  * UserSetting Web 应用服务
