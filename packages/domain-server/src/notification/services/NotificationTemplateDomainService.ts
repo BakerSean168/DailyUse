@@ -25,7 +25,7 @@ export class NotificationTemplateDomainService {
     name: string;
     type: NotificationType;
     category: NotificationCategory;
-    template: NotificationTemplateConfigDTO;
+    template: NotificationTemplateConfigServerDTO;
     description?: string;
     isSystemTemplate?: boolean;
   }): Promise<NotificationTemplate> {
@@ -109,7 +109,7 @@ export class NotificationTemplateDomainService {
    */
   public async updateTemplateConfig(
     uuid: string,
-    template: Partial<NotificationTemplateConfigDTO>,
+    template: Partial<NotificationTemplateConfigServerDTO>,
   ): Promise<NotificationTemplate> {
     const templateEntity = await this.templateRepo.findById(uuid);
     if (!templateEntity) {

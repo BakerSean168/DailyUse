@@ -60,7 +60,7 @@ export class ChannelError extends ValueObject implements ChannelError {
   /**
    * 转换为 Server DTO
    */
-  public toServerDTO(): IChannelError {
+  public toServerDTO(): ChannelErrorServerDTO {
     return {
       code: this.code,
       message: this.message,
@@ -86,15 +86,15 @@ export class ChannelError extends ValueObject implements ChannelError {
     };
   }
 
-  public toContract(): IChannelError {
+  public toContract(): ChannelErrorServerDTO {
     return this.toServerDTO();
   }
 
-  public static fromServerDTO(dto: IChannelError): ChannelError {
+  public static fromServerDTO(dto: ChannelErrorServerDTO): ChannelError {
     return new ChannelError(dto);
   }
 
-  public static fromContract(error: IChannelError): ChannelError {
+  public static fromContract(error: ChannelErrorServerDTO): ChannelError {
     return ChannelError.fromServerDTO(error);
   }
 }

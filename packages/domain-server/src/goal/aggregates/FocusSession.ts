@@ -11,6 +11,9 @@
 
 import { AggregateRoot } from '@dailyuse/utils';
 import {
+  FocusSessionStatus,
+} from '@dailyuse/contracts/goal';
+import type {
   FocusSessionCancelledEvent,
   FocusSessionClientDTO,
   FocusSessionCompletedEvent,
@@ -20,7 +23,6 @@ import {
   FocusSessionServer,
   FocusSessionServerDTO,
   FocusSessionStartedEvent,
-  FocusSessionStatus,
 } from '@dailyuse/contracts/goal';
 
 // 类型别名

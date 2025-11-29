@@ -49,8 +49,8 @@ export class NotificationDomainService {
     urgency?: UrgencyLevel;
     relatedEntityType?: RelatedEntityType;
     relatedEntityUuid?: string;
-    actions?: NotificationActionDTO[];
-    metadata?: NotificationMetadataDTO;
+    actions?: NotificationActionServerDTO[];
+    metadata?: NotificationMetadataServerDTO;
     expiresAt?: number;
     channels?: string[]; // 指定发送渠道
   }): Promise<Notification> {

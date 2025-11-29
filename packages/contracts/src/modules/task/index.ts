@@ -15,7 +15,7 @@ export {
   RecurrenceFrequency,
   DayOfWeek,
   RecurrenceEndConditionType,
-  ReminderType,
+  TaskReminderType,
   ReminderTimeUnit,
   DependencyType,
   DependencyStatus,

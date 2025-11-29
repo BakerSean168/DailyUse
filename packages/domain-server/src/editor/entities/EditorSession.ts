@@ -14,7 +14,7 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import {
+import type {
   EditorSessionClientDTO,
   EditorSessionPersistenceDTO,
   EditorSessionServerDTO,

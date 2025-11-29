@@ -48,6 +48,12 @@ export type {
 } from './value-objects/DoNotDisturbConfigServer';
 
 export type {
+  IDoNotDisturbConfigClient,
+  DoNotDisturbConfigClientDTO,
+  DoNotDisturbConfigClient,
+} from './value-objects/DoNotDisturbConfigClient';
+
+export type {
   IRateLimitServer,
   RateLimitServerDTO,
   RateLimitPersistenceDTO,

@@ -14,6 +14,8 @@ import {
   GoalStatus,
   ReminderTriggerType,
   ReviewType,
+} from '@dailyuse/contracts/goal';
+import type {
   SnapshotTrigger,
 } from '@dailyuse/contracts/goal';
 import type {

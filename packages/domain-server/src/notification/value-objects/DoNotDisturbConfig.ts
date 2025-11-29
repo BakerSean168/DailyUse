@@ -3,7 +3,9 @@
  * 免打扰配置 - 不可变值对象
  */
 
-import type { DoNotDisturbConfigClientDTO, DoNotDisturbConfigPersistenceDTO, DoNotDisturbConfigServerDTO } from '@dailyuse/contracts/notification';
+import type { DoNotDisturbConfigPersistenceDTO, DoNotDisturbConfigServerDTO,
+  DoNotDisturbConfigClientDTO
+ } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
 
 /**

@@ -3,13 +3,13 @@
  * 任务提醒配置值对象 - 客户端接口
  */
 
-import type { ReminderType, ReminderTimeUnit } from '../enums';
+import type { TaskReminderType, ReminderTimeUnit } from '../enums';
 import type { TaskReminderConfigServerDTO } from './TaskReminderConfigServer';
 
 // ============ 接口定义 ============
 
 interface ReminderTrigger {
-  type: ReminderType;
+  type: TaskReminderType;
   absoluteTime?: number | null;
   relativeValue?: number | null;
   relativeUnit?: ReminderTimeUnit | null;

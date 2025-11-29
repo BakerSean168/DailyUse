@@ -4,11 +4,11 @@
  */
 
 import type { ReminderTimeUnit, TaskReminderConfigClientDTO, TaskReminderConfigPersistenceDTO, TaskReminderConfigServer, TaskReminderConfigServerDTO } from '@dailyuse/contracts/task';
-import { ReminderType } from '@dailyuse/contracts/task';
+import { TaskReminderType } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
 interface ReminderTrigger {
-  type: ReminderType;
+  type: TaskReminderType;
   absoluteTime?: number | null;
   relativeValue?: number | null;
   relativeUnit?: ReminderTimeUnit | null;

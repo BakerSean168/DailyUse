@@ -99,9 +99,10 @@ export enum RecurrenceEndConditionType {
 // ============ 提醒枚举 ============
 
 /**
- * 提醒类型
+ * 任务提醒类型（Task 模块专用）
+ * 与 Reminder 模块的 ReminderType 区分
  */
-export enum ReminderType {
+export enum TaskReminderType {
   ABSOLUTE = 'ABSOLUTE', // 绝对时间提醒
   RELATIVE = 'RELATIVE', // 相对时间提醒
 }

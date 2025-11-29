@@ -111,7 +111,7 @@ export class NotificationPreferenceDomainService {
   public async updateCategoryPreference(
     accountUuid: string,
     category: NotificationCategory,
-    preference: Partial<CategoryPreferenceDTO>,
+    preference: Partial<CategoryPreferenceServerDTO>,
   ): Promise<void> {
     const userPreference = await this.getOrCreatePreference(accountUuid);
     userPreference.updateCategoryPreference(category, preference);

@@ -3,7 +3,7 @@
  * 实现 PasswordCredentialServer 接口
  */
 
-import {
+import type {
   PasswordCredentialClientDTO,
   PasswordCredentialPersistenceDTO,
   PasswordCredentialServer,

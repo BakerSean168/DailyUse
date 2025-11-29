@@ -12,7 +12,7 @@
  * - 与业务逻辑耦合最小化
  */
 
-import { ReminderType } from '@dailyuse/contracts/task';
+import { ReminderType } from '@dailyuse/contracts/reminder';
 import type { FixedTimeTrigger, IntervalTrigger, RecurrenceConfigServerDTO, ReminderTemplateServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
 import { WeekDay } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';

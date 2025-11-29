@@ -82,7 +82,7 @@ export class TabViewState extends ValueObject implements TabViewState {
   /**
    * 值相等性比较
    */
-  public equals(other: ITabViewState): boolean {
+  public equals(other: ITabViewStateServer): boolean {
     if (!(other instanceof TabViewState)) {
       return false;
     }

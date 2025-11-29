@@ -21,7 +21,7 @@ import type {
 /**
  * Task 调度策略实现
  */
-export class TaskScheduleStrategy implements ScheduleStrategy {
+export class TaskScheduleStrategy implements IScheduleStrategy {
   /**
    * 支持 TASK 源模块
    */

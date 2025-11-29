@@ -75,7 +75,7 @@ export class WorkspaceLayout extends ValueObject implements WorkspaceLayout {
   /**
    * 值相等性比较
    */
-  public equals(other: IWorkspaceLayout): boolean {
+  public equals(other: IWorkspaceLayoutServer): boolean {
     if (!(other instanceof WorkspaceLayout)) {
       return false;
     }

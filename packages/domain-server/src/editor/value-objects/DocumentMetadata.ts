@@ -84,7 +84,7 @@ export class DocumentMetadata extends ValueObject implements DocumentMetadata {
   /**
    * 值相等性比较
    */
-  public equals(other: IDocumentMetadata): boolean {
+  public equals(other: IDocumentMetadataServer): boolean {
     if (!(other instanceof DocumentMetadata)) {
       return false;
     }

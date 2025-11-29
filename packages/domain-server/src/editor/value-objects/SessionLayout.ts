@@ -54,7 +54,7 @@ export class SessionLayout extends ValueObject implements SessionLayout {
   /**
    * 值相等性比较
    */
-  public equals(other: ISessionLayout): boolean {
+  public equals(other: ISessionLayoutServer): boolean {
     if (!(other instanceof SessionLayout)) {
       return false;
     }

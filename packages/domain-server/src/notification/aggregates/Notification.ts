@@ -396,8 +396,8 @@ export class Notification extends AggregateRoot implements NotificationServer {
     urgency?: UrgencyLevel;
     relatedEntityType?: RelatedEntityType;
     relatedEntityUuid?: string;
-    actions?: NotificationActionDTO[];
-    metadata?: NotificationMetadataDTO;
+    actions?: NotificationActionServerDTO[];
+    metadata?: NotificationMetadataServerDTO;
     expiresAt?: number;
   }): Notification {
     logger.info('🔨 [聚合根] 创建 Notification 实例', {

@@ -134,7 +134,7 @@ export class NotificationPreference extends AggregateRoot implements Notificatio
    */
   public updateCategoryPreference(
     category: NotificationCategory,
-    preference: Partial<CategoryPreferenceDTO>,
+    preference: Partial<CategoryPreferenceServerDTO>,
   ): void {
     const categoryKey = category.toLowerCase() as keyof CategoryPreferences;
     if (categoryKey in this._categories) {

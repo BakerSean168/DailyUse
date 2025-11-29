@@ -1,6 +1,5 @@
 import type { ActiveHoursConfigServerDTO, ActiveTimeConfigServerDTO, NotificationConfigServerDTO, RecurrenceConfigServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
-import { ControlMode } from '@dailyuse/contracts/reminder';
-import { ReminderType } from '@dailyuse/contracts/task';
+import { ControlMode, ReminderType } from '@dailyuse/contracts/reminder';
 import type {
   IReminderGroupRepository,
   IReminderStatisticsRepository,

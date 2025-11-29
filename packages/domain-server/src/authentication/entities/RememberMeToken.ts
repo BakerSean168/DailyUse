@@ -3,7 +3,7 @@
  * 实现 RememberMeTokenServer 接口
  */
 
-import {
+import type {
   DeviceInfoServer,
   RememberMeTokenClientDTO,
   RememberMeTokenPersistenceDTO,

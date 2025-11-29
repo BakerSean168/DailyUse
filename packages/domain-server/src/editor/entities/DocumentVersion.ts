@@ -4,11 +4,13 @@
  */
 
 import {
+  VersionChangeType,
+} from '@dailyuse/contracts/editor';
+import type {
   DocumentVersionClientDTO,
   DocumentVersionPersistenceDTO,
   DocumentVersionServer,
   DocumentVersionServerDTO,
-  VersionChangeType,
 } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 

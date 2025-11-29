@@ -4,12 +4,14 @@
  */
 
 import {
+  LinkedSourceType,
+  LinkedTargetType,
+} from '@dailyuse/contracts/editor';
+import type {
   LinkedResourceClientDTO,
   LinkedResourcePersistenceDTO,
   LinkedResourceServer,
   LinkedResourceServerDTO,
-  LinkedSourceType,
-  LinkedTargetType,
 } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 

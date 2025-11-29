@@ -20,7 +20,7 @@ import type {
 /**
  * Goal 调度策略实现
  */
-export class GoalScheduleStrategy implements ScheduleStrategy {
+export class GoalScheduleStrategy implements IScheduleStrategy {
   /**
    * 支持 GOAL 源模块
    */

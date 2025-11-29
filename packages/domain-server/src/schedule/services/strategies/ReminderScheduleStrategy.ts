@@ -21,7 +21,7 @@ import type {
 /**
  * Reminder 调度策略实现
  */
-export class ReminderScheduleStrategy implements ScheduleStrategy {
+export class ReminderScheduleStrategy implements IScheduleStrategy {
   /**
    * 支持 REMINDER 源模块
    */

@@ -23,7 +23,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   // ===== 私有字段 =====
   private _notificationUuid: string;
   private _channelType: NotificationChannelType;
-  private _status: ChannelStatusType;
+  private _status: ChannelStatus;
   private _recipient: string | null;
   private _sendAttempts: number;
   private _maxRetries: number;
@@ -39,7 +39,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
     uuid?: string;
     notificationUuid: string;
     channelType: NotificationChannelType;
-    status: ChannelStatusType;
+    status: ChannelStatus;
     recipient?: string | null;
     sendAttempts: number;
     maxRetries: number;
@@ -75,7 +75,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   public get channelType(): NotificationChannelType {
     return this._channelType;
   }
-  public get status(): ChannelStatusType {
+  public get status(): ChannelStatus {
     return this._status;
   }
   public get recipient(): string | null {
@@ -87,10 +87,10 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   public get maxRetries(): number {
     return this._maxRetries;
   }
-  public get error(): ChannelErrorDTO | null {
+  public get error(): ChannelErrorServerDTO | null {
     return this._error?.toContract() ?? null;
   }
-  public get response(): ChannelResponseDTO | null {
+  public get response(): ChannelResponseServerDTO | null {
     return this._response?.toContract() ?? null;
   }
   public get createdAt(): number {
@@ -159,7 +159,7 @@ export class NotificationChannel extends Entity implements NotificationChannelSe
   /**
    * 标记为失败
    */
-  public markAsFailed(error: ChannelErrorDTO): void {
+  public markAsFailed(error: ChannelErrorServerDTO): void {
     this._status = ChannelStatus.FAILED;
     this._error = ChannelError.fromContract(error);
     this._failedAt = Date.now();

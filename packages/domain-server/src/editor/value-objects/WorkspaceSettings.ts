@@ -87,7 +87,7 @@ export class WorkspaceSettings extends ValueObject implements WorkspaceSettings 
   /**
    * 值相等性比较
    */
-  public equals(other: IWorkspaceSettings): boolean {
+  public equals(other: IWorkspaceSettingsServer): boolean {
     if (!(other instanceof WorkspaceSettings)) {
       return false;
     }

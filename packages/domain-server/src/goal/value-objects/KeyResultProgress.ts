@@ -5,9 +5,11 @@
 
 import {
   AggregationMethod,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
+import type {
   KeyResultProgressPersistenceDTO,
   KeyResultProgressServerDTO,
-  KeyResultValueType,
 } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 

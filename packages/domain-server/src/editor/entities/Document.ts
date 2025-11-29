@@ -4,13 +4,15 @@
  */
 
 import {
-  DocumentClientDTO,
   DocumentLanguage,
+  IndexStatus,
+} from '@dailyuse/contracts/editor';
+import type {
+  DocumentClientDTO,
   DocumentMetadataServerDTO,
   DocumentPersistenceDTO,
   DocumentServer,
   DocumentServerDTO,
-  IndexStatus,
 } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 import { DocumentMetadata } from '../value-objects/DocumentMetadata';

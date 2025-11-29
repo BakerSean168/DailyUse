@@ -3,7 +3,16 @@
  * 实现 NotificationTemplateServer 接口
  */
 
-import type { EmailTemplateContent, NotificationTemplateAggregatePersistenceDTO, NotificationTemplateAggregateServerDTO, NotificationTemplateConfigServer, NotificationTemplateConfigServerDTO, NotificationTemplateServer, PushTemplateContent, TemplateContent } from '@dailyuse/contracts/notification';
+import type {
+  EmailTemplateContent,
+  NotificationTemplateAggregatePersistenceDTO,
+  NotificationTemplateAggregateServerDTO,
+  NotificationTemplateConfigServer,
+  NotificationTemplateConfigServerDTO,
+  NotificationTemplateServer,
+  PushTemplateContent,
+  TemplateContent,
+} from '@dailyuse/contracts/notification';
 import { NotificationCategory } from '@dailyuse/contracts/notification';
 import { NotificationType } from '@dailyuse/contracts/notification';
 import { AggregateRoot } from '@dailyuse/utils';
@@ -105,7 +114,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
   /**
    * 更新模板配置
    */
-  public updateTemplate(template: Partial<NotificationTemplateConfigDTO>): void {
+  public updateTemplate(template: Partial<NotificationTemplateConfigServerDTO>): void {
     const current = this._template.toContract();
     const updated = { ...current, ...template };
     this._template = NotificationTemplateConfig.fromContract(updated);
@@ -183,14 +192,14 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
 
   // ===== 转换方法 =====
 
-  public toServerDTO(): NotificationTemplateServerDTO {
+  public toServerDTO(): NotificationTemplateAggregateServerDTO {
     return {
       uuid: this.uuid,
       name: this.name,
       description: this.description,
       type: this.type,
       category: this.category,
-      template: this.template,
+      template: this._template.toContract(),
       isActive: this.isActive,
       isSystemTemplate: this.isSystemTemplate,
       createdAt: this.createdAt,
@@ -198,7 +207,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
     };
   }
 
-  public toPersistenceDTO(): NotificationTemplatePersistenceDTO {
+  public toPersistenceDTO(): NotificationTemplateAggregatePersistenceDTO {
     const templateDTO = this._template.toContract();
     return {
       uuid: this.uuid,
@@ -239,7 +248,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
     name: string;
     type: NotificationType;
     category: NotificationCategory;
-    template: NotificationTemplateConfigDTO;
+    template: NotificationTemplateConfigServerDTO;
     description?: string;
     isSystemTemplate?: boolean;
   }): NotificationTemplate {
@@ -257,7 +266,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
     });
   }
 
-  public static fromServerDTO(dto: NotificationTemplateServerDTO): NotificationTemplate {
+  public static fromServerDTO(dto: NotificationTemplateAggregateServerDTO): NotificationTemplate {
     return new NotificationTemplate({
       uuid: dto.uuid,
       name: dto.name,
@@ -272,7 +281,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
     });
   }
 
-  public static fromPersistenceDTO(dto: NotificationTemplatePersistenceDTO): NotificationTemplate {
+  public static fromPersistenceDTO(dto: NotificationTemplateAggregatePersistenceDTO): NotificationTemplate {
     const template: TemplateContent = {
       title: dto.templateTitle,
       content: dto.templateContent,
@@ -298,7 +307,7 @@ export class NotificationTemplate extends AggregateRoot implements NotificationT
           }
         : null;
 
-    const templateConfigDTO: NotificationTemplateConfigDTO = {
+    const templateConfigDTO: NotificationTemplateConfigServerDTO = {
       template,
       channels: { inApp: true, email: !!emailTemplate, push: !!pushTemplate, sms: false }, // Infer channels
       emailTemplate,

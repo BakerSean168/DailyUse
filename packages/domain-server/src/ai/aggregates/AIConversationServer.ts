@@ -6,7 +6,7 @@ import type {
   AIConversationServerDTO,
 } from '@dailyuse/contracts/ai';
 import { ConversationStatus } from '@dailyuse/contracts/ai';
-import { MessageServer } from '../entities/MessageServer';
+import { Message } from '../entities/MessageServer';
 
 export class AIConversation extends AggregateRoot implements AIConversationServer {
   private _accountUuid: string;
@@ -18,7 +18,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
   private _updatedAt: number;
   private _deletedAt: number | null;
 
-  private _messages: MessageServer[];
+  private _messages: Message[];
 
   private constructor(params: {
     uuid?: string;
@@ -79,7 +79,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     return this._deletedAt;
   }
 
-  public get messages(): MessageServer[] {
+  public get messages(): Message[] {
     return [...this._messages];
   }
 
@@ -123,7 +123,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     });
 
     if (dto.messages) {
-      conversation._messages = dto.messages.map((m) => MessageServer.fromServerDTO(m));
+      conversation._messages = dto.messages.map((m) => Message.fromServerDTO(m));
     }
 
     return conversation;
@@ -143,7 +143,7 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     });
   }
 
-  public addMessage(message: MessageServer): void {
+  public addMessage(message: Message): void {
     if (this._status !== ConversationStatus.ACTIVE) {
       throw new Error('Cannot add message to a non-active conversation');
     }
@@ -164,11 +164,11 @@ export class AIConversation extends AggregateRoot implements AIConversationServe
     });
   }
 
-  public getAllMessages(): MessageServer[] {
+  public getAllMessages(): Message[] {
     return [...this._messages].sort((a, b) => a.createdAt - b.createdAt);
   }
 
-  public getLatestMessage(): MessageServer | null {
+  public getLatestMessage(): Message | null {
     if (this._messages.length === 0) {
       return null;
     }

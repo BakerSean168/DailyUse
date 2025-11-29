@@ -15,7 +15,7 @@ import { ValueObject } from '@dailyuse/utils';
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class WorkspaceLayout extends ValueObject implements WorkspaceLayoutClient {
+export class WorkspaceLayout extends ValueObject implements IWorkspaceLayoutClient {
   public readonly sidebarPosition: 'left' | 'right';
   public readonly sidebarWidth: number;
   public readonly panelPosition: 'bottom' | 'right';

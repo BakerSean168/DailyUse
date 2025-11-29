@@ -3,7 +3,7 @@
  * 实现 CredentialHistoryServer 接口
  */
 
-import {
+import type {
   CredentialHistoryClientDTO,
   CredentialHistoryPersistenceDTO,
   CredentialHistoryServer,

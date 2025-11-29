@@ -4,7 +4,7 @@
  * 作为 EditorSession 实体的子实体
  */
 
-import {
+import type {
   EditorGroupClientDTO,
   EditorGroupPersistenceDTO,
   EditorGroupServer,
