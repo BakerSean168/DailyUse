@@ -172,7 +172,7 @@ export class RepositoryStatisticsController {
         return RepositoryStatisticsController.responseBuilder.sendSuccess(
           res,
           result.statistics,
-          result.message,
+          result.message ?? 'Statistics recalculated successfully',
           200,
         );
       } else {
@@ -182,7 +182,7 @@ export class RepositoryStatisticsController {
         });
         return RepositoryStatisticsController.responseBuilder.sendError(res, {
           code: ResponseCode.INTERNAL_ERROR,
-          message: result.message,
+          message: result.message ?? 'Failed to recalculate statistics',
         });
       }
     } catch (error) {

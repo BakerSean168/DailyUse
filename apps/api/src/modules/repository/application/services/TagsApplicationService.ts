@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
+import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagStatisticsDto } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 

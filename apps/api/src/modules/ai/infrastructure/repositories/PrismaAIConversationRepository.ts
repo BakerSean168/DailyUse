@@ -167,6 +167,83 @@ export class PrismaAIConversationRepository implements IAIConversationRepository
   }
 
   /**
+   * 根据状态查找对话
+   */
+  async findByStatus(
+    accountUuid: string,
+    status: ConversationStatus,
+    options?: { includeChildren?: boolean },
+  ): Promise<AIConversationServer[]> {
+    try {
+      const conversations = await this.prisma.aiConversation.findMany({
+        where: {
+          accountUuid,
+          status,
+          deletedAt: null,
+        },
+        orderBy: {
+          lastMessageAt: 'desc',
+        },
+        include: {
+          messages: options?.includeChildren
+            ? {
+                orderBy: { createdAt: 'asc' },
+              }
+            : false,
+        },
+      });
+
+      return conversations.map((conv) => this.mapToDomainEntity(conv));
+    } catch (error) {
+      logger.error('Failed to find conversations by status', { error, accountUuid, status });
+      throw error;
+    }
+  }
+
+  /**
+   * 查找最近的对话（分页）
+   */
+  async findRecent(
+    accountUuid: string,
+    limit: number,
+    offset = 0,
+  ): Promise<AIConversationServer[]> {
+    try {
+      const conversations = await this.prisma.aiConversation.findMany({
+        where: {
+          accountUuid,
+          deletedAt: null,
+        },
+        orderBy: {
+          lastMessageAt: 'desc',
+        },
+        take: limit,
+        skip: offset,
+      });
+
+      return conversations.map((conv) => this.mapToDomainEntity(conv));
+    } catch (error) {
+      logger.error('Failed to find recent conversations', { error, accountUuid, limit, offset });
+      throw error;
+    }
+  }
+
+  /**
+   * 检查对话是否存在
+   */
+  async exists(uuid: string): Promise<boolean> {
+    try {
+      const count = await this.prisma.aiConversation.count({
+        where: { uuid, deletedAt: null },
+      });
+      return count > 0;
+    } catch (error) {
+      logger.error('Failed to check conversation existence', { error, uuid });
+      throw error;
+    }
+  }
+
+  /**
    * 将 Prisma 模型映射为领域聚合根
    */
   private mapToDomainEntity(data: any): AIConversationServer {

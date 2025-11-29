@@ -6,3 +6,4 @@
 export * from './IScheduleTaskRepository';
 export * from './IScheduleStatisticsRepository';
 export * from './IScheduleExecutionRepository';
+export * from './IScheduleRepository';

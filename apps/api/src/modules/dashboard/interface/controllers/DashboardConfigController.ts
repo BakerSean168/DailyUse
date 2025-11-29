@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
 import { DashboardConfigApplicationService } from '../../application/services/DashboardConfigApplicationService';
-import type { DashboardConfigServerDTO, WidgetConfig } from '@dailyuse/contracts/dashboard';
+import type { DashboardConfigServerDTO, WidgetConfigDTO } from '@dailyuse/contracts/dashboard';
 
 
 /**

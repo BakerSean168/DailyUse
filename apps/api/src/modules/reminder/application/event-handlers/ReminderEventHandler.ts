@@ -1,5 +1,5 @@
 import { eventBus, type DomainEvent, Logger } from '@dailyuse/utils';
-import type { ReminderTemplateServerDTO, ReminderInstanceServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 
 const logger = new Logger('ReminderEventHandler');

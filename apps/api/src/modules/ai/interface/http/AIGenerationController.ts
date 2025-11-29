@@ -99,7 +99,7 @@ export class AIGenerationController {
    */
   static async generateKeyResults(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const { goalTitle, goalDescription, category, importance, urgency } = req.body;
+      const { goalTitle, goalDescription, startDate, endDate, goalContext } = req.body;
       const accountUuid = req.user?.accountUuid;
 
       // 验证必需参数
@@ -130,7 +130,6 @@ export class AIGenerationController {
       logger.info('Generating key results', {
         accountUuid,
         goalTitle,
-        category,
       });
 
       // 调用 ApplicationService
@@ -139,9 +138,9 @@ export class AIGenerationController {
         accountUuid,
         goalTitle,
         goalDescription,
-        category,
-        importance,
-        urgency,
+        startDate: startDate ?? Date.now(),
+        endDate: endDate ?? Date.now() + 90 * 24 * 60 * 60 * 1000, // default 90 days
+        goalContext,
       });
 
       // 返回成功响应

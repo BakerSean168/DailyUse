@@ -85,6 +85,7 @@ export class TaskDependencyController {
 
       const service = await TaskDependencyController.getTaskDependencyService();
       const dependency = await service.createDependency({
+        accountUuid,
         predecessorTaskUuid,
         successorTaskUuid: taskUuid,
         dependencyType: dependencyType || 'FINISH_TO_START',

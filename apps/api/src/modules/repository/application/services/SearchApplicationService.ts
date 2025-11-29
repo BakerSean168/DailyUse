@@ -7,7 +7,7 @@
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, SearchRequest, SearchResponse, SearchResultItem, MatchType } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 import { Resource } from '@dailyuse/domain-server/repository';
-import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
+import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 
 
 export class SearchApplicationService {

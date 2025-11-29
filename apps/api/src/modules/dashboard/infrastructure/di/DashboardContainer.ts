@@ -10,12 +10,12 @@ import type {
 import type {
   IScheduleStatisticsRepository,
 } from '@dailyuse/domain-server/schedule';
+import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import { TaskContainer } from '@/modules/task/infrastructure/di/TaskContainer';
 import { GoalContainer } from '@/modules/goal/infrastructure/di/GoalContainer';
 import { ReminderContainer } from '@/modules/reminder/infrastructure/di/ReminderContainer';
 import { ScheduleContainer } from '@/modules/schedule/infrastructure/di/ScheduleContainer';
 import type { StatisticsCacheService } from '../services/StatisticsCacheService';
-import type { IDashboardConfigRepository } from '../../domain/repositories/IDashboardConfigRepository';
 import prisma from '../../../../shared/db/prisma';
 import { DashboardConfigPrismaRepository } from '../repositories/DashboardConfigPrismaRepository';
 import { StatisticsCacheService as CacheServiceImpl } from '../services/StatisticsCacheService';

@@ -214,4 +214,35 @@ export class PrismaTaskDependencyRepository implements ITaskDependencyRepository
 
     return this.mapToDTO(dependency);
   }
+
+  /**
+   * 获取账户的所有依赖关系
+   * 通过关联的任务模板获取账户信息
+   */
+  async findAllByAccount(accountUuid: string): Promise<TaskDependencyServerDTO[]> {
+    // 先获取账户的所有任务模板 UUID
+    const templates = await this.prisma.taskTemplate.findMany({
+      where: { accountUuid },
+      select: { uuid: true },
+    });
+
+    const templateUuids = templates.map((t) => t.uuid);
+
+    if (templateUuids.length === 0) {
+      return [];
+    }
+
+    // 查找所有相关的依赖关系
+    const dependencies = await this.prisma.taskDependency.findMany({
+      where: {
+        OR: [
+          { predecessorTaskUuid: { in: templateUuids } },
+          { successorTaskUuid: { in: templateUuids } },
+        ],
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return dependencies.map((dep) => this.mapToDTO(dep));
+  }
 }

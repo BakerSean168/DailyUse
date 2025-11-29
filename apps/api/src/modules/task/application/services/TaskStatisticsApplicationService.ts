@@ -5,7 +5,7 @@ import type {
 } from '@dailyuse/domain-server/task';
 import { TaskStatistics } from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
-import type * as TaskContracts from '@dailyuse/contracts/task';
+import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
 
 /**
  * TaskStatistics 应用服务
@@ -74,7 +74,7 @@ export class TaskStatisticsApplicationService {
   async getStatistics(
     accountUuid: string,
     forceRecalculate = false,
-  ): Promise<TaskContracts.TaskStatisticsServerDTO> {
+  ): Promise<TaskStatisticsServerDTO> {
     // 1. 尝试从数据库获取现有统计数据
     let statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
 

@@ -4,8 +4,8 @@
  */
 import { v4 as uuidv4 } from 'uuid';
 import { Resource } from '@dailyuse/domain-server/repository';
+import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import { ResourceType } from '@dailyuse/contracts/repository';
-import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 

@@ -76,4 +76,13 @@ export interface ITaskInstanceRepository {
    * @param fromDate 起始日期（默认为当前时间）
    */
   countFutureInstances(templateUuid: string, fromDate?: number): Promise<number>;
+
+  /**
+   * 根据模板 UUID 和日期范围查找任务实例
+   */
+  findByTemplateUuidAndDateRange(
+    templateUuid: string,
+    startDate: number,
+    endDate: number,
+  ): Promise<TaskInstance[]>;
 }

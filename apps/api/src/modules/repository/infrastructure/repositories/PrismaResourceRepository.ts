@@ -4,14 +4,14 @@
  */
 import { PrismaClient } from '@prisma/client';
 import { Resource } from '@dailyuse/domain-server/repository';
-import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
+import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO } from '@dailyuse/contracts/repository';
 
 
 export class PrismaResourceRepository implements IResourceRepository {
   constructor(private prisma: PrismaClient) {}
 
-  async findById(uuid: string): Promise<Resource | null> {
+  async findByUuid(uuid: string): Promise<Resource | null> {
     const data = await this.prisma.resource.findUnique({
       where: { uuid },
     });
@@ -33,6 +33,11 @@ export class PrismaResourceRepository implements IResourceRepository {
       created_at: new Date(Number(data.createdAt)),
       updated_at: new Date(Number(data.updatedAt)),
     });
+  }
+
+  // Alias for findByUuid
+  async findById(uuid: string): Promise<Resource | null> {
+    return this.findByUuid(uuid);
   }
 
   async findByRepositoryUuid(repositoryUuid: string): Promise<Resource[]> {
@@ -123,6 +128,43 @@ export class PrismaResourceRepository implements IResourceRepository {
     await this.prisma.resource.delete({
       where: { uuid },
     });
+  }
+
+  async findByAccountUuid(accountUuid: string): Promise<Resource[]> {
+    // Find resources through repositories that belong to the account
+    const repositories = await this.prisma.repository.findMany({
+      where: { accountUuid },
+      select: { uuid: true },
+    });
+
+    if (repositories.length === 0) {
+      return [];
+    }
+
+    const resources = await this.prisma.resource.findMany({
+      where: {
+        repositoryUuid: { in: repositories.map((r) => r.uuid) },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return resources.map((data) =>
+      Resource.fromPersistenceDTO({
+        uuid: data.uuid,
+        repository_uuid: data.repositoryUuid,
+        folder_uuid: data.folderUuid,
+        name: data.name,
+        type: data.type as any,
+        path: data.path,
+        size: data.size,
+        content: data.content,
+        metadata: JSON.stringify(data.metadata),
+        stats: JSON.stringify(data.stats),
+        status: data.status as any,
+        created_at: new Date(Number(data.createdAt)),
+        updated_at: new Date(Number(data.updatedAt)),
+      }),
+    );
   }
 
   async existsByPath(repositoryUuid: string, path: string): Promise<boolean> {

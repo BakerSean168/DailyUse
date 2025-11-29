@@ -73,6 +73,7 @@ export interface DependencyChainClientDTO {
  * 创建依赖请求
  */
 export interface CreateTaskDependencyRequest {
+  readonly accountUuid: string;
   readonly predecessorTaskUuid: string;
   readonly successorTaskUuid: string;
   readonly dependencyType: DependencyType;

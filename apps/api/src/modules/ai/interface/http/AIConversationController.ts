@@ -15,9 +15,17 @@ import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/respons
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
-import type { AIGenerationResult } from '@dailyuse/domain-server/ai';
 import { QuotaExceededError, AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import { z } from 'zod';
+
+/**
+ * AI 生成结果类型
+ */
+interface AIGenerationResult {
+  content: string;
+  tokenUsage?: { totalTokens?: number } | null;
+  finishReason?: string;
+}
 
 const logger = createLogger('AIConversationController');
 

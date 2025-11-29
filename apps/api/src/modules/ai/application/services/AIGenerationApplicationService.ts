@@ -125,7 +125,7 @@ export class AIGenerationApplicationService {
           .getAdapterForProvider(providerUuid, accountUuid);
         const providerConfig = await container
           .getProviderConfigRepository()
-          .findByUuid(providerUuid, accountUuid);
+          .findByUuid(providerUuid);
         if (providerConfig) {
           providerName = providerConfig.name;
           modelUsed = providerConfig.availableModels?.[0]?.id || providerConfig.defaultModel || modelUsed;
@@ -491,7 +491,7 @@ export class AIGenerationApplicationService {
     // Conversation
     let conversation: AIConversationServer | null = null;
     if (conversationUuid) {
-      conversation = (await this.conversationRepository.findByUuid(conversationUuid, true)) as any;
+      conversation = (await this.conversationRepository.findByUuid(conversationUuid, { includeChildren: true })) as any;
     }
     if (!conversation) {
       const title = userMessage.length <= 50 ? userMessage : userMessage.slice(0, 47) + '...';
@@ -597,7 +597,7 @@ export class AIGenerationApplicationService {
 
     let conversation: AIConversationServer | null = null;
     if (conversationUuid) {
-      conversation = (await this.conversationRepository.findByUuid(conversationUuid, true)) as any;
+      conversation = (await this.conversationRepository.findByUuid(conversationUuid, { includeChildren: true })) as any;
     }
     if (!conversation) {
       const title = userMessage.length <= 50 ? userMessage : userMessage.slice(0, 47) + '...';

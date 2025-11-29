@@ -13,7 +13,7 @@
 
 import Redis from 'ioredis';
 import type { RedisOptions } from 'ioredis';
-import type { DashboardConfigServerDTO, WidgetConfig, DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
+import type { DashboardConfigServerDTO, WidgetConfigDTO, DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
 
 export class StatisticsCacheService {
   private readonly redis: Redis;

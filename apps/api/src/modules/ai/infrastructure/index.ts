@@ -11,7 +11,6 @@
 // ===== Adapters =====
 export * from './adapters/BaseAIAdapter';
 export * from './adapters/OpenAIAdapter';
-export * from './adapters/MockAIAdapter';
 
 // ===== Prompts =====
 export * from './prompts/templates';

@@ -565,9 +565,22 @@ export class ReminderApplicationService {
         count: upcomingReminders.length,
       });
 
+      // Map UpcomingReminderDTO to UpcomingReminderItemDTO
+      const mappedReminders = upcomingReminders.map((r) => ({
+        templateUuid: r.templateUuid,
+        templateTitle: r.title,
+        templateType: r.type,
+        importanceLevel: r.importanceLevel,
+        scheduledTime: r.nextTriggerAt,
+        description: r.description ?? null,
+        tags: [],
+        color: r.color ?? null,
+        icon: r.icon ?? null,
+      }));
+
       return {
-        reminders: upcomingReminders,
-        total: upcomingReminders.length,
+        reminders: mappedReminders,
+        total: mappedReminders.length,
         fromDate: now,
         toDate: now + days * 24 * 60 * 60 * 1000,
       };

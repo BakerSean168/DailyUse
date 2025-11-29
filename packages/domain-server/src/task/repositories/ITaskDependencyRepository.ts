@@ -81,4 +81,9 @@ export interface ITaskDependencyRepository {
     uuid: string,
     data: { dependencyType?: string; lagDays?: number },
   ): Promise<TaskDependencyServerDTO>;
+
+  /**
+   * 获取账户的所有依赖关系
+   */
+  findAllByAccount(accountUuid: string): Promise<TaskDependencyServerDTO[]>;
 }

@@ -11,7 +11,7 @@
  * 架构层次：Interface Layer
  */
 
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { DashboardStatisticsApplicationService } from '../../application/services/DashboardStatisticsApplicationService';
 
