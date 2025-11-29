@@ -10,7 +10,6 @@ import { TaskDependencyDragDropService } from '../TaskDependencyDragDropService'
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 
 type TaskClientDTO = TaskTemplateClientDTO;
-type DependencyType = DependencyType;
 vi.mock('../../../infrastructure/api/taskApiClient', () => ({
   taskDependencyApiClient: {
     validateDependency: vi.fn(),

@@ -3,7 +3,6 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useAIGenerationStore } from '../aiGenerationStore';
 import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
-type AIUsageQuotaClientDTO = AIUsageQuotaClientDTO;
 
 describe('aiGenerationStore', () => {
   beforeEach(() => {

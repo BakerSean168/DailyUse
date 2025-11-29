@@ -40,7 +40,7 @@ export class SkipRecord extends ValueObject implements SkipRecord {
   }
 
   // 值对象方法
-  public equals(other: ISkipRecord): boolean {
+  public equals(other: SkipRecordClient): boolean {
     return this._skippedAt === other.skippedAt && this._reason === other.reason;
   }
 
@@ -52,7 +52,7 @@ export class SkipRecord extends ValueObject implements SkipRecord {
     };
   }
 
-  public toClientDTO(): SkipRecordDTO {
+  public toClientDTO(): SkipRecordClientDTO {
     return {
       skippedAt: this._skippedAt,
       reason: this._reason,
@@ -63,7 +63,7 @@ export class SkipRecord extends ValueObject implements SkipRecord {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: SkipRecordDTO): SkipRecord {
+  public static fromClientDTO(dto: SkipRecordClientDTO): SkipRecord {
     return new SkipRecord({
       skippedAt: dto.skippedAt,
       reason: dto.reason,

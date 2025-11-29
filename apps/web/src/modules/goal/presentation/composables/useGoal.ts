@@ -11,9 +11,23 @@
  */
 
 import { ref, computed, reactive } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type {
+  GoalClientDTO,
+  KeyResultClientDTO,
+  CreateGoalRequest,
+  UpdateGoalRequest,
+  GoalServerDTO,
+  KeyResultServerDTO,
+  AddKeyResultRequest,
+  UpdateKeyResultRequest,
+  ProgressBreakdown,
+  CreateGoalRecordRequest,
+  CreateGoalReviewRequest,
+  UpdateGoalReviewRequest,
+  CreateGoalFolderRequest,
+  UpdateGoalFolderRequest,
+} from '@dailyuse/contracts/goal';
 import { GoalStatus as GC_GoalStatus } from '@dailyuse/contracts/goal';
-import type { GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 import { useGoalManagement } from './useGoalManagement';
 import { useGoalFolder } from './useGoalFolder';
 import { useKeyResult } from './useKeyResult';

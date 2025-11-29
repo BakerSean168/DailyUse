@@ -3,9 +3,24 @@
  * 会话管理应用服务 - 负责会话和设备管理相关的用例
  */
 
-import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+import type {
+  GetActiveSessionsRequest,
+  ActiveSessionsResponseDTO,
+  RevokeSessionRequest,
+  RevokeAllSessionsRequest,
+  TrustedDevicesResponseDTO,
+  TrustDeviceRequest,
+  RevokeTrustedDeviceRequest,
+} from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
+
+// Type aliases
+type GetActiveSessionsRequestDTO = GetActiveSessionsRequest;
+type RevokeSessionRequestDTO = RevokeSessionRequest;
+type RevokeAllSessionsRequestDTO = RevokeAllSessionsRequest;
+type TrustDeviceRequestDTO = TrustDeviceRequest;
+type RevokeTrustedDeviceRequestDTO = RevokeTrustedDeviceRequest;
 
 export class SessionApplicationService {
   private static instance: SessionApplicationService;

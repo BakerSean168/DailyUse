@@ -134,9 +134,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useBookmarkStore } from '../stores/bookmarkStore';
-import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, Bookmark } from '@dailyuse/contracts/repository';
 
-type Bookmark = Bookmark;
 
 // Props
 const props = defineProps<{

@@ -116,7 +116,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistory {
   }
 
   // DTO 转换
-  public toClientDTO(): TaskTemplateHistoryDTO {
+  public toClientDTO(): TaskTemplateHistoryClientDTO {
     return {
       uuid: this.uuid,
       templateUuid: this._templateUuid,
@@ -141,7 +141,7 @@ export class TaskTemplateHistory extends Entity implements TaskTemplateHistory {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskTemplateHistoryDTO): TaskTemplateHistory {
+  public static fromClientDTO(dto: TaskTemplateHistoryClientDTO): TaskTemplateHistory {
     return new TaskTemplateHistory({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,

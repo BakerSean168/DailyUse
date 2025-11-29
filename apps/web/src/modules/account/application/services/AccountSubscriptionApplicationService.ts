@@ -3,7 +3,12 @@
  * 账户订阅应用服务 - 负责订阅相关的用例
  */
 
-import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
+import type {
+  SubscriptionDTO,
+  SubscribePlanRequestDTO,
+  CancelSubscriptionRequestDTO,
+  AccountStatsResponseDTO,
+} from '@dailyuse/contracts/account';
 import { useAccountStore } from '../../presentation/stores/accountStore';
 import { accountApiClient } from '../../infrastructure/api/accountApiClient';
 

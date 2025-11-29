@@ -11,9 +11,6 @@
 import { apiClient } from '@/shared/api/instances';
 import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
-// 类型别名
-type AIUsageQuotaClientDTO = AIUsageQuotaClientDTO;
-
 /**
  * AI Generation API Client
  */

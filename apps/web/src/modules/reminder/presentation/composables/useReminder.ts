@@ -5,7 +5,7 @@ import {
   reminderStatisticsApplicationService,
   reminderSyncApplicationService,
 } from '../../application/services';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequest, UpdateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
 
 export function useReminder() {
   const reminderStore = useReminderStore();
@@ -50,7 +50,7 @@ export function useReminder() {
     await reminderSyncApplicationService.refreshAll();
   }
 
-  async function createReminderTemplate(request: CreateReminderTemplateRequestDTO) {
+  async function createReminderTemplate(request: CreateReminderTemplateRequest) {
     return await reminderTemplateApplicationService.createReminderTemplate(request);
   }
 
@@ -70,7 +70,7 @@ export function useReminder() {
    */
   async function updateTemplate(
     uuid: string,
-    request: UpdateReminderTemplateRequestDTO,
+    request: UpdateReminderTemplateRequest,
   ) {
     return await reminderTemplateApplicationService.updateReminderTemplate(uuid, request);
   }

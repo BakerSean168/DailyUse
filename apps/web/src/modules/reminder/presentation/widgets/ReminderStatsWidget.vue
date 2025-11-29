@@ -3,7 +3,7 @@
  * ReminderStatsWidget - 提醒统计 Widget
  */
 import { computed } from 'vue';
-import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
+import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useReminderStatistics } from '@/modules/notification/presentation/composables/useReminderStatistics';
 
 interface Props {

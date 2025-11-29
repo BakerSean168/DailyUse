@@ -104,7 +104,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
 import { taskDependencyGraphService } from '@/modules/task/application/services/TaskDependencyGraphService';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 
 type TaskClientDTO = TaskTemplateClientDTO;
 
@@ -160,7 +160,7 @@ function updateChart() {
   if (!chartInstance.value) return;
 
   try {
-    let graphData = taskDependencyGraphService.generateGraphData(props.tasks, props.dependencies);
+    let graphData = taskDependencyGraphService.transformToGraphData(props.tasks, props.dependencies);
 
     if (showCriticalPath.value && criticalPathInfo.value) {
       graphData = taskDependencyGraphService.highlightCriticalPath(graphData, criticalPathInfo.value);

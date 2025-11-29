@@ -12,6 +12,7 @@
 
 import { computed } from 'vue';
 import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 import { useTaskStatistics } from '@/modules/task/presentation/composables/useTaskStatistics';
 
 // ===== Props =====

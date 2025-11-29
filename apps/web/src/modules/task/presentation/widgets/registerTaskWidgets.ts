@@ -9,6 +9,7 @@
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { defineAsyncComponent } from 'vue';
 import type { WidgetConfig, WidgetType } from '@dailyuse/contracts/dashboard';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 
 /**
  * 注册 Task 模块的所有 Widgets

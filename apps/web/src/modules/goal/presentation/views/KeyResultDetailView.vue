@@ -241,8 +241,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useGoal } from '../composables/useGoal';
-import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';

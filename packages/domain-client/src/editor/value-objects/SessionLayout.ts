@@ -3,7 +3,7 @@
  * 会话布局 - 客户端值对象
  */
 
-import type { ISessionLayoutClient, SessionLayoutClientDTO, SessionLayoutServerDTO } from '@dailyuse/contracts/editor';
+import type { ISessionLayoutClient, SessionLayoutClient, SessionLayoutClientDTO, SessionLayoutServerDTO } from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
 
 /**
@@ -15,7 +15,7 @@ import { ValueObject } from '@dailyuse/utils';
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class SessionLayout extends ValueObject implements SessionLayoutClient {
+export class SessionLayout extends ValueObject implements ISessionLayoutClient {
   public readonly splitType: 'horizontal' | 'vertical' | 'grid';
   public readonly groupCount: number;
   public readonly activeGroupIndex: number;

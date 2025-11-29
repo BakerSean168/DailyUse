@@ -12,8 +12,8 @@
  * - 统一错误处理
  */
 
-import { ReminderTemplateStatus } from '@dailyuse/contracts/reminder';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO } from '@dailyuse/contracts/reminder';
+import { ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderHistoryClientDTO, ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';

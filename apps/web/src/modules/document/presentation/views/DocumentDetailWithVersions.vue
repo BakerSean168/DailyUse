@@ -105,10 +105,8 @@ import { useRoute } from 'vue-router';
 import { useDocumentVersion } from '../composables/useDocumentVersion';
 import VersionHistoryList from '../components/VersionHistoryList.vue';
 import VersionDiffViewer from '../components/VersionDiffViewer.vue';
-import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
+import type { DocumentClientDTO, DocumentVersionClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentClientDTO;
-type DocumentVersionClientDTO = DocumentVersionClientDTO;
 
 // ==================== Route & State ====================
 const route = useRoute();

@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from '@/shared/api';
-import type { EditorDocumentClientDTO } from '@dailyuse/contracts/editor';
+import type { DocumentClientDTO, EditorWorkspaceClientDTO, CreateEditorWorkspaceRequest, UpdateEditorWorkspaceRequest, CreateEditorSessionRequest, EditorSessionClientDTO } from '@dailyuse/contracts/editor';
 
 // 类型别名
 type CreateWorkspaceRequest = CreateEditorWorkspaceRequest;

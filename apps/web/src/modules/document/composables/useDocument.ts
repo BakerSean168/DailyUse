@@ -3,10 +3,6 @@ import { ref } from 'vue';
 import { documentApiClient } from '../api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentClientDTO;
-type CreateDocumentDTO = CreateDocumentDTO;
-type UpdateDocumentDTO = UpdateDocumentDTO;
-type FindDocumentsQueryDTO = FindDocumentsQueryDTO;
 
 export function useDocument() {
   const documents = ref<DocumentClientDTO[]>([]);

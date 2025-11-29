@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest } from '@dailyuse/contracts/goal';
 import { focusModeApiClient } from '../../infrastructure/api/focusModeApiClient';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 import { createLogger } from '@dailyuse/utils';

@@ -140,8 +140,8 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue';
-import { ReminderTemplateStatus, ReminderGroupType } from '@dailyuse/contracts/reminder';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
+import { ControlMode } from '@dailyuse/contracts/reminder';
+import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
 import { ColorPicker, IconPicker } from '@dailyuse/ui';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { useReminderGroup } from '../../composables/useReminderGroup';
@@ -276,7 +276,7 @@ const handleSave = async () => {
 
   try {
     // 构建分组数据
-    const groupData: CreateReminderGroupRequestDTO = {
+    const groupData: CreateReminderGroupRequest = {
       name: formData.name.trim(),
       description: formData.description?.trim() || undefined,
       color: formData.color,

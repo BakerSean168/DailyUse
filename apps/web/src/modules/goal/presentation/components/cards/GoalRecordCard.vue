@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
 
 defineProps<{

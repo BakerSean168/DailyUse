@@ -32,9 +32,9 @@ export default createTsupConfig({
     'src/ai/index.ts',
   ],
   external: ['@dailyuse/contracts', '@dailyuse/utils'],
-  // 暂时禁用 DTS 生成，直到所有 verbatimModuleSyntax 问题修复
+  // 启用 DTS 生成
   extraOptions: {
-    dts: false,
+    dts: true,
   },
 });
 

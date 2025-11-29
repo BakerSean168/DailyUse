@@ -11,24 +11,6 @@ import type { AuthTokens, LoginRequest } from '@dailyuse/contracts/authenticatio
 import type { AccountServerDTO } from '@dailyuse/contracts/account';
 
 // 类型别名以简化使用
-type LoginRequestDTO = LoginRequestDTO;
-type LoginResponseDTO = LoginResponseDTO;
-type RefreshTokenRequestDTO = RefreshTokenRequestDTO;
-type RefreshTokenResponseDTO = RefreshTokenResponseDTO;
-type LogoutResponse = LogoutResponse;
-type VerifyMFARequest = VerifyMFARequest;
-type VerifyMFAResponse = VerifyMFAResponse;
-type MFADeviceListResponse = MFADeviceListResponse;
-type SessionListResponse = SessionListResponse;
-type TerminateSessionRequest = TerminateSessionRequest;
-type ChangePasswordRequestDTO = ChangePasswordRequestDTO;
-type PasswordChangeResponse = PasswordChangeResponse;
-type CreateMFADeviceRequest = CreateMFADeviceRequest;
-type MFADeviceCreationResponse = MFADeviceCreationResponse;
-type DeleteMFADeviceRequest = DeleteMFADeviceRequest;
-type AccountClientDTO = AccountClientDTO;
-type AuthSessionClientDTO = AuthSessionClientDTO;
-type DeviceInfoClientDTO = DeviceInfoClientDTO;
 
 /**
  * 认证 API 服务类

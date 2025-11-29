@@ -5,7 +5,7 @@
 import type { IKeyResultSnapshotClient, KeyResultSnapshotClientDTO, KeyResultSnapshotServerDTO } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-export class KeyResultSnapshot extends ValueObject implements KeyResultSnapshot {
+export class KeyResultSnapshot extends ValueObject implements IKeyResultSnapshotClient {
   private _keyResultUuid: string;
   private _title: string;
   private _targetValue: number;
@@ -63,7 +63,7 @@ export class KeyResultSnapshot extends ValueObject implements KeyResultSnapshot 
   }
 
   // 值对象方法
-  public equals(other: IKeyResultSnapshot): boolean {
+  public equals(other: IKeyResultSnapshotClient): boolean {
     return (
       this._keyResultUuid === other.keyResultUuid &&
       this._title === other.title &&
@@ -84,7 +84,7 @@ export class KeyResultSnapshot extends ValueObject implements KeyResultSnapshot 
     };
   }
 
-  public toClientDTO(): KeyResultSnapshotDTO {
+  public toClientDTO(): KeyResultSnapshotClientDTO {
     return {
       keyResultUuid: this._keyResultUuid,
       title: this._title,
@@ -98,7 +98,7 @@ export class KeyResultSnapshot extends ValueObject implements KeyResultSnapshot 
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: KeyResultSnapshotDTO): KeyResultSnapshot {
+  public static fromClientDTO(dto: KeyResultSnapshotClientDTO): KeyResultSnapshot {
     return new KeyResultSnapshot({
       keyResultUuid: dto.keyResultUuid,
       title: dto.title,

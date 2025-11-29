@@ -5,7 +5,6 @@
 
 import type { EditorWorkspaceClient, EditorWorkspaceClientDTO, EditorWorkspaceServerDTO } from '@dailyuse/contracts/editor';
 import { ProjectType } from '@dailyuse/contracts/editor';
-import { ProjectType } from '@dailyuse/contracts/editor';
 import { AggregateRoot } from '@dailyuse/utils';
 import { WorkspaceLayoutClient, WorkspaceSettingsClient } from '../value-objects';
 import { EditorSessionClient } from '../entities';

@@ -12,8 +12,6 @@ import { apiClient } from '@/shared/api';
 import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
 // 类型别名
-type UserSettingClientDTO = UserSettingClientDTO;
-type UpdateUserSettingRequest = UpdateUserSettingRequest;
 
 /** 
  * 设置更新响应（轻量级）

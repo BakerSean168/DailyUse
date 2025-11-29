@@ -9,7 +9,7 @@
  */
 
 import { computed, onMounted, ref } from 'vue';
-import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
+import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useGoal } from '@/modules/goal/presentation/composables/useGoal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 

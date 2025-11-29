@@ -96,7 +96,7 @@ export class RecurrenceRule extends ValueObject implements RecurrenceRule {
   }
 
   // 值对象方法
-  public equals(other: IRecurrenceRule): boolean {
+  public equals(other: RecurrenceRuleClient): boolean {
     return (
       this._frequency === other.frequency &&
       this._interval === other.interval &&
@@ -122,7 +122,7 @@ export class RecurrenceRule extends ValueObject implements RecurrenceRule {
     };
   }
 
-  public toClientDTO(): RecurrenceRuleDTO {
+  public toClientDTO(): RecurrenceRuleClientDTO {
     return {
       frequency: this._frequency,
       interval: this._interval,
@@ -137,7 +137,7 @@ export class RecurrenceRule extends ValueObject implements RecurrenceRule {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: RecurrenceRuleDTO): RecurrenceRule {
+  public static fromClientDTO(dto: RecurrenceRuleClientDTO): RecurrenceRule {
     return new RecurrenceRule({
       frequency: dto.frequency,
       interval: dto.interval,

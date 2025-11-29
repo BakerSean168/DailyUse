@@ -3,9 +3,18 @@
  * API Key 管理应用服务 - 负责 API Key 相关的用例
  */
 
-import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+import type {
+  CreateApiKeyRequest,
+  CreateApiKeyResponseDTO,
+  ApiKeyListResponseDTO,
+  RevokeApiKeyRequest,
+} from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
+
+// Type aliases
+type CreateApiKeyRequestDTO = CreateApiKeyRequest;
+type RevokeApiKeyRequestDTO = RevokeApiKeyRequest;
 
 export class ApiKeyApplicationService {
   private static instance: ApiKeyApplicationService;

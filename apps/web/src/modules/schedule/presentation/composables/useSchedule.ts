@@ -12,9 +12,9 @@ import type {
   ModuleStatisticsServerDTO,
   ConflictDetectionResult,
   ScheduleClientDTO,
-  CreateScheduleTaskRequestDTO,
-  CreateScheduleRequestDTO,
-  ResolveConflictRequestDTO,
+  CreateScheduleTaskRequest,
+  CreateScheduleRequest,
+  ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import { createLogger } from '@dailyuse/utils';

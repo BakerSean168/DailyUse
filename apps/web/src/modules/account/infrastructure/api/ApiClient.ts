@@ -13,14 +13,6 @@ import type {
 import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
 
 // 使用 AccountContracts 命名空间中的类型
-type AccountDTO = AccountDTO;
-type CreateAccountRequestDTO = CreateAccountRequestDTO;
-type UpdateAccountRequest = UpdateAccountRequest;
-type VerifyEmailRequestDTO = VerifyEmailRequestDTO;
-type VerifyPhoneRequestDTO = VerifyPhoneRequestDTO;
-type AccountCreationResponse = AccountCreationResponse;
-type AccountDetailResponse = AccountDetailResponse;
-type AccountListResponseDTO = AccountListResponseDTO;
 
 // 注册相关类型
 type RegistrationByUsernameAndPasswordRequestDTO = CreateAccountRequestDTO;

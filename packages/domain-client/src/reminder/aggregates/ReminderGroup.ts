@@ -230,7 +230,7 @@ export class ReminderGroup extends AggregateRoot
 
   // ========== 转换方法 ==========
   
-  public toClientDTO(): ReminderGroupDTO {
+  public toClientDTO(): ReminderGroupClientDTO {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,
@@ -295,7 +295,7 @@ export class ReminderGroup extends AggregateRoot
     });
   }
   
-  public static fromClientDTO(dto: ReminderGroupDTO): ReminderGroup {
+  public static fromClientDTO(dto: ReminderGroupClientDTO): ReminderGroup {
     return new ReminderGroup({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,

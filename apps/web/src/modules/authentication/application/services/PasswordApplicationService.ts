@@ -3,9 +3,25 @@
  * 密码管理应用服务 - 负责密码相关的用例
  */
 
-import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+import type {
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
+  Enable2FARequest,
+  Enable2FAResponseDTO,
+  Disable2FARequest,
+  Verify2FARequest,
+} from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
+
+// Type aliases
+type ForgotPasswordRequestDTO = ForgotPasswordRequest;
+type ResetPasswordRequestDTO = ResetPasswordRequest;
+type ChangePasswordRequestDTO = ChangePasswordRequest;
+type Enable2FARequestDTO = Enable2FARequest;
+type Disable2FARequestDTO = Disable2FARequest;
+type Verify2FARequestDTO = Verify2FARequest;
 
 export class PasswordApplicationService {
   private static instance: PasswordApplicationService;

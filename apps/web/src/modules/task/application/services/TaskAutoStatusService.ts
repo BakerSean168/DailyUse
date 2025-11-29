@@ -9,7 +9,7 @@
  */
 
 import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 import mitt, { type Emitter } from 'mitt';

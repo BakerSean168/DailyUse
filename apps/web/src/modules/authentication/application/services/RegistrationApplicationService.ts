@@ -3,9 +3,12 @@
  * 注册应用服务 - 负责用户注册相关的用例
  */
 
-import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+import type { RegisterRequest } from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
+
+// Type alias
+type RegisterRequestDTO = RegisterRequest;
 
 export class RegistrationApplicationService {
   private static instance: RegistrationApplicationService;

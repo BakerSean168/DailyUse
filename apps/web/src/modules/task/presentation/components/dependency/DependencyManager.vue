@@ -136,7 +136,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskDependencyValidationService } from '@/modules/task/application/services/TaskDependencyValidationService';
 import { taskAutoStatusService } from '@/modules/task/application/services/TaskAutoStatusService';
@@ -148,7 +148,6 @@ import DependencyValidationDialog from './DependencyValidationDialog.vue';
 import BlockedTaskInfo from './BlockedTaskInfo.vue';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 
-type TaskDependencyClientDTO = TaskDependencyClientDTO;
 
 interface Props {
   currentTaskUuid?: string;

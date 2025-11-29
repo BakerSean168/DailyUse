@@ -6,7 +6,6 @@ import { DashboardConfigApiClient } from '../infrastructure/api/DashboardConfigA
 import { widgetRegistry } from '../infrastructure/WidgetRegistry';
 
 // 本地类型别名（无需导出，web 应用不生成 .d.ts）
-type WidgetConfigData = WidgetConfigData;
 type WidgetConfig = WidgetConfigDTO;
 
 /**

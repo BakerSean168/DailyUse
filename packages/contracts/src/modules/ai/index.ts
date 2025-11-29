@@ -150,3 +150,10 @@ export type {
   RefreshProviderModelsRequest,
   RefreshProviderModelsResponse,
 } from './api-requests/AIProviderConfigRequest';
+
+export type {
+  GenerateGoalRequest,
+  GenerateGoalWithKRsRequest,
+} from './api-requests/GenerateGoalRequest';
+
+export { GoalCategory } from './api-requests/GenerateGoalRequest';

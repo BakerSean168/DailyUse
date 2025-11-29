@@ -1,5 +1,12 @@
-import type { AuthTokens, LoginRequest } from '@dailyuse/contracts/authentication';
-import type { AccountServerDTO } from '@dailyuse/contracts/account';
+import type {
+  AuthTokens,
+  LoginRequest,
+  LoginResponseDTO,
+  ChangePasswordRequest,
+  AuthSessionClientDTO,
+  DeviceInfoClientDTO,
+} from '@dailyuse/contracts/authentication';
+import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import { AuthApiService } from '../../infrastructure/api/ApiClient';
 import { AuthManager } from '../../../../shared/api/core/interceptors';
 import { publishUserLoggedInEvent, publishUserLoggedOutEvent } from '../events/authEvents';
@@ -7,14 +14,8 @@ import { publishUserLoggedInEvent, publishUserLoggedOutEvent } from '../events/a
 import { useAuthenticationStore } from '../../presentation/stores/authenticationStore';
 
 // Type aliases for cleaner code
-type LoginRequestDTO = LoginRequestDTO;
-type LoginResponseDTO = LoginResponseDTO;
-type RefreshTokenRequestDTO = RefreshTokenRequestDTO;
-type RefreshTokenResponseDTO = RefreshTokenResponseDTO;
-type ChangePasswordRequestDTO = ChangePasswordRequestDTO;
-type AuthSessionClientDTO = AuthSessionClientDTO;
-type DeviceInfoClientDTO = DeviceInfoClientDTO;
-type AccountClientDTO = AccountClientDTO;
+type LoginRequestDTO = LoginRequest;
+type ChangePasswordRequestDTO = ChangePasswordRequest;
 
 /**
  * Authentication Application Service

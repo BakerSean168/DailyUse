@@ -1,5 +1,21 @@
 import { apiClient } from '@/shared/api/instances';
-import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
+import type {
+  AccountDTO,
+  AccountListResponseDTO,
+  AccountQueryParams,
+  AccountStatsResponseDTO,
+  AccountHistoryListResponseDTO,
+  SubscriptionDTO,
+  CreateAccountRequestDTO,
+  UpdateAccountProfileRequestDTO,
+  UpdateAccountPreferencesRequestDTO,
+  UpdateEmailRequestDTO,
+  VerifyEmailRequestDTO,
+  UpdatePhoneRequestDTO,
+  VerifyPhoneRequestDTO,
+  SubscribePlanRequestDTO,
+  CancelSubscriptionRequestDTO,
+} from '@dailyuse/contracts/account';
 
 /**
  * Account API 客户端

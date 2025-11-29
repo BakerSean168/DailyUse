@@ -9,10 +9,9 @@
  */
 
 import { ref, computed, readonly, onMounted, onUnmounted } from 'vue';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO, TaskDashboardResponse } from '@dailyuse/contracts/task';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
 
-type TaskDashboardResponse = TaskDashboardResponse;
 
 /**
  * 任务仪表板 Composable

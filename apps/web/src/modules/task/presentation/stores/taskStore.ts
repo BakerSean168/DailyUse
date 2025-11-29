@@ -2,12 +2,7 @@ import { defineStore } from 'pinia';
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 import { toDayStart } from '@dailyuse/utils';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
-
-const TaskInstanceStatus = TaskInstanceStatus;
-type TaskInstanceStatus = TaskInstanceStatus;
-
-const TaskTemplateStatus = TaskTemplateStatus;
-type TaskTemplateStatus = TaskTemplateStatus;
+import { TaskInstanceStatus, TaskTemplateStatus } from '@dailyuse/contracts/task';
 
 /**
  * Task Store - 新架构

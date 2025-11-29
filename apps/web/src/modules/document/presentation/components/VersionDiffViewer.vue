@@ -81,7 +81,6 @@
 import { computed } from 'vue';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type VersionComparisonDTO = VersionComparisonDTO;
 
 // ==================== Props ====================
 const props = defineProps<{

@@ -70,7 +70,7 @@ export class GoalReview extends Entity implements GoalReview {
   public get improvements(): string | null | undefined {
     return this._improvements;
   }
-  public get keyResultSnapshots(): KeyResultSnapshotDTO[] {
+  public get keyResultSnapshots(): KeyResultSnapshotClientDTO[] {
     return this._keyResultSnapshots.map((s) => s.toClientDTO());
   }
   public get reviewedAt(): number {
@@ -196,7 +196,7 @@ export class GoalReview extends Entity implements GoalReview {
   }
 
   // DTO 转换
-  public toClientDTO(): GoalReviewDTO {
+  public toClientDTO(): GoalReviewClientDTO {
     return {
       uuid: this.uuid,
       goalUuid: this._goalUuid,
@@ -235,7 +235,7 @@ export class GoalReview extends Entity implements GoalReview {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalReviewDTO): GoalReview {
+  public static fromClientDTO(dto: GoalReviewClientDTO): GoalReview {
     return new GoalReview({
       uuid: dto.uuid,
       goalUuid: dto.goalUuid,
@@ -245,7 +245,7 @@ export class GoalReview extends Entity implements GoalReview {
       achievements: dto.achievements,
       challenges: dto.challenges,
       improvements: dto.improvements,
-      keyResultSnapshots: dto.keyResultSnapshots.map((s) =>
+      keyResultSnapshots: dto.keyResultSnapshots.map((s: KeyResultSnapshotClientDTO) =>
         KeyResultSnapshot.fromClientDTO(s),
       ),
       reviewedAt: dto.reviewedAt,

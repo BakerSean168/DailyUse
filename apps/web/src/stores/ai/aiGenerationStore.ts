@@ -17,6 +17,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { AIUsageQuotaClientDTO } from '@dailyuse/contracts/ai';
+import { GenerationTaskType } from '@dailyuse/contracts/ai';
 
 /**
  * AI Generation Store

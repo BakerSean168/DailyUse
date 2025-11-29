@@ -10,7 +10,6 @@ import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/c
 import { useUserSettingStore } from '../stores/userSettingStore';
 
 // 类型别名
-type UserSettingClientDTO = UserSettingClientDTO;
 
 export interface SettingExportData {
   version: string;

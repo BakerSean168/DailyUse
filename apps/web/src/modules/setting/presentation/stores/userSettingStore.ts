@@ -26,8 +26,6 @@ import { getThemeService } from '../../application/services/ThemeService';
 // ==================== 类型定义 ====================
 
 // 类型别名
-type UserSettingClientDTO = UserSettingClientDTO;
-type UpdateUserSettingRequest = UpdateUserSettingRequest;
 
 /** 外观设置 */
 type AppearanceSettings = NonNullable<UpdateUserSettingRequest['appearance']>;

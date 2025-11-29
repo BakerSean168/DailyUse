@@ -15,7 +15,7 @@ import { AIMessage } from '../entities/AIMessage';
 export class AIConversation extends AggregateRoot implements AIConversationClientInstance {
   private _accountUuid: string;
   private _title: string;
-  private _status: ConversationStatusEnum;
+  private _status: ConversationStatus;
   private _messageCount: number;
   private _lastMessageAt?: number | null;
   private _createdAt: number;
@@ -27,7 +27,7 @@ export class AIConversation extends AggregateRoot implements AIConversationClien
     uuid: string;
     accountUuid: string;
     title: string;
-    status: ConversationStatusEnum;
+    status: ConversationStatus;
     messageCount: number;
     lastMessageAt?: number | null;
     createdAt: number;
@@ -90,7 +90,7 @@ export class AIConversation extends AggregateRoot implements AIConversationClien
     return this.isActive;
   }
   get statusText(): string {
-    const map: Record<ConversationStatusEnum, string> = {
+    const map: Record<ConversationStatus, string> = {
       [ConversationStatus.ACTIVE]: '进行中',
       [ConversationStatus.CLOSED]: '已关闭',
       [ConversationStatus.ARCHIVED]: '已归档',

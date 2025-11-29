@@ -2,9 +2,7 @@
  * CategoryPreference 值对象实现 (Client)
  */
 
-import {
-  ImportanceLevel,
-} from '@dailyuse/contracts/notification';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import type {
   CategoryPreferenceClient as ICategoryPreferenceClient,
   CategoryPreferenceClientDTO,

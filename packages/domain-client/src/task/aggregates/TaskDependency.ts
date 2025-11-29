@@ -192,7 +192,7 @@ export class TaskDependency extends AggregateRoot {
     };
   }
 
-  toClientDTO(): TaskDependencyDTO {
+  toClientDTO(): TaskDependencyClientDTO {
     return {
       uuid: this.uuid,
       predecessorTaskUuid: this._predecessorTaskUuid,
@@ -246,7 +246,7 @@ export class TaskDependency extends AggregateRoot {
   /**
    * 从 Client DTO 创建客户端实体
    */
-  static fromClientDTO(dto: TaskDependencyDTO): TaskDependency {
+  static fromClientDTO(dto: TaskDependencyClientDTO): TaskDependency {
     return new TaskDependency({
       uuid: dto.uuid,
       predecessorTaskUuid: dto.predecessorTaskUuid,

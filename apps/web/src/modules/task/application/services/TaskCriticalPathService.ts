@@ -12,10 +12,9 @@
  */
 
 import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 
-type TaskDependencyClientDTO = TaskDependencyClientDTO;
 
 /**
  * 任务时序信息

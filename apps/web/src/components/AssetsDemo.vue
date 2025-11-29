@@ -161,8 +161,12 @@ import { audioService, type SoundType } from '@/services/AudioService';
 import { AuthManager } from '@/shared/api';
 import { reminderApiClient } from '@/modules/reminder/infrastructure/api/reminderApiClient';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, CreateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
+import { ReminderType, TriggerType, RecurrenceType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { generateUUID } from '@dailyuse/utils';
+
+// Type alias
+type CreateReminderTemplateRequestDTO = CreateReminderTemplateRequest;
 
 // 音频控制状态
 const volume = ref(50);

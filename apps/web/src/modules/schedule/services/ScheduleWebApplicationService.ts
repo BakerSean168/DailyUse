@@ -7,7 +7,7 @@ import { scheduleApiClient } from '../infrastructure/api';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
-  CreateScheduleTaskRequestDTO,
+  CreateScheduleTaskRequest,
   ScheduleStatisticsClientDTO,
   ModuleStatisticsClientDTO,
 } from '@dailyuse/contracts/schedule';

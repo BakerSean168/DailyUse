@@ -4,9 +4,17 @@
  */
 
 import { ref } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
-import { GoalStatus as GC_GoalStatus } from '@dailyuse/contracts/goal';
-import type { GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import { AggregationMethod, KeyResultValueType, GoalStatus as GC_GoalStatus } from '@dailyuse/contracts/goal';
+import type {
+  GoalClientDTO,
+  KeyResultClientDTO,
+  CreateGoalRequest,
+  UpdateGoalRequest,
+  GoalServerDTO,
+  KeyResultServerDTO,
+  AddKeyResultRequest,
+  UpdateKeyResultRequest,
+} from '@dailyuse/contracts/goal';
 import { keyResultApplicationService } from '../../application/services';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 

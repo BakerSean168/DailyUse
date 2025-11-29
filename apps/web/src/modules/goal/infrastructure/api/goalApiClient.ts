@@ -1,6 +1,29 @@
 import { apiClient } from '@/shared/api/instances';
 import { GoalStatus } from '@dailyuse/contracts/goal';
-import type { GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import type {
+  GoalServerDTO,
+  KeyResultServerDTO,
+  GoalClientDTO,
+  KeyResultClientDTO,
+  CreateGoalRequest,
+  GoalsResponse,
+  UpdateGoalRequest,
+  AddKeyResultRequest,
+  KeyResultsResponse,
+  UpdateKeyResultRequest,
+  ProgressBreakdown,
+  CreateGoalReviewRequest,
+  GoalReviewClientDTO,
+  GoalReviewsResponse,
+  GoalAggregateViewResponse,
+  CreateGoalRecordRequest,
+  GoalRecordClientDTO,
+  GoalRecordsResponse,
+  CreateGoalFolderRequest,
+  GoalFolderClientDTO,
+  GoalFolderListResponse,
+  UpdateGoalFolderRequest,
+} from '@dailyuse/contracts/goal';
 
 /**
  * Goal API 客户端

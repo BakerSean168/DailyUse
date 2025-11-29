@@ -3,11 +3,19 @@
  * 登录应用服务 - 负责登录相关的用例
  */
 
-import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+import type {
+  LoginRequest,
+  LoginResponseDTO,
+  LogoutRequest,
+} from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
 import { useAccountStore } from '../../../account/presentation/stores/accountStore';
 import { accountApiClient } from '../../../account/infrastructure/api/accountApiClient';
+
+// Type aliases
+type LoginRequestDTO = LoginRequest;
+type LogoutRequestDTO = LogoutRequest;
 
 export class LoginApplicationService {
   private static instance: LoginApplicationService;

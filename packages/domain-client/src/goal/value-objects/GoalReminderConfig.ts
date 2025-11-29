@@ -11,7 +11,7 @@ import type {
 } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-export class GoalReminderConfig extends ValueObject implements GoalReminderConfig {
+export class GoalReminderConfig extends ValueObject implements IGoalReminderConfigClient {
   private _enabled: boolean;
   private _triggers: ReminderTrigger[];
 
@@ -65,7 +65,7 @@ export class GoalReminderConfig extends ValueObject implements GoalReminderConfi
   }
 
   // 值对象方法
-  public equals(other: IGoalReminderConfig): boolean {
+  public equals(other: IGoalReminderConfigClient): boolean {
     return (
       this._enabled === other.enabled &&
       JSON.stringify(this._triggers) === JSON.stringify(other.triggers)
@@ -100,7 +100,7 @@ export class GoalReminderConfig extends ValueObject implements GoalReminderConfi
     };
   }
 
-  public toClientDTO(): GoalReminderConfigDTO {
+  public toClientDTO(): GoalReminderConfigClientDTO {
     return {
       enabled: this._enabled,
       triggers: [...this._triggers],
@@ -113,7 +113,7 @@ export class GoalReminderConfig extends ValueObject implements GoalReminderConfi
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalReminderConfigDTO): GoalReminderConfig {
+  public static fromClientDTO(dto: GoalReminderConfigClientDTO): GoalReminderConfig {
     return new GoalReminderConfig({
       enabled: dto.enabled,
       triggers: dto.triggers,

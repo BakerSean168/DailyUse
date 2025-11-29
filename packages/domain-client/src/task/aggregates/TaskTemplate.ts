@@ -580,7 +580,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
   }
 
   // DTO 转换
-  public toClientDTO(): TaskTemplateDTO {
+  public toClientDTO(): TaskTemplateClientDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -652,7 +652,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskTemplateDTO): TaskTemplate {
+  public static fromClientDTO(dto: TaskTemplateClientDTO): TaskTemplate {
     return new TaskTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,

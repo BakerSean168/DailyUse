@@ -55,9 +55,9 @@ const testAuth = () => {
       hasAccessToken: !!AuthManager.getAccessToken(),
       isTokenExpired: AuthManager.isTokenExpired(),
       needsRefresh: AuthManager.needsRefresh(),
-      user: authStore.user,
+      user: authStore.getCurrentUser,
       error: authStore.error,
-      loading: authStore.loading,
+      loading: authStore.isLoading,
     };
   } catch (error: any) {
     authStatus.value = {

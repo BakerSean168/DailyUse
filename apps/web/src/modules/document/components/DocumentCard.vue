@@ -38,7 +38,6 @@
 <script setup lang="ts">
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentClientDTO;
 
 interface Props {
   document: DocumentClientDTO;

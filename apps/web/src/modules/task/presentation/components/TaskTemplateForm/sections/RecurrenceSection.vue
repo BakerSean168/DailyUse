@@ -82,11 +82,8 @@
 <script setup lang="ts">
 import { TaskTemplate, RecurrenceRule } from '@dailyuse/domain-client/task';
 import { computed, ref, watch } from 'vue';
-import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
-
-const RecurrenceFrequency = RecurrenceFrequency;
-const DayOfWeek = DayOfWeek;
+import { TaskTemplateStatus, TaskType, TaskInstanceStatus, RecurrenceFrequency, DayOfWeek } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, RecurrenceRuleClientDTO } from '@dailyuse/contracts/task';
 
 interface Props {
   modelValue: TaskTemplate;

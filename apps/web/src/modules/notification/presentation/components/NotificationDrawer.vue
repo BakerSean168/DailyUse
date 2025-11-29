@@ -41,7 +41,6 @@ import { computed } from 'vue';
 import NotificationList from './NotificationList.vue';
 import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 
-type NotificationClientDTO = NotificationClientDTO;
 
 interface Props {
   modelValue: boolean;

@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, reactive } from 'vue';
 
-import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
+import type { AccountDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
 import { Gender } from '@dailyuse/contracts/account';
 
 type ProfileData = {

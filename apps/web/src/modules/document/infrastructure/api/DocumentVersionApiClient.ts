@@ -9,10 +9,6 @@
 import { apiClient } from '@/shared/api/instances';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentVersionClientDTO = DocumentVersionClientDTO;
-type DocumentVersionServerDTO = DocumentVersionServerDTO;
-type VersionComparisonDTO = VersionComparisonDTO;
-type VersionHistoryResponseDTO = VersionHistoryResponseDTO;
 
 export class DocumentVersionApiClient {
   /**

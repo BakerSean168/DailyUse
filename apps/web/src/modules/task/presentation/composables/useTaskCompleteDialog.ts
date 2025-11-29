@@ -4,8 +4,9 @@
  */
 
 import { ref } from 'vue';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO, TaskGoalBindingClientDTO } from '@dailyuse/contracts/task';
 import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import { AggregationMethod } from '@dailyuse/contracts/goal';
 import { useTaskInstance } from './useTaskInstance';
 import { useTaskStore } from '../stores/taskStore';
 import { useGoal } from '@/modules/goal/presentation/composables/useGoal';

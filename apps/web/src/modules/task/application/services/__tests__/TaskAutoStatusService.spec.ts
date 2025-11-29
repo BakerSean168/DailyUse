@@ -8,7 +8,6 @@ import { taskAutoStatusService } from '../TaskAutoStatusService';
 import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 
-type TaskDependencyClientDTO = TaskDependencyClientDTO;
 
 // 简化的任务类型用于测试
 interface TestTask {

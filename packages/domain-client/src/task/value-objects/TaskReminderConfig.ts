@@ -66,7 +66,7 @@ export class TaskReminderConfig extends ValueObject implements TaskReminderConfi
   }
 
   // 值对象方法
-  public equals(other: ITaskReminderConfig): boolean {
+  public equals(other: TaskReminderConfigClient): boolean {
     return (
       this._enabled === other.enabled &&
       JSON.stringify(this._triggers) === JSON.stringify(other.triggers)
@@ -90,7 +90,7 @@ export class TaskReminderConfig extends ValueObject implements TaskReminderConfi
     };
   }
 
-  public toClientDTO(): TaskReminderConfigDTO {
+  public toClientDTO(): TaskReminderConfigClientDTO {
     return {
       enabled: this._enabled,
       triggers: [...this._triggers],
@@ -102,7 +102,7 @@ export class TaskReminderConfig extends ValueObject implements TaskReminderConfi
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskReminderConfigDTO): TaskReminderConfig {
+  public static fromClientDTO(dto: TaskReminderConfigClientDTO): TaskReminderConfig {
     return new TaskReminderConfig({
       enabled: dto.enabled,
       triggers: dto.triggers,

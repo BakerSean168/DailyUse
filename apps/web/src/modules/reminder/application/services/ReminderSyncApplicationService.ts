@@ -1,4 +1,4 @@
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, ReminderHistoryClientDTO, ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate, ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { getReminderStore } from '../../presentation/stores/reminderStore';

@@ -9,7 +9,7 @@
 import { ref, computed, watch } from 'vue';
 import { weightSnapshotWebApplicationService } from '../services/WeightSnapshotWebApplicationService';
 import { createLogger } from '@dailyuse/utils';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotServerDTO } from '@dailyuse/contracts/goal';
 
 const logger = createLogger('useWeightSnapshot');
 

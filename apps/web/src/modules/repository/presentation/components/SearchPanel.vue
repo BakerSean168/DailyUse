@@ -150,11 +150,8 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useSearchStore } from '../stores/searchStore';
-import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, SearchMode, SearchResultItem, SearchRequest, SearchResponse } from '@dailyuse/contracts/repository';
 
-type SearchMode = SearchMode;
-type SearchResultItem = SearchResultItem;
-type SearchMatch = SearchMatch;
 
 // Props
 const props = defineProps<{

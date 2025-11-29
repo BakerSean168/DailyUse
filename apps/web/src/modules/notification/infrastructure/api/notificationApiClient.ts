@@ -7,12 +7,6 @@
 import { apiClient } from '@/shared/api/instances';
 import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 
-type NotificationClientDTO = NotificationClientDTO;
-type CreateNotificationRequestDTO = CreateNotificationRequestDTO;
-type QueryNotificationsRequest = QueryNotificationsRequest;
-type NotificationListResponseDTO = NotificationListResponseDTO;
-type UnreadCountResponse = UnreadCountResponse;
-type BatchDeleteNotificationsRequest = BatchDeleteNotificationsRequest;
 
 export class NotificationApiClient {
   private readonly baseUrl = '/api/v1/notifications';

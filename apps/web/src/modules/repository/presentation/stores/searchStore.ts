@@ -5,12 +5,9 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, SearchMode, SearchResultItem, SearchRequest, SearchResponse } from '@dailyuse/contracts/repository';
 import { repositoryApiClient } from '@/modules/repository/infrastructure/api';
 
-type SearchMode = SearchMode;
-type SearchResponse = SearchResponse;
-type SearchResultItem = SearchResultItem;
 
 export const useSearchStore = defineStore('repository-search', () => {
   // State

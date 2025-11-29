@@ -3,7 +3,7 @@
  * ScheduleStatsWidget - 日程统计 Widget
  */
 import { computed, ref } from 'vue';
-import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
+import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
 
 interface Props {
   size?: WidgetSize;

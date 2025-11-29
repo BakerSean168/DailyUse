@@ -1,4 +1,4 @@
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, GoalFolderClientDTO, CreateGoalFolderRequest, UpdateGoalFolderRequest, GoalFoldersResponse } from '@dailyuse/contracts/goal';
 import { GoalFolder } from '@dailyuse/domain-client/goal';
 import { goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';

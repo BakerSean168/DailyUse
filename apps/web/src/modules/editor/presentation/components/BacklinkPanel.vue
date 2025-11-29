@@ -85,7 +85,6 @@ import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 import { useRouter } from 'vue-router';
 
-type BacklinkDTO = BacklinkDTO;
 
 // ==================== Props ====================
 interface Props {

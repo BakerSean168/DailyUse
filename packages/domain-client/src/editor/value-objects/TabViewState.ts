@@ -15,7 +15,7 @@ import { ValueObject } from '@dailyuse/utils';
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class TabViewState extends ValueObject implements TabViewStateClient {
+export class TabViewState extends ValueObject implements ITabViewStateClient {
   public readonly scrollTop: number;
   public readonly scrollLeft: number;
   public readonly cursorPosition: {

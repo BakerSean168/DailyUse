@@ -78,11 +78,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { TaskTemplate, TaskReminderConfig } from '@dailyuse/domain-client/task';
-import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import { TaskTemplateStatus, TaskType, TaskInstanceStatus, TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskReminderConfigClientDTO } from '@dailyuse/contracts/task';
 
-const ReminderType = ReminderType;
-const ReminderTimeUnit = ReminderTimeUnit;
+// 类型别名
+const ReminderType = TaskReminderType;
 
 interface Props {
   modelValue: TaskTemplate;
@@ -138,7 +138,7 @@ const reminderEnabled = computed({
 // 触发器列表
 const triggers = ref<
   Array<{
-    type: ReminderType;
+    type: TaskReminderType;
     absoluteTime?: number | null;
     relativeValue?: number | null;
     relativeUnit?: ReminderTimeUnit | null;

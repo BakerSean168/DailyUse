@@ -2,14 +2,6 @@
 import { apiClient } from '@/shared/api/instances';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentClientDTO;
-type CreateDocumentDTO = CreateDocumentDTO;
-type UpdateDocumentDTO = UpdateDocumentDTO;
-type FindDocumentsQueryDTO = FindDocumentsQueryDTO;
-type BacklinksResponseDTO = BacklinksResponseDTO;
-type LinkGraphResponseDTO = LinkGraphResponseDTO;
-type BrokenLinksResponseDTO = BrokenLinksResponseDTO;
-type RepairLinkRequestDTO = RepairLinkRequestDTO;
 
 interface PaginatedResult<T> {
   items: T[];

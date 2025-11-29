@@ -17,7 +17,7 @@ import { ValueObject } from '@dailyuse/utils';
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class ScheduleConfig extends ValueObject implements ScheduleConfigClient {
+export class ScheduleConfig extends ValueObject implements IScheduleConfigClient {
   public readonly cronExpression: string;
   public readonly timezone: Timezone;
   public readonly startDate: Date | null;

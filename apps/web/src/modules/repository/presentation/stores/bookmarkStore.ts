@@ -5,11 +5,9 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, Bookmark } from '@dailyuse/contracts/repository';
 import { v4 as uuidv4 } from 'uuid';
 
-type Bookmark = Bookmark;
-type BookmarkTargetType = BookmarkTargetType;
 
 const STORAGE_KEY = 'repository-bookmarks';
 

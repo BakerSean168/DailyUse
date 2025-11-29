@@ -175,7 +175,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { useReminder } from '../../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';

@@ -204,7 +204,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { useReminder } from '../../composables/useReminder';

@@ -225,8 +225,8 @@
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue';
 import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
-import { ReminderTemplateStatus, ReminderGroupType } from '@dailyuse/contracts/reminder';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
+import { TriggerType, ReminderType, NotificationChannel } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequest, UpdateReminderTemplateRequest, TriggerConfigServerDTO, ActiveTimeConfigServerDTO, NotificationConfigServerDTO } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ColorPicker, IconPicker } from '@dailyuse/ui';
 import { useReminder } from '../../composables/useReminder';
@@ -378,7 +378,7 @@ const handleSave = async () => {
 
     if (isEditMode.value && currentTemplate.value) {
       // 更新模式 - 包含完整的更新数据
-      const updateRequest: UpdateReminderTemplateRequestDTO = {
+      const updateRequest: UpdateReminderTemplateRequest = {
         title: formData.title,
         description: formData.description || undefined,
         trigger: buildTriggerConfig(),
@@ -395,7 +395,7 @@ const handleSave = async () => {
       snackbar.showSuccess('提醒模板已更新');
     } else {
       // 创建模式 - 固定使用 RECURRING 类型
-      const createRequest: CreateReminderTemplateRequestDTO = {
+      const createRequest: CreateReminderTemplateRequest = {
         title: formData.title,
         description: formData.description || undefined,
         type: ReminderType.RECURRING,

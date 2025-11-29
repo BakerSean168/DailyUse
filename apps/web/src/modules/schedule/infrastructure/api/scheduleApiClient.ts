@@ -2,13 +2,13 @@ import { apiClient } from '@/shared/api/instances';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleTaskClientDTO,
-  CreateScheduleTaskRequestDTO,
+  CreateScheduleTaskRequest,
   ScheduleStatisticsClientDTO,
   ModuleStatisticsClientDTO,
   ConflictDetectionResult,
-  CreateScheduleRequestDTO,
+  CreateScheduleRequest,
   ScheduleClientDTO,
-  ResolveConflictRequestDTO,
+  ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
 
 /**

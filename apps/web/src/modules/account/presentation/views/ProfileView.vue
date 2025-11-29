@@ -300,10 +300,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAccount } from '../composables/useAccount';
-import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
+import type { AccountDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
 
 // Composables
-const { getMyProfile, updateMyProfile } = useAccount();
+const {
+  getMyProfile,
+  updateMyProfile,
+} = useAccount();
 
 // 状态管理
 const profile = ref<AccountDTO | null>(null);

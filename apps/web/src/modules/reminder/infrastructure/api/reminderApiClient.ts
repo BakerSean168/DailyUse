@@ -8,13 +8,9 @@
  */
 
 import { apiClient } from '@/shared/api';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequest, UpdateReminderTemplateRequest, ReminderHistoryClientDTO, ReminderStatisticsClientDTO, UpcomingRemindersResponseDTO, GetUpcomingRemindersRequest } from '@dailyuse/contracts/reminder';
 
 // 类型别名
-type ReminderTemplateClientDTO = ReminderTemplateClientDTO;
-type CreateReminderTemplateRequestDTO = CreateReminderTemplateRequestDTO;
-type UpdateReminderTemplateRequestDTO = UpdateReminderTemplateRequestDTO;
-type ReminderStatisticsClientDTO = ReminderStatisticsClientDTO;
 
 /**
  * Reminder API Client

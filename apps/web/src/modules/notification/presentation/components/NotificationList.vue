@@ -27,7 +27,6 @@
 import NotificationItem from './NotificationItem.vue';
 import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 
-type NotificationClientDTO = NotificationClientDTO;
 
 interface Props {
   notifications: NotificationClientDTO[];

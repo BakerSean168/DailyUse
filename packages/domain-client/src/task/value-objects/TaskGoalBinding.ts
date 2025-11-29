@@ -38,7 +38,7 @@ export class TaskGoalBinding extends ValueObject implements TaskGoalBinding {
   }
 
   // 值对象方法
-  public equals(other: ITaskGoalBinding): boolean {
+  public equals(other: TaskGoalBindingClient): boolean {
     return (
       this._goalUuid === other.goalUuid &&
       this._keyResultUuid === other.keyResultUuid &&
@@ -55,7 +55,7 @@ export class TaskGoalBinding extends ValueObject implements TaskGoalBinding {
     };
   }
 
-  public toClientDTO(): TaskGoalBindingDTO {
+  public toClientDTO(): TaskGoalBindingClientDTO {
     return {
       goalUuid: this._goalUuid,
       keyResultUuid: this._keyResultUuid,
@@ -66,7 +66,7 @@ export class TaskGoalBinding extends ValueObject implements TaskGoalBinding {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskGoalBindingDTO): TaskGoalBinding {
+  public static fromClientDTO(dto: TaskGoalBindingClientDTO): TaskGoalBinding {
     return new TaskGoalBinding({
       goalUuid: dto.goalUuid,
       keyResultUuid: dto.keyResultUuid,

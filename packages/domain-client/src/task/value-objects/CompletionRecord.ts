@@ -67,7 +67,7 @@ export class CompletionRecord extends ValueObject implements CompletionRecord {
   }
 
   // 值对象方法
-  public equals(other: ICompletionRecord): boolean {
+  public equals(other: CompletionRecordClient): boolean {
     return (
       this._completedAt === other.completedAt &&
       this._actualDuration === other.actualDuration &&
@@ -86,7 +86,7 @@ export class CompletionRecord extends ValueObject implements CompletionRecord {
     };
   }
 
-  public toClientDTO(): CompletionRecordDTO {
+  public toClientDTO(): CompletionRecordClientDTO {
     return {
       completedAt: this._completedAt,
       actualDuration: this._actualDuration,
@@ -101,7 +101,7 @@ export class CompletionRecord extends ValueObject implements CompletionRecord {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: CompletionRecordDTO): CompletionRecord {
+  public static fromClientDTO(dto: CompletionRecordClientDTO): CompletionRecord {
     return new CompletionRecord({
       completedAt: dto.completedAt,
       actualDuration: dto.actualDuration,

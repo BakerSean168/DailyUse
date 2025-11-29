@@ -5,7 +5,6 @@
 import type { IApiClient } from '@/shared/api/core/types';
 import type { RepositoryServerDTO, ResourceServerDTO } from '@dailyuse/contracts/repository';
 
-type ResourceClientDTO = ResourceClientDTO;
 
 export interface CreateResourceDTO {
   repositoryUuid: string;

@@ -1,13 +1,8 @@
 import { defineStore } from 'pinia';
-import type { AuthTokens, LoginRequest } from '@dailyuse/contracts/authentication';
-import type { AccountServerDTO } from '@dailyuse/contracts/account';
+import type { AuthTokens, LoginRequest, AuthSessionClientDTO, AuthCredentialClientDTO } from '@dailyuse/contracts/authentication';
+import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import { AuthManager } from '@/shared/api';
 import { AuthCredential, AuthSession } from '@dailyuse/domain-client/authentication';
-
-// 本地类型别名（无需导出，web 应用不生成 .d.ts）
-type AuthCredentialClientDTO = AuthCredentialClientDTO;
-type AuthSessionClientDTO = AuthSessionClientDTO;
-type AccountClientDTO = AccountClientDTO;
 
 // MFA 设备临时类型（需要在 contracts 中定义）
 interface DeviceInfoClientDTO {

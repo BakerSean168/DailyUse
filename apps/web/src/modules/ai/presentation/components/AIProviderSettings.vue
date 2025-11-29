@@ -219,8 +219,6 @@ import { useAIProviders } from '../composables/useAIProviders';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
-type AIProviderConfigClientDTO = AIProviderConfigClientDTO;
-
 // ===== Composables =====
 const {
     providers,

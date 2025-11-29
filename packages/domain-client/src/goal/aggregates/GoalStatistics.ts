@@ -4,7 +4,7 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { TrendType } from '@dailyuse/contracts/goal';
+import type { TrendType } from '@dailyuse/contracts/goal';
 import type {
   ChartData,
   GoalStatisticsClient,
@@ -347,7 +347,7 @@ export class GoalStatistics
     };
   }
 
-  toClientDTO(): GoalStatisticsDTO {
+  toClientDTO(): GoalStatisticsClientDTO {
     return {
       accountUuid: this._accountUuid,
       totalGoals: this._totalGoals,
@@ -431,7 +431,7 @@ export class GoalStatistics
     );
   }
 
-  static fromClientDTO(dto: GoalStatisticsDTO): GoalStatistics {
+  static fromClientDTO(dto: GoalStatisticsClientDTO): GoalStatistics {
     return new GoalStatistics(
       dto.accountUuid,
       dto.totalGoals,

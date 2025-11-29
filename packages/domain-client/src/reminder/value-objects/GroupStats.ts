@@ -4,10 +4,10 @@
 
 import type { GroupStatsClientDTO, GroupStatsServerDTO, IGroupStatsClient } from '@dailyuse/contracts/reminder';
 
-export class GroupStats implements GroupStats {
-  private readonly dto: GroupStatsDTO;
+export class GroupStats implements IGroupStatsClient {
+  private readonly dto: GroupStatsClientDTO;
 
-  private constructor(dto: GroupStatsDTO) {
+  private constructor(dto: GroupStatsClientDTO) {
     this.dto = dto;
   }
 
@@ -19,15 +19,15 @@ export class GroupStats implements GroupStats {
   get templateCountText(): string { return this.dto.templateCountText; }
   get activeStatusText(): string { return this.dto.activeStatusText; }
 
-  public equals(other: IGroupStats): boolean {
+  public equals(other: IGroupStatsClient): boolean {
     return JSON.stringify(this.dto) === JSON.stringify((other as GroupStats).dto);
   }
 
-  public toDTO(): GroupStatsDTO {
+  public toDTO(): GroupStatsClientDTO {
     return this.dto;
   }
 
-  public toClientDTO(): GroupStatsDTO {
+  public toClientDTO(): GroupStatsClientDTO {
     return this.dto;
   }
 
@@ -41,16 +41,16 @@ export class GroupStats implements GroupStats {
     };
   }
 
-  public static fromDTO(dto: GroupStatsDTO): GroupStats {
+  public static fromDTO(dto: GroupStatsClientDTO): GroupStats {
     return new GroupStats(dto);
   }
 
-  public static fromClientDTO(dto: GroupStatsDTO): GroupStats {
+  public static fromClientDTO(dto: GroupStatsClientDTO): GroupStats {
     return new GroupStats(dto);
   }
 
   public static fromServerDTO(dto: GroupStatsServerDTO): GroupStats {
-    const clientDTO: GroupStatsDTO = {
+    const clientDTO: GroupStatsClientDTO = {
       ...dto,
       templateCountText: `${dto.totalTemplates} 个提醒`,
       activeStatusText: `${dto.activeTemplates} 个活跃`,

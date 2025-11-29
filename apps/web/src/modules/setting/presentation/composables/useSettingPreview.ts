@@ -6,7 +6,6 @@
 import { ref, watch, computed } from 'vue';
 import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
-type UserSettingClientDTO = UserSettingClientDTO;
 
 export interface PreviewSettings {
   theme: string;

@@ -101,17 +101,11 @@ import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import TaskDAGVisualization from './dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from './dialogs/TaskTemplateDialog.vue';
 import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 // composables
 import { taskDependencyApiClient } from '../../infrastructure/api/taskApiClient';
 import { useTaskTemplate } from '../composables/useTaskTemplate';
 
-type TaskDependencyClientDTO = TaskDependencyClientDTO;
-type TaskTemplateClientDTO = TaskTemplateClientDTO;
-
-// 导入枚举类型
-const TaskTemplateStatus = TaskTemplateStatus;
-type TaskTemplateStatus = TaskTemplateStatus;
 
 const taskStore = useTaskStore();
 const currentStatus = ref<TaskTemplateStatus>(TaskTemplateStatus.ACTIVE); // 使用枚举类型

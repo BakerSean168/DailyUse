@@ -17,7 +17,7 @@ import { ValueObject } from '@dailyuse/utils';
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class ExecutionInfo extends ValueObject implements ExecutionInfoClient {
+export class ExecutionInfo extends ValueObject implements IExecutionInfoClient {
   public readonly nextRunAt: Date | null;
   public readonly lastRunAt: Date | null;
   public readonly executionCount: number;

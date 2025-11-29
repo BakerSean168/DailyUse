@@ -5,7 +5,7 @@
  */
 
 import { defineStore } from 'pinia';
-import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TreeNode } from '@dailyuse/contracts/repository';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
 
 /**

@@ -5,7 +5,6 @@
 
 import type { EditorTabClient, EditorTabClientDTO, EditorTabServerDTO, TabViewStateClientDTO } from '@dailyuse/contracts/editor';
 import { TabType } from '@dailyuse/contracts/editor';
-import { TabType } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 import { TabViewStateClient } from '../value-objects';
 

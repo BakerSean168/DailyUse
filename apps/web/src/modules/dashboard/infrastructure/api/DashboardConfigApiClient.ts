@@ -1,7 +1,6 @@
 import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
 import { apiClient } from '@/shared/api';
 
-type WidgetConfigData = WidgetConfigData;
 type WidgetConfig = WidgetConfigDTO;
 
 /**

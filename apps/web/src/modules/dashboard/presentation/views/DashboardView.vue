@@ -89,7 +89,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useDashboardConfigStore } from '@/modules/dashboard/stores/dashboardConfigStore';
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 // ✅ Widget 注册现在由各业务模块初始化时完成，不需要在这里导入
-import { WidgetType } from '@dailyuse/contracts/dashboard';
+import { WidgetType, WidgetSize } from '@dailyuse/contracts/dashboard';
 import type { WidgetConfig, DashboardConfigClientDTO, WidgetDefinition } from '@dailyuse/contracts/dashboard';
 import WidgetSettingsPanel from '../components/WidgetSettingsPanel.vue';
 

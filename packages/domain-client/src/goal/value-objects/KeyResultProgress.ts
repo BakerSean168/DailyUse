@@ -2,17 +2,18 @@
  * KeyResultProgress 值对象实现 (Client)
  */
 
-import type {
+import {
   AggregationMethod,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
+import type {
   IKeyResultProgressClient,
   KeyResultProgressClientDTO,
   KeyResultProgressServerDTO,
-  KeyResultValueType,
 } from '@dailyuse/contracts/goal';
-import { AggregationMethod, KeyResultValueType } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-export class KeyResultProgress extends ValueObject implements KeyResultProgress {
+export class KeyResultProgress extends ValueObject implements IKeyResultProgressClient {
   private _valueType: KeyResultValueType;
   private _aggregationMethod: AggregationMethod;
   private _targetValue: number;
@@ -113,7 +114,7 @@ export class KeyResultProgress extends ValueObject implements KeyResultProgress 
   }
 
   // 值对象方法
-  public equals(other: IKeyResultProgress): boolean {
+  public equals(other: IKeyResultProgressClient): boolean {
     return (
       this._valueType === other.valueType &&
       this._aggregationMethod === other.aggregationMethod &&
@@ -135,7 +136,7 @@ export class KeyResultProgress extends ValueObject implements KeyResultProgress 
     };
   }
 
-  public toClientDTO(): KeyResultProgressDTO {
+  public toClientDTO(): KeyResultProgressClientDTO {
     return {
       valueType: this._valueType,
       aggregationMethod: this._aggregationMethod,
@@ -153,7 +154,7 @@ export class KeyResultProgress extends ValueObject implements KeyResultProgress 
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: KeyResultProgressDTO): KeyResultProgress {
+  public static fromClientDTO(dto: KeyResultProgressClientDTO): KeyResultProgress {
     return new KeyResultProgress({
       valueType: dto.valueType,
       aggregationMethod: dto.aggregationMethod,

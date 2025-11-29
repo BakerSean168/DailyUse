@@ -6,7 +6,7 @@
  */
 
 import { ref, computed, watch, type Ref } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotClientDTO } from '@dailyuse/contracts/goal';
 import {
   generateTimelineFromGoal,
   interpolateSnapshots,

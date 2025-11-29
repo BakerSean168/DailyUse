@@ -199,7 +199,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
   }
 
   // DTO 转换
-  public toClientDTO(): TaskInstanceDTO {
+  public toClientDTO(): TaskInstanceClientDTO {
     return {
       uuid: this.uuid,
       templateUuid: this._templateUuid,
@@ -248,7 +248,7 @@ export class TaskInstance extends AggregateRoot implements TaskInstance {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskInstanceDTO): TaskInstance {
+  public static fromClientDTO(dto: TaskInstanceClientDTO): TaskInstance {
     return new TaskInstance({
       uuid: dto.uuid,
       templateUuid: dto.templateUuid,

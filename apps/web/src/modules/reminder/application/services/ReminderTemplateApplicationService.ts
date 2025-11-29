@@ -13,7 +13,7 @@
  * - 统一错误处理
  */
 
-import type { CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
+import type { CreateReminderTemplateRequest, UpdateReminderTemplateRequest, ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';

@@ -207,10 +207,8 @@ import { marked } from 'marked';
 import VersionHistoryList from '../components/VersionHistoryList.vue';
 import VersionDiffViewer from '../components/VersionDiffViewer.vue';
 import { useDocumentVersion } from '../composables/useDocumentVersion';
-import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
+import type { DocumentClientDTO, DocumentVersionClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentClientDTO;
-type DocumentVersionClientDTO = DocumentVersionClientDTO;
 
 const route = useRoute();
 const router = useRouter();

@@ -58,7 +58,6 @@ import TaskTemplateCard from './TaskTemplateCard.vue';
 import { useDragAndDrop } from '@/shared/composables/useDragAndDrop';
 import { TaskDependencyDragDropService } from '@/modules/task/application/services/TaskDependencyDragDropService';
 
-type TaskTemplateClientDTO = TaskTemplateClientDTO;
 
 // Props
 interface Props {

@@ -4,7 +4,6 @@ import { useDashboardConfigStore } from '../dashboardConfigStore';
 import { DashboardConfigApiClient } from '../../infrastructure/api/DashboardConfigApiClient';
 import type { WidgetConfig, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 
-type WidgetConfigData = WidgetConfigData;
 
 // Mock API Client
 vi.mock('../../infrastructure/api/DashboardConfigApiClient');

@@ -16,7 +16,7 @@ import { ValueObject } from '@dailyuse/utils';
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class RetryPolicy extends ValueObject implements RetryPolicyClient {
+export class RetryPolicy extends ValueObject implements IRetryPolicyClient {
   public readonly enabled: boolean;
   public readonly maxRetries: number;
   public readonly retryDelay: number;

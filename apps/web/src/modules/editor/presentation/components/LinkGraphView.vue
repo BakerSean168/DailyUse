@@ -64,9 +64,6 @@ import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 import * as echarts from 'echarts';
 
-type LinkGraphResponseDTO = LinkGraphResponseDTO;
-type LinkGraphNodeDTO = LinkGraphNodeDTO;
-type LinkGraphEdgeDTO = LinkGraphEdgeDTO;
 
 // ==================== Props ====================
 interface Props {

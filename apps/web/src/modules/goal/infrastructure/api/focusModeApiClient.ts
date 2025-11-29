@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api/instances';
-import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest } from '@dailyuse/contracts/goal';
 
 /**
  * FocusMode API Client

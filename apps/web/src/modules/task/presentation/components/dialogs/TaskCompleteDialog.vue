@@ -224,7 +224,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { format } from 'date-fns';
-import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import { AggregationMethod, type GoalClientDTO, type KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 // ===================== 接口定义 =====================
 

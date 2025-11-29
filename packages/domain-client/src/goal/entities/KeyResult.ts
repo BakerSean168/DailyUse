@@ -183,7 +183,7 @@ export class KeyResult extends Entity implements KeyResult {
   }
 
   // DTO 转换
-  public toClientDTO(): KeyResultDTO {
+  public toClientDTO(): KeyResultClientDTO {
     return {
       uuid: this.uuid,
       goalUuid: this._goalUuid,
@@ -222,7 +222,7 @@ export class KeyResult extends Entity implements KeyResult {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: KeyResultDTO): KeyResult {
+  public static fromClientDTO(dto: KeyResultClientDTO): KeyResult {
     return new KeyResult({
       uuid: dto.uuid,
       goalUuid: dto.goalUuid,

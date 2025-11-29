@@ -17,7 +17,7 @@ import { ValueObject } from '@dailyuse/utils';
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class TaskMetadata extends ValueObject implements TaskMetadataClient {
+export class TaskMetadata extends ValueObject implements ITaskMetadataClient {
   public readonly payload: Record<string, any>;
   public readonly tags: string[];
   public readonly priority: TaskPriority;

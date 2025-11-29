@@ -67,7 +67,6 @@ import { useDebounceFn } from '@vueuse/core';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentClientDTO;
 
 // ==================== Props ====================
 interface Props {

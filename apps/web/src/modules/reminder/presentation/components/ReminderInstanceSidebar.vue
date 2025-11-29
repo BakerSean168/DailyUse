@@ -268,7 +268,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
 import { useReminder } from '../composables/useReminder';
 import { useRouter } from 'vue-router';
 import { format, formatDistanceToNow, isToday, isPast, startOfDay } from 'date-fns';

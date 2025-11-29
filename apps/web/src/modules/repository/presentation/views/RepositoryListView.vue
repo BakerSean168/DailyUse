@@ -140,7 +140,7 @@ import RepoDialog from '../components/dialogs/RepoDialog.vue';
 import { useRepository } from '../composables/useRepository';
 // types
 import { Repository } from '@dailyuse/domain-client/repository';
-import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TagClientDTO, BookmarkClientDTO } from '@dailyuse/contracts/repository';
+import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO, type TagClientDTO, type BookmarkClientDTO } from '@dailyuse/contracts/repository';
 
 // component refs
 const repoDialogRef = ref<InstanceType<typeof RepoDialog> | null>(null);

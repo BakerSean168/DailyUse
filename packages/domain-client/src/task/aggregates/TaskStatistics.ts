@@ -317,7 +317,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatistics {
     };
   }
 
-  toClientDTO(): TaskStatisticsDTO {
+  toClientDTO(): TaskStatisticsClientDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -407,7 +407,7 @@ export class TaskStatistics extends AggregateRoot implements TaskStatistics {
   /**
    * 从 Client DTO 创建客户端实体
    */
-  static fromClientDTO(dto: TaskStatisticsDTO): TaskStatistics {
+  static fromClientDTO(dto: TaskStatisticsClientDTO): TaskStatistics {
     return new TaskStatistics({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,

@@ -165,6 +165,8 @@ export type {
 
 export type {
   TrendType,
+  ChartData,
+  TimelineData,
   GoalStatisticsServerDTO,
   GoalStatisticsPersistenceDTO,
   GoalStatisticsRecalculatedEvent,

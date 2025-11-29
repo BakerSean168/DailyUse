@@ -101,9 +101,8 @@
 </template>
 
 <script setup lang="ts">
-import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
+import type { DocumentClientDTO, DocumentVersionClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentVersionClientDTO = DocumentVersionClientDTO;
 
 // ==================== Props ====================
 defineProps<{

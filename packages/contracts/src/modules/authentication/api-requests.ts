@@ -5,6 +5,25 @@
 
 import { DeviceType, SessionStatus, CredentialType, TwoFactorMethod } from './enums';
 
+// ============ Token Types ============
+
+/**
+ * 认证 Token 数据
+ * 用于前端存储和管理认证状态
+ */
+export interface AuthTokens {
+  /** 访问令牌 */
+  accessToken: string;
+  /** 刷新令牌（可选 - 现在存储在 httpOnly Cookie 中） */
+  refreshToken?: string;
+  /** 访问令牌过期时间戳 (ms) */
+  accessTokenExpiresAt?: number;
+  /** 刷新令牌过期时间戳 (ms) */
+  refreshTokenExpiresAt?: number;
+  /** 令牌类型（默认 Bearer） */
+  tokenType?: string;
+}
+
 // ============ 认证请求 ============
 
 /**

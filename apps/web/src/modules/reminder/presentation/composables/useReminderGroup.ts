@@ -4,7 +4,7 @@
  */
 
 import { ref, computed } from 'vue';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
 import { reminderGroupApplicationService } from '../../application/services';
 import { getReminderStore } from '../stores/reminderStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -66,7 +66,7 @@ export function useReminderGroup() {
   /**
    * 创建新分组
    */
-  const createGroup = async (data: CreateReminderGroupRequestDTO) => {
+  const createGroup = async (data: CreateReminderGroupRequest) => {
     try {
       const response = await reminderGroupApplicationService.createReminderGroup(data);
       showCreateGroupDialog.value = false;
@@ -83,7 +83,7 @@ export function useReminderGroup() {
    */
   const updateGroup = async (
     uuid: string,
-    data: UpdateReminderGroupRequestDTO,
+    data: UpdateReminderGroupRequest,
   ) => {
     try {
       const response = await reminderGroupApplicationService.updateReminderGroup(uuid, data);

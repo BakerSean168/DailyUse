@@ -87,7 +87,7 @@ export class TaskTimeConfig extends ValueObject implements TaskTimeConfig {
   }
 
   // 值对象方法
-  public equals(other: ITaskTimeConfig): boolean {
+  public equals(other: TaskTimeConfigClient): boolean {
     return (
       this._timeType === other.timeType &&
       this._startDate === other.startDate &&
@@ -108,7 +108,7 @@ export class TaskTimeConfig extends ValueObject implements TaskTimeConfig {
     };
   }
 
-  public toClientDTO(): TaskTimeConfigDTO {
+  public toClientDTO(): TaskTimeConfigClientDTO {
     return {
       timeType: this._timeType,
       startDate: this._startDate,
@@ -126,7 +126,7 @@ export class TaskTimeConfig extends ValueObject implements TaskTimeConfig {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskTimeConfigDTO): TaskTimeConfig {
+  public static fromClientDTO(dto: TaskTimeConfigClientDTO): TaskTimeConfig {
     return new TaskTimeConfig({
       timeType: dto.timeType,
       startDate: dto.startDate,

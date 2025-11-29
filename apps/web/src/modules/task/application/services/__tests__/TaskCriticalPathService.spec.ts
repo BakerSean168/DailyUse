@@ -9,7 +9,6 @@ import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 
-type TaskDependencyClientDTO = TaskDependencyClientDTO;
 
 // 创建测试任务
 function createTestTask(uuid: string, title: string, estimatedMinutes: number): TaskForDAG {

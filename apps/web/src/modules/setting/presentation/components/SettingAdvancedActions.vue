@@ -225,7 +225,6 @@ import { ref, onMounted } from 'vue';
 import { useSettingImportExport } from '../composables/useSettingImportExport';
 import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
-type UserSettingClientDTO = UserSettingClientDTO;
 
 interface SyncStatus {
   lastSyncedAt: number;

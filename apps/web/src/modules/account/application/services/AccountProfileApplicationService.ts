@@ -3,7 +3,16 @@
  * 账户资料应用服务 - 负责账户资料相关的用例
  */
 
-import type { AccountClientDTO, UpdateAccountRequest } from '@dailyuse/contracts/account';
+import type {
+  AccountDTO,
+  UpdateAccountProfileRequestDTO,
+  UpdateAccountPreferencesRequestDTO,
+  UpdateEmailRequestDTO,
+  VerifyEmailRequestDTO,
+  UpdatePhoneRequestDTO,
+  VerifyPhoneRequestDTO,
+  AccountHistoryListResponseDTO,
+} from '@dailyuse/contracts/account';
 import { useAccountStore } from '../../presentation/stores/accountStore';
 import { accountApiClient } from '../../infrastructure/api/accountApiClient';
 

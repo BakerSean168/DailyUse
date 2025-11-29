@@ -45,7 +45,7 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigCli
   /**
    * 从 Client DTO 创建实例
    */
-  static fromDTO(dto: DashboardConfigDTO): DashboardConfig {
+  static fromDTO(dto: DashboardConfigClientDTO): DashboardConfig {
     return new DashboardConfig({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
@@ -255,7 +255,7 @@ export class DashboardConfig extends AggregateRoot implements DashboardConfigCli
   /**
    * 转换为 DTO
    */
-  toDTO(): DashboardConfigDTO {
+  toDTO(): DashboardConfigClientDTO {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,

@@ -15,7 +15,7 @@ import { ValueObject } from '@dailyuse/utils';
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class WorkspaceSettings extends ValueObject implements WorkspaceSettingsClient {
+export class WorkspaceSettings extends ValueObject implements IWorkspaceSettingsClient {
   public readonly theme: string;
   public readonly fontSize: number;
   public readonly fontFamily: string;

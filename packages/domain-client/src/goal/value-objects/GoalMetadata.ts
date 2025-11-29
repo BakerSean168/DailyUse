@@ -92,7 +92,7 @@ export class GoalMetadata extends ValueObject implements GoalMetadataClient {
   }
 
   // 值对象方法
-  public equals(other: IGoalMetadata): boolean {
+  public equals(other: GoalMetadataClient): boolean {
     return (
       this._importance === other.importance &&
       this._urgency === other.urgency &&
@@ -116,7 +116,7 @@ export class GoalMetadata extends ValueObject implements GoalMetadataClient {
     };
   }
 
-  public toClientDTO(): GoalMetadataDTO {
+  public toClientDTO(): GoalMetadataClientDTO {
     return {
       importance: this._importance,
       urgency: this._urgency,
@@ -132,7 +132,7 @@ export class GoalMetadata extends ValueObject implements GoalMetadataClient {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalMetadataDTO): GoalMetadata {
+  public static fromClientDTO(dto: GoalMetadataClientDTO): GoalMetadata {
     return new GoalMetadata({
       importance: dto.importance,
       urgency: dto.urgency,

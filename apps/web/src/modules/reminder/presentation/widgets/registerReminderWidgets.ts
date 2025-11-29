@@ -8,7 +8,7 @@
 
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { defineAsyncComponent } from 'vue';
-import type { WidgetConfig, WidgetType } from '@dailyuse/contracts/dashboard';
+import { WidgetSize, type WidgetConfig, type WidgetType } from '@dailyuse/contracts/dashboard';
 
 /**
  * 注册 Reminder 模块的所有 Widgets

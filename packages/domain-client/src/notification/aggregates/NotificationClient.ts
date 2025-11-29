@@ -9,12 +9,11 @@ import type {
   RelatedEntityType,
 } from '@dailyuse/contracts/notification';
 import {
-  ImportanceLevel,
   NotificationCategory,
   NotificationStatus,
   NotificationType,
-  UrgencyLevel,
 } from '@dailyuse/contracts/notification';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
 import { NotificationActionClient, NotificationMetadataClient } from '../value-objects';
 
@@ -428,7 +427,7 @@ export class NotificationClientImpl extends AggregateRoot implements INotificati
 
   // ===== DTO 转换方法 =====
 
-  public toClientDTO(): NotificationClientImplDTO {
+  public toClientDTO(): NotificationClientDTO {
     return {
       uuid: this.uuid,
       accountUuid: this.accountUuid,
@@ -500,7 +499,7 @@ export class NotificationClientImpl extends AggregateRoot implements INotificati
 
   // ===== 静态工厂方法 =====
 
-  public static fromClientDTO(dto: NotificationClientImplDTO): NotificationClientImpl {
+  public static fromClientDTO(dto: NotificationClientDTO): NotificationClientImpl {
     return new NotificationClientImpl({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
@@ -515,7 +514,7 @@ export class NotificationClientImpl extends AggregateRoot implements INotificati
       readAt: dto.readAt,
       relatedEntityType: dto.relatedEntityType,
       relatedEntityUuid: dto.relatedEntityUuid,
-      actions: dto.actions?.map((a) => NotificationActionClient.fromClientDTO(a)) || null,
+      actions: dto.actions?.map((a: any) => NotificationActionClient.fromClientDTO(a)) || null,
       metadata: dto.metadata ? NotificationMetadataClient.fromClientDTO(dto.metadata) : null,
       expiresAt: dto.expiresAt,
       createdAt: dto.createdAt,

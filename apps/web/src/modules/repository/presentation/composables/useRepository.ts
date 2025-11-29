@@ -4,8 +4,6 @@ import { RepositoryWebApplicationService } from '../../application/services/Repo
 import { useRepositoryStore } from '../stores/repositoryStore';
 import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TagClientDTO, BookmarkClientDTO } from '@dailyuse/contracts/repository';
 
-type RepositoryType = RepositoryType;
-type RepositoryStatus = RepositoryStatus;
 
 /**
  * Repository 模块组合式函数 - 新架构

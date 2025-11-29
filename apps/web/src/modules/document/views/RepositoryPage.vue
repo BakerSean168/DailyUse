@@ -42,7 +42,6 @@ import DocumentList from '../components/DocumentList.vue';
 import DocumentEditor from '../components/DocumentEditor.vue';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentClientDTO;
 
 const { documents, loading, pagination, loadDocuments, createDocument, updateDocument, deleteDocument } = useDocument();
 

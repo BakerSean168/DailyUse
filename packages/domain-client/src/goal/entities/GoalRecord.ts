@@ -89,7 +89,7 @@ export class GoalRecord extends Entity implements GoalRecord {
   }
 
   // DTO 转换
-  public toClientDTO(): GoalRecordDTO {
+  public toClientDTO(): GoalRecordClientDTO {
     return {
       uuid: this.uuid,
       keyResultUuid: this._keyResultUuid,
@@ -117,7 +117,7 @@ export class GoalRecord extends Entity implements GoalRecord {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalRecordDTO): GoalRecord {
+  public static fromClientDTO(dto: GoalRecordClientDTO): GoalRecord {
     return new GoalRecord({
       uuid: dto.uuid,
       keyResultUuid: dto.keyResultUuid,

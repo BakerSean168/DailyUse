@@ -115,6 +115,18 @@ import { ref, computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskTemplate } from '@dailyuse/domain-client/task';
 
+// 本地类型定义
+interface ReminderAlert {
+  uuid: string;
+  timing: {
+    type: 'relative' | 'absolute';
+    minutesBefore?: number;
+    absoluteTime?: Date;
+  };
+  type: 'notification' | 'email' | 'sound' | 'sms';
+  message?: string;
+}
+
 interface Props {
   modelValue: ReminderAlert[];
 }

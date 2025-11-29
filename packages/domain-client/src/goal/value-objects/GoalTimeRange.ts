@@ -5,7 +5,7 @@
 import type { GoalTimeRangeClient, GoalTimeRangeClientDTO, GoalTimeRangeServerDTO } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-export class GoalTimeRange extends ValueObject implements GoalTimeRange {
+export class GoalTimeRange extends ValueObject implements GoalTimeRangeClient {
   private _startDate: number | null;
   private _targetDate: number | null;
   private _completedAt: number | null;
@@ -99,7 +99,7 @@ export class GoalTimeRange extends ValueObject implements GoalTimeRange {
   }
 
   // 值对象方法
-  public equals(other: IGoalTimeRange): boolean {
+  public equals(other: GoalTimeRangeClient): boolean {
     return (
       this._startDate === other.startDate &&
       this._targetDate === other.targetDate &&
@@ -133,7 +133,7 @@ export class GoalTimeRange extends ValueObject implements GoalTimeRange {
     };
   }
 
-  public toClientDTO(): GoalTimeRangeDTO {
+  public toClientDTO(): GoalTimeRangeClientDTO {
     return {
       startDate: this._startDate,
       targetDate: this._targetDate,
@@ -152,7 +152,7 @@ export class GoalTimeRange extends ValueObject implements GoalTimeRange {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalTimeRangeDTO): GoalTimeRange {
+  public static fromClientDTO(dto: GoalTimeRangeClientDTO): GoalTimeRange {
     return new GoalTimeRange({
       startDate: dto.startDate,
       targetDate: dto.targetDate,

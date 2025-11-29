@@ -43,11 +43,11 @@ export class ReminderTemplate extends AggregateRoot
   private _title: string;
   private _description?: string | null;
   private _type: ReminderType;
-  private _trigger: TriggerConfig;
-  private _recurrence?: RecurrenceConfig | null;
-  private _activeTime: ActiveTimeConfig;
-  private _activeHours?: ActiveHoursConfig | null;
-  private _notificationConfig: NotificationConfig;
+  private _trigger: ValueObjects.TriggerConfig;
+  private _recurrence?: ValueObjects.RecurrenceConfig | null;
+  private _activeTime: ValueObjects.ActiveTimeConfig;
+  private _activeHours?: ValueObjects.ActiveHoursConfig | null;
+  private _notificationConfig: ValueObjects.NotificationConfig;
   private _selfEnabled: boolean;
   private _status: ReminderStatus;
   private _groupUuid?: string | null;
@@ -56,7 +56,7 @@ export class ReminderTemplate extends AggregateRoot
   private _color?: string | null;
   private _icon?: string | null;
   private _nextTriggerAt?: number | null;
-  private _stats: ReminderStats;
+  private _stats: ValueObjects.ReminderStats;
   private _smartFrequencyEnabled: boolean;
   private _createdAt: number;
   private _updatedAt: number;
@@ -69,11 +69,11 @@ export class ReminderTemplate extends AggregateRoot
     title: string;
     description?: string | null;
     type: ReminderType;
-    trigger: TriggerConfig;
-    recurrence?: RecurrenceConfig | null;
-    activeTime: ActiveTimeConfig;
-    activeHours?: ActiveHoursConfig | null;
-    notificationConfig: NotificationConfig;
+    trigger: ValueObjects.TriggerConfig;
+    recurrence?: ValueObjects.RecurrenceConfig | null;
+    activeTime: ValueObjects.ActiveTimeConfig;
+    activeHours?: ValueObjects.ActiveHoursConfig | null;
+    notificationConfig: ValueObjects.NotificationConfig;
     selfEnabled: boolean;
     status: ReminderStatus;
     groupUuid?: string | null;
@@ -82,7 +82,7 @@ export class ReminderTemplate extends AggregateRoot
     color?: string | null;
     icon?: string | null;
     nextTriggerAt?: number | null;
-    stats: ReminderStats;
+    stats: ValueObjects.ReminderStats;
     smartFrequencyEnabled?: boolean;
     createdAt: number;
     updatedAt: number;
@@ -120,11 +120,11 @@ export class ReminderTemplate extends AggregateRoot
   public get title(): string { return this._title; }
   public get description(): string | null | undefined { return this._description; }
   public get type(): ReminderType { return this._type; }
-  public get trigger(): TriggerConfig { return this._trigger; }
-  public get recurrence(): RecurrenceConfig | null | undefined { return this._recurrence; }
-  public get activeTime(): ActiveTimeConfig { return this._activeTime; }
-  public get activeHours(): ActiveHoursConfig | null | undefined { return this._activeHours; }
-  public get notificationConfig(): NotificationConfig { return this._notificationConfig; }
+  public get trigger(): ValueObjects.TriggerConfig { return this._trigger; }
+  public get recurrence(): ValueObjects.RecurrenceConfig | null | undefined { return this._recurrence; }
+  public get activeTime(): ValueObjects.ActiveTimeConfig { return this._activeTime; }
+  public get activeHours(): ValueObjects.ActiveHoursConfig | null | undefined { return this._activeHours; }
+  public get notificationConfig(): ValueObjects.NotificationConfig { return this._notificationConfig; }
   public get selfEnabled(): boolean { return this._selfEnabled; }
   public get status(): ReminderStatus { return this._status; }
   public get effectiveEnabled(): boolean { return this._selfEnabled && this._status === ReminderStatus.ACTIVE; }
@@ -134,7 +134,7 @@ export class ReminderTemplate extends AggregateRoot
   public get color(): string | null | undefined { return this._color; }
   public get icon(): string | null | undefined { return this._icon; }
   public get nextTriggerAt(): number | null | undefined { return this._nextTriggerAt; }
-  public get stats(): ReminderStats { return this._stats; }
+  public get stats(): ValueObjects.ReminderStats { return this._stats; }
   public get createdAt(): number { return this._createdAt; }
   public get updatedAt(): number { return this._updatedAt; }
   public get deletedAt(): number | null | undefined { return this._deletedAt; }
@@ -269,12 +269,12 @@ export class ReminderTemplate extends AggregateRoot
     this._updatedAt = Date.now();
   }
   
-  public updateTrigger(trigger: TriggerConfig): void {
+  public updateTrigger(trigger: ValueObjects.TriggerConfig): void {
     this._trigger = trigger;
     this._updatedAt = Date.now();
   }
   
-  public updateRecurrence(recurrence: RecurrenceConfig | null): void {
+  public updateRecurrence(recurrence: ValueObjects.RecurrenceConfig | null): void {
     this._recurrence = recurrence;
     this._updatedAt = Date.now();
   }
@@ -343,17 +343,17 @@ export class ReminderTemplate extends AggregateRoot
     this._updatedAt = Date.now();
   }
   
-  public updateActiveTime(activeTime: ActiveTimeConfig): void {
+  public updateActiveTime(activeTime: ValueObjects.ActiveTimeConfig): void {
     this._activeTime = activeTime;
     this._updatedAt = Date.now();
   }
   
-  public updateActiveHours(activeHours: ActiveHoursConfig | null): void {
+  public updateActiveHours(activeHours: ValueObjects.ActiveHoursConfig | null): void {
     this._activeHours = activeHours;
     this._updatedAt = Date.now();
   }
   
-  public updateNotificationConfig(config: NotificationConfig): void {
+  public updateNotificationConfig(config: ValueObjects.NotificationConfig): void {
     this._notificationConfig = config;
     this._updatedAt = Date.now();
   }
@@ -363,7 +363,7 @@ export class ReminderTemplate extends AggregateRoot
     this._updatedAt = Date.now();
   }
   
-  public updateStats(stats: ReminderStats): void {
+  public updateStats(stats: ValueObjects.ReminderStats): void {
     this._stats = stats;
     this._updatedAt = Date.now();
   }
@@ -488,10 +488,8 @@ export class ReminderTemplate extends AggregateRoot
       }),
       recurrence: null,
       activeTime: ValueObjects.ActiveTimeConfig.fromClientDTO({
-        startDate: now,
-        endDate: null,
+        activatedAt: now,
         displayText: '立即生效',
-        isActive: true,
       }),
       activeHours: null,
       notificationConfig: ValueObjects.NotificationConfig.fromClientDTO({

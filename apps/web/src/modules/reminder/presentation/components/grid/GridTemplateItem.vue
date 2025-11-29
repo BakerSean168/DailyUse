@@ -50,8 +50,7 @@
 
 <script setup lang="ts">
 import { inject, computed, ref } from 'vue';
-import { ReminderTemplateStatus, ReminderGroupType } from '@dailyuse/contracts/reminder';
-import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequestDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { useReminderStore } from '../../stores/reminderStore';
 
 type ReminderTemplate = ReminderTemplateClientDTO;

@@ -5,7 +5,7 @@
  * 支持基于权重快照的时间线动画
  */
 
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotClientDTO } from '@dailyuse/contracts/goal';
 
 /**
  * 时间线快照点

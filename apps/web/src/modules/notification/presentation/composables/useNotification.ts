@@ -9,8 +9,6 @@ import { notificationApiClient } from '../../infrastructure/api/notificationApiC
 import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 import { useWebSocket } from './useWebSocket';
 
-type NotificationClientDTO = NotificationClientDTO;
-type QueryNotificationsRequest = QueryNotificationsRequest;
 
 export function useNotification() {
   const notifications = ref<NotificationClientDTO[]>([]);

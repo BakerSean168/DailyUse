@@ -3,7 +3,7 @@
  * GoalStatsWidget - 目标统计 Widget
  */
 import { computed } from 'vue';
-import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
+import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 
 interface Props {

@@ -2,7 +2,6 @@ import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
-type UserSettingClientDTO = UserSettingClientDTO;
 
 /**
  * Setting Sync API Client

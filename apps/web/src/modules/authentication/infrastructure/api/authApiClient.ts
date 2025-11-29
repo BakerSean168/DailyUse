@@ -1,5 +1,49 @@
 import { apiClient, publicApiClient } from '@/shared/api/instances';
-import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+import type {
+  LoginRequest,
+  LoginResponseDTO,
+  RegisterRequest,
+  LogoutRequest,
+  RefreshTokenRequest,
+  RefreshTokenResponseDTO,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
+  Enable2FARequest,
+  Enable2FAResponseDTO,
+  Disable2FARequest,
+  Verify2FARequest,
+  CreateApiKeyRequest,
+  CreateApiKeyResponseDTO,
+  ApiKeyListResponseDTO,
+  RevokeApiKeyRequest,
+  GetActiveSessionsRequest,
+  ActiveSessionsResponseDTO,
+  RevokeSessionRequest,
+  RevokeAllSessionsRequest,
+  TrustDeviceRequest,
+  RevokeTrustedDeviceRequest,
+  TrustedDevicesResponseDTO,
+} from '@dailyuse/contracts/authentication';
+
+// Type aliases for backward compatibility
+type LoginRequestDTO = LoginRequest;
+type RegisterRequestDTO = RegisterRequest;
+type LogoutRequestDTO = LogoutRequest;
+type RefreshTokenRequestDTO = RefreshTokenRequest;
+type ForgotPasswordRequestDTO = ForgotPasswordRequest;
+type ResetPasswordRequestDTO = ResetPasswordRequest;
+type ChangePasswordRequestDTO = ChangePasswordRequest;
+type Enable2FARequestDTO = Enable2FARequest;
+type Disable2FARequestDTO = Disable2FARequest;
+type Verify2FARequestDTO = Verify2FARequest;
+type CreateApiKeyRequestDTO = CreateApiKeyRequest;
+type RevokeApiKeyRequestDTO = RevokeApiKeyRequest;
+type GetActiveSessionsRequestDTO = GetActiveSessionsRequest;
+type RevokeSessionRequestDTO = RevokeSessionRequest;
+type RevokeAllSessionsRequestDTO = RevokeAllSessionsRequest;
+type TrustDeviceRequestDTO = TrustDeviceRequest;
+type RevokeTrustedDeviceRequestDTO = RevokeTrustedDeviceRequest;
 
 /**
  * Authentication API 客户端
