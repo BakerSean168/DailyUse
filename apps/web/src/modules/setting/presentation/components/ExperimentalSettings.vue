@@ -117,7 +117,6 @@ import { useUserSetting } from '../composables/useUserSetting';
 import type {
   UserSettingClientDTO,
   UpdateUserSettingRequest,
-  ExperimentalFeatures,
   UpdateExperimentalRequest,
 } from '@dailyuse/contracts/setting';
 

@@ -156,8 +156,9 @@ import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
 import { Goal, KeyResult } from '@dailyuse/domain-client/goal';
-import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
 import { useMessage } from '@dailyuse/ui';

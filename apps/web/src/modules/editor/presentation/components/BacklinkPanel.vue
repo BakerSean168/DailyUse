@@ -83,8 +83,10 @@
 import { ref, watch, onMounted } from 'vue';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
+import { DocumentContracts } from '@dailyuse/contracts/document';
 import { useRouter } from 'vue-router';
 
+type BacklinkDTO = DocumentContracts.BacklinkDTO;
 
 // ==================== Props ====================
 interface Props {

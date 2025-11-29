@@ -80,7 +80,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
+import { DocumentContracts } from '@dailyuse/contracts/document';
 
+type VersionComparisonDTO = DocumentContracts.VersionComparisonDTO;
 
 // ==================== Props ====================
 const props = defineProps<{

@@ -120,8 +120,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue';
 import { useScheduleEvent } from '../composables/useScheduleEvent';
-import type { CreateScheduleEventRequest, UpdateScheduleEventRequest } from '../../infrastructure/api/scheduleEventApiClient';
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, CreateScheduleRequest, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 // ===== Composables =====
 const { createSchedule, updateSchedule, isLoading } = useScheduleEvent();
@@ -211,7 +210,7 @@ async function handleSubmit() {
 
   if (isEditing.value && editingSchedule.value) {
     // 编辑模式
-    const updateData: UpdateScheduleEventRequest = {
+    const updateData: UpdateScheduleRequest = {
       title: formData.title,
       description: formData.description || undefined,
       startTime: startTimestamp,
@@ -227,7 +226,7 @@ async function handleSubmit() {
     }
   } else {
     // 创建模式
-    const requestData: CreateScheduleEventRequest = {
+    const requestData: CreateScheduleRequest = {
       title: formData.title,
       description: formData.description || undefined,
       startTime: startTimestamp,

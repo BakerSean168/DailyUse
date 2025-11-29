@@ -176,7 +176,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, ScheduleStatisticsServerDTO, ModuleStatisticsServerDTO } from '@dailyuse/contracts/schedule';
 
 // Props
 const props = defineProps<{

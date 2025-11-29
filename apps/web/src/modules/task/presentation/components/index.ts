@@ -1,9 +1,5 @@
-export { default as TaskCard } from './TaskCard.vue';
-export { default as TaskList } from './TaskList.vue';
-export { default as TaskForm } from './TaskForm.vue';
-export { default as TaskDashboard } from './TaskDashboard.vue';
-export { default as TaskDetail } from './TaskDetail.vue';
-export { default as SubtaskList } from './SubtaskList.vue';
-export { default as TaskBatchToolbar } from './TaskBatchToolbar.vue';
-export { default as TaskTimeline } from './TaskTimeline.vue';
+// Export components that actually exist in this directory
 export { default as TaskDependencyGraph } from './TaskDependencyGraph.vue';
+export { default as TaskAIGenerationDialog } from './TaskAIGenerationDialog.vue';
+export { default as TaskInstanceManagement } from './TaskInstanceManagement.vue';
+export { default as TaskTemplateManagement } from './TaskTemplateManagement.vue';

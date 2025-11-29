@@ -205,7 +205,7 @@ import KrWeightDistributionChart from '../components/echarts/KrWeightDistributio
 import PeriodBarChart from '../components/echarts/PeriodBarChart.vue';
 import { GoalReview } from '@dailyuse/domain-client/goal';
 import { Goal } from '@dailyuse/domain-client/goal';
-import { GoalStatus, GoalPriority } from '@dailyuse/contracts/goal';
+import { GoalStatus, ReviewType } from '@dailyuse/contracts/goal';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
 

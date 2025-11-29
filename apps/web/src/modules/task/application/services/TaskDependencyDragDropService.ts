@@ -7,7 +7,7 @@
  * @module TaskDependencyDragDropService
  */
 
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO, ValidateDependencyRequest, CreateTaskDependencyRequest, DependencyType } from '@dailyuse/contracts/task';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 import { TaskDependencyValidationService } from './TaskDependencyValidationService';
 import { useSnackbar } from '@/shared/composables/useSnackbar';

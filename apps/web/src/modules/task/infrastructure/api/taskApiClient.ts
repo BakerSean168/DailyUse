@@ -9,6 +9,11 @@ import type {
   BindToGoalRequest,
   TaskDependencyClientDTO,
   TaskStatisticsServerDTO,
+  ValidateDependencyRequest,
+  ValidateDependencyResponse,
+  CreateTaskDependencyRequest,
+  CompleteTaskInstanceRequest,
+  SkipTaskInstanceRequest,
 } from '@dailyuse/contracts/task';
 
 /**

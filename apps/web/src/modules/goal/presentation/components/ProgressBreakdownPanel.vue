@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, ProgressBreakdown } from '@dailyuse/contracts/goal';
 import { useGoal } from '../composables/useGoal';
 import { format } from 'date-fns';
 

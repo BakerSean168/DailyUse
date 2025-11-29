@@ -17,11 +17,36 @@ import {
   passwordApplicationService,
   apiKeyApplicationService,
 } from '../../application/services';
-import type { LoginRequest, RegisterRequest, AuthTokens, LoginResponse } from '@dailyuse/contracts/authentication';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthTokens,
+  LoginResponse,
+  LoginResponseDTO,
+  RegisterRequestDTO,
+  LogoutRequestDTO,
+  ForgotPasswordRequestDTO,
+  ResetPasswordRequestDTO,
+  ChangePasswordRequestDTO,
+  Enable2FARequestDTO,
+  Enable2FAResponseDTO,
+  Disable2FARequestDTO,
+  Verify2FARequestDTO,
+  GetActiveSessionsRequestDTO,
+  ActiveSessionsResponseDTO,
+  RevokeSessionRequestDTO,
+  RevokeAllSessionsRequestDTO,
+  TrustedDevicesResponseDTO,
+  TrustDeviceRequestDTO,
+  RevokeTrustedDeviceRequestDTO,
+  CreateApiKeyRequestDTO,
+  CreateApiKeyResponseDTO,
+  ApiKeyListResponseDTO,
+  RevokeApiKeyRequestDTO,
+} from '@dailyuse/contracts/authentication';
 
 // Type aliases for DTO naming convention
 type LoginRequestDTO = LoginRequest;
-type LoginResponseDTO = LoginResponse;
 
 export function useAuth() {
   const authStore = useAuthStore();

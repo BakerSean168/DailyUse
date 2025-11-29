@@ -236,7 +236,7 @@ export class ScheduleApiClient {
    */
   async resolveConflict(
     scheduleUuid: string,
-    request: ResolveConflictRequestDTO,
+    request: ResolveConflictRequest,
   ): Promise<{
     schedule: ScheduleClientDTO;
     conflicts: ConflictDetectionResult;

@@ -23,7 +23,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // ===== Composables =====
-const { goals } = useGoal();
+const { goals, fetchGoals } = useGoal();
 
 // ===== State =====
 const isLoading = ref(true);
@@ -125,7 +125,7 @@ const formatDate = (dateString: string) => {
 onMounted(async () => {
     try {
         isLoading.value = true;
-        await goalStore.fetchAllGoals();
+        await fetchGoals();
     } catch (error) {
         console.error('[GoalTimelineWidget] Failed to load goals:', error);
     } finally {

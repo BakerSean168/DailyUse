@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // ===== Composables =====
-const { taskInstances, completeTaskInstance } = useTaskInstance();
+const { taskInstances, completeTaskInstance, updateTaskInstance } = useTaskInstance();
 
 // ===== State =====
 const isLoading = ref(true);
@@ -136,7 +136,7 @@ const formatTime = (dateString: string | undefined) => {
  */
 const toggleComplete = async (taskUuid: string) => {
     try {
-        await taskInstanceStore.updateInstance(taskUuid, {
+        await updateTaskInstance(taskUuid, {
             status: TaskInstanceStatus.COMPLETED,
         });
     } catch (error) {
@@ -146,14 +146,9 @@ const toggleComplete = async (taskUuid: string) => {
 
 // ===== Lifecycle =====
 onMounted(async () => {
-    try {
-        isLoading.value = true;
-        await taskInstanceStore.fetchAllInstances();
-    } catch (error) {
-        console.error('[TodayTasksWidget] Failed to load tasks:', error);
-    } finally {
-        isLoading.value = false;
-    }
+    // taskInstances are loaded reactively from the store
+    // No need to fetch explicitly as the store handles initialization
+    isLoading.value = false;
 });
 </script>
 

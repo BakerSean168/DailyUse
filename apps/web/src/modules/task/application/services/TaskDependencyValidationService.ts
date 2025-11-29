@@ -8,7 +8,7 @@
  * - 自依赖检测（Self-dependency Check）
  */
 
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO, ValidateDependencyRequest, ValidateDependencyResponse } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 

@@ -1,11 +1,6 @@
 import { ref, computed } from 'vue';
-import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
-import {
-  scheduleEventApiClient,
-  type CreateScheduleEventRequest,
-  type UpdateScheduleEventRequest,
-  type GetSchedulesByTimeRangeRequest,
-} from '../../infrastructure/api/scheduleEventApiClient';
+import type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest, GetSchedulesByTimeRangeRequest } from '@dailyuse/contracts/schedule';
+import { scheduleEventApiClient } from '../../infrastructure/api/scheduleEventApiClient';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 /**
@@ -49,7 +44,7 @@ export function useScheduleEvent() {
   /**
    * 创建日程事件
    */
-  async function createSchedule(data: CreateScheduleEventRequest): Promise<ScheduleClientDTO | null> {
+  async function createSchedule(data: CreateScheduleRequest): Promise<ScheduleClientDTO | null> {
     isLoading.value = true;
     error.value = null;
 
@@ -160,7 +155,7 @@ export function useScheduleEvent() {
    */
   async function updateSchedule(
     uuid: string,
-    data: UpdateScheduleEventRequest
+    data: UpdateScheduleRequest
   ): Promise<ScheduleClientDTO | null> {
     isLoading.value = true;
     error.value = null;

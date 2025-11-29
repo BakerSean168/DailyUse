@@ -62,8 +62,12 @@
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
+import { DocumentContracts } from '@dailyuse/contracts/document';
 import * as echarts from 'echarts';
 
+type LinkGraphResponseDTO = DocumentContracts.LinkGraphResponseDTO;
+type LinkGraphNodeDTO = DocumentContracts.LinkGraphNodeDTO;
+type LinkGraphEdgeDTO = DocumentContracts.LinkGraphEdgeDTO;
 
 // ==================== Props ====================
 interface Props {

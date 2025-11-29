@@ -1,5 +1,5 @@
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, CreateScheduleRequest, UpdateScheduleRequest, GetSchedulesByTimeRangeRequest } from '@dailyuse/contracts/schedule';
 import { apiClient } from '@/shared/api/instances';
 
 /**
@@ -42,7 +42,7 @@ class ScheduleEventApiClient {
   /**
    * 获取指定时间范围内的日程事件
    */
-  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequestDTO): Promise<ScheduleClientDTO[]> {
+  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<ScheduleClientDTO[]> {
     const response = await apiClient.get<ScheduleClientDTO[]>(this.baseUrl, {
       params: {
         startTime: params.startTime.toString(),
@@ -55,7 +55,7 @@ class ScheduleEventApiClient {
   /**
    * 更新日程事件
    */
-  async updateSchedule(uuid: string, data: UpdateScheduleRequestDTO): Promise<ScheduleClientDTO> {
+  async updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<ScheduleClientDTO> {
     const response = await apiClient.patch<ScheduleClientDTO>(`${this.baseUrl}/${uuid}`, data);
     return response;
   }

@@ -6,7 +6,7 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TagStatisticsDto, TagResourceReferenceDto } from '@dailyuse/contracts/repository';
 import axios from 'axios';
 
 type TagStatistics = TagStatisticsDto;

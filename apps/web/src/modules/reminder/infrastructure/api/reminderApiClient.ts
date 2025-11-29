@@ -8,7 +8,7 @@
  */
 
 import { apiClient } from '@/shared/api';
-import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequest, UpdateReminderTemplateRequest, ReminderHistoryClientDTO, ReminderStatisticsClientDTO, UpcomingRemindersResponseDTO, GetUpcomingRemindersRequest } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequest, UpdateReminderTemplateRequest, ReminderHistoryClientDTO, ReminderStatisticsClientDTO, UpcomingRemindersResponseDTO, GetUpcomingRemindersRequest, CreateReminderGroupRequest, UpdateReminderGroupRequest, TemplateScheduleStatusDTO } from '@dailyuse/contracts/reminder';
 
 // 类型别名
 
@@ -70,7 +70,7 @@ export const reminderApiClient = {
    */
   async updateTemplate(
     uuid: string,
-    data: UpdateReminderTemplateRequestDTO,
+    data: UpdateReminderTemplateRequest,
   ): Promise<ReminderTemplateClientDTO> {
     return apiClient.patch<ReminderTemplateClientDTO>(`/reminders/templates/${uuid}`, data);
   },
@@ -78,7 +78,7 @@ export const reminderApiClient = {
   // 别名方法（兼容应用服务）
   updateReminderTemplate(
     uuid: string,
-    data: UpdateReminderTemplateRequestDTO,
+    data: UpdateReminderTemplateRequest,
   ): Promise<ReminderTemplateClientDTO> {
     return this.updateTemplate(uuid, data);
   },
@@ -185,7 +185,7 @@ export const reminderApiClient = {
    * 创建提醒分组
    */
   async createReminderGroup(
-    data: CreateReminderGroupRequestDTO,
+    data: CreateReminderGroupRequest,
   ): Promise<ReminderGroupClientDTO> {
     return apiClient.post<ReminderGroupClientDTO>('/reminder-groups', data);
   },
@@ -235,7 +235,7 @@ export const reminderApiClient = {
    */
   async updateReminderGroup(
     uuid: string,
-    data: UpdateReminderGroupRequestDTO,
+    data: UpdateReminderGroupRequest,
   ): Promise<ReminderGroupClientDTO> {
     return apiClient.patch<ReminderGroupClientDTO>(
       `/reminder-groups/${uuid}`,

@@ -4,7 +4,7 @@
  */
 
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, ScheduleExecutionClientDTO } from '@dailyuse/contracts/schedule';
 import { apiClient } from '@/shared/api/instances';
 
 /**

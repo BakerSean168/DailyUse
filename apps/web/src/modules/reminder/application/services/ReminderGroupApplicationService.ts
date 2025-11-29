@@ -1,4 +1,4 @@
-import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, ReminderHistoryClientDTO } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, ReminderHistoryClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { getReminderStore } from '../../presentation/stores/reminderStore';
@@ -35,7 +35,7 @@ export class ReminderGroupApplicationService {
    * 创建提醒分组
    */
   async createReminderGroup(
-    request: CreateReminderGroupRequestDTO,
+    request: CreateReminderGroupRequest,
   ): Promise<ReminderGroupClientDTO> {
     try {
       this.reminderStore.setLoading(true);
@@ -135,7 +135,7 @@ export class ReminderGroupApplicationService {
    */
   async updateReminderGroup(
     uuid: string,
-    request: UpdateReminderGroupRequestDTO,
+    request: UpdateReminderGroupRequest,
   ): Promise<ReminderGroupClientDTO> {
     try {
       this.reminderStore.setLoading(true);

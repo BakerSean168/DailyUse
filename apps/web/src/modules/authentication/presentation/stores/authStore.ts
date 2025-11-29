@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthTokens,
+  ActiveSessionsResponseDTO,
+  ApiKeyListResponseDTO,
+  TrustedDevicesResponseDTO,
+} from '@dailyuse/contracts/authentication';
 
 // 使用 DTO 类型
 type SessionDTO = ActiveSessionsResponseDTO['sessions'][0];

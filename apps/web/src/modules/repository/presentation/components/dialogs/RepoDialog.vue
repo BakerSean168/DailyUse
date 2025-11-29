@@ -255,7 +255,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { Repository } from '@dailyuse/domain-client/repository';
-import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO, type TagClientDTO, type BookmarkClientDTO } from '@dailyuse/contracts/repository';
+import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 // composables
 import { useRepository } from '../../composables/useRepository';
 

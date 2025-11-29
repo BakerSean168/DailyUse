@@ -290,7 +290,7 @@ export function useSchedule() {
    */
   async function resolveConflict(
     scheduleUuid: string,
-    request: ResolveConflictRequestDTO,
+    request: ResolveConflictRequest,
   ) {
     isResolvingConflict.value = true;
     resolveConflictError.value = null;
