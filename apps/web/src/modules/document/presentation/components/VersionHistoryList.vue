@@ -35,7 +35,7 @@
           </template>
 
           <v-list-item-title>
-            {{ version.title }}
+            版本 {{ version.versionNumber }}
             <v-chip
               :color="getChangeTypeColor(version.changeType)"
               size="x-small"
@@ -50,8 +50,8 @@
           </v-list-item-subtitle>
 
           <v-list-item-subtitle class="text-caption">
-            {{ formatDate(version.createdAt) }}
-            <span v-if="version.changedBy" class="ml-2">· {{ version.changedBy }}</span>
+            {{ version.formattedCreatedAt }}
+            <span v-if="version.createdBy" class="ml-2">· {{ version.createdBy }}</span>
           </v-list-item-subtitle>
 
           <template #append>
@@ -101,7 +101,8 @@
 </template>
 
 <script setup lang="ts">
-import type { DocumentClientDTO, DocumentVersionClientDTO } from '@dailyuse/contracts/editor';
+import type { DocumentVersionClientDTO } from '@dailyuse/contracts/editor';
+import { VersionChangeType } from '@dailyuse/contracts/editor';
 
 
 // ==================== Props ====================
@@ -123,48 +124,30 @@ defineEmits<{
 }>();
 
 // ==================== Helpers ====================
-function getChangeTypeColor(changeType: string): string {
-  const colors: Record<string, string> = {
-    INITIAL: 'primary',
-    MAJOR: 'error',
-    MINOR: 'warning',
-    PATCH: 'info',
-    RESTORE: 'success',
+function getChangeTypeColor(changeType: VersionChangeType): string {
+  const colors: Record<VersionChangeType, string> = {
+    [VersionChangeType.CREATE]: 'primary',
+    [VersionChangeType.EDIT]: 'info',
+    [VersionChangeType.DELETE]: 'error',
+    [VersionChangeType.RENAME]: 'warning',
+    [VersionChangeType.MOVE]: 'purple',
+    [VersionChangeType.MERGE]: 'teal',
+    [VersionChangeType.RESTORE]: 'success',
   };
   return colors[changeType] || 'grey';
 }
 
-function getChangeTypeLabel(changeType: string): string {
-  const labels: Record<string, string> = {
-    INITIAL: '初始版本',
-    MAJOR: '重大更新',
-    MINOR: '次要更新',
-    PATCH: '补丁更新',
-    RESTORE: '版本恢复',
+function getChangeTypeLabel(changeType: VersionChangeType): string {
+  const labels: Record<VersionChangeType, string> = {
+    [VersionChangeType.CREATE]: '创建',
+    [VersionChangeType.EDIT]: '编辑',
+    [VersionChangeType.DELETE]: '删除',
+    [VersionChangeType.RENAME]: '重命名',
+    [VersionChangeType.MOVE]: '移动',
+    [VersionChangeType.MERGE]: '合并',
+    [VersionChangeType.RESTORE]: '恢复',
   };
-  return labels[changeType] || changeType;
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return '刚刚';
-  if (diffMins < 60) return `${diffMins} 分钟前`;
-  if (diffHours < 24) return `${diffHours} 小时前`;
-  if (diffDays < 7) return `${diffDays} 天前`;
-
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return labels[changeType] || String(changeType);
 }
 </script>
 

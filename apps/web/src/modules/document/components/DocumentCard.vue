@@ -1,20 +1,20 @@
 <template>
   <v-card :to="`/repository/${document.uuid}`" hover>
-    <v-card-title>{{ document.title }}</v-card-title>
+    <v-card-title>{{ document.name }}</v-card-title>
     
     <v-card-subtitle class="text-grey">
       <v-icon size="small" class="mr-1">mdi-folder</v-icon>
-      {{ document.folderPath }}
+      {{ getFolderPath(document.path) }}
       <span class="mx-2">·</span>
-      {{ formatDate(document.updatedAt) }}
+      {{ document.formattedUpdatedAt }}
     </v-card-subtitle>
 
     <v-card-text>
-      <p class="text-body-2 text-grey-darken-1">{{ document.excerpt }}</p>
+      <p class="text-body-2 text-grey-darken-1">{{ getExcerpt(document.content) }}</p>
       
-      <div v-if="document.tags.length" class="mt-2">
+      <div v-if="document.metadata.tags.length" class="mt-2">
         <v-chip
-          v-for="tag in document.tags"
+          v-for="tag in document.metadata.tags"
           :key="tag"
           size="small"
           class="mr-1"
@@ -25,8 +25,8 @@
     </v-card-text>
 
     <v-card-actions>
-      <v-chip size="small" :color="getStatusColor(document.status)">
-        {{ getStatusText(document.status) }}
+      <v-chip size="small" :color="getIndexStatusColor(document.indexStatus)">
+        {{ getIndexStatusText(document.indexStatus) }}
       </v-chip>
       <v-spacer />
       <v-btn icon="mdi-pencil" size="small" @click.prevent="$emit('edit', document)" />
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
+import { IndexStatus } from '@dailyuse/contracts/editor';
 
 
 interface Props {
@@ -50,25 +51,35 @@ defineEmits<{
   delete: [document: DocumentClientDTO];
 }>();
 
-const formatDate = (timestamp: number) => {
-  return new Date(timestamp * 1000).toLocaleDateString('zh-CN');
+const getFolderPath = (path: string): string => {
+  const lastSlash = path.lastIndexOf('/');
+  return lastSlash > 0 ? path.substring(0, lastSlash) : '/';
 };
 
-const getStatusColor = (status: string) => {
+const getExcerpt = (content: string, maxLength = 100): string => {
+  if (content.length <= maxLength) return content;
+  return content.substring(0, maxLength) + '...';
+};
+
+const getIndexStatusColor = (status: IndexStatus): string => {
   switch (status) {
-    case 'DRAFT': return 'grey';
-    case 'PUBLISHED': return 'success';
-    case 'ARCHIVED': return 'warning';
-    default: return 'default';
+    case IndexStatus.INDEXED: return 'success';
+    case IndexStatus.NOT_INDEXED: return 'grey';
+    case IndexStatus.INDEXING: return 'warning';
+    case IndexStatus.FAILED: return 'error';
+    case IndexStatus.OUTDATED: return 'orange';
+    default: return 'grey';
   }
 };
 
-const getStatusText = (status: string) => {
+const getIndexStatusText = (status: IndexStatus): string => {
   switch (status) {
-    case 'DRAFT': return '草稿';
-    case 'PUBLISHED': return '已发布';
-    case 'ARCHIVED': return '已归档';
-    default: return status;
+    case IndexStatus.INDEXED: return '已索引';
+    case IndexStatus.NOT_INDEXED: return '未索引';
+    case IndexStatus.INDEXING: return '索引中';
+    case IndexStatus.FAILED: return '索引失败';
+    case IndexStatus.OUTDATED: return '需更新';
+    default: return '未知';
   }
 };
 </script>

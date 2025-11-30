@@ -4,11 +4,10 @@
  */
 
 import type { Component } from 'vue';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 
-/**
- * Widget 尺寸
- */
-export type WidgetSize = 'small' | 'medium' | 'large';
+// Re-export WidgetSize for convenience
+export { WidgetSize };
 
 /**
  * Widget 元数据

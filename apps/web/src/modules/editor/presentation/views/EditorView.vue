@@ -148,7 +148,7 @@ import LinkGraphView from '../components/LinkGraphView.vue';
 import { useMarkdownEditor } from '../composables/useMarkdownEditor';
 import { useAutoSave } from '../composables/useAutoSave';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
-import { DocumentContracts } from '@dailyuse/contracts/document';
+import type { DocumentContracts } from '@dailyuse/contracts/document';
 
 // ==================== Props ====================
 interface Props {
@@ -278,11 +278,11 @@ function handleTriggerSuggestion(position: { x: number; y: number; query: string
   showSuggestion.value = true;
 }
 
-function handleLinkSelect(document: DocumentContracts.DocumentClientDTO) {
-  if (!editorRef.value) return;
+function handleLinkSelect(document: DocumentContracts.DocumentClientDTO | null) {
+  if (!document || !editorRef.value) return;
   
-  // Insert [[title]] at cursor position
-  const linkText = `[[${document.title}]]`;
+  // Insert [[name]] at cursor position
+  const linkText = `[[${document.name}]]`;
   editorRef.value.insertTextAtCursor(linkText);
   
   showSuggestion.value = false;

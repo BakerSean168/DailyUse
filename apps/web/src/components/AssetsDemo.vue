@@ -292,7 +292,7 @@ const createRecurringReminder = async () => {
       },
       recurrence: {
         type: RecurrenceType.DAILY,
-        daily: { intervalDays: 1 },
+        daily: { interval: 1 },
         weekly: null,
         customDays: null,
       },
@@ -304,7 +304,7 @@ const createRecurringReminder = async () => {
         channels: [NotificationChannel.IN_APP],
         title: '测试提醒',
         body: '这是一个测试提醒，每分钟触发一次',
-        sound: { type: 'default' },
+        sound: { enabled: true, soundName: 'default' },
         vibration: undefined,
         actions: undefined,
       },

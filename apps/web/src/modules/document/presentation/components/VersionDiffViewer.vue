@@ -23,7 +23,7 @@
             {{ comparison.fromVersion.title }}
           </div>
           <div class="text-caption text-medium-emphasis">
-            {{ formatDate(comparison.fromVersion.createdAt) }}
+            {{ formatTimestamp(comparison.fromVersion.createdAt) }}
           </div>
         </div>
 
@@ -37,7 +37,7 @@
             {{ comparison.toVersion.title }}
           </div>
           <div class="text-caption text-medium-emphasis">
-            {{ formatDate(comparison.toVersion.createdAt) }}
+            {{ formatTimestamp(comparison.toVersion.createdAt) }}
           </div>
         </div>
       </div>
@@ -51,17 +51,17 @@
       >
         <div class="d-flex justify-space-around text-center">
           <div>
-            <div class="text-h6 text-success">+{{ comparison.summary.added }}</div>
+            <div class="text-h6 text-success">+{{ comparison.summary.addedLines }}</div>
             <div class="text-caption">添加</div>
           </div>
           <v-divider vertical />
           <div>
-            <div class="text-h6 text-error">-{{ comparison.summary.removed }}</div>
+            <div class="text-h6 text-error">-{{ comparison.summary.removedLines }}</div>
             <div class="text-caption">删除</div>
           </div>
           <v-divider vertical />
           <div>
-            <div class="text-h6">{{ comparison.summary.unchanged }}</div>
+            <div class="text-h6">{{ comparison.summary.unchangedLines }}</div>
             <div class="text-caption">未变更</div>
           </div>
         </div>
@@ -70,7 +70,7 @@
       <!-- Diff Display -->
       <v-card variant="outlined" class="diff-container">
         <v-card-text class="pa-0">
-          <pre class="diff-content"><code v-for="(line, index) in diffLines" :key="index" :class="getDiffLineClass(line)">{{ line }}</code></pre>
+          <pre class="diff-content"><code v-for="(line, index) in comparison.diffs" :key="index" :class="getDiffLineClass(line.type)">{{ line.content }}</code></pre>
         </v-card-text>
       </v-card>
     </v-card-text>
@@ -78,14 +78,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
-import { DocumentContracts } from '@dailyuse/contracts/document';
+import type { DocumentContracts } from '@dailyuse/contracts/document';
 
 type VersionComparisonDTO = DocumentContracts.VersionComparisonDTO;
+type DiffLineType = 'added' | 'removed' | 'unchanged';
 
 // ==================== Props ====================
-const props = defineProps<{
+defineProps<{
   comparison: VersionComparisonDTO;
 }>();
 
@@ -94,21 +93,17 @@ defineEmits<{
   close: [];
 }>();
 
-// ==================== Computed ====================
-const diffLines = computed(() => {
-  return props.comparison.diff.split('\n');
-});
-
 // ==================== Helpers ====================
-function getDiffLineClass(line: string): string {
-  if (line.startsWith('+')) return 'diff-line-added';
-  if (line.startsWith('-')) return 'diff-line-removed';
-  if (line.startsWith('@@')) return 'diff-line-header';
-  return 'diff-line-unchanged';
+function getDiffLineClass(type: DiffLineType): string {
+  switch (type) {
+    case 'added': return 'diff-line-added';
+    case 'removed': return 'diff-line-removed';
+    default: return 'diff-line-unchanged';
+  }
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp);
   return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: '2-digit',

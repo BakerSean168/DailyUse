@@ -5,7 +5,7 @@
       <v-col cols="12" md="8">
         <v-card>
           <v-card-title class="d-flex justify-space-between align-center">
-            <span>{{ document?.title || '文档详情' }}</span>
+            <span>{{ document?.name || '文档详情' }}</span>
             <div>
               <v-btn
                 icon="mdi-history"
@@ -13,9 +13,9 @@
                 @click="toggleVersionPanel"
               >
                 <v-badge
-                  :content="versionState.totalVersions"
+                  :content="versionState.totalVersions.value"
                   color="primary"
-                  :model-value="versionState.totalVersions > 0"
+                  :model-value="versionState.totalVersions.value > 0"
                 >
                   <v-icon>mdi-history</v-icon>
                 </v-badge>
@@ -28,8 +28,7 @@
           <v-card-text>
             <div v-if="document">
               <p class="text-caption text-medium-emphasis mb-2">
-                当前版本: v{{ document.currentVersion }} | 
-                最后更新: {{ formatDate(document.lastVersionedAt) }}
+                最后更新: {{ document.formattedUpdatedAt || formatDate(String(document.updatedAt)) }}
               </p>
               <div v-html="document.content" class="document-content" />
             </div>
@@ -41,11 +40,11 @@
       <!-- Version History Panel (Right) -->
       <v-col v-if="showVersionPanel" cols="12" md="4">
         <VersionHistoryList
-          :versions="versionState.versions"
-          :total-versions="versionState.totalVersions"
-          :loading="versionState.loading"
-          :has-versions="versionState.hasVersions"
-          :has-more-pages="versionState.hasMorePages"
+          :versions="versionState.versions.value ?? []"
+          :total-versions="versionState.totalVersions.value ?? 0"
+          :loading="versionState.loading.value ?? false"
+          :has-versions="versionState.hasVersions.value ?? false"
+          :has-more-pages="versionState.hasMorePages.value ?? false"
           @select-version="handleSelectVersion"
           @compare="handleCompareVersion"
           @restore="handleRestoreVersion"
@@ -83,7 +82,7 @@
           <v-btn variant="text" @click="showRestoreDialog = false">取消</v-btn>
           <v-btn
             color="primary"
-            :loading="versionState.restoring"
+            :loading="versionState.restoring.value"
             @click="confirmRestore"
           >
             确认恢复
@@ -106,6 +105,7 @@ import { useDocumentVersion } from '../composables/useDocumentVersion';
 import VersionHistoryList from '../components/VersionHistoryList.vue';
 import VersionDiffViewer from '../components/VersionDiffViewer.vue';
 import type { DocumentClientDTO, DocumentVersionClientDTO } from '@dailyuse/contracts/editor';
+import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
 
 
 // ==================== Route & State ====================
@@ -141,9 +141,13 @@ async function handleCompareVersion(version: DocumentVersionClientDTO) {
   if (!document.value) return;
   
   try {
+    // Compare with latest version (first in history list)
+    const latestVersion = versionState.versions.value?.[0];
+    const latestVersionNumber = latestVersion?.versionNumber ?? version.versionNumber;
+    
     await versionState.compareVersions(
       version.versionNumber,
-      document.value.currentVersion
+      latestVersionNumber
     );
     showDiffDialog.value = true;
   } catch (error) {
@@ -190,11 +194,28 @@ onMounted(async () => {
   // For now, mock data
   document.value = {
     uuid: documentUuid.value,
-    title: '示例文档',
+    workspaceUuid: '',
+    accountUuid: '',
+    path: '/documents/示例文档.md',
+    name: '示例文档',
+    language: DocumentLanguage.MARKDOWN,
     content: '<p>这是文档内容...</p>',
-    currentVersion: 5,
-    lastVersionedAt: new Date().toISOString(),
-  } as any;
+    contentHash: '',
+    metadata: {
+      tags: [],
+      category: null,
+      wordCount: 50,
+      characterCount: 200,
+      readingTime: 1,
+      wordCountFormatted: '50 字',
+      readingTimeFormatted: '1 分钟',
+    },
+    indexStatus: IndexStatus.NOT_INDEXED,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    formattedCreatedAt: new Date().toLocaleString('zh-CN'),
+    formattedUpdatedAt: new Date().toLocaleString('zh-CN'),
+  };
   
   // Load version history
   await versionState.loadVersions();
