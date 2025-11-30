@@ -14,6 +14,8 @@ import type {
   CreateTaskDependencyRequest,
   CompleteTaskInstanceRequest,
   SkipTaskInstanceRequest,
+  DependencyChainClientDTO,
+  UpdateTaskDependencyRequest,
 } from '@dailyuse/contracts/task';
 
 /**

@@ -68,8 +68,12 @@ export class LoginApplicationService {
 
       // 保存tokens和会话信息
       this.authStore.setAccessToken(response.accessToken);
-      this.authStore.setRefreshToken(response.refreshToken);
-      this.authStore.setCurrentSessionId(response.sessionId);
+      if (response.refreshToken) {
+        this.authStore.setRefreshToken(response.refreshToken);
+      }
+      if (response.sessionId) {
+        this.authStore.setCurrentSessionId(response.sessionId);
+      }
       this.authStore.setTokenExpiresAt(response.accessTokenExpiresAt);
 
       // 🔧 修复: 登录成功后获取并设置用户信息到 AccountStore
@@ -130,7 +134,9 @@ export class LoginApplicationService {
 
       // 更新tokens
       this.authStore.setAccessToken(response.accessToken);
-      this.authStore.setRefreshToken(response.refreshToken);
+      if (response.refreshToken) {
+        this.authStore.setRefreshToken(response.refreshToken);
+      }
       this.authStore.setTokenExpiresAt(response.accessTokenExpiresAt);
     } catch (error) {
       console.error('Failed to refresh token:', error);

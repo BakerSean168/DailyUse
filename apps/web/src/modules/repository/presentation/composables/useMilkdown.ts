@@ -10,6 +10,7 @@ import { history } from '@milkdown/plugin-history';
 import { cursor } from '@milkdown/plugin-cursor';
 import { prism } from '@milkdown/plugin-prism';
 import { nord } from '@milkdown/theme-nord';
+import type { Ctx } from '@milkdown/ctx';
 
 export interface UseMilkdownOptions {
   content?: string;
@@ -32,19 +33,21 @@ export function useMilkdown(options: UseMilkdownOptions = {}) {
     }
 
     try {
-      const editorInstance = await Editor.make()
-        .config((ctx) => {
-          ctx.set(rootCtx, editorRef.value);
-          ctx.set(defaultValueCtx, options.content || '');
+      const configure = (ctx: Ctx): void => {
+        ctx.set(rootCtx, editorRef.value);
+        ctx.set(defaultValueCtx, options.content || '');
 
-          // 监听内容变化
-          ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
-            if (options.onChange) {
-              options.onChange(markdown);
-            }
-          });
-        })
-        .use(nord) // 主题
+        // 监听内容变化
+        ctx.get(listenerCtx).markdownUpdated((_ctx: Ctx, markdown: string) => {
+          if (options.onChange) {
+            options.onChange(markdown);
+          }
+        });
+      };
+
+      const editorInstance = await Editor.make()
+        .config(configure)
+        .config(nord)
         .use(commonmark) // CommonMark 规范
         .use(listener) // 事件监听
         .use(history) // 撤销/重做

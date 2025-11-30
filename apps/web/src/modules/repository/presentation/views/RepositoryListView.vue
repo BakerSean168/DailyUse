@@ -159,8 +159,7 @@ const statusTabs = [
   { label: '全部', value: 'all' },
   { label: '活跃', value: RepositoryStatus.ACTIVE },
   { label: '归档', value: RepositoryStatus.ARCHIVED },
-  { label: '不活跃', value: RepositoryStatus.INACTIVE },
-  { label: '同步中', value: RepositoryStatus.SYNCING },
+  { label: '已删除', value: RepositoryStatus.DELETED },
 ];
 
 // ===== 计算属性 =====
@@ -191,9 +190,7 @@ const repoCountByStatus = computed(() => {
       .length,
     archived: repos.filter((repo) => repo.status === RepositoryStatus.ARCHIVED)
       .length,
-    inactive: repos.filter((repo) => repo.status === RepositoryStatus.INACTIVE)
-      .length,
-    syncing: repos.filter((repo) => repo.status === RepositoryStatus.SYNCING)
+    deleted: repos.filter((repo) => repo.status === RepositoryStatus.DELETED)
       .length,
   };
 });

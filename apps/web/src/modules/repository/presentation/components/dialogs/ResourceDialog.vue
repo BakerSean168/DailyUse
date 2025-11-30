@@ -313,16 +313,16 @@ watch(
           uuid: resource.uuid,
           repositoryUuid: resource.repositoryUuid,
           name: resource.name,
-          description: resource.description,
+          description: '',
           type: resource.type,
           path: resource.path,
           size: resource.size,
-          author: resource.author,
-          version: resource.version,
-          tags: [...(resource.tags || [])],
-          category: resource.category,
+          author: '',
+          version: '',
+          tags: [],
+          category: '',
           status: resource.status,
-          metadata: { ...resource.metadata },
+          metadata: { ...(resource.metadata as Record<string, any>) },
         };
       } else {
         resourceData.value = {

@@ -21,7 +21,6 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthTokens,
-  LoginResponse,
   LoginResponseDTO,
   RegisterRequestDTO,
   LogoutRequestDTO,

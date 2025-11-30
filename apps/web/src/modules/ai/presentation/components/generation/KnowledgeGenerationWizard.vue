@@ -53,7 +53,7 @@
                     <div class="text-center">
                       <p class="text-body-1 text-grey-darken-2">正在生成 {{ progress }}% 完成</p>
                       <p v-if="estimatedTime" class="text-body-2 text-grey">预计剩余时间：{{ estimatedTime }}</p>
-                      <div class="visually-hidden" aria-live="polite" role="status" data-test="progress-live">进度 {{ progress.value }}%</div>
+                      <div class="visually-hidden" aria-live="polite" role="status" data-test="progress-live">进度 {{ progress }}%</div>
                     </div>
                   </div>
                   <div class="document-status-section" aria-live="polite" role="region" aria-label="文档生成状态" data-test="document-status-list">

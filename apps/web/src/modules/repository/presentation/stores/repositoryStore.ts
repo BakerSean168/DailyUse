@@ -356,8 +356,7 @@ export const useRepositoryStore = defineStore('repository', {
       total: number;
       active: number;
       archived: number;
-      syncing: number;
-      inactive: number;
+      deleted: number;
       byType: Record<string, number>;
     } {
       const total = state.repositories.length;
@@ -367,11 +366,8 @@ export const useRepositoryStore = defineStore('repository', {
       const archived = state.repositories.filter(
         (r) => r.status === RepositoryStatus.ARCHIVED,
       ).length;
-      const syncing = state.repositories.filter(
-        (r) => r.status === RepositoryStatus.SYNCING,
-      ).length;
-      const inactive = state.repositories.filter(
-        (r) => r.status === RepositoryStatus.INACTIVE,
+      const deleted = state.repositories.filter(
+        (r) => r.status === RepositoryStatus.DELETED,
       ).length;
 
       const byType: Record<string, number> = {};
@@ -380,7 +376,7 @@ export const useRepositoryStore = defineStore('repository', {
         byType[type] = (byType[type] || 0) + 1;
       });
 
-      return { total, active, archived, syncing, inactive, byType };
+      return { total, active, archived, deleted, byType };
     },
 
     /**

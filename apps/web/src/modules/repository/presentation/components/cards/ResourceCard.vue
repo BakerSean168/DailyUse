@@ -61,27 +61,6 @@
         </v-menu>
       </div>
 
-      <!-- 资源描述 -->
-      <p v-if="resource.description" class="text-body-2 text-medium-emphasis mb-4">
-        {{ resource.description }}
-      </p>
-
-      <!-- 资源标签 -->
-      <div v-if="resource.tags && resource.tags.length > 0" class="mb-4">
-        <v-chip
-          v-for="tag in resource.tags.slice(0, 3)"
-          :key="tag"
-          size="x-small"
-          variant="outlined"
-          class="mr-1 mb-1"
-        >
-          {{ tag }}
-        </v-chip>
-        <v-chip v-if="resource.tags.length > 3" size="x-small" variant="text" class="mr-1 mb-1">
-          +{{ resource.tags.length - 3 }}
-        </v-chip>
-      </div>
-
       <!-- 资源元信息 -->
       <div class="resource-meta d-flex align-center flex-wrap gap-2">
         <v-chip size="small" variant="outlined" class="font-weight-medium" v-if="resource.size">
@@ -138,6 +117,7 @@ import { computed, ref, defineExpose } from 'vue';
 import { format } from 'date-fns';
 
 import { Resource } from '@dailyuse/domain-client/repository';
+import { ResourceType } from '@dailyuse/contracts/repository';
 
 const props = defineProps<{
   resource: Resource;
@@ -249,15 +229,15 @@ const formatFileSize = (bytes: number): string => {
  */
 const getResourceTypeColor = () => {
   switch (props.resource.type) {
-    case 'image':
+    case ResourceType.IMAGE:
       return 'green';
-    case 'video':
+    case ResourceType.VIDEO:
       return 'red';
-    case 'audio':
+    case ResourceType.AUDIO:
       return 'purple';
-    case 'code':
+    case ResourceType.CODE:
       return 'orange';
-    case 'link':
+    case ResourceType.LINK:
       return 'cyan';
     default:
       return 'grey';
@@ -269,16 +249,15 @@ const getResourceTypeColor = () => {
  */
 const getResourceTypeIcon = () => {
   switch (props.resource.type) {
-    // case 'document': return 'mdi-file-document'
-    case 'image':
+    case ResourceType.IMAGE:
       return 'mdi-image';
-    case 'video':
+    case ResourceType.VIDEO:
       return 'mdi-video';
-    case 'audio':
+    case ResourceType.AUDIO:
       return 'mdi-music';
-    case 'code':
+    case ResourceType.CODE:
       return 'mdi-code-tags';
-    case 'link':
+    case ResourceType.LINK:
       return 'mdi-link';
     default:
       return 'mdi-file';

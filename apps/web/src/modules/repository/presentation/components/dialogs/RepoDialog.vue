@@ -289,7 +289,7 @@ const repositoryData = ref<{
 }>({
   name: '',
   description: '',
-  type: RepositoryType.LOCAL,
+  type: RepositoryType.MARKDOWN,
   path: '',
   status: RepositoryStatus.ACTIVE,
   relatedGoals: [],
@@ -312,15 +312,15 @@ watch(
         repositoryData.value = {
           uuid: repository.uuid,
           name: repository.name,
-          description: repository.description,
+          description: repository.description ?? '',
           type: repository.type,
           path: repository.path,
           status: repository.status,
-          relatedGoals: repository.relatedGoals || [],
+          relatedGoals: [],
           config: {
-            enableGit: repository.config.enableGit,
-            autoSync: repository.config.autoSync,
-            enableVersionControl: repository.config.enableVersionControl,
+            enableGit: repository.config?.enableGit ?? false,
+            autoSync: repository.config?.autoSync ?? false,
+            enableVersionControl: repository.config?.enableVersionControl ?? false,
           },
           tags: [], // TODO: 从 Repository 实体中获取 tags
         };
@@ -328,7 +328,7 @@ watch(
         repositoryData.value = {
           name: '',
           description: '',
-          type: RepositoryType.LOCAL,
+          type: RepositoryType.MARKDOWN,
           path: '',
           status: RepositoryStatus.ACTIVE,
           relatedGoals: [],
@@ -355,14 +355,14 @@ const tabs = [
 
 // 表单选项
 const repositoryTypeOptions = [
-  { text: '本地仓库', value: RepositoryType.LOCAL },
-  { text: '远程仓库', value: RepositoryType.REMOTE },
-  { text: '同步仓库', value: RepositoryType.SYNCHRONIZED },
+  { text: 'Markdown 仓库', value: RepositoryType.MARKDOWN },
+  { text: '代码仓库', value: RepositoryType.CODE },
+  { text: '混合仓库', value: RepositoryType.MIXED },
 ];
 
 const statusOptions = [
   { text: '活跃', value: RepositoryStatus.ACTIVE },
-  { text: '停用', value: RepositoryStatus.INACTIVE },
+  { text: '已删除', value: RepositoryStatus.DELETED },
   { text: '已归档', value: RepositoryStatus.ARCHIVED },
 ];
 

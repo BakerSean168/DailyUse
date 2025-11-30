@@ -251,7 +251,7 @@ import TaskAIGenerationDialog from '@/modules/task/presentation/components/TaskA
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { useMessage } from '@dailyuse/ui';
 import type { KeyResult, Goal } from '@dailyuse/domain-client/goal';
-import { useAuthStore } from '@/stores/auth/authStore';
+import { useAuthStore } from '@/modules/authentication/presentation/stores/authStore';
 
 const router = useRouter();
 const route = useRoute();

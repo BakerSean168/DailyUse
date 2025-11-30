@@ -66,14 +66,6 @@
         {{ repository.description }}
       </p>
 
-      <!-- 关联目标标签 -->
-      <div v-if="repository.relatedGoals && repository.relatedGoals.length > 0" class="mb-4">
-        <v-chip color="primary" variant="tonal" size="small" class="mr-2">
-          <v-icon start size="small">mdi-target</v-icon>
-          {{ getGoalTitle(repository.relatedGoals[0]) }}
-        </v-chip>
-      </div>
-
       <!-- 仓库元信息 -->
       <div class="repo-meta d-flex align-center flex-wrap gap-2">
         <v-chip size="small" variant="outlined" class="font-weight-medium">
@@ -119,6 +111,7 @@ import { computed, ref, defineExpose } from 'vue';
 import { format } from 'date-fns';
 import { useRouter } from 'vue-router';
 import { Repository } from '@dailyuse/domain-client/repository';
+import { RepositoryStatus } from '@dailyuse/contracts/repository';
 
 const router = useRouter();
 
@@ -215,11 +208,11 @@ const goToRepoDetailView = () => {
 
 const getStatusColor = () => {
   switch (props.repository.status) {
-    case 'active':
+    case RepositoryStatus.ACTIVE:
       return 'success';
-    case 'archived':
+    case RepositoryStatus.ARCHIVED:
       return 'warning';
-    case 'inactive':
+    case RepositoryStatus.DELETED:
       return 'error';
     default:
       return 'primary';
@@ -228,11 +221,11 @@ const getStatusColor = () => {
 
 const getStatusIcon = () => {
   switch (props.repository.status) {
-    case 'active':
+    case RepositoryStatus.ACTIVE:
       return 'mdi-check-circle';
-    case 'archived':
+    case RepositoryStatus.ARCHIVED:
       return 'mdi-archive';
-    case 'inactive':
+    case RepositoryStatus.DELETED:
       return 'mdi-delete';
     default:
       return 'mdi-circle';
@@ -241,23 +234,15 @@ const getStatusIcon = () => {
 
 const getStatusText = () => {
   switch (props.repository.status) {
-    case 'active':
+    case RepositoryStatus.ACTIVE:
       return '活跃';
-    case 'archived':
+    case RepositoryStatus.ARCHIVED:
       return '已归档';
-    case 'inactive':
+    case RepositoryStatus.DELETED:
       return '已删除';
     default:
       return props.repository.status;
   }
-};
-
-/**
- * 获取目标标题
- */
-const getGoalTitle = (goalUuid: string) => {
-  // TODO: 根据goalUuid获取目标标题
-  return `目标-${goalUuid.slice(0, 8)}`;
 };
 </script>
 

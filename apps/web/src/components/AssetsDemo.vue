@@ -292,27 +292,27 @@ const createRecurringReminder = async () => {
       },
       recurrence: {
         type: RecurrenceType.DAILY,
-        interval: 1,
-        daysOfWeek: null,
-        daysOfMonth: null,
+        daily: { intervalDays: 1 },
+        weekly: null,
+        customDays: null,
       },
       activeTime: {
         activatedAt: now,
       },
-      activeHours: null,
+      activeHours: undefined,
       notificationConfig: {
         channels: [NotificationChannel.IN_APP],
         title: '测试提醒',
         body: '这是一个测试提醒，每分钟触发一次',
-        sound: 'default',
-        vibration: null,
-        actions: null,
+        sound: { type: 'default' },
+        vibration: undefined,
+        actions: undefined,
       },
       importanceLevel: ImportanceLevel.Moderate,
       tags: ['测试', '循环'],
-      color: null,
-      icon: null,
-      groupUuid: null,
+      color: undefined,
+      icon: undefined,
+      groupUuid: undefined,
     };
 
     console.log('📤 发送创建请求:', request);

@@ -9,7 +9,7 @@ import type {
   RuleConditionType,
   RuleMetric,
   RuleOperator,
-} from '../../../../../../../packages/contracts/src/modules/goal/rules/StatusRule';
+} from '@dailyuse/contracts/goal';
 
 /**
  * 内置规则集

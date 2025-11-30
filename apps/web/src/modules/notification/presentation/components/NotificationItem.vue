@@ -15,7 +15,7 @@
         {{ notification.title }}
       </span>
       <v-chip
-        v-if="notification.importance === 'HIGH' || notification.importance === 'CRITICAL'"
+        v-if="notification.importance === ImportanceLevel.Vital || notification.importance === ImportanceLevel.Important"
         size="x-small"
         :color="priorityColor"
         class="ml-2"
@@ -63,7 +63,8 @@
 import { computed } from 'vue';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
+import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 
 interface Props {
@@ -101,10 +102,10 @@ const typeColor = computed(() => typeColorMap[props.notification.type] || 'grey'
 
 const priorityColor = computed(() => {
   switch (props.notification.importance) {
-    case 'CRITICAL':
-    case 'HIGH':
+    case ImportanceLevel.Vital:
+    case ImportanceLevel.Important:
       return 'error';
-    case 'NORMAL':
+    case ImportanceLevel.Moderate:
       return 'warning';
     default:
       return 'grey';
@@ -113,9 +114,9 @@ const priorityColor = computed(() => {
 
 const priorityText = computed(() => {
   switch (props.notification.importance) {
-    case 'CRITICAL':
+    case ImportanceLevel.Vital:
       return '紧急';
-    case 'HIGH':
+    case ImportanceLevel.Important:
       return '重要';
     default:
       return '';

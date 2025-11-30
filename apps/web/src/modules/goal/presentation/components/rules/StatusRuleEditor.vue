@@ -294,8 +294,8 @@ import { useAutoStatusRules } from '../../../application/composables/useAutoStat
 import type {
   StatusRule,
   RuleCondition,
-} from '../../../../../../../../packages/contracts/src/modules/goal/rules/StatusRule';
-import { GoalStatus } from '../../../../../../../../packages/contracts/src/modules/goal/enums';
+} from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 import { sortRulesByPriority } from '../../../application/rules/BuiltInRules';
 
 const { config, getRuleEngine } = useAutoStatusRules();

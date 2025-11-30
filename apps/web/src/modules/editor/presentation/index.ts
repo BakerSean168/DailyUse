@@ -12,4 +12,4 @@ export { default as MediaViewer } from './components/MediaViewer.vue';
 export { useEditor } from './composables/useEditor';
 
 // 类型
-// export type { EditorTab } from './components/EditorTabBar.vue';
+export type { EditorTab } from './components/EditorTabBar.vue';

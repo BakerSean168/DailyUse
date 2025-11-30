@@ -376,8 +376,8 @@ export class ReminderSyncApplicationService {
       return null;
     }
 
-    if ('displayName' in snapshot) {
-      return ReminderTemplate.fromClientDTO(snapshot);
+    if ('displayName' in snapshot && typeof snapshot.displayName === 'string') {
+      return ReminderTemplate.fromClientDTO(snapshot as ReminderTemplateClientDTO);
     }
 
     return ReminderTemplate.fromServerDTO(snapshot as ReminderTemplateServerDTO);

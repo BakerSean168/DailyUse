@@ -33,7 +33,7 @@ export const useResourceStore = defineStore('resource', () => {
   const isSaving = ref(false);
 
   // API Client
-  const resourceApi = new ResourceApiClient(apiClient.getInstance());
+  const resourceApi = new ResourceApiClient(apiClient);
 
   // Computed
   const activeTab = computed(() => {

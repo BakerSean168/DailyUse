@@ -8,8 +8,8 @@ import { scheduleWebApplicationService } from '../../services/ScheduleWebApplica
 import { scheduleApiClient } from '../../infrastructure/api/scheduleApiClient';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
-  ScheduleStatisticsServerDTO,
-  ModuleStatisticsServerDTO,
+  ScheduleStatisticsClientDTO,
+  ModuleStatisticsClientDTO,
   ConflictDetectionResult,
   ScheduleClientDTO,
   CreateScheduleTaskRequest,
@@ -28,10 +28,10 @@ const logger = createLogger('useSchedule');
 export function useSchedule() {
   // ===== 状态 =====
   const tasks = ref<ScheduleTask[]>([]);
-  const statistics = ref<ScheduleStatisticsServerDTO | null>(null);
+  const statistics = ref<ScheduleStatisticsClientDTO | null>(null);
   const moduleStatistics = ref<Record<
     SourceModule,
-    ModuleStatisticsServerDTO
+    ModuleStatisticsClientDTO
   > | null>(null);
   const isLoading = ref(false);
   const isLoadingStats = ref(false);

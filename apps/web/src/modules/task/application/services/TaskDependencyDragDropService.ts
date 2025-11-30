@@ -78,6 +78,7 @@ export class TaskDependencyDragDropService {
 
       // Step 2: Create dependency request
       const request: CreateTaskDependencyRequest = {
+        accountUuid: sourceTask.accountUuid,
         predecessorTaskUuid: targetTask.uuid, // targetTask is the predecessor (must finish first)
         successorTaskUuid: sourceTask.uuid, // sourceTask is the successor (depends on predecessor)
         dependencyType,
