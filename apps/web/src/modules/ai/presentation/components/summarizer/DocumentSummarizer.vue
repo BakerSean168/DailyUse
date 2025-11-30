@@ -152,7 +152,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useDocumentSummarizer } from '../composables/useDocumentSummarizer';
+import { useDocumentSummarizer } from '../../composables/useDocumentSummarizer';
 import SummaryDisplay from './SummaryDisplay.vue';
 
 // ============ Composable ============

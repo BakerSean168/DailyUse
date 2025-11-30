@@ -107,9 +107,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest, HiddenGoalsMode } from '@dailyuse/contracts/goal';
+import type { FocusModeClientDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 import { useFocusMode } from '../composables/useFocusMode';
-import { useGoalStore } from '../../application/stores/goalStore';
+import { useGoalStore } from '../stores/goalStore';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FocusModeHistoryPanel');

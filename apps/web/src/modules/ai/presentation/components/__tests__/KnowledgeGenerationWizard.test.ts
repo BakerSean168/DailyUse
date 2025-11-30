@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import KnowledgeGenerationWizard from '../generation/KnowledgeGenerationWizard.vue';
+import KnowledgeGenerationWizard from '../KnowledgeGenerationWizard.vue';
 import { DocumentStatus } from '../../types/knowledgeGeneration';
 
 // Router mock
@@ -8,7 +8,7 @@ const mockPush = vi.fn();
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockPush,
-    currentRoute: { value: { path: '/ai-tools/knowledge-generator' } },
+    currentRoute: { value: { path: '/ai/knowledge-generator' } },
   }),
 }));
 
@@ -79,8 +79,9 @@ function mountWizard() {
   return mount(KnowledgeGenerationWizard, { global: { stubs } });
 }
 
-describe('KnowledgeGenerationWizard (migrated)', () => {
+describe('KnowledgeGenerationWizard', () => {
   let wrapper: ReturnType<typeof mountWizard>;
+
   beforeEach(() => {
     vi.clearAllMocks();
     Object.assign(mockComposable, {
@@ -96,13 +97,16 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
       documentPreviews: { value: [] },
     });
   });
+
   afterEach(() => {
     if (wrapper) wrapper.unmount();
   });
+
   it('Step1: 输入框显示', () => {
     wrapper = mountWizard();
     expect(wrapper.find('[data-test="input-topic"]').exists()).toBe(true);
   });
+
   it('Step1: startGeneration 参数正确', async () => {
     wrapper = mountWizard();
     await wrapper.find('[data-test="input-topic"]').setValue('测试主题');
@@ -113,6 +117,7 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
       targetAudience: 'Beginners',
     });
   });
+
   it('Step3: 丢弃文档触发 discardDocument', async () => {
     mockComposable.currentStep.value = 3;
     mockComposable.isCompleted.value = true;
@@ -129,6 +134,7 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
     await (wrapper.vm as any).handleDiscard('x');
     expect(mockComposable.discardDocument).toHaveBeenCalledWith('x');
   });
+
   it('Step4: 成功文案显示', () => {
     mockComposable.currentStep.value = 4;
     mockComposable.isCompleted.value = true;
@@ -138,6 +144,7 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
     wrapper = mountWizard();
     expect(wrapper.text()).toContain('知识库创建成功');
   });
+
   it('取消流程: confirmCancel 执行取消与重置并导航', async () => {
     mockComposable.currentStep.value = 2;
     mockComposable.isGenerating.value = true;
@@ -147,8 +154,9 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
     await (wrapper.vm as any).confirmCancel();
     expect(mockComposable.cancelTask).toHaveBeenCalled();
     expect(mockComposable.reset).toHaveBeenCalled();
-    expect(mockPush).toHaveBeenCalledWith('/ai-tools');
+    expect(mockPush).toHaveBeenCalledWith('/ai');
   });
+
   it('错误提示: Step2 显示错误信息', () => {
     mockComposable.currentStep.value = 2;
     mockComposable.isFailed.value = true;
@@ -156,11 +164,14 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
     wrapper = mountWizard();
     expect(wrapper.text()).toContain('生成失败：配额不足');
   });
+
+  // Accessibility tests
   it('可访问性: Stepper 具有 tablist 角色', () => {
     wrapper = mountWizard();
     const stepper = wrapper.find('[data-test="stepper"]');
     expect(stepper.attributes('role')).toBe('tablist');
   });
+
   it('可访问性: ProgressBar 具有 ARIA 属性', () => {
     mockComposable.currentStep.value = 2;
     wrapper = mountWizard();
@@ -169,6 +180,7 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
     expect(bar.attributes('aria-valuemin')).toBe('0');
     expect(bar.attributes('aria-valuemax')).toBe('100');
   });
+
   it('可访问性: 取消对话框具有 dialog 角色与 aria-modal', async () => {
     mockComposable.currentStep.value = 2;
     wrapper = mountWizard();
@@ -178,12 +190,14 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
     expect(dialog.attributes('role')).toBe('dialog');
     expect(dialog.attributes('aria-modal')).toBe('true');
   });
+
   it('可访问性: 键盘导航 Stepper ArrowRight 前进', async () => {
     wrapper = mountWizard();
     expect(mockComposable.currentStep.value).toBe(1);
     await wrapper.find('[data-test="stepper"]').trigger('keydown', { key: 'ArrowRight' });
     expect(mockComposable.currentStep.value).toBe(2);
   });
+
   it('可访问性: 键盘导航 Home 跳到第一步, End 跳到最后一步', async () => {
     wrapper = mountWizard();
     mockComposable.currentStep.value = 2;
@@ -192,6 +206,7 @@ describe('KnowledgeGenerationWizard (migrated)', () => {
     await wrapper.find('[data-test="stepper"]').trigger('keydown', { key: 'Home' });
     expect(mockComposable.currentStep.value).toBe(1);
   });
+
   it('可访问性: 进度 live region 更新包含百分比', () => {
     mockComposable.currentStep.value = 2;
     mockComposable.progress.value = 42;
