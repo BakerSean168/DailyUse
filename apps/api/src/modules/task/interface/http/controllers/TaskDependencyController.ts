@@ -6,7 +6,7 @@
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { TaskDependencyApplicationService } from '../../../../task/application/services/TaskDependencyApplicationService';
-import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts';
+import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('TaskDependencyController');
@@ -85,6 +85,7 @@ export class TaskDependencyController {
 
       const service = await TaskDependencyController.getTaskDependencyService();
       const dependency = await service.createDependency({
+        accountUuid,
         predecessorTaskUuid,
         successorTaskUuid: taskUuid,
         dependencyType: dependencyType || 'FINISH_TO_START',

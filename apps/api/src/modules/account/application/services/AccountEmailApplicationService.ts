@@ -16,9 +16,9 @@
  * - Repository：数据访问层，接收事务上下文 tx（待更新）
  */
 
-import { AccountContracts } from '@dailyuse/contracts';
-import type { IAccountRepository, Account } from '@dailyuse/domain-server';
-import { AccountDomainService } from '@dailyuse/domain-server';
+import type { AccountServerDTO, AccountClientDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
+import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
+import { AccountDomainService } from '@dailyuse/domain-server/account';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
 import prisma from '../../../../shared/db/prisma';
 import { eventBus, createLogger } from '@dailyuse/utils';
@@ -45,7 +45,7 @@ export interface VerifyEmailRequest {
  */
 export interface AccountResponse {
   success: boolean;
-  account: AccountContracts.AccountClientDTO;
+  account: AccountClientDTO;
   message: string;
 }
 
@@ -263,3 +263,4 @@ export class AccountEmailApplicationService {
     });
   }
 }
+

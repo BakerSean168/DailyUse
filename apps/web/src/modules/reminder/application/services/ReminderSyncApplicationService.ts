@@ -1,5 +1,5 @@
-import type { ReminderContracts } from '@dailyuse/contracts';
-import { ReminderTemplate, ReminderGroup } from '@dailyuse/domain-client';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, ReminderHistoryClientDTO, ReminderStatisticsClientDTO, ReminderGroupServerDTO, ReminderTemplateServerDTO } from '@dailyuse/contracts/reminder';
+import { ReminderTemplate, ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { getReminderStore } from '../../presentation/stores/reminderStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -25,8 +25,8 @@ export interface ReminderTemplateRefreshEvent {
   action?: string;
   payload?: Record<string, unknown>;
   template?:
-    | ReminderContracts.ReminderTemplateClientDTO
-    | ReminderContracts.ReminderTemplateServerDTO;
+    | ReminderTemplateClientDTO
+    | ReminderTemplateServerDTO;
 }
 
 /**
@@ -39,8 +39,8 @@ export interface ReminderGroupRefreshEvent {
   action?: string;
   payload?: Record<string, unknown>;
   group?:
-    | ReminderContracts.ReminderGroupClientDTO
-    | ReminderContracts.ReminderGroupServerDTO;
+    | ReminderGroupClientDTO
+    | ReminderGroupServerDTO;
 }
 
 /**
@@ -369,35 +369,36 @@ export class ReminderSyncApplicationService {
 
   private normalizeTemplateSnapshot(
     snapshot?:
-      | ReminderContracts.ReminderTemplateClientDTO
-      | ReminderContracts.ReminderTemplateServerDTO,
+      | ReminderTemplateClientDTO
+      | ReminderTemplateServerDTO,
   ): ReminderTemplate | null {
     if (!snapshot) {
       return null;
     }
 
-    if ('displayName' in snapshot) {
-      return ReminderTemplate.fromClientDTO(snapshot);
+    if ('displayName' in snapshot && typeof snapshot.displayName === 'string') {
+      return ReminderTemplate.fromClientDTO(snapshot as ReminderTemplateClientDTO);
     }
 
-    return ReminderTemplate.fromServerDTO(snapshot as ReminderContracts.ReminderTemplateServerDTO);
+    return ReminderTemplate.fromServerDTO(snapshot as ReminderTemplateServerDTO);
   }
 
   private normalizeGroupSnapshot(
     snapshot?:
-      | ReminderContracts.ReminderGroupClientDTO
-      | ReminderContracts.ReminderGroupServerDTO,
+      | ReminderGroupClientDTO
+      | ReminderGroupServerDTO,
   ): ReminderGroup | null {
     if (!snapshot) {
       return null;
     }
 
     if ('displayName' in snapshot || 'controlModeText' in snapshot) {
-      return ReminderGroup.fromClientDTO(snapshot as ReminderContracts.ReminderGroupClientDTO);
+      return ReminderGroup.fromClientDTO(snapshot as ReminderGroupClientDTO);
     }
 
-    return ReminderGroup.fromServerDTO(snapshot as ReminderContracts.ReminderGroupServerDTO);
+    return ReminderGroup.fromServerDTO(snapshot as ReminderGroupServerDTO);
   }
 }
 
 export const reminderSyncApplicationService = ReminderSyncApplicationService.getInstance();
+

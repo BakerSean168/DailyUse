@@ -8,7 +8,7 @@ import { NotificationApplicationService } from '../../modules/notification/appli
 import { NotificationRepository } from '../../modules/notification/infrastructure/repositories/NotificationRepository';
 import { NotificationTemplateRepository } from '../../modules/notification/infrastructure/repositories/NotificationTemplateRepository';
 import { NotificationPreferenceRepository } from '../../modules/notification/infrastructure/repositories/NotificationPreferenceRepository';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationServerDTO } from '@dailyuse/contracts/notification';
 import { v4 as uuidv4 } from 'uuid';
 
 const prisma = new PrismaClient();
@@ -52,14 +52,14 @@ async function testNotificationCreation() {
 
     // 3. 创建请求对象（完全按照 TaskTriggeredHandler 的方式）
     console.log('3️⃣ 创建请求对象...');
-    const request: NotificationContracts.CreateNotificationRequest = {
+    const request: CreateNotificationRequest = {
       uuid: uuidv4(),
       accountUuid: TEST_ACCOUNT_UUID,
       title,
       content,
-      type: 'schedule_reminder' as NotificationContracts.NotificationType,
-      priority: 'high' as NotificationContracts.NotificationPriority,
-      channels: ['desktop' as NotificationContracts.NotificationChannel],
+      type: 'schedule_reminder' as NotificationType,
+      priority: 'high' as NotificationPriority,
+      channels: ['desktop' as NotificationChannel],
       icon: undefined,
       actions: undefined,
       metadata: {
@@ -120,3 +120,5 @@ testNotificationCreation()
     console.error('💥 测试失败:', error.message);
     process.exit(1);
   });
+
+

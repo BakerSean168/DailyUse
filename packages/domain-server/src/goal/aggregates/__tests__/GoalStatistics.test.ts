@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GoalStatistics } from '../GoalStatistics';
-import type { GoalContracts } from '@dailyuse/contracts';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
 describe('GoalStatistics aggregate event handlers', () => {
   it('increments totalGoals and activeGoals on goal.created', () => {
@@ -11,10 +12,10 @@ describe('GoalStatistics aggregate event handlers', () => {
       accountUuid: 'account-1',
       timestamp: Date.now(),
       payload: {
-        importance: 'MEDIUM' as GoalContracts.ImportanceLevel,
-        urgency: 'NONE' as GoalContracts.UrgencyLevel,
+        importance: 'MEDIUM' as ImportanceLevel,
+        urgency: 'NONE' as UrgencyLevel,
         category: 'health',
-        newStatus: 'ACTIVE' as GoalContracts.GoalStatus,
+        newStatus: 'ACTIVE' as GoalStatus,
       },
     };
 
@@ -32,7 +33,7 @@ describe('GoalStatistics aggregate event handlers', () => {
       accountUuid: 'account-2',
       timestamp: Date.now(),
       payload: {
-        newStatus: 'COMPLETED' as GoalContracts.GoalStatus,
+        newStatus: 'COMPLETED' as GoalStatus,
         completedAt: Date.now(),
       },
     };

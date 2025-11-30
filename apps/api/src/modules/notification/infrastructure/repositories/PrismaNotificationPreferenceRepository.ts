@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import type { INotificationPreferenceRepository } from '@dailyuse/domain-server';
-import { NotificationPreference } from '@dailyuse/domain-server';
+import type { INotificationPreferenceRepository } from '@dailyuse/domain-server/notification';
+import { NotificationPreference } from '@dailyuse/domain-server/notification';
 
 /**
  * NotificationPreference Prisma 仓储实现

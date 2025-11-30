@@ -6,11 +6,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AIGenerationService } from '../AIGenerationService';
 import type { BaseAIAdapter, AIGenerationResponse } from '../../adapters/BaseAIAdapter';
-import { GenerationTaskType, AIContracts } from '@dailyuse/contracts';
+import { AIUsageQuotaServerDTO, GenerationTaskType, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
 import { AIValidationError } from '../../errors/AIErrors';
 
-type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
-type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
 
 describe('AIGenerationService.generateKeyResults', () => {
   let service: AIGenerationService;

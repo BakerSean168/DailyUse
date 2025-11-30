@@ -1,4 +1,4 @@
-import type { IAccountRepository } from '@dailyuse/domain-server';
+import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import { PrismaAccountRepository } from '../repositories/PrismaAccountRepository';
 import { prisma } from '@/config/prisma';
 

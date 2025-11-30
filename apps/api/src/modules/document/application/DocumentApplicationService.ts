@@ -5,14 +5,8 @@ import type { DocumentRepository, PaginatedResult } from '../domain/DocumentRepo
 import { DOCUMENT_REPOSITORY } from '../domain/DocumentRepository.interface';
 import type { DocumentVersionRepository } from '../domain/DocumentVersionRepository.interface';
 import { DocumentVersion } from '../domain/DocumentVersion';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentServerDTO, DocumentVersionServerDTO, DocumentLinkServerDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
-type CreateDocumentDTO = DocumentContracts.CreateDocumentDTO;
-type UpdateDocumentDTO = DocumentContracts.UpdateDocumentDTO;
-type FindDocumentsQueryDTO = DocumentContracts.FindDocumentsQueryDTO;
-type SaveDocumentDTO = DocumentContracts.SaveDocumentDTO;
-type SaveDocumentResponseDTO = DocumentContracts.SaveDocumentResponseDTO;
 
 @Injectable()
 export class DocumentApplicationService {
@@ -219,3 +213,5 @@ export class DocumentApplicationService {
     };
   }
 }
+
+

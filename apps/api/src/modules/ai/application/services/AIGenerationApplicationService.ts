@@ -21,15 +21,15 @@ import type {
   AIGenerationValidationService,
   IKnowledgeGenerationTaskRepository,
   KnowledgeGenerationTask,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/ai';
 import {
   createKnowledgeGenerationTask,
   updateTaskProgress,
   completeTask,
   failTask,
-} from '@dailyuse/domain-server';
-import type { AIContracts } from '@dailyuse/contracts';
-import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts';
+} from '@dailyuse/domain-server/ai';
+import type { AIProviderConfigServerDTO, AIGenerationTaskServerDTO, AIUsageQuotaServerDTO, AIUsageQuotaClientDTO, AIConversationServerDTO, GeneratedGoalDraft, GenerateGoalResponse, TokenUsageServerDTO, SummarizationResultDTO } from '@dailyuse/contracts/ai';
+import { GenerationTaskType, TaskStatus, AIProvider, AIModel } from '@dailyuse/contracts/ai';
 import { randomUUID } from 'crypto';
 import { createLogger } from '@dailyuse/utils';
 import type {
@@ -39,19 +39,10 @@ import type {
 import { QuotaEnforcementService } from '../../infrastructure/QuotaEnforcementService';
 import { getPromptTemplate } from '../../infrastructure/prompts/templates';
 import { SUMMARIZATION_PROMPT, GENERATE_GOAL_PROMPT } from '../../infrastructure/prompts/templates';
-import { MessageRole } from '@dailyuse/contracts';
-import { MessageServer } from '@dailyuse/domain-server';
-import { AIConversationServer } from '@dailyuse/domain-server';
+import { MessageRole } from '@dailyuse/contracts/ai';
+import { MessageServer } from '@dailyuse/domain-server/ai';
+import { AIConversationServer } from '@dailyuse/domain-server/ai';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
-
-type AIUsageQuotaClientDTO = AIContracts.AIUsageQuotaClientDTO;
-type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
-type AIGenerationTaskServerDTO = AIContracts.AIGenerationTaskServerDTO;
-type SummarizationRequestDTO = AIContracts.SummarizationRequestDTO;
-type SummarizationResultDTO = AIContracts.SummarizationResultDTO;
-type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
-type GeneratedGoalDraft = AIContracts.GeneratedGoalDraft;
-type GenerateGoalResponse = AIContracts.GenerateGoalResponse;
 
 const logger = createLogger('AIGenerationApplicationService');
 
@@ -134,10 +125,10 @@ export class AIGenerationApplicationService {
           .getAdapterForProvider(providerUuid, accountUuid);
         const providerConfig = await container
           .getProviderConfigRepository()
-          .findByUuid(providerUuid, accountUuid);
+          .findByUuid(providerUuid);
         if (providerConfig) {
           providerName = providerConfig.name;
-          modelUsed = providerConfig.models?.[0]?.modelId || modelUsed;
+          modelUsed = providerConfig.availableModels?.[0]?.id || providerConfig.defaultModel || modelUsed;
         }
       } catch (error) {
         logger.warn('Failed to get custom provider, falling back to default', {
@@ -500,7 +491,7 @@ export class AIGenerationApplicationService {
     // Conversation
     let conversation: AIConversationServer | null = null;
     if (conversationUuid) {
-      conversation = (await this.conversationRepository.findByUuid(conversationUuid, true)) as any;
+      conversation = (await this.conversationRepository.findByUuid(conversationUuid, { includeChildren: true })) as any;
     }
     if (!conversation) {
       const title = userMessage.length <= 50 ? userMessage : userMessage.slice(0, 47) + '...';
@@ -606,7 +597,7 @@ export class AIGenerationApplicationService {
 
     let conversation: AIConversationServer | null = null;
     if (conversationUuid) {
-      conversation = (await this.conversationRepository.findByUuid(conversationUuid, true)) as any;
+      conversation = (await this.conversationRepository.findByUuid(conversationUuid, { includeChildren: true })) as any;
     }
     if (!conversation) {
       const title = userMessage.length <= 50 ? userMessage : userMessage.slice(0, 47) + '...';
@@ -1125,3 +1116,7 @@ export class AIGenerationApplicationService {
     return documents;
   }
 }
+
+
+
+

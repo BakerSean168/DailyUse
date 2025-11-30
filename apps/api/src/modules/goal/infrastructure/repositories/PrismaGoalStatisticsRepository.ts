@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { PrismaClient } from '@prisma/client';
-import type { IGoalStatisticsRepository } from '@dailyuse/domain-server';
-import { GoalStatistics } from '@dailyuse/domain-server';
+import type { IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
+import { GoalStatistics } from '@dailyuse/domain-server/goal';
 
 /**
  * GoalStatistics Prisma 仓储实现

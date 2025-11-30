@@ -248,8 +248,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { Resource } from '@dailyuse/domain-client';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import { Resource } from '@dailyuse/domain-client/repository';
+import { ResourceType, ResourceStatus, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 // composables
 import { useRepository } from '../../composables/useRepository';
 
@@ -266,14 +266,14 @@ const resourceData = ref<{
   repositoryUuid: string;
   name: string;
   description?: string;
-  type: RepositoryContracts.ResourceType;
+  type: ResourceType;
   path: string;
   size: number;
   author?: string;
   version?: string;
   tags: string[];
   category?: string;
-  status: RepositoryContracts.ResourceStatus;
+  status: ResourceStatus;
   metadata: {
     mimeType?: string;
     encoding?: string;
@@ -287,14 +287,14 @@ const resourceData = ref<{
   repositoryUuid: '',
   name: '',
   description: '',
-  type: RepositoryContracts.ResourceType.MARKDOWN,
+  type: ResourceType.MARKDOWN,
   path: '',
   size: 0,
   author: '',
   version: '',
   tags: [],
   category: '',
-  status: RepositoryContracts.ResourceStatus.ACTIVE,
+  status: ResourceStatus.ACTIVE,
   metadata: {
     isFavorite: false,
     accessCount: 0,
@@ -313,30 +313,30 @@ watch(
           uuid: resource.uuid,
           repositoryUuid: resource.repositoryUuid,
           name: resource.name,
-          description: resource.description,
+          description: '',
           type: resource.type,
           path: resource.path,
           size: resource.size,
-          author: resource.author,
-          version: resource.version,
-          tags: [...(resource.tags || [])],
-          category: resource.category,
+          author: '',
+          version: '',
+          tags: [],
+          category: '',
           status: resource.status,
-          metadata: { ...resource.metadata },
+          metadata: { ...(resource.metadata as Record<string, any>) },
         };
       } else {
         resourceData.value = {
           repositoryUuid: '',
           name: '',
           description: '',
-          type: RepositoryContracts.ResourceType.MARKDOWN,
+          type: ResourceType.MARKDOWN,
           path: '',
           size: 0,
           author: '',
           version: '',
           tags: [],
           category: '',
-          status: RepositoryContracts.ResourceStatus.ACTIVE,
+          status: ResourceStatus.ACTIVE,
           metadata: {
             isFavorite: false,
             accessCount: 0,
@@ -358,14 +358,14 @@ const tabs = [
 
 // 表单选项
 const resourceTypeOptions = [
-  { text: 'Markdown文档', value: RepositoryContracts.ResourceType.MARKDOWN },
-  { text: 'PDF文档', value: RepositoryContracts.ResourceType.PDF },
-  { text: '图片', value: RepositoryContracts.ResourceType.IMAGE },
-  { text: '视频', value: RepositoryContracts.ResourceType.VIDEO },
-  { text: '音频', value: RepositoryContracts.ResourceType.AUDIO },
-  { text: '代码', value: RepositoryContracts.ResourceType.CODE },
-  { text: '链接', value: RepositoryContracts.ResourceType.LINK },
-  { text: '其他', value: RepositoryContracts.ResourceType.OTHER },
+  { text: 'Markdown文档', value: ResourceType.MARKDOWN },
+  { text: 'PDF文档', value: ResourceType.PDF },
+  { text: '图片', value: ResourceType.IMAGE },
+  { text: '视频', value: ResourceType.VIDEO },
+  { text: '音频', value: ResourceType.AUDIO },
+  { text: '代码', value: ResourceType.CODE },
+  { text: '链接', value: ResourceType.LINK },
+  { text: '其他', value: ResourceType.OTHER },
 ];
 
 // 校验规则
@@ -388,7 +388,7 @@ const resourceDescription = computed({
 
 const resourceType = computed({
   get: () => resourceData.value.type,
-  set: (val: RepositoryContracts.ResourceType) => {
+  set: (val: ResourceType) => {
     resourceData.value.type = val;
   },
 });
@@ -459,21 +459,21 @@ const resourceNote = computed({
 });
 
 // 工具方法
-const getResourceTypeIcon = (type: RepositoryContracts.ResourceType) => {
+const getResourceTypeIcon = (type: ResourceType) => {
   switch (type) {
-    case RepositoryContracts.ResourceType.MARKDOWN:
+    case ResourceType.MARKDOWN:
       return 'mdi-file-document';
-    case RepositoryContracts.ResourceType.PDF:
+    case ResourceType.PDF:
       return 'mdi-file-pdf-box';
-    case RepositoryContracts.ResourceType.IMAGE:
+    case ResourceType.IMAGE:
       return 'mdi-image';
-    case RepositoryContracts.ResourceType.VIDEO:
+    case ResourceType.VIDEO:
       return 'mdi-video';
-    case RepositoryContracts.ResourceType.AUDIO:
+    case ResourceType.AUDIO:
       return 'mdi-music';
-    case RepositoryContracts.ResourceType.CODE:
+    case ResourceType.CODE:
       return 'mdi-code-tags';
-    case RepositoryContracts.ResourceType.LINK:
+    case ResourceType.LINK:
       return 'mdi-link';
     default:
       return 'mdi-file';
@@ -658,3 +658,4 @@ defineExpose({
   }
 }
 </style>
+

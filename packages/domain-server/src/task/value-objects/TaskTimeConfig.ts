@@ -3,11 +3,9 @@
  * 任务时间配置 - 不可变值对象
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTimeConfigClientDTO, TaskTimeConfigPersistenceDTO, TaskTimeConfigServer, TaskTimeConfigServerDTO } from '@dailyuse/contracts/task';
+import { TimeType } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
-
-type ITaskTimeConfig = TaskContracts.TaskTimeConfigServerDTO;
-type TimeType = TaskContracts.TimeType;
 
 /**
  * TaskTimeConfig 值对象
@@ -18,7 +16,7 @@ type TimeType = TaskContracts.TimeType;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
+export class TaskTimeConfig extends ValueObject implements TaskTimeConfigServer {
   public readonly timeType: TimeType;
   public readonly startDate: number | null;
   // endDate 已移除 - 结束日期属于重复规则的结束条件
@@ -93,7 +91,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
   /**
    * DTO 转换
    */
-  public toServerDTO(): TaskContracts.TaskTimeConfigServerDTO {
+  public toServerDTO(): TaskTimeConfigServerDTO {
     return {
       timeType: this.timeType,
       startDate: this.startDate,
@@ -103,7 +101,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     };
   }
 
-  public toClientDTO(): TaskContracts.TaskTimeConfigClientDTO {
+  public toClientDTO(): TaskTimeConfigClientDTO {
     return {
       timeType: this.timeType,
       startDate: this.startDate,
@@ -120,7 +118,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     };
   }
 
-  public toPersistenceDTO(): TaskContracts.TaskTimeConfigPersistenceDTO {
+  public toPersistenceDTO(): TaskTimeConfigPersistenceDTO {
     return {
       timeType: this.timeType,
       startDate: this.startDate,
@@ -133,7 +131,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
   /**
    * 静态工厂方法
    */
-  public static fromServerDTO(dto: TaskContracts.TaskTimeConfigServerDTO): TaskTimeConfig {
+  public static fromServerDTO(dto: TaskTimeConfigServerDTO): TaskTimeConfig {
     return new TaskTimeConfig({
       timeType: dto.timeType,
       startDate: dto.startDate,
@@ -143,9 +141,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     });
   }
 
-  public static fromPersistenceDTO(
-    dto: TaskContracts.TaskTimeConfigPersistenceDTO,
-  ): TaskTimeConfig {
+  public static fromPersistenceDTO(dto: TaskTimeConfigPersistenceDTO): TaskTimeConfig {
     return new TaskTimeConfig({
       timeType: dto.timeType as TimeType,
       startDate: dto.startDate,

@@ -5,8 +5,7 @@
 
 import { ref } from 'vue';
 import { statusRuleEngine, type GoalData } from '../services/StatusRuleEngine';
-import type { RuleExecutionResult } from '../../../../../../../packages/contracts/src/modules/goal/rules/StatusRule';
-import type { GoalStatus } from '../../../../../../../packages/contracts/src/modules/goal/enums';
+import type { RuleExecutionResult, GoalStatus } from '@dailyuse/contracts/goal';
 
 /**
  * 自动状态规则配置

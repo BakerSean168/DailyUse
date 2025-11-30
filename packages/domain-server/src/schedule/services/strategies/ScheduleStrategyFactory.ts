@@ -7,7 +7,7 @@
  * - 提供统一的策略访问接口
  */
 
-import { SourceModule } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
 import type { IScheduleStrategy } from './IScheduleStrategy';
 import { GoalScheduleStrategy } from './GoalScheduleStrategy';
 import { TaskScheduleStrategy } from './TaskScheduleStrategy';

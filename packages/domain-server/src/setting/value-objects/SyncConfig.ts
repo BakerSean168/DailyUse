@@ -3,17 +3,17 @@
  * 实现 SyncConfigServer 接口
  */
 
-import type { SettingContracts } from '@dailyuse/contracts';
-
-type ISyncConfigServer = SettingContracts.SyncConfigServer;
-type SyncConfigServerDTO = SettingContracts.SyncConfigServerDTO;
-type SyncConfigClientDTO = SettingContracts.SyncConfigClientDTO;
+import type {
+  SyncConfigClientDTO,
+  SyncConfigServer,
+  SyncConfigServerDTO,
+} from '@dailyuse/contracts/setting';
 
 /**
  * SyncConfig 值对象
  * 不可变的同步配置
  */
-export class SyncConfig implements ISyncConfigServer {
+export class SyncConfig implements SyncConfigServer {
   public readonly enabled: boolean;
   public readonly syncToCloud: boolean;
   public readonly syncToDevices: boolean;

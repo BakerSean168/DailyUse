@@ -3,17 +3,16 @@
  * 兼容 SubscriptionClient 接口
  */
 
-import { AccountContracts, SubscriptionPlan, SubscriptionStatus, BillingCycle } from '@dailyuse/contracts';
+import type { SubscriptionClient, SubscriptionClientDTO } from '@dailyuse/contracts/account';
+import { BillingCycle, SubscriptionPlan, SubscriptionStatus } from '@dailyuse/contracts/account';
 import { Entity } from '@dailyuse/utils';
 
-type ISubscriptionClient = AccountContracts.SubscriptionClient;
-type SubscriptionClientDTO = AccountContracts.SubscriptionClientDTO;
 
 /**
  * Subscription 实体 (Client)
  * 订阅实体
  */
-export class Subscription extends Entity implements ISubscriptionClient {
+export class Subscription extends Entity implements SubscriptionClient {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _plan: SubscriptionPlan;

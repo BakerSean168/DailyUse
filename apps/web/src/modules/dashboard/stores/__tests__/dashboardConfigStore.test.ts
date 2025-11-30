@@ -2,9 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useDashboardConfigStore } from '../dashboardConfigStore';
 import { DashboardConfigApiClient } from '../../infrastructure/api/DashboardConfigApiClient';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 
-type WidgetConfigData = DashboardContracts.WidgetConfigData;
 
 // Mock API Client
 vi.mock('../../infrastructure/api/DashboardConfigApiClient');
@@ -325,3 +324,4 @@ describe('useDashboardConfigStore', () => {
     });
   });
 });
+

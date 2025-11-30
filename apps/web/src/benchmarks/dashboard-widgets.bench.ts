@@ -10,10 +10,10 @@
 import { bench, describe } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
-import TaskStatsWidget from '@/modules/dashboard/presentation/components/TaskStatsWidget.vue';
-import GoalStatsWidget from '@/modules/dashboard/presentation/components/GoalStatsWidget.vue';
-import ReminderStatsWidget from '@/modules/dashboard/presentation/components/ReminderStatsWidget.vue';
-import ScheduleStatsWidget from '@/modules/dashboard/presentation/components/ScheduleStatsWidget.vue';
+import TaskStatsWidget from '@/modules/task/presentation/widgets/TaskStatsWidget.vue';
+import GoalStatsWidget from '@/modules/goal/presentation/widgets/GoalStatsWidget.vue';
+import ReminderStatsWidget from '@/modules/reminder/presentation/widgets/ReminderStatsWidget.vue';
+import ScheduleStatsWidget from '@/modules/schedule/presentation/widgets/ScheduleStatsWidget.vue';
 
 // Mock data for benchmarks
 const mockTaskStats = {
@@ -377,8 +377,7 @@ describe('Dashboard Page Performance Benchmarks', () => {
     () => {
       const completedTasks = 45;
       const totalTasks = 100;
-      const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-      return completionRate;
+      const _completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
     },
     {
       iterations: 1000,
@@ -396,8 +395,7 @@ describe('Dashboard Page Performance Benchmarks', () => {
         { id: 'schedule-stats', visible: true },
       ];
 
-      const visibleWidgets = widgets.filter((w) => w.visible);
-      return visibleWidgets;
+      const _visibleWidgets = widgets.filter((w) => w.visible);
     },
     {
       iterations: 1000,
@@ -415,8 +413,7 @@ describe('Dashboard Page Performance Benchmarks', () => {
         { id: 'widget-4', order: 2 },
       ];
 
-      const sortedWidgets = [...widgets].sort((a, b) => a.order - b.order);
-      return sortedWidgets;
+      const _sortedWidgets = [...widgets].sort((a, b) => a.order - b.order);
     },
     {
       iterations: 1000,

@@ -3,19 +3,14 @@
  * 分类偏好 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { CategoryPreferenceClientDTO, CategoryPreferencePersistenceDTO, CategoryPreferenceServerDTO, ChannelPreference } from '@dailyuse/contracts/notification';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ValueObject } from '@dailyuse/utils';
-
-type ICategoryPreference = NotificationContracts.CategoryPreferenceServerDTO;
-type CategoryPreferencePersistenceDTO = NotificationContracts.CategoryPreferencePersistenceDTO;
-type CategoryPreferenceClientDTO = NotificationContracts.CategoryPreferenceClientDTO;
-type ImportanceLevel = NotificationContracts.ImportanceLevel;
-type ChannelPreference = NotificationContracts.ChannelPreference;
 
 /**
  * CategoryPreference 值对象
  */
-export class CategoryPreference extends ValueObject implements ICategoryPreference {
+export class CategoryPreference extends ValueObject implements CategoryPreference {
   public readonly enabled: boolean;
   public readonly channels: ChannelPreference;
   public readonly importance: ImportanceLevel[];
@@ -76,7 +71,7 @@ export class CategoryPreference extends ValueObject implements ICategoryPreferen
   /**
    * 转换为 Server DTO
    */
-  public toServerDTO(): ICategoryPreference {
+  public toServerDTO(): CategoryPreferenceServerDTO {
     return {
       enabled: this.enabled,
       channels: { ...this.channels },
@@ -104,15 +99,15 @@ export class CategoryPreference extends ValueObject implements ICategoryPreferen
     };
   }
 
-  public toContract(): ICategoryPreference {
+  public toContract(): CategoryPreferenceServerDTO {
     return this.toServerDTO();
   }
 
-  public static fromServerDTO(dto: ICategoryPreference): CategoryPreference {
+  public static fromServerDTO(dto: CategoryPreferenceServerDTO): CategoryPreference {
     return new CategoryPreference(dto);
   }
 
-  public static fromContract(preference: ICategoryPreference): CategoryPreference {
+  public static fromContract(preference: CategoryPreferenceServerDTO): CategoryPreference {
     return CategoryPreference.fromServerDTO(preference);
   }
 

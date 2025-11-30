@@ -201,13 +201,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { TaskContracts } from '@dailyuse/contracts';
+import { DependencyType } from '@dailyuse/contracts/task';
+import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import DependencyManager from '@/modules/task/presentation/components/dependency/DependencyManager.vue';
 import TaskDAGVisualization from '@/modules/task/presentation/components/dag/TaskDAGVisualization.vue';
 import { taskAutoStatusService } from '@/modules/task/application/services/TaskAutoStatusService';
 
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
 
 interface EventLogEntry {
   time: string;
@@ -282,48 +282,55 @@ const loadDemoData = () => {
   ] as TaskForDAG[];
 
   // 创建演示依赖数据
+  const now = new Date();
   dependencies.value = [
     {
       uuid: 'dep-1',
       predecessorTaskUuid: 'task-1',
       successorTaskUuid: 'task-2',
-      dependencyType: 'FS',
-      createdAt: new Date().toISOString(),
+      dependencyType: DependencyType.FINISH_TO_START,
+      createdAt: now,
+      updatedAt: now,
     },
     {
       uuid: 'dep-2',
       predecessorTaskUuid: 'task-2',
       successorTaskUuid: 'task-3',
-      dependencyType: 'FS',
-      createdAt: new Date().toISOString(),
+      dependencyType: DependencyType.FINISH_TO_START,
+      createdAt: now,
+      updatedAt: now,
     },
     {
       uuid: 'dep-3',
       predecessorTaskUuid: 'task-2',
       successorTaskUuid: 'task-4',
-      dependencyType: 'FS',
-      createdAt: new Date().toISOString(),
+      dependencyType: DependencyType.FINISH_TO_START,
+      createdAt: now,
+      updatedAt: now,
     },
     {
       uuid: 'dep-4',
       predecessorTaskUuid: 'task-3',
       successorTaskUuid: 'task-5',
-      dependencyType: 'FS',
-      createdAt: new Date().toISOString(),
+      dependencyType: DependencyType.FINISH_TO_START,
+      createdAt: now,
+      updatedAt: now,
     },
     {
       uuid: 'dep-5',
       predecessorTaskUuid: 'task-4',
       successorTaskUuid: 'task-5',
-      dependencyType: 'FS',
-      createdAt: new Date().toISOString(),
+      dependencyType: DependencyType.FINISH_TO_START,
+      createdAt: now,
+      updatedAt: now,
     },
     {
       uuid: 'dep-6',
       predecessorTaskUuid: 'task-5',
       successorTaskUuid: 'task-6',
-      dependencyType: 'FS',
-      createdAt: new Date().toISOString(),
+      dependencyType: DependencyType.FINISH_TO_START,
+      createdAt: now,
+      updatedAt: now,
     },
   ] as TaskDependencyClientDTO[];
 
@@ -452,3 +459,4 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 </style>
+

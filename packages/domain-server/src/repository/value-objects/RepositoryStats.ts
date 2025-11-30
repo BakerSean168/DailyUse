@@ -2,10 +2,7 @@
  * Repository Stats Value Object - Server Implementation
  * 仓储统计值对象 - 服务端实现
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
-
-type RepositoryStatsServer = RepositoryContracts.RepositoryStatsServer;
-type RepositoryStatsServerDTO = RepositoryContracts.RepositoryStatsServerDTO;
+import type { RepositoryStatsServer, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';
 
 export class RepositoryStats implements RepositoryStatsServer {
   // ===== 私有字段 =====

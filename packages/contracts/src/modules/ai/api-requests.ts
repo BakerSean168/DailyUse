@@ -106,10 +106,10 @@ export * from './api-responses/GenerateKeyResultsResponse';
 export * from './api-requests/GenerateTasksRequest';
 export * from './api-responses/GenerateTasksResponse';
 // Summarization (Epic 4 Story 4.1)
-export * from './api-requests/SummarizationRequestDTO';
+export * from './api-requests/SummarizationRequest';
 export * from './api-responses/SummarizationResultDTO';
 // Knowledge Generation (Epic 4 Story 4.3)
-export * from './api-requests/KnowledgeGenerationRequestDTO';
+export * from './api-requests/KnowledgeGenerationRequest';
 export * from './api-responses/KnowledgeGenerationTaskDTO';
 // Goal Generation (Story AI-002)
 export * from './api-requests/GenerateGoalRequest';

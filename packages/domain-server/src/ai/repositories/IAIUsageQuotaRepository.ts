@@ -8,9 +8,7 @@
  * - 隐藏持久化细节
  */
 
-import type { AIContracts } from '@dailyuse/contracts';
-
-type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
+import type { AIUsageQuotaServerDTO } from '@dailyuse/contracts/ai';
 
 /**
  * IAIUsageQuotaRepository 仓储接口

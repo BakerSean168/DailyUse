@@ -4,18 +4,17 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { GoalContracts } from '@dailyuse/contracts';
-
-type IGoalFolder = GoalContracts.GoalFolderClient;
-type GoalFolderDTO = GoalContracts.GoalFolderClientDTO;
-type GoalFolderServerDTO = GoalContracts.GoalFolderServerDTO;
-type FolderType = GoalContracts.FolderType;
-const FolderType = GoalContracts.FolderType;
+import { FolderType } from '@dailyuse/contracts/goal';
+import type {
+  GoalFolderClient,
+  GoalFolderClientDTO,
+  GoalFolderServerDTO,
+} from '@dailyuse/contracts/goal';
 
 /**
  * 目标文件夹聚合根客户端实现
  */
-export class GoalFolder extends AggregateRoot implements IGoalFolder {
+export class GoalFolder extends AggregateRoot implements GoalFolderClient {
   private _accountUuid: string;
   private _name: string;
   private _description?: string | null;
@@ -233,7 +232,7 @@ export class GoalFolder extends AggregateRoot implements IGoalFolder {
     };
   }
 
-  toClientDTO(): GoalFolderDTO {
+  toClientDTO(): GoalFolderClientDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -353,7 +352,7 @@ export class GoalFolder extends AggregateRoot implements IGoalFolder {
     );
   }
 
-  static fromClientDTO(dto: GoalFolderDTO): GoalFolder {
+  static fromClientDTO(dto: GoalFolderClientDTO): GoalFolder {
     return new GoalFolder(
       dto.uuid,
       dto.accountUuid,

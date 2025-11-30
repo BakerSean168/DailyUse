@@ -12,11 +12,9 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import type { IAIUsageQuotaRepository } from '@dailyuse/domain-server';
-import type { AIContracts } from '@dailyuse/contracts';
-import { QuotaResetPeriod } from '@dailyuse/contracts';
-
-type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
+import type { IAIUsageQuotaRepository } from '@dailyuse/domain-server/ai';
+import type { AIUsageQuotaServerDTO } from '@dailyuse/contracts/ai';
+import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 
 /**
  * PrismaAIUsageQuotaRepository 实现
@@ -147,3 +145,7 @@ export class PrismaAIUsageQuotaRepository implements IAIUsageQuotaRepository {
     };
   }
 }
+
+
+
+

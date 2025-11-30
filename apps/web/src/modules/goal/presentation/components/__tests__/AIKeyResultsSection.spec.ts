@@ -18,7 +18,7 @@ import * as directives from 'vuetify/directives';
 import AIKeyResultsSection from '../AIKeyResultsSection.vue';
 import AIGenerateKRButton from '../AIGenerateKRButton.vue';
 import KRPreviewList from '../KRPreviewList.vue';
-import type { AIContracts } from '@dailyuse/contracts';
+import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 // Mock useSnackbar
 const mockShowSnackbar = vi.fn();
@@ -56,7 +56,7 @@ describe('AIKeyResultsSection', () => {
   let vuetify: ReturnType<typeof createVuetify>;
 
   const mockGeneratedResults: Array<
-    AIContracts.KeyResultSuggestion & { uuid?: string; selected?: boolean }
+    KeyResultSuggestion & { uuid?: string; selected?: boolean }
   > = [
     {
       uuid: 'kr-1',
@@ -431,3 +431,4 @@ describe('AIKeyResultsSection', () => {
     });
   });
 });
+

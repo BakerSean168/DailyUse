@@ -18,7 +18,9 @@ import { GoalContainer } from '../infrastructure/di/GoalContainer';
 import { PrismaWeightSnapshotRepository } from '../infrastructure/repositories/PrismaWeightSnapshotRepository';
 import { PrismaGoalRepository } from '../infrastructure/repositories/PrismaGoalRepository';
 import { getTestPrisma } from '../../../test/helpers/database-helpers';
-import { GoalContracts, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
 
 describe('Weight Snapshot Integration Tests', () => {
   let snapshotService: WeightSnapshotApplicationService;
@@ -71,7 +73,7 @@ describe('Weight Snapshot Integration Tests', () => {
     // Add 3 key results with weights
     let goalAfterKR1 = await goalService.addKeyResult(testGoalUuid, {
       title: 'User Growth',
-      valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+      valueType: KeyResultValueType.INCREMENTAL,
       targetValue: 1000,
       currentValue: 0,
       weight: 40, // 40%
@@ -80,7 +82,7 @@ describe('Weight Snapshot Integration Tests', () => {
 
     let goalAfterKR2 = await goalService.addKeyResult(testGoalUuid, {
       title: 'Revenue Growth',
-      valueType: GoalContracts.KeyResultValueType.INCREMENTAL,
+      valueType: KeyResultValueType.INCREMENTAL,
       targetValue: 100,
       currentValue: 0,
       weight: 30, // 30%
@@ -89,7 +91,7 @@ describe('Weight Snapshot Integration Tests', () => {
 
     let goalAfterKR3 = await goalService.addKeyResult(testGoalUuid, {
       title: 'Retention Rate',
-      valueType: GoalContracts.KeyResultValueType.PERCENTAGE,
+      valueType: KeyResultValueType.PERCENTAGE,
       targetValue: 100,
       currentValue: 0,
       weight: 30, // 30%
@@ -418,3 +420,5 @@ describe('Weight Snapshot Integration Tests', () => {
     });
   });
 });
+
+

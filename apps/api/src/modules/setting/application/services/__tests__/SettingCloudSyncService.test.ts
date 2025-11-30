@@ -14,7 +14,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SettingCloudSyncService, type SettingVersion } from '../SettingCloudSyncService';
 import { SettingContainer } from '../../../infrastructure/di/SettingContainer';
-import type { IUserSettingRepository } from '@dailyuse/domain-server';
+import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { generateUUID } from '@dailyuse/utils';
 
 describe('SettingCloudSyncService - DI Integration', () => {

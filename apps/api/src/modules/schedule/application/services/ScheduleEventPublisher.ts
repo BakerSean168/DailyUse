@@ -1,14 +1,15 @@
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
-import type { ScheduleTask } from '@dailyuse/domain-server';
+import type { ScheduleTask } from '@dailyuse/domain-server/schedule';
 import {
   ScheduleTaskFactory,
   ScheduleStrategyNotFoundError,
   SourceEntityNoScheduleRequiredError,
   ScheduleTaskCreationError,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import { ScheduleApplicationService } from './ScheduleApplicationService';
-import type { GoalContracts, TaskContracts } from '@dailyuse/contracts';
-import { SourceModule } from '@dailyuse/contracts';
+import type { GoalServerDTO } from '@dailyuse/contracts/goal';
+import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
+import { SourceModule } from '@dailyuse/contracts/schedule';
 
 /**
  * Schedule 领域事件发布器
@@ -48,7 +49,7 @@ export class ScheduleEventPublisher {
         }
 
         const { goal } = event.payload as {
-          goal: GoalContracts.GoalServerDTO;
+          goal: GoalServerDTO;
         };
 
         await this.handleGoalCreated(event.accountUuid, goal);
@@ -84,7 +85,7 @@ export class ScheduleEventPublisher {
           );
           return;
         }
-        const { goal } = event.payload as { goal: GoalContracts.GoalServerDTO };
+        const { goal } = event.payload as { goal: GoalServerDTO };
         await this.handleGoalScheduleChanged(event.accountUuid, goal);
       } catch (error) {
         console.error(`❌ [ScheduleEventPublisher] Error handling ${event.eventType}:`, error);
@@ -105,7 +106,7 @@ export class ScheduleEventPublisher {
           return;
         }
         const { taskTemplateData } = event.payload as {
-          taskTemplateData: TaskContracts.TaskTemplateServerDTO;
+          taskTemplateData: TaskTemplateServerDTO;
         };
 
         if (!taskTemplateData) {
@@ -159,7 +160,7 @@ export class ScheduleEventPublisher {
 
         const { taskTemplateUuid } = event.payload as {
           taskTemplateUuid: string;
-          taskTemplateData?: TaskContracts.TaskTemplateServerDTO;
+          taskTemplateData?: TaskTemplateServerDTO;
         };
 
         console.log(`▶️  [ScheduleEventPublisher] 处理任务模板恢复: ${taskTemplateUuid}`);
@@ -445,7 +446,7 @@ export class ScheduleEventPublisher {
    */
   private static async handleGoalCreated(
     accountUuid: string,
-    goal: GoalContracts.GoalServerDTO,
+    goal: GoalServerDTO,
   ): Promise<void> {
     try {
       // 使用工厂创建调度任务
@@ -466,7 +467,7 @@ export class ScheduleEventPublisher {
         description: scheduleTask.description ?? undefined,
         sourceModule: scheduleTask.sourceModule,
         sourceEntityId: scheduleTask.sourceEntityId,
-        schedule: scheduleTask.schedule,
+        schedule: scheduleTask.schedule.toServerDTO(),
         retryConfig: scheduleTask.retryPolicy,
         payload: metadataDTO.payload,
         tags: metadataDTO.tags,
@@ -500,7 +501,7 @@ export class ScheduleEventPublisher {
    */
   private static async handleGoalScheduleChanged(
     accountUuid: string,
-    goal: GoalContracts.GoalServerDTO,
+    goal: GoalServerDTO,
   ): Promise<void> {
     console.log(`🔄 [ScheduleEventPublisher] Handling goal schedule change for: ${goal.uuid}`);
 
@@ -520,7 +521,7 @@ export class ScheduleEventPublisher {
    */
   private static async handleTaskTemplateScheduleChanged(
     accountUuid: string,
-    taskTemplate: TaskContracts.TaskTemplateServerDTO,
+    taskTemplate: TaskTemplateServerDTO,
   ): Promise<void> {
     console.log(
       `🔄 [ScheduleEventPublisher] Handling task template schedule change for: ${taskTemplate.uuid}`,
@@ -641,7 +642,7 @@ export class ScheduleEventPublisher {
         description: scheduleTask.description ?? undefined,
         sourceModule: scheduleTask.sourceModule,
         sourceEntityId: scheduleTask.sourceEntityId,
-        schedule: scheduleTask.schedule,
+        schedule: scheduleTask.schedule.toServerDTO(),
         retryConfig: scheduleTask.retryPolicy,
         payload: metadataDTO.payload,
         tags: metadataDTO.tags,
@@ -708,7 +709,7 @@ export class ScheduleEventPublisher {
         description: scheduleTask.description ?? undefined,
         sourceModule: scheduleTask.sourceModule,
         sourceEntityId: scheduleTask.sourceEntityId,
-        schedule: scheduleTask.schedule,
+        schedule: scheduleTask.schedule.toServerDTO(),
         retryConfig: scheduleTask.retryPolicy,
         payload: metadataDTO.payload,
         tags: metadataDTO.tags,

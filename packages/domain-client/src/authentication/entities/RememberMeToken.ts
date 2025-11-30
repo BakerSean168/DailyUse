@@ -3,18 +3,17 @@
  * 兼容 RememberMeTokenClient 接口
  */
 
-import { AuthenticationContracts, RememberMeTokenStatus } from '@dailyuse/contracts';
+import type { RememberMeTokenClient, RememberMeTokenClientDTO } from '@dailyuse/contracts/authentication';
+import { RememberMeTokenStatus } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 import { DeviceInfo } from '../value-objects/DeviceInfo';
 
-type IRememberMeTokenClient = AuthenticationContracts.RememberMeTokenClient;
-type RememberMeTokenClientDTO = AuthenticationContracts.RememberMeTokenClientDTO;
 
 /**
  * RememberMeToken 实体 (Client)
  * 记住我令牌实体
  */
-export class RememberMeToken extends Entity implements IRememberMeTokenClient {
+export class RememberMeToken extends Entity implements RememberMeTokenClient {
   // ===== 私有字段 =====
   private _credentialUuid: string;
   private _accountUuid: string;

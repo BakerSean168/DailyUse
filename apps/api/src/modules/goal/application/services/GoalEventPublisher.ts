@@ -1,8 +1,9 @@
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
 import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
-import type { GoalContracts } from '@dailyuse/contracts';
-import { GoalStatus } from '@dailyuse/contracts';
-import type { Goal } from '@dailyuse/domain-server';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import type { Goal } from '@dailyuse/domain-server/goal';
 
 /**
  * Goal 领域事件发布器
@@ -35,7 +36,7 @@ export class GoalEventPublisher {
         }
 
         const { goal } = event.payload as {
-          goal: GoalContracts.GoalServerDTO;
+          goal: GoalServerDTO;
         };
 
         await statisticsService.handleStatisticsUpdateEvent({
@@ -65,10 +66,10 @@ export class GoalEventPublisher {
         }
 
         const { importance, urgency, category, status } = event.payload as {
-          importance: GoalContracts.ImportanceLevel;
-          urgency: GoalContracts.UrgencyLevel;
+          importance: ImportanceLevel;
+          urgency: UrgencyLevel;
           category?: string;
-          status: GoalContracts.GoalStatus;
+          status: GoalStatus;
         };
 
         await statisticsService.handleStatisticsUpdateEvent({
@@ -98,8 +99,8 @@ export class GoalEventPublisher {
         }
 
         const { previousStatus, newStatus } = event.payload as {
-          previousStatus: GoalContracts.GoalStatus;
-          newStatus: GoalContracts.GoalStatus;
+          previousStatus: GoalStatus;
+          newStatus: GoalStatus;
         };
 
         await statisticsService.handleStatisticsUpdateEvent({
@@ -180,7 +181,7 @@ export class GoalEventPublisher {
         }
 
         const { previousStatus } = event.payload as {
-          previousStatus: GoalContracts.GoalStatus;
+          previousStatus: GoalStatus;
         };
 
         await statisticsService.handleStatisticsUpdateEvent({
@@ -410,3 +411,6 @@ export class GoalEventPublisher {
     this.isInitialized = false;
   }
 }
+
+
+

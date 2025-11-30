@@ -11,7 +11,7 @@ import type {
   InternalAxiosRequestConfig,
 } from 'axios';
 import type { HttpClientConfig, ApiResponse, SuccessResponse, ErrorResponse } from './types';
-import { ResponseCode } from '@dailyuse/contracts';
+import { ResponseCode } from '@dailyuse/contracts/response';
 import { environmentConfig } from './config';
 
 // 扩展 Axios 配置类型以支持自定义元数据

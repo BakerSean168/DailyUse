@@ -9,13 +9,13 @@ import type {
   RuleExecutionResult,
   RuleMetric,
   RuleOperator,
-} from '../../../../../../../packages/contracts/src/modules/goal/rules/StatusRule';
-import type { GoalStatus } from '../../../../../../../packages/contracts/src/modules/goal/enums';
+} from '@dailyuse/contracts/goal';
+import type { GoalStatus } from '@dailyuse/contracts/goal';
 import {
   BUILT_IN_RULES,
   sortRulesByPriority,
   getEnabledRules,
-} from '../../application/rules/BuiltInRules';
+} from '../rules/BuiltInRules';
 
 /**
  * 目标数据接口（用于规则评估）

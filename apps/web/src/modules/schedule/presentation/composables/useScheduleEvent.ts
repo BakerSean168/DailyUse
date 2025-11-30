@@ -1,11 +1,6 @@
 import { ref, computed } from 'vue';
-import { ScheduleContracts } from '@dailyuse/contracts';
-import {
-  scheduleEventApiClient,
-  type CreateScheduleEventRequest,
-  type UpdateScheduleEventRequest,
-  type GetSchedulesByTimeRangeRequest,
-} from '../../infrastructure/api/scheduleEventApiClient';
+import type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest, GetSchedulesByTimeRangeRequest } from '@dailyuse/contracts/schedule';
+import { scheduleEventApiClient } from '../../infrastructure/api/scheduleEventApiClient';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 /**
@@ -18,7 +13,7 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 /**
  * Schedule Event Store (module-level singleton)
  */
-const schedules = ref<Map<string, ScheduleContracts.ScheduleClientDTO>>(new Map());
+const schedules = ref<Map<string, ScheduleClientDTO>>(new Map());
 const activeScheduleUuid = ref<string | null>(null);
 const isLoading = ref(false);
 const error = ref<Error | null>(null);
@@ -49,7 +44,7 @@ export function useScheduleEvent() {
   /**
    * 创建日程事件
    */
-  async function createSchedule(data: CreateScheduleEventRequest): Promise<ScheduleContracts.ScheduleClientDTO | null> {
+  async function createSchedule(data: CreateScheduleRequest): Promise<ScheduleClientDTO | null> {
     isLoading.value = true;
     error.value = null;
 
@@ -71,7 +66,7 @@ export function useScheduleEvent() {
   /**
    * 获取日程事件详情
    */
-  async function getSchedule(uuid: string, forceRefresh = false): Promise<ScheduleContracts.ScheduleClientDTO | null> {
+  async function getSchedule(uuid: string, forceRefresh = false): Promise<ScheduleClientDTO | null> {
     // Cache-first strategy
     if (!forceRefresh && schedules.value.has(uuid)) {
       const cached = schedules.value.get(uuid);
@@ -102,7 +97,7 @@ export function useScheduleEvent() {
   /**
    * 获取账户的所有日程事件
    */
-  async function getSchedulesByAccount(forceRefresh = false): Promise<ScheduleContracts.ScheduleClientDTO[]> {
+  async function getSchedulesByAccount(forceRefresh = false): Promise<ScheduleClientDTO[]> {
     // Cache-first strategy
     if (!forceRefresh && schedules.value.size > 0) {
       return schedulesList.value;
@@ -134,7 +129,7 @@ export function useScheduleEvent() {
    */
   async function getSchedulesByTimeRange(
     params: GetSchedulesByTimeRangeRequest
-  ): Promise<ScheduleContracts.ScheduleClientDTO[]> {
+  ): Promise<ScheduleClientDTO[]> {
     isLoading.value = true;
     error.value = null;
 
@@ -160,8 +155,8 @@ export function useScheduleEvent() {
    */
   async function updateSchedule(
     uuid: string,
-    data: UpdateScheduleEventRequest
-  ): Promise<ScheduleContracts.ScheduleClientDTO | null> {
+    data: UpdateScheduleRequest
+  ): Promise<ScheduleClientDTO | null> {
     isLoading.value = true;
     error.value = null;
 
@@ -223,7 +218,7 @@ export function useScheduleEvent() {
   async function loadSchedulesByTimeRange(
     startTime: number,
     endTime: number
-  ): Promise<ScheduleContracts.ScheduleClientDTO[]> {
+  ): Promise<ScheduleClientDTO[]> {
     return getSchedulesByTimeRange({ startTime, endTime });
   }
 
@@ -256,3 +251,4 @@ export function useScheduleEvent() {
     clearCache,
   };
 }
+

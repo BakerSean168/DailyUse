@@ -4,18 +4,21 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { ReminderContracts } from '@dailyuse/contracts';
-
-type TemplateStatsInfo = ReminderContracts.TemplateStatsInfo;
-type GroupStatsInfo = ReminderContracts.GroupStatsInfo;
-type TriggerStatsInfo = ReminderContracts.TriggerStatsInfo;
+import type {
+  GroupStatsInfo,
+  ReminderStatisticsClient,
+  ReminderStatisticsClientDTO,
+  ReminderStatisticsServerDTO,
+  TemplateStatsInfo,
+  TriggerStatsInfo,
+} from '@dailyuse/contracts/reminder';
 
 /**
  * 提醒统计聚合根客户端实现
  */
 export class ReminderStatistics
   extends AggregateRoot
-  implements ReminderContracts.ReminderStatisticsClient
+  implements ReminderStatisticsClient
 {
   private _accountUuid: string;
   private _templateStats: TemplateStatsInfo;
@@ -125,7 +128,7 @@ export class ReminderStatistics
 
   // ========== DTO 转换 ==========
 
-  toServerDTO(): ReminderContracts.ReminderStatisticsServerDTO {
+  toServerDTO(): ReminderStatisticsServerDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -136,7 +139,7 @@ export class ReminderStatistics
     };
   }
 
-  toClientDTO(): ReminderContracts.ReminderStatisticsClientDTO {
+  toClientDTO(): ReminderStatisticsClientDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -190,7 +193,7 @@ export class ReminderStatistics
     );
   }
 
-  static fromServerDTO(dto: ReminderContracts.ReminderStatisticsServerDTO): ReminderStatistics {
+  static fromServerDTO(dto: ReminderStatisticsServerDTO): ReminderStatistics {
     return new ReminderStatistics(
       dto.uuid,
       dto.accountUuid,
@@ -201,7 +204,7 @@ export class ReminderStatistics
     );
   }
 
-  static fromClientDTO(dto: ReminderContracts.ReminderStatisticsClientDTO): ReminderStatistics {
+  static fromClientDTO(dto: ReminderStatisticsClientDTO): ReminderStatistics {
     return new ReminderStatistics(
       dto.uuid,
       dto.accountUuid,

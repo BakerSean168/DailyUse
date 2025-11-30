@@ -5,11 +5,10 @@
  * 负责在 Domain 对象和 Prisma 模型之间进行转换。
  */
 
-import { KeyResultWeightSnapshot } from '@dailyuse/domain-server';
+import { KeyResultWeightSnapshot } from '@dailyuse/domain-server/goal';
 import type { Prisma } from '@prisma/client';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, SnapshotTrigger } from '@dailyuse/contracts/goal';
 
-type SnapshotTrigger = GoalContracts.SnapshotTrigger;
 
 /**
  * Prisma Weight Snapshot 类型 (生成后可用)
@@ -120,3 +119,4 @@ export class PrismaWeightSnapshotMapper {
     return prismaSnapshots.map((snapshot) => this.toDomain(snapshot));
   }
 }
+

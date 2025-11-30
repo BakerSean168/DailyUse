@@ -4,21 +4,22 @@
  * 作为 EditorGroup 实体的子实体
  */
 
-import { EditorContracts } from '@dailyuse/contracts';
+import type {
+  EditorTabClientDTO,
+  EditorTabPersistenceDTO,
+  EditorTabServer,
+  EditorTabServerDTO,
+  TabType,
+  TabViewStateServerDTO,
+} from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 import { TabViewState } from '../value-objects/TabViewState';
-
-type IEditorTabServer = EditorContracts.EditorTabServer;
-type EditorTabServerDTO = EditorContracts.EditorTabServerDTO;
-type EditorTabClientDTO = EditorContracts.EditorTabClientDTO;
-type EditorTabPersistenceDTO = EditorContracts.EditorTabPersistenceDTO;
-type TabType = EditorContracts.TabType;
 
 /**
  * EditorTab 实体
  * 作为 EditorGroup 实体的子实体
  */
-export class EditorTab extends Entity implements IEditorTabServer {
+export class EditorTab extends Entity implements EditorTabServer {
   // ===== 私有字段 =====
   private _groupUuid: string; // 父实体外键
   private _sessionUuid: string;
@@ -98,7 +99,7 @@ export class EditorTab extends Entity implements IEditorTabServer {
   public get title(): string {
     return this._title;
   }
-  public get viewState(): EditorContracts.TabViewStateServerDTO {
+  public get viewState(): TabViewStateServerDTO {
     return this._viewState.toServerDTO();
   }
   public get isPinned(): boolean {
@@ -131,7 +132,7 @@ export class EditorTab extends Entity implements IEditorTabServer {
     tabIndex: number;
     tabType: TabType;
     title: string;
-    viewState?: Partial<EditorContracts.TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
   }): EditorTab {
     const uuid = crypto.randomUUID();
@@ -249,7 +250,7 @@ export class EditorTab extends Entity implements IEditorTabServer {
   /**
    * 更新视图状态
    */
-  public updateViewState(viewState: Partial<EditorContracts.TabViewStateServerDTO>): void {
+  public updateViewState(viewState: Partial<TabViewStateServerDTO>): void {
     this._viewState = this._viewState.with(viewState);
     this._updatedAt = Date.now();
   }

@@ -11,7 +11,7 @@ import { BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 
 use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]);
-import { Goal } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client/goal';
 import { useTheme } from 'vuetify';
 
 const props = defineProps<{

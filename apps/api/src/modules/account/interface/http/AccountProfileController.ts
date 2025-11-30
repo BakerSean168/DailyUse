@@ -14,7 +14,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { AccountProfileApplicationService } from '../../application/services/AccountProfileApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountProfileController');
@@ -211,3 +211,5 @@ export class AccountProfileController {
     }
   }
 }
+
+

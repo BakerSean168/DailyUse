@@ -6,11 +6,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
-import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse/domain-server';
-import { Notification } from '@dailyuse/domain-server';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse/domain-server/notification';
+import { Notification } from '@dailyuse/domain-server/notification';
+import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type NotificationPersistenceDTO = NotificationContracts.NotificationPersistenceDTO;
 
 @Injectable()
 export class PrismaNotificationRepository implements NotificationRepository {
@@ -194,3 +193,4 @@ export class PrismaNotificationRepository implements NotificationRepository {
     return Notification.fromPersistence(dto);
   }
 }
+

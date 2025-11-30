@@ -39,9 +39,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { format } from 'date-fns';
-import type { TaskInstance } from '@dailyuse/domain-client';
-import type { TaskContracts } from '@dailyuse/contracts';
-import { Goal, KeyResult } from '@dailyuse/domain-client';
+import type { TaskInstance } from '@dailyuse/domain-client/task';
 import { useTaskStore } from '../../stores/taskStore';
 
 // Props
@@ -188,3 +186,4 @@ const getKeyResultName = (binding: any) => {
   margin-top: 0.5rem;
 }
 </style>
+

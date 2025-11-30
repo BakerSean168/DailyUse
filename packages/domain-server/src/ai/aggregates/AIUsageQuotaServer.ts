@@ -1,13 +1,14 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import { AIContracts } from '@dailyuse/contracts';
+import {
+  QuotaResetPeriod,
+} from '@dailyuse/contracts/ai';
+import type {
+  AIUsageQuotaClientDTO,
+  AIUsageQuotaPersistenceDTO,
+  AIUsageQuotaServer as IAIUsageQuotaServer,
+  AIUsageQuotaServerDTO,
+} from '@dailyuse/contracts/ai';
 
-type IAIUsageQuotaServer = AIContracts.AIUsageQuotaServer;
-type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
-type AIUsageQuotaPersistenceDTO = AIContracts.AIUsageQuotaPersistenceDTO;
-type AIUsageQuotaClientDTO = AIContracts.AIUsageQuotaClientDTO;
-type QuotaResetPeriod = AIContracts.QuotaResetPeriod;
-
-const QuotaResetPeriodEnum = AIContracts.QuotaResetPeriod;
 
 export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaServer {
   private _accountUuid: string;
@@ -227,18 +228,18 @@ export class AIUsageQuotaServer extends AggregateRoot implements IAIUsageQuotaSe
     const resetDate = new Date(now);
 
     switch (this._resetPeriod) {
-      case QuotaResetPeriodEnum.DAILY:
+      case QuotaResetPeriod.DAILY:
         resetDate.setDate(now.getDate() + 1);
         resetDate.setHours(0, 0, 0, 0);
         break;
-      case QuotaResetPeriodEnum.WEEKLY:
+      case QuotaResetPeriod.WEEKLY:
         // Reset on next Monday
         const day = now.getDay();
         const diff = day === 0 ? 1 : 8 - day; // If Sunday (0), add 1. If Mon-Sat, add 8-day.
         resetDate.setDate(now.getDate() + diff);
         resetDate.setHours(0, 0, 0, 0);
         break;
-      case QuotaResetPeriodEnum.MONTHLY:
+      case QuotaResetPeriod.MONTHLY:
         resetDate.setMonth(now.getMonth() + 1);
         resetDate.setDate(1);
         resetDate.setHours(0, 0, 0, 0);

@@ -2,14 +2,10 @@
  * GoalRecord 实体实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalRecordClient, GoalRecordClientDTO, GoalRecordServerDTO } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
 
-type IGoalRecord = GoalContracts.GoalRecordClient;
-type GoalRecordDTO = GoalContracts.GoalRecordClientDTO;
-type GoalRecordServerDTO = GoalContracts.GoalRecordServerDTO;
-
-export class GoalRecord extends Entity implements IGoalRecord {
+export class GoalRecord extends Entity implements GoalRecord {
   private _keyResultUuid: string;
   private _goalUuid: string;
   private _value: number;
@@ -93,7 +89,7 @@ export class GoalRecord extends Entity implements IGoalRecord {
   }
 
   // DTO 转换
-  public toClientDTO(): GoalRecordDTO {
+  public toClientDTO(): GoalRecordClientDTO {
     return {
       uuid: this.uuid,
       keyResultUuid: this._keyResultUuid,
@@ -121,7 +117,7 @@ export class GoalRecord extends Entity implements IGoalRecord {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalRecordDTO): GoalRecord {
+  public static fromClientDTO(dto: GoalRecordClientDTO): GoalRecord {
     return new GoalRecord({
       uuid: dto.uuid,
       keyResultUuid: dto.keyResultUuid,

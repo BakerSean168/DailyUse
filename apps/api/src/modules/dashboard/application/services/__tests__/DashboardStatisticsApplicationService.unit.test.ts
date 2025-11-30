@@ -3,16 +3,22 @@ import { DashboardStatisticsApplicationService } from '../DashboardStatisticsApp
 import { DashboardContainer } from '../../../infrastructure/di/DashboardContainer';
 import type {
   ITaskStatisticsRepository,
-  IGoalStatisticsRepository,
-  IReminderStatisticsRepository,
-  IScheduleStatisticsRepository,
   TaskStatistics,
+} from '@dailyuse/domain-server/task';
+import type {
+  IGoalStatisticsRepository,
   GoalStatistics,
+} from '@dailyuse/domain-server/goal';
+import type {
+  IReminderStatisticsRepository,
   ReminderStatistics,
+} from '@dailyuse/domain-server/reminder';
+import type {
+  IScheduleStatisticsRepository,
   ScheduleStatistics,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import type { StatisticsCacheService } from '../../../infrastructure/services/StatisticsCacheService';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 
 describe('DashboardStatisticsApplicationService - Unit Tests', () => {
   let service: DashboardStatisticsApplicationService;
@@ -146,7 +152,7 @@ describe('DashboardStatisticsApplicationService - Unit Tests', () => {
   describe('getDashboardStatistics', () => {
     it('should return cached data if available', async () => {
       // Arrange
-      const cachedData: DashboardContracts.DashboardStatisticsClientDTO = {
+      const cachedData: DashboardStatisticsClientDTO = {
         task: {
           totalTaskTemplates: 10,
           totalTaskInstances: 25,
@@ -388,3 +394,4 @@ describe('DashboardStatisticsApplicationService - Unit Tests', () => {
     });
   });
 });
+

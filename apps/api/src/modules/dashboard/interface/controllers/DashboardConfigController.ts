@@ -1,9 +1,8 @@
 import type { Request, Response } from 'express';
 import { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
 import { DashboardConfigApplicationService } from '../../application/services/DashboardConfigApplicationService';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { DashboardConfigServerDTO, WidgetConfigDTO } from '@dailyuse/contracts/dashboard';
 
-type WidgetConfigData = DashboardContracts.WidgetConfigData;
 
 /**
  * Dashboard 配置控制器
@@ -93,3 +92,5 @@ export class DashboardConfigController {
     }
   }
 }
+
+

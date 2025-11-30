@@ -1,8 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
-import type { SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
-type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
 
 /**
  * Setting Sync API Client
@@ -89,4 +88,5 @@ export class SettingSyncApiClient {
     return response.data;
   }
 }
+
 

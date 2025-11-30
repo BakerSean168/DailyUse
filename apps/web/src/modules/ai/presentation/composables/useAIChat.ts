@@ -3,7 +3,7 @@
  */
 import { ref, computed } from 'vue';
 import type { ChatMessage, SendOptions } from '../types/chat';
-import { httpAiConversationRepository } from '@dailyuse/domain-client';
+import { httpAiConversationRepository } from '@dailyuse/domain-client/ai';
 
 interface SSEEventPayload {
   content?: string;

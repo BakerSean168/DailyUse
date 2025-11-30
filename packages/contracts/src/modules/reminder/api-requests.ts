@@ -25,7 +25,7 @@ import type { BatchOperationResponseDTO as SharedBatchOperationResponseDTO } fro
 /**
  * 创建提醒模板请求
  */
-export interface CreateReminderTemplateRequestDTO {
+export interface CreateReminderTemplateRequest {
   title: string;
   type: ReminderType;
   trigger: TriggerConfigServerDTO;
@@ -44,7 +44,7 @@ export interface CreateReminderTemplateRequestDTO {
 /**
  * 更新提醒模板请求
  */
-export interface UpdateReminderTemplateRequestDTO {
+export interface UpdateReminderTemplateRequest {
   title?: string;
   description?: string;
   trigger?: TriggerConfigServerDTO;
@@ -62,7 +62,7 @@ export interface UpdateReminderTemplateRequestDTO {
 /**
  * 查询提醒模板请求
  */
-export interface QueryReminderTemplatesRequestDTO {
+export interface QueryReminderTemplatesRequest {
   status?: ReminderStatus;
   type?: ReminderType;
   groupUuid?: string;
@@ -93,7 +93,7 @@ export interface ReminderTemplateListDTO {
 /**
  * 创建提醒分组请求
  */
-export interface CreateReminderGroupRequestDTO {
+export interface CreateReminderGroupRequest {
   name: string;
   description?: string;
   color?: string;
@@ -105,7 +105,7 @@ export interface CreateReminderGroupRequestDTO {
 /**
  * 更新提醒分组请求
  */
-export interface UpdateReminderGroupRequestDTO {
+export interface UpdateReminderGroupRequest {
   name?: string;
   description?: string;
   color?: string;
@@ -117,14 +117,14 @@ export interface UpdateReminderGroupRequestDTO {
 /**
  * 切换分组控制模式请求
  */
-export interface SwitchGroupControlModeRequestDTO {
+export interface SwitchGroupControlModeRequest {
   mode: ControlMode;
 }
 
 /**
  * 批量操作分组模板请求
  */
-export interface BatchGroupTemplatesRequestDTO {
+export interface BatchGroupTemplatesRequest {
   action: 'ENABLE' | 'PAUSE';
 }
 
@@ -237,7 +237,7 @@ export interface UpcomingReminderItemDTO {
 /**
  * 获取即将到来的提醒请求
  */
-export interface GetUpcomingRemindersRequestDTO {
+export interface GetUpcomingRemindersRequest {
   days?: number; // 未来多少天，默认7天
   limit?: number; // 返回数量限制
   importanceLevel?: ImportanceLevel; // 按重要程度筛选

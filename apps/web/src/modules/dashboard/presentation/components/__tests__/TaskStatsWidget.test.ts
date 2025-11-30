@@ -6,7 +6,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import TaskStatsWidget from '../TaskStatsWidget.vue';
-import { DashboardContracts } from '@dailyuse/contracts';
+import { WidgetType } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfig, DashboardConfigServerDTO } from '@dailyuse/contracts/dashboard';
 
 // Mock useTaskStatistics composable
 vi.mock('../../../../task/presentation/composables/useTaskStatistics', () => ({
@@ -40,7 +41,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该显示完成率 (非 small 尺寸)', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       expect(wrapper.find('.completion-rate-value').text()).toBe('50%');
@@ -49,7 +50,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该在 small 尺寸时隐藏完成率', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.SMALL },
+        props: { size: WidgetSize.SMALL },
       });
 
       expect(wrapper.find('.widget-completion-rate').exists()).toBe(false);
@@ -59,7 +60,7 @@ describe('TaskStatsWidget', () => {
   describe('尺寸变体', () => {
     it('应该应用 small 尺寸样式', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.SMALL },
+        props: { size: WidgetSize.SMALL },
       });
 
       expect(wrapper.find('.widget-size-small').exists()).toBe(true);
@@ -68,7 +69,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该应用 medium 尺寸样式', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       expect(wrapper.find('.widget-size-medium').exists()).toBe(true);
@@ -77,7 +78,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该应用 large 尺寸样式', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.LARGE },
+        props: { size: WidgetSize.LARGE },
       });
 
       expect(wrapper.find('.widget-size-large').exists()).toBe(true);
@@ -94,7 +95,7 @@ describe('TaskStatsWidget', () => {
   describe('统计数据显示', () => {
     it('应该显示待办任务数量', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       const statCards = wrapper.findAll('.stat-card');
@@ -106,7 +107,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该显示进行中任务数量', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       const statCards = wrapper.findAll('.stat-card');
@@ -118,7 +119,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该显示已完成任务数量', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       const statCards = wrapper.findAll('.stat-card');
@@ -130,7 +131,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该显示总任务数', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       expect(wrapper.find('.total-value').text()).toBe('10');
@@ -140,7 +141,7 @@ describe('TaskStatsWidget', () => {
   describe('Small 尺寸紧凑显示', () => {
     it('应该显示紧凑统计信息', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.SMALL },
+        props: { size: WidgetSize.SMALL },
       });
 
       const compactItems = wrapper.findAll('.stat-item-compact');
@@ -150,7 +151,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该显示总计、完成和进行中', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.SMALL },
+        props: { size: WidgetSize.SMALL },
       });
 
       const text = wrapper.text();
@@ -165,7 +166,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该隐藏底部总计区域', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.SMALL },
+        props: { size: WidgetSize.SMALL },
       });
 
       expect(wrapper.find('.widget-footer').exists()).toBe(false);
@@ -228,7 +229,7 @@ describe('TaskStatsWidget', () => {
       } as any);
 
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       expect(wrapper.find('.completion-rate-value').classes()).toContain('text-green-600');
@@ -254,7 +255,7 @@ describe('TaskStatsWidget', () => {
       } as any);
 
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       expect(wrapper.find('.completion-rate-value').classes()).toContain('text-blue-600');
@@ -280,7 +281,7 @@ describe('TaskStatsWidget', () => {
       } as any);
 
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       expect(wrapper.find('.completion-rate-value').classes()).toContain('text-orange-600');
@@ -306,7 +307,7 @@ describe('TaskStatsWidget', () => {
       } as any);
 
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       expect(wrapper.find('.completion-rate-value').classes()).toContain('text-gray-600');
@@ -322,7 +323,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该为每个统计项显示图标', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       expect(wrapper.find('.i-heroicons-clock').exists()).toBe(true); // 待办
@@ -334,7 +335,7 @@ describe('TaskStatsWidget', () => {
   describe('响应式布局', () => {
     it('应该在 medium 尺寸时使用 grid 布局', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.MEDIUM },
+        props: { size: WidgetSize.MEDIUM },
       });
 
       const grid = wrapper.find('.stats-grid');
@@ -344,7 +345,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该在 large 尺寸时使用加强 grid 布局', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.LARGE },
+        props: { size: WidgetSize.LARGE },
       });
 
       const grid = wrapper.find('.stats-grid');
@@ -354,7 +355,7 @@ describe('TaskStatsWidget', () => {
 
     it('应该在 small 尺寸时使用 flex 布局', () => {
       const wrapper = mount(TaskStatsWidget, {
-        props: { size: DashboardContracts.WidgetSize.SMALL },
+        props: { size: WidgetSize.SMALL },
       });
 
       expect(wrapper.find('.stats-compact').exists()).toBe(true);
@@ -440,9 +441,9 @@ describe('TaskStatsWidget', () => {
   describe('Props 验证', () => {
     it('应该接受有效的 WidgetSize 值', () => {
       const sizes = [
-        DashboardContracts.WidgetSize.SMALL,
-        DashboardContracts.WidgetSize.MEDIUM,
-        DashboardContracts.WidgetSize.LARGE,
+        WidgetSize.SMALL,
+        WidgetSize.MEDIUM,
+        WidgetSize.LARGE,
       ];
 
       sizes.forEach((size) => {
@@ -455,3 +456,5 @@ describe('TaskStatsWidget', () => {
     });
   });
 });
+
+

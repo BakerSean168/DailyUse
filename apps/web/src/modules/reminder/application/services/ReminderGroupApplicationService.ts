@@ -1,5 +1,5 @@
-import type { ReminderContracts } from '@dailyuse/contracts';
-import { ReminderGroup } from '@dailyuse/domain-client';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, ReminderHistoryClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
+import { ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { getReminderStore } from '../../presentation/stores/reminderStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -35,8 +35,8 @@ export class ReminderGroupApplicationService {
    * 创建提醒分组
    */
   async createReminderGroup(
-    request: ReminderContracts.CreateReminderGroupRequestDTO,
-  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    request: CreateReminderGroupRequest,
+  ): Promise<ReminderGroupClientDTO> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
@@ -66,7 +66,7 @@ export class ReminderGroupApplicationService {
     page?: number;
     limit?: number;
   }): Promise<{
-    items: ReminderContracts.ReminderGroupClientDTO[];
+    items: ReminderGroupClientDTO[];
     total: number;
     page: number;
     pageSize: number;
@@ -108,7 +108,7 @@ export class ReminderGroupApplicationService {
   /**
    * 获取分组详情
    */
-  async getReminderGroup(uuid: string): Promise<ReminderContracts.ReminderGroupClientDTO> {
+  async getReminderGroup(uuid: string): Promise<ReminderGroupClientDTO> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
@@ -135,8 +135,8 @@ export class ReminderGroupApplicationService {
    */
   async updateReminderGroup(
     uuid: string,
-    request: ReminderContracts.UpdateReminderGroupRequestDTO,
-  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+    request: UpdateReminderGroupRequest,
+  ): Promise<ReminderGroupClientDTO> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
@@ -188,7 +188,7 @@ export class ReminderGroupApplicationService {
    */
   async toggleReminderGroupStatus(
     uuid: string,
-  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+  ): Promise<ReminderGroupClientDTO> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
@@ -216,7 +216,7 @@ export class ReminderGroupApplicationService {
    */
   async toggleReminderGroupControlMode(
     uuid: string,
-  ): Promise<ReminderContracts.ReminderGroupClientDTO> {
+  ): Promise<ReminderGroupClientDTO> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
@@ -243,3 +243,4 @@ export class ReminderGroupApplicationService {
 }
 
 export const reminderGroupApplicationService = ReminderGroupApplicationService.getInstance();
+

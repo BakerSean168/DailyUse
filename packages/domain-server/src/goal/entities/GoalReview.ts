@@ -9,19 +9,13 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import type { GoalContracts } from '@dailyuse/contracts';
-
-type IGoalReviewServer = GoalContracts.GoalReviewServer;
-type GoalReviewServerDTO = GoalContracts.GoalReviewServerDTO;
-type GoalReviewClientDTO = GoalContracts.GoalReviewClientDTO;
-type GoalReviewPersistenceDTO = GoalContracts.GoalReviewPersistenceDTO;
-type ReviewType = GoalContracts.ReviewType;
-type KeyResultSnapshotServerDTO = GoalContracts.KeyResultSnapshotServerDTO;
+import type { GoalReviewClientDTO, GoalReviewPersistenceDTO, GoalReviewServer, GoalReviewServerDTO, KeyResultSnapshotServerDTO } from '@dailyuse/contracts/goal';
+import { ReviewType } from '@dailyuse/contracts/goal';
 
 /**
  * GoalReview 实体
  */
-export class GoalReview extends Entity implements IGoalReviewServer {
+export class GoalReview extends Entity implements GoalReviewServer {
   // ===== 私有字段 =====
   private _goalUuid: string;
   private _type: ReviewType;

@@ -2,12 +2,13 @@
  * RateLimit 值对象实现 (Client)
  */
 
-import { NotificationContracts } from '@dailyuse/contracts';
+import type {
+  RateLimitClient as IRateLimitClient,
+  RateLimitClientDTO,
+  RateLimitServerDTO,
+} from '@dailyuse/contracts/notification';
 
-type RateLimitClientDTO = NotificationContracts.RateLimitClientDTO;
-type RateLimitServerDTO = NotificationContracts.RateLimitServerDTO;
-
-export class RateLimitClient implements NotificationContracts.RateLimitClient {
+export class RateLimitClient implements IRateLimitClient {
   private readonly dto: RateLimitClientDTO;
 
   private constructor(dto: RateLimitClientDTO) {
@@ -19,7 +20,7 @@ export class RateLimitClient implements NotificationContracts.RateLimitClient {
   get maxPerDay(): number { return this.dto.maxPerDay; }
   get limitText(): string { return this.dto.limitText; }
 
-  public equals(other: NotificationContracts.RateLimitClient): boolean {
+  public equals(other: RateLimitClient): boolean {
     return JSON.stringify(this.dto) === JSON.stringify((other as RateLimitClient).dto);
   }
 

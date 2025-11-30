@@ -7,9 +7,7 @@
  * - 由基础设施层实现（Prisma）
  */
 
-import type { AIContracts } from '@dailyuse/contracts';
-
-type AIProviderConfigServerDTO = AIContracts.AIProviderConfigServerDTO;
+import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 
 /**
  * IAIProviderConfigRepository 仓储接口

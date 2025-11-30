@@ -61,7 +61,8 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
+import type { DocumentContracts } from '@dailyuse/contracts/document';
 import * as echarts from 'echarts';
 
 type LinkGraphResponseDTO = DocumentContracts.LinkGraphResponseDTO;
@@ -263,3 +264,4 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 </style>
+

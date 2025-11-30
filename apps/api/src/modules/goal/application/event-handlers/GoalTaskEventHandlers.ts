@@ -4,7 +4,7 @@
  */
 
 import { eventBus } from '@dailyuse/utils';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateServerDTO, TaskInstanceServerDTO, TaskInstanceCompletedEvent } from '@dailyuse/contracts/task';
 import { GoalRecordApplicationService } from '../services/GoalRecordApplicationService';
 import { createLogger } from '@dailyuse/utils';
 
@@ -53,7 +53,7 @@ export class GoalTaskEventHandlers {
    * 当任务实例完成且有关联的目标绑定时，自动创建进度记录
    */
   private async handleTaskInstanceCompleted(
-    event: TaskContracts.TaskInstanceCompletedEvent,
+    event: TaskInstanceCompletedEvent,
   ): Promise<void> {
     const { payload } = event;
     const { goalBinding, title, completedAt, accountUuid } = payload;
@@ -115,3 +115,4 @@ export class GoalTaskEventHandlers {
     logger.info('✅ Goal module task event handlers destroyed');
   }
 }
+

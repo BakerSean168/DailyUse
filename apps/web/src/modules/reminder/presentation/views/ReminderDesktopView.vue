@@ -176,12 +176,12 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { reminderGroupApplicationService } from '../../application/services';
 
 // 类型导入 - 使用 Contracts DTO
-import type { ReminderContracts } from '@dailyuse/contracts';
-import { ReminderTemplate as ReminderTemplateEntity } from '@dailyuse/domain-client';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
+import { ReminderTemplate as ReminderTemplateEntity } from '@dailyuse/domain-client/reminder';
 
 // 类型别名
-type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
-type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
+type ReminderTemplate = ReminderTemplateClientDTO;
+type ReminderTemplateGroup = ReminderGroupClientDTO;
 
 // 使用 composables
 const { isLoading, error, reminderTemplates, reminderGroups, initialize, refreshAll, deleteTemplate, updateTemplate, toggleTemplateStatus } =
@@ -889,3 +889,4 @@ onMounted(async () => {
   border-radius: 0 0 8px 8px;
 }
 </style>
+

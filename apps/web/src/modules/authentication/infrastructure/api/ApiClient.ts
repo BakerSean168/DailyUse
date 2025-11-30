@@ -7,27 +7,10 @@
 // @ts-nocheck - Some response types not yet defined in contracts
 import { api } from '../../../../shared/api/instances';
 import type { RequestOptions } from '../../../../shared/api/core/types';
-import { AuthenticationContracts, AccountContracts } from '@dailyuse/contracts';
+import type { AuthTokens, LoginRequest } from '@dailyuse/contracts/authentication';
+import type { AccountServerDTO } from '@dailyuse/contracts/account';
 
 // 类型别名以简化使用
-type LoginRequestDTO = AuthenticationContracts.LoginRequestDTO;
-type LoginResponseDTO = AuthenticationContracts.LoginResponseDTO;
-type RefreshTokenRequestDTO = AuthenticationContracts.RefreshTokenRequestDTO;
-type RefreshTokenResponseDTO = AuthenticationContracts.RefreshTokenResponseDTO;
-type LogoutResponse = AuthenticationContracts.LogoutResponse;
-type VerifyMFARequest = AuthenticationContracts.VerifyMFARequest;
-type VerifyMFAResponse = AuthenticationContracts.VerifyMFAResponse;
-type MFADeviceListResponse = AuthenticationContracts.MFADeviceListResponse;
-type SessionListResponse = AuthenticationContracts.SessionListResponse;
-type TerminateSessionRequest = AuthenticationContracts.TerminateSessionRequest;
-type ChangePasswordRequestDTO = AuthenticationContracts.ChangePasswordRequestDTO;
-type PasswordChangeResponse = AuthenticationContracts.PasswordChangeResponse;
-type CreateMFADeviceRequest = AuthenticationContracts.CreateMFADeviceRequest;
-type MFADeviceCreationResponse = AuthenticationContracts.MFADeviceCreationResponse;
-type DeleteMFADeviceRequest = AuthenticationContracts.DeleteMFADeviceRequest;
-type AccountClientDTO = AuthenticationContracts.AccountClientDTO;
-type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
-type DeviceInfoClientDTO = AuthenticationContracts.DeviceInfoClientDTO;
 
 /**
  * 认证 API 服务类
@@ -150,3 +133,7 @@ export class AuthApiService {
     return api.post('/auth/sessions/terminate-others', {}, options);
   }
 }
+
+
+
+

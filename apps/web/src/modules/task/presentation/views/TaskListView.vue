@@ -133,7 +133,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskTemplateToDAG } from '@/modules/task/types/task-dag.types';
 import TaskDAGVisualization from '@/modules/task/presentation/components/dag/TaskDAGVisualization.vue';
@@ -145,7 +145,6 @@ import { taskAutoStatusService } from '@/modules/task/application/services/TaskA
 
 // 类型别名
 type TaskClientDTO = TaskForDAG;
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
 
 const router = useRouter();
 
@@ -208,15 +207,15 @@ const loadTasks = async () => {
   loading.value = true;
   try {
     // 加载任务模板（用于 DAG 可视化）
-    const response = await taskTemplateApiClient.getTemplates({
+    const templates = await taskTemplateApiClient.getTaskTemplates({
       status: 'ACTIVE',
       limit: 100,
     });
 
     // 转换为 DAG 格式
-    if (response.data) {
-      tasks.value = response.data.map((template: any) =>
-        taskTemplateToDAG(template as TaskContracts.TaskTemplateClientDTO),
+    if (templates && templates.length > 0) {
+      tasks.value = templates.map((template: TaskTemplateClientDTO) =>
+        taskTemplateToDAG(template),
       );
     }
   } catch (error) {
@@ -396,3 +395,4 @@ onUnmounted(() => {
   gap: 8px;
 }
 </style>
+

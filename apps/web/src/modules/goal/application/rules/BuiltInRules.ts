@@ -3,13 +3,13 @@
  * 内置状态更新规则
  */
 
-import { GoalStatus } from '@dailyuse/contracts';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 import type {
   StatusRule,
   RuleConditionType,
   RuleMetric,
   RuleOperator,
-} from '../../../../../../../packages/contracts/src/modules/goal/rules/StatusRule';
+} from '@dailyuse/contracts/goal';
 
 /**
  * 内置规则集
@@ -218,3 +218,6 @@ export const RULE_TEMPLATES = {
     },
   }),
 };
+
+
+

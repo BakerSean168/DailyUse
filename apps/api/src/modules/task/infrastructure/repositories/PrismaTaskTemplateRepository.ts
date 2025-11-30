@@ -1,9 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import type { ITaskTemplateRepository } from '@dailyuse/domain-server';
-import { TaskTemplate, TaskTemplateHistory } from '@dailyuse/domain-server';
-import type { TaskContracts } from '@dailyuse/contracts';
-
-type TaskTemplateStatus = TaskContracts.TaskTemplateStatus;
+import type { ITaskTemplateRepository } from '@dailyuse/domain-server/task';
+import { TaskTemplate, TaskTemplateHistory } from '@dailyuse/domain-server/task';
+import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
 
 /**
  * TaskTemplate Prisma 仓库

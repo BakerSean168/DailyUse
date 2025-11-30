@@ -17,7 +17,7 @@ import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import KRPreviewList from '../KRPreviewList.vue';
-import type { AIContracts } from '@dailyuse/contracts';
+import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 // Mock useSnackbar
 const mockShowSnackbar = vi.fn();
@@ -39,7 +39,7 @@ describe('KRPreviewList', () => {
   let wrapper: VueWrapper;
   let vuetify: ReturnType<typeof createVuetify>;
 
-  const mockKeyResults: Array<AIContracts.KeyResultSuggestion & { uuid?: string; selected?: boolean }> = [
+  const mockKeyResults: Array<KeyResultSuggestion & { uuid?: string; selected?: boolean }> = [
     {
       uuid: 'kr-1',
       title: '关键结果 1',
@@ -425,3 +425,4 @@ describe('KRPreviewList', () => {
     });
   });
 });
+

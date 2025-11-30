@@ -1,11 +1,10 @@
-import type { IGoalRepository } from '@dailyuse/domain-server';
+import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalDomainService, Goal } from '@dailyuse/domain-server';
-import type { GoalContracts } from '@dailyuse/contracts';
+import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { GoalEventPublisher } from './GoalEventPublisher';
 import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
-
-type GoalStatisticsClientDTO = GoalContracts.GoalStatisticsClientDTO;
 
 /**
  * Goal 应用服务
@@ -64,8 +63,8 @@ export class GoalApplicationService {
     accountUuid: string;
     title: string;
     description?: string;
-    importance: GoalContracts.ImportanceLevel;
-    urgency: GoalContracts.UrgencyLevel;
+    importance: ImportanceLevel;
+    urgency: UrgencyLevel;
     parentGoalUuid?: string;
     folderUuid?: string;
     startDate?: number;
@@ -75,7 +74,7 @@ export class GoalApplicationService {
     color?: string;
     feasibilityAnalysis?: string;
     motivation?: string;
-  }): Promise<GoalContracts.GoalClientDTO> {
+  }): Promise<GoalClientDTO> {
     // 1. 如果有父目标，先查询
     let parentGoal: Goal | undefined;
     if (params.parentGoalUuid) {
@@ -105,7 +104,7 @@ export class GoalApplicationService {
   async getGoal(
     uuid: string,
     options?: { includeChildren?: boolean },
-  ): Promise<GoalContracts.GoalClientDTO | null> {
+  ): Promise<GoalClientDTO | null> {
     const goal = await this.goalRepository.findById(uuid, options);
     return goal ? goal.toClientDTO(true) : null;
   }
@@ -120,7 +119,7 @@ export class GoalApplicationService {
       status?: string;
       folderUuid?: string;
     },
-  ): Promise<GoalContracts.GoalClientDTO[]> {
+  ): Promise<GoalClientDTO[]> {
     const goals = await this.goalRepository.findByAccountUuid(accountUuid, options);
     const dtos = goals.map((g: Goal) => g.toClientDTO(true));
     
@@ -135,8 +134,8 @@ export class GoalApplicationService {
     updates: Partial<{
       title: string;
       description: string;
-      importance: GoalContracts.ImportanceLevel;
-      urgency: GoalContracts.UrgencyLevel;
+      importance: ImportanceLevel;
+      urgency: UrgencyLevel;
       category: string;
       deadline: number;
       tags: string[];
@@ -145,7 +144,7 @@ export class GoalApplicationService {
       feasibilityAnalysis: string;
       motivation: string;
     }>,
-  ): Promise<GoalContracts.GoalClientDTO> {
+  ): Promise<GoalClientDTO> {
     // 1. 查询目标
     const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
@@ -244,7 +243,7 @@ export class GoalApplicationService {
   /**
    * 归档目标
    */
-  async archiveGoal(uuid: string): Promise<GoalContracts.GoalClientDTO> {
+  async archiveGoal(uuid: string): Promise<GoalClientDTO> {
     // 1. 查询目标
     const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
@@ -267,7 +266,7 @@ export class GoalApplicationService {
   /**
    * 激活目标
    */
-  async activateGoal(uuid: string): Promise<GoalContracts.GoalClientDTO> {
+  async activateGoal(uuid: string): Promise<GoalClientDTO> {
     // 1. 查询目标
     const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
@@ -290,7 +289,7 @@ export class GoalApplicationService {
   /**
    * 完成目标
    */
-  async completeGoal(uuid: string): Promise<GoalContracts.GoalClientDTO> {
+  async completeGoal(uuid: string): Promise<GoalClientDTO> {
     // 1. 查询目标
     const goal = await this.goalRepository.findById(uuid);
     if (!goal) {
@@ -315,7 +314,7 @@ export class GoalApplicationService {
   /**
    * 搜索目标
    */
-  async searchGoals(accountUuid: string, query: string): Promise<GoalContracts.GoalClientDTO[]> {
+  async searchGoals(accountUuid: string, query: string): Promise<GoalClientDTO[]> {
     const goals = await this.goalRepository.findByAccountUuid(accountUuid, {});
     return goals
       .filter((g) => g.title.includes(query) || g.description?.includes(query))
@@ -339,3 +338,4 @@ export class GoalApplicationService {
     return statistics;
   }
 }
+

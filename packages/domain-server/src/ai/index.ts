@@ -17,12 +17,16 @@
  */
 
 // ===== Aggregates =====
-export * from './aggregates/AIConversationServer';
+export * from './aggregates/AIConversation';
+// 为了向后兼容，导出 AIConversation 别名为 AIConversationServer
+export { AIConversation as AIConversationServer } from './aggregates/AIConversation';
 export * from './aggregates/AIUsageQuotaServer';
 export * from './aggregates/AIProviderConfigServer';
 
 // ===== Entities =====
-export * from './entities/MessageServer';
+export * from './entities/Message';
+// 为了向后兼容，导出 Message 别名为 MessageServer
+export { Message as MessageServer } from './entities/Message';
 export * from './entities/KnowledgeGenerationTask';
 
 // ===== Value Objects =====

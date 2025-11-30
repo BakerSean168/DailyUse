@@ -8,7 +8,7 @@
 
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { defineAsyncComponent } from 'vue';
-import { DashboardContracts } from '@dailyuse/contracts';
+import { WidgetSize, type WidgetConfig, type WidgetType } from '@dailyuse/contracts/dashboard';
 
 /**
  * 注册 Goal 模块的所有 Widgets
@@ -24,7 +24,7 @@ export function registerGoalWidgets(): void {
     component: defineAsyncComponent(() => import('./GoalStatsWidget.vue')),
     defaultVisible: true,
     defaultOrder: 1,
-    defaultSize: DashboardContracts.WidgetSize.MEDIUM,
+    defaultSize: WidgetSize.MEDIUM,
     icon: 'i-heroicons-flag',
     category: 'goal',
   });
@@ -37,10 +37,11 @@ export function registerGoalWidgets(): void {
     component: defineAsyncComponent(() => import('./GoalTimelineWidget.vue')),
     defaultVisible: true,
     defaultOrder: 5,
-    defaultSize: DashboardContracts.WidgetSize.LARGE,
+    defaultSize: WidgetSize.LARGE,
     icon: 'i-heroicons-calendar',
     category: 'goal',
   });
 
   console.log('[Goal] Goal widgets registered successfully');
 }
+

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { Account } from '@dailyuse/domain-client';
+import { Account } from '@dailyuse/domain-client/account';
 
 export const useAccountStore = defineStore(
   'auth',

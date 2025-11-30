@@ -3,18 +3,18 @@
  * 实现 SearchEngineServer 接口
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type {
+  SearchEngineClientDTO,
+  SearchEnginePersistenceDTO,
+  SearchEngineServer,
+  SearchEngineServerDTO,
+} from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
-
-type ISearchEngineServer = EditorContracts.SearchEngineServer;
-type SearchEngineServerDTO = EditorContracts.SearchEngineServerDTO;
-type SearchEngineClientDTO = EditorContracts.SearchEngineClientDTO;
-type SearchEnginePersistenceDTO = EditorContracts.SearchEnginePersistenceDTO;
 
 /**
  * SearchEngine 实体
  */
-export class SearchEngine extends Entity implements ISearchEngineServer {
+export class SearchEngine extends Entity implements SearchEngineServer {
   // ===== 私有字段 =====
   private _workspaceUuid: string; // 聚合根外键
   private _accountUuid: string;

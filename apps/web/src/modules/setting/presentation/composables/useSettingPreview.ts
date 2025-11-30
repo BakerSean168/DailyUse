@@ -4,9 +4,8 @@
  */
 
 import { ref, watch, computed } from 'vue';
-import type { SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
-type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
 
 export interface PreviewSettings {
   theme: string;
@@ -131,3 +130,4 @@ export function useSettingPreview(initialSettings: PreviewSettings) {
     applyAllPreview,
   };
 }
+

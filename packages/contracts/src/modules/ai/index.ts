@@ -132,3 +132,28 @@ export type {
   UpdateQuotaLimitRequest,
   ListRequest,
 } from './api-requests';
+
+export type {
+  GeneratedGoalDraft,
+  GenerateGoalResponse,
+  GenerateGoalWithKRsResponse,
+} from './api-responses/GenerateGoalResponse';
+
+export type { SummarizationResultDTO } from './api-responses/SummarizationResultDTO';
+
+export type {
+  CreateAIProviderRequest,
+  UpdateAIProviderRequest,
+  TestAIProviderConnectionRequest,
+  TestAIProviderConnectionResponse,
+  SetDefaultProviderRequest,
+  RefreshProviderModelsRequest,
+  RefreshProviderModelsResponse,
+} from './api-requests/AIProviderConfigRequest';
+
+export type {
+  GenerateGoalRequest,
+  GenerateGoalWithKRsRequest,
+} from './api-requests/GenerateGoalRequest';
+
+export { GoalCategory } from './api-requests/GenerateGoalRequest';

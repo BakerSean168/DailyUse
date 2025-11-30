@@ -18,8 +18,8 @@ import {
   ScheduleTask,
   type IScheduleExecutionRepository,
   ScheduleExecution,
-} from '@dailyuse/domain-server';
-import { ExecutionStatus } from '@dailyuse/contracts';
+} from '@dailyuse/domain-server/schedule';
+import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * Bree 执行引擎配置
@@ -265,18 +265,14 @@ export class BreeExecutionEngine implements IScheduleExecutionEngine {
     };
 
     // 调度配置
-    const dto = scheduleConfig.toDTO();
+    const dto = scheduleConfig.toServerDTO();
 
     if (dto.cronExpression) {
       // Cron 表达式调度
       jobOptions.cron = dto.cronExpression;
-    } else if (dto.intervalMs) {
-      // 间隔调度
-      jobOptions.interval = `${dto.intervalMs}ms`;
-    } else if (dto.date) {
-      // 一次性调度
-      jobOptions.date = new Date(dto.date);
     }
+    // Note: intervalMs and date scheduling are not currently supported in ScheduleConfigServerDTO
+    // They would need to be added to the contracts if needed
 
     // 时区
     if (dto.timezone) {

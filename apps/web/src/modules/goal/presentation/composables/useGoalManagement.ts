@@ -4,7 +4,7 @@
  */
 
 import { ref, computed } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { goalManagementApplicationService, goalSyncApplicationService } from '../../application/services';
 import { getGoalStore } from '../stores/goalStore';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
@@ -91,7 +91,7 @@ export function useGoalManagement() {
   /**
    * 创建新目标
    */
-  const createGoal = async (data: GoalContracts.CreateGoalRequest) => {
+  const createGoal = async (data: CreateGoalRequest) => {
     try {
       const response = await goalManagementApplicationService.createGoal(data);
       showCreateDialog.value = false;
@@ -106,7 +106,7 @@ export function useGoalManagement() {
   /**
    * 更新目标
    */
-  const updateGoal = async (uuid: string, data: GoalContracts.UpdateGoalRequest) => {
+  const updateGoal = async (uuid: string, data: UpdateGoalRequest) => {
     try {
       const response = await goalManagementApplicationService.updateGoal(uuid, data);
       showEditDialog.value = false;
@@ -214,3 +214,4 @@ export function useGoalManagement() {
     closeEditDialog,
   };
 }
+

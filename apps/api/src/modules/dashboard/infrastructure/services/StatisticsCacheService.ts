@@ -13,7 +13,7 @@
 
 import Redis from 'ioredis';
 import type { RedisOptions } from 'ioredis';
-import { DashboardContracts } from '@dailyuse/contracts';
+import type { DashboardConfigServerDTO, WidgetConfigDTO, DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
 
 export class StatisticsCacheService {
   private readonly redis: Redis;
@@ -81,7 +81,7 @@ export class StatisticsCacheService {
   /**
    * 获取缓存的统计数据
    */
-  async get(userId: string): Promise<DashboardContracts.DashboardStatisticsClientDTO | null> {
+  async get(userId: string): Promise<DashboardStatisticsClientDTO | null> {
     const key = this.getCacheKey(userId);
 
     try {
@@ -106,7 +106,7 @@ export class StatisticsCacheService {
   /**
    * 设置缓存数据
    */
-  async set(userId: string, data: DashboardContracts.DashboardStatisticsClientDTO): Promise<void> {
+  async set(userId: string, data: DashboardStatisticsClientDTO): Promise<void> {
     const key = this.getCacheKey(userId);
 
     try {
@@ -244,3 +244,5 @@ export class StatisticsCacheService {
     }
   }
 }
+
+

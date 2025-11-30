@@ -3,21 +3,21 @@
  * 通知模板配置 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type {
+  ChannelConfig,
+  EmailTemplateContent,
+  NotificationTemplateConfigClientDTO,
+  NotificationTemplateConfigPersistenceDTO,
+  NotificationTemplateConfigServerDTO,
+  PushTemplateContent,
+  TemplateContent,
+} from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type INotificationTemplateConfig = NotificationContracts.NotificationTemplateConfigServerDTO;
-type NotificationTemplateConfigPersistenceDTO = NotificationContracts.NotificationTemplateConfigPersistenceDTO;
-type NotificationTemplateConfigClientDTO = NotificationContracts.NotificationTemplateConfigClientDTO;
-type TemplateContent = NotificationContracts.TemplateContent;
-type ChannelConfig = NotificationContracts.ChannelConfig;
-type EmailTemplateContent = NotificationContracts.EmailTemplateContent;
-type PushTemplateContent = NotificationContracts.PushTemplateContent;
 
 /**
  * NotificationTemplateConfig 值对象
  */
-export class NotificationTemplateConfig extends ValueObject implements INotificationTemplateConfig {
+export class NotificationTemplateConfig extends ValueObject implements NotificationTemplateConfig {
   public readonly template: TemplateContent;
   public readonly channels: ChannelConfig;
   public readonly emailTemplate?: EmailTemplateContent | null;
@@ -89,7 +89,7 @@ export class NotificationTemplateConfig extends ValueObject implements INotifica
   /**
    * 转换为 Contract 接口
    */
-  public toServerDTO(): INotificationTemplateConfig {
+  public toServerDTO(): NotificationTemplateConfigServerDTO {
     return {
       template: {
         ...this.template,
@@ -127,15 +127,15 @@ export class NotificationTemplateConfig extends ValueObject implements INotifica
     };
   }
 
-  public toContract(): INotificationTemplateConfig {
+  public toContract(): NotificationTemplateConfigServerDTO {
     return this.toServerDTO();
   }
 
-  public static fromServerDTO(dto: INotificationTemplateConfig): NotificationTemplateConfig {
+  public static fromServerDTO(dto: NotificationTemplateConfigServerDTO): NotificationTemplateConfig {
     return new NotificationTemplateConfig(dto);
   }
 
-  public static fromContract(config: INotificationTemplateConfig): NotificationTemplateConfig {
+  public static fromContract(config: NotificationTemplateConfigServerDTO): NotificationTemplateConfig {
     return NotificationTemplateConfig.fromServerDTO(config);
   }
 

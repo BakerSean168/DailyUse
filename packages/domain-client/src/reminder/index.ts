@@ -4,3 +4,4 @@
 
 export { ReminderTemplate } from './aggregates/ReminderTemplate';
 export { ReminderGroup } from './aggregates/ReminderGroup';
+export { ReminderStatistics } from './aggregates/ReminderStatistics';

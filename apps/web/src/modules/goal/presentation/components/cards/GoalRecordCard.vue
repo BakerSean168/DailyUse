@@ -42,11 +42,11 @@
 </template>
 
 <script setup lang="ts">
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalRecordClientDTO } from '@dailyuse/contracts/goal';
 import { format } from 'date-fns';
 
 defineProps<{
-  record: GoalContracts.GoalRecordClientDTO;
+  record: GoalRecordClientDTO;
 }>();
 </script>
 
@@ -81,3 +81,4 @@ defineProps<{
   }
 }
 </style>
+

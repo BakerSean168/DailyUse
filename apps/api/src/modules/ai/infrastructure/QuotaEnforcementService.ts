@@ -12,10 +12,10 @@
  * - 后续可扩展为完整聚合根模式（需创建 AIUsageQuota 聚合根类）
  */
 
-import { AIContracts, QuotaResetPeriod } from '@dailyuse/contracts';
-import { AIQuotaExceededError } from '@dailyuse/domain-server';
+import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, AIUsageQuotaServerDTO } from '@dailyuse/contracts/ai';
+import { AIQuotaExceededError } from '@dailyuse/domain-server/ai';
 
-type AIUsageQuotaServerDTO = AIContracts.AIUsageQuotaServerDTO;
 
 export class QuotaEnforcementService {
   constructor() {
@@ -126,3 +126,7 @@ export class QuotaEnforcementService {
     };
   }
 }
+
+
+
+

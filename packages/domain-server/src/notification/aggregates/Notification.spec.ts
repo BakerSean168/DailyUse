@@ -2,9 +2,9 @@
  * Notification 聚合根单元测试
  */
 
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { describe, it, expect } from 'vitest';
 import { Notification } from './Notification';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
 
 describe('Notification Aggregate', () => {
   describe('create', () => {

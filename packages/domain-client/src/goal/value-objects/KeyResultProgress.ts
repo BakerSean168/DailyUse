@@ -2,17 +2,18 @@
  * KeyResultProgress 值对象实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
-import { GoalContracts as GC } from '@dailyuse/contracts';
+import {
+  AggregationMethod,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
+import type {
+  IKeyResultProgressClient,
+  KeyResultProgressClientDTO,
+  KeyResultProgressServerDTO,
+} from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-type IKeyResultProgress = GoalContracts.IKeyResultProgressClient;
-type KeyResultProgressDTO = GoalContracts.KeyResultProgressClientDTO;
-type KeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
-type KeyResultValueType = GoalContracts.KeyResultValueType;
-type AggregationMethod = GoalContracts.AggregationMethod;
-
-export class KeyResultProgress extends ValueObject implements IKeyResultProgress {
+export class KeyResultProgress extends ValueObject implements IKeyResultProgressClient {
   private _valueType: KeyResultValueType;
   private _aggregationMethod: AggregationMethod;
   private _targetValue: number;
@@ -113,7 +114,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
   }
 
   // 值对象方法
-  public equals(other: IKeyResultProgress): boolean {
+  public equals(other: IKeyResultProgressClient): boolean {
     return (
       this._valueType === other.valueType &&
       this._aggregationMethod === other.aggregationMethod &&
@@ -135,7 +136,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
     };
   }
 
-  public toClientDTO(): KeyResultProgressDTO {
+  public toClientDTO(): KeyResultProgressClientDTO {
     return {
       valueType: this._valueType,
       aggregationMethod: this._aggregationMethod,
@@ -153,7 +154,7 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: KeyResultProgressDTO): KeyResultProgress {
+  public static fromClientDTO(dto: KeyResultProgressClientDTO): KeyResultProgress {
     return new KeyResultProgress({
       valueType: dto.valueType,
       aggregationMethod: dto.aggregationMethod,
@@ -177,8 +178,8 @@ export class KeyResultProgress extends ValueObject implements IKeyResultProgress
 
   public static createDefault(): KeyResultProgress {
     return new KeyResultProgress({
-      valueType: GC.KeyResultValueType.INCREMENTAL,
-      aggregationMethod: GC.AggregationMethod.SUM,
+      valueType: KeyResultValueType.INCREMENTAL,
+      aggregationMethod: AggregationMethod.SUM,
       targetValue: 100,
       currentValue: 0,
       unit: '',

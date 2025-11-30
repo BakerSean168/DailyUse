@@ -1,7 +1,7 @@
 <template>
   <div class="task-template-form-container">
     <!-- 错误状态显示 - 修复：检查 computed 的 value -->
-    <v-alert v-if="!props.modelValue" type="error" variant="tonal" class="mb-4">
+    <v-alert v-if="!taskTemplateBeingEdited" type="error" variant="tonal" class="mb-4">
       <v-alert-title>无法加载模板</v-alert-title>
       <div>没有找到正在编辑的任务模板，请重新选择或创建模板。</div>
       <template #append>
@@ -13,25 +13,25 @@
     <v-form v-else ref="formRef" class="task-template-form">
       <!-- 统一使用 @update:model-value 事件 -->
       <BasicInfoSection
-        :model-value="taskTemplateBeingEdited"
+        :model-value="taskTemplateBeingEdited!"
         @update:validation="updateBasicValidation"
         @update:model-value="handleTemplateUpdate"
       />
 
       <TimeConfigSection
-        :model-value="taskTemplateBeingEdited"
+        :model-value="taskTemplateBeingEdited!"
         @update:validation="updateTimeValidation"
         @update:model-value="handleTemplateUpdate"
       />
 
       <RecurrenceSection
-        :model-value="taskTemplateBeingEdited"
+        :model-value="taskTemplateBeingEdited!"
         @update:validation="updateRecurrenceValidation"
         @update:model-value="handleTemplateUpdate"
       />
 
       <ReminderSection
-        :model-value="taskTemplateBeingEdited"
+        :model-value="taskTemplateBeingEdited!"
         @update:validation="updateReminderValidation"
         @update:model-value="handleTemplateUpdate"
       />
@@ -39,12 +39,12 @@
       <!-- 移除 SchedulingPolicySection，调度配置已经在其他模块中处理 -->
 
       <KeyResultLinksSection
-        :model-value="taskTemplateBeingEdited"
+        :model-value="taskTemplateBeingEdited!"
         @update:model-value="handleTemplateUpdate"
       />
 
       <MetadataSection
-        :model-value="taskTemplateBeingEdited"
+        :model-value="taskTemplateBeingEdited!"
         @update:validation="updateMetadataValidation"
         @update:model-value="handleTemplateUpdate"
       />
@@ -61,7 +61,7 @@ import ReminderSection from './sections/ReminderSection.vue';
 import MetadataSection from './sections/MetadataSection.vue';
 import KeyResultLinksSection from './sections/KeyResultLinksSection.vue';
 import { useTaskTemplateForm } from '../../composables/useTaskTemplateForm';
-import type { TaskTemplate } from '@dailyuse/domain-client';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
 
 // ===== Props 定义 =====
 interface Props {

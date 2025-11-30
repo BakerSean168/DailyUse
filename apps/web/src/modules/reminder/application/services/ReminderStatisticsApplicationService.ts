@@ -12,7 +12,8 @@
  * - 统一错误处理
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderHistoryClientDTO, ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -53,7 +54,7 @@ export class ReminderStatisticsApplicationService {
   async getReminderStatistics(
     accountUuid: string,
     options?: { forceRefresh?: boolean },
-  ): Promise<ReminderContracts.ReminderStatisticsClientDTO> {
+  ): Promise<ReminderStatisticsClientDTO> {
     try {
       this.reminderStore.setLoading(true);
       this.reminderStore.setError(null);
@@ -78,3 +79,6 @@ export class ReminderStatisticsApplicationService {
 // 导出单例实例
 export const reminderStatisticsApplicationService =
   ReminderStatisticsApplicationService.getInstance();
+
+
+

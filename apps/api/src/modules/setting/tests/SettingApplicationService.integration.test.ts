@@ -13,7 +13,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SettingApplicationService } from '../application/services/SettingApplicationService';
 import { PrismaUserSettingRepository } from '../infrastructure/repositories/PrismaUserSettingRepository';
 import { PrismaClient } from '@prisma/client';
-import { UserSettingServer as UserSetting } from '@dailyuse/domain-server';
+import { UserSettingServer as UserSetting } from '@dailyuse/domain-server/setting';
 import { getPrismaClient } from '../../test/setup-database';
 
 describe('SettingApplicationService 集成测试', () => {

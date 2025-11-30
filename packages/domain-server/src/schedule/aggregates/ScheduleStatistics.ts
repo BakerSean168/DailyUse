@@ -1,11 +1,12 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import { ScheduleContracts, SourceModule, ExecutionStatus, ScheduleTaskStatus } from '@dailyuse/contracts';
-
-type IScheduleStatisticsServer = ScheduleContracts.ScheduleStatisticsServer;
-type ScheduleStatisticsServerDTO = ScheduleContracts.ScheduleStatisticsServerDTO;
-type ScheduleStatisticsClientDTO = ScheduleContracts.ScheduleStatisticsClientDTO;
-type ScheduleStatisticsPersistenceDTO = ScheduleContracts.ScheduleStatisticsPersistenceDTO;
-type ModuleStatisticsServerDTO = ScheduleContracts.ModuleStatisticsServerDTO;
+import type {
+  ModuleStatisticsServerDTO,
+  ScheduleStatisticsClientDTO,
+  ScheduleStatisticsPersistenceDTO,
+  ScheduleStatisticsServer,
+  ScheduleStatisticsServerDTO,
+} from '@dailyuse/contracts/schedule';
+import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 
 /**
  * ScheduleStatistics 聚合根
@@ -20,7 +21,7 @@ type ModuleStatisticsServerDTO = ScheduleContracts.ModuleStatisticsServerDTO;
  * TODO: 修复接口实现签名不匹配的问题
  * @domain-server/schedule
  */
-export class ScheduleStatistics extends AggregateRoot implements IScheduleStatisticsServer {
+export class ScheduleStatistics extends AggregateRoot implements ScheduleStatisticsServer {
   // ============ 私有字段 ============
   private _accountUuid: string;
 
@@ -141,7 +142,7 @@ export class ScheduleStatistics extends AggregateRoot implements IScheduleStatis
     this._failedExecutions = params.failedExecutions;
     this._timeoutExecutions = params.timeoutExecutions;
     this._skippedExecutions = params.skippedExecutions;
-    
+
     this._avgExecutionDuration = params.avgExecutionDuration ?? 0;
     this._minExecutionDuration = params.minExecutionDuration ?? 0;
     this._maxExecutionDuration = params.maxExecutionDuration ?? 0;
@@ -271,7 +272,7 @@ export class ScheduleStatistics extends AggregateRoot implements IScheduleStatis
    */
   public incrementTaskCount(status: ScheduleTaskStatus): void {
     this._totalTasks++;
-    
+
     switch (status) {
       case 'active':
         this._activeTasks++;
@@ -289,7 +290,7 @@ export class ScheduleStatistics extends AggregateRoot implements IScheduleStatis
         this._failedTasks++;
         break;
     }
-    
+
     this._lastUpdatedAt = Date.now();
 
     // 发布事件
@@ -312,7 +313,7 @@ export class ScheduleStatistics extends AggregateRoot implements IScheduleStatis
    */
   public decrementTaskCount(status: ScheduleTaskStatus): void {
     this._totalTasks = Math.max(0, this._totalTasks - 1);
-    
+
     switch (status) {
       case 'active':
         this._activeTasks = Math.max(0, this._activeTasks - 1);
@@ -330,7 +331,7 @@ export class ScheduleStatistics extends AggregateRoot implements IScheduleStatis
         this._failedTasks = Math.max(0, this._failedTasks - 1);
         break;
     }
-    
+
     this._lastUpdatedAt = Date.now();
 
     // 发布事件
@@ -443,7 +444,11 @@ export class ScheduleStatistics extends AggregateRoot implements IScheduleStatis
    * 记录执行结果
    * 接口签名: recordExecution(status: ExecutionStatus, duration: number, sourceModule: SourceModule): void
    */
-  public recordExecution(status: ExecutionStatus, duration: number, sourceModule: SourceModule): void {
+  public recordExecution(
+    status: ExecutionStatus,
+    duration: number,
+    sourceModule: SourceModule,
+  ): void {
     this._totalExecutions++;
 
     // 更新执行状态统计
@@ -500,17 +505,16 @@ export class ScheduleStatistics extends AggregateRoot implements IScheduleStatis
   private _updateExecutionStats(duration: number): void {
     // 更新总时长
     this._totalDuration += duration;
-    
+
     // 更新平均时长
-    this._avgExecutionDuration = this._totalExecutions > 0 
-      ? this._totalDuration / this._totalExecutions 
-      : 0;
-    
+    this._avgExecutionDuration =
+      this._totalExecutions > 0 ? this._totalDuration / this._totalExecutions : 0;
+
     // 更新最小时长
     if (this._minExecutionDuration === 0 || duration < this._minExecutionDuration) {
       this._minExecutionDuration = duration;
     }
-    
+
     // 更新最大时长
     if (duration > this._maxExecutionDuration) {
       this._maxExecutionDuration = duration;
@@ -857,7 +861,11 @@ export class ScheduleStatistics extends AggregateRoot implements IScheduleStatis
     }
   }
 
-  private _recordModuleExecution(module: SourceModule, status: ExecutionStatus, duration: number): void {
+  private _recordModuleExecution(
+    module: SourceModule,
+    status: ExecutionStatus,
+    duration: number,
+  ): void {
     switch (module) {
       case 'reminder':
         this._reminderExecutions++;

@@ -3,18 +3,18 @@
  * 文档元数据 - 不可变值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type {
+  DocumentMetadataClientDTO,
+  DocumentMetadataPersistenceDTO,
+  DocumentMetadataServerDTO,
+  IDocumentMetadataServer,
+} from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type IDocumentMetadata = EditorContracts.IDocumentMetadataServer;
-type DocumentMetadataServerDTO = EditorContracts.DocumentMetadataServerDTO;
-type DocumentMetadataClientDTO = EditorContracts.DocumentMetadataClientDTO;
-type DocumentMetadataPersistenceDTO = EditorContracts.DocumentMetadataPersistenceDTO;
 
 /**
  * DocumentMetadata 值对象
  */
-export class DocumentMetadata extends ValueObject implements IDocumentMetadata {
+export class DocumentMetadata extends ValueObject implements DocumentMetadata {
   public readonly tags: string[];
   public readonly category: string | null;
   public readonly wordCount: number | null;
@@ -84,7 +84,7 @@ export class DocumentMetadata extends ValueObject implements IDocumentMetadata {
   /**
    * 值相等性比较
    */
-  public equals(other: IDocumentMetadata): boolean {
+  public equals(other: IDocumentMetadataServer): boolean {
     if (!(other instanceof DocumentMetadata)) {
       return false;
     }

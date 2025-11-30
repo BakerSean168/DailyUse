@@ -3,15 +3,10 @@
  * 任务实例 - 聚合根
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskInstanceClientDTO, TaskInstancePersistenceDTO, TaskInstanceServer, TaskInstanceServerDTO } from '@dailyuse/contracts/task';
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
 import { TaskTimeConfig, CompletionRecord, SkipRecord } from '../value-objects';
-
-type ITaskInstance = TaskContracts.TaskInstanceServer;
-type TaskInstanceServerDTO = TaskContracts.TaskInstanceServerDTO;
-type TaskInstanceClientDTO = TaskContracts.TaskInstanceClientDTO;
-type TaskInstancePersistenceDTO = TaskContracts.TaskInstancePersistenceDTO;
-type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
 
 /**
  * TaskInstance 聚合根
@@ -22,7 +17,7 @@ type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
  * - 确保业务规则一致性
  * - 是事务边界
  */
-export class TaskInstance extends AggregateRoot implements ITaskInstance {
+export class TaskInstance extends AggregateRoot implements TaskInstanceServer {
   // ===== 私有字段 =====
   private _templateUuid: string;
   private _accountUuid: string;
@@ -308,7 +303,7 @@ export class TaskInstance extends AggregateRoot implements ITaskInstance {
 
   /**
    * 创建新的任务实例
-   * 
+   *
    * 注意：不再发布领域事件
    * 提醒由 ScheduleTask 统一管理（混合方案 C）
    */

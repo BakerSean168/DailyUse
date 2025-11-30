@@ -1,9 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import type { ITaskInstanceRepository } from '@dailyuse/domain-server';
-import { TaskInstance } from '@dailyuse/domain-server';
-import type { TaskContracts } from '@dailyuse/contracts';
-
-type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
+import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
+import { TaskInstance } from '@dailyuse/domain-server/task';
+import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
 /**
  * TaskInstance Prisma Ө��
@@ -151,5 +149,23 @@ export class PrismaTaskInstanceRepository implements ITaskInstanceRepository {
         instanceDate: { gte: date },
       },
     });
+  }
+
+  async findByTemplateUuidAndDateRange(
+    templateUuid: string,
+    startDate: number,
+    endDate: number,
+  ): Promise<TaskInstance[]> {
+    const instances = await this.prisma.taskInstance.findMany({
+      where: {
+        templateUuid,
+        instanceDate: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
+      },
+      orderBy: { instanceDate: 'asc' },
+    });
+    return instances.map(this.mapToEntity);
   }
 }

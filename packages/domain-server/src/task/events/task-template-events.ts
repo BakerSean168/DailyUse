@@ -1,7 +1,5 @@
 import type { DomainEvent } from '@dailyuse/utils';
-import type { TaskContracts } from '@dailyuse/contracts';
-
-type TaskTemplateServerDTO = TaskContracts.TaskTemplateServerDTO;
+import type { RecurrenceRuleServerDTO, TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 
 /**
  * 当任务模板的计划时间（开始或结束日期）发生变化时触发
@@ -26,8 +24,8 @@ export interface TaskTemplateRecurrenceChangedEvent extends DomainEvent {
   eventType: 'task_template.recurrence_changed';
   payload: {
     taskTemplate: TaskTemplateServerDTO;
-    oldRecurrenceRule: TaskContracts.RecurrenceRuleServerDTO | null;
-    newRecurrenceRule: TaskContracts.RecurrenceRuleServerDTO | null;
+    oldRecurrenceRule: RecurrenceRuleServerDTO | null;
+    newRecurrenceRule: RecurrenceRuleServerDTO | null;
   };
 }
 

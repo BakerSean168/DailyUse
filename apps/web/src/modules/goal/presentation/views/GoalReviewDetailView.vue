@@ -232,7 +232,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { Goal, GoalReview } from '@dailyuse/domain-client';
+import { Goal, GoalReview } from '@dailyuse/domain-client/goal';
 import { format } from 'date-fns';
 import ReviewProgressChart from '../components/echarts/ReviewProgressChart.vue';
 import KrWeightDistributionChart from '../components/echarts/KrWeightDistributionChart.vue';

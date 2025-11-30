@@ -3,17 +3,15 @@
  * 免打扰配置 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { DoNotDisturbConfigPersistenceDTO, DoNotDisturbConfigServerDTO,
+  DoNotDisturbConfigClientDTO
+ } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type IDoNotDisturbConfig = NotificationContracts.DoNotDisturbConfigServerDTO;
-type DoNotDisturbConfigPersistenceDTO = NotificationContracts.DoNotDisturbConfigPersistenceDTO;
-type DoNotDisturbConfigClientDTO = NotificationContracts.DoNotDisturbConfigClientDTO;
 
 /**
  * DoNotDisturbConfig 值对象
  */
-export class DoNotDisturbConfig extends ValueObject implements IDoNotDisturbConfig {
+export class DoNotDisturbConfig extends ValueObject implements DoNotDisturbConfig {
   public readonly enabled: boolean;
   public readonly startTime: string; // 'HH:mm'
   public readonly endTime: string; // 'HH:mm'
@@ -104,7 +102,7 @@ export class DoNotDisturbConfig extends ValueObject implements IDoNotDisturbConf
   /**
    * 转换为 Server DTO
    */
-  public toServerDTO(): IDoNotDisturbConfig {
+  public toServerDTO(): DoNotDisturbConfigServerDTO {
     return {
       enabled: this.enabled,
       startTime: this.startTime,
@@ -145,21 +143,21 @@ export class DoNotDisturbConfig extends ValueObject implements IDoNotDisturbConf
   /**
    * 转换为 Contract 接口 (兼容旧代码)
    */
-  public toContract(): IDoNotDisturbConfig {
+  public toContract(): DoNotDisturbConfigServerDTO {
     return this.toServerDTO();
   }
 
   /**
    * 从 Server DTO 创建值对象
    */
-  public static fromServerDTO(dto: IDoNotDisturbConfig): DoNotDisturbConfig {
+  public static fromServerDTO(dto: DoNotDisturbConfigServerDTO): DoNotDisturbConfig {
     return new DoNotDisturbConfig(dto);
   }
 
   /**
    * 从 Contract 接口创建值对象 (兼容旧代码)
    */
-  public static fromContract(config: IDoNotDisturbConfig): DoNotDisturbConfig {
+  public static fromContract(config: DoNotDisturbConfigServerDTO): DoNotDisturbConfig {
     return DoNotDisturbConfig.fromServerDTO(config);
   }
 

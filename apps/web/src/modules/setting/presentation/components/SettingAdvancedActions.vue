@@ -223,9 +223,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useSettingImportExport } from '../composables/useSettingImportExport';
-import type { SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 
-type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
 
 interface SyncStatus {
   lastSyncedAt: number;
@@ -446,3 +445,4 @@ const formatTime = (timestamp: number): string => {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 </style>
+

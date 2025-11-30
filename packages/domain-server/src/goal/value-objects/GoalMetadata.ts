@@ -3,13 +3,11 @@
  * 目标元数据 - 不可变值对象
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import type { GoalMetadataPersistenceDTO, GoalMetadataServerDTO } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { ValueObject } from '@dailyuse/utils';
 
 // 类型别名
-type GoalMetadataServerDTO = GoalContracts.GoalMetadataServerDTO;
-type GoalMetadataPersistenceDTO = GoalContracts.GoalMetadataPersistenceDTO;
 
 /**
  * GoalMetadata 值对象

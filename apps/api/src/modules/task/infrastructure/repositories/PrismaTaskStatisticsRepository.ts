@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import type { ITaskStatisticsRepository } from '@dailyuse/domain-server';
-import { TaskStatistics } from '@dailyuse/domain-server';
+import type { ITaskStatisticsRepository } from '@dailyuse/domain-server/task';
+import { TaskStatistics } from '@dailyuse/domain-server/task';
 
 /**
  * TaskStatistics Prisma 仓储实现

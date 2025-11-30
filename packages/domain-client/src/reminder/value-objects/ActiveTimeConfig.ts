@@ -1,97 +1,70 @@
 /**
  * ActiveTimeConfig 值对象实现 (Client)
+ * 
+ * 重构说明：
+ * - 移除 endDate 字段（生效控制改由 status 字段负责）
+ * - startDate 重命名为 activatedAt（语义更清晰）
+ * - activatedAt 作为循环提醒的计算基准
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import type { IActiveTimeConfigClient, ActiveTimeConfigClientDTO, ActiveTimeConfigServerDTO } from '@dailyuse/contracts/reminder';
 
-type ActiveTimeConfigClientDTO = ReminderContracts.ActiveTimeConfigClientDTO;
-type ActiveTimeConfigServerDTO = ReminderContracts.ActiveTimeConfigServerDTO;
-
-export class ActiveTimeConfig implements ReminderContracts.ActiveTimeConfigClient {
-  private readonly _startDate: number;
-  private readonly _endDate: number | null;
+export class ActiveTimeConfig implements IActiveTimeConfigClient {
+  private readonly _activatedAt: number;
   private readonly _displayText: string;
-  private readonly _isActive: boolean;
 
   private constructor(params: {
-    startDate: number;
-    endDate?: number | null;
+    activatedAt: number;
     displayText: string;
-    isActive: boolean;
   }) {
-    this._startDate = params.startDate;
-    this._endDate = params.endDate ?? null;
+    this._activatedAt = params.activatedAt;
     this._displayText = params.displayText;
-    this._isActive = params.isActive;
   }
 
   // ===== Getters =====
-  get startDate(): number {
-    return this._startDate;
-  }
-
-  get endDate(): number | null {
-    return this._endDate;
+  get activatedAt(): number {
+    return this._activatedAt;
   }
 
   get displayText(): string {
     return this._displayText;
   }
 
-  get isActive(): boolean {
-    return this._isActive;
-  }
-
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.ActiveTimeConfigClient): boolean {
-    return (
-      this._startDate === other.startDate &&
-      this._endDate === other.endDate
-    );
+  public equals(other: IActiveTimeConfigClient): boolean {
+    return this._activatedAt === other.activatedAt;
   }
 
   // ===== DTO 转换方法 =====
   public toClientDTO(): ActiveTimeConfigClientDTO {
     return {
-      startDate: this._startDate,
-      endDate: this._endDate,
+      activatedAt: this._activatedAt,
       displayText: this._displayText,
-      isActive: this._isActive,
     };
   }
 
   public toServerDTO(): ActiveTimeConfigServerDTO {
     return {
-      startDate: this._startDate,
-      endDate: this._endDate,
+      activatedAt: this._activatedAt,
     };
   }
 
   // ===== 静态工厂方法 =====
   public static fromClientDTO(dto: ActiveTimeConfigClientDTO): ActiveTimeConfig {
     return new ActiveTimeConfig({
-      startDate: dto.startDate,
-      endDate: dto.endDate,
+      activatedAt: dto.activatedAt,
       displayText: dto.displayText,
-      isActive: dto.isActive,
     });
   }
 
   public static fromServerDTO(dto: ActiveTimeConfigServerDTO): ActiveTimeConfig {
-    const now = Date.now();
-    const isActive = dto.startDate <= now && (!dto.endDate || dto.endDate >= now);
-    
     // 生成 displayText
-    const startDateStr = new Date(dto.startDate).toLocaleDateString('zh-CN');
-    const displayText = dto.endDate
-      ? `${startDateStr} 至 ${new Date(dto.endDate).toLocaleDateString('zh-CN')}`
-      : `从 ${startDateStr} 开始`;
+    const activatedAtStr = new Date(dto.activatedAt).toLocaleString('zh-CN');
+    const displayText = `启动于 ${activatedAtStr}`;
 
     return new ActiveTimeConfig({
-      startDate: dto.startDate,
-      endDate: dto.endDate,
+      activatedAt: dto.activatedAt,
       displayText,
-      isActive,
     });
   }
 }

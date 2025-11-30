@@ -9,9 +9,7 @@
 
 import { ref, type Ref, type ComputedRef } from 'vue';
 import { goalGenerationApiClient } from '../../infrastructure/api/goalGenerationApiClient';
-import type { AIContracts } from '@dailyuse/contracts';
-
-type GeneratedGoalDraft = AIContracts.GeneratedGoalDraft;
+import type { GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 interface TokenUsage {
   promptTokens: number;

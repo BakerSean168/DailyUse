@@ -7,7 +7,8 @@ import { EditorWorkspace } from './aggregates/EditorWorkspace';
 import { EditorSession } from './entities/EditorSession';
 import { EditorGroup } from './entities/EditorGroup';
 import { EditorTab } from './entities/EditorTab';
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { EditorGroupClientDTO, EditorGroupPersistenceDTO, EditorGroupServerDTO, EditorSessionClientDTO, EditorSessionPersistenceDTO, EditorSessionServerDTO, EditorTabClientDTO, EditorTabPersistenceDTO, EditorTabServerDTO, EditorWorkspaceClientDTO, EditorWorkspacePersistenceDTO, EditorWorkspaceServerDTO } from '@dailyuse/contracts/editor';
+import { ProjectType, TabType } from '@dailyuse/contracts/editor';
 
 // ===== 测试聚合根 =====
 function testEditorWorkspace() {
@@ -15,13 +16,13 @@ function testEditorWorkspace() {
     accountUuid: 'account-123',
     name: 'Test Workspace',
     projectPath: '/path/to/project',
-    projectType: 'typescript' as EditorContracts.ProjectType,
+    projectType: 'typescript' as ProjectType,
   });
 
   // 测试 DTO 转换
-  const serverDTO: EditorContracts.EditorWorkspaceServerDTO = workspace.toServerDTO();
-  const clientDTO: EditorContracts.EditorWorkspaceClientDTO = workspace.toClientDTO();
-  const persistenceDTO: EditorContracts.EditorWorkspacePersistenceDTO =
+  const serverDTO: EditorWorkspaceServerDTO = workspace.toServerDTO();
+  const clientDTO: EditorWorkspaceClientDTO = workspace.toClientDTO();
+  const persistenceDTO: EditorWorkspacePersistenceDTO =
     workspace.toPersistenceDTO();
 
   // 测试 From DTO
@@ -38,9 +39,9 @@ function testEditorSession() {
   });
 
   // 测试 DTO 转换
-  const serverDTO: EditorContracts.EditorSessionServerDTO = session.toServerDTO();
-  const clientDTO: EditorContracts.EditorSessionClientDTO = session.toClientDTO();
-  const persistenceDTO: EditorContracts.EditorSessionPersistenceDTO = session.toPersistenceDTO();
+  const serverDTO: EditorSessionServerDTO = session.toServerDTO();
+  const clientDTO: EditorSessionClientDTO = session.toClientDTO();
+  const persistenceDTO: EditorSessionPersistenceDTO = session.toPersistenceDTO();
 
   // 测试 From DTO
   const fromServer = EditorSession.fromServerDTO(serverDTO);
@@ -58,9 +59,9 @@ function testEditorGroup() {
   });
 
   // 测试 DTO 转换
-  const serverDTO: EditorContracts.EditorGroupServerDTO = group.toServerDTO();
-  const clientDTO: EditorContracts.EditorGroupClientDTO = group.toClientDTO();
-  const persistenceDTO: EditorContracts.EditorGroupPersistenceDTO = group.toPersistenceDTO();
+  const serverDTO: EditorGroupServerDTO = group.toServerDTO();
+  const clientDTO: EditorGroupClientDTO = group.toClientDTO();
+  const persistenceDTO: EditorGroupPersistenceDTO = group.toPersistenceDTO();
 
   // 测试 From DTO
   const fromDTO = EditorGroup.fromDTO(serverDTO);
@@ -77,13 +78,13 @@ function testEditorTab() {
     accountUuid: 'account-123',
     tabIndex: 0,
     title: 'Test Tab',
-    tabType: 'document' as EditorContracts.TabType,
+    tabType: 'document' as TabType,
   });
 
   // 测试 DTO 转换
-  const serverDTO: EditorContracts.EditorTabServerDTO = tab.toServerDTO();
-  const clientDTO: EditorContracts.EditorTabClientDTO = tab.toClientDTO();
-  const persistenceDTO: EditorContracts.EditorTabPersistenceDTO = tab.toPersistenceDTO();
+  const serverDTO: EditorTabServerDTO = tab.toServerDTO();
+  const clientDTO: EditorTabClientDTO = tab.toClientDTO();
+  const persistenceDTO: EditorTabPersistenceDTO = tab.toPersistenceDTO();
 
   // 测试 From DTO
   const fromServer = EditorTab.fromServerDTO(serverDTO);
@@ -98,7 +99,7 @@ function testRecursiveConversion() {
     accountUuid: 'account-123',
     name: 'Test Workspace',
     projectPath: '/path/to/project',
-    projectType: 'typescript' as EditorContracts.ProjectType,
+    projectType: 'typescript' as ProjectType,
   });
 
   // 添加会话
@@ -116,7 +117,7 @@ function testRecursiveConversion() {
   const tab = group.addTab({
     tabIndex: 0,
     title: 'Tab 1',
-    tabType: 'document' as EditorContracts.TabType,
+    tabType: 'document' as TabType,
   });
 
   // 测试递归转换

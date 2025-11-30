@@ -6,11 +6,10 @@
  */
 
 import { ref } from 'vue';
-import type { SettingContracts } from '@dailyuse/contracts';
+import type { UserSettingClientDTO, UpdateUserSettingRequest } from '@dailyuse/contracts/setting';
 import { useUserSettingStore } from '../stores/userSettingStore';
 
 // 类型别名
-type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
 
 export interface SettingExportData {
   version: string;
@@ -205,3 +204,4 @@ export function useSettingImportExport() {
     getLocalBackups,
   };
 }
+

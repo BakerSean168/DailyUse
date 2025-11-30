@@ -3,14 +3,14 @@
  * ScheduleStatsWidget - 日程统计 Widget
  */
 import { computed, ref } from 'vue';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
 
 interface Props {
-  size?: DashboardContracts.WidgetSize;
+  size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  size: 'small' as DashboardContracts.WidgetSize,
+  size: 'small' as WidgetSize,
 });
 
 // TODO: 等 Schedule 模块实现后集成真实数据
@@ -58,3 +58,4 @@ const stats = computed(() => [
 <style scoped>
 .schedule-stats-widget { height: 100%; }
 </style>
+

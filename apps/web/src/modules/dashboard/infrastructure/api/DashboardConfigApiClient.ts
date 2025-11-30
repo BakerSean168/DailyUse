@@ -1,8 +1,5 @@
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, DashboardConfigClientDTO, WidgetConfigData, WidgetConfigDTO } from '@dailyuse/contracts/dashboard';
 import { apiClient } from '@/shared/api';
-
-type WidgetConfigData = DashboardContracts.WidgetConfigData;
-type WidgetConfig = DashboardContracts.WidgetConfigDTO;
 
 /**
  * Dashboard Widget 配置 API 端点
@@ -120,3 +117,4 @@ export class DashboardConfigApiClient {
     }
   }
 }
+

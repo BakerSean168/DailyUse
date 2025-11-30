@@ -155,8 +155,10 @@ import TemplateBrowser from '../template/TemplateBrowser.vue';
 import StatusRuleEditor from '../rules/StatusRuleEditor.vue';
 // types
 import { useGoalStore } from '../../stores/goalStore';
-import { Goal, KeyResult } from '@dailyuse/domain-client';
-import { GoalContracts } from '@dailyuse/contracts';
+import { Goal, KeyResult } from '@dailyuse/domain-client/goal';
+import { GoalStatus } from '@dailyuse/contracts/goal';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
 import { useMessage } from '@dailyuse/ui';
@@ -452,15 +454,15 @@ const goalFeasibility = computed({
 });
 
 const importanceLevel = computed({
-  get: () => goalModel.value?.importance || GoalContracts.ImportanceLevel.Moderate,
-  set: (val: GoalContracts.ImportanceLevel) => {
+  get: () => goalModel.value?.importance || ImportanceLevel.Moderate,
+  set: (val: ImportanceLevel) => {
     goalModel.value?.updateImportance(val);
   },
 });
 
 const urgencyLevel = computed({
-  get: () => goalModel.value?.urgency || GoalContracts.UrgencyLevel.Medium,
-  set: (val: GoalContracts.UrgencyLevel) => {
+  get: () => goalModel.value?.urgency || UrgencyLevel.Medium,
+  set: (val: UrgencyLevel) => {
     goalModel.value?.updateUrgency(val);
   },
 });
@@ -793,3 +795,4 @@ defineExpose({
   }
 }
 </style>
+

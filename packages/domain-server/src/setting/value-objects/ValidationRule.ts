@@ -3,17 +3,17 @@
  * 实现 ValidationRuleServer 接口
  */
 
-import type { SettingContracts } from '@dailyuse/contracts';
-
-type IValidationRuleServer = SettingContracts.ValidationRuleServer;
-type ValidationRuleServerDTO = SettingContracts.ValidationRuleServerDTO;
-type ValidationRuleClientDTO = SettingContracts.ValidationRuleClientDTO;
+import type {
+  ValidationRuleClientDTO,
+  ValidationRuleServer,
+  ValidationRuleServerDTO,
+} from '@dailyuse/contracts/setting';
 
 /**
  * ValidationRule 值对象
  * 不可变的验证规则
  */
-export class ValidationRule implements IValidationRuleServer {
+export class ValidationRule implements ValidationRuleServer {
   public readonly required: boolean;
   public readonly min?: number | null;
   public readonly max?: number | null;

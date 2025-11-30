@@ -11,10 +11,10 @@
  * 时间复杂度: O(V + E)，V = 任务数，E = 依赖数
  */
 
-import { TaskContracts } from '@dailyuse/contracts';
+import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
 
 /**
  * 任务时序信息
@@ -417,3 +417,4 @@ export class TaskCriticalPathService {
 
 // 导出单例
 export const taskCriticalPathService = new TaskCriticalPathService();
+

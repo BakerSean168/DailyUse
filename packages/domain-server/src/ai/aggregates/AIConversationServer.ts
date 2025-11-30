@@ -1,16 +1,14 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import { AIContracts } from '@dailyuse/contracts';
-import { MessageServer } from '../entities/MessageServer';
+import type {
+  AIConversationClientDTO,
+  AIConversationPersistenceDTO,
+  AIConversationServer,
+  AIConversationServerDTO,
+} from '@dailyuse/contracts/ai';
+import { ConversationStatus } from '@dailyuse/contracts/ai';
+import { Message } from '../entities/MessageServer';
 
-type IAIConversationServer = AIContracts.AIConversationServer;
-type AIConversationServerDTO = AIContracts.AIConversationServerDTO;
-type AIConversationPersistenceDTO = AIContracts.AIConversationPersistenceDTO;
-type AIConversationClientDTO = AIContracts.AIConversationClientDTO;
-type ConversationStatus = AIContracts.ConversationStatus;
-
-const ConversationStatusEnum = AIContracts.ConversationStatus;
-
-export class AIConversationServer extends AggregateRoot implements IAIConversationServer {
+export class AIConversation extends AggregateRoot implements AIConversationServer {
   private _accountUuid: string;
   private _title: string;
   private _status: ConversationStatus;
@@ -20,7 +18,7 @@ export class AIConversationServer extends AggregateRoot implements IAIConversati
   private _updatedAt: number;
   private _deletedAt: number | null;
 
-  private _messages: MessageServer[];
+  private _messages: Message[];
 
   private constructor(params: {
     uuid?: string;
@@ -81,16 +79,16 @@ export class AIConversationServer extends AggregateRoot implements IAIConversati
     return this._deletedAt;
   }
 
-  public get messages(): MessageServer[] {
+  public get messages(): Message[] {
     return [...this._messages];
   }
 
-  public static create(params: { accountUuid: string; title: string }): AIConversationServer {
+  public static create(params: { accountUuid: string; title: string }): AIConversation {
     const now = Date.now();
-    const conversation = new AIConversationServer({
+    const conversation = new AIConversation({
       accountUuid: params.accountUuid,
       title: params.title,
-      status: ConversationStatusEnum.ACTIVE,
+      status: ConversationStatus.ACTIVE,
       messageCount: 0,
       lastMessageAt: null,
       createdAt: now,
@@ -111,8 +109,8 @@ export class AIConversationServer extends AggregateRoot implements IAIConversati
     return conversation;
   }
 
-  public static fromServerDTO(dto: AIConversationServerDTO): AIConversationServer {
-    const conversation = new AIConversationServer({
+  public static fromServerDTO(dto: AIConversationServerDTO): AIConversation {
+    const conversation = new AIConversation({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -125,14 +123,14 @@ export class AIConversationServer extends AggregateRoot implements IAIConversati
     });
 
     if (dto.messages) {
-      conversation._messages = dto.messages.map((m) => MessageServer.fromServerDTO(m));
+      conversation._messages = dto.messages.map((m) => Message.fromServerDTO(m));
     }
 
     return conversation;
   }
 
-  public static fromPersistenceDTO(dto: AIConversationPersistenceDTO): AIConversationServer {
-    return new AIConversationServer({
+  public static fromPersistenceDTO(dto: AIConversationPersistenceDTO): AIConversation {
+    return new AIConversation({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
@@ -145,8 +143,8 @@ export class AIConversationServer extends AggregateRoot implements IAIConversati
     });
   }
 
-  public addMessage(message: MessageServer): void {
-    if (this._status !== ConversationStatusEnum.ACTIVE) {
+  public addMessage(message: Message): void {
+    if (this._status !== ConversationStatus.ACTIVE) {
       throw new Error('Cannot add message to a non-active conversation');
     }
     this._messages.push(message);
@@ -166,11 +164,11 @@ export class AIConversationServer extends AggregateRoot implements IAIConversati
     });
   }
 
-  public getAllMessages(): MessageServer[] {
+  public getAllMessages(): Message[] {
     return [...this._messages].sort((a, b) => a.createdAt - b.createdAt);
   }
 
-  public getLatestMessage(): MessageServer | null {
+  public getLatestMessage(): Message | null {
     if (this._messages.length === 0) {
       return null;
     }
@@ -200,7 +198,7 @@ export class AIConversationServer extends AggregateRoot implements IAIConversati
 
   public softDelete(): void {
     this._deletedAt = Date.now();
-    this._status = ConversationStatusEnum.ARCHIVED;
+    this._status = ConversationStatus.ARCHIVED;
     this._updatedAt = Date.now();
   }
 
@@ -230,10 +228,10 @@ export class AIConversationServer extends AggregateRoot implements IAIConversati
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
       messages: null,
-      isActive: this._status === ConversationStatusEnum.ACTIVE,
-      isClosed: this._status === ConversationStatusEnum.CLOSED,
-      isArchived: this._status === ConversationStatusEnum.ARCHIVED,
-      canAddMessage: this._status === ConversationStatusEnum.ACTIVE,
+      isActive: this._status === ConversationStatus.ACTIVE,
+      isClosed: this._status === ConversationStatus.CLOSED,
+      isArchived: this._status === ConversationStatus.ARCHIVED,
+      canAddMessage: this._status === ConversationStatus.ACTIVE,
       statusText: this._status,
       formattedCreatedAt: new Date(this._createdAt).toLocaleString(),
       formattedUpdatedAt: new Date(this._updatedAt).toLocaleString(),

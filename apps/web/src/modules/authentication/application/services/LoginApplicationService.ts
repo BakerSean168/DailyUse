@@ -3,11 +3,19 @@
  * 登录应用服务 - 负责登录相关的用例
  */
 
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type {
+  LoginRequest,
+  LoginResponseDTO,
+  LogoutRequest,
+} from '@dailyuse/contracts/authentication';
 import { useAuthStore } from '../../presentation/stores/authStore';
 import { authApiClient } from '../../infrastructure/api/authApiClient';
 import { useAccountStore } from '../../../account/presentation/stores/accountStore';
 import { accountApiClient } from '../../../account/infrastructure/api/accountApiClient';
+
+// Type aliases
+type LoginRequestDTO = LoginRequest;
+type LogoutRequestDTO = LogoutRequest;
 
 export class LoginApplicationService {
   private static instance: LoginApplicationService;
@@ -51,7 +59,7 @@ export class LoginApplicationService {
   /**
    * 用户登录
    */
-  async login(request: AuthenticationContracts.LoginRequestDTO): Promise<AuthenticationContracts.LoginResponseDTO> {
+  async login(request: LoginRequestDTO): Promise<LoginResponseDTO> {
     try {
       this.authStore.setLoading(true);
       this.authStore.clearError();
@@ -60,8 +68,12 @@ export class LoginApplicationService {
 
       // 保存tokens和会话信息
       this.authStore.setAccessToken(response.accessToken);
-      this.authStore.setRefreshToken(response.refreshToken);
-      this.authStore.setCurrentSessionId(response.sessionId);
+      if (response.refreshToken) {
+        this.authStore.setRefreshToken(response.refreshToken);
+      }
+      if (response.sessionId) {
+        this.authStore.setCurrentSessionId(response.sessionId);
+      }
       this.authStore.setTokenExpiresAt(response.accessTokenExpiresAt);
 
       // 🔧 修复: 登录成功后获取并设置用户信息到 AccountStore
@@ -90,7 +102,7 @@ export class LoginApplicationService {
   /**
    * 用户登出
    */
-  async logout(request?: AuthenticationContracts.LogoutRequestDTO): Promise<void> {
+  async logout(request?: LogoutRequestDTO): Promise<void> {
     try {
       this.authStore.setLoading(true);
 
@@ -122,7 +134,9 @@ export class LoginApplicationService {
 
       // 更新tokens
       this.authStore.setAccessToken(response.accessToken);
-      this.authStore.setRefreshToken(response.refreshToken);
+      if (response.refreshToken) {
+        this.authStore.setRefreshToken(response.refreshToken);
+      }
       this.authStore.setTokenExpiresAt(response.accessTokenExpiresAt);
     } catch (error) {
       console.error('Failed to refresh token:', error);
@@ -151,3 +165,4 @@ export class LoginApplicationService {
 
 // 导出单例
 export const loginApplicationService = LoginApplicationService.getInstance();
+

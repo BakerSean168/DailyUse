@@ -1,8 +1,8 @@
 // @ts-nocheck
 import { useRepositoryStore } from '../../presentation/stores/repositoryStore';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
-import { Repository } from '@dailyuse/domain-client';
-import { type RepositoryContracts } from '@dailyuse/contracts';
+import { Repository } from '@dailyuse/domain-client/repository';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**
  * 仓库管理应用服务
@@ -20,8 +20,8 @@ export class RepositoryManagementApplicationService {
    * 用例：创建仓库
    */
   async createRepository(
-    request: RepositoryContracts.CreateRepositoryRequestDTO,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+    request: CreateRepositoryRequestDTO,
+  ): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -49,7 +49,7 @@ export class RepositoryManagementApplicationService {
     type?: string;
     status?: string;
     goalUuid?: string;
-  }): Promise<RepositoryContracts.RepositoryListResponseDTO> {
+  }): Promise<RepositoryListResponseDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -77,7 +77,7 @@ export class RepositoryManagementApplicationService {
   /**
    * 用例：获取仓库详情
    */
-  async getRepositoryById(uuid: string): Promise<RepositoryContracts.RepositoryDTO | null> {
+  async getRepositoryById(uuid: string): Promise<RepositoryDTO | null> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -104,8 +104,8 @@ export class RepositoryManagementApplicationService {
    */
   async updateRepository(
     uuid: string,
-    request: RepositoryContracts.UpdateRepositoryRequestDTO,
-  ): Promise<RepositoryContracts.RepositoryDTO> {
+    request: UpdateRepositoryRequestDTO,
+  ): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -146,7 +146,7 @@ export class RepositoryManagementApplicationService {
   /**
    * 用例：激活仓库
    */
-  async activateRepository(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async activateRepository(uuid: string): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -168,7 +168,7 @@ export class RepositoryManagementApplicationService {
   /**
    * 用例：归档仓库
    */
-  async archiveRepository(uuid: string): Promise<RepositoryContracts.RepositoryDTO> {
+  async archiveRepository(uuid: string): Promise<RepositoryDTO> {
     try {
       this.repositoryStore.setLoading(true);
       this.repositoryStore.setError(null);
@@ -190,3 +190,4 @@ export class RepositoryManagementApplicationService {
 
 // 导出单例
 export const repositoryManagementService = new RepositoryManagementApplicationService();
+

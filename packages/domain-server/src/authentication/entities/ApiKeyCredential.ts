@@ -3,15 +3,15 @@
  * 实现 ApiKeyCredentialServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type {
+  ApiKeyCredentialClientDTO,
+  ApiKeyCredentialPersistenceDTO,
+  ApiKeyCredentialServer,
+  ApiKeyCredentialServerDTO,
+} from '@dailyuse/contracts/authentication';
 import { Entity, generateUUID } from '@dailyuse/utils';
 
-type IApiKeyCredentialServer = AuthenticationContracts.ApiKeyCredentialServer;
-type ApiKeyCredentialServerDTO = AuthenticationContracts.ApiKeyCredentialServerDTO;
-type ApiKeyCredentialClientDTO = AuthenticationContracts.ApiKeyCredentialClientDTO;
-type ApiKeyCredentialPersistenceDTO = AuthenticationContracts.ApiKeyCredentialPersistenceDTO;
-
-export class ApiKeyCredential extends Entity implements IApiKeyCredentialServer {
+export class ApiKeyCredential extends Entity implements ApiKeyCredentialServer {
   public readonly credentialUuid: string;
   public readonly name: string;
   public readonly key: string;

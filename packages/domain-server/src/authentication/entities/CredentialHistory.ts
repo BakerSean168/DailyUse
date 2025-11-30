@@ -3,15 +3,15 @@
  * 实现 CredentialHistoryServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type {
+  CredentialHistoryClientDTO,
+  CredentialHistoryPersistenceDTO,
+  CredentialHistoryServer,
+  CredentialHistoryServerDTO,
+} from '@dailyuse/contracts/authentication';
 import { Entity, generateUUID } from '@dailyuse/utils';
 
-type ICredentialHistoryServer = AuthenticationContracts.CredentialHistoryServer;
-type CredentialHistoryServerDTO = AuthenticationContracts.CredentialHistoryServerDTO;
-type CredentialHistoryClientDTO = AuthenticationContracts.CredentialHistoryClientDTO;
-type CredentialHistoryPersistenceDTO = AuthenticationContracts.CredentialHistoryPersistenceDTO;
-
-export class CredentialHistory extends Entity implements ICredentialHistoryServer {
+export class CredentialHistory extends Entity implements CredentialHistoryServer {
   public readonly credentialUuid: string;
   public readonly action: string;
   public readonly details?: any | null;

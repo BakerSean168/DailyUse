@@ -70,7 +70,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 import WeekViewCalendar from '../components/WeekViewCalendar.vue';
 import CreateScheduleDialog from '../components/CreateScheduleDialog.vue';
 import { useScheduleEvent } from '../composables/useScheduleEvent';
@@ -85,7 +86,7 @@ const {
 
 const scheduleDialogRef = ref<InstanceType<typeof CreateScheduleDialog> | null>(null);
 const showEventDetails = ref(false);
-const selectedEvent = ref<ScheduleContracts.ScheduleClientDTO | null>(null);
+const selectedEvent = ref<ScheduleClientDTO | null>(null);
 const currentWeekStart = ref<Date>(new Date());
 const currentWeekEnd = ref<Date>(new Date());
 
@@ -105,7 +106,7 @@ async function handleWeekChange(startDate: Date, endDate: Date) {
   );
 }
 
-function handleEventClick(event: ScheduleContracts.ScheduleClientDTO) {
+function handleEventClick(event: ScheduleClientDTO) {
   selectedEvent.value = event;
   showEventDetails.value = true;
 }
@@ -137,7 +138,7 @@ async function handleDelete() {
   );
 }
 
-function formatEventTime(event: ScheduleContracts.ScheduleClientDTO): string {
+function formatEventTime(event: ScheduleClientDTO): string {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
   const formatDateTime = (date: Date) => {
@@ -158,3 +159,4 @@ function formatEventTime(event: ScheduleContracts.ScheduleClientDTO): string {
   width: 100%;
 }
 </style>
+

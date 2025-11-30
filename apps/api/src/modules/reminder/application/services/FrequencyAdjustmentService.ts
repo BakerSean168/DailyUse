@@ -1,5 +1,5 @@
-import type { IReminderTemplateRepository } from '@dailyuse/domain-server';
-import { FrequencyAdjustment } from '@dailyuse/domain-server';
+import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
+import { FrequencyAdjustment } from '@dailyuse/domain-server/reminder';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 import { SmartFrequencyAnalysisService } from './SmartFrequencyAnalysisService';
 

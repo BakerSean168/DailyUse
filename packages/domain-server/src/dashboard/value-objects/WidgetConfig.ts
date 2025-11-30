@@ -1,16 +1,13 @@
 /**
  * WidgetConfig 值对象实现 (Server)
  */
-import { DashboardContracts } from '@dailyuse/contracts';
-
-type IWidgetConfigServer = DashboardContracts.WidgetConfigServer;
-type WidgetConfigDTO = DashboardContracts.WidgetConfigDTO;
-type WidgetSize = DashboardContracts.WidgetSize;
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfigDTO, WidgetConfigServer } from '@dailyuse/contracts/dashboard';
 
 /**
  * Widget 配置值对象
  */
-export class WidgetConfig implements IWidgetConfigServer {
+export class WidgetConfig implements WidgetConfigServer {
   readonly visible: boolean;
   readonly order: number;
   readonly size: WidgetSize;
@@ -39,7 +36,7 @@ export class WidgetConfig implements IWidgetConfigServer {
    */
   static createDefault(
     order: number,
-    size: WidgetSize = DashboardContracts.WidgetSize.MEDIUM,
+    size: WidgetSize = WidgetSize.MEDIUM,
   ): WidgetConfig {
     return new WidgetConfig({
       visible: true,
@@ -71,7 +68,7 @@ export class WidgetConfig implements IWidgetConfigServer {
     if (typeof this.order !== 'number' || this.order < 0) {
       return false;
     }
-    if (!Object.values(DashboardContracts.WidgetSize).includes(this.size)) {
+    if (!Object.values(WidgetSize).includes(this.size)) {
       return false;
     }
     return true;

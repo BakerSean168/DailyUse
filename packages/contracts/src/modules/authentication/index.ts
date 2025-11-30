@@ -137,30 +137,50 @@ export type {
 
 // ============ API Requests/Responses ============
 export type {
-  LoginRequestDTO,
+  AuthTokens,
+  LoginRequest,
   LoginResponseDTO,
-  RegisterRequestDTO,
-  RefreshTokenRequestDTO,
+  RegisterRequest,
+  RefreshTokenRequest,
   RefreshTokenResponseDTO,
-  LogoutRequestDTO,
-  ChangePasswordRequestDTO,
-  ResetPasswordRequestDTO,
-  ForgotPasswordRequestDTO,
-  Enable2FARequestDTO,
+  LogoutRequest,
+  ChangePasswordRequest,
+  ResetPasswordRequest,
+  ForgotPasswordRequest,
+  Enable2FARequest,
   Enable2FAResponseDTO,
-  Verify2FARequestDTO,
-  Disable2FARequestDTO,
-  CreateApiKeyRequestDTO,
+  Verify2FARequest,
+  Disable2FARequest,
+  CreateApiKeyRequest,
   CreateApiKeyResponseDTO,
-  RevokeApiKeyRequestDTO,
+  RevokeApiKeyRequest,
   ApiKeyListResponseDTO,
-  GetActiveSessionsRequestDTO,
+  GetActiveSessionsRequest,
   ActiveSessionsResponseDTO,
-  RevokeSessionRequestDTO,
-  RevokeAllSessionsRequestDTO,
-  TrustDeviceRequestDTO,
-  RevokeTrustedDeviceRequestDTO,
+  RevokeSessionRequest,
+  RevokeAllSessionsRequest,
+  TrustDeviceRequest,
+  RevokeTrustedDeviceRequest,
   TrustedDevicesResponseDTO,
   SessionQueryParams,
   CredentialQueryParams,
 } from './api-requests';
+
+// ============ DTO Aliases (for backward compatibility) ============
+// Web 应用使用 *RequestDTO 命名，提供别名兼容
+export type { LoginRequest as LoginRequestDTO } from './api-requests';
+export type { RegisterRequest as RegisterRequestDTO } from './api-requests';
+export type { LogoutRequest as LogoutRequestDTO } from './api-requests';
+export type { ChangePasswordRequest as ChangePasswordRequestDTO } from './api-requests';
+export type { ResetPasswordRequest as ResetPasswordRequestDTO } from './api-requests';
+export type { ForgotPasswordRequest as ForgotPasswordRequestDTO } from './api-requests';
+export type { Enable2FARequest as Enable2FARequestDTO } from './api-requests';
+export type { Verify2FARequest as Verify2FARequestDTO } from './api-requests';
+export type { Disable2FARequest as Disable2FARequestDTO } from './api-requests';
+export type { CreateApiKeyRequest as CreateApiKeyRequestDTO } from './api-requests';
+export type { RevokeApiKeyRequest as RevokeApiKeyRequestDTO } from './api-requests';
+export type { GetActiveSessionsRequest as GetActiveSessionsRequestDTO } from './api-requests';
+export type { RevokeSessionRequest as RevokeSessionRequestDTO } from './api-requests';
+export type { RevokeAllSessionsRequest as RevokeAllSessionsRequestDTO } from './api-requests';
+export type { TrustDeviceRequest as TrustDeviceRequestDTO } from './api-requests';
+export type { RevokeTrustedDeviceRequest as RevokeTrustedDeviceRequestDTO } from './api-requests';

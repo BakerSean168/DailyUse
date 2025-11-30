@@ -10,22 +10,23 @@
  */
 
 import { computed, onMounted, ref } from 'vue';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 import { useTaskInstance } from '@/modules/task/presentation/composables/useTaskInstance';
-import { TaskInstanceStatus } from '@dailyuse/contracts';
-import type { TaskInstance } from '@dailyuse/domain-client';
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import type { TaskForWidget } from '@/modules/task/types/task-dag.types';
 
 // ===== Props =====
 interface Props {
-    size?: DashboardContracts.WidgetSize;
+    size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    size: 'medium' as DashboardContracts.WidgetSize,
+    size: 'medium' as WidgetSize,
 });
 
 // ===== Composables =====
-const { taskInstances, completeTaskInstance } = useTaskInstance();
+const { taskInstances, completeTaskInstance, updateTaskInstance } = useTaskInstance();
 
 // ===== State =====
 const isLoading = ref(true);
@@ -48,7 +49,7 @@ const todayTasks = computed(() => {
     }
 
     return instances
-        .filter((task: TaskInstance) => {
+        .filter((task: TaskForWidget) => {
             if (task.status === TaskInstanceStatus.COMPLETED) return false;
 
             // 检查是否有今天的 scheduledTime
@@ -66,7 +67,7 @@ const todayTasks = computed(() => {
             return false;
         })
         .slice(0, props.size === 'small' ? 3 : props.size === 'medium' ? 5 : 10)
-        .sort((a: TaskInstance, b: TaskInstance) => {
+        .sort((a: TaskForWidget, b: TaskForWidget) => {
             // 按优先级和时间排序
             const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
             const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 3;
@@ -87,9 +88,9 @@ const todayTasks = computed(() => {
  */
 const taskStats = computed(() => ({
     total: todayTasks.value.length,
-    highPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'HIGH').length,
-    mediumPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'MEDIUM').length,
-    lowPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'LOW').length,
+    highPriority: todayTasks.value.filter((t: TaskForWidget) => t.priority === 'HIGH').length,
+    mediumPriority: todayTasks.value.filter((t: TaskForWidget) => t.priority === 'MEDIUM').length,
+    lowPriority: todayTasks.value.filter((t: TaskForWidget) => t.priority === 'LOW').length,
 }));
 
 /**
@@ -135,7 +136,7 @@ const formatTime = (dateString: string | undefined) => {
  */
 const toggleComplete = async (taskUuid: string) => {
     try {
-        await taskInstanceStore.updateInstance(taskUuid, {
+        await updateTaskInstance(taskUuid, {
             status: TaskInstanceStatus.COMPLETED,
         });
     } catch (error) {
@@ -145,14 +146,9 @@ const toggleComplete = async (taskUuid: string) => {
 
 // ===== Lifecycle =====
 onMounted(async () => {
-    try {
-        isLoading.value = true;
-        await taskInstanceStore.fetchAllInstances();
-    } catch (error) {
-        console.error('[TodayTasksWidget] Failed to load tasks:', error);
-    } finally {
-        isLoading.value = false;
-    }
+    // taskInstances are loaded reactively from the store
+    // No need to fetch explicitly as the store handles initialization
+    isLoading.value = false;
 });
 </script>
 
@@ -264,3 +260,4 @@ onMounted(async () => {
     transform: translateX(4px);
 }
 </style>
+

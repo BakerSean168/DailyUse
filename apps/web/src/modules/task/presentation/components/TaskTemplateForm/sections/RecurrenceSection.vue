@@ -80,12 +80,10 @@
 </template>
 
 <script setup lang="ts">
-import { TaskTemplate, RecurrenceRule } from '@dailyuse/domain-client';
+import { TaskTemplate, RecurrenceRule } from '@dailyuse/domain-client/task';
 import { computed, ref, watch } from 'vue';
-import { TaskContracts } from '@dailyuse/contracts';
-
-const RecurrenceFrequency = TaskContracts.RecurrenceFrequency;
-const DayOfWeek = TaskContracts.DayOfWeek;
+import { RecurrenceFrequency, DayOfWeek } from '@dailyuse/contracts/task';
+import type { RecurrenceRuleClientDTO } from '@dailyuse/contracts/task';
 
 interface Props {
   modelValue: TaskTemplate;
@@ -130,7 +128,7 @@ const recurrenceEnabled = computed({
   set: (value: boolean) => {
     if (value && !props.modelValue.recurrenceRule) {
       // 启用重复：创建默认规则
-      const defaultRule: TaskContracts.RecurrenceRuleClientDTO = {
+      const defaultRule: RecurrenceRuleClientDTO = {
         frequency: RecurrenceFrequency.DAILY,
         interval: 1,
         daysOfWeek: [],
@@ -157,7 +155,7 @@ const recurrenceEnabled = computed({
 // 频率
 const frequency = computed({
   get: () => props.modelValue.recurrenceRule?.frequency ?? RecurrenceFrequency.DAILY,
-  set: (value: TaskContracts.RecurrenceFrequency) => {
+  set: (value: RecurrenceFrequency) => {
     updateRecurrenceRule({ frequency: value });
   },
 });
@@ -173,7 +171,7 @@ const interval = computed({
 // 选中的星期
 const selectedDays = computed({
   get: () => props.modelValue.recurrenceRule?.daysOfWeek ?? [],
-  set: (value: TaskContracts.DayOfWeek[]) => {
+  set: (value: DayOfWeek[]) => {
     updateRecurrenceRule({ daysOfWeek: value });
   },
 });
@@ -207,11 +205,11 @@ const initializeEndCondition = () => {
 };
 
 // 更新重复规则
-const updateRecurrenceRule = (updates: Partial<TaskContracts.RecurrenceRuleClientDTO>) => {
+const updateRecurrenceRule = (updates: Partial<RecurrenceRuleClientDTO>) => {
   const currentRule = props.modelValue.recurrenceRule;
   if (!currentRule) return;
 
-  const newRuleDTO: TaskContracts.RecurrenceRuleClientDTO = {
+  const newRuleDTO: RecurrenceRuleClientDTO = {
     frequency: updates.frequency ?? currentRule.frequency,
     interval: updates.interval ?? currentRule.interval,
     daysOfWeek: updates.daysOfWeek ?? currentRule.daysOfWeek,
@@ -357,3 +355,4 @@ watch(
   font-weight: 600;
 }
 </style>
+

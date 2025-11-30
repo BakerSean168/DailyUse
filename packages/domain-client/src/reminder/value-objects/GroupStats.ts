@@ -2,16 +2,12 @@
  * GroupStats 值对象实现 (分组统计信息)
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import type { GroupStatsClientDTO, GroupStatsServerDTO, IGroupStatsClient } from '@dailyuse/contracts/reminder';
 
-type IGroupStats = ReminderContracts.IGroupStatsClient;
-type GroupStatsDTO = ReminderContracts.GroupStatsClientDTO;
-type GroupStatsServerDTO = ReminderContracts.GroupStatsServerDTO;
+export class GroupStats implements IGroupStatsClient {
+  private readonly dto: GroupStatsClientDTO;
 
-export class GroupStats implements IGroupStats {
-  private readonly dto: GroupStatsDTO;
-
-  private constructor(dto: GroupStatsDTO) {
+  private constructor(dto: GroupStatsClientDTO) {
     this.dto = dto;
   }
 
@@ -23,15 +19,15 @@ export class GroupStats implements IGroupStats {
   get templateCountText(): string { return this.dto.templateCountText; }
   get activeStatusText(): string { return this.dto.activeStatusText; }
 
-  public equals(other: IGroupStats): boolean {
+  public equals(other: IGroupStatsClient): boolean {
     return JSON.stringify(this.dto) === JSON.stringify((other as GroupStats).dto);
   }
 
-  public toDTO(): GroupStatsDTO {
+  public toDTO(): GroupStatsClientDTO {
     return this.dto;
   }
 
-  public toClientDTO(): GroupStatsDTO {
+  public toClientDTO(): GroupStatsClientDTO {
     return this.dto;
   }
 
@@ -45,16 +41,16 @@ export class GroupStats implements IGroupStats {
     };
   }
 
-  public static fromDTO(dto: GroupStatsDTO): GroupStats {
+  public static fromDTO(dto: GroupStatsClientDTO): GroupStats {
     return new GroupStats(dto);
   }
 
-  public static fromClientDTO(dto: GroupStatsDTO): GroupStats {
+  public static fromClientDTO(dto: GroupStatsClientDTO): GroupStats {
     return new GroupStats(dto);
   }
 
   public static fromServerDTO(dto: GroupStatsServerDTO): GroupStats {
-    const clientDTO: GroupStatsDTO = {
+    const clientDTO: GroupStatsClientDTO = {
       ...dto,
       templateCountText: `${dto.totalTemplates} 个提醒`,
       activeStatusText: `${dto.activeTemplates} 个活跃`,

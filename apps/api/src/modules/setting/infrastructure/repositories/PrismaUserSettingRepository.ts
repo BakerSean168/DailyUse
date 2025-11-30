@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
-import type { IUserSettingRepository } from '@dailyuse/domain-server';
-import { UserSetting } from '@dailyuse/domain-server';
+import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
+import { UserSetting } from '@dailyuse/domain-server/setting';
 import type { Prisma } from '@prisma/client';
 
 /**

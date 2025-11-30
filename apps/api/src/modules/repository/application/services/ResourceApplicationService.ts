@@ -3,14 +3,12 @@
  * Resource 应用服务 - Story 10-2
  */
 import { v4 as uuidv4 } from 'uuid';
-import { Resource } from '@dailyuse/domain-server';
-import { ResourceType } from '@dailyuse/contracts';
-import type { IResourceRepository } from '../../domain/repositories/IResourceRepository';
+import { Resource } from '@dailyuse/domain-server/repository';
+import type { IResourceRepository } from '@dailyuse/domain-server/repository';
+import { ResourceType } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 
-type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
-type ResourceClientDTO = RepositoryContracts.ResourceClientDTO;
 
 /**
  * Resource 应用服务
@@ -108,3 +106,5 @@ export class ResourceApplicationService {
     await this.resourceRepository.save(resource);
   }
 }
+
+

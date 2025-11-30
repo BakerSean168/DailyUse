@@ -3,12 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { AIContracts } from '@dailyuse/contracts';
+import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 import { QuotaEnforcementService, QuotaExceededError } from '../QuotaEnforcementService';
 import { AIUsageQuotaServer } from '../../aggregates/AIUsageQuotaServer';
 import type { IAIUsageQuotaRepository } from '../../repositories/IAIUsageQuotaRepository';
 
-const QuotaResetPeriodEnum = AIContracts.QuotaResetPeriod;
 
 describe('QuotaEnforcementService', () => {
   let service: QuotaEnforcementService;
@@ -29,7 +28,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       vi.spyOn(mockRepository, 'findByAccountUuid').mockResolvedValue(quota);
@@ -46,7 +45,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 10,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       // Consume all quota
@@ -74,7 +73,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       // Consume some quota
@@ -97,7 +96,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       vi.spyOn(mockRepository, 'findByAccountUuid').mockResolvedValue(quota);
@@ -112,7 +111,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 10,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       quota.consume(10); // Use all quota
@@ -125,7 +124,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       quota.consume(50); // Use all quota
@@ -144,7 +143,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       quota.consume(30);
@@ -162,7 +161,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 100,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       quota.consume(25);
@@ -181,7 +180,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       quota.consume(50);
@@ -200,7 +199,7 @@ describe('QuotaEnforcementService', () => {
       const quota = AIUsageQuotaServer.create({
         accountUuid: 'user-123',
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
 
       vi.spyOn(mockRepository, 'findByAccountUuid').mockResolvedValue(quota);

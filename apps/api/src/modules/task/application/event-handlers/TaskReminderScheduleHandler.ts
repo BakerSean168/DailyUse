@@ -14,7 +14,7 @@
  */
 
 import type { DomainEvent } from '@dailyuse/utils';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskType, TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
 
 interface ScheduleTaskTriggeredPayload {
@@ -27,11 +27,11 @@ interface ScheduleTaskTriggeredPayload {
     payload?: {
       taskUuid?: string;
       taskTitle?: string;
-      taskType?: TaskContracts.TaskType;
+      taskType?: TaskType;
       reminderTriggers?: Array<{
-        type: TaskContracts.ReminderTriggerType;
+        type: TaskReminderType;
         relativeValue?: number;
-        relativeUnit?: TaskContracts.ReminderTimeUnit;
+        relativeUnit?: ReminderTimeUnit;
         absoluteTime?: number;
       }>;
     };
@@ -71,7 +71,8 @@ export class TaskReminderScheduleHandler {
       }
 
       const instance = instances[0];
-      console.log(`[TaskReminderScheduleHandler] 找到今天的任务实例: ${instance.uuid}, title="${instance.title}"`);
+      const taskTitle = metadata?.payload?.taskTitle ?? instance.templateUuid;
+      console.log(`[TaskReminderScheduleHandler] 找到今天的任务实例: ${instance.uuid}, title="${taskTitle}"`);
 
       // 2. 获取提醒配置
       const reminderTriggers = metadata?.payload?.reminderTriggers;
@@ -98,9 +99,9 @@ export class TaskReminderScheduleHandler {
   private async sendReminderNotification(
     instance: any,
     triggers: Array<{
-      type: TaskContracts.ReminderTriggerType;
+      type: TaskReminderType;
       relativeValue?: number;
-      relativeUnit?: TaskContracts.ReminderTimeUnit;
+      relativeUnit?: ReminderTimeUnit;
       absoluteTime?: number;
     }>
   ): Promise<void> {
@@ -147,7 +148,7 @@ export class TaskReminderScheduleHandler {
   /**
    * 转换时间单位到分钟
    */
-  private convertToMinutes(value: number, unit: TaskContracts.ReminderTimeUnit): number {
+  private convertToMinutes(value: number, unit: ReminderTimeUnit): number {
     switch (unit) {
       case 'MINUTES':
         return value;

@@ -66,7 +66,7 @@ interface BlockingTask {
   uuid: string;
   title: string;
   status: string;
-  estimatedMinutes?: number;
+  estimatedMinutes?: number | null;
 }
 
 interface Props {

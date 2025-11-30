@@ -3,17 +3,18 @@
  * 任务统计 - 聚合根
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type {
+  CompletionStatsInfo,
+  DistributionStatsInfo,
+  InstanceStatsInfo,
+  TaskStatisticsClientDTO,
+  TaskStatisticsPersistenceDTO,
+  TaskStatisticsServer,
+  TaskStatisticsServerDTO,
+  TemplateStatsInfo,
+  TimeStatsInfo,
+} from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
-
-type ITaskStatistics = TaskContracts.TaskStatisticsServer;
-type TaskStatisticsServerDTO = TaskContracts.TaskStatisticsServerDTO;
-type TaskStatisticsPersistenceDTO = TaskContracts.TaskStatisticsPersistenceDTO;
-type TemplateStatsInfo = TaskContracts.TemplateStatsInfo;
-type InstanceStatsInfo = TaskContracts.InstanceStatsInfo;
-type CompletionStatsInfo = TaskContracts.CompletionStatsInfo;
-type TimeStatsInfo = TaskContracts.TimeStatsInfo;
-type DistributionStatsInfo = TaskContracts.DistributionStatsInfo;
 
 /**
  * TaskStatistics 构造函数参数
@@ -36,7 +37,7 @@ interface TaskStatisticsProps {
  * - 提供统计计算方法
  * - 是事务边界
  */
-export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
+export class TaskStatistics extends AggregateRoot implements TaskStatisticsServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _templateStats: TemplateStatsInfo;
@@ -491,9 +492,8 @@ export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
       allDayTasks: templates.filter((t) => t.timeConfig?.timeType === 'ALL_DAY').length,
       timePointTasks: templates.filter((t) => t.timeConfig?.timeType === 'TIME_POINT').length,
       timeRangeTasks: templates.filter((t) => t.timeConfig?.timeType === 'TIME_RANGE').length,
-      overdueInstances: instances.filter(
-        (i) => i.status === 'PENDING' && i.scheduledEndTime < now,
-      ).length,
+      overdueInstances: instances.filter((i) => i.status === 'PENDING' && i.scheduledEndTime < now)
+        .length,
       upcomingInstances: instances.filter(
         (i) =>
           i.status === 'PENDING' &&
@@ -556,6 +556,54 @@ export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
       distributionStats: this._distributionStats,
       calculatedAt: this._calculatedAt,
     };
+  }
+
+  /**
+   * 转换为 Client DTO
+   */
+  public toClientDTO(): TaskStatisticsClientDTO {
+    const todayCompleted = this._completionStats.todayCompleted;
+    const todayTotal = this._instanceStats.todayInstances;
+    const weekCompleted = this._completionStats.weekCompleted;
+    const weekTotal = this._instanceStats.weekInstances;
+    const completionRate = this._completionStats.completionRate;
+    const overdueCount = this._timeStats.overdueInstances;
+
+    return {
+      uuid: this._uuid,
+      accountUuid: this._accountUuid,
+      templateStats: this._templateStats,
+      instanceStats: this._instanceStats,
+      completionStats: this._completionStats,
+      timeStats: this._timeStats,
+      distributionStats: this._distributionStats,
+      calculatedAt: this._calculatedAt,
+      // UI 扩展字段
+      todayCompletionText: `今日完成 ${todayCompleted}/${todayTotal}`,
+      weekCompletionText: `本周完成 ${weekCompleted}/${weekTotal}`,
+      completionRateText: `完成率 ${Math.round(completionRate)}%`,
+      overdueText: overdueCount > 0 ? `${overdueCount} 个逾期` : '无逾期',
+      efficiencyTrendText: this.getEfficiencyTrendText(),
+    };
+  }
+
+  /**
+   * 获取效率趋势文本
+   */
+  private getEfficiencyTrendText(): string {
+    const todayRate = this._instanceStats.todayInstances > 0
+      ? this._completionStats.todayCompleted / this._instanceStats.todayInstances
+      : 0;
+    const weekRate = this._instanceStats.weekInstances > 0
+      ? this._completionStats.weekCompleted / this._instanceStats.weekInstances
+      : 0;
+
+    if (todayRate > weekRate * 1.1) {
+      return '效率提升';
+    } else if (todayRate < weekRate * 0.9) {
+      return '效率下降';
+    }
+    return '保持稳定';
   }
 
   /**

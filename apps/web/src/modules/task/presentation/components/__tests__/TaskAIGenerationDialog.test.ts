@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount, VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import TaskAIGenerationDialog from '../TaskAIGenerationDialog.vue';
-import { TaskPriority } from '@dailyuse/contracts';
+import { TaskPriority } from '@dailyuse/contracts/task';
 
 // Mock generateTasks
 const mockGenerateTasks = vi.fn().mockResolvedValue({
@@ -302,3 +302,5 @@ describe('TaskAIGenerationDialog', () => {
     expect(vm.getPriorityColor('low')).toBe('info');
   });
 });
+
+

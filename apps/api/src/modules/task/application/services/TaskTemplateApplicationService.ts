@@ -2,7 +2,7 @@ import type {
   ITaskInstanceRepository,
   ITaskTemplateRepository,
   TaskFilters,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
 import {
   TaskTemplate,
   TaskInstance,
@@ -10,10 +10,20 @@ import {
   TaskTimeConfig,
   RecurrenceRule,
   TaskReminderConfig,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
-import { TaskContracts } from '@dailyuse/contracts';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
+import type {
+  TaskTimeConfigServerDTO,
+  RecurrenceRuleServerDTO,
+  TaskReminderConfigServerDTO,
+  TaskTemplateServerDTO,
+  TaskInstanceServerDTO,
+  TaskTemplateClientDTO,
+  TaskTemplateHistoryServerDTO,
+  TaskInstanceClientDTO,
+} from '@dailyuse/contracts/task';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
 
 /**
@@ -80,16 +90,16 @@ export class TaskTemplateApplicationService {
     accountUuid: string;
     title: string;
     description?: string;
-    taskType: TaskContracts.TaskType;
-    timeConfig: TaskContracts.TaskTimeConfigServerDTO;
-    recurrenceRule?: TaskContracts.RecurrenceRuleServerDTO;
-    reminderConfig?: TaskContracts.TaskReminderConfigServerDTO;
+    taskType: TaskType;
+    timeConfig: TaskTimeConfigServerDTO;
+    recurrenceRule?: RecurrenceRuleServerDTO;
+    reminderConfig?: TaskReminderConfigServerDTO;
     importance?: ImportanceLevel;
     urgency?: UrgencyLevel;
     folderUuid?: string;
     tags?: string[];
     color?: string;
-  }): Promise<TaskContracts.TaskTemplateServerDTO> {
+  }): Promise<TaskTemplateServerDTO> {
     // Note: Account existence is implicitly validated by the database foreign key constraint.
     // If account doesn't exist, Prisma will throw a foreign key constraint error.
     // For more explicit validation, check account in a separate repository if needed.
@@ -123,7 +133,7 @@ export class TaskTemplateApplicationService {
     await this.templateRepository.save(template);
 
     // 🔥 如果状态是 ACTIVE，立即生成初始实例
-    if (template.status === TaskContracts.TaskTemplateStatus.ACTIVE) {
+    if (template.status === TaskTemplateStatus.ACTIVE) {
       console.log(
         `[TaskTemplateApplicationService] 模板 "${template.title}" 已创建，开始生成初始实例...`,
       );
@@ -222,7 +232,7 @@ export class TaskTemplateApplicationService {
   private async createScheduleTaskForTemplate(template: TaskTemplate): Promise<void> {
     try {
       const { ScheduleTaskFactory } = await import('@dailyuse/domain-server');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       const { ScheduleContainer } = await import(
         '../../../schedule/infrastructure/di/ScheduleContainer'
       );
@@ -270,7 +280,7 @@ export class TaskTemplateApplicationService {
   async getTaskTemplate(
     uuid: string,
     includeChildren: boolean = false,
-  ): Promise<TaskContracts.TaskTemplateServerDTO | null> {
+  ): Promise<TaskTemplateServerDTO | null> {
     const template = includeChildren
       ? await this.templateRepository.findByUuidWithChildren(uuid)
       : await this.templateRepository.findByUuid(uuid);
@@ -284,12 +294,12 @@ export class TaskTemplateApplicationService {
    */
   async getTaskTemplatesByAccount(
     accountUuid: string,
-  ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
+  ): Promise<TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findByAccount(accountUuid);
 
     // 🔥 自动检查并补充每个 ACTIVE 模板的实例
     for (const template of templates) {
-      if (template.status === TaskContracts.TaskTemplateStatus.ACTIVE) {
+      if (template.status === TaskTemplateStatus.ACTIVE) {
         this.checkAndRefillInstances(template).catch((error) => {
           console.error(`❌ 补充模板 "${template.title}" 实例失败:`, error);
         });
@@ -334,8 +344,8 @@ export class TaskTemplateApplicationService {
    */
   async getTaskTemplatesByStatus(
     accountUuid: string,
-    status: TaskContracts.TaskTemplateStatus,
-  ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
+    status: TaskTemplateStatus,
+  ): Promise<TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findByStatus(accountUuid, status);
     return templates.map((t) => t.toClientDTO());
   }
@@ -346,7 +356,7 @@ export class TaskTemplateApplicationService {
    */
   async getActiveTaskTemplates(
     accountUuid: string,
-  ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
+  ): Promise<TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findActiveTemplates(accountUuid);
 
     // 🔥 自动检查并补充每个模板的实例
@@ -364,7 +374,7 @@ export class TaskTemplateApplicationService {
    */
   async getTaskTemplatesByFolder(
     folderUuid: string,
-  ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
+  ): Promise<TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findByFolder(folderUuid);
     return templates.map((t) => t.toClientDTO());
   }
@@ -372,7 +382,7 @@ export class TaskTemplateApplicationService {
   /**
    * 根据目标获取任务模板
    */
-  async getTaskTemplatesByGoal(goalUuid: string): Promise<TaskContracts.TaskTemplateServerDTO[]> {
+  async getTaskTemplatesByGoal(goalUuid: string): Promise<TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findByGoal(goalUuid);
     return templates.map((t) => t.toClientDTO());
   }
@@ -383,7 +393,7 @@ export class TaskTemplateApplicationService {
   async getTaskTemplatesByTags(
     accountUuid: string,
     tags: string[],
-  ): Promise<TaskContracts.TaskTemplateServerDTO[]> {
+  ): Promise<TaskTemplateServerDTO[]> {
     const templates = await this.templateRepository.findByTags(accountUuid, tags);
     return templates.map((t) => t.toClientDTO());
   }
@@ -396,16 +406,16 @@ export class TaskTemplateApplicationService {
     params: {
       title?: string;
       description?: string;
-      timeConfig?: TaskContracts.TaskTimeConfigServerDTO;
-      recurrenceRule?: TaskContracts.RecurrenceRuleServerDTO;
-      reminderConfig?: TaskContracts.TaskReminderConfigServerDTO;
+      timeConfig?: TaskTimeConfigServerDTO;
+      recurrenceRule?: RecurrenceRuleServerDTO;
+      reminderConfig?: TaskReminderConfigServerDTO;
       importance?: ImportanceLevel;
       urgency?: UrgencyLevel;
       folderUuid?: string;
       tags?: string[];
       color?: string;
     },
-  ): Promise<TaskContracts.TaskTemplateServerDTO> {
+  ): Promise<TaskTemplateServerDTO> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
@@ -450,7 +460,7 @@ export class TaskTemplateApplicationService {
    * 2. 立即生成实例到今天
    * 3. 发布恢复事件，触发提醒调度恢复
    */
-  async activateTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateServerDTO> {
+  async activateTaskTemplate(uuid: string): Promise<TaskTemplateServerDTO> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
@@ -500,7 +510,7 @@ export class TaskTemplateApplicationService {
    * 3. 处理已存在的未完成实例（标记为 SKIPPED）
    * 4. 发布暂停事件，触发提醒调度暂停
    */
-  async pauseTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateServerDTO> {
+  async pauseTaskTemplate(uuid: string): Promise<TaskTemplateServerDTO> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
@@ -574,7 +584,7 @@ export class TaskTemplateApplicationService {
   /**
    * 归档任务模板
    */
-  async archiveTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateServerDTO> {
+  async archiveTaskTemplate(uuid: string): Promise<TaskTemplateServerDTO> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
@@ -596,7 +606,7 @@ export class TaskTemplateApplicationService {
   /**
    * 恢复任务模板
    */
-  async restoreTaskTemplate(uuid: string): Promise<TaskContracts.TaskTemplateServerDTO> {
+  async restoreTaskTemplate(uuid: string): Promise<TaskTemplateServerDTO> {
     await this.templateRepository.restore(uuid);
 
     const template = await this.templateRepository.findByUuid(uuid);
@@ -646,7 +656,7 @@ export class TaskTemplateApplicationService {
       keyResultUuid: string;
       incrementValue: number;
     },
-  ): Promise<TaskContracts.TaskTemplateServerDTO> {
+  ): Promise<TaskTemplateServerDTO> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
@@ -661,7 +671,7 @@ export class TaskTemplateApplicationService {
   /**
    * 解除目标绑定
    */
-  async unbindFromGoal(uuid: string): Promise<TaskContracts.TaskTemplateServerDTO> {
+  async unbindFromGoal(uuid: string): Promise<TaskTemplateServerDTO> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
@@ -680,7 +690,7 @@ export class TaskTemplateApplicationService {
   async generateInstances(
     uuid: string,
     toDate?: number,
-  ): Promise<TaskContracts.TaskInstanceServerDTO[]> {
+  ): Promise<TaskInstanceServerDTO[]> {
     const template = await this.templateRepository.findByUuid(uuid);
     if (!template) {
       throw new Error(`TaskTemplate ${uuid} not found`);
@@ -735,7 +745,7 @@ export class TaskTemplateApplicationService {
     folderUuid?: string;
     tags?: string[];
     color?: string;
-  }): Promise<TaskContracts.TaskTemplateClientDTO> {
+  }): Promise<TaskTemplateClientDTO> {
     // 使用领域模型的工厂方法创建一次性任务
     const task = TaskTemplate.createOneTimeTask({
       accountUuid: params.accountUuid,
@@ -764,7 +774,7 @@ export class TaskTemplateApplicationService {
   /**
    * 阻塞任务模板
    */
-  async blockTask(uuid: string, reason: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async blockTask(uuid: string, reason: string): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -779,7 +789,7 @@ export class TaskTemplateApplicationService {
   /**
    * 解除阻塞任务模板
    */
-  async unblockTask(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async unblockTask(uuid: string): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -797,7 +807,7 @@ export class TaskTemplateApplicationService {
   async updateDueDate(
     uuid: string,
     newDueDate: number | null,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -815,7 +825,7 @@ export class TaskTemplateApplicationService {
   async updateEstimatedTime(
     uuid: string,
     estimatedMinutes: number,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -845,7 +855,7 @@ export class TaskTemplateApplicationService {
       color?: string;
       note?: string;
     },
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -888,7 +898,7 @@ export class TaskTemplateApplicationService {
   /**
    * 获取任务历史记录
    */
-  async getTaskHistory(uuid: string): Promise<TaskContracts.TaskTemplateHistoryServerDTO[]> {
+  async getTaskHistory(uuid: string): Promise<TaskTemplateHistoryServerDTO[]> {
     const task = await this.templateRepository.findByUuidWithChildren(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -905,7 +915,7 @@ export class TaskTemplateApplicationService {
   async findOneTimeTasks(
     accountUuid: string,
     filters?: TaskFilters,
-  ): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  ): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findOneTimeTasks(accountUuid, filters);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -916,7 +926,7 @@ export class TaskTemplateApplicationService {
   async findRecurringTasks(
     accountUuid: string,
     filters?: TaskFilters,
-  ): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  ): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findRecurringTasks(accountUuid, filters);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -924,7 +934,7 @@ export class TaskTemplateApplicationService {
   /**
    * 查找逾期任务
    */
-  async getOverdueTasks(accountUuid: string): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  async getOverdueTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findOverdueTasks(accountUuid);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -932,7 +942,7 @@ export class TaskTemplateApplicationService {
   /**
    * 查找今日任务
    */
-  async getTodayTasks(accountUuid: string): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  async getTodayTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findTodayTasks(accountUuid);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -943,7 +953,7 @@ export class TaskTemplateApplicationService {
   async getUpcomingTasks(
     accountUuid: string,
     daysAhead: number,
-  ): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  ): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findUpcomingTasks(accountUuid, daysAhead);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -954,7 +964,7 @@ export class TaskTemplateApplicationService {
   async getTasksSortedByPriority(
     accountUuid: string,
     limit?: number,
-  ): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  ): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findTasksSortedByPriority(accountUuid, limit);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -962,7 +972,7 @@ export class TaskTemplateApplicationService {
   /**
    * 根据 Goal 查找任务（新版本，支持 ONE_TIME）
    */
-  async getTasksByGoal(goalUuid: string): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  async getTasksByGoal(goalUuid: string): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findTasksByGoal(goalUuid);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -970,7 +980,7 @@ export class TaskTemplateApplicationService {
   /**
    * 根据 KeyResult 查找任务
    */
-  async getTasksByKeyResult(keyResultUuid: string): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  async getTasksByKeyResult(keyResultUuid: string): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findTasksByKeyResult(keyResultUuid);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -978,7 +988,7 @@ export class TaskTemplateApplicationService {
   /**
    * 查找被阻塞的任务
    */
-  async getBlockedTasks(accountUuid: string): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  async getBlockedTasks(accountUuid: string): Promise<TaskTemplateClientDTO[]> {
     const tasks = await this.templateRepository.findBlockedTasks(accountUuid);
     return tasks.map((t) => t.toClientDTO());
   }
@@ -1006,7 +1016,7 @@ export class TaskTemplateApplicationService {
       dueDate?: number;
       estimatedMinutes?: number;
     },
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     // 验证父任务存在
     const parentTask = await this.templateRepository.findByUuid(parentUuid);
     if (!parentTask) {
@@ -1037,7 +1047,7 @@ export class TaskTemplateApplicationService {
   /**
    * 获取子任务列表
    */
-  async getSubtasks(parentUuid: string): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  async getSubtasks(parentUuid: string): Promise<TaskTemplateClientDTO[]> {
     const subtasks = await this.templateRepository.findSubtasks(parentUuid);
     return subtasks.map((t) => t.toClientDTO());
   }
@@ -1064,7 +1074,7 @@ export class TaskTemplateApplicationService {
     uuid: string,
     goalUuid: string,
     keyResultUuid?: string,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -1079,7 +1089,7 @@ export class TaskTemplateApplicationService {
   /**
    * 解除目标链接
    */
-  async unlinkFromGoal(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async unlinkFromGoal(uuid: string): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -1100,7 +1110,7 @@ export class TaskTemplateApplicationService {
     uuid: string,
     reason: string,
     dependencyTaskUuid?: string,
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -1115,7 +1125,7 @@ export class TaskTemplateApplicationService {
   /**
    * 标记为就绪
    */
-  async markAsReady(uuid: string): Promise<TaskContracts.TaskTemplateClientDTO> {
+  async markAsReady(uuid: string): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -1133,7 +1143,7 @@ export class TaskTemplateApplicationService {
   async updateDependencyStatus(
     uuid: string,
     status: 'PENDING' | 'READY' | 'BLOCKED',
-  ): Promise<TaskContracts.TaskTemplateClientDTO> {
+  ): Promise<TaskTemplateClientDTO> {
     const task = await this.templateRepository.findByUuid(uuid);
     if (!task) {
       throw new Error(`Task ${uuid} not found`);
@@ -1162,7 +1172,7 @@ export class TaskTemplateApplicationService {
       goalUuid?: string;
       keyResultUuid?: string;
     }>,
-  ): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  ): Promise<TaskTemplateClientDTO[]> {
     const taskEntities = tasks.map((params) =>
       TaskTemplate.createOneTimeTask({
         accountUuid: params.accountUuid,
@@ -1197,11 +1207,11 @@ export class TaskTemplateApplicationService {
   async getRecentCompletedTasks(
     accountUuid: string,
     limit: number = 10,
-  ): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  ): Promise<TaskTemplateClientDTO[]> {
     // 获取最近7天完成的任务
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const tasks = await this.templateRepository.findOneTimeTasks(accountUuid, {
-      taskType: TaskContracts.TaskType.ONE_TIME,
+      taskType: TaskType.ONE_TIME,
       status: 'COMPLETED' as any,
     });
 
@@ -1221,12 +1231,12 @@ export class TaskTemplateApplicationService {
    * 获取任务仪表板数据
    */
   async getTaskDashboard(accountUuid: string): Promise<{
-    todayTasks: TaskContracts.TaskTemplateClientDTO[];
-    overdueTasks: TaskContracts.TaskTemplateClientDTO[];
-    blockedTasks: TaskContracts.TaskTemplateClientDTO[];
-    upcomingTasks: TaskContracts.TaskTemplateClientDTO[];
-    highPriorityTasks: TaskContracts.TaskTemplateClientDTO[];
-    recentCompleted: TaskContracts.TaskTemplateClientDTO[];
+    todayTasks: TaskTemplateClientDTO[];
+    overdueTasks: TaskTemplateClientDTO[];
+    blockedTasks: TaskTemplateClientDTO[];
+    upcomingTasks: TaskTemplateClientDTO[];
+    highPriorityTasks: TaskTemplateClientDTO[];
+    recentCompleted: TaskTemplateClientDTO[];
     statistics: {
       totalActive: number;
       totalCompleted: number;
@@ -1253,11 +1263,11 @@ export class TaskTemplateApplicationService {
       this.getTasksSortedByPriority(accountUuid, 5), // 前5个高优先级任务
       this.getRecentCompletedTasks(accountUuid, 10), // 最近10个完成的任务
       this.countTasks(accountUuid, {
-        taskType: TaskContracts.TaskType.ONE_TIME,
+        taskType: TaskType.ONE_TIME,
         status: 'TODO' as any,
       }),
       this.countTasks(accountUuid, {
-        taskType: TaskContracts.TaskType.ONE_TIME,
+        taskType: TaskType.ONE_TIME,
         status: 'COMPLETED' as any,
       }),
     ]);
@@ -1292,7 +1302,7 @@ export class TaskTemplateApplicationService {
     templateUuid: string,
     fromDate: number,
     toDate: number,
-  ): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+  ): Promise<TaskInstanceClientDTO[]> {
     // 验证模板是否存在
     const template = await this.templateRepository.findByUuid(templateUuid);
     if (!template) {
@@ -1314,3 +1324,4 @@ export class TaskTemplateApplicationService {
     return filteredInstances.map((instance) => instance.toClientDTO());
   }
 }
+

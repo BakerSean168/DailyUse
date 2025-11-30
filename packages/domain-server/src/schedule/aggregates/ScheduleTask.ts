@@ -10,29 +10,23 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import {
-  ScheduleContracts,
-  ScheduleTaskStatus,
-  ExecutionStatus,
-  SourceModule,
-} from '@dailyuse/contracts';
+import type {
+  ScheduleTaskClientDTO,
+  ScheduleTaskPersistenceDTO,
+  ScheduleTaskServer,
+  ScheduleTaskServerDTO,
+} from '@dailyuse/contracts/schedule';
+import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleConfig } from '../value-objects/ScheduleConfig';
 import { ExecutionInfo } from '../value-objects/ExecutionInfo';
 import { RetryPolicy } from '../value-objects/RetryPolicy';
 import { TaskMetadata } from '../value-objects/TaskMetadata';
 import { ScheduleExecution } from '../entities/ScheduleExecution';
 
-// 使用 Contracts 中的 DTO 类型
-// Refreshed
-type IScheduleTaskServer = ScheduleContracts.ScheduleTaskServer;
-type ScheduleTaskServerDTO = ScheduleContracts.ScheduleTaskServerDTO;
-type ScheduleTaskClientDTO = ScheduleContracts.ScheduleTaskClientDTO;
-type ScheduleTaskPersistenceDTO = ScheduleContracts.ScheduleTaskPersistenceDTO;
-
 /**
  * ScheduleTask 聚合根
  */
-export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
+export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _name: string;
@@ -133,7 +127,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
   }
 
   // ===== 便捷访问器方法 =====
-  
+
   /**
    * 获取任务名称（便捷访问器）
    */
@@ -428,12 +422,12 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
 
   /**
    * 执行任务
-   * 
+   *
    * @description
    * 1. 验证任务是否可执行（状态、启用、到期）
    * 2. 发布 schedule.task.triggered 领域事件
    * 3. 更新 nextRunAt（由外部 recordExecution 记录结果）
-   * 
+   *
    * @returns 是否成功触发执行
    */
   public execute(): boolean {
@@ -843,8 +837,6 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
     };
   }
 
-
-
   /**
    * 转换为持久化 DTO（全部使用 camelCase）
    */
@@ -873,7 +865,9 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
       nextRunAt: this._execution.nextRunAt,
       lastRunAt: this._execution.lastRunAt,
       executionCount: this._execution.executionCount,
-      lastExecutionStatus: this._execution.lastExecutionStatus ? String(this._execution.lastExecutionStatus) : null,
+      lastExecutionStatus: this._execution.lastExecutionStatus
+        ? String(this._execution.lastExecutionStatus)
+        : null,
       lastExecutionDuration: this._execution.lastExecutionDuration,
       consecutiveFailures: this._execution.consecutiveFailures,
       // RetryPolicy (flattened，使用 camelCase)
@@ -984,7 +978,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
     if (dto.schedule && typeof dto.schedule.startDate === 'string') {
       return this.fromServerDTO(dto);
     }
-    
+
     // 旧 DTO 处理
     const task = new ScheduleTask({
       uuid: dto.uuid,
@@ -1036,7 +1030,7 @@ export class ScheduleTask extends AggregateRoot implements IScheduleTaskServer {
         nextRunAt: dto.nextRunAt ?? null,
         lastRunAt: dto.lastRunAt ?? null,
         executionCount: dto.executionCount,
-        lastExecutionStatus: dto.lastExecutionStatus as ExecutionStatus ?? null,
+        lastExecutionStatus: (dto.lastExecutionStatus as ExecutionStatus) ?? null,
         lastExecutionDuration: dto.lastExecutionDuration ?? dto.last_execution_duration ?? null,
         consecutiveFailures: dto.consecutiveFailures ?? dto.consecutive_failures,
       }),

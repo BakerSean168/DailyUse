@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api/instances';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotServerDTO } from '@dailyuse/contracts/goal';
 
 /**
  * Weight Snapshot API 客户端
@@ -43,7 +43,7 @@ export class WeightSnapshotApiClient {
     page: number = 1,
     pageSize: number = 20,
   ): Promise<{
-    snapshots: GoalContracts.KeyResultWeightSnapshotServerDTO[];
+    snapshots: KeyResultWeightSnapshotServerDTO[];
     pagination: {
       total: number;
       page: number;
@@ -68,7 +68,7 @@ export class WeightSnapshotApiClient {
     page: number = 1,
     pageSize: number = 20,
   ): Promise<{
-    snapshots: GoalContracts.KeyResultWeightSnapshotServerDTO[];
+    snapshots: KeyResultWeightSnapshotServerDTO[];
     pagination: {
       total: number;
       page: number;
@@ -131,3 +131,4 @@ export class WeightSnapshotApiClient {
  * Weight Snapshot API Client 单例
  */
 export const weightSnapshotApiClient = new WeightSnapshotApiClient();
+

@@ -12,8 +12,8 @@
  * - 发布领域事件
  */
 
-import type { IAuthCredentialRepository, AuthCredential } from '@dailyuse/domain-server';
-import { AuthenticationDomainService } from '@dailyuse/domain-server';
+import type { IAuthCredentialRepository, AuthCredential } from '@dailyuse/domain-server/authentication';
+import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { AuthenticationContainer } from '../../infrastructure/di/AuthenticationContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';
 

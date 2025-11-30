@@ -6,11 +6,8 @@
 
 import type { INotificationTemplateRepository } from '../repositories/INotificationTemplateRepository';
 import { NotificationTemplate } from '../aggregates/NotificationTemplate';
-import type { NotificationContracts } from '@dailyuse/contracts';
-
-type NotificationType = NotificationContracts.NotificationType;
-type NotificationCategory = NotificationContracts.NotificationCategory;
-type NotificationTemplateConfigDTO = NotificationContracts.NotificationTemplateConfigServerDTO;
+import type { NotificationTemplateConfigServerDTO } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 
 /**
  * NotificationTemplateDomainService
@@ -28,7 +25,7 @@ export class NotificationTemplateDomainService {
     name: string;
     type: NotificationType;
     category: NotificationCategory;
-    template: NotificationTemplateConfigDTO;
+    template: NotificationTemplateConfigServerDTO;
     description?: string;
     isSystemTemplate?: boolean;
   }): Promise<NotificationTemplate> {
@@ -112,7 +109,7 @@ export class NotificationTemplateDomainService {
    */
   public async updateTemplateConfig(
     uuid: string,
-    template: Partial<NotificationTemplateConfigDTO>,
+    template: Partial<NotificationTemplateConfigServerDTO>,
   ): Promise<NotificationTemplate> {
     const templateEntity = await this.templateRepo.findById(uuid);
     if (!templateEntity) {

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server';
-import { ScheduleStatistics } from '@dailyuse/domain-server';
+import type { IScheduleStatisticsRepository } from '@dailyuse/domain-server/schedule';
+import { ScheduleStatistics } from '@dailyuse/domain-server/schedule';
 
 /**
  * ScheduleStatistics 聚合根 Prisma 仓储实现

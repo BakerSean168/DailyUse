@@ -4,13 +4,9 @@
  *
  * 注意：枚举定义放在独立文件中，因为枚举通常是通用的，
  * 可以在 Server、Client、Persistence 层之间共享
+ *
+ * ImportanceLevel 和 UrgencyLevel 从 @dailyuse/contracts/shared 导入
  */
-
-// ============ 从 shared 中导入共享枚举 ============
-import { ImportanceLevel, UrgencyLevel } from '../../shared/index';
-
-// 重新导出共享枚举
-export { ImportanceLevel, UrgencyLevel };
 
 // ============ 通知相关枚举 ============
 

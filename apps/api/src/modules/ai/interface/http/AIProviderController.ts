@@ -10,7 +10,8 @@
  */
 
 import type { Response } from 'express';
-import { createResponseBuilder, ResponseCode, AIProviderType } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
+import { AIProviderType } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
@@ -559,3 +560,7 @@ export class AIProviderController {
     }
   }
 }
+
+
+
+

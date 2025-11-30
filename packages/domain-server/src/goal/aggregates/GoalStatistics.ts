@@ -8,22 +8,25 @@
  * - 确保统计数据的一致性
  */
 
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot } from '@dailyuse/utils';
-import type { GoalContracts } from '@dailyuse/contracts';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import type {
+  GoalServerDTO,
+  GoalStatisticsClientDTO,
+  GoalStatisticsPersistenceDTO,
+  GoalStatisticsRecalculatedEvent,
+  GoalStatisticsServer,
+  GoalStatisticsServerDTO,
+  GoalStatisticsUpdateEvent,
+  TrendType,
+} from '@dailyuse/contracts/goal';
 
 // 类型别名
-type IGoalStatisticsServer = GoalContracts.GoalStatisticsServer;
-type GoalStatisticsServerDTO = GoalContracts.GoalStatisticsServerDTO;
-type GoalStatisticsClientDTO = GoalContracts.GoalStatisticsClientDTO;
-type GoalStatisticsPersistenceDTO = GoalContracts.GoalStatisticsPersistenceDTO;
-type GoalStatisticsRecalculatedEvent = GoalContracts.GoalStatisticsRecalculatedEvent;
-type GoalServerDTO = GoalContracts.GoalServerDTO;
 
 /**
  * GoalStatistics 聚合根
  */
-export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServer {
+export class GoalStatistics extends AggregateRoot implements GoalStatisticsServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _totalGoals: number;
@@ -471,7 +474,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
       this._totalKeyResults > 0 ? (this._completedKeyResults / this._totalKeyResults) * 100 : 0;
     const overdueRate = this._totalGoals > 0 ? (this._overdueGoals / this._totalGoals) * 100 : 0;
 
-    const getTrend = (created: number, completed: number): GoalContracts.TrendType => {
+    const getTrend = (created: number, completed: number): TrendType => {
       if (completed > created) return 'UP';
       if (completed < created) return 'DOWN';
       return 'STABLE';
@@ -544,7 +547,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理目标创建事件
    */
-  public onGoalCreated(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onGoalCreated(event: GoalStatisticsUpdateEvent): void {
     this._totalGoals++;
 
     // 更新按重要性统计
@@ -593,7 +596,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理目标删除事件
    */
-  public onGoalDeleted(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onGoalDeleted(event: GoalStatisticsUpdateEvent): void {
     this._totalGoals = Math.max(0, this._totalGoals - 1);
 
     // 更新按重要性统计
@@ -634,7 +637,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理目标状态变更事件
    */
-  public onGoalStatusChanged(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onGoalStatusChanged(event: GoalStatisticsUpdateEvent): void {
     const { previousStatus, newStatus } = event.payload;
 
     if (!previousStatus || !newStatus) return;
@@ -664,7 +667,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理目标完成事件
    */
-  public onGoalCompleted(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onGoalCompleted(event: GoalStatisticsUpdateEvent): void {
     // 目标从 ACTIVE 状态变为 COMPLETED
     this._activeGoals = Math.max(0, this._activeGoals - 1);
     this._completedGoals++;
@@ -687,7 +690,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理目标归档事件
    */
-  public onGoalArchived(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onGoalArchived(event: GoalStatisticsUpdateEvent): void {
     this._archivedGoals++;
     this._lastCalculatedAt = Date.now();
   }
@@ -695,7 +698,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理目标激活事件
    */
-  public onGoalActivated(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onGoalActivated(event: GoalStatisticsUpdateEvent): void {
     this._activeGoals++;
     this._lastCalculatedAt = Date.now();
   }
@@ -703,7 +706,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理关键结果创建事件
    */
-  public onKeyResultCreated(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onKeyResultCreated(event: GoalStatisticsUpdateEvent): void {
     const count = event.payload.keyResultCount || 1;
     this._totalKeyResults += count;
     this._lastCalculatedAt = Date.now();
@@ -712,7 +715,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理关键结果删除事件
    */
-  public onKeyResultDeleted(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onKeyResultDeleted(event: GoalStatisticsUpdateEvent): void {
     const count = event.payload.keyResultCount || 1;
     this._totalKeyResults = Math.max(0, this._totalKeyResults - count);
     this._lastCalculatedAt = Date.now();
@@ -721,7 +724,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理关键结果完成事件
    */
-  public onKeyResultCompleted(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onKeyResultCompleted(event: GoalStatisticsUpdateEvent): void {
     this._completedKeyResults++;
     this._lastCalculatedAt = Date.now();
   }
@@ -729,7 +732,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理回顾创建事件
    */
-  public onReviewCreated(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onReviewCreated(event: GoalStatisticsUpdateEvent): void {
     this._totalReviews++;
 
     // 更新平均评分
@@ -745,7 +748,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理回顾删除事件
    */
-  public onReviewDeleted(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onReviewDeleted(event: GoalStatisticsUpdateEvent): void {
     this._totalReviews = Math.max(0, this._totalReviews - 1);
 
     // 更新平均评分
@@ -765,7 +768,7 @@ export class GoalStatistics extends AggregateRoot implements IGoalStatisticsServ
   /**
    * 处理专注会话完成事件
    */
-  public onFocusSessionCompleted(event: GoalContracts.GoalStatisticsUpdateEvent): void {
+  public onFocusSessionCompleted(event: GoalStatisticsUpdateEvent): void {
     if (event.payload.focusMinutes) {
       // 这里可以添加专注会话相关的统计
       // 目前 GoalStatistics 没有专注会话字段，可以后续扩展

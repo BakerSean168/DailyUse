@@ -120,15 +120,16 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue';
 import { useScheduleEvent } from '../composables/useScheduleEvent';
-import type { CreateScheduleEventRequest, UpdateScheduleEventRequest } from '../../infrastructure/api/scheduleEventApiClient';
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import { useAuthentication } from '@/modules/authentication/presentation/composables/useAuthentication';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, CreateScheduleRequest, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 // ===== Composables =====
 const { createSchedule, updateSchedule, isLoading } = useScheduleEvent();
+const { getAccountUuid } = useAuthentication();
 
 // ===== State =====
 const visible = ref(false);
-const editingSchedule = ref<ScheduleContracts.ScheduleClientDTO | null>(null);
+const editingSchedule = ref<ScheduleClientDTO | null>(null);
 
 const isEditing = computed(() => !!editingSchedule.value);
 
@@ -211,7 +212,7 @@ async function handleSubmit() {
 
   if (isEditing.value && editingSchedule.value) {
     // 编辑模式
-    const updateData: UpdateScheduleEventRequest = {
+    const updateData: UpdateScheduleRequest = {
       title: formData.title,
       description: formData.description || undefined,
       startTime: startTimestamp,
@@ -227,11 +228,18 @@ async function handleSubmit() {
     }
   } else {
     // 创建模式
-    const requestData: CreateScheduleEventRequest = {
+    const accountUuid = getAccountUuid();
+    if (!accountUuid) {
+      alert('请先登录');
+      return;
+    }
+    const requestData: CreateScheduleRequest = {
+      accountUuid,
       title: formData.title,
       description: formData.description || undefined,
       startTime: startTimestamp,
       endTime: endTimestamp,
+      duration: endTimestamp - startTimestamp,
       priority: formData.priority || undefined,
       location: formData.location || undefined,
       attendees: formData.attendees.length > 0 ? formData.attendees : undefined,
@@ -268,7 +276,7 @@ function openForCreate() {
 /**
  * 打开编辑对话框
  */
-function openForEdit(schedule: ScheduleContracts.ScheduleClientDTO) {
+function openForEdit(schedule: ScheduleClientDTO) {
   if (!schedule) {
     console.error('[CreateScheduleDialog] openForEdit: schedule is required');
     return;
@@ -298,7 +306,7 @@ function openForEdit(schedule: ScheduleContracts.ScheduleClientDTO) {
 /**
  * 通用打开方法（向后兼容）
  */
-function openDialog(schedule?: ScheduleContracts.ScheduleClientDTO) {
+function openDialog(schedule?: ScheduleClientDTO) {
   if (schedule) {
     openForEdit(schedule);
   } else {
@@ -328,3 +336,4 @@ defineExpose({
   background-color: rgba(var(--v-theme-primary), 0.1);
 }
 </style>
+

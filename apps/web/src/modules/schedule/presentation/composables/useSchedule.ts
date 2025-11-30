@@ -6,8 +6,17 @@
 import { ref, onMounted } from 'vue';
 import { scheduleWebApplicationService } from '../../services/ScheduleWebApplicationService';
 import { scheduleApiClient } from '../../infrastructure/api/scheduleApiClient';
-import { ScheduleContracts } from '@dailyuse/contracts';
-import { ScheduleTask } from '@dailyuse/domain-client';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type {
+  ScheduleStatisticsClientDTO,
+  ModuleStatisticsClientDTO,
+  ConflictDetectionResult,
+  ScheduleClientDTO,
+  CreateScheduleTaskRequest,
+  CreateScheduleRequest,
+  ResolveConflictRequest,
+} from '@dailyuse/contracts/schedule';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('useSchedule');
@@ -19,30 +28,30 @@ const logger = createLogger('useSchedule');
 export function useSchedule() {
   // ===== 状态 =====
   const tasks = ref<ScheduleTask[]>([]);
-  const statistics = ref<ScheduleContracts.ScheduleStatisticsServerDTO | null>(null);
+  const statistics = ref<ScheduleStatisticsClientDTO | null>(null);
   const moduleStatistics = ref<Record<
-    ScheduleContracts.SourceModule,
-    ScheduleContracts.ModuleStatisticsServerDTO
+    SourceModule,
+    ModuleStatisticsClientDTO
   > | null>(null);
   const isLoading = ref(false);
   const isLoadingStats = ref(false);
   const error = ref<string | null>(null);
 
   // ===== 冲突检测状态 (Story 9.5) =====
-  const conflicts = ref<ScheduleContracts.ConflictDetectionResult | null>(null);
+  const conflicts = ref<ConflictDetectionResult | null>(null);
   const isDetectingConflicts = ref(false);
   const conflictError = ref<string | null>(null);
 
   const lastCreatedSchedule = ref<{
-    schedule: ScheduleContracts.ScheduleClientDTO;
-    conflicts?: ScheduleContracts.ConflictDetectionResult;
+    schedule: ScheduleClientDTO;
+    conflicts?: ConflictDetectionResult;
   } | null>(null);
   const isCreatingSchedule = ref(false);
   const createScheduleError = ref<string | null>(null);
 
   const resolvedConflict = ref<{
-    schedule: ScheduleContracts.ScheduleClientDTO;
-    conflicts: ScheduleContracts.ConflictDetectionResult;
+    schedule: ScheduleClientDTO;
+    conflicts: ConflictDetectionResult;
     applied: {
       strategy: string;
       previousStartTime?: number;
@@ -78,7 +87,7 @@ export function useSchedule() {
   /**
    * 根据模块获取任务
    */
-  async function fetchTasksByModule(module: ScheduleContracts.SourceModule) {
+  async function fetchTasksByModule(module: SourceModule) {
     isLoading.value = true;
     error.value = null;
 
@@ -102,7 +111,7 @@ export function useSchedule() {
    * 创建任务
    */
   async function createTask(
-    request: ScheduleContracts.CreateScheduleTaskRequestDTO,
+    request: CreateScheduleTaskRequest,
   ): Promise<ScheduleTask> {
     isLoading.value = true;
     error.value = null;
@@ -246,7 +255,7 @@ export function useSchedule() {
    * 
    * @param request 创建日程请求
    */
-  async function createSchedule(request: ScheduleContracts.CreateScheduleRequestDTO) {
+  async function createSchedule(request: CreateScheduleRequest) {
     isCreatingSchedule.value = true;
     createScheduleError.value = null;
 
@@ -281,7 +290,7 @@ export function useSchedule() {
    */
   async function resolveConflict(
     scheduleUuid: string,
-    request: ScheduleContracts.ResolveConflictRequestDTO,
+    request: ResolveConflictRequest,
   ) {
     isResolvingConflict.value = true;
     resolveConflictError.value = null;
@@ -449,3 +458,4 @@ export function useSchedule() {
     resolveConflict,
   };
 }
+

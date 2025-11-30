@@ -15,7 +15,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { TaskTimeConfig } from '../TaskTimeConfig';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTimeConfigPersistenceDTO, TaskTimeConfigServerDTO } from '@dailyuse/contracts/task';
+import { TimeType } from '@dailyuse/contracts/task';
 
 describe('TaskTimeConfig Value Object', () => {
   // ==================== 测试数据 ====================
@@ -586,7 +587,7 @@ describe('TaskTimeConfig Value Object', () => {
   describe('Factory Methods', () => {
     describe('fromServerDTO()', () => {
       it('应该从 ALL_DAY ServerDTO 正确恢复配置', () => {
-        const dto: TaskContracts.TaskTimeConfigServerDTO = {
+        const dto: TaskTimeConfigServerDTO = {
           timeType: 'ALL_DAY',
           startDate: mockStartDate,
           endDate: mockEndDate,
@@ -602,7 +603,7 @@ describe('TaskTimeConfig Value Object', () => {
       });
 
       it('应该从 TIME_POINT ServerDTO 正确恢复配置', () => {
-        const dto: TaskContracts.TaskTimeConfigServerDTO = {
+        const dto: TaskTimeConfigServerDTO = {
           timeType: 'TIME_POINT',
           startDate: null,
           endDate: null,
@@ -617,7 +618,7 @@ describe('TaskTimeConfig Value Object', () => {
       });
 
       it('应该从 TIME_RANGE ServerDTO 正确恢复配置', () => {
-        const dto: TaskContracts.TaskTimeConfigServerDTO = {
+        const dto: TaskTimeConfigServerDTO = {
           timeType: 'TIME_RANGE',
           startDate: null,
           endDate: null,
@@ -634,7 +635,7 @@ describe('TaskTimeConfig Value Object', () => {
 
     describe('fromPersistenceDTO()', () => {
       it('应该从 ALL_DAY PersistenceDTO 正确恢复配置', () => {
-        const dto: TaskContracts.TaskTimeConfigPersistenceDTO = {
+        const dto: TaskTimeConfigPersistenceDTO = {
           timeType: 'ALL_DAY',
           startDate: mockStartDate,
           endDate: mockEndDate,
@@ -650,7 +651,7 @@ describe('TaskTimeConfig Value Object', () => {
       });
 
       it('应该从 TIME_RANGE PersistenceDTO 正确恢复配置', () => {
-        const dto: TaskContracts.TaskTimeConfigPersistenceDTO = {
+        const dto: TaskTimeConfigPersistenceDTO = {
           timeType: 'TIME_RANGE',
           startDate: null,
           endDate: null,
@@ -665,7 +666,7 @@ describe('TaskTimeConfig Value Object', () => {
       });
 
       it('应该处理 null timeRange', () => {
-        const dto: TaskContracts.TaskTimeConfigPersistenceDTO = {
+        const dto: TaskTimeConfigPersistenceDTO = {
           timeType: 'ALL_DAY',
           startDate: mockStartDate,
           endDate: null,
@@ -775,7 +776,7 @@ describe('TaskTimeConfig Value Object', () => {
     });
 
     it('应该正确处理三种时间类型的中文文本', () => {
-      const types: TaskContracts.TimeType[] = ['ALL_DAY', 'TIME_POINT', 'TIME_RANGE'];
+      const types: TimeType[] = ['ALL_DAY', 'TIME_POINT', 'TIME_RANGE'];
       const expectedTexts = ['全天', '时间点', '时间段'];
 
       types.forEach((type, index) => {

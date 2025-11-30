@@ -8,7 +8,7 @@
 import type { Request, Response } from 'express';
 import { WeightSnapshotApplicationService } from '../../application/services/WeightSnapshotApplicationService';
 import { GoalApplicationService } from '../../application/services/GoalApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
 import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
@@ -200,10 +200,10 @@ export class WeightSnapshotController {
         {
           snapshots,
           pagination: {
-            total: result.total,
+            total: result.pagination.total,
             page,
             pageSize,
-            totalPages: Math.ceil(result.total / pageSize),
+            totalPages: Math.ceil(result.pagination.total / pageSize),
           },
         },
         'Snapshots retrieved successfully',
@@ -237,10 +237,10 @@ export class WeightSnapshotController {
         {
           snapshots,
           pagination: {
-            total: result.total,
+            total: result.pagination.total,
             page,
             pageSize,
-            totalPages: Math.ceil(result.total / pageSize),
+            totalPages: Math.ceil(result.pagination.total / pageSize),
           },
         },
         'KeyResult snapshots retrieved successfully',
@@ -504,3 +504,5 @@ export class WeightSnapshotController {
     });
   }
 }
+
+

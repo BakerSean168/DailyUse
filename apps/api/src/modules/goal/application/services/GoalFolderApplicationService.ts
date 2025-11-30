@@ -1,7 +1,7 @@
-import type { IGoalFolderRepository, IGoalRepository } from '@dailyuse/domain-server';
+import type { IGoalFolderRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalFolderDomainService, GoalFolder, Goal } from '@dailyuse/domain-server';
-import type { GoalContracts } from '@dailyuse/contracts';
+import { GoalFolderDomainService, GoalFolder, Goal } from '@dailyuse/domain-server/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 /**
  * GoalFolder 应用服务
@@ -73,7 +73,7 @@ export class GoalFolderApplicationService {
       parentFolderUuid?: string;
       sortOrder?: number;
     },
-  ): Promise<GoalContracts.GoalFolderClientDTO> {
+  ): Promise<GoalFolderClientDTO> {
     // 1. 验证名称
     this.domainService.validateFolderName(params.name);
 
@@ -120,7 +120,7 @@ export class GoalFolderApplicationService {
   /**
    * 获取文件夹
    */
-  async getFolder(uuid: string): Promise<GoalContracts.GoalFolderClientDTO | null> {
+  async getFolder(uuid: string): Promise<GoalFolderClientDTO | null> {
     const folder = await this.folderRepository.findById(uuid);
     return folder ? folder.toClientDTO() : null;
   }
@@ -128,7 +128,7 @@ export class GoalFolderApplicationService {
   /**
    * 获取账户的所有文件夹
    */
-  async getFoldersByAccount(accountUuid: string): Promise<GoalContracts.GoalFolderClientDTO[]> {
+  async getFoldersByAccount(accountUuid: string): Promise<GoalFolderClientDTO[]> {
     const folders = await this.folderRepository.findByAccountUuid(accountUuid);
     return folders.map((folder) => folder.toClientDTO());
   }
@@ -152,7 +152,7 @@ export class GoalFolderApplicationService {
       color?: string;
       sortOrder?: number;
     },
-  ): Promise<GoalContracts.GoalFolderClientDTO> {
+  ): Promise<GoalFolderClientDTO> {
     // 1. 查询文件夹
     const folder = await this.folderRepository.findById(uuid);
     if (!folder) {
@@ -238,7 +238,7 @@ export class GoalFolderApplicationService {
   /**
    * 恢复已删除的文件夹
    */
-  async restoreFolder(uuid: string): Promise<GoalContracts.GoalFolderClientDTO> {
+  async restoreFolder(uuid: string): Promise<GoalFolderClientDTO> {
     // 1. 查询文件夹
     const folder = await this.folderRepository.findById(uuid);
     if (!folder) {
@@ -275,7 +275,7 @@ export class GoalFolderApplicationService {
   async moveGoalToFolder(
     goalUuid: string,
     folderUuid: string | null,
-  ): Promise<GoalContracts.GoalClientDTO> {
+  ): Promise<GoalClientDTO> {
     // 1. 查询目标
     const goal = await this.goalRepository.findById(goalUuid);
     if (!goal) {
@@ -379,7 +379,7 @@ export class GoalFolderApplicationService {
    *
    * 公开方法，可以手动触发统计更新
    */
-  async updateFolderStatistics(folderUuid: string): Promise<GoalContracts.GoalFolderClientDTO> {
+  async updateFolderStatistics(folderUuid: string): Promise<GoalFolderClientDTO> {
     await this.updateFolderStatisticsInternal(folderUuid);
 
     const folder = await this.folderRepository.findById(folderUuid);
@@ -420,3 +420,4 @@ export class GoalFolderApplicationService {
     }
   }
 }
+

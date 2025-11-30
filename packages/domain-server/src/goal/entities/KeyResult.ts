@@ -10,16 +10,17 @@
 
 import { GoalRecord } from './GoalRecord';
 import { Entity } from '@dailyuse/utils';
-import type { GoalContracts } from '@dailyuse/contracts';
-
-type IKeyResultServer = GoalContracts.KeyResultServer;
-type KeyResultServerDTO = GoalContracts.KeyResultServerDTO;
-type KeyResultClientDTO = GoalContracts.KeyResultClientDTO;
-type KeyResultPersistenceDTO = GoalContracts.KeyResultPersistenceDTO;
-type KeyResultProgressServerDTO = GoalContracts.KeyResultProgressServerDTO;
-type KeyResultProgressClientDTO = GoalContracts.KeyResultProgressClientDTO;
-type GoalRecordServerDTO = GoalContracts.GoalRecordServerDTO;
-type AggregationMethod = GoalContracts.AggregationMethod;
+import type {
+  AggregationMethod,
+  GoalRecordServerDTO,
+  KeyResultClientDTO,
+  KeyResultPersistenceDTO,
+  KeyResultProgressClientDTO,
+  KeyResultProgressServerDTO,
+  KeyResultServer,
+  KeyResultServerDTO,
+  KeyResultValueType,
+} from '@dailyuse/contracts/goal';
 
 // 用于解析持久化 DTO 中的 progress（JSON 字符串）
 interface ProgressPersistence {
@@ -34,7 +35,7 @@ interface ProgressPersistence {
 /**
  * KeyResult 实体
  */
-export class KeyResult extends Entity implements IKeyResultServer {
+export class KeyResult extends Entity implements KeyResultServer {
   // ===== 私有字段 =====
   private _goalUuid: string;
   private _title: string;
@@ -379,14 +380,14 @@ export class KeyResult extends Entity implements IKeyResultServer {
       progressColor = 'yellow';
     }
 
-    const valueTypeTextMap: Record<GoalContracts.KeyResultValueType, string> = {
+    const valueTypeTextMap: Record<KeyResultValueType, string> = {
       INCREMENTAL: '累计值',
       ABSOLUTE: '绝对值',
       PERCENTAGE: '百分比',
       BINARY: '二元',
     };
 
-    const aggregationMethodTextMap: Record<GoalContracts.AggregationMethod, string> = {
+    const aggregationMethodTextMap: Record<AggregationMethod, string> = {
       SUM: '求和',
       AVERAGE: '求平均',
       MAX: '求最大值',

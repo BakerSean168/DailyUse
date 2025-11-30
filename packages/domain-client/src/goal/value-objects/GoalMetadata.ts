@@ -2,20 +2,15 @@
  * GoalMetadata 值对象实现 (Client)
  */
 
-import { GoalContracts } from '@dailyuse/contracts';
+import type {
+  GoalMetadataClient,
+  GoalMetadataClientDTO,
+  GoalMetadataServerDTO,
+} from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalMetadata = GoalContracts.GoalMetadataClient;
-type GoalMetadataDTO = GoalContracts.GoalMetadataClientDTO;
-type GoalMetadataServerDTO = GoalContracts.GoalMetadataServerDTO;
-
-type ImportanceLevel = GoalContracts.ImportanceLevel;
-type UrgencyLevel = GoalContracts.UrgencyLevel;
-
-const ImportanceLevel = GoalContracts.ImportanceLevel;
-const UrgencyLevel = GoalContracts.UrgencyLevel;
-
-export class GoalMetadata extends ValueObject implements IGoalMetadata {
+export class GoalMetadata extends ValueObject implements GoalMetadataClient {
   private _importance: ImportanceLevel;
   private _urgency: UrgencyLevel;
   private _category: string | null;
@@ -97,7 +92,7 @@ export class GoalMetadata extends ValueObject implements IGoalMetadata {
   }
 
   // 值对象方法
-  public equals(other: IGoalMetadata): boolean {
+  public equals(other: GoalMetadataClient): boolean {
     return (
       this._importance === other.importance &&
       this._urgency === other.urgency &&
@@ -121,7 +116,7 @@ export class GoalMetadata extends ValueObject implements IGoalMetadata {
     };
   }
 
-  public toClientDTO(): GoalMetadataDTO {
+  public toClientDTO(): GoalMetadataClientDTO {
     return {
       importance: this._importance,
       urgency: this._urgency,
@@ -137,7 +132,7 @@ export class GoalMetadata extends ValueObject implements IGoalMetadata {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalMetadataDTO): GoalMetadata {
+  public static fromClientDTO(dto: GoalMetadataClientDTO): GoalMetadata {
     return new GoalMetadata({
       importance: dto.importance,
       urgency: dto.urgency,

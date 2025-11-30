@@ -4,13 +4,9 @@
  * 实现 IExecutionInfoClient 接口
  */
 
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { ExecutionInfoClientDTO, ExecutionInfoServerDTO, IExecutionInfoClient } from '@dailyuse/contracts/schedule';
+import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 import { ValueObject } from '@dailyuse/utils';
-
-type IExecutionInfoClient = ScheduleContracts.IExecutionInfoClient;
-type ExecutionInfoServerDTO = ScheduleContracts.ExecutionInfoServerDTO;
-type ExecutionInfoClientDTO = ScheduleContracts.ExecutionInfoClientDTO;
-type ExecutionStatus = ScheduleContracts.ExecutionStatus;
 
 /**
  * ExecutionInfoClient 值对象

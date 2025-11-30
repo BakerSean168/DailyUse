@@ -3,28 +3,29 @@
  * 实现 NotificationPreferenceServer 接口
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
-import { NotificationCategory } from '@dailyuse/contracts';
+import type {
+  CategoryPreferenceServerDTO,
+  CategoryPreferences,
+  ChannelPreferences,
+  DoNotDisturbConfigServer,
+  DoNotDisturbConfigServerDTO,
+  NotificationPreferencePersistenceDTO,
+  NotificationPreferenceServer,
+  NotificationPreferenceServerDTO,
+  RateLimitServer,
+  RateLimitServerDTO,
+} from '@dailyuse/contracts/notification';
+import { NotificationCategory } from '@dailyuse/contracts/notification';
 import { AggregateRoot } from '@dailyuse/utils';
 import { CategoryPreference } from '../value-objects/CategoryPreference';
 import { DoNotDisturbConfig } from '../value-objects/DoNotDisturbConfig';
 import { RateLimit } from '../value-objects/RateLimit';
 
-type INotificationPreferenceServer = NotificationContracts.NotificationPreferenceServer;
-type NotificationPreferenceServerDTO = NotificationContracts.NotificationPreferenceServerDTO;
-type NotificationPreferencePersistenceDTO =
-  NotificationContracts.NotificationPreferencePersistenceDTO;
-type CategoryPreferenceDTO = NotificationContracts.CategoryPreferenceServerDTO;
-type DoNotDisturbConfigDTO = NotificationContracts.DoNotDisturbConfigServerDTO;
-type RateLimitDTO = NotificationContracts.RateLimitServerDTO;
-type ChannelPreferences = NotificationContracts.ChannelPreferences;
-type CategoryPreferences = NotificationContracts.CategoryPreferences;
-
 /**
  * NotificationPreference 聚合根
  * 负责用户通知偏好设置的管理
  */
-export class NotificationPreference extends AggregateRoot implements INotificationPreferenceServer {
+export class NotificationPreference extends AggregateRoot implements NotificationPreferenceServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _enabled: boolean;
@@ -81,10 +82,10 @@ export class NotificationPreference extends AggregateRoot implements INotificati
       system: { ...this._categories.system },
     };
   }
-  public get doNotDisturb(): NotificationContracts.DoNotDisturbConfigServer | null {
+  public get doNotDisturb(): DoNotDisturbConfigServer | null {
     return this._doNotDisturb ?? null;
   }
-  public get rateLimit(): NotificationContracts.RateLimitServer | null {
+  public get rateLimit(): RateLimitServer | null {
     return this._rateLimit ?? null;
   }
   public get createdAt(): number {
@@ -133,7 +134,7 @@ export class NotificationPreference extends AggregateRoot implements INotificati
    */
   public updateCategoryPreference(
     category: NotificationCategory,
-    preference: Partial<CategoryPreferenceDTO>,
+    preference: Partial<CategoryPreferenceServerDTO>,
   ): void {
     const categoryKey = category.toLowerCase() as keyof CategoryPreferences;
     if (categoryKey in this._categories) {

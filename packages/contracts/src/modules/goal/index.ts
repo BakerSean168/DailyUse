@@ -80,10 +80,62 @@ export type {
   KeyResultSnapshotClient,
 } from './value-objects/KeyResultSnapshot';
 
-// ============ Entities ============
-export type { FocusSessionClientDTO, FocusSessionClient } from './aggregates/FocusSessionClient';
+// KeyResultWeightSnapshot 和 SnapshotTrigger
+export type {
+  SnapshotTrigger,
+  KeyResultWeightSnapshotServerDTO,
+  KeyResultWeightSnapshotClientDTO,
+  KeyResultWeightSnapshotPersistenceDTO,
+} from './value-objects/KeyResultWeightSnapshot';
 
-// ============ Aggregates ============
+// ProgressBreakdown
+export type {
+  ProgressBreakdown,
+  ProgressBreakdownResponse,
+} from './value-objects/ProgressBreakdown';
+
+// ============ Entities (Server) ============
+export type {
+  GoalRecordServerDTO,
+  GoalRecordPersistenceDTO,
+  GoalRecordServer,
+  GoalRecordServerStatic,
+} from './entities/GoalRecordServer';
+
+export type {
+  KeyResultServerDTO,
+  KeyResultPersistenceDTO,
+  KeyResultServer,
+  KeyResultServerStatic,
+} from './entities/KeyResultServer';
+
+export type {
+  GoalReviewServerDTO,
+  GoalReviewPersistenceDTO,
+  GoalReviewServer,
+  GoalReviewServerStatic,
+} from './entities/GoalReviewServer';
+
+// ============ Entities (Client) ============
+export type {
+  GoalRecordClientDTO,
+  GoalRecordClient,
+  GoalRecordClientStatic,
+} from './entities/GoalRecordClient';
+
+export type {
+  KeyResultClientDTO,
+  KeyResultClient,
+  KeyResultClientStatic,
+} from './entities/KeyResultClient';
+
+export type {
+  GoalReviewClientDTO,
+  GoalReviewClient,
+  GoalReviewClientStatic,
+} from './entities/GoalReviewClient';
+
+// ============ Aggregates (Server) ============
 export type {
   GoalServerDTO,
   GoalPersistenceDTO,
@@ -101,13 +153,6 @@ export type {
 } from './aggregates/GoalServer';
 
 export type {
-  GoalClientDTO,
-  GoalClient,
-  GoalClientStatic,
-  GoalClientInstance,
-} from './aggregates/GoalClient';
-
-export type {
   GoalFolderServerDTO,
   GoalFolderPersistenceDTO,
   GoalFolderCreatedEvent,
@@ -119,18 +164,43 @@ export type {
 } from './aggregates/GoalFolderServer';
 
 export type {
-  GoalFolderClientDTO,
-  GoalFolderClient,
-  GoalFolderClientStatic,
-} from './aggregates/GoalFolderClient';
-
-export type {
+  TrendType,
+  ChartData,
+  TimelineData,
   GoalStatisticsServerDTO,
   GoalStatisticsPersistenceDTO,
   GoalStatisticsRecalculatedEvent,
   GoalStatisticsServer,
   GoalStatisticsServerStatic,
 } from './aggregates/GoalStatisticsServer';
+
+export type {
+  FocusSessionServerDTO,
+  FocusSessionPersistenceDTO,
+  FocusSessionServer,
+  FocusSessionStartedEvent,
+  FocusSessionPausedEvent,
+  FocusSessionResumedEvent,
+  FocusSessionCompletedEvent,
+  FocusSessionCancelledEvent,
+} from './aggregates/FocusSessionServer';
+
+// ============ Aggregates (Client) ============
+export type { FocusSessionClientDTO, FocusSessionClient } from './aggregates/FocusSessionClient';
+
+export type {
+  GoalClientDTO,
+  GoalClient,
+  GoalClientStatic,
+  GoalClientInstance,
+  GoalTimeRangeSummary,
+} from './aggregates/GoalClient';
+
+export type {
+  GoalFolderClientDTO,
+  GoalFolderClient,
+  GoalFolderClientStatic,
+} from './aggregates/GoalFolderClient';
 
 export type {
   GoalStatisticsClientDTO,

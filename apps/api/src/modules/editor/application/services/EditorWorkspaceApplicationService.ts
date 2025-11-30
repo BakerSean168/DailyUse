@@ -1,7 +1,18 @@
-import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server';
+import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server/editor';
 import { EditorContainer } from '../../infrastructure/di/EditorContainer';
-import { EditorWorkspaceDomainService } from '@dailyuse/domain-server';
-import type { EditorContracts } from '@dailyuse/contracts';
+import { EditorWorkspaceDomainService } from '@dailyuse/domain-server/editor';
+import type { 
+  DocumentClientDTO,
+  EditorWorkspaceServerDTO,
+  WorkspaceLayoutServerDTO,
+  WorkspaceSettingsServerDTO,
+  EditorSessionServerDTO,
+  SessionLayoutServerDTO,
+  EditorGroupServerDTO,
+  EditorTabServerDTO,
+  TabViewStateServerDTO,
+} from '@dailyuse/contracts/editor';
+import { ProjectType, SplitDirection, TabType } from '@dailyuse/contracts/editor';
 
 /**
  * EditorWorkspace 应用服务
@@ -57,10 +68,10 @@ export class EditorWorkspaceApplicationService {
     name: string;
     description?: string;
     projectPath: string;
-    projectType: EditorContracts.ProjectType;
-    layout?: Partial<EditorContracts.WorkspaceLayoutServerDTO>;
-    settings?: Partial<EditorContracts.WorkspaceSettingsServerDTO>;
-  }): Promise<EditorContracts.EditorWorkspaceServerDTO> {
+    projectType: ProjectType;
+    layout?: Partial<WorkspaceLayoutServerDTO>;
+    settings?: Partial<WorkspaceSettingsServerDTO>;
+  }): Promise<EditorWorkspaceServerDTO> {
     // 委托给领域服务处理业务逻辑
     const workspace = await this.domainService.createWorkspace(params);
 
@@ -74,7 +85,7 @@ export class EditorWorkspaceApplicationService {
   async getWorkspace(
     uuid: string,
     options?: { includeSessions?: boolean },
-  ): Promise<EditorContracts.EditorWorkspaceServerDTO | null> {
+  ): Promise<EditorWorkspaceServerDTO | null> {
     // 委托给领域服务处理
     const workspace = await this.domainService.getWorkspace(uuid, options);
 
@@ -87,7 +98,7 @@ export class EditorWorkspaceApplicationService {
   async getWorkspacesByAccount(
     accountUuid: string,
     options?: { includeSessions?: boolean },
-  ): Promise<EditorContracts.EditorWorkspaceServerDTO[]> {
+  ): Promise<EditorWorkspaceServerDTO[]> {
     // 委托给领域服务处理
     const workspaces = await this.domainService.getWorkspacesByAccount(accountUuid, options);
 
@@ -103,7 +114,7 @@ export class EditorWorkspaceApplicationService {
     name?: string;
     description?: string;
     isActive?: boolean;
-  }): Promise<EditorContracts.EditorWorkspaceServerDTO> {
+  }): Promise<EditorWorkspaceServerDTO> {
     // 委托给领域服务处理
     const workspace = await this.domainService.updateWorkspace(params);
 
@@ -126,8 +137,8 @@ export class EditorWorkspaceApplicationService {
   async addSession(params: {
     workspaceUuid: string;
     name: string;
-    layout?: Partial<EditorContracts.SessionLayoutServerDTO>;
-  }): Promise<EditorContracts.EditorSessionServerDTO> {
+    layout?: Partial<SessionLayoutServerDTO>;
+  }): Promise<EditorSessionServerDTO> {
     // 委托给领域服务处理
     const session = await this.domainService.addSession(params);
 
@@ -137,7 +148,7 @@ export class EditorWorkspaceApplicationService {
   /**
    * 获取工作区的所有会话
    */
-  async getSessions(workspaceUuid: string): Promise<EditorContracts.EditorSessionServerDTO[]> {
+  async getSessions(workspaceUuid: string): Promise<EditorSessionServerDTO[]> {
     // 委托给领域服务处理
     const sessions = await this.domainService.getSessions(workspaceUuid);
 
@@ -151,9 +162,9 @@ export class EditorWorkspaceApplicationService {
     workspaceUuid: string;
     sessionUuid: string;
     name?: string;
-    layout?: Partial<EditorContracts.SessionLayoutServerDTO>;
+    layout?: Partial<SessionLayoutServerDTO>;
     isActive?: boolean;
-  }): Promise<EditorContracts.EditorSessionServerDTO> {
+  }): Promise<EditorSessionServerDTO> {
     // 委托给领域服务处理
     const session = await this.domainService.updateSession(params);
 
@@ -178,7 +189,7 @@ export class EditorWorkspaceApplicationService {
     sessionUuid: string;
     groupIndex: number;
     name?: string;
-  }): Promise<EditorContracts.EditorGroupServerDTO> {
+  }): Promise<EditorGroupServerDTO> {
     // 委托给领域服务处理
     const group = await this.domainService.addGroup(params);
 
@@ -194,8 +205,8 @@ export class EditorWorkspaceApplicationService {
     groupUuid: string;
     groupIndex?: number;
     name?: string;
-    splitDirection?: EditorContracts.SplitDirection;
-  }): Promise<EditorContracts.EditorGroupServerDTO> {
+    splitDirection?: SplitDirection;
+  }): Promise<EditorGroupServerDTO> {
     // 委托给领域服务处理
     const group = await this.domainService.updateGroup(params);
 
@@ -225,11 +236,11 @@ export class EditorWorkspaceApplicationService {
     groupUuid: string;
     documentUuid?: string;
     tabIndex: number;
-    tabType: EditorContracts.TabType;
+    tabType: TabType;
     title: string;
-    viewState?: Partial<EditorContracts.TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
-  }): Promise<EditorContracts.EditorTabServerDTO> {
+  }): Promise<EditorTabServerDTO> {
     // 委托给领域服务处理
     const tab = await this.domainService.addTab(params);
 
@@ -246,9 +257,9 @@ export class EditorWorkspaceApplicationService {
     tabUuid: string;
     tabIndex?: number;
     title?: string;
-    viewState?: Partial<EditorContracts.TabViewStateServerDTO>;
+    viewState?: Partial<TabViewStateServerDTO>;
     isPinned?: boolean;
-  }): Promise<EditorContracts.EditorTabServerDTO> {
+  }): Promise<EditorTabServerDTO> {
     // 委托给领域服务处理
     const tab = await this.domainService.updateTab(params);
 
@@ -308,3 +319,7 @@ export class EditorWorkspaceApplicationService {
     await this.domainService.deactivateTab(workspaceUuid, sessionUuid, groupUuid, tabUuid);
   }
 }
+
+
+
+

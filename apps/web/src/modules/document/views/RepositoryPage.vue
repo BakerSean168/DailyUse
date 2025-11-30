@@ -40,9 +40,8 @@ import { ref, onMounted } from 'vue';
 import { useDocument } from '../composables/useDocument';
 import DocumentList from '../components/DocumentList.vue';
 import DocumentEditor from '../components/DocumentEditor.vue';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 
 const { documents, loading, pagination, loadDocuments, createDocument, updateDocument, deleteDocument } = useDocument();
 
@@ -77,7 +76,7 @@ const handleSave = async (data: any) => {
 };
 
 const handleDelete = async (document: DocumentClientDTO) => {
-  if (confirm(`确定要删除文档"${document.title}"吗？`)) {
+  if (confirm(`确定要删除文档"${document.name}"吗？`)) {
     try {
       await deleteDocument(document.uuid);
       snackbar.value = { show: true, message: '文档删除成功', color: 'success' };
@@ -92,3 +91,4 @@ const closeEditor = () => {
   editingDocument.value = undefined;
 };
 </script>
+

@@ -3,12 +3,9 @@
  * 任务依赖关系 - 客户端
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskDependencyClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import { DependencyType } from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
-
-type TaskDependencyDTO = TaskContracts.TaskDependencyClientDTO;
-type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
-type DependencyType = TaskContracts.DependencyType;
 
 /**
  * TaskDependency 聚合根 (Client)
@@ -195,7 +192,7 @@ export class TaskDependency extends AggregateRoot {
     };
   }
 
-  toClientDTO(): TaskDependencyDTO {
+  toClientDTO(): TaskDependencyClientDTO {
     return {
       uuid: this.uuid,
       predecessorTaskUuid: this._predecessorTaskUuid,
@@ -249,7 +246,7 @@ export class TaskDependency extends AggregateRoot {
   /**
    * 从 Client DTO 创建客户端实体
    */
-  static fromClientDTO(dto: TaskDependencyDTO): TaskDependency {
+  static fromClientDTO(dto: TaskDependencyClientDTO): TaskDependency {
     return new TaskDependency({
       uuid: dto.uuid,
       predecessorTaskUuid: dto.predecessorTaskUuid,

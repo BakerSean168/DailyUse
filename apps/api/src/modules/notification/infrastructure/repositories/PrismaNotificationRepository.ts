@@ -1,12 +1,10 @@
 // @ts-nocheck
 import type { PrismaClient } from '@prisma/client';
 import prisma from '../../../../shared/db/prisma';
-import type { NotificationRepository as INotificationRepository } from '@dailyuse/domain-server';
-import { Notification, NotificationChannel, NotificationHistory } from '@dailyuse/domain-server';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationRepository as INotificationRepository } from '@dailyuse/domain-server/notification';
+import { Notification, NotificationChannel, NotificationHistory } from '@dailyuse/domain-server/notification';
+import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
-type NotificationStatus = NotificationContracts.NotificationStatus;
-type NotificationCategory = NotificationContracts.NotificationCategory;
 
 /**
  * Notification 聚合根 Prisma 仓储实现
@@ -404,3 +402,4 @@ export class PrismaNotificationRepository implements INotificationRepository {
     return result.count;
   }
 }
+

@@ -10,7 +10,7 @@ import type {
   ErrorResponse,
   PaginationInfo,
   ErrorDetail,
-} from '@dailyuse/contracts';
+} from '@dailyuse/contracts/response';
 
 // 重新导出 contracts 中的类型，供前端使用
 export type { ApiResponse, SuccessResponse, ErrorResponse, PaginationInfo, ErrorDetail };

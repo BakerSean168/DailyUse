@@ -9,17 +9,18 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import { ExecutionStatus, ScheduleContracts } from '@dailyuse/contracts';
-
-type IScheduleExecutionServer = ScheduleContracts.ScheduleExecutionServer;
-type ScheduleExecutionServerDTO = ScheduleContracts.ScheduleExecutionServerDTO;
-type ScheduleExecutionClientDTO = ScheduleContracts.ScheduleExecutionClientDTO;
-type ScheduleExecutionPersistenceDTO = ScheduleContracts.ScheduleExecutionPersistenceDTO;
+import type {
+  ScheduleExecutionClientDTO,
+  ScheduleExecutionPersistenceDTO,
+  ScheduleExecutionServer,
+  ScheduleExecutionServerDTO,
+} from '@dailyuse/contracts/schedule';
+import { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * ScheduleExecution 实体
  */
-export class ScheduleExecution extends Entity implements IScheduleExecutionServer {
+export class ScheduleExecution extends Entity implements ScheduleExecutionServer {
   // ===== 私有字段 =====
   private _taskUuid: string;
   private _executionTime: number;

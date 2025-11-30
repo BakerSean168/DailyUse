@@ -1,12 +1,12 @@
 /**
  * Notification Module - Explicit Exports
  * 通知模块 - 显式导出
+ *
+ * ImportanceLevel 和 UrgencyLevel 从 @dailyuse/contracts/shared 导入
  */
 
 // ============ Enums ============
 export {
-  ImportanceLevel,
-  UrgencyLevel,
   NotificationType,
   NotificationCategory,
   NotificationStatus,
@@ -46,6 +46,12 @@ export type {
   DoNotDisturbConfigPersistenceDTO,
   DoNotDisturbConfigServer,
 } from './value-objects/DoNotDisturbConfigServer';
+
+export type {
+  IDoNotDisturbConfigClient,
+  DoNotDisturbConfigClientDTO,
+  DoNotDisturbConfigClient,
+} from './value-objects/DoNotDisturbConfigClient';
 
 export type {
   IRateLimitServer,
@@ -216,18 +222,18 @@ export type {
   NotificationPreferenceDTO,
   TemplateRenderResultDTO,
   TemplateValidationResultDTO,
-  CreateNotificationRequestDTO,
-  UpdateNotificationRequestDTO,
+  CreateNotificationRequest,
+  UpdateNotificationRequest,
   NotificationQueryParamsDTO,
-  MarkAsReadBatchRequestDTO,
-  DeleteNotificationsBatchRequestDTO,
-  CleanupOldNotificationsRequestDTO,
-  CreateNotificationTemplateRequestDTO,
-  UpdateNotificationTemplateRequestDTO,
-  CreateNotificationFromTemplateRequestDTO,
-  RenderTemplateRequestDTO,
-  UpdateNotificationPreferenceRequestDTO,
-  SendNotificationRequestDTO,
-  RetryChannelRequestDTO,
-  ExecuteNotificationActionRequestDTO,
+  MarkAsReadBatchRequest,
+  DeleteNotificationsBatchRequest,
+  CleanupOldNotificationsRequest,
+  CreateNotificationTemplateRequest,
+  UpdateNotificationTemplateRequest,
+  CreateNotificationFromTemplateRequest,
+  RenderTemplateRequest,
+  UpdateNotificationPreferenceRequest,
+  SendNotificationRequest,
+  RetryChannelRequest,
+  ExecuteNotificationActionRequest,
 } from './api-requests';

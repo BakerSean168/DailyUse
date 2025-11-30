@@ -14,7 +14,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { TwoFactorApplicationService } from '../../application/services/TwoFactorApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('TwoFactorController');
@@ -296,3 +296,5 @@ export class TwoFactorController {
     }
   }
 }
+
+

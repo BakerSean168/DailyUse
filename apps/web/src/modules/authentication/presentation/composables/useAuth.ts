@@ -17,7 +17,35 @@ import {
   passwordApplicationService,
   apiKeyApplicationService,
 } from '../../application/services';
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthTokens,
+  LoginResponseDTO,
+  RegisterRequestDTO,
+  LogoutRequestDTO,
+  ForgotPasswordRequestDTO,
+  ResetPasswordRequestDTO,
+  ChangePasswordRequestDTO,
+  Enable2FARequestDTO,
+  Enable2FAResponseDTO,
+  Disable2FARequestDTO,
+  Verify2FARequestDTO,
+  GetActiveSessionsRequestDTO,
+  ActiveSessionsResponseDTO,
+  RevokeSessionRequestDTO,
+  RevokeAllSessionsRequestDTO,
+  TrustedDevicesResponseDTO,
+  TrustDeviceRequestDTO,
+  RevokeTrustedDeviceRequestDTO,
+  CreateApiKeyRequestDTO,
+  CreateApiKeyResponseDTO,
+  ApiKeyListResponseDTO,
+  RevokeApiKeyRequestDTO,
+} from '@dailyuse/contracts/authentication';
+
+// Type aliases for DTO naming convention
+type LoginRequestDTO = LoginRequest;
 
 export function useAuth() {
   const authStore = useAuthStore();
@@ -54,8 +82,8 @@ export function useAuth() {
    * 登录
    */
   async function login(
-    request: AuthenticationContracts.LoginRequestDTO,
-  ): Promise<AuthenticationContracts.LoginResponseDTO> {
+    request: LoginRequestDTO,
+  ): Promise<LoginResponseDTO> {
     const response = await loginApplicationService.login(request);
     
     // 如果记住登录，保存标识符
@@ -72,7 +100,7 @@ export function useAuth() {
    * @returns 包含账户信息和提示消息
    */
   async function register(
-    request: AuthenticationContracts.RegisterRequestDTO,
+    request: RegisterRequestDTO,
   ): Promise<{ account: any; message: string }> {
     return await registrationApplicationService.register(request);
   }
@@ -80,7 +108,7 @@ export function useAuth() {
   /**
    * 登出
    */
-  async function logout(request?: AuthenticationContracts.LogoutRequestDTO): Promise<void> {
+  async function logout(request?: LogoutRequestDTO): Promise<void> {
     await loginApplicationService.logout(request);
   }
 
@@ -104,7 +132,7 @@ export function useAuth() {
    * 忘记密码
    */
   async function forgotPassword(
-    request: AuthenticationContracts.ForgotPasswordRequestDTO,
+    request: ForgotPasswordRequestDTO,
   ): Promise<void> {
     await passwordApplicationService.forgotPassword(request);
   }
@@ -113,7 +141,7 @@ export function useAuth() {
    * 重置密码
    */
   async function resetPassword(
-    request: AuthenticationContracts.ResetPasswordRequestDTO,
+    request: ResetPasswordRequestDTO,
   ): Promise<void> {
     await passwordApplicationService.resetPassword(request);
   }
@@ -122,7 +150,7 @@ export function useAuth() {
    * 修改密码
    */
   async function changePassword(
-    request: AuthenticationContracts.ChangePasswordRequestDTO,
+    request: ChangePasswordRequestDTO,
   ): Promise<void> {
     await passwordApplicationService.changePassword(request);
   }
@@ -133,22 +161,22 @@ export function useAuth() {
    * 启用两步验证
    */
   async function enable2FA(
-    request: AuthenticationContracts.Enable2FARequestDTO,
-  ): Promise<AuthenticationContracts.Enable2FAResponseDTO> {
+    request: Enable2FARequestDTO,
+  ): Promise<Enable2FAResponseDTO> {
     return await passwordApplicationService.enable2FA(request);
   }
 
   /**
    * 禁用两步验证
    */
-  async function disable2FA(request: AuthenticationContracts.Disable2FARequestDTO): Promise<void> {
+  async function disable2FA(request: Disable2FARequestDTO): Promise<void> {
     await passwordApplicationService.disable2FA(request);
   }
 
   /**
    * 验证两步验证码
    */
-  async function verify2FA(request: AuthenticationContracts.Verify2FARequestDTO): Promise<void> {
+  async function verify2FA(request: Verify2FARequestDTO): Promise<void> {
     await passwordApplicationService.verify2FA(request);
   }
 
@@ -158,8 +186,8 @@ export function useAuth() {
    * 获取活跃会话列表
    */
   async function getActiveSessions(
-    request?: AuthenticationContracts.GetActiveSessionsRequestDTO,
-  ): Promise<AuthenticationContracts.ActiveSessionsResponseDTO> {
+    request?: GetActiveSessionsRequestDTO,
+  ): Promise<ActiveSessionsResponseDTO> {
     return await sessionApplicationService.getActiveSessions(request);
   }
 
@@ -167,7 +195,7 @@ export function useAuth() {
    * 撤销会话
    */
   async function revokeSession(
-    request: AuthenticationContracts.RevokeSessionRequestDTO,
+    request: RevokeSessionRequestDTO,
   ): Promise<void> {
     await sessionApplicationService.revokeSession(request);
   }
@@ -176,7 +204,7 @@ export function useAuth() {
    * 撤销所有会话
    */
   async function revokeAllSessions(
-    request?: AuthenticationContracts.RevokeAllSessionsRequestDTO,
+    request?: RevokeAllSessionsRequestDTO,
   ): Promise<void> {
     await sessionApplicationService.revokeAllSessions(request);
   }
@@ -186,14 +214,14 @@ export function useAuth() {
   /**
    * 获取受信任设备列表
    */
-  async function getTrustedDevices(): Promise<AuthenticationContracts.TrustedDevicesResponseDTO> {
+  async function getTrustedDevices(): Promise<TrustedDevicesResponseDTO> {
     return await sessionApplicationService.getTrustedDevices();
   }
 
   /**
    * 信任设备
    */
-  async function trustDevice(request: AuthenticationContracts.TrustDeviceRequestDTO): Promise<void> {
+  async function trustDevice(request: TrustDeviceRequestDTO): Promise<void> {
     await sessionApplicationService.trustDevice(request);
   }
 
@@ -201,7 +229,7 @@ export function useAuth() {
    * 撤销设备信任
    */
   async function revokeTrustedDevice(
-    request: AuthenticationContracts.RevokeTrustedDeviceRequestDTO,
+    request: RevokeTrustedDeviceRequestDTO,
   ): Promise<void> {
     await sessionApplicationService.revokeTrustedDevice(request);
   }
@@ -212,15 +240,15 @@ export function useAuth() {
    * 创建 API Key
    */
   async function createApiKey(
-    request: AuthenticationContracts.CreateApiKeyRequestDTO,
-  ): Promise<AuthenticationContracts.CreateApiKeyResponseDTO> {
+    request: CreateApiKeyRequestDTO,
+  ): Promise<CreateApiKeyResponseDTO> {
     return await apiKeyApplicationService.createApiKey(request);
   }
 
   /**
    * 获取 API Key 列表
    */
-  async function getApiKeys(): Promise<AuthenticationContracts.ApiKeyListResponseDTO> {
+  async function getApiKeys(): Promise<ApiKeyListResponseDTO> {
     return await apiKeyApplicationService.getApiKeys();
   }
 
@@ -228,7 +256,7 @@ export function useAuth() {
    * 撤销 API Key
    */
   async function revokeApiKey(
-    request: AuthenticationContracts.RevokeApiKeyRequestDTO,
+    request: RevokeApiKeyRequestDTO,
   ): Promise<void> {
     await apiKeyApplicationService.revokeApiKey(request);
   }
@@ -319,3 +347,4 @@ export function useAuth() {
     restoreFromStorage,
   };
 }
+

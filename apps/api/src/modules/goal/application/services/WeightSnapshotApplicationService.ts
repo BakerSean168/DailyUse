@@ -9,15 +9,10 @@ import type {
   IGoalRepository,
   IWeightSnapshotRepository,
   KeyResult,
-} from '@dailyuse/domain-server';
-import { KeyResultWeightSnapshot } from '@dailyuse/domain-server';
-import type { GoalContracts } from '@dailyuse/contracts';
+} from '@dailyuse/domain-server/goal';
+import { KeyResultWeightSnapshot } from '@dailyuse/domain-server/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, SnapshotTrigger } from '@dailyuse/contracts/goal';
 import { GoalNotFoundError, KeyResultNotFoundError } from '../errors/WeightSnapshotErrors';
-
-/**
- * 快照触发类型
- */
-type SnapshotTrigger = GoalContracts.SnapshotTrigger;
 
 /**
  * 创建快照 DTO
@@ -510,3 +505,4 @@ export class WeightSnapshotApplicationService {
     };
   }
 }
+

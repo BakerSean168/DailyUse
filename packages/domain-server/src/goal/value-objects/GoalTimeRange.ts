@@ -3,12 +3,10 @@
  * 目标时间范围 - 不可变值对象
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalTimeRangePersistenceDTO, GoalTimeRangeServerDTO } from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
 // 类型别名
-type GoalTimeRangeServerDTO = GoalContracts.GoalTimeRangeServerDTO;
-type GoalTimeRangePersistenceDTO = GoalContracts.GoalTimeRangePersistenceDTO;
 
 /**
  * GoalTimeRange 值对象

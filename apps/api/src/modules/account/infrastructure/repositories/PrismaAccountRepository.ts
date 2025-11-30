@@ -2,9 +2,9 @@ import { PrismaClient } from '@prisma/client';
 import type {
   IAccountRepository,
   AccountPrismaTransactionClient as PrismaTransactionClient,
-} from '@dailyuse/domain-server';
-import { Account } from '@dailyuse/domain-server';
-import type { AccountContracts } from '@dailyuse/contracts';
+} from '@dailyuse/domain-server/account';
+import { Account } from '@dailyuse/domain-server/account';
+import type { AccountServerDTO } from '@dailyuse/contracts/account';
 
 /**
  * Account 聚合根 Prisma 仓储实现
@@ -197,3 +197,4 @@ export class PrismaAccountRepository implements IAccountRepository {
     };
   }
 }
+

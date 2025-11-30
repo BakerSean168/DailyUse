@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
-import { Goal } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client/goal';
 import { useTheme } from 'vuetify';
 
 const props = defineProps<{

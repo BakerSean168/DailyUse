@@ -11,10 +11,7 @@
  */
 
 import type { ScheduleTask } from '../aggregates/ScheduleTask';
-import type { ScheduleContracts } from '@dailyuse/contracts';
-
-type ScheduleTaskStatus = ScheduleContracts.ScheduleTaskStatus;
-type SourceModule = ScheduleContracts.SourceModule;
+import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 
 /**
  * ScheduleTask 查询选项

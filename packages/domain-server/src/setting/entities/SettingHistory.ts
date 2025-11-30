@@ -4,20 +4,20 @@
  */
 
 import { Entity, generateUUID } from '@dailyuse/utils';
-import type { SettingContracts } from '@dailyuse/contracts';
+import type {
+  SettingHistoryClientDTO,
+  SettingHistoryPersistenceDTO,
+  SettingHistoryServer,
+  SettingHistoryServerDTO,
+} from '@dailyuse/contracts/setting';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-
-type ISettingHistoryServer = SettingContracts.SettingHistoryServer;
-type SettingHistoryServerDTO = SettingContracts.SettingHistoryServerDTO;
-type SettingHistoryClientDTO = SettingContracts.SettingHistoryClientDTO;
-type SettingHistoryPersistenceDTO = SettingContracts.SettingHistoryPersistenceDTO;
 
 /**
  * SettingHistory 实体
  * 设置变更历史记录
  */
-export class SettingHistory extends Entity implements ISettingHistoryServer {
+export class SettingHistory extends Entity implements SettingHistoryServer {
   public readonly settingUuid: string;
   public readonly settingKey: string;
   public readonly oldValue: any;

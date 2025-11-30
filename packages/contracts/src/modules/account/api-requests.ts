@@ -45,7 +45,7 @@ export interface AccountHistoryListResponseDTO {
 /**
  * 创建账户请求
  */
-export interface CreateAccountRequestDTO {
+export interface CreateAccountRequest {
   username: string;
   email: string;
   password?: string; // 可选，可能通过第三方登录
@@ -57,7 +57,7 @@ export interface CreateAccountRequestDTO {
 /**
  * 更新账户资料请求
  */
-export interface UpdateAccountProfileRequestDTO {
+export interface UpdateAccountProfileRequest {
   displayName?: string;
   avatar?: string;
   bio?: string;
@@ -71,7 +71,7 @@ export interface UpdateAccountProfileRequestDTO {
 /**
  * 更新账户偏好请求
  */
-export interface UpdateAccountPreferencesRequestDTO {
+export interface UpdateAccountPreferencesRequest {
   theme?: ThemeType;
   accentColor?: string;
   notifications?: {
@@ -90,7 +90,7 @@ export interface UpdateAccountPreferencesRequestDTO {
 /**
  * 更新邮箱请求
  */
-export interface UpdateEmailRequestDTO {
+export interface UpdateEmailRequest {
   newEmail: string;
   password: string; // 需要密码验证
 }
@@ -98,14 +98,14 @@ export interface UpdateEmailRequestDTO {
 /**
  * 验证邮箱请求
  */
-export interface VerifyEmailRequestDTO {
+export interface VerifyEmailRequest {
   code: string; // 验证码
 }
 
 /**
  * 更新手机号请求
  */
-export interface UpdatePhoneRequestDTO {
+export interface UpdatePhoneRequest {
   newPhoneNumber: string;
   password: string;
 }
@@ -113,14 +113,14 @@ export interface UpdatePhoneRequestDTO {
 /**
  * 验证手机号请求
  */
-export interface VerifyPhoneRequestDTO {
+export interface VerifyPhoneRequest {
   code: string;
 }
 
 /**
  * 订阅计划请求
  */
-export interface SubscribePlanRequestDTO {
+export interface SubscribePlanRequest {
   plan: SubscriptionPlan;
   billingCycle: 'MONTHLY' | 'YEARLY' | 'LIFETIME';
   paymentMethod?: string;
@@ -129,7 +129,7 @@ export interface SubscribePlanRequestDTO {
 /**
  * 取消订阅请求
  */
-export interface CancelSubscriptionRequestDTO {
+export interface CancelSubscriptionRequest {
   reason?: string;
   feedback?: string;
 }

@@ -10,11 +10,11 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { type SettingContracts } from '@dailyuse/contracts';
-
-type UserSettingClient = SettingContracts.UserSettingClient;
-type UserSettingServerDTO = SettingContracts.UserSettingServerDTO;
-type UserSettingClientDTO = SettingContracts.UserSettingClientDTO;
+import type {
+  UserSettingClient,
+  UserSettingServerDTO,
+  UserSettingClientDTO,
+} from '@dailyuse/contracts/setting';
 
 /**
  * UserSetting 聚合根 (Client)

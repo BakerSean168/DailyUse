@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { eventBus } from '@dailyuse/utils';
 import { ScheduleEventPublisher } from '../ScheduleEventPublisher';
 import { ScheduleApplicationService } from '../ScheduleApplicationService';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 describe('Schedule Module Integration', () => {
   const testAccountUuid = 'test-account-123';
@@ -27,7 +27,7 @@ describe('Schedule Module Integration', () => {
 
   it('should create schedule task when Goal with reminderConfig is created', async () => {
     // 准备测试数据：包含提醒配置的 Goal
-    const goalWithReminder: GoalContracts.GoalServerDTO = {
+    const goalWithReminder: GoalServerDTO = {
       uuid: testGoalUuid,
       accountUuid: testAccountUuid,
       title: '测试目标 - 学习 DDD',
@@ -81,7 +81,7 @@ describe('Schedule Module Integration', () => {
 
   it('should schedule short-term goals twice per day', async () => {
     const shortTermGoalUuid = 'short-term-goal-123';
-    const shortTermGoal: GoalContracts.GoalServerDTO = {
+    const shortTermGoal: GoalServerDTO = {
       uuid: shortTermGoalUuid,
       accountUuid: testAccountUuid,
       title: '短期目标 - 一周打卡',
@@ -117,7 +117,7 @@ describe('Schedule Module Integration', () => {
 
   it('should schedule long-term goals weekly', async () => {
     const longTermGoalUuid = 'long-term-goal-456';
-    const longTermGoal: GoalContracts.GoalServerDTO = {
+    const longTermGoal: GoalServerDTO = {
       uuid: longTermGoalUuid,
       accountUuid: testAccountUuid,
       title: '长期目标 - 年度 OKR',
@@ -152,7 +152,7 @@ describe('Schedule Module Integration', () => {
   });
 
   it('should NOT create schedule task when Goal without reminderConfig is created', async () => {
-    const goalWithoutReminder: GoalContracts.GoalServerDTO = {
+    const goalWithoutReminder: GoalServerDTO = {
       uuid: 'test-goal-no-reminder',
       accountUuid: testAccountUuid,
       title: '无提醒的测试目标',
@@ -188,7 +188,7 @@ describe('Schedule Module Integration', () => {
 
   it('should delete schedule tasks when Goal is deleted', async () => {
     // 1. 先创建一个有调度任务的 Goal
-    const goalWithReminder: GoalContracts.GoalServerDTO = {
+    const goalWithReminder: GoalServerDTO = {
       uuid: testGoalUuid,
       accountUuid: testAccountUuid,
       title: '待删除的测试目标',
@@ -263,7 +263,7 @@ describe('Schedule Module Integration', () => {
     ];
 
     for (const testCase of testCases) {
-      const goal: GoalContracts.GoalServerDTO = {
+      const goal: GoalServerDTO = {
         uuid: `test-goal-priority-${testCase.importance}`,
         accountUuid: testAccountUuid,
         title: `优先级测试 ${testCase.importance}/${testCase.urgency}`,
@@ -301,3 +301,4 @@ describe('Schedule Module Integration', () => {
     }
   });
 });
+

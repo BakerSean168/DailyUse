@@ -3,14 +3,8 @@
  * 任务优先级值对象
  */
 
-/**
- * 优先级等级
- */
-export enum PriorityLevel {
-  HIGH = 'HIGH',
-  MEDIUM = 'MEDIUM',
-  LOW = 'LOW',
-}
+// 重新导出通用的 PriorityLevel
+export { PriorityLevel } from '../../../shared/priority';
 
 /**
  * 任务优先级
@@ -19,7 +13,7 @@ export interface TaskPriority {
   /**
    * 优先级等级
    */
-  level: PriorityLevel;
+  level: import('../../../shared/priority').PriorityLevel;
 
   /**
    * 优先级分数 (0-100)

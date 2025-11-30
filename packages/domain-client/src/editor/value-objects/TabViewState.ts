@@ -3,12 +3,8 @@
  * 标签页视图状态 - 客户端值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { ITabViewStateClient, TabViewStateClientDTO, TabViewStateServerDTO } from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type ITabViewStateClient = EditorContracts.ITabViewStateClient;
-type TabViewStateServerDTO = EditorContracts.TabViewStateServerDTO;
-type TabViewStateClientDTO = EditorContracts.TabViewStateClientDTO;
 
 /**
  * TabViewState 值对象

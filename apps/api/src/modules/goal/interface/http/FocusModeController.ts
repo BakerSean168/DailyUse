@@ -1,6 +1,6 @@
 import type { Response } from 'express';
 import { FocusModeApplicationService } from '../../application/services/FocusModeApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 
@@ -328,3 +328,5 @@ export class FocusModeController {
     }
   }
 }
+
+

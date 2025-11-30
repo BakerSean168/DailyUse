@@ -139,8 +139,8 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../../stores/repositoryStore';
 import { useMessage } from '@dailyuse/ui';
-import { RepositoryContracts } from '@dailyuse/contracts';
-import { repositoryApplicationService } from '../../application/services/repositoryApplicationService';
+import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
+import { repositoryManagementApplicationService } from '@/modules/repository/application/services/RepositoryManagementApplicationService';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -174,15 +174,15 @@ const currentRepositoryUuid = ref<string | null>(repositoryStore.selectedReposit
 const newRepository = ref({
   name: '',
   path: '',
-  type: RepositoryContracts.RepositoryType.LOCAL,
+  type: RepositoryType.MARKDOWN,
   description: '',
 });
 
 // 仓库类型选项
 const repositoryTypes = [
-  { title: '本地仓库', value: RepositoryContracts.RepositoryType.LOCAL },
-  { title: 'Git 仓库', value: RepositoryContracts.RepositoryType.GIT },
-  { title: '云端仓库', value: RepositoryContracts.RepositoryType.CLOUD },
+  { title: 'Markdown 仓库', value: RepositoryType.MARKDOWN },
+  { title: '代码仓库', value: RepositoryType.CODE },
+  { title: '混合仓库', value: RepositoryType.MIXED },
 ];
 
 // 表单验证规则
@@ -192,27 +192,27 @@ const rules = {
 };
 
 // 获取仓库图标
-function getRepositoryIcon(type: RepositoryContracts.RepositoryType): string {
+function getRepositoryIcon(type: RepositoryType): string {
   switch (type) {
-    case RepositoryContracts.RepositoryType.LOCAL:
-      return 'mdi-folder';
-    case RepositoryContracts.RepositoryType.GIT:
-      return 'mdi-git';
-    case RepositoryContracts.RepositoryType.CLOUD:
-      return 'mdi-cloud';
+    case RepositoryType.MARKDOWN:
+      return 'mdi-language-markdown';
+    case RepositoryType.CODE:
+      return 'mdi-code-tags';
+    case RepositoryType.MIXED:
+      return 'mdi-folder-multiple';
     default:
       return 'mdi-folder';
   }
 }
 
 // 获取仓库颜色
-function getRepositoryColor(type: RepositoryContracts.RepositoryType): string {
+function getRepositoryColor(type: RepositoryType): string {
   switch (type) {
-    case RepositoryContracts.RepositoryType.LOCAL:
+    case RepositoryType.MARKDOWN:
       return 'blue';
-    case RepositoryContracts.RepositoryType.GIT:
+    case RepositoryType.CODE:
       return 'orange';
-    case RepositoryContracts.RepositoryType.CLOUD:
+    case RepositoryType.MIXED:
       return 'purple';
     default:
       return 'grey';
@@ -220,15 +220,13 @@ function getRepositoryColor(type: RepositoryContracts.RepositoryType): string {
 }
 
 // 获取状态颜色
-function getStatusColor(status: RepositoryContracts.RepositoryStatus): string {
+function getStatusColor(status: RepositoryStatus): string {
   switch (status) {
-    case RepositoryContracts.RepositoryStatus.ACTIVE:
+    case RepositoryStatus.ACTIVE:
       return 'success';
-    case RepositoryContracts.RepositoryStatus.ARCHIVED:
+    case RepositoryStatus.ARCHIVED:
       return 'grey';
-    case RepositoryContracts.RepositoryStatus.SYNCING:
-      return 'info';
-    case RepositoryContracts.RepositoryStatus.INACTIVE:
+    case RepositoryStatus.DELETED:
       return 'warning';
     default:
       return 'grey';
@@ -236,16 +234,14 @@ function getStatusColor(status: RepositoryContracts.RepositoryStatus): string {
 }
 
 // 获取状态文本
-function getStatusText(status: RepositoryContracts.RepositoryStatus): string {
+function getStatusText(status: RepositoryStatus): string {
   switch (status) {
-    case RepositoryContracts.RepositoryStatus.ACTIVE:
+    case RepositoryStatus.ACTIVE:
       return '活跃';
-    case RepositoryContracts.RepositoryStatus.ARCHIVED:
+    case RepositoryStatus.ARCHIVED:
       return '已归档';
-    case RepositoryContracts.RepositoryStatus.SYNCING:
-      return '同步中';
-    case RepositoryContracts.RepositoryStatus.INACTIVE:
-      return '未激活';
+    case RepositoryStatus.DELETED:
+      return '已删除';
     default:
       return '未知';
   }
@@ -269,7 +265,7 @@ function closeCreateDialog() {
   newRepository.value = {
     name: '',
     path: '',
-    type: RepositoryContracts.RepositoryType.LOCAL,
+    type: RepositoryType.MARKDOWN,
     description: '',
   };
   createForm.value?.reset();
@@ -282,7 +278,7 @@ async function createRepository() {
   try {
     creating.value = true;
 
-    await repositoryApplicationService.createRepository({
+    await repositoryManagementApplicationService.createRepository({
       name: newRepository.value.name,
       path: newRepository.value.path,
       type: newRepository.value.type,
@@ -309,7 +305,7 @@ async function deleteRepository(uuid: string) {
   try {
     await message.delConfirm('确定要删除此仓库吗？此操作不可撤销。');
 
-    await repositoryApplicationService.deleteRepository(uuid);
+    await repositoryManagementApplicationService.deleteRepository(uuid);
     message.success('删除成功');
 
     // 如果删除的是当前选中的仓库，清除选中状态
@@ -332,3 +328,4 @@ function close() {
   background-color: rgba(var(--v-theme-primary), 0.08);
 }
 </style>
+

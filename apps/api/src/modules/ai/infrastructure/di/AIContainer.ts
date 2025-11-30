@@ -14,7 +14,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { AIGenerationService } from '@dailyuse/domain-server';
+import { AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import { AIGenerationApplicationService } from '../../application/services/AIGenerationApplicationService';
 import { AIConversationService } from '../../application/services/AIConversationService';
 import { AIProviderConfigService } from '../../application/services/AIProviderConfigService';
@@ -34,7 +34,7 @@ export class AIContainer {
   private applicationService?: AIGenerationApplicationService;
   private conversationService?: AIConversationService;
   private providerConfigService?: AIProviderConfigService;
-  private validationService?: AIGenerationService;
+  private validationService?: AIGenerationValidationService;
   private conversationRepository?: PrismaAIConversationRepository;
   private quotaRepository?: PrismaAIUsageQuotaRepository;
   private providerConfigRepository?: PrismaAIProviderConfigRepository;
@@ -102,7 +102,8 @@ export class AIContainer {
    */
   getAIAdapter(): BaseAIAdapter {
     if (!this.aiAdapter) {
-      this.aiAdapter = new OpenAIAdapter();
+      const apiKey = process.env.OPENAI_API_KEY || '';
+      this.aiAdapter = new OpenAIAdapter(apiKey);
     }
     return this.aiAdapter;
   }
@@ -119,11 +120,11 @@ export class AIContainer {
   }
 
   /**
-   * 获取 AIGenerationService（领域服务 - 纯验证）
+   * 获取 AIGenerationValidationService（领域服务 - 纯验证）
    */
-  getValidationService(): AIGenerationService {
+  getValidationService(): AIGenerationValidationService {
     if (!this.validationService) {
-      this.validationService = new AIGenerationService();
+      this.validationService = new AIGenerationValidationService();
     }
     return this.validationService;
   }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ConversationStatus, MessageRole } from '@dailyuse/contracts';
+import { ConversationStatus, MessageRole } from '@dailyuse/contracts/ai';
 import { AIConversationServer } from '../AIConversationServer';
 import { MessageServer } from '../../entities/MessageServer';
 

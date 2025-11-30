@@ -3,7 +3,12 @@
  * 账户订阅应用服务 - 负责订阅相关的用例
  */
 
-import type { AccountContracts } from '@dailyuse/contracts';
+import type {
+  SubscriptionDTO,
+  SubscribePlanRequestDTO,
+  CancelSubscriptionRequestDTO,
+  AccountStatsResponseDTO,
+} from '@dailyuse/contracts/account';
 import { useAccountStore } from '../../presentation/stores/accountStore';
 import { accountApiClient } from '../../infrastructure/api/accountApiClient';
 
@@ -44,7 +49,7 @@ export class AccountSubscriptionApplicationService {
   /**
    * 获取订阅信息
    */
-  async getSubscription(accountId: string): Promise<AccountContracts.SubscriptionDTO> {
+  async getSubscription(accountId: string): Promise<SubscriptionDTO> {
     try {
       this.accountStore.setLoading(true);
       const subscription = await accountApiClient.getSubscription(accountId);
@@ -63,8 +68,8 @@ export class AccountSubscriptionApplicationService {
    */
   async subscribePlan(
     accountId: string,
-    request: AccountContracts.SubscribePlanRequestDTO,
-  ): Promise<AccountContracts.SubscriptionDTO> {
+    request: SubscribePlanRequestDTO,
+  ): Promise<SubscriptionDTO> {
     try {
       this.accountStore.setLoading(true);
       const subscription = await accountApiClient.subscribePlan(accountId, request);
@@ -88,8 +93,8 @@ export class AccountSubscriptionApplicationService {
    */
   async cancelSubscription(
     accountId: string,
-    request?: AccountContracts.CancelSubscriptionRequestDTO,
-  ): Promise<AccountContracts.SubscriptionDTO> {
+    request?: CancelSubscriptionRequestDTO,
+  ): Promise<SubscriptionDTO> {
     try {
       this.accountStore.setLoading(true);
       const subscription = await accountApiClient.cancelSubscription(accountId, request);
@@ -113,7 +118,7 @@ export class AccountSubscriptionApplicationService {
   /**
    * 获取账户统计
    */
-  async getAccountStats(): Promise<AccountContracts.AccountStatsResponseDTO> {
+  async getAccountStats(): Promise<AccountStatsResponseDTO> {
     try {
       this.accountStore.setLoading(true);
       const stats = await accountApiClient.getAccountStats();
@@ -131,3 +136,4 @@ export class AccountSubscriptionApplicationService {
 // 导出单例
 export const accountSubscriptionApplicationService =
   AccountSubscriptionApplicationService.getInstance();
+

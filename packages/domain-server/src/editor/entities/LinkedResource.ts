@@ -3,20 +3,22 @@
  * 实现 LinkedResourceServer 接口
  */
 
-import { EditorContracts } from '@dailyuse/contracts';
+import {
+  LinkedSourceType,
+  LinkedTargetType,
+} from '@dailyuse/contracts/editor';
+import type {
+  LinkedResourceClientDTO,
+  LinkedResourcePersistenceDTO,
+  LinkedResourceServer,
+  LinkedResourceServerDTO,
+} from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
-
-type ILinkedResourceServer = EditorContracts.LinkedResourceServer;
-type LinkedResourceServerDTO = EditorContracts.LinkedResourceServerDTO;
-type LinkedResourceClientDTO = EditorContracts.LinkedResourceClientDTO;
-type LinkedResourcePersistenceDTO = EditorContracts.LinkedResourcePersistenceDTO;
-type LinkedSourceType = EditorContracts.LinkedSourceType;
-type LinkedTargetType = EditorContracts.LinkedTargetType;
 
 /**
  * LinkedResource 实体
  */
-export class LinkedResource extends Entity implements ILinkedResourceServer {
+export class LinkedResource extends Entity implements LinkedResourceServer {
   // ===== 私有字段 =====
   private _workspaceUuid: string; // 聚合根外键
   private _accountUuid: string;
@@ -257,14 +259,14 @@ export class LinkedResource extends Entity implements ILinkedResourceServer {
    * 判断是否为内部链接（指向工作区内文档）
    */
   public isInternalLink(): boolean {
-    return this._targetType === EditorContracts.LinkedTargetType.DOCUMENT;
+    return this._targetType === LinkedTargetType.DOCUMENT;
   }
 
   /**
    * 判断是否为外部链接
    */
   public isExternalLink(): boolean {
-    return this._targetType === EditorContracts.LinkedTargetType.EXTERNAL_URL;
+    return this._targetType === LinkedTargetType.EXTERNAL_URL;
   }
 
   /**

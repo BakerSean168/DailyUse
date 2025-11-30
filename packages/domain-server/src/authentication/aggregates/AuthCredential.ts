@@ -3,7 +3,16 @@
  * 实现 AuthCredentialServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type {
+  ApiKeyCredentialServer,
+  AuthCredentialClientDTO,
+  AuthCredentialPersistenceDTO,
+  AuthCredentialServer,
+  AuthCredentialServerDTO,
+  CredentialHistoryServer,
+  PasswordCredentialServer,
+  RememberMeTokenServer,
+} from '@dailyuse/contracts/authentication';
 import { AggregateRoot, generateUUID } from '@dailyuse/utils';
 import { PasswordCredential } from '../entities/PasswordCredential';
 import { ApiKeyCredential } from '../entities/ApiKeyCredential';
@@ -12,16 +21,7 @@ import { CredentialHistory } from '../entities/CredentialHistory';
 import { DeviceInfo } from '../value-objects/DeviceInfo';
 import crypto from 'crypto';
 
-type IAuthCredentialServer = AuthenticationContracts.AuthCredentialServer;
-type AuthCredentialServerDTO = AuthenticationContracts.AuthCredentialServerDTO;
-type AuthCredentialClientDTO = AuthenticationContracts.AuthCredentialClientDTO;
-type AuthCredentialPersistenceDTO = AuthenticationContracts.AuthCredentialPersistenceDTO;
-type PasswordCredentialServer = AuthenticationContracts.PasswordCredentialServer;
-type ApiKeyCredentialServer = AuthenticationContracts.ApiKeyCredentialServer;
-type RememberMeTokenServer = AuthenticationContracts.RememberMeTokenServer;
-type CredentialHistoryServer = AuthenticationContracts.CredentialHistoryServer;
-
-export class AuthCredential extends AggregateRoot implements IAuthCredentialServer {
+export class AuthCredential extends AggregateRoot implements AuthCredentialServer {
   public readonly accountUuid: string;
   public readonly type: 'PASSWORD' | 'API_KEY' | 'BIOMETRIC' | 'MAGIC_LINK' | 'HARDWARE_KEY';
   private _passwordCredential: PasswordCredential | null;

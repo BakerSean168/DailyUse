@@ -1,9 +1,9 @@
-import { AIContracts } from '@dailyuse/contracts';
-
-type MessageRole = AIContracts.MessageRole;
-type MessageServerDTO = AIContracts.MessageServerDTO;
-type MessageClientDTO = AIContracts.MessageClientDTO;
-type MessageClient = AIContracts.MessageClient;
+import { MessageRole } from '@dailyuse/contracts/ai';
+import type {
+  MessageClient,
+  MessageClientDTO,
+  MessageServerDTO,
+} from '@dailyuse/contracts/ai';
 
 export class AIMessage implements MessageClient {
   private constructor(
@@ -54,13 +54,13 @@ export class AIMessage implements MessageClient {
   }
 
   isUserMessage(): boolean {
-    return this.role === AIContracts.MessageRole.USER;
+    return this.role === MessageRole.USER;
   }
   isAssistantMessage(): boolean {
-    return this.role === AIContracts.MessageRole.ASSISTANT;
+    return this.role === MessageRole.ASSISTANT;
   }
   isSystemMessage(): boolean {
-    return this.role === AIContracts.MessageRole.SYSTEM;
+    return this.role === MessageRole.SYSTEM;
   }
   getFormattedTime(): string {
     return new Date(this.createdAt).toLocaleTimeString('zh-CN', {
@@ -82,9 +82,9 @@ export class AIMessage implements MessageClient {
       content: this.content,
       tokenCount: this.tokenCount ?? null,
       createdAt: this.createdAt,
-      isUser: this.role === AIContracts.MessageRole.USER,
-      isAssistant: this.role === AIContracts.MessageRole.ASSISTANT,
-      isSystem: this.role === AIContracts.MessageRole.SYSTEM,
+      isUser: this.role === MessageRole.USER,
+      isAssistant: this.role === MessageRole.ASSISTANT,
+      isSystem: this.role === MessageRole.SYSTEM,
       formattedTime: this.getFormattedTime(),
     };
   }

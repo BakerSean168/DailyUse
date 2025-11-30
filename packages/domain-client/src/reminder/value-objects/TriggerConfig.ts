@@ -2,15 +2,18 @@
  * TriggerConfig 值对象实现 (Client)
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import {
+  TriggerType,
+} from '@dailyuse/contracts/reminder';
+import type {
+  FixedTimeTrigger,
+  IntervalTrigger,
+  TriggerConfigClient,
+  TriggerConfigClientDTO,
+  TriggerConfigServerDTO,
+} from '@dailyuse/contracts/reminder';
 
-type TriggerConfigClientDTO = ReminderContracts.TriggerConfigClientDTO;
-type TriggerConfigServerDTO = ReminderContracts.TriggerConfigServerDTO;
-type TriggerType = ReminderContracts.TriggerType;
-type FixedTimeTrigger = ReminderContracts.FixedTimeTrigger;
-type IntervalTrigger = ReminderContracts.IntervalTrigger;
-
-export class TriggerConfig implements ReminderContracts.TriggerConfigClient {
+export class TriggerConfig implements TriggerConfigClient {
   private readonly _type: TriggerType;
   private readonly _fixedTime: FixedTimeTrigger | null;
   private readonly _interval: IntervalTrigger | null;
@@ -46,7 +49,7 @@ export class TriggerConfig implements ReminderContracts.TriggerConfigClient {
   }
 
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.TriggerConfigClient): boolean {
+  public equals(other: TriggerConfigClient): boolean {
     return (
       this._type === other.type &&
       JSON.stringify(this._fixedTime) === JSON.stringify(other.fixedTime) &&

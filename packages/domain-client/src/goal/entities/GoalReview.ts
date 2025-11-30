@@ -2,18 +2,12 @@
  * GoalReview 实体实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
-import { GoalContracts as GC } from '@dailyuse/contracts';
+import type { GoalReviewClient, GoalReviewClientDTO, GoalReviewServerDTO, KeyResultSnapshotClientDTO } from '@dailyuse/contracts/goal';
+import { ReviewType } from '@dailyuse/contracts/goal';
 import { Entity } from '@dailyuse/utils';
 import { KeyResultSnapshot } from '../value-objects/KeyResultSnapshot';
 
-type IGoalReview = GoalContracts.GoalReviewClient;
-type GoalReviewDTO = GoalContracts.GoalReviewClientDTO;
-type GoalReviewServerDTO = GoalContracts.GoalReviewServerDTO;
-type KeyResultSnapshotDTO = GoalContracts.KeyResultSnapshotClientDTO;
-type ReviewType = GoalContracts.ReviewType;
-
-export class GoalReview extends Entity implements IGoalReview {
+export class GoalReview extends Entity implements GoalReview {
   private _goalUuid: string;
   private _type: ReviewType;
   private _rating: number;
@@ -76,7 +70,7 @@ export class GoalReview extends Entity implements IGoalReview {
   public get improvements(): string | null | undefined {
     return this._improvements;
   }
-  public get keyResultSnapshots(): KeyResultSnapshotDTO[] {
+  public get keyResultSnapshots(): KeyResultSnapshotClientDTO[] {
     return this._keyResultSnapshots.map((s) => s.toClientDTO());
   }
   public get reviewedAt(): number {
@@ -89,11 +83,11 @@ export class GoalReview extends Entity implements IGoalReview {
   // UI 辅助属性
   public get typeText(): string {
     const typeLabels: Record<ReviewType, string> = {
-      [GC.ReviewType.WEEKLY]: '周复盘',
-      [GC.ReviewType.MONTHLY]: '月复盘',
-      [GC.ReviewType.QUARTERLY]: '季度复盘',
-      [GC.ReviewType.ANNUAL]: '年度复盘',
-      [GC.ReviewType.ADHOC]: '临时复盘',
+      [ReviewType.WEEKLY]: '周复盘',
+      [ReviewType.MONTHLY]: '月复盘',
+      [ReviewType.QUARTERLY]: '季度复盘',
+      [ReviewType.ANNUAL]: '年度复盘',
+      [ReviewType.ADHOC]: '临时复盘',
     };
     return typeLabels[this._type] || '未知类型';
   }
@@ -202,7 +196,7 @@ export class GoalReview extends Entity implements IGoalReview {
   }
 
   // DTO 转换
-  public toClientDTO(): GoalReviewDTO {
+  public toClientDTO(): GoalReviewClientDTO {
     return {
       uuid: this.uuid,
       goalUuid: this._goalUuid,
@@ -241,7 +235,7 @@ export class GoalReview extends Entity implements IGoalReview {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalReviewDTO): GoalReview {
+  public static fromClientDTO(dto: GoalReviewClientDTO): GoalReview {
     return new GoalReview({
       uuid: dto.uuid,
       goalUuid: dto.goalUuid,
@@ -251,7 +245,7 @@ export class GoalReview extends Entity implements IGoalReview {
       achievements: dto.achievements,
       challenges: dto.challenges,
       improvements: dto.improvements,
-      keyResultSnapshots: dto.keyResultSnapshots.map((s) =>
+      keyResultSnapshots: dto.keyResultSnapshots.map((s: KeyResultSnapshotClientDTO) =>
         KeyResultSnapshot.fromClientDTO(s),
       ),
       reviewedAt: dto.reviewedAt,
@@ -282,7 +276,7 @@ export class GoalReview extends Entity implements IGoalReview {
     return new GoalReview({
       uuid: crypto.randomUUID(),
       goalUuid,
-      type: GC.ReviewType.ADHOC,
+      type: ReviewType.ADHOC,
       rating: 5,
       summary: '',
       keyResultSnapshots: [],

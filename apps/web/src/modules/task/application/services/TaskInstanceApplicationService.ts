@@ -3,8 +3,8 @@
  * 任务实例应用服务 - 负责任务实例的 CRUD 操作和状态管理
  */
 
-import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client';
-import type { TaskContracts } from '@dailyuse/contracts';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskInstanceApiClient } from '../../infrastructure/api/taskApiClient';
 
@@ -46,14 +46,14 @@ export class TaskInstanceApplicationService {
    * 创建任务实例
    * @deprecated 后端不支持直接创建实例，请使用 TaskTemplate 的 generateInstances 方法
    */
-  async createTaskInstance(request: any): Promise<TaskContracts.TaskInstanceClientDTO> {
+  async createTaskInstance(request: any): Promise<TaskInstanceClientDTO> {
     throw new Error('createTaskInstance is not supported - use TaskTemplate.generateInstances instead');
   }
 
   /**
    * 获取任务实例详情
    */
-  async getTaskInstanceById(uuid: string): Promise<TaskContracts.TaskInstanceClientDTO | null> {
+  async getTaskInstanceById(uuid: string): Promise<TaskInstanceClientDTO | null> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -84,7 +84,7 @@ export class TaskInstanceApplicationService {
   async updateTaskInstance(
     uuid: string,
     request: any,
-  ): Promise<TaskContracts.TaskInstanceClientDTO> {
+  ): Promise<TaskInstanceClientDTO> {
     throw new Error('updateTaskInstance is not supported - use start/complete/skip methods instead');
   }
 
@@ -119,7 +119,7 @@ export class TaskInstanceApplicationService {
       note?: string;
       rating?: number;
     },
-  ): Promise<TaskContracts.TaskInstanceClientDTO> {
+  ): Promise<TaskInstanceClientDTO> {
     try {
       this.taskStore.setLoading(true);
       this.taskStore.setError(null);
@@ -158,7 +158,7 @@ export class TaskInstanceApplicationService {
    * 撤销任务完成
    * @deprecated 后端不支持撤销完成功能
    */
-  async undoCompleteTaskInstance(uuid: string): Promise<TaskContracts.TaskInstanceClientDTO> {
+  async undoCompleteTaskInstance(uuid: string): Promise<TaskInstanceClientDTO> {
     throw new Error('undoCompleteTaskInstance is not supported');
   }
 
@@ -169,7 +169,7 @@ export class TaskInstanceApplicationService {
   async rescheduleTaskInstance(
     uuid: string,
     request: any,
-  ): Promise<TaskContracts.TaskInstanceClientDTO> {
+  ): Promise<TaskInstanceClientDTO> {
     throw new Error('rescheduleTaskInstance is not supported');
   }
 
@@ -180,7 +180,7 @@ export class TaskInstanceApplicationService {
   async cancelTaskInstance(
     uuid: string,
     reason?: string,
-  ): Promise<TaskContracts.TaskInstanceClientDTO> {
+  ): Promise<TaskInstanceClientDTO> {
     throw new Error('cancelTaskInstance is not supported - use skipTaskInstance instead');
   }
 
@@ -199,7 +199,7 @@ export class TaskInstanceApplicationService {
     urgency?: string;
     tags?: string[];
   }): Promise<{
-    data: TaskContracts.TaskInstanceClientDTO[];
+    data: TaskInstanceClientDTO[];
     total: number;
     page: number;
     limit: number;
@@ -212,7 +212,7 @@ export class TaskInstanceApplicationService {
    * 获取今日任务
    * @deprecated 后端不支持，请使用 getTaskInstances 并过滤日期
    */
-  async getTodayInstances(): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+  async getTodayInstances(): Promise<TaskInstanceClientDTO[]> {
     throw new Error('getTodayInstances is not supported - use getTaskInstances with date filters instead');
   }
 
@@ -220,7 +220,7 @@ export class TaskInstanceApplicationService {
    * 获取即将到期的任务
    * @deprecated 后端不支持，请使用 getTaskInstances 并过滤日期
    */
-  async getUpcomingInstances(days?: number): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+  async getUpcomingInstances(days?: number): Promise<TaskInstanceClientDTO[]> {
     throw new Error('getUpcomingInstances is not supported - use getTaskInstances with date filters instead');
   }
 
@@ -228,7 +228,7 @@ export class TaskInstanceApplicationService {
    * 获取逾期任务
    * @deprecated 后端不支持，请使用 getTaskInstances 并过滤日期
    */
-  async getOverdueInstances(): Promise<TaskContracts.TaskInstanceClientDTO[]> {
+  async getOverdueInstances(): Promise<TaskInstanceClientDTO[]> {
     throw new Error('getOverdueInstances is not supported - use getTaskInstances with date filters instead');
   }
 }
@@ -237,3 +237,4 @@ export class TaskInstanceApplicationService {
  * 导出单例实例
  */
 export const taskInstanceApplicationService = TaskInstanceApplicationService.getInstance();
+

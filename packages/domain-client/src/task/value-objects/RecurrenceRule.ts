@@ -2,16 +2,11 @@
  * RecurrenceRule 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { RecurrenceRuleClient, RecurrenceRuleClientDTO, RecurrenceRuleServerDTO } from '@dailyuse/contracts/task';
+import { DayOfWeek, RecurrenceFrequency } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type IRecurrenceRule = TaskContracts.RecurrenceRuleClient;
-type RecurrenceRuleDTO = TaskContracts.RecurrenceRuleClientDTO;
-type RecurrenceRuleServerDTO = TaskContracts.RecurrenceRuleServerDTO;
-type RecurrenceFrequency = TaskContracts.RecurrenceFrequency;
-type DayOfWeek = TaskContracts.DayOfWeek;
-
-export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
+export class RecurrenceRule extends ValueObject implements RecurrenceRule {
   private _frequency: RecurrenceFrequency;
   private _interval: number;
   private _daysOfWeek: DayOfWeek[];
@@ -101,7 +96,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   }
 
   // 值对象方法
-  public equals(other: IRecurrenceRule): boolean {
+  public equals(other: RecurrenceRuleClient): boolean {
     return (
       this._frequency === other.frequency &&
       this._interval === other.interval &&
@@ -127,7 +122,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
     };
   }
 
-  public toClientDTO(): RecurrenceRuleDTO {
+  public toClientDTO(): RecurrenceRuleClientDTO {
     return {
       frequency: this._frequency,
       interval: this._interval,
@@ -142,7 +137,7 @@ export class RecurrenceRule extends ValueObject implements IRecurrenceRule {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: RecurrenceRuleDTO): RecurrenceRule {
+  public static fromClientDTO(dto: RecurrenceRuleClientDTO): RecurrenceRule {
     return new RecurrenceRule({
       frequency: dto.frequency,
       interval: dto.interval,

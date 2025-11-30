@@ -5,16 +5,16 @@
     <v-card-text>
       <v-form ref="formRef">
         <v-text-field
-          v-model="formData.title"
-          label="标题"
-          :rules="[(v) => !!v || '标题不能为空']"
+          v-model="formData.name"
+          label="文件名"
+          :rules="[(v) => !!v || '文件名不能为空']"
           required
         />
 
         <v-text-field
-          v-model="formData.folderPath"
-          label="文件夹路径"
-          placeholder="/personal/notes"
+          v-model="formData.path"
+          label="文件路径"
+          placeholder="/personal/notes/readme.md"
           :rules="[(v) => !!v || '路径不能为空', (v) => v.startsWith('/') || '路径必须以 / 开头']"
           required
         />
@@ -46,9 +46,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 
 interface Props {
   document?: DocumentClientDTO;
@@ -60,15 +59,15 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  save: [data: { title: string; content: string; folderPath: string; tags: string[] }];
+  save: [data: { name: string; content: string; path: string; tags: string[] }];
   cancel: [];
 }>();
 
 const formRef = ref();
 const formData = ref({
-  title: '',
+  name: '',
   content: '',
-  folderPath: '/',
+  path: '/',
   tags: [] as string[],
 });
 
@@ -78,17 +77,17 @@ watch(() => props.document, (doc) => {
   if (doc) {
     isEdit.value = true;
     formData.value = {
-      title: doc.title,
+      name: doc.name,
       content: doc.content,
-      folderPath: doc.folderPath,
-      tags: [...doc.tags],
+      path: doc.path,
+      tags: [...doc.metadata.tags],
     };
   } else {
     isEdit.value = false;
     formData.value = {
-      title: '',
+      name: '',
       content: '',
-      folderPath: '/',
+      path: '/',
       tags: [],
     };
   }
@@ -101,3 +100,4 @@ const handleSave = async () => {
   }
 };
 </script>
+

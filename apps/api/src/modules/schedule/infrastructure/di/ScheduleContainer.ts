@@ -2,7 +2,7 @@ import type {
   IScheduleTaskRepository,
   IScheduleStatisticsRepository,
   IScheduleExecutionRepository,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 import { PrismaScheduleTaskRepository } from '../repositories/PrismaScheduleTaskRepository';
 import { PrismaScheduleStatisticsRepository } from '../repositories/PrismaScheduleStatisticsRepository';
 import { PrismaScheduleRepository } from '../repositories/PrismaScheduleRepository';

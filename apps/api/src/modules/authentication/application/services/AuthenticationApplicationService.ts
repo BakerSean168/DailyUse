@@ -17,12 +17,11 @@ import crypto from 'crypto';
 import type {
   IAuthCredentialRepository,
   IAuthSessionRepository,
-  IAccountRepository,
   AuthCredential,
   AuthSession,
-  Account,
-} from '@dailyuse/domain-server';
-import { AuthenticationDomainService } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/authentication';
+import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
+import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { AuthenticationContainer } from '../../infrastructure/di/AuthenticationContainer';
 import { AccountContainer } from '../../../account/infrastructure/di/AccountContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';

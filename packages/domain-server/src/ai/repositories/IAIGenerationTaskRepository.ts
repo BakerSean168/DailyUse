@@ -8,11 +8,8 @@
  * - 隐藏持久化细节
  */
 
-import type { AIContracts } from '@dailyuse/contracts';
-
-type AIGenerationTaskServerDTO = AIContracts.AIGenerationTaskServerDTO;
-type GenerationTaskType = AIContracts.GenerationTaskType;
-type TaskStatus = AIContracts.TaskStatus;
+import type { AIGenerationTaskServerDTO, TaskStatus } from '@dailyuse/contracts/ai';
+import { GenerationTaskType } from '@dailyuse/contracts/ai';
 
 /**
  * IAIGenerationTaskRepository 仓储接口

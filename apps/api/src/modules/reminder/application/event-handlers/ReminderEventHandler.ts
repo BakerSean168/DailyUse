@@ -1,5 +1,5 @@
 import { eventBus, type DomainEvent, Logger } from '@dailyuse/utils';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderTemplateServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
 
 const logger = new Logger('ReminderEventHandler');
@@ -26,7 +26,7 @@ type ReminderTemplateRefreshPayload = {
   action: ReminderTemplateAction;
   timestamp: number;
   payload?: Record<string, unknown>;
-  template?: ReminderContracts.ReminderTemplateServerDTO;
+  template?: ReminderTemplateServerDTO;
 };
 
 type ReminderGroupRefreshPayload = {
@@ -35,7 +35,7 @@ type ReminderGroupRefreshPayload = {
   action: ReminderGroupAction;
   timestamp: number;
   payload?: Record<string, unknown>;
-  group?: ReminderContracts.ReminderGroupServerDTO;
+  group?: ReminderGroupServerDTO;
 };
 
 type SSEManager = import('../../../notification/interface/http/sseRoutes').SSEConnectionManager;
@@ -143,11 +143,11 @@ export class ReminderEventHandler {
     };
 
     if (!options?.skipSnapshot) {
-      let templateSnapshot: ReminderContracts.ReminderTemplateServerDTO | undefined;
+      let templateSnapshot: ReminderTemplateServerDTO | undefined;
 
       if (options?.includeSnapshotFromEvent) {
         templateSnapshot = rawPayload?.reminder as
-          | ReminderContracts.ReminderTemplateServerDTO
+          | ReminderTemplateServerDTO
           | undefined;
       }
 
@@ -201,7 +201,7 @@ export class ReminderEventHandler {
 
   private static async fetchTemplateSnapshot(
     uuid: string,
-  ): Promise<ReminderContracts.ReminderTemplateServerDTO | undefined> {
+  ): Promise<ReminderTemplateServerDTO | undefined> {
     try {
       const repo = ReminderContainer.getInstance().getReminderTemplateRepository() as any;
       const template = typeof repo.findByUuid === 'function' ? await repo.findByUuid(uuid) : await repo.findById(uuid);
@@ -214,7 +214,7 @@ export class ReminderEventHandler {
 
   private static async fetchGroupSnapshot(
     uuid: string,
-  ): Promise<ReminderContracts.ReminderGroupServerDTO | undefined> {
+  ): Promise<ReminderGroupServerDTO | undefined> {
     try {
       const repo = ReminderContainer.getInstance().getReminderGroupRepository() as any;
       let group = null;
@@ -277,7 +277,7 @@ export class ReminderEventHandler {
         ? (payload as Record<string, unknown>)
         : undefined;
 
-    const reminder = rawPayload?.reminder as ReminderContracts.ReminderTemplateServerDTO | undefined;
+    const reminder = rawPayload?.reminder as ReminderTemplateServerDTO | undefined;
     
     if (!reminder) {
       logger.error('[ReminderEventHandler] Missing reminder in event payload');
@@ -294,7 +294,7 @@ export class ReminderEventHandler {
 
     try {
       const { ScheduleTaskFactory } = await import('@dailyuse/domain-server');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
       
       // 创建 ScheduleTaskFactory
@@ -346,7 +346,7 @@ export class ReminderEventHandler {
     
     try {
       const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
@@ -385,7 +385,7 @@ export class ReminderEventHandler {
     
     try {
       const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
@@ -424,7 +424,7 @@ export class ReminderEventHandler {
     
     try {
       const { ScheduleContainer } = await import('../../../schedule/infrastructure/di/ScheduleContainer');
-      const { SourceModule } = await import('@dailyuse/contracts');
+      const { SourceModule } = await import('@dailyuse/contracts/schedule');
       
       const container = ScheduleContainer.getInstance();
       const repository = container.getScheduleTaskRepository();
@@ -434,7 +434,7 @@ export class ReminderEventHandler {
       
       if (scheduleTasks && scheduleTasks.length > 0) {
         for (const scheduleTask of scheduleTasks) {
-          await repository.delete(scheduleTask.uuid);
+          await repository.deleteByUuid(scheduleTask.uuid);
           
           logger.info('✅ [ReminderEventHandler] 删除了 ScheduleTask', {
             reminderUuid,
@@ -454,3 +454,4 @@ export class ReminderEventHandler {
     }
   }
 }
+

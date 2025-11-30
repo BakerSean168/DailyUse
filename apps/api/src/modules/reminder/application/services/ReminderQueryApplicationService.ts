@@ -14,8 +14,10 @@
  */
 
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
-import { UpcomingReminderCalculationService, UpcomingReminderDTO } from '@dailyuse/domain-server';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import type { UpcomingReminderDTO } from '@dailyuse/domain-server/reminder';
+import { UpcomingReminderCalculationService } from '@dailyuse/domain-server/reminder';
+import type { ReminderTemplateServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderQueryApplicationService');
@@ -34,7 +36,7 @@ export interface UpcomingRemindersQueryParams {
   
   // 过滤选项
   groupUuid?: string | null; // 仅查看特定分组，null 表示未分组的提醒
-  importanceLevel?: ReminderContracts.ImportanceLevel; // 仅查看特定重要性级别
+  importanceLevel?: ImportanceLevel; // 仅查看特定重要性级别
 }
 
 /**
@@ -229,7 +231,7 @@ export class ReminderQueryApplicationService {
       const container = ReminderContainer.getInstance();
       const reminderRepo = container.getReminderTemplateRepository();
 
-      const reminder = await reminderRepo.findByUuid(templateUuid);
+      const reminder = await reminderRepo.findById(templateUuid);
       if (!reminder) {
         logger.warn('提醒模板不存在', { accountUuid, templateUuid });
         return null;
@@ -323,3 +325,4 @@ export class ReminderQueryApplicationService {
 
 // 导出单例实例
 export const reminderQueryApplicationService = ReminderQueryApplicationService.getInstance();
+

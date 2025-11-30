@@ -2,14 +2,10 @@
  * CompletionRecord 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { CompletionRecordClient, CompletionRecordClientDTO, CompletionRecordServerDTO } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ICompletionRecord = TaskContracts.CompletionRecordClient;
-type CompletionRecordDTO = TaskContracts.CompletionRecordClientDTO;
-type CompletionRecordServerDTO = TaskContracts.CompletionRecordServerDTO;
-
-export class CompletionRecord extends ValueObject implements ICompletionRecord {
+export class CompletionRecord extends ValueObject implements CompletionRecord {
   private _completedAt: number;
   private _actualDuration: number | null;
   private _note: string | null;
@@ -71,7 +67,7 @@ export class CompletionRecord extends ValueObject implements ICompletionRecord {
   }
 
   // 值对象方法
-  public equals(other: ICompletionRecord): boolean {
+  public equals(other: CompletionRecordClient): boolean {
     return (
       this._completedAt === other.completedAt &&
       this._actualDuration === other.actualDuration &&
@@ -90,7 +86,7 @@ export class CompletionRecord extends ValueObject implements ICompletionRecord {
     };
   }
 
-  public toClientDTO(): CompletionRecordDTO {
+  public toClientDTO(): CompletionRecordClientDTO {
     return {
       completedAt: this._completedAt,
       actualDuration: this._actualDuration,
@@ -105,7 +101,7 @@ export class CompletionRecord extends ValueObject implements ICompletionRecord {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: CompletionRecordDTO): CompletionRecord {
+  public static fromClientDTO(dto: CompletionRecordClientDTO): CompletionRecord {
     return new CompletionRecord({
       completedAt: dto.completedAt,
       actualDuration: dto.actualDuration,

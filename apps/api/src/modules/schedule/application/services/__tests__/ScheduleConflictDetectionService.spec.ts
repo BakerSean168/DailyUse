@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ScheduleConflictDetectionService from '../ScheduleConflictDetectionService';
-import type { ScheduleServerDTO } from '@dailyuse/contracts';
-import { Schedule as DomainSchedule } from '@dailyuse/domain-server';
+import type { ScheduleServerDTO } from '@dailyuse/contracts/schedule';
+import { Schedule as DomainSchedule } from '@dailyuse/domain-server/schedule';
 
 describe('ScheduleConflictDetectionService', () => {
   let service: ScheduleConflictDetectionService;
@@ -269,3 +269,5 @@ describe('ScheduleConflictDetectionService', () => {
     });
   });
 });
+
+

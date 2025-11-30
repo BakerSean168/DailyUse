@@ -3,19 +3,24 @@
  * 实现 EditorWorkspaceServer 接口
  */
 
-import { EditorContracts } from '@dailyuse/contracts';
+import {
+  ProjectType,
+} from '@dailyuse/contracts/editor';
+import type {
+  EditorWorkspaceClientDTO,
+  EditorWorkspacePersistenceDTO,
+  EditorWorkspaceServer,
+  EditorWorkspaceServerDTO,
+  SessionLayoutServerDTO,
+  WorkspaceLayoutServerDTO,
+  WorkspaceSettingsServerDTO,
+} from '@dailyuse/contracts/editor';
 import { AggregateRoot } from '@dailyuse/utils';
 import { WorkspaceLayout } from '../value-objects/WorkspaceLayout';
 import { WorkspaceSettings } from '../value-objects/WorkspaceSettings';
 import { EditorSession } from '../entities/EditorSession';
 import { EditorGroup } from '../entities/EditorGroup';
 import { EditorTab } from '../entities/EditorTab';
-
-type IEditorWorkspaceServer = EditorContracts.EditorWorkspaceServer;
-type EditorWorkspaceServerDTO = EditorContracts.EditorWorkspaceServerDTO;
-type EditorWorkspaceClientDTO = EditorContracts.EditorWorkspaceClientDTO;
-type EditorWorkspacePersistenceDTO = EditorContracts.EditorWorkspacePersistenceDTO;
-type ProjectType = EditorContracts.ProjectType;
 
 /**
  * EditorWorkspace 聚合根
@@ -26,7 +31,7 @@ type ProjectType = EditorContracts.ProjectType;
  * - 确保聚合内的一致性
  * - 是事务边界
  */
-export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceServer {
+export class EditorWorkspace extends AggregateRoot implements EditorWorkspaceServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _name: string;
@@ -96,10 +101,10 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceSe
   public get projectType(): ProjectType {
     return this._projectType;
   }
-  public get layout(): EditorContracts.WorkspaceLayoutServerDTO {
+  public get layout(): WorkspaceLayoutServerDTO {
     return this._layout.toServerDTO();
   }
-  public get settings(): EditorContracts.WorkspaceSettingsServerDTO {
+  public get settings(): WorkspaceSettingsServerDTO {
     return this._settings.toServerDTO();
   }
   public get isActive(): boolean {
@@ -132,8 +137,8 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceSe
     description?: string;
     projectPath: string;
     projectType: ProjectType;
-    layout?: Partial<EditorContracts.WorkspaceLayoutServerDTO>;
-    settings?: Partial<EditorContracts.WorkspaceSettingsServerDTO>;
+    layout?: Partial<WorkspaceLayoutServerDTO>;
+    settings?: Partial<WorkspaceSettingsServerDTO>;
   }): EditorWorkspace {
     const uuid = crypto.randomUUID();
     const now = Date.now();
@@ -339,7 +344,7 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceSe
   /**
    * 更新布局配置
    */
-  public updateLayout(layout: Partial<EditorContracts.WorkspaceLayoutServerDTO>): void {
+  public updateLayout(layout: Partial<WorkspaceLayoutServerDTO>): void {
     this._layout = this._layout.with(layout);
     this._updatedAt = Date.now();
 
@@ -358,7 +363,7 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceSe
   /**
    * 更新设置
    */
-  public updateSettings(settings: Partial<EditorContracts.WorkspaceSettingsServerDTO>): void {
+  public updateSettings(settings: Partial<WorkspaceSettingsServerDTO>): void {
     this._settings = this._settings.with(settings);
     this._updatedAt = Date.now();
 
@@ -398,7 +403,7 @@ export class EditorWorkspace extends AggregateRoot implements IEditorWorkspaceSe
   public addSession(params: {
     name: string;
     description?: string;
-    layout?: Partial<EditorContracts.SessionLayoutServerDTO>;
+    layout?: Partial<SessionLayoutServerDTO>;
   }): EditorSession {
     const session = EditorSession.create({
       workspaceUuid: this.uuid,

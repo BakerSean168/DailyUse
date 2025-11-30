@@ -1,13 +1,14 @@
 /**
  * Folder 实体实现 (Server)
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type {
+  FolderClientDTO,
+  FolderMetadataServerDTO,
+  FolderPersistenceDTO,
+  FolderServer,
+  FolderServerDTO,
+} from '@dailyuse/contracts/repository';
 import { FolderMetadata } from '../value-objects';
-
-// 类型别名
-type FolderServer = RepositoryContracts.FolderServer;
-type FolderServerDTO = RepositoryContracts.FolderServerDTO;
-type FolderPersistenceDTO = RepositoryContracts.FolderPersistenceDTO;
 
 export class Folder implements FolderServer {
   // ===== 私有字段 =====
@@ -123,7 +124,7 @@ export class Folder implements FolderServer {
     this._updatedAt = Date.now();
   }
 
-  updateMetadata(metadata: Partial<RepositoryContracts.FolderMetadataServerDTO>): void {
+  updateMetadata(metadata: Partial<FolderMetadataServerDTO>): void {
     const currentDTO = this._metadata.toServerDTO();
     const merged = { ...currentDTO, ...metadata };
     this._metadata = FolderMetadata.fromServerDTO(merged);
@@ -154,7 +155,7 @@ export class Folder implements FolderServer {
     };
   }
 
-  toClientDTO(includeChildren = false): RepositoryContracts.FolderClientDTO {
+  toClientDTO(includeChildren = false): FolderClientDTO {
     // 计算路径深度
     const depth = this._path.split('/').filter((p) => p.length > 0).length;
     const isRoot = this._parentUuid === null;
@@ -216,7 +217,7 @@ export class Folder implements FolderServer {
     name: string;
     parentPath?: string | null;
     order?: number;
-    metadata?: Partial<RepositoryContracts.FolderMetadataServerDTO>;
+    metadata?: Partial<FolderMetadataServerDTO>;
   }): Folder {
     const path = params.parentPath ? `${params.parentPath}/${params.name}` : `/${params.name}`;
 

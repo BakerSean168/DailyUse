@@ -204,14 +204,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
-import { ReminderTemplate } from '@dailyuse/domain-client';
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { useReminder } from '../../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
-type ReminderTemplateDTO = ReminderContracts.ReminderTemplateClientDTO;
+type ReminderTemplateDTO = ReminderTemplateClientDTO;
 
 // Composables
 const { toggleTemplateStatus, getReminderTemplateByUuid } = useReminder();
@@ -408,3 +409,4 @@ defineExpose({
   word-break: break-word;
 }
 </style>
+

@@ -1,9 +1,7 @@
 // @ts-nocheck
 import { randomUUID } from 'crypto';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentServerDTO, DocumentVersionServerDTO, DocumentLinkServerDTO } from '@dailyuse/contracts/editor';
 
-type DocumentServerDTO = DocumentContracts.DocumentServerDTO;
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 
 type Result<T> = 
   | { isSuccess: true; isFailure: false; getValue: () => T }
@@ -344,3 +342,5 @@ export class Document {
     };
   }
 }
+
+

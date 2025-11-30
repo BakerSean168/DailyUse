@@ -4,12 +4,13 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
-import { ScheduleContracts } from '@dailyuse/contracts';
-
-type TaskPriority = ScheduleContracts.TaskPriority;
-type TaskMetadataServerDTO = ScheduleContracts.TaskMetadataServerDTO;
-type TaskMetadataClientDTO = ScheduleContracts.TaskMetadataClientDTO;
-type TaskMetadataPersistenceDTO = ScheduleContracts.TaskMetadataPersistenceDTO;
+import type {
+  TaskMetadataClientDTO,
+  TaskMetadataPersistenceDTO,
+  TaskMetadataServer,
+  TaskMetadataServerDTO,
+} from '@dailyuse/contracts/schedule';
+import { TaskPriority } from '@dailyuse/contracts/schedule';
 
 /**
  * TaskMetadata 值对象
@@ -20,7 +21,7 @@ type TaskMetadataPersistenceDTO = ScheduleContracts.TaskMetadataPersistenceDTO;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class TaskMetadata extends ValueObject implements ScheduleContracts.TaskMetadataServer {
+export class TaskMetadata extends ValueObject implements TaskMetadataServer {
   public readonly payload: Record<string, any>;
   public readonly tags: string[];
   public readonly priority: TaskPriority;
@@ -50,7 +51,7 @@ export class TaskMetadata extends ValueObject implements ScheduleContracts.TaskM
 
     this.payload = safePayload;
     this.tags = params.tags ? [...params.tags] : [];
-    this.priority = params.priority || ScheduleContracts.TaskPriority.NORMAL;
+    this.priority = params.priority || TaskPriority.NORMAL;
     this.timeout = params.timeout ?? null;
 
     // 验证配置
@@ -77,7 +78,7 @@ export class TaskMetadata extends ValueObject implements ScheduleContracts.TaskM
         errors.push('Tags must be non-empty strings');
       }
     }
-    
+
     return { isValid: errors.length === 0, errors };
   }
 
@@ -191,25 +192,31 @@ export class TaskMetadata extends ValueObject implements ScheduleContracts.TaskM
       tags: Array.from(this.tags),
       priority: this.priority,
       timeout: this.timeout,
-      
+
       // UI 辅助属性
       priorityDisplay: this.priority, // 暂时直接使用枚举值
       priorityColor: this.getPriorityColor(),
       tagsDisplay: this.tags.join(', '),
       timeoutFormatted: this.timeout ? `${this.timeout}ms` : '无超时',
-      payloadSummary: Object.keys(this.payload).length > 0 
-        ? `${Object.keys(this.payload).length} items` 
-        : 'Empty',
+      payloadSummary:
+        Object.keys(this.payload).length > 0
+          ? `${Object.keys(this.payload).length} items`
+          : 'Empty',
     };
   }
 
   private getPriorityColor(): string {
     switch (this.priority) {
-      case ScheduleContracts.TaskPriority.URGENT: return 'red';
-      case ScheduleContracts.TaskPriority.HIGH: return 'orange';
-      case ScheduleContracts.TaskPriority.NORMAL: return 'blue';
-      case ScheduleContracts.TaskPriority.LOW: return 'gray';
-      default: return 'default';
+      case TaskPriority.URGENT:
+        return 'red';
+      case TaskPriority.HIGH:
+        return 'orange';
+      case TaskPriority.NORMAL:
+        return 'blue';
+      case TaskPriority.LOW:
+        return 'gray';
+      default:
+        return 'default';
     }
   }
 
@@ -251,7 +258,7 @@ export class TaskMetadata extends ValueObject implements ScheduleContracts.TaskM
     return new TaskMetadata({
       payload: {},
       tags: [],
-      priority: ScheduleContracts.TaskPriority.NORMAL,
+      priority: TaskPriority.NORMAL,
       timeout: null,
     });
   }

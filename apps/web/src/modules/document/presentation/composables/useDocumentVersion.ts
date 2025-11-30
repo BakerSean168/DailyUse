@@ -8,10 +8,8 @@
 
 import { ref, computed } from 'vue';
 import { documentVersionApi } from '../../infrastructure/api/DocumentVersionApiClient';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentVersionClientDTO = DocumentContracts.DocumentVersionClientDTO;
-type VersionComparisonDTO = DocumentContracts.VersionComparisonDTO;
 
 export function useDocumentVersion(documentUuid: string) {
   // ==================== State ====================
@@ -173,3 +171,4 @@ export function useDocumentVersion(documentUuid: string) {
     refresh,
   };
 }
+

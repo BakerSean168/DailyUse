@@ -13,13 +13,14 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskDependency } from '../TaskDependency';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskDependencyServerDTO } from '@dailyuse/contracts/task';
+import { DependencyType } from '@dailyuse/contracts/task';
 
 describe('TaskDependency Aggregate', () => {
   // ==================== 测试数据 ====================
   const mockPredecessorUuid = 'task-predecessor-uuid-123';
   const mockSuccessorUuid = 'task-successor-uuid-456';
-  const mockDependencyType: TaskContracts.DependencyType = 'FINISH_TO_START';
+  const mockDependencyType: DependencyType = 'FINISH_TO_START';
 
   // ==================== 工厂方法测试 ====================
   describe('Factory Methods', () => {
@@ -106,7 +107,7 @@ describe('TaskDependency Aggregate', () => {
     describe('fromServerDTO()', () => {
       it('应该从 ServerDTO 正确恢复依赖', () => {
         const now = new Date();
-        const dto: TaskContracts.TaskDependencyServerDTO = {
+        const dto: TaskDependencyServerDTO = {
           uuid: 'test-uuid',
           predecessorTaskUuid: mockPredecessorUuid,
           successorTaskUuid: mockSuccessorUuid,
@@ -133,7 +134,7 @@ describe('TaskDependency Aggregate', () => {
           uuid: 'test-uuid',
           predecessorTaskUuid: mockPredecessorUuid,
           successorTaskUuid: mockSuccessorUuid,
-          dependencyType: mockDependencyType as TaskContracts.DependencyType,
+          dependencyType: mockDependencyType as DependencyType,
           lagDays: 3,
           createdAt: now,
           updatedAt: now,
@@ -323,7 +324,7 @@ describe('TaskDependency Aggregate', () => {
   // ==================== 边界条件测试 ====================
   describe('Edge Cases', () => {
     it('应该处理所有依赖类型', () => {
-      const types: TaskContracts.DependencyType[] = [
+      const types: DependencyType[] = [
         'FINISH_TO_START',
         'START_TO_START',
         'FINISH_TO_FINISH',

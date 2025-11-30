@@ -4,7 +4,7 @@
  */
 
 import { ref, computed } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, CreateGoalFolderRequest, UpdateGoalFolderRequest } from '@dailyuse/contracts/goal';
 import { goalFolderApplicationService } from '../../application/services';
 import { getGoalStore } from '../stores/goalStore';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
@@ -67,7 +67,7 @@ export function useGoalFolder() {
   /**
    * 创建新文件夹
    */
-  const createFolder = async (data: GoalContracts.CreateGoalFolderRequest) => {
+  const createFolder = async (data: CreateGoalFolderRequest) => {
     try {
       const response = await goalFolderApplicationService.createGoalFolder(data);
       showCreateFolderDialog.value = false;
@@ -82,7 +82,7 @@ export function useGoalFolder() {
   /**
    * 更新文件夹
    */
-  const updateFolder = async (uuid: string, data: GoalContracts.UpdateGoalFolderRequest) => {
+  const updateFolder = async (uuid: string, data: UpdateGoalFolderRequest) => {
     try {
       const response = await goalFolderApplicationService.updateGoalFolder(uuid, data);
       showEditFolderDialog.value = false;
@@ -131,3 +131,4 @@ export function useGoalFolder() {
     deleteFolder,
   };
 }
+

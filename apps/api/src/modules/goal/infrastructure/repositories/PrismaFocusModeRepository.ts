@@ -1,7 +1,7 @@
 import type { PrismaClient, focusMode as PrismaFocusMode } from '@prisma/client';
-import type { IFocusModeRepository } from '@dailyuse/domain-server';
-import { FocusMode } from '@dailyuse/domain-server';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { IFocusModeRepository } from '@dailyuse/domain-server/goal';
+import { FocusMode } from '@dailyuse/domain-server/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 
 /**
  * FocusMode Prisma 仓储实现
@@ -19,7 +19,7 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
       focusedGoalUuids: data.focusedGoalUuids,
       startTime: Number(data.startTime),
       endTime: Number(data.endTime),
-      hiddenGoalsMode: data.hiddenGoalsMode as GoalContracts.HiddenGoalsMode,
+      hiddenGoalsMode: data.hiddenGoalsMode as HiddenGoalsMode,
       isActive: data.isActive,
       actualEndTime: data.actualEndTime ? Number(data.actualEndTime) : null,
       createdAt: Number(data.createdAt),
@@ -125,3 +125,4 @@ export class PrismaFocusModeRepository implements IFocusModeRepository {
     });
   }
 }
+

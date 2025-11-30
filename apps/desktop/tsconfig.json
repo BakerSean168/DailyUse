@@ -91,15 +91,10 @@
   // ============================================================
 
   // Desktop 应用依赖的包
+  // 注意：使用 tsup 构建的包不需要通过 references 引用
+  // 它们通过 package.json 的 exports 字段提供类型
   "references": [
     // Vite 配置文件的类型检查
-    { "path": "./tsconfig.node.json" },
-
-    // 应用依赖的包
-    { "path": "../../packages/contracts" },
-
-    { "path": "../../packages/domain-client" },
-    { "path": "../../packages/utils" },
-    { "path": "../../packages/ui" }
+    { "path": "./tsconfig.node.json" }
   ]
 }

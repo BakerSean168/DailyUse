@@ -19,7 +19,7 @@
 import type { ScheduleStatistics } from '../aggregates/ScheduleStatistics';
 import type { IScheduleStatisticsRepository } from '../repositories/IScheduleStatisticsRepository';
 import type { IScheduleTaskRepository } from '../repositories/IScheduleTaskRepository';
-import { ScheduleContracts, SourceModule, ScheduleTaskStatus } from '@dailyuse/contracts';
+import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 
 /**
  * 模块统计查询结果

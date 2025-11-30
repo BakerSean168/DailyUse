@@ -1,12 +1,8 @@
 // @ts-nocheck
 import { ref } from 'vue';
 import { documentApiClient } from '../api/DocumentApiClient';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
-type CreateDocumentDTO = DocumentContracts.CreateDocumentDTO;
-type UpdateDocumentDTO = DocumentContracts.UpdateDocumentDTO;
-type FindDocumentsQueryDTO = DocumentContracts.FindDocumentsQueryDTO;
 
 export function useDocument() {
   const documents = ref<DocumentClientDTO[]>([]);
@@ -134,3 +130,4 @@ export function useDocument() {
     deleteDocument,
   };
 }
+

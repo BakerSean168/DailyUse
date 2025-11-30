@@ -3,10 +3,13 @@
  * 任务目标绑定 - 不可变值对象
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type {
+  TaskGoalBindingClientDTO,
+  TaskGoalBindingPersistenceDTO,
+  TaskGoalBindingServer,
+  TaskGoalBindingServerDTO,
+} from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
-
-type ITaskGoalBinding = TaskContracts.TaskGoalBindingServerDTO;
 
 /**
  * TaskGoalBinding 值对象
@@ -17,7 +20,7 @@ type ITaskGoalBinding = TaskContracts.TaskGoalBindingServerDTO;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {
+export class TaskGoalBinding extends ValueObject implements TaskGoalBindingServer {
   public readonly goalUuid: string;
   public readonly keyResultUuid: string;
   public readonly incrementValue: number;
@@ -73,7 +76,7 @@ export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {
   /**
    * DTO 转换
    */
-  public toServerDTO(): TaskContracts.TaskGoalBindingServerDTO {
+  public toServerDTO(): TaskGoalBindingServerDTO {
     return {
       goalUuid: this.goalUuid,
       keyResultUuid: this.keyResultUuid,
@@ -81,7 +84,7 @@ export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {
     };
   }
 
-  public toClientDTO(): TaskContracts.TaskGoalBindingClientDTO {
+  public toClientDTO(): TaskGoalBindingClientDTO {
     return {
       goalUuid: this.goalUuid,
       keyResultUuid: this.keyResultUuid,
@@ -91,7 +94,7 @@ export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {
     };
   }
 
-  public toPersistenceDTO(): TaskContracts.TaskGoalBindingPersistenceDTO {
+  public toPersistenceDTO(): TaskGoalBindingPersistenceDTO {
     return {
       goalUuid: this.goalUuid,
       keyResultUuid: this.keyResultUuid,
@@ -102,7 +105,7 @@ export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {
   /**
    * 静态工厂方法
    */
-  public static fromServerDTO(dto: TaskContracts.TaskGoalBindingServerDTO): TaskGoalBinding {
+  public static fromServerDTO(dto: TaskGoalBindingServerDTO): TaskGoalBinding {
     return new TaskGoalBinding({
       goalUuid: dto.goalUuid,
       keyResultUuid: dto.keyResultUuid,
@@ -110,9 +113,7 @@ export class TaskGoalBinding extends ValueObject implements ITaskGoalBinding {
     });
   }
 
-  public static fromPersistenceDTO(
-    dto: TaskContracts.TaskGoalBindingPersistenceDTO,
-  ): TaskGoalBinding {
+  public static fromPersistenceDTO(dto: TaskGoalBindingPersistenceDTO): TaskGoalBinding {
     return new TaskGoalBinding({
       goalUuid: dto.goalUuid,
       keyResultUuid: dto.keyResultUuid,

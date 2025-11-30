@@ -2,14 +2,10 @@
  * SkipRecord 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { SkipRecordClient, SkipRecordClientDTO, SkipRecordServerDTO } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ISkipRecord = TaskContracts.SkipRecordClient;
-type SkipRecordDTO = TaskContracts.SkipRecordClientDTO;
-type SkipRecordServerDTO = TaskContracts.SkipRecordServerDTO;
-
-export class SkipRecord extends ValueObject implements ISkipRecord {
+export class SkipRecord extends ValueObject implements SkipRecord {
   private _skippedAt: number;
   private _reason: string | null;
 
@@ -44,7 +40,7 @@ export class SkipRecord extends ValueObject implements ISkipRecord {
   }
 
   // 值对象方法
-  public equals(other: ISkipRecord): boolean {
+  public equals(other: SkipRecordClient): boolean {
     return this._skippedAt === other.skippedAt && this._reason === other.reason;
   }
 
@@ -56,7 +52,7 @@ export class SkipRecord extends ValueObject implements ISkipRecord {
     };
   }
 
-  public toClientDTO(): SkipRecordDTO {
+  public toClientDTO(): SkipRecordClientDTO {
     return {
       skippedAt: this._skippedAt,
       reason: this._reason,
@@ -67,7 +63,7 @@ export class SkipRecord extends ValueObject implements ISkipRecord {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: SkipRecordDTO): SkipRecord {
+  public static fromClientDTO(dto: SkipRecordClientDTO): SkipRecord {
     return new SkipRecord({
       skippedAt: dto.skippedAt,
       reason: dto.reason,

@@ -14,7 +14,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { PasswordManagementApplicationService } from '../../application/services/PasswordManagementApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('PasswordManagementController');
@@ -284,3 +284,5 @@ export class PasswordManagementController {
     }
   }
 }
+
+

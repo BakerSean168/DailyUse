@@ -223,7 +223,7 @@ import { ref } from 'vue';
 import StatusRuleEditor from '../components/rules/StatusRuleEditor.vue';
 import { useAutoStatusRules } from '../../application/composables/useAutoStatusRules';
 import type { RuleSuggestion } from '../../application/composables/useAutoStatusRules';
-import { GoalStatus } from '../../../../../../../packages/contracts/src/modules/goal/enums';
+import { GoalStatus } from '@dailyuse/contracts/goal';
 
 const { evaluateGoal, recordHistory, executionHistory } = useAutoStatusRules();
 

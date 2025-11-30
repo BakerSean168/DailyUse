@@ -3,15 +3,10 @@
  * 实现 NotificationServer 接口
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
-import {
-  NotificationType,
-  NotificationCategory,
-  NotificationStatus,
-  RelatedEntityType,
-  ImportanceLevel,
-  UrgencyLevel,
-} from '@dailyuse/contracts';
+import type { RelatedEntityType, NotificationActionServer, NotificationActionServerDTO, NotificationMetadataServer, NotificationMetadataServerDTO, NotificationPersistenceDTO, NotificationServer, NotificationServerDTO } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
+import { NotificationType } from '@dailyuse/contracts/notification';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { AggregateRoot, createLogger } from '@dailyuse/utils';
 import { NotificationAction } from '../value-objects/NotificationAction';
 import { NotificationMetadata } from '../value-objects/NotificationMetadata';
@@ -20,16 +15,10 @@ import { NotificationHistory } from '../entities/NotificationHistory';
 
 const logger = createLogger('Notification');
 
-type INotificationServer = NotificationContracts.NotificationServer;
-type NotificationServerDTO = NotificationContracts.NotificationServerDTO;
-type NotificationPersistenceDTO = NotificationContracts.NotificationPersistenceDTO;
-type NotificationActionDTO = NotificationContracts.NotificationActionServerDTO;
-type NotificationMetadataDTO = NotificationContracts.NotificationMetadataServerDTO;
-
 /**
  * Notification 聚合根
  */
-export class Notification extends AggregateRoot implements INotificationServer {
+export class Notification extends AggregateRoot implements NotificationServer {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _title: string;
@@ -145,10 +134,10 @@ export class Notification extends AggregateRoot implements INotificationServer {
   public get relatedEntityUuid(): string | null {
     return this._relatedEntityUuid;
   }
-  public get actions(): NotificationContracts.NotificationActionServer[] | null {
+  public get actions(): NotificationActionServer[] | null {
     return this._actions ?? null;
   }
-  public get metadata(): NotificationContracts.NotificationMetadataServer | null {
+  public get metadata(): NotificationMetadataServer | null {
     return this._metadata ?? null;
   }
   public get expiresAt(): number | null {
@@ -407,8 +396,8 @@ export class Notification extends AggregateRoot implements INotificationServer {
     urgency?: UrgencyLevel;
     relatedEntityType?: RelatedEntityType;
     relatedEntityUuid?: string;
-    actions?: NotificationActionDTO[];
-    metadata?: NotificationMetadataDTO;
+    actions?: NotificationActionServerDTO[];
+    metadata?: NotificationMetadataServerDTO;
     expiresAt?: number;
   }): Notification {
     logger.info('🔨 [聚合根] 创建 Notification 实例', {
@@ -441,7 +430,7 @@ export class Notification extends AggregateRoot implements INotificationServer {
     });
 
     notification.addHistory('CREATED', { createdAt: now });
-    
+
     logger.info('✅ [聚合根] Notification 实例已创建', {
       uuid: notification.uuid,
       status: notification.status,

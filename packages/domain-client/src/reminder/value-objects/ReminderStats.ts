@@ -2,12 +2,9 @@
  * ReminderStats 值对象实现 (Client)
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderStatsClient, ReminderStatsClientDTO, ReminderStatsServerDTO } from '@dailyuse/contracts/reminder';
 
-type ReminderStatsClientDTO = ReminderContracts.ReminderStatsClientDTO;
-type ReminderStatsServerDTO = ReminderContracts.ReminderStatsServerDTO;
-
-export class ReminderStats implements ReminderContracts.ReminderStatsClient {
+export class ReminderStats implements ReminderStatsClient {
   private readonly _totalTriggers: number;
   private readonly _lastTriggeredAt: number | null | undefined;
   private readonly _totalTriggersText: string;
@@ -43,7 +40,7 @@ export class ReminderStats implements ReminderContracts.ReminderStatsClient {
   }
 
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.ReminderStatsClient): boolean {
+  public equals(other: ReminderStatsClient): boolean {
     return (
       this._totalTriggers === other.totalTriggers &&
       this._lastTriggeredAt === other.lastTriggeredAt

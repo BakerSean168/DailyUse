@@ -4,11 +4,12 @@
  */
 
 import { ValueObject } from '@dailyuse/utils';
-import { ScheduleContracts } from '@dailyuse/contracts';
-
-type RetryPolicyServerDTO = ScheduleContracts.RetryPolicyServerDTO;
-type RetryPolicyClientDTO = ScheduleContracts.RetryPolicyClientDTO;
-type RetryPolicyPersistenceDTO = ScheduleContracts.RetryPolicyPersistenceDTO;
+import type {
+  RetryPolicyClientDTO,
+  RetryPolicyPersistenceDTO,
+  RetryPolicyServer,
+  RetryPolicyServerDTO,
+} from '@dailyuse/contracts/schedule';
 
 /**
  * RetryPolicy 值对象
@@ -19,7 +20,7 @@ type RetryPolicyPersistenceDTO = ScheduleContracts.RetryPolicyPersistenceDTO;
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class RetryPolicy extends ValueObject implements ScheduleContracts.RetryPolicyServer {
+export class RetryPolicy extends ValueObject implements RetryPolicyServer {
   public readonly enabled: boolean;
   public readonly maxRetries: number;
   public readonly retryDelay: number;
@@ -152,12 +153,12 @@ export class RetryPolicy extends ValueObject implements ScheduleContracts.RetryP
       retryDelay: this.retryDelay,
       backoffMultiplier: this.backoffMultiplier,
       maxRetryDelay: this.maxRetryDelay,
-      
+
       // UI 辅助属性
       enabledDisplay: this.enabled ? 'Enabled' : 'Disabled',
       retryDelayFormatted: `${this.retryDelay}ms`,
       maxRetryDelayFormatted: `${this.maxRetryDelay}ms`,
-      policyDescription: this.enabled 
+      policyDescription: this.enabled
         ? `Retry up to ${this.maxRetries} times, starting at ${this.retryDelay}ms`
         : 'No retry policy',
     };

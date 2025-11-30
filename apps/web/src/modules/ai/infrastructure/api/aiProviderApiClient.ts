@@ -9,12 +9,11 @@
  */
 
 import { apiClient } from '@/shared/api/instances';
-import type { AIContracts } from '@dailyuse/contracts';
-
-// 类型别名
-type AIProviderConfigClientDTO = AIContracts.AIProviderConfigClientDTO;
-type CreateAIProviderRequest = AIContracts.CreateAIProviderRequest;
-type UpdateAIProviderRequest = AIContracts.UpdateAIProviderRequest;
+import type {
+  AIProviderConfigClientDTO,
+  CreateAIProviderRequest,
+  UpdateAIProviderRequest,
+} from '@dailyuse/contracts/ai';
 
 /**
  * AI Provider API Response 类型

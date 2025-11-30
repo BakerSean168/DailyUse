@@ -10,9 +10,7 @@
  */
 
 import type { Setting } from '../aggregates/Setting';
-import type { SettingContracts } from '@dailyuse/contracts';
-
-type SettingScope = SettingContracts.SettingScope;
+import { SettingScope } from '@dailyuse/contracts/setting';
 
 /**
  * ISettingRepository 仓储接口

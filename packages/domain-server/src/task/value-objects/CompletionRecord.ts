@@ -3,11 +3,13 @@
  * 完成记录 - 不可变值对象
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type {
+  CompletionRecordClientDTO,
+  CompletionRecordPersistenceDTO,
+  CompletionRecordServer,
+  CompletionRecordServerDTO,
+} from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
-
-type ICompletionRecord = TaskContracts.CompletionRecordServerDTO;
-type CompletionRecordPersistenceDTO = TaskContracts.CompletionRecordPersistenceDTO;
 
 /**
  * CompletionRecord 值对象
@@ -18,7 +20,7 @@ type CompletionRecordPersistenceDTO = TaskContracts.CompletionRecordPersistenceD
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class CompletionRecord extends ValueObject implements ICompletionRecord {
+export class CompletionRecord extends ValueObject implements CompletionRecordServer {
   public readonly completedAt: number;
   public readonly note: string | null;
   public readonly rating: number | null;
@@ -105,7 +107,7 @@ export class CompletionRecord extends ValueObject implements ICompletionRecord {
   /**
    * DTO 转换
    */
-  public toServerDTO(): TaskContracts.CompletionRecordServerDTO {
+  public toServerDTO(): CompletionRecordServerDTO {
     return {
       completedAt: this.completedAt,
       note: this.note,
@@ -114,7 +116,7 @@ export class CompletionRecord extends ValueObject implements ICompletionRecord {
     };
   }
 
-  public toClientDTO(): TaskContracts.CompletionRecordClientDTO {
+  public toClientDTO(): CompletionRecordClientDTO {
     return {
       completedAt: this.completedAt,
       note: this.note,
@@ -143,7 +145,7 @@ export class CompletionRecord extends ValueObject implements ICompletionRecord {
    * 静态工厂方法
    */
   public static fromServerDTO(
-    dto: TaskContracts.CompletionRecordServerDTO,
+    dto: CompletionRecordServerDTO,
     taskUuid: string,
     completionStatus = 'completed',
   ): CompletionRecord {

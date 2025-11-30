@@ -7,7 +7,7 @@ import type {
   ActiveHoursConfigServerDTO,
   ActiveHoursConfigClientDTO,
   ActiveHoursConfigPersistenceDTO,
-} from '@dailyuse/contracts/src/modules/reminder';
+} from '@dailyuse/contracts/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
 /**

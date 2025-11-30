@@ -2,19 +2,20 @@
  * DashboardConfig 聚合根实现 (Client)
  */
 
-import { DashboardContracts } from '@dailyuse/contracts';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
+import type {
+  DashboardConfigClient,
+  DashboardConfigClientDTO,
+  DashboardConfigServerDTO,
+  WidgetConfigDTO,
+  WidgetConfigData,
+} from '@dailyuse/contracts/dashboard';
 import { AggregateRoot } from '@dailyuse/utils';
 import { WidgetConfig } from '../value-objects';
 
 // 类型别名
-type IDashboardConfig = DashboardContracts.DashboardConfigClient;
-type DashboardConfigDTO = DashboardContracts.DashboardConfigClientDTO;
-type DashboardConfigServerDTO = DashboardContracts.DashboardConfigServerDTO;
-type WidgetConfigData = DashboardContracts.WidgetConfigData;
-type WidgetConfigDTO = DashboardContracts.WidgetConfigDTO;
-type WidgetSize = DashboardContracts.WidgetSize;
 
-export class DashboardConfig extends AggregateRoot implements IDashboardConfig {
+export class DashboardConfig extends AggregateRoot implements DashboardConfigClient {
   private _accountUuid: string;
   private _widgetConfig: Map<string, WidgetConfig>;
   private _createdAt: number;
@@ -44,7 +45,7 @@ export class DashboardConfig extends AggregateRoot implements IDashboardConfig {
   /**
    * 从 Client DTO 创建实例
    */
-  static fromDTO(dto: DashboardConfigDTO): DashboardConfig {
+  static fromDTO(dto: DashboardConfigClientDTO): DashboardConfig {
     return new DashboardConfig({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
@@ -73,10 +74,10 @@ export class DashboardConfig extends AggregateRoot implements IDashboardConfig {
   static createDefault(accountUuid: string): DashboardConfig {
     const now = Date.now();
     const defaultConfig: WidgetConfigData = {
-      'task-stats': { visible: true, order: 1, size: DashboardContracts.WidgetSize.MEDIUM },
-      'goal-stats': { visible: true, order: 2, size: DashboardContracts.WidgetSize.MEDIUM },
-      'reminder-stats': { visible: true, order: 3, size: DashboardContracts.WidgetSize.SMALL },
-      'schedule-stats': { visible: true, order: 4, size: DashboardContracts.WidgetSize.SMALL },
+      'task-stats': { visible: true, order: 1, size: WidgetSize.MEDIUM },
+      'goal-stats': { visible: true, order: 2, size: WidgetSize.MEDIUM },
+      'reminder-stats': { visible: true, order: 3, size: WidgetSize.SMALL },
+      'schedule-stats': { visible: true, order: 4, size: WidgetSize.SMALL },
     };
 
     return new DashboardConfig({
@@ -173,7 +174,7 @@ export class DashboardConfig extends AggregateRoot implements IDashboardConfig {
           WidgetConfig.fromDTO({
             visible: updateConfig.visible ?? true,
             order: updateConfig.order ?? this._widgetConfig.size + 1,
-            size: updateConfig.size ?? DashboardContracts.WidgetSize.MEDIUM,
+            size: updateConfig.size ?? WidgetSize.MEDIUM,
           }),
         );
       } else {
@@ -254,7 +255,7 @@ export class DashboardConfig extends AggregateRoot implements IDashboardConfig {
   /**
    * 转换为 DTO
    */
-  toDTO(): DashboardConfigDTO {
+  toDTO(): DashboardConfigClientDTO {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,

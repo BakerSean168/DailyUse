@@ -2,9 +2,9 @@ import type { Request, Response } from 'express';
 import { SmartFrequencyAnalysisService } from '../../application/services/SmartFrequencyAnalysisService';
 import { FrequencyAdjustmentService } from '../../application/services/FrequencyAdjustmentService';
 import { ReminderResponseService } from '../../application/services/ReminderResponseService';
-import type { IReminderTemplateRepository } from '@dailyuse/domain-server';
+import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
 import { ReminderContainer } from '../../infrastructure/di/ReminderContainer';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('SmartFrequencyController');
@@ -422,3 +422,5 @@ export class SmartFrequencyController {
     }
   }
 }
+
+

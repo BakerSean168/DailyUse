@@ -2,16 +2,16 @@
  * GoalReminderConfig 值对象实现 (Client)
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type {
+  GoalReminderConfigClientDTO,
+  GoalReminderConfigServerDTO,
+  IGoalReminderConfigClient,
+  ReminderTrigger,
+  ReminderTriggerType,
+} from '@dailyuse/contracts/goal';
 import { ValueObject } from '@dailyuse/utils';
 
-type IGoalReminderConfig = GoalContracts.IGoalReminderConfigClient;
-type GoalReminderConfigDTO = GoalContracts.GoalReminderConfigClientDTO;
-type GoalReminderConfigServerDTO = GoalContracts.GoalReminderConfigServerDTO;
-type ReminderTrigger = GoalContracts.ReminderTrigger;
-type ReminderTriggerType = GoalContracts.ReminderTriggerType;
-
-export class GoalReminderConfig extends ValueObject implements IGoalReminderConfig {
+export class GoalReminderConfig extends ValueObject implements IGoalReminderConfigClient {
   private _enabled: boolean;
   private _triggers: ReminderTrigger[];
 
@@ -65,7 +65,7 @@ export class GoalReminderConfig extends ValueObject implements IGoalReminderConf
   }
 
   // 值对象方法
-  public equals(other: IGoalReminderConfig): boolean {
+  public equals(other: IGoalReminderConfigClient): boolean {
     return (
       this._enabled === other.enabled &&
       JSON.stringify(this._triggers) === JSON.stringify(other.triggers)
@@ -100,7 +100,7 @@ export class GoalReminderConfig extends ValueObject implements IGoalReminderConf
     };
   }
 
-  public toClientDTO(): GoalReminderConfigDTO {
+  public toClientDTO(): GoalReminderConfigClientDTO {
     return {
       enabled: this._enabled,
       triggers: [...this._triggers],
@@ -113,7 +113,7 @@ export class GoalReminderConfig extends ValueObject implements IGoalReminderConf
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: GoalReminderConfigDTO): GoalReminderConfig {
+  public static fromClientDTO(dto: GoalReminderConfigClientDTO): GoalReminderConfig {
     return new GoalReminderConfig({
       enabled: dto.enabled,
       triggers: dto.triggers,

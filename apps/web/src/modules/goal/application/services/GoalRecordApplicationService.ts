@@ -1,5 +1,5 @@
-import type { GoalContracts } from '@dailyuse/contracts';
-import { Goal } from '@dailyuse/domain-client';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, GoalRecordClientDTO, CreateGoalRecordRequest, GoalRecordsResponse } from '@dailyuse/contracts/goal';
+import { Goal } from '@dailyuse/domain-client/goal';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -51,8 +51,8 @@ export class GoalRecordApplicationService {
   async createGoalRecord(
     goalUuid: string,
     keyResultUuid: string,
-    request: GoalContracts.CreateGoalRecordRequest,
-  ): Promise<GoalContracts.GoalRecordClientDTO> {
+    request: CreateGoalRecordRequest,
+  ): Promise<GoalRecordClientDTO> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -99,7 +99,7 @@ export class GoalRecordApplicationService {
       limit?: number;
       dateRange?: { start?: string; end?: string };
     },
-  ): Promise<GoalContracts.GoalRecordsResponse> {
+  ): Promise<GoalRecordsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -127,7 +127,7 @@ export class GoalRecordApplicationService {
       limit?: number;
       dateRange?: { start?: string; end?: string };
     },
-  ): Promise<GoalContracts.GoalRecordsResponse> {
+  ): Promise<GoalRecordsResponse> {
     try {
       this.goalStore.setLoading(true);
       this.goalStore.setError(null);
@@ -171,3 +171,4 @@ export class GoalRecordApplicationService {
 }
 
 export const goalRecordApplicationService = GoalRecordApplicationService.getInstance();
+

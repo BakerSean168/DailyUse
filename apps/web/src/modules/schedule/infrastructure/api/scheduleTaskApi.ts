@@ -3,7 +3,8 @@
  * 调度任务 API 调用层
  */
 
-import { ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, ScheduleExecutionClientDTO } from '@dailyuse/contracts/schedule';
 import { apiClient } from '@/shared/api/instances';
 
 /**
@@ -11,8 +12,8 @@ import { apiClient } from '@/shared/api/instances';
  */
 export async function getScheduleTask(
   taskUuid: string,
-): Promise<ScheduleContracts.ScheduleTaskClientDTO> {
-  return await apiClient.get<ScheduleContracts.ScheduleTaskClientDTO>(
+): Promise<ScheduleTaskClientDTO> {
+  return await apiClient.get<ScheduleTaskClientDTO>(
     `schedules/tasks/${taskUuid}`
   );
 }
@@ -23,11 +24,12 @@ export async function getScheduleTask(
 export async function getScheduleTaskExecutions(
   taskUuid: string,
   limit: number = 20,
-): Promise<ScheduleContracts.ScheduleExecutionClientDTO[]> {
-  return await apiClient.get<ScheduleContracts.ScheduleExecutionClientDTO[]>(
+): Promise<ScheduleExecutionClientDTO[]> {
+  return await apiClient.get<ScheduleExecutionClientDTO[]>(
     `schedules/tasks/${taskUuid}/executions`,
     {
       params: { limit },
     }
   );
 }
+

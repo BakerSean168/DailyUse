@@ -17,7 +17,7 @@ import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import AIGenerateKRButton from '../AIGenerateKRButton.vue';
-import type { AIContracts } from '@dailyuse/contracts';
+import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 // Mock useAIGeneration composable
 const mockGenerateKeyResults = vi.fn();
@@ -391,3 +391,4 @@ describe('AIGenerateKRButton', () => {
     });
   });
 });
+

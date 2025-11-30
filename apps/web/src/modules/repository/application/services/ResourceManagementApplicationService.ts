@@ -1,8 +1,8 @@
 // @ts-nocheck
 import { useResourceStore } from '../../presentation/stores/resourceStore';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
-import { Resource } from '@dailyuse/domain-client';
-import { type RepositoryContracts } from '@dailyuse/contracts';
+import { Resource } from '@dailyuse/domain-client/repository';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**
  * 资源管理应用服务
@@ -20,8 +20,8 @@ export class ResourceManagementApplicationService {
    * 用例：创建资源
    */
   async createResource(
-    request: RepositoryContracts.CreateResourceRequestDTO,
-  ): Promise<RepositoryContracts.ResourceDTO> {
+    request: CreateResourceRequestDTO,
+  ): Promise<ResourceDTO> {
     try {
       this.resourceStore.setLoading(true);
       this.resourceStore.setError(null);
@@ -45,7 +45,7 @@ export class ResourceManagementApplicationService {
    */
   async getResources(
     repositoryUuid?: string,
-  ): Promise<RepositoryContracts.ResourceListResponseDTO> {
+  ): Promise<ResourceListResponseDTO> {
     try {
       this.resourceStore.setLoading(true);
       this.resourceStore.setError(null);
@@ -69,7 +69,7 @@ export class ResourceManagementApplicationService {
    */
   async getRepositoryResources(
     repositoryUuid: string,
-  ): Promise<RepositoryContracts.ResourceDTO[]> {
+  ): Promise<ResourceDTO[]> {
     try {
       this.resourceStore.setLoading(true);
       this.resourceStore.setError(null);
@@ -91,7 +91,7 @@ export class ResourceManagementApplicationService {
   /**
    * 用例：获取资源详情
    */
-  async getResourceById(uuid: string): Promise<RepositoryContracts.ResourceDTO | null> {
+  async getResourceById(uuid: string): Promise<ResourceDTO | null> {
     try {
       this.resourceStore.setLoading(true);
       this.resourceStore.setError(null);
@@ -118,8 +118,8 @@ export class ResourceManagementApplicationService {
    */
   async updateResource(
     uuid: string,
-    request: RepositoryContracts.UpdateResourceRequestDTO,
-  ): Promise<RepositoryContracts.ResourceDTO> {
+    request: UpdateResourceRequestDTO,
+  ): Promise<ResourceDTO> {
     try {
       this.resourceStore.setLoading(true);
       this.resourceStore.setError(null);
@@ -160,3 +160,4 @@ export class ResourceManagementApplicationService {
 
 // 导出单例
 export const resourceManagementService = new ResourceManagementApplicationService();
+

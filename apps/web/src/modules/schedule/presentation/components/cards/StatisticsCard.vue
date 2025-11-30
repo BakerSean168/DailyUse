@@ -175,14 +175,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, ScheduleStatisticsServerDTO, ModuleStatisticsServerDTO } from '@dailyuse/contracts/schedule';
 
 // Props
 const props = defineProps<{
-  statistics: ScheduleContracts.ScheduleStatisticsServerDTO | null;
+  statistics: ScheduleStatisticsServerDTO | null;
   moduleStatistics?: Record<
-    ScheduleContracts.SourceModule,
-    ScheduleContracts.ModuleStatisticsServerDTO
+    SourceModule,
+    ModuleStatisticsServerDTO
   > | null;
   isLoading?: boolean;
   error?: string | null;
@@ -270,3 +271,4 @@ function getModuleColor(module: string): string {
   overflow-y: auto;
 }
 </style>
+

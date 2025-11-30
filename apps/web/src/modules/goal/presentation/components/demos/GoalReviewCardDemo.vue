@@ -106,10 +106,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Goal } from '@dailyuse/domain-client';
+import { Goal } from '@dailyuse/domain-client/goal';
 import { format } from 'date-fns';
 import { useGoal } from '../../composables/useGoal';
-import GoalReviewCard from '../cards/GoalReviewCard.vue';
+import GoalReviewCard from '../cards/GoalReviewListCard.vue';
 
 const goalComposable = useGoal();
 

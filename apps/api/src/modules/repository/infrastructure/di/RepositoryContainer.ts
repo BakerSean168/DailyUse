@@ -1,4 +1,9 @@
-import type { IRepositoryRepository, IResourceRepository, IFolderRepository } from '@dailyuse/domain-server';
+import type { 
+  IRepositoryRepository, 
+  IResourceRepository, 
+  IFolderRepository,
+  IRepositoryStatisticsRepository,
+} from '@dailyuse/domain-server/repository';
 import { PrismaRepositoryRepository } from '../repositories/PrismaRepositoryRepository';
 import { PrismaResourceRepository } from '../repositories/PrismaResourceRepository';
 import { PrismaFolderRepository } from '../repositories/PrismaFolderRepository';
@@ -20,6 +25,7 @@ export class RepositoryContainer {
   private repositoryRepository?: IRepositoryRepository;
   private resourceRepository?: IResourceRepository;
   private folderRepository?: IFolderRepository;
+  private repositoryStatisticsRepository?: IRepositoryStatisticsRepository;
 
   private constructor() {}
 
@@ -88,5 +94,31 @@ export class RepositoryContainer {
     this.repositoryRepository = undefined;
     this.resourceRepository = undefined;
     this.folderRepository = undefined;
+    this.repositoryStatisticsRepository = undefined;
+  }
+
+  /**
+   * 获取 RepositoryStatistics 仓储实例（懒加载）
+   * TODO: 实现 PrismaRepositoryStatisticsRepository
+   */
+  getRepositoryStatisticsRepository(): IRepositoryStatisticsRepository {
+    if (!this.repositoryStatisticsRepository) {
+      throw new Error('PrismaRepositoryStatisticsRepository not implemented yet');
+    }
+    return this.repositoryStatisticsRepository;
+  }
+
+  /**
+   * 设置 RepositoryStatistics 仓储实例（用于测试）
+   */
+  setRepositoryStatisticsRepository(repository: IRepositoryStatisticsRepository): void {
+    this.repositoryStatisticsRepository = repository;
+  }
+
+  /**
+   * 获取 Repository 聚合仓储实例（别名）
+   */
+  getRepositoryAggregateRepository(): IRepositoryRepository {
+    return this.getRepositoryRepository();
   }
 }

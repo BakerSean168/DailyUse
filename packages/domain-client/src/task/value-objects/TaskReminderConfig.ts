@@ -2,23 +2,18 @@
  * TaskReminderConfig 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { ReminderTimeUnit, TaskReminderConfigClient, TaskReminderConfigClientDTO, TaskReminderConfigServerDTO } from '@dailyuse/contracts/task';
+import { TaskReminderType } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskReminderConfig = TaskContracts.TaskReminderConfigClient;
-type TaskReminderConfigDTO = TaskContracts.TaskReminderConfigClientDTO;
-type TaskReminderConfigServerDTO = TaskContracts.TaskReminderConfigServerDTO;
-type ReminderType = TaskContracts.ReminderType;
-type ReminderTimeUnit = TaskContracts.ReminderTimeUnit;
-
 interface ReminderTrigger {
-  type: ReminderType;
+  type: TaskReminderType;
   absoluteTime?: number | null;
   relativeValue?: number | null;
   relativeUnit?: ReminderTimeUnit | null;
 }
 
-export class TaskReminderConfig extends ValueObject implements ITaskReminderConfig {
+export class TaskReminderConfig extends ValueObject implements TaskReminderConfig {
   private _enabled: boolean;
   private _triggers: ReminderTrigger[];
 
@@ -71,7 +66,7 @@ export class TaskReminderConfig extends ValueObject implements ITaskReminderConf
   }
 
   // 值对象方法
-  public equals(other: ITaskReminderConfig): boolean {
+  public equals(other: TaskReminderConfigClient): boolean {
     return (
       this._enabled === other.enabled &&
       JSON.stringify(this._triggers) === JSON.stringify(other.triggers)
@@ -95,7 +90,7 @@ export class TaskReminderConfig extends ValueObject implements ITaskReminderConf
     };
   }
 
-  public toClientDTO(): TaskReminderConfigDTO {
+  public toClientDTO(): TaskReminderConfigClientDTO {
     return {
       enabled: this._enabled,
       triggers: [...this._triggers],
@@ -107,7 +102,7 @@ export class TaskReminderConfig extends ValueObject implements ITaskReminderConf
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskReminderConfigDTO): TaskReminderConfig {
+  public static fromClientDTO(dto: TaskReminderConfigClientDTO): TaskReminderConfig {
     return new TaskReminderConfig({
       enabled: dto.enabled,
       triggers: dto.triggers,

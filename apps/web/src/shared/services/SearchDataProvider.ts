@@ -8,7 +8,9 @@
  */
 
 import { ref } from 'vue';
-import type { GoalContracts, TaskContracts, ReminderContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { goalManagementApplicationService } from '@/modules/goal/application/services';
 import { TaskTemplateApplicationService } from '@/modules/task/application/services/TaskTemplateApplicationService';
 import { reminderTemplateApplicationService } from '@/modules/reminder/application/services';
@@ -30,8 +32,8 @@ export interface SearchableItem {
  * Search data cache
  */
 interface SearchDataCache {
-  goals: GoalContracts.GoalClientDTO[];
-  tasks: TaskContracts.TaskTemplateClientDTO[];
+  goals: GoalClientDTO[];
+  tasks: TaskTemplateClientDTO[];
   reminders: SearchableItem[];
   lastUpdated: number;
 }
@@ -135,14 +137,14 @@ export class SearchDataProvider {
   /**
    * Load goals from API
    */
-  private async loadGoals(): Promise<GoalContracts.GoalClientDTO[]> {
+  private async loadGoals(): Promise<GoalClientDTO[]> {
     try {
       const response = await this.goalService.getGoals({
         limit: 1000, // Get all goals (reasonable limit)
       });
 
       // Response is GoalsResponse: { goals: GoalClientDTO[], total, page, limit, hasMore }
-      return (response.goals || []) as GoalContracts.GoalClientDTO[];
+      return (response.goals || []) as GoalClientDTO[];
     } catch (error) {
       console.error('Failed to load goals:', error);
       return [];
@@ -152,7 +154,7 @@ export class SearchDataProvider {
   /**
    * Load tasks from API
    */
-  private async loadTasks(): Promise<TaskContracts.TaskTemplateClientDTO[]> {
+  private async loadTasks(): Promise<TaskTemplateClientDTO[]> {
     try {
       const templates = await this.taskTemplateService.getTaskTemplates({
         limit: 1000, // Get all tasks
@@ -183,7 +185,7 @@ export class SearchDataProvider {
       const reminders = reminderStore.reminderTemplates || [];
 
       // Convert to searchable items
-      return reminders.map((reminder: ReminderContracts.ReminderTemplateClientDTO) => ({
+      return reminders.map((reminder: ReminderTemplateClientDTO) => ({
         uuid: reminder.uuid,
         title: reminder.title,
         description: reminder.description,
@@ -200,14 +202,14 @@ export class SearchDataProvider {
   /**
    * Get goals (from cache)
    */
-  public getGoals(): GoalContracts.GoalClientDTO[] {
+  public getGoals(): GoalClientDTO[] {
     return this.cache.value?.goals || [];
   }
 
   /**
    * Get tasks (from cache)
    */
-  public getTasks(): TaskContracts.TaskTemplateClientDTO[] {
+  public getTasks(): TaskTemplateClientDTO[] {
     return this.cache.value?.tasks || [];
   }
 
@@ -265,3 +267,4 @@ export class SearchDataProvider {
 
 // Export singleton instance
 export const searchDataProvider = SearchDataProvider.getInstance();
+

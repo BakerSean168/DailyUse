@@ -1,20 +1,21 @@
 import { AggregateRoot } from '@dailyuse/utils';
-import { AIContracts } from '@dailyuse/contracts';
+import { ConversationStatus } from '@dailyuse/contracts/ai';
+import type {
+  AIConversationClient,
+  AIConversationClientDTO,
+  AIConversationClientInstance,
+  AIConversationServerDTO,
+  MessageClient,
+} from '@dailyuse/contracts/ai';
 import { AIMessage } from '../entities/AIMessage';
 
 // Aliases & Types
-const ConversationStatus = AIContracts.ConversationStatus;
-type ConversationStatusEnum = AIContracts.ConversationStatus;
-type AIConversationClientDTO = AIContracts.AIConversationClientDTO;
-type AIConversationServerDTO = AIContracts.AIConversationServerDTO;
-type MessageClient = AIContracts.MessageClient;
-type AIConversationClient = AIContracts.AIConversationClient;
-type AIConversationClientInstance = AIContracts.AIConversationClientInstance;
+
 
 export class AIConversation extends AggregateRoot implements AIConversationClientInstance {
   private _accountUuid: string;
   private _title: string;
-  private _status: ConversationStatusEnum;
+  private _status: ConversationStatus;
   private _messageCount: number;
   private _lastMessageAt?: number | null;
   private _createdAt: number;
@@ -26,7 +27,7 @@ export class AIConversation extends AggregateRoot implements AIConversationClien
     uuid: string;
     accountUuid: string;
     title: string;
-    status: ConversationStatusEnum;
+    status: ConversationStatus;
     messageCount: number;
     lastMessageAt?: number | null;
     createdAt: number;
@@ -89,7 +90,7 @@ export class AIConversation extends AggregateRoot implements AIConversationClien
     return this.isActive;
   }
   get statusText(): string {
-    const map: Record<ConversationStatusEnum, string> = {
+    const map: Record<ConversationStatus, string> = {
       [ConversationStatus.ACTIVE]: '进行中',
       [ConversationStatus.CLOSED]: '已关闭',
       [ConversationStatus.ARCHIVED]: '已归档',

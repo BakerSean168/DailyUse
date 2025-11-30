@@ -2,15 +2,11 @@
  * TaskTimeConfig 值对象实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTimeConfigClient, TaskTimeConfigClientDTO, TaskTimeConfigServerDTO } from '@dailyuse/contracts/task';
+import { TimeType } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskTimeConfig = TaskContracts.TaskTimeConfigClient;
-type TaskTimeConfigDTO = TaskContracts.TaskTimeConfigClientDTO;
-type TaskTimeConfigServerDTO = TaskContracts.TaskTimeConfigServerDTO;
-type TimeType = TaskContracts.TimeType;
-
-export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
+export class TaskTimeConfig extends ValueObject implements TaskTimeConfig {
   private _timeType: TimeType;
   private _startDate: number | null;
   // _endDate 已移除 - 结束日期属于重复规则
@@ -91,7 +87,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
   }
 
   // 值对象方法
-  public equals(other: ITaskTimeConfig): boolean {
+  public equals(other: TaskTimeConfigClient): boolean {
     return (
       this._timeType === other.timeType &&
       this._startDate === other.startDate &&
@@ -112,7 +108,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
     };
   }
 
-  public toClientDTO(): TaskTimeConfigDTO {
+  public toClientDTO(): TaskTimeConfigClientDTO {
     return {
       timeType: this._timeType,
       startDate: this._startDate,
@@ -130,7 +126,7 @@ export class TaskTimeConfig extends ValueObject implements ITaskTimeConfig {
   }
 
   // 静态工厂方法
-  public static fromClientDTO(dto: TaskTimeConfigDTO): TaskTimeConfig {
+  public static fromClientDTO(dto: TaskTimeConfigClientDTO): TaskTimeConfig {
     return new TaskTimeConfig({
       timeType: dto.timeType,
       startDate: dto.startDate,

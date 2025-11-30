@@ -1,6 +1,7 @@
-import type { IRepositoryRepository } from '@dailyuse/domain-server';
-import { Repository } from '@dailyuse/domain-server';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
+import { Repository } from '@dailyuse/domain-server/repository';
+import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, RepositoryClientDTO, RepositoryConfigServerDTO, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';
+import { RepositoryType, RepositoryStatus } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
 /**
@@ -49,11 +50,11 @@ export class RepositoryApplicationService {
   async createRepository(params: {
     accountUuid: string;
     name: string;
-    type: RepositoryContracts.RepositoryType;
+    type: RepositoryType;
     path: string;
     description?: string;
-    config?: Partial<RepositoryContracts.RepositoryConfigServerDTO>;
-  }): Promise<RepositoryContracts.RepositoryClientDTO> {
+    config?: Partial<RepositoryConfigServerDTO>;
+  }): Promise<RepositoryClientDTO> {
     // 1. 创建领域实体
     const repository = Repository.create(params);
 
@@ -67,7 +68,7 @@ export class RepositoryApplicationService {
   /**
    * 获取仓储详情
    */
-  async getRepository(uuid: string): Promise<RepositoryContracts.RepositoryClientDTO | null> {
+  async getRepository(uuid: string): Promise<RepositoryClientDTO | null> {
     const repository = await this.repositoryRepository.findByUuid(uuid);
     return repository ? repository.toClientDTO() : null;
   }
@@ -77,8 +78,8 @@ export class RepositoryApplicationService {
    */
   async listRepositories(
     accountUuid: string,
-    status?: RepositoryContracts.RepositoryStatus,
-  ): Promise<RepositoryContracts.RepositoryClientDTO[]> {
+    status?: RepositoryStatus,
+  ): Promise<RepositoryClientDTO[]> {
     let repositories: Repository[];
 
     if (status) {
@@ -98,8 +99,8 @@ export class RepositoryApplicationService {
    */
   async updateRepositoryConfig(
     uuid: string,
-    config: Partial<RepositoryContracts.RepositoryConfigServerDTO>,
-  ): Promise<RepositoryContracts.RepositoryClientDTO> {
+    config: Partial<RepositoryConfigServerDTO>,
+  ): Promise<RepositoryClientDTO> {
     // 1. 查询仓储
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
@@ -121,8 +122,8 @@ export class RepositoryApplicationService {
    */
   async updateRepositoryStats(
     uuid: string,
-    stats: Partial<RepositoryContracts.RepositoryStatsServerDTO>,
-  ): Promise<RepositoryContracts.RepositoryClientDTO> {
+    stats: Partial<RepositoryStatsServerDTO>,
+  ): Promise<RepositoryClientDTO> {
     // 1. 查询仓储
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
@@ -142,7 +143,7 @@ export class RepositoryApplicationService {
   /**
    * 归档仓储
    */
-  async archiveRepository(uuid: string): Promise<RepositoryContracts.RepositoryClientDTO> {
+  async archiveRepository(uuid: string): Promise<RepositoryClientDTO> {
     // 1. 查询仓储
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
@@ -162,7 +163,7 @@ export class RepositoryApplicationService {
   /**
    * 激活仓储
    */
-  async activateRepository(uuid: string): Promise<RepositoryContracts.RepositoryClientDTO> {
+  async activateRepository(uuid: string): Promise<RepositoryClientDTO> {
     // 1. 查询仓储
     const repository = await this.repositoryRepository.findByUuid(uuid);
     if (!repository) {
@@ -196,3 +197,5 @@ export class RepositoryApplicationService {
     await this.repositoryRepository.save(repository);
   }
 }
+
+

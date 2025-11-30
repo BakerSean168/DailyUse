@@ -13,9 +13,9 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AIConversationService } from '../AIConversationService';
-import type { IAIConversationRepository } from '@dailyuse/domain-server';
-import { AIConversationServer, MessageServer } from '@dailyuse/domain-server';
-import { MessageRole, ConversationStatus } from '@dailyuse/contracts';
+import type { IAIConversationRepository } from '@dailyuse/domain-server/ai';
+import { AIConversationServer, MessageServer } from '@dailyuse/domain-server/ai';
+import { MessageRole, ConversationStatus } from '@dailyuse/contracts/ai';
 
 describe('AIConversationService', () => {
   let service: AIConversationService;
@@ -474,3 +474,5 @@ describe('AIConversationService', () => {
     });
   });
 });
+
+

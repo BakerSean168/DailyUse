@@ -1,12 +1,18 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { AccountContracts } from '@dailyuse/contracts';
+import type {
+  AccountDTO,
+  SubscriptionDTO,
+  AccountHistoryServerDTO,
+  AccountStatsResponseDTO,
+  AccountStatus,
+  SubscriptionPlan,
+} from '@dailyuse/contracts/account';
+import { AccountStatus as AccountStatusEnum, SubscriptionPlan as SubscriptionPlanEnum } from '@dailyuse/contracts/account';
 
 // 本地类型别名（无需导出，web 应用不生成 .d.ts）
-type AccountDTO = AccountContracts.AccountDTO;
-type SubscriptionDTO = AccountContracts.SubscriptionDTO;
-type AccountHistoryDTO = AccountContracts.AccountHistoryServerDTO;
-type AccountStatsDTO = AccountContracts.AccountStatsResponseDTO;
+type AccountHistoryDTO = AccountHistoryServerDTO;
+type AccountStatsDTO = AccountStatsResponseDTO;
 
 /**
  * Account Store - 状态管理
@@ -55,28 +61,28 @@ export const useAccountStore = defineStore('account', () => {
    * 是否为活跃账户
    */
   const isActiveAccount = computed(
-    () => currentAccount.value?.status === AccountContracts.AccountStatus.ACTIVE,
+    () => currentAccount.value?.status === AccountStatusEnum.ACTIVE,
   );
 
   /**
    * 是否已停用
    */
   const isDeactivatedAccount = computed(
-    () => currentAccount.value?.status === AccountContracts.AccountStatus.INACTIVE,
+    () => currentAccount.value?.status === AccountStatusEnum.INACTIVE,
   );
 
   /**
    * 是否已暂停
    */
   const isSuspendedAccount = computed(
-    () => currentAccount.value?.status === AccountContracts.AccountStatus.SUSPENDED,
+    () => currentAccount.value?.status === AccountStatusEnum.SUSPENDED,
   );
 
   /**
    * 是否已删除
    */
   const isDeletedAccount = computed(
-    () => currentAccount.value?.status === AccountContracts.AccountStatus.DELETED,
+    () => currentAccount.value?.status === AccountStatusEnum.DELETED,
   );
 
   /**
@@ -100,7 +106,7 @@ export const useAccountStore = defineStore('account', () => {
    * 当前订阅计划
    */
   const currentSubscriptionPlan = computed(
-    () => subscription.value?.plan ?? AccountContracts.SubscriptionPlan.FREE,
+    () => subscription.value?.plan ?? SubscriptionPlanEnum.FREE,
   );
 
   /**
@@ -108,8 +114,8 @@ export const useAccountStore = defineStore('account', () => {
    */
   const isPremiumUser = computed(
     () =>
-      subscription.value?.plan === AccountContracts.SubscriptionPlan.PRO ||
-      subscription.value?.plan === AccountContracts.SubscriptionPlan.ENTERPRISE,
+      subscription.value?.plan === SubscriptionPlanEnum.PRO ||
+      subscription.value?.plan === SubscriptionPlanEnum.ENTERPRISE,
   );
 
   /**
@@ -307,3 +313,5 @@ export const useAccountStore = defineStore('account', () => {
     clearAll,
   };
 });
+
+

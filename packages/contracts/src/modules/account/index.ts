@@ -62,15 +62,27 @@ export type {
   AccountListResponseDTO,
   SubscriptionDTO,
   AccountHistoryListResponseDTO,
-  CreateAccountRequestDTO,
-  UpdateAccountProfileRequestDTO,
-  UpdateAccountPreferencesRequestDTO,
-  UpdateEmailRequestDTO,
-  VerifyEmailRequestDTO,
-  UpdatePhoneRequestDTO,
-  VerifyPhoneRequestDTO,
-  SubscribePlanRequestDTO,
-  CancelSubscriptionRequestDTO,
+  CreateAccountRequest,
+  UpdateAccountProfileRequest,
+  UpdateAccountPreferencesRequest,
+  UpdateEmailRequest,
+  VerifyEmailRequest,
+  UpdatePhoneRequest,
+  VerifyPhoneRequest,
+  SubscribePlanRequest,
+  CancelSubscriptionRequest,
   AccountQueryParams,
   AccountStatsResponseDTO,
 } from './api-requests';
+
+// ============ DTO Aliases (for backward compatibility) ============
+// Web 应用使用 *RequestDTO 命名，提供别名兼容
+export type { CreateAccountRequest as CreateAccountRequestDTO } from './api-requests';
+export type { UpdateAccountProfileRequest as UpdateAccountProfileRequestDTO } from './api-requests';
+export type { UpdateAccountPreferencesRequest as UpdateAccountPreferencesRequestDTO } from './api-requests';
+export type { UpdateEmailRequest as UpdateEmailRequestDTO } from './api-requests';
+export type { VerifyEmailRequest as VerifyEmailRequestDTO } from './api-requests';
+export type { UpdatePhoneRequest as UpdatePhoneRequestDTO } from './api-requests';
+export type { VerifyPhoneRequest as VerifyPhoneRequestDTO } from './api-requests';
+export type { SubscribePlanRequest as SubscribePlanRequestDTO } from './api-requests';
+export type { CancelSubscriptionRequest as CancelSubscriptionRequestDTO } from './api-requests';

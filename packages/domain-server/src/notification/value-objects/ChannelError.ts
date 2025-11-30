@@ -3,17 +3,13 @@
  * 渠道错误 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { ChannelErrorClientDTO, ChannelErrorPersistenceDTO, ChannelErrorServerDTO } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type IChannelError = NotificationContracts.ChannelErrorServerDTO;
-type ChannelErrorPersistenceDTO = NotificationContracts.ChannelErrorPersistenceDTO;
-type ChannelErrorClientDTO = NotificationContracts.ChannelErrorClientDTO;
 
 /**
  * ChannelError 值对象
  */
-export class ChannelError extends ValueObject implements IChannelError {
+export class ChannelError extends ValueObject implements ChannelError {
   public readonly code: string;
   public readonly message: string;
   public readonly details?: any;
@@ -64,7 +60,7 @@ export class ChannelError extends ValueObject implements IChannelError {
   /**
    * 转换为 Server DTO
    */
-  public toServerDTO(): IChannelError {
+  public toServerDTO(): ChannelErrorServerDTO {
     return {
       code: this.code,
       message: this.message,
@@ -90,15 +86,15 @@ export class ChannelError extends ValueObject implements IChannelError {
     };
   }
 
-  public toContract(): IChannelError {
+  public toContract(): ChannelErrorServerDTO {
     return this.toServerDTO();
   }
 
-  public static fromServerDTO(dto: IChannelError): ChannelError {
+  public static fromServerDTO(dto: ChannelErrorServerDTO): ChannelError {
     return new ChannelError(dto);
   }
 
-  public static fromContract(error: IChannelError): ChannelError {
+  public static fromContract(error: ChannelErrorServerDTO): ChannelError {
     return ChannelError.fromServerDTO(error);
   }
 }

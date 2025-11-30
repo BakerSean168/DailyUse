@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { Goal, GoalFolder } from '@dailyuse/domain-client';
-import { type GoalContracts } from '@dailyuse/contracts';
+import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
 
 // 类型定义
 interface GoalStoreState {
@@ -683,3 +683,5 @@ export interface GoalStoreActions {
 export function getGoalStore(): GoalStore & GoalStoreActions {
   return useGoalStore() as GoalStore & GoalStoreActions;
 }
+
+

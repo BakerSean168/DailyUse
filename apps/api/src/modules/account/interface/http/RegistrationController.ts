@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { RegistrationApplicationService } from '../../application/services/RegistrationApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('RegistrationController');
@@ -155,3 +155,5 @@ export class RegistrationController {
     }
   }
 }
+
+

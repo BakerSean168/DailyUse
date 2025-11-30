@@ -14,7 +14,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { ApiKeyApplicationService } from '../../application/services/ApiKeyApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ApiKeyController');
@@ -372,3 +372,5 @@ export class ApiKeyController {
     }
   }
 }
+
+

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { NotificationApplicationService } from '../../application/services/NotificationApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('NotificationController');
@@ -461,3 +461,5 @@ export class NotificationController {
     }
   }
 }
+
+

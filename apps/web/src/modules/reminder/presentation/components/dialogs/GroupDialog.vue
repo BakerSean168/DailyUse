@@ -140,12 +140,13 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ControlMode } from '@dailyuse/contracts/reminder';
+import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
 import { ColorPicker, IconPicker } from '@dailyuse/ui';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { useReminderGroup } from '../../composables/useReminderGroup';
 
-type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
+type ReminderTemplateGroup = ReminderGroupClientDTO;
 
 // Composables
 const snackbar = useSnackbar();
@@ -164,7 +165,7 @@ const formData = reactive({
   description: '',
   icon: 'mdi-folder',
   color: '#2196F3',
-  controlMode: ReminderContracts.ControlMode.INDIVIDUAL, // 默认个体控制
+  controlMode: ControlMode.INDIVIDUAL, // 默认个体控制
   order: 0,
 });
 
@@ -201,12 +202,12 @@ const colorOptions = [
 const controlModeOptions = [
   {
     title: '个体控制',
-    value: ReminderContracts.ControlMode.INDIVIDUAL,
+    value: ControlMode.INDIVIDUAL,
     description: '每个提醒模板可以独立启用/暂停',
   },
   {
     title: '组控制',
-    value: ReminderContracts.ControlMode.GROUP,
+    value: ControlMode.GROUP,
     description: '所有提醒模板统一启用/暂停',
   },
 ];
@@ -224,7 +225,7 @@ const resetForm = () => {
   formData.description = '';
   formData.icon = 'mdi-folder';
   formData.color = '#2196F3';
-  formData.controlMode = ReminderContracts.ControlMode.INDIVIDUAL;
+  formData.controlMode = ControlMode.INDIVIDUAL;
   formData.order = 0;
   formRef.value?.resetValidation();
 };
@@ -275,7 +276,7 @@ const handleSave = async () => {
 
   try {
     // 构建分组数据
-    const groupData: ReminderContracts.CreateReminderGroupRequestDTO = {
+    const groupData: CreateReminderGroupRequest = {
       name: formData.name.trim(),
       description: formData.description?.trim() || undefined,
       color: formData.color,
@@ -325,3 +326,4 @@ defineExpose({
   padding-inline-start: 12px;
 }
 </style>
+

@@ -96,7 +96,8 @@ import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGene
 import { taskTemplateApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
-import { TaskType, TimeType, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { TaskType, TimeType } from '@dailyuse/contracts/task';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
 // Props
 const props = defineProps<{
@@ -334,3 +335,4 @@ watch(
     gap: 8px;
 }
 </style>
+

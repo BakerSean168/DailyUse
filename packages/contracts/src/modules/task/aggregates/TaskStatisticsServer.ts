@@ -4,6 +4,7 @@
  */
 
 import type { TemplateStatsInfoDTO } from '../../../shared/dtos';
+import type { TaskStatisticsClientDTO } from './TaskStatisticsClient';
 
 // ============ 子统计信息接口 ============
 
@@ -220,6 +221,11 @@ export interface TaskStatisticsServer {
    * 转换为 Server DTO
    */
   toServerDTO(): TaskStatisticsServerDTO;
+
+  /**
+   * 转换为 Client DTO
+   */
+  toClientDTO(): TaskStatisticsClientDTO;
 
   /**
    * 转换为 Persistence DTO (数据库)

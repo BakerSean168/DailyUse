@@ -76,8 +76,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, reactive } from 'vue';
 
-import type { AccountContracts } from '@dailyuse/contracts';
-import { Gender } from '@dailyuse/contracts';
+import type { AccountDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
+import { Gender } from '@dailyuse/contracts/account';
 
 type ProfileData = {
   displayName: string;
@@ -90,12 +90,12 @@ type ProfileData = {
 
 const props = defineProps<{
   modelValue: boolean;
-  account: AccountContracts.AccountDTO | null;
+  account: AccountDTO | null;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'handle-update-profile', formData: AccountContracts.UpdateAccountProfileRequestDTO): void;
+  (e: 'handle-update-profile', formData: UpdateAccountProfileRequestDTO): void;
 }>();
 
 const formRef = ref<InstanceType<typeof HTMLFormElement> | null>(null);
@@ -169,3 +169,4 @@ watch([() => props.account, () => props.modelValue], ([account, modelValue]) => 
   }
 });
 </script>
+

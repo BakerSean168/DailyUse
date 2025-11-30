@@ -2,17 +2,13 @@
  * NotificationMetadata 值对象实现 (Client)
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { INotificationMetadataClient, NotificationMetadataClientDTO, NotificationMetadataServerDTO } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type INotificationMetadataClient = NotificationContracts.INotificationMetadataClient;
-type NotificationMetadataClientDTO = NotificationContracts.NotificationMetadataClientDTO;
-type NotificationMetadataServerDTO = NotificationContracts.NotificationMetadataServerDTO;
 
 /**
  * NotificationMetadata 值对象 (Client)
  */
-export class NotificationMetadataClient extends ValueObject implements INotificationMetadataClient {
+export class NotificationMetadataClient extends ValueObject implements NotificationMetadataClient {
   public readonly icon?: string | null;
   public readonly image?: string | null;
   public readonly color?: string | null;

@@ -14,7 +14,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { AccountEmailApplicationService } from '../../application/services/AccountEmailApplicationService';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountEmailController');
@@ -288,3 +288,5 @@ export class AccountEmailController {
     }
   }
 }
+
+

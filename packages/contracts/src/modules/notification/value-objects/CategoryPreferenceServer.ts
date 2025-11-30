@@ -4,7 +4,7 @@
 ��
  */
 import type { CategoryPreferenceClientDTO } from './CategoryPreferenceClient';
-import type { ImportanceLevel } from '../enums';
+import type { ImportanceLevel } from '../../../shared/index';
 
 // ============ q�{��I ============
 

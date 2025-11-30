@@ -30,13 +30,13 @@
         </template>
 
         <v-list-item-title class="text-body-2">
-          {{ doc.title }}
+          {{ doc.name }}
         </v-list-item-title>
 
         <v-list-item-subtitle class="text-caption">
-          {{ doc.folderPath || '/' }}
-          <v-chip v-if="doc.tags?.length" size="x-small" class="ml-2">
-            {{ doc.tags[0] }}
+          {{ getFolderPath(doc.path) || '/' }}
+          <v-chip v-if="doc.metadata?.tags?.length" size="x-small" class="ml-2">
+            {{ doc.metadata.tags[0] }}
           </v-chip>
         </v-list-item-subtitle>
       </v-list-item>
@@ -65,9 +65,8 @@
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 
 // ==================== Props ====================
 interface Props {
@@ -101,11 +100,17 @@ const filteredDocuments = computed(() => {
 
   const query = props.searchQuery.toLowerCase();
   return documents.value.filter(doc =>
-    doc.title.toLowerCase().includes(query) ||
-    doc.folderPath?.toLowerCase().includes(query) ||
-    doc.tags?.some(tag => tag.toLowerCase().includes(query))
+    doc.name.toLowerCase().includes(query) ||
+    doc.path?.toLowerCase().includes(query) ||
+    doc.metadata?.tags?.some((tag: string) => tag.toLowerCase().includes(query))
   );
 });
+
+// ==================== Helpers ====================
+function getFolderPath(path: string): string {
+  const lastSlash = path.lastIndexOf('/');
+  return lastSlash > 0 ? path.substring(0, lastSlash) : '/';
+}
 
 // ==================== Methods ====================
 async function searchDocumentsImpl(query: string) {
@@ -225,3 +230,4 @@ onBeforeUnmount(() => {
   background-color: rgba(25, 118, 210, 0.12);
 }
 </style>
+

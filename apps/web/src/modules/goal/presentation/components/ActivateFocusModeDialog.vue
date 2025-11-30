@@ -112,7 +112,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 import { useFocusMode } from '../composables/useFocusMode';
 import { createLogger } from '@dailyuse/utils';
 
@@ -131,7 +131,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];
-  activated: [focusMode: GoalContracts.FocusModeClientDTO];
+  activated: [focusMode: FocusModeClientDTO];
 }>();
 
 // ===== Composables =====
@@ -146,7 +146,7 @@ const formData = ref({
   focusedGoalUuids: [] as string[],
   startTime: new Date().toISOString().slice(0, 16), // YYYY-MM-DDTHH:mm
   endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), // +30天
-  hiddenGoalsMode: 'hide_all' as GoalContracts.HiddenGoalsMode,
+  hiddenGoalsMode: 'hide_all' as HiddenGoalsMode,
 });
 
 // ===== 计算属性 =====
@@ -230,7 +230,7 @@ const handleSubmit = async () => {
   }
 
   try {
-    const request: GoalContracts.ActivateFocusModeRequest = {
+    const request: ActivateFocusModeRequest = {
       focusedGoalUuids: formData.value.focusedGoalUuids,
       startTime: new Date(formData.value.startTime).getTime(),
       endTime: new Date(formData.value.endTime).getTime(),
@@ -290,3 +290,4 @@ watch(
   overflow-y: auto;
 }
 </style>
+

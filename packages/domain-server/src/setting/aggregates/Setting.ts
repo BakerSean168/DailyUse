@@ -4,23 +4,22 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { SettingContracts } from '@dailyuse/contracts';
+import type {
+  SettingClientDTO,
+  SettingPersistenceDTO,
+  SettingServer,
+  SettingServerDTO,
+} from '@dailyuse/contracts/setting';
+import { SettingScope, SettingValueType } from '@dailyuse/contracts/setting';
 import { ValidationRule } from '../value-objects/ValidationRule';
 import { UIConfig } from '../value-objects/UIConfig';
 import { SyncConfig } from '../value-objects/SyncConfig';
 import { SettingHistory } from '../entities/SettingHistory';
 
-const { SettingValueType } = SettingContracts;
-type ISettingServer = SettingContracts.SettingServer;
-type SettingServerDTO = SettingContracts.SettingServerDTO;
-type SettingPersistenceDTO = SettingContracts.SettingPersistenceDTO;
-type SettingValueType = SettingContracts.SettingValueType;
-type SettingScope = SettingContracts.SettingScope;
-
 /**
  * Setting 聚合根
  */
-export class Setting extends AggregateRoot implements ISettingServer {
+export class Setting extends AggregateRoot implements SettingServer {
   private _key: string;
   private _name: string;
   private _description?: string | null;
@@ -382,7 +381,7 @@ export class Setting extends AggregateRoot implements ISettingServer {
   /**
    * 转换为 ClientDTO
    */
-  public toClientDTO(): SettingContracts.SettingClientDTO {
+  public toClientDTO(): SettingClientDTO {
     return {
       uuid: this.uuid,
       key: this._key,

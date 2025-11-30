@@ -23,7 +23,7 @@ type EChartsOption = ComposeOption<
 >;
 
 import { computed } from 'vue';
-import type { Goal, KeyResult } from '@dailyuse/domain-client';
+import type { Goal, KeyResult } from '@dailyuse/domain-client/goal';
 import { useTheme } from 'vuetify';
 import { format } from 'date-fns';
 const theme = useTheme();

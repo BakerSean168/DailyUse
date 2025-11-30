@@ -5,13 +5,10 @@
  * Handles quota checks, consumption, and reset operations.
  */
 
-import { AIContracts } from '@dailyuse/contracts';
+import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
 import type { IAIUsageQuotaRepository } from '../repositories/IAIUsageQuotaRepository';
 import { AIUsageQuotaServer } from '../aggregates/AIUsageQuotaServer';
 
-type QuotaResetPeriod = AIContracts.QuotaResetPeriod;
-
-const QuotaResetPeriodEnum = AIContracts.QuotaResetPeriod;
 
 export class QuotaExceededError extends Error {
   constructor(
@@ -157,7 +154,7 @@ export class QuotaEnforcementService {
       const quota = AIUsageQuotaServer.create({
         accountUuid,
         quotaLimit: 50,
-        resetPeriod: QuotaResetPeriodEnum.DAILY,
+        resetPeriod: QuotaResetPeriod.DAILY,
       });
       await this.quotaRepository.save(quota.toServerDTO());
       return quota;

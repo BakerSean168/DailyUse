@@ -3,11 +3,11 @@
  * 任务依赖关系仓储接口
  */
 
-import { TaskContracts } from '@dailyuse/contracts';
-
-type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
-type CreateTaskDependencyRequest = TaskContracts.CreateTaskDependencyRequest;
-type CircularDependencyValidationResult = TaskContracts.CircularDependencyValidationResult;
+import type {
+  CircularDependencyValidationResult,
+  CreateTaskDependencyRequest,
+  TaskDependencyServerDTO,
+} from '@dailyuse/contracts/task';
 
 /**
  * TaskDependency 仓储接口
@@ -81,4 +81,9 @@ export interface ITaskDependencyRepository {
     uuid: string,
     data: { dependencyType?: string; lagDays?: number },
   ): Promise<TaskDependencyServerDTO>;
+
+  /**
+   * 获取账户的所有依赖关系
+   */
+  findAllByAccount(accountUuid: string): Promise<TaskDependencyServerDTO[]>;
 }

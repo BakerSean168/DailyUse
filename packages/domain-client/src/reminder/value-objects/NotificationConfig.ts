@@ -2,19 +2,21 @@
  * NotificationConfig 值对象实现 (Client)
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
-
-type NotificationConfigClientDTO = ReminderContracts.NotificationConfigClientDTO;
-type NotificationConfigServerDTO = ReminderContracts.NotificationConfigServerDTO;
-type NotificationChannel = ReminderContracts.NotificationChannel;
-type SoundConfig = ReminderContracts.SoundConfig;
-type VibrationConfig = ReminderContracts.VibrationConfig;
-type NotificationActionConfig = ReminderContracts.NotificationActionConfig;
+import {
+  NotificationChannel,
+} from '@dailyuse/contracts/reminder';
+import type {
+  NotificationActionConfig,
+  NotificationConfigClient,
+  NotificationConfigClientDTO,
+  NotificationConfigServerDTO,
+  SoundConfig,
+  VibrationConfig,
+} from '@dailyuse/contracts/reminder';
 
 // 枚举常量使用 Enum 后缀，避免与类型名冲突
-const NotificationChannelEnum = ReminderContracts.NotificationChannel;
 
-export class NotificationConfig implements ReminderContracts.NotificationConfigClient {
+export class NotificationConfig implements NotificationConfigClient {
   private readonly _channels: NotificationChannel[];
   private readonly _title: string | null | undefined;
   private readonly _body: string | null | undefined;
@@ -85,7 +87,7 @@ export class NotificationConfig implements ReminderContracts.NotificationConfigC
   }
 
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.NotificationConfigClient): boolean {
+  public equals(other: NotificationConfigClient): boolean {
     return (
       JSON.stringify(this._channels) === JSON.stringify(other.channels) &&
       this._title === other.title &&
@@ -140,13 +142,13 @@ export class NotificationConfig implements ReminderContracts.NotificationConfigC
     // 生成 channelsText
     const channelNames = dto.channels.map((c) => {
       switch (c) {
-        case NotificationChannelEnum.IN_APP:
+        case NotificationChannel.IN_APP:
           return '应用内';
-        case NotificationChannelEnum.PUSH:
+        case NotificationChannel.PUSH:
           return '推送';
-        case NotificationChannelEnum.EMAIL:
+        case NotificationChannel.EMAIL:
           return '邮件';
-        case NotificationChannelEnum.SMS:
+        case NotificationChannel.SMS:
           return '短信';
         default:
           return '未知';

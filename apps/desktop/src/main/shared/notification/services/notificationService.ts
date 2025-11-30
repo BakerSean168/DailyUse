@@ -2,7 +2,7 @@ import { BrowserWindow } from 'electron';
 import { NotificationWindowManager } from '../windows/notificationWindow';
 
 import type { NotificationWindow } from '../types';
-import type { ApiResponse } from '@dailyuse/contracts';
+import type { ApiResponse } from '@dailyuse/contracts/response';
 
 export interface NotificationServiceConfig {
   mainWindow: BrowserWindow;

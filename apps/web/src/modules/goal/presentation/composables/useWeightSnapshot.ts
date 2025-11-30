@@ -1,5 +1,5 @@
 import { ref, computed, reactive } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotServerDTO } from '@dailyuse/contracts/goal';
 import { WeightSnapshotWebApplicationService } from '../../application/services/WeightSnapshotWebApplicationService';
 import { getGoalStore } from '../stores/goalStore';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
@@ -24,7 +24,7 @@ export function useWeightSnapshot() {
   const error = computed(() => goalStore.error);
 
   // ===== 本地状态 =====
-  const snapshots = ref<GoalContracts.KeyResultWeightSnapshotServerDTO[]>([]);
+  const snapshots = ref<KeyResultWeightSnapshotServerDTO[]>([]);
   const pagination = reactive({
     total: 0,
     page: 1,
@@ -267,3 +267,4 @@ export function useWeightSnapshot() {
     hasMorePages,
   };
 }
+

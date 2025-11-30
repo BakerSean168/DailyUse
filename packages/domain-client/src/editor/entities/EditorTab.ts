@@ -3,15 +3,10 @@
  * 编辑器标签实体 - 客户端实现
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
-import { EditorContracts as EC } from '@dailyuse/contracts';
+import type { EditorTabClient, EditorTabClientDTO, EditorTabServerDTO, TabViewStateClientDTO } from '@dailyuse/contracts/editor';
+import { TabType } from '@dailyuse/contracts/editor';
 import { Entity } from '@dailyuse/utils';
 import { TabViewStateClient } from '../value-objects';
-
-type IEditorTabClient = EditorContracts.EditorTabClient;
-type EditorTabClientDTO = EditorContracts.EditorTabClientDTO;
-type EditorTabServerDTO = EditorContracts.EditorTabServerDTO;
-type TabType = EditorContracts.TabType;
 
 /**
  * EditorTab Entity (Client)
@@ -21,7 +16,7 @@ type TabType = EditorContracts.TabType;
  * - 封装业务逻辑
  * - 管理自身状态
  */
-export class EditorTab extends Entity implements IEditorTabClient {
+export class EditorTab extends Entity implements EditorTabClient {
   // ===== 私有字段 =====
   private _groupUuid: string;
   private _sessionUuid: string;
@@ -101,7 +96,7 @@ export class EditorTab extends Entity implements IEditorTabClient {
   public get title(): string {
     return this._title;
   }
-  public get viewState(): EditorContracts.TabViewStateClientDTO {
+  public get viewState(): TabViewStateClientDTO {
     return this._viewState.toClientDTO();
   }
   public get isPinned(): boolean {
@@ -165,12 +160,12 @@ export class EditorTab extends Entity implements IEditorTabClient {
    */
   public getTabTypeLabel(): string {
     const labels: Record<TabType, string> = {
-      [EC.TabType.DOCUMENT]: '文档',
-      [EC.TabType.PREVIEW]: '预览',
-      [EC.TabType.DIFF]: '对比',
-      [EC.TabType.SETTINGS]: '设置',
-      [EC.TabType.SEARCH]: '搜索',
-      [EC.TabType.WELCOME]: '欢迎',
+      [TabType.DOCUMENT]: '文档',
+      [TabType.PREVIEW]: '预览',
+      [TabType.DIFF]: '对比',
+      [TabType.SETTINGS]: '设置',
+      [TabType.SEARCH]: '搜索',
+      [TabType.WELCOME]: '欢迎',
     };
     return labels[this._tabType] || this._tabType;
   }
@@ -180,12 +175,12 @@ export class EditorTab extends Entity implements IEditorTabClient {
    */
   public getIconName(): string {
     const icons: Record<TabType, string> = {
-      [EC.TabType.DOCUMENT]: 'document',
-      [EC.TabType.PREVIEW]: 'eye',
-      [EC.TabType.DIFF]: 'git-compare',
-      [EC.TabType.SETTINGS]: 'settings',
-      [EC.TabType.SEARCH]: 'search',
-      [EC.TabType.WELCOME]: 'home',
+      [TabType.DOCUMENT]: 'document',
+      [TabType.PREVIEW]: 'eye',
+      [TabType.DIFF]: 'git-compare',
+      [TabType.SETTINGS]: 'settings',
+      [TabType.SEARCH]: 'search',
+      [TabType.WELCOME]: 'home',
     };
     return icons[this._tabType] || 'file';
   }
@@ -194,7 +189,7 @@ export class EditorTab extends Entity implements IEditorTabClient {
    * 是否为文档标签
    */
   public isDocumentTab(): boolean {
-    return this._tabType === EC.TabType.DOCUMENT;
+    return this._tabType === TabType.DOCUMENT;
   }
 
   /**
@@ -202,7 +197,7 @@ export class EditorTab extends Entity implements IEditorTabClient {
    */
   public canClose(): boolean {
     // Welcome 标签通常不允许关闭
-    return this._tabType !== EC.TabType.WELCOME;
+    return this._tabType !== TabType.WELCOME;
   }
 
   /**

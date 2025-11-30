@@ -12,18 +12,12 @@ import type { INotificationRepository } from '../repositories/INotificationRepos
 import type { INotificationTemplateRepository } from '../repositories/INotificationTemplateRepository';
 import type { INotificationPreferenceRepository } from '../repositories/INotificationPreferenceRepository';
 import { Notification } from '../aggregates/Notification';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationActionServerDTO, NotificationMetadataServerDTO, RelatedEntityType } from '@dailyuse/contracts/notification';
+import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('NotificationDomainService');
-
-type NotificationType = NotificationContracts.NotificationType;
-type NotificationCategory = NotificationContracts.NotificationCategory;
-type NotificationActionDTO = NotificationContracts.NotificationActionServerDTO;
-type NotificationMetadataDTO = NotificationContracts.NotificationMetadataServerDTO;
-type RelatedEntityType = NotificationContracts.RelatedEntityType;
-type ImportanceLevel = NotificationContracts.ImportanceLevel;
-type UrgencyLevel = NotificationContracts.UrgencyLevel;
 
 /**
  * NotificationDomainService
@@ -55,8 +49,8 @@ export class NotificationDomainService {
     urgency?: UrgencyLevel;
     relatedEntityType?: RelatedEntityType;
     relatedEntityUuid?: string;
-    actions?: NotificationActionDTO[];
-    metadata?: NotificationMetadataDTO;
+    actions?: NotificationActionServerDTO[];
+    metadata?: NotificationMetadataServerDTO;
     expiresAt?: number;
     channels?: string[]; // 指定发送渠道
   }): Promise<Notification> {

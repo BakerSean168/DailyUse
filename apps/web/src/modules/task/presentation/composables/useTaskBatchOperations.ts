@@ -9,7 +9,7 @@
  */
 
 import { ref, computed, readonly } from 'vue';
-import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client';
+import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
 
 

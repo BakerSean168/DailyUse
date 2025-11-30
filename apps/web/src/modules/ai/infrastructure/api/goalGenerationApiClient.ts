@@ -8,13 +8,12 @@
  */
 
 import { apiClient } from '@/shared/api/instances';
-import type { AIContracts } from '@dailyuse/contracts';
-
-// 类型别名
-type GenerateGoalRequest = AIContracts.GenerateGoalRequest;
-type GenerateGoalResponse = AIContracts.GenerateGoalResponse;
-type GenerateGoalWithKRsRequest = AIContracts.GenerateGoalWithKRsRequest;
-type GenerateGoalWithKRsResponse = AIContracts.GenerateGoalWithKRsResponse;
+import type {
+  GenerateGoalRequest,
+  GenerateGoalResponse,
+  GenerateGoalWithKRsRequest,
+  GenerateGoalWithKRsResponse,
+} from '@dailyuse/contracts/ai';
 
 /**
  * Goal Generation API Client

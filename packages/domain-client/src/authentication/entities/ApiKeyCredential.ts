@@ -3,17 +3,16 @@
  * 兼容 ApiKeyCredentialClient 接口
  */
 
-import { AuthenticationContracts, ApiKeyStatus } from '@dailyuse/contracts';
+import type { ApiKeyCredentialClient, ApiKeyCredentialClientDTO } from '@dailyuse/contracts/authentication';
+import { ApiKeyStatus } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
-type IApiKeyCredentialClient = AuthenticationContracts.ApiKeyCredentialClient;
-type ApiKeyCredentialClientDTO = AuthenticationContracts.ApiKeyCredentialClientDTO;
 
 /**
  * ApiKeyCredential 实体 (Client)
  * API 密钥凭证实体
  */
-export class ApiKeyCredential extends Entity implements IApiKeyCredentialClient {
+export class ApiKeyCredential extends Entity implements ApiKeyCredentialClient {
   // ===== 私有字段 =====
   private _credentialUuid: string;
   private _name: string;

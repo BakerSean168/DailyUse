@@ -7,7 +7,7 @@
  * - 处理调度任务的创建业务逻辑
  */
 
-import { SourceModule } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '../aggregates/ScheduleTask';
 import { ScheduleStrategyFactory } from './strategies/ScheduleStrategyFactory';
 import type { ScheduleStrategyInput } from './strategies/IScheduleStrategy';

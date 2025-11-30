@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest } from '@dailyuse/contracts/goal';
 import { focusModeApiClient } from '../../infrastructure/api/focusModeApiClient';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 import { createLogger } from '@dailyuse/utils';
@@ -35,8 +35,8 @@ export function useFocusMode() {
   // ===== 响应式状态 =====
   const isLoading = ref(false);
   const error = ref<string | null>(null);
-  const activeFocusMode = ref<GoalContracts.FocusModeClientDTO | null>(null);
-  const focusModeHistory = ref<GoalContracts.FocusModeClientDTO[]>([]);
+  const activeFocusMode = ref<FocusModeClientDTO | null>(null);
+  const focusModeHistory = ref<FocusModeClientDTO[]>([]);
 
   // ===== 计算属性 =====
   const hasActiveFocusMode = computed(() => activeFocusMode.value !== null);
@@ -55,8 +55,8 @@ export function useFocusMode() {
    * @returns 专注周期 DTO
    */
   const activateFocusMode = async (
-    request: GoalContracts.ActivateFocusModeRequest,
-  ): Promise<GoalContracts.FocusModeClientDTO> => {
+    request: ActivateFocusModeRequest,
+  ): Promise<FocusModeClientDTO> => {
     isLoading.value = true;
     error.value = null;
 
@@ -87,7 +87,7 @@ export function useFocusMode() {
    * @param uuid - 专注周期 UUID（可选，默认使用当前活跃周期）
    * @returns 失效后的专注周期 DTO
    */
-  const deactivateFocusMode = async (uuid?: string): Promise<GoalContracts.FocusModeClientDTO> => {
+  const deactivateFocusMode = async (uuid?: string): Promise<FocusModeClientDTO> => {
     isLoading.value = true;
     error.value = null;
 
@@ -134,7 +134,7 @@ export function useFocusMode() {
   const extendFocusMode = async (
     newEndTime: number,
     uuid?: string,
-  ): Promise<GoalContracts.FocusModeClientDTO> => {
+  ): Promise<FocusModeClientDTO> => {
     isLoading.value = true;
     error.value = null;
 
@@ -179,7 +179,7 @@ export function useFocusMode() {
    */
   const fetchActiveFocusMode = async (
     forceRefresh = false,
-  ): Promise<GoalContracts.FocusModeClientDTO | null> => {
+  ): Promise<FocusModeClientDTO | null> => {
     // 如果有缓存且不强制刷新，直接返回
     if (!forceRefresh && activeFocusMode.value) {
       return activeFocusMode.value;
@@ -216,7 +216,7 @@ export function useFocusMode() {
    */
   const fetchFocusModeHistory = async (
     forceRefresh = false,
-  ): Promise<GoalContracts.FocusModeClientDTO[]> => {
+  ): Promise<FocusModeClientDTO[]> => {
     // 如果有缓存且不强制刷新，直接返回
     if (!forceRefresh && focusModeHistory.value.length > 0) {
       return focusModeHistory.value;
@@ -275,3 +275,4 @@ export function useFocusMode() {
     clearState,
   };
 }
+

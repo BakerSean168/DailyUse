@@ -1,4 +1,4 @@
-import type { KeyResult } from '@dailyuse/domain-client';
+import type { KeyResult } from '@dailyuse/domain-client/goal';
 
 /**
  * 权重分配策略

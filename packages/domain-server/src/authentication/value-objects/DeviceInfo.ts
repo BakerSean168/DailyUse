@@ -3,15 +3,11 @@
  * 实现 DeviceInfoServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type { DeviceInfoClientDTO, DeviceInfoServer, DeviceInfoServerDTO } from '@dailyuse/contracts/authentication';
 import { ValueObject } from '@dailyuse/utils';
 import crypto from 'crypto';
 
-type IDeviceInfoServer = AuthenticationContracts.DeviceInfoServer;
-type DeviceInfoServerDTO = AuthenticationContracts.DeviceInfoServerDTO;
-type DeviceInfoClientDTO = AuthenticationContracts.DeviceInfoClientDTO;
-
-export class DeviceInfo extends ValueObject implements IDeviceInfoServer {
+export class DeviceInfo extends ValueObject implements DeviceInfoServer {
   public readonly deviceId: string;
   public readonly deviceFingerprint: string;
   public readonly deviceType: 'BROWSER' | 'DESKTOP' | 'MOBILE' | 'TABLET' | 'API' | 'UNKNOWN';

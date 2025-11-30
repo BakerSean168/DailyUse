@@ -177,7 +177,7 @@
 import { ref, computed, watch } from 'vue';
 import { useGoalGeneration } from '../composables/useGoalGeneration';
 import { useAIProviders } from '../composables/useAIProviders';
-import type { AIContracts } from '@dailyuse/contracts';
+import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 // ===== Props & Emits =====
 const props = withDefaults(defineProps<{
@@ -188,8 +188,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void;
-    (e: 'confirm', goal: AIContracts.GeneratedGoalDraft): void;
-    (e: 'goal-created', goal: AIContracts.GeneratedGoalDraft): void;
+    (e: 'confirm', goal: GeneratedGoalDraft): void;
+    (e: 'goal-created', goal: GeneratedGoalDraft): void;
 }>();
 
 // ===== Composables =====
@@ -339,3 +339,4 @@ defineExpose({
     min-height: 300px;
 }
 </style>
+

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
-import { type RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO } from '@dailyuse/contracts/repository';
 
 /**
  * 仓库 Git 操作应用服务
@@ -10,7 +10,7 @@ export class RepositoryGitApplicationService {
   /**
    * 用例：获取 Git 状态
    */
-  async getGitStatus(repositoryUuid: string): Promise<RepositoryContracts.GitStatusResponseDTO> {
+  async getGitStatus(repositoryUuid: string): Promise<GitStatusResponseDTO> {
     try {
       const statusDTO = await repositoryApiClient.getGitStatus(repositoryUuid);
       return statusDTO;
@@ -26,8 +26,8 @@ export class RepositoryGitApplicationService {
    */
   async gitCommit(
     repositoryUuid: string,
-    request: RepositoryContracts.GitCommitRequestDTO,
-  ): Promise<RepositoryContracts.GitCommitResponseDTO> {
+    request: GitCommitRequestDTO,
+  ): Promise<GitCommitResponseDTO> {
     try {
       const response = await repositoryApiClient.gitCommit(repositoryUuid, request);
       return response;
@@ -41,3 +41,5 @@ export class RepositoryGitApplicationService {
 
 // 导出单例
 export const repositoryGitService = new RepositoryGitApplicationService();
+
+

@@ -4,13 +4,9 @@
  * 实现 IScheduleConfigClient 接口
  */
 
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { IScheduleConfigClient, ScheduleConfigClientDTO, ScheduleConfigServerDTO } from '@dailyuse/contracts/schedule';
+import { Timezone } from '@dailyuse/contracts/schedule';
 import { ValueObject } from '@dailyuse/utils';
-
-type IScheduleConfigClient = ScheduleContracts.IScheduleConfigClient;
-type ScheduleConfigServerDTO = ScheduleContracts.ScheduleConfigServerDTO;
-type ScheduleConfigClientDTO = ScheduleContracts.ScheduleConfigClientDTO;
-type Timezone = ScheduleContracts.Timezone;
 
 /**
  * ScheduleConfigClient 值对象

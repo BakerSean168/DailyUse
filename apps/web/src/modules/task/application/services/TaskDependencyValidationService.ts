@@ -8,7 +8,7 @@
  * - 自依赖检测（Self-dependency Check）
  */
 
-import { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO, ValidateDependencyRequest, ValidateDependencyResponse } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 
@@ -65,7 +65,7 @@ export class TaskDependencyValidationService {
     predecessorUuid: string,
     successorUuid: string,
     dependencyType: string,
-    existingDependencies: TaskContracts.TaskDependencyClientDTO[],
+    existingDependencies: TaskDependencyClientDTO[],
     allTasks?: TaskForDAG[],
   ): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
@@ -143,7 +143,7 @@ export class TaskDependencyValidationService {
   detectCircularDependency(
     predecessorUuid: string,
     successorUuid: string,
-    existingDependencies: TaskContracts.TaskDependencyClientDTO[],
+    existingDependencies: TaskDependencyClientDTO[],
     allTasks?: TaskForDAG[],
   ): CircularDependencyResult {
     // 构建邻接表（前驱 → 后继）
@@ -243,7 +243,7 @@ export class TaskDependencyValidationService {
    * 构建依赖图（邻接表）
    */
   private buildDependencyGraph(
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): Map<string, Set<string>> {
     const graph = new Map<string, Set<string>>();
 
@@ -312,7 +312,7 @@ export class TaskDependencyValidationService {
     predecessorUuid: string,
     successorUuid: string,
     dependencyType: string,
-    existingDependencies: TaskContracts.TaskDependencyClientDTO[],
+    existingDependencies: TaskDependencyClientDTO[],
   ): boolean {
     return existingDependencies.some(
       (dep) =>
@@ -327,7 +327,7 @@ export class TaskDependencyValidationService {
    */
   private calculateChainDepth(
     taskUuid: string,
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
   ): number {
     const graph = this.buildDependencyGraph(dependencies);
     const visited = new Set<string>();
@@ -354,8 +354,8 @@ export class TaskDependencyValidationService {
    * 调用后端验证 API
    */
   async validateDependencyRemote(
-    request: TaskContracts.ValidateDependencyRequest,
-  ): Promise<TaskContracts.ValidateDependencyResponse> {
+    request: ValidateDependencyRequest,
+  ): Promise<ValidateDependencyResponse> {
     try {
       return await taskDependencyApiClient.validateDependency(request);
     } catch (error) {
@@ -370,7 +370,7 @@ export class TaskDependencyValidationService {
    */
   calculateAffectedTasks(
     taskUuid: string,
-    dependencies: TaskContracts.TaskDependencyClientDTO[],
+    dependencies: TaskDependencyClientDTO[],
     isCreation: boolean,
   ): string[] {
     const graph = this.buildDependencyGraph(dependencies);
@@ -418,3 +418,4 @@ export class TaskDependencyValidationService {
 
 // 导出单例
 export const taskDependencyValidationService = new TaskDependencyValidationService();
+

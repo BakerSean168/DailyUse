@@ -5,9 +5,9 @@
  * 负责专注周期的创建、查询、延期、失效和自动过期检查。
  */
 
-import type { IFocusModeRepository, IGoalRepository } from '@dailyuse/domain-server';
-import { FocusMode } from '@dailyuse/domain-server';
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { IFocusModeRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
+import { FocusMode } from '@dailyuse/domain-server/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode, FocusModeClientDTO } from '@dailyuse/contracts/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 
 /**
@@ -18,7 +18,7 @@ export interface ActivateFocusModeParams {
   focusedGoalUuids: string[];
   startTime: number;
   endTime: number;
-  hiddenGoalsMode: GoalContracts.HiddenGoalsMode;
+  hiddenGoalsMode: HiddenGoalsMode;
 }
 
 /**
@@ -90,7 +90,7 @@ export class FocusModeApplicationService {
    * @throws Error 如果目标数量不在 1-3 范围
    * @throws Error 如果目标不存在或不属于该账户
    */
-  async activateFocusMode(params: ActivateFocusModeParams): Promise<GoalContracts.FocusModeClientDTO> {
+  async activateFocusMode(params: ActivateFocusModeParams): Promise<FocusModeClientDTO> {
     const { accountUuid, focusedGoalUuids, startTime, endTime, hiddenGoalsMode } = params;
 
     // 1. 校验账户是否已有活跃周期
@@ -129,7 +129,7 @@ export class FocusModeApplicationService {
    * @throws Error 如果专注周期不存在
    * @throws Error 如果专注周期已失效
    */
-  async deactivateFocusMode(uuid: string): Promise<GoalContracts.FocusModeClientDTO> {
+  async deactivateFocusMode(uuid: string): Promise<FocusModeClientDTO> {
     // 1. 查找专注周期
     const focusMode = await this.focusModeRepository.findById(uuid);
     if (!focusMode) {
@@ -158,7 +158,7 @@ export class FocusModeApplicationService {
    * @throws Error 如果专注周期已失效
    * @throws Error 如果 newEndTime <= endTime（不允许缩短）
    */
-  async extendFocusMode(params: ExtendFocusModeParams): Promise<GoalContracts.FocusModeClientDTO> {
+  async extendFocusMode(params: ExtendFocusModeParams): Promise<FocusModeClientDTO> {
     const { uuid, newEndTime } = params;
 
     // 1. 查找专注周期
@@ -187,7 +187,7 @@ export class FocusModeApplicationService {
    *
    * @returns 活跃周期，不存在则返回 null
    */
-  async getActiveFocusMode(accountUuid: string): Promise<GoalContracts.FocusModeClientDTO | null> {
+  async getActiveFocusMode(accountUuid: string): Promise<FocusModeClientDTO | null> {
     const focusMode = await this.focusModeRepository.findActiveByAccountUuid(accountUuid);
     return focusMode ? focusMode.toClientDTO() : null;
   }
@@ -197,7 +197,7 @@ export class FocusModeApplicationService {
    *
    * @returns 周期列表（按创建时间倒序）
    */
-  async getFocusModeHistory(accountUuid: string): Promise<GoalContracts.FocusModeClientDTO[]> {
+  async getFocusModeHistory(accountUuid: string): Promise<FocusModeClientDTO[]> {
     const focusModes = await this.focusModeRepository.findByAccountUuid(accountUuid);
     return focusModes.map((fm) => fm.toClientDTO());
   }
@@ -232,3 +232,4 @@ export class FocusModeApplicationService {
     }
   }
 }
+

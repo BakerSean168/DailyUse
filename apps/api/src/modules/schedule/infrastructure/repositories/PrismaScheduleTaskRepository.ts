@@ -12,16 +12,10 @@
  */
 
 import type { PrismaClient } from '@prisma/client';
-import type { IScheduleTaskRepository } from '@dailyuse/domain-server';
-import { ScheduleTask, ScheduleExecution } from '@dailyuse/domain-server';
-import { ScheduleContracts } from '@dailyuse/contracts';
-
-// 类型别名
-type ScheduleTaskStatus = ScheduleContracts.ScheduleTaskStatus;
-type SourceModule = ScheduleContracts.SourceModule;
-
-// 枚举值别名
-const ScheduleTaskStatus = ScheduleContracts.ScheduleTaskStatus;
+import type { IScheduleTaskRepository } from '@dailyuse/domain-server/schedule';
+import { ScheduleTask, ScheduleExecution } from '@dailyuse/domain-server/schedule';
+import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
+import type { SourceModule, ScheduleTaskPersistenceDTO } from '@dailyuse/contracts/schedule';
 
 /**
  * ScheduleTask 查询选项
@@ -51,7 +45,7 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
    */
   private toDomain(data: any): ScheduleTask {
     // 构建 PersistenceDTO（所有字段都是扁平化的）
-    const persistenceDTO: ScheduleContracts.ScheduleTaskPersistenceDTO = {
+    const persistenceDTO: ScheduleTaskPersistenceDTO = {
       uuid: data.uuid,
       accountUuid: data.accountUuid,
       name: data.name,
@@ -396,3 +390,4 @@ export class PrismaScheduleTaskRepository implements IScheduleTaskRepository {
     });
   }
 }
+

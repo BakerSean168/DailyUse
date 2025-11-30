@@ -3,17 +3,14 @@
  * 兼容 RefreshTokenClient 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type { RefreshTokenClient, RefreshTokenClientDTO } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
-
-type IRefreshTokenClient = AuthenticationContracts.RefreshTokenClient;
-type RefreshTokenClientDTO = AuthenticationContracts.RefreshTokenClientDTO;
 
 /**
  * RefreshToken 实体 (Client)
  * 刷新令牌实体
  */
-export class RefreshToken extends Entity implements IRefreshTokenClient {
+export class RefreshToken extends Entity implements RefreshTokenClient {
   // ===== 私有字段 =====
   private _sessionUuid: string;
   private _token: string;

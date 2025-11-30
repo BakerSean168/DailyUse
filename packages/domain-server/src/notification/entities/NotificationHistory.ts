@@ -3,17 +3,13 @@
  * 实现 NotificationHistoryServer 接口
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationHistoryPersistenceDTO, NotificationHistoryServer, NotificationHistoryServerDTO } from '@dailyuse/contracts/notification';
 import { Entity } from '@dailyuse/utils';
-
-type INotificationHistoryServer = NotificationContracts.NotificationHistoryServer;
-type NotificationHistoryServerDTO = NotificationContracts.NotificationHistoryServerDTO;
-type NotificationHistoryPersistenceDTO = NotificationContracts.NotificationHistoryPersistenceDTO;
 
 /**
  * NotificationHistory 实体
  */
-export class NotificationHistory extends Entity implements INotificationHistoryServer {
+export class NotificationHistory extends Entity implements NotificationHistoryServer {
   // ===== 私有字段 =====
   private _notificationUuid: string;
   private _action: string;

@@ -5,7 +5,7 @@
  * 支持基于权重快照的时间线动画
  */
 
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotClientDTO } from '@dailyuse/contracts/goal';
 
 /**
  * 时间线快照点
@@ -82,8 +82,8 @@ export interface TimelinePlayState {
  * @param weightSnapshots 权重快照列表
  */
 export function generateTimelineFromGoal(
-  goal: GoalContracts.GoalClientDTO,
-  weightSnapshots: GoalContracts.KeyResultWeightSnapshotClientDTO[],
+  goal: GoalClientDTO,
+  weightSnapshots: KeyResultWeightSnapshotClientDTO[],
 ): TimelineData {
   const snapshots: TimelineSnapshot[] = [];
 
@@ -288,3 +288,4 @@ export const DEFAULT_TIMELINE_PLAY_STATE: TimelinePlayState = {
   speed: 1,
   loop: false,
 };
+

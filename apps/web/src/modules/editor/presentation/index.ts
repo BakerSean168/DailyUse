@@ -11,5 +11,5 @@ export { default as MediaViewer } from './components/MediaViewer.vue';
 // Composable
 export { useEditor } from './composables/useEditor';
 
-// 类型
-// export type { EditorTab } from './components/EditorTabBar.vue';
+// 类型（从 contracts 包重新导出）
+export type { SimpleEditorTab as EditorTab } from '@dailyuse/contracts/shared';

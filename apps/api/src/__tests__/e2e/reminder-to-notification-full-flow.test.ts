@@ -12,7 +12,8 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { generateUUID } from '@dailyuse/utils';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderTemplateStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO } from '@dailyuse/contracts/reminder';
 
 const TEST_TIMEOUT = 120000; // 2 分钟超时
 
@@ -517,3 +518,5 @@ describe(
   },
   TEST_TIMEOUT,
 );
+
+

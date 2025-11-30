@@ -30,8 +30,8 @@
 
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import type { TaskTemplate } from '@dailyuse/domain-client';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
 interface Props {
   modelValue: TaskTemplate;
@@ -156,3 +156,4 @@ watch(
   font-weight: 600;
 }
 </style>
+

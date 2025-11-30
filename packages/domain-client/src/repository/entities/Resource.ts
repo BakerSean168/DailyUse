@@ -2,15 +2,20 @@
  * Resource Entity - Client Implementation
  * 资源实体 - 客户端实现
  */
-import { RepositoryContracts, ResourceType, ResourceStatus } from '@dailyuse/contracts';
+import {
+  ResourceStatus,
+  ResourceType,
+} from '@dailyuse/contracts/repository';
+import type {
+  ResourceClient,
+  ResourceClientDTO,
+  ResourceServerDTO,
+} from '@dailyuse/contracts/repository';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { ResourceMetadata } from '../value-objects/ResourceMetadata';
 import { ResourceStats } from '../value-objects/ResourceStats';
 
-type ResourceClient = RepositoryContracts.ResourceClient;
-type ResourceClientDTO = RepositoryContracts.ResourceClientDTO;
-type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
 
 export class Resource implements ResourceClient {
   private readonly _uuid: string;

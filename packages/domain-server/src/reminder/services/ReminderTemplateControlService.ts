@@ -16,13 +16,9 @@ import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
 import type { ReminderGroup } from '../aggregates/ReminderGroup';
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
 import type { IReminderGroupRepository } from '../repositories/IReminderGroupRepository';
-import { ReminderContracts } from '@dailyuse/contracts';
-
-type ControlMode = ReminderContracts.ControlMode;
-type ReminderStatus = ReminderContracts.ReminderStatus;
+import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
 // 枚举值使用（避免与类型别名冲突）
-const ReminderStatusEnum = ReminderContracts.ReminderStatus;
 
 /**
  * 模板有效状态结果
@@ -82,7 +78,7 @@ export class ReminderTemplateControlService {
         groupStatus: null,
         controlMode: null,
         effectiveStatus: templateStatus,
-        isEffectivelyEnabled: templateStatus === ReminderContracts.ReminderStatus.ACTIVE,
+        isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
         statusReason: '未分组，使用模板自身状态',
       };
     }
@@ -102,7 +98,7 @@ export class ReminderTemplateControlService {
         groupStatus: null,
         controlMode: null,
         effectiveStatus: templateStatus,
-        isEffectivelyEnabled: templateStatus === ReminderContracts.ReminderStatus.ACTIVE,
+        isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
         statusReason: '分组不存在，使用模板自身状态',
       };
     }
@@ -111,7 +107,7 @@ export class ReminderTemplateControlService {
     const controlMode = targetGroup.controlMode;
 
     // INDIVIDUAL 模式：模板状态即有效状态
-    if (controlMode === ReminderContracts.ControlMode.INDIVIDUAL) {
+    if (controlMode === ControlMode.INDIVIDUAL) {
       return {
         templateUuid: template.uuid,
         templateStatus,
@@ -119,21 +115,21 @@ export class ReminderTemplateControlService {
         groupStatus,
         controlMode,
         effectiveStatus: templateStatus,
-        isEffectivelyEnabled: templateStatus === ReminderContracts.ReminderStatus.ACTIVE,
+        isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
         statusReason: '分组为独立控制模式，使用模板自身状态',
       };
     }
 
     // GROUP 模式：分组状态 AND 模板状态
     const effectiveStatus =
-      groupStatus === ReminderContracts.ReminderStatus.ACTIVE && templateStatus === ReminderContracts.ReminderStatus.ACTIVE
-        ? ReminderContracts.ReminderStatus.ACTIVE
-        : ReminderContracts.ReminderStatus.PAUSED;
+      groupStatus === ReminderStatus.ACTIVE && templateStatus === ReminderStatus.ACTIVE
+        ? ReminderStatus.ACTIVE
+        : ReminderStatus.PAUSED;
 
     let statusReason = '分组为组控制模式';
-    if (groupStatus === ReminderContracts.ReminderStatus.PAUSED) {
+    if (groupStatus === ReminderStatus.PAUSED) {
       statusReason += '，分组已暂停';
-    } else if (templateStatus === ReminderContracts.ReminderStatus.PAUSED) {
+    } else if (templateStatus === ReminderStatus.PAUSED) {
       statusReason += '，模板已暂停';
     } else {
       statusReason += '，分组和模板均启用';
@@ -146,7 +142,7 @@ export class ReminderTemplateControlService {
       groupStatus,
       controlMode,
       effectiveStatus,
-      isEffectivelyEnabled: effectiveStatus === ReminderContracts.ReminderStatus.ACTIVE,
+      isEffectivelyEnabled: effectiveStatus === ReminderStatus.ACTIVE,
       statusReason,
     };
   }
@@ -186,7 +182,7 @@ export class ReminderTemplateControlService {
           groupStatus: null,
           controlMode: null,
           effectiveStatus: templateStatus,
-          isEffectivelyEnabled: templateStatus === ReminderContracts.ReminderStatus.ACTIVE,
+          isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
           statusReason: '未分组，使用模板自身状态',
         });
         continue;
@@ -201,7 +197,7 @@ export class ReminderTemplateControlService {
           groupStatus: null,
           controlMode: null,
           effectiveStatus: templateStatus,
-          isEffectivelyEnabled: templateStatus === ReminderContracts.ReminderStatus.ACTIVE,
+          isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
           statusReason: '分组不存在，使用模板自身状态',
         });
         continue;
@@ -210,7 +206,7 @@ export class ReminderTemplateControlService {
       const groupStatus = group.status;
       const controlMode = group.controlMode;
 
-      if (controlMode === ReminderContracts.ControlMode.INDIVIDUAL) {
+      if (controlMode === ControlMode.INDIVIDUAL) {
         results.push({
           templateUuid: template.uuid,
           templateStatus,
@@ -218,21 +214,21 @@ export class ReminderTemplateControlService {
           groupStatus,
           controlMode,
           effectiveStatus: templateStatus,
-          isEffectivelyEnabled: templateStatus === ReminderContracts.ReminderStatus.ACTIVE,
+          isEffectivelyEnabled: templateStatus === ReminderStatus.ACTIVE,
           statusReason: '分组为独立控制模式，使用模板自身状态',
         });
         continue;
       }
 
       const effectiveStatus =
-        groupStatus === ReminderContracts.ReminderStatus.ACTIVE && templateStatus === ReminderContracts.ReminderStatus.ACTIVE
-          ? ReminderContracts.ReminderStatus.ACTIVE
-          : ReminderContracts.ReminderStatus.PAUSED;
+        groupStatus === ReminderStatus.ACTIVE && templateStatus === ReminderStatus.ACTIVE
+          ? ReminderStatus.ACTIVE
+          : ReminderStatus.PAUSED;
 
       let statusReason = '分组为组控制模式';
-      if (groupStatus === ReminderContracts.ReminderStatus.PAUSED) {
+      if (groupStatus === ReminderStatus.PAUSED) {
         statusReason += '，分组已暂停';
-      } else if (templateStatus === ReminderContracts.ReminderStatus.PAUSED) {
+      } else if (templateStatus === ReminderStatus.PAUSED) {
         statusReason += '，模板已暂停';
       } else {
         statusReason += '，分组和模板均启用';
@@ -245,7 +241,7 @@ export class ReminderTemplateControlService {
         groupStatus,
         controlMode,
         effectiveStatus,
-        isEffectivelyEnabled: effectiveStatus === ReminderStatusEnum.ACTIVE,
+        isEffectivelyEnabled: effectiveStatus === ReminderStatus.ACTIVE,
         statusReason,
       });
     }

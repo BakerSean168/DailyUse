@@ -145,7 +145,7 @@ import { ref, computed, watch } from 'vue';
 import { useSchedule } from '../composables/useSchedule';
 import ScheduleConflictAlert from './ScheduleConflictAlert.vue';
 import { useDebounceFn } from '@vueuse/core';
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ConflictSuggestion, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 // Composable
 const schedule = useSchedule();
@@ -273,7 +273,7 @@ const handleEndTimeChange = (event: Event) => {
   form.value.endTime = parseDateTime(target.value);
 };
 
-const handleApplySuggestion = (suggestion: ScheduleContracts.ConflictSuggestion) => {
+const handleApplySuggestion = (suggestion: ConflictSuggestion) => {
   // Apply suggested times to form
   form.value.startTime = suggestion.newStartTime;
   form.value.endTime = suggestion.newEndTime;
@@ -301,7 +301,7 @@ const handleSubmit = async () => {
   }
 
   try {
-    const request: ScheduleContracts.CreateScheduleRequestDTO = {
+    const request: CreateScheduleRequest = {
       accountUuid: form.value.accountUuid,
       title: form.value.title,
       description: form.value.description,
@@ -343,3 +343,4 @@ const handleReset = () => {
 <style scoped>
 /* Component-specific styles */
 </style>
+

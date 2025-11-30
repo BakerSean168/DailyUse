@@ -1,4 +1,5 @@
-import { ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, CreateScheduleRequest, UpdateScheduleRequest, GetSchedulesByTimeRangeRequest } from '@dailyuse/contracts/schedule';
 import { apiClient } from '@/shared/api/instances';
 
 /**
@@ -17,32 +18,32 @@ class ScheduleEventApiClient {
   /**
    * 创建日程事件
    */
-  async createSchedule(data: ScheduleContracts.CreateScheduleRequestDTO): Promise<ScheduleContracts.ScheduleClientDTO> {
-    const response = await apiClient.post<ScheduleContracts.ScheduleClientDTO>(this.baseUrl, data);
+  async createSchedule(data: CreateScheduleRequest): Promise<ScheduleClientDTO> {
+    const response = await apiClient.post<ScheduleClientDTO>(this.baseUrl, data);
     return response;
   }
 
   /**
    * 获取日程事件详情
    */
-  async getSchedule(uuid: string): Promise<ScheduleContracts.ScheduleClientDTO> {
-    const response = await apiClient.get<ScheduleContracts.ScheduleClientDTO>(`${this.baseUrl}/${uuid}`);
+  async getSchedule(uuid: string): Promise<ScheduleClientDTO> {
+    const response = await apiClient.get<ScheduleClientDTO>(`${this.baseUrl}/${uuid}`);
     return response;
   }
 
   /**
    * 获取账户的所有日程事件
    */
-  async getSchedulesByAccount(): Promise<ScheduleContracts.ScheduleClientDTO[]> {
-    const response = await apiClient.get<ScheduleContracts.ScheduleClientDTO[]>(this.baseUrl);
+  async getSchedulesByAccount(): Promise<ScheduleClientDTO[]> {
+    const response = await apiClient.get<ScheduleClientDTO[]>(this.baseUrl);
     return response;
   }
 
   /**
    * 获取指定时间范围内的日程事件
    */
-  async getSchedulesByTimeRange(params: ScheduleContracts.GetSchedulesByTimeRangeRequestDTO): Promise<ScheduleContracts.ScheduleClientDTO[]> {
-    const response = await apiClient.get<ScheduleContracts.ScheduleClientDTO[]>(this.baseUrl, {
+  async getSchedulesByTimeRange(params: GetSchedulesByTimeRangeRequest): Promise<ScheduleClientDTO[]> {
+    const response = await apiClient.get<ScheduleClientDTO[]>(this.baseUrl, {
       params: {
         startTime: params.startTime.toString(),
         endTime: params.endTime.toString(),
@@ -54,8 +55,8 @@ class ScheduleEventApiClient {
   /**
    * 更新日程事件
    */
-  async updateSchedule(uuid: string, data: ScheduleContracts.UpdateScheduleRequestDTO): Promise<ScheduleContracts.ScheduleClientDTO> {
-    const response = await apiClient.patch<ScheduleContracts.ScheduleClientDTO>(`${this.baseUrl}/${uuid}`, data);
+  async updateSchedule(uuid: string, data: UpdateScheduleRequest): Promise<ScheduleClientDTO> {
+    const response = await apiClient.patch<ScheduleClientDTO>(`${this.baseUrl}/${uuid}`, data);
     return response;
   }
 
@@ -71,8 +72,8 @@ class ScheduleEventApiClient {
    * 
    * Story 4-3: Schedule Conflict Detection Integration
    */
-  async getScheduleConflicts(uuid: string): Promise<ScheduleContracts.ConflictDetectionResult> {
-    const response = await apiClient.get<ScheduleContracts.ConflictDetectionResult>(
+  async getScheduleConflicts(uuid: string): Promise<ConflictDetectionResult> {
+    const response = await apiClient.get<ConflictDetectionResult>(
       `${this.baseUrl}/${uuid}/conflicts`
     );
     return response;
@@ -81,3 +82,4 @@ class ScheduleEventApiClient {
 
 // Export singleton instance
 export const scheduleEventApiClient = new ScheduleEventApiClient();
+

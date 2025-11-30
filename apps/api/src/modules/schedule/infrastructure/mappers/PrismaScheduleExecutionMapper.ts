@@ -8,8 +8,8 @@
  */
 
 import type { scheduleExecution as PrismaScheduleExecution } from '@prisma/client';
-import { ScheduleExecution } from '@dailyuse/domain-server';
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import { ScheduleExecution } from '@dailyuse/domain-server/schedule';
+import type { ExecutionStatus } from '@dailyuse/contracts/schedule';
 
 /**
  * PrismaScheduleExecutionMapper
@@ -24,7 +24,7 @@ export class PrismaScheduleExecutionMapper {
       uuid: data.uuid,
       taskUuid: data.taskUuid,
       executionTime: data.executionTime.getTime(),
-      status: data.status as ScheduleContracts.ExecutionStatus,
+      status: data.status as ExecutionStatus,
       duration: data.duration ?? undefined,
       result: data.result ?? undefined,
       error: data.error ?? undefined,

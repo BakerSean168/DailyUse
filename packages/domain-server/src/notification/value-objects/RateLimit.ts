@@ -3,17 +3,13 @@
  * 频率限制 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { RateLimitClientDTO, RateLimitPersistenceDTO, RateLimitServerDTO } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type IRateLimit = NotificationContracts.RateLimitServerDTO;
-type RateLimitPersistenceDTO = NotificationContracts.RateLimitPersistenceDTO;
-type RateLimitClientDTO = NotificationContracts.RateLimitClientDTO;
 
 /**
  * RateLimit 值对象
  */
-export class RateLimit extends ValueObject implements IRateLimit {
+export class RateLimit extends ValueObject implements RateLimit {
   public readonly enabled: boolean;
   public readonly maxPerHour: number;
   public readonly maxPerDay: number;
@@ -64,7 +60,7 @@ export class RateLimit extends ValueObject implements IRateLimit {
   /**
    * 转换为 Server DTO
    */
-  public toServerDTO(): IRateLimit {
+  public toServerDTO(): RateLimitServerDTO {
     return {
       enabled: this.enabled,
       maxPerHour: this.maxPerHour,
@@ -98,21 +94,21 @@ export class RateLimit extends ValueObject implements IRateLimit {
   /**
    * 转换为 Contract 接口 (兼容旧代码)
    */
-  public toContract(): IRateLimit {
+  public toContract(): RateLimitServerDTO {
     return this.toServerDTO();
   }
 
   /**
    * 从 Server DTO 创建值对象
    */
-  public static fromServerDTO(dto: IRateLimit): RateLimit {
+  public static fromServerDTO(dto: RateLimitServerDTO): RateLimit {
     return new RateLimit(dto);
   }
 
   /**
    * 从 Contract 接口创建值对象 (兼容旧代码)
    */
-  public static fromContract(rateLimit: IRateLimit): RateLimit {
+  public static fromContract(rateLimit: RateLimitServerDTO): RateLimit {
     return RateLimit.fromServerDTO(rateLimit);
   }
 

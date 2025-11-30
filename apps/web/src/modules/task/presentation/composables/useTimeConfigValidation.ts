@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
 
 // Note: any and TaskTimeType are not exported, using any for now
 // TODO: Fix type imports when contracts are updated
@@ -240,3 +240,4 @@ export function useTimeConfigValidation() {
     resetValidation,
   };
 }
+

@@ -112,7 +112,8 @@
 import { computed, ref, watch } from 'vue';
 import { useDashboardConfigStore } from '@/modules/dashboard/stores/dashboardConfigStore';
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
-import { DashboardContracts } from '@dailyuse/contracts';
+import { WidgetType, WidgetSize } from '@dailyuse/contracts/dashboard';
+import type { WidgetConfigDTO, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 
 interface Props {
   isOpen: boolean;
@@ -129,12 +130,12 @@ const emit = defineEmits<Emits>();
 const configStore = useDashboardConfigStore();
 const isSaving = ref(false);
 const dialogOpen = ref(false);
-const localConfig = ref<Record<string, DashboardContracts.WidgetConfigDTO>>({});
+const localConfig = ref<Record<string, WidgetConfigDTO>>({});
 
 const widgetSizes = [
-  { value: DashboardContracts.WidgetSize.SMALL, label: '小' },
-  { value: DashboardContracts.WidgetSize.MEDIUM, label: '中' },
-  { value: DashboardContracts.WidgetSize.LARGE, label: '大' },
+  { value: WidgetSize.SMALL, label: '小' },
+  { value: WidgetSize.MEDIUM, label: '中' },
+  { value: WidgetSize.LARGE, label: '大' },
 ];
 
 const sortedWidgets = computed(() => {
@@ -180,7 +181,7 @@ const initializeLocalConfig = async () => {
   const allWidgets = widgetRegistry.getAllWidgets();
   console.log('[WidgetSettings] Found widgets in registry:', allWidgets.length);
   
-  const newConfig: Record<string, DashboardContracts.WidgetConfigDTO> = {};
+  const newConfig: Record<string, WidgetConfigDTO> = {};
   allWidgets.forEach((widget) => {
     const storeConfig = configStore.getWidgetConfig(widget.id);
     newConfig[widget.id] = storeConfig
@@ -210,7 +211,7 @@ const toggleVisibility = (widgetId: string, visible: boolean) => {
   localConfig.value[widgetId].visible = visible;
 };
 
-const changeSize = (widgetId: string, size: DashboardContracts.WidgetSize) => {
+const changeSize = (widgetId: string, size: WidgetSize) => {
   console.log(`[WidgetSettings] Changing size for ${widgetId}:`, size);
   if (!localConfig.value[widgetId]) {
     const widget = widgetRegistry.getWidget(widgetId);
@@ -245,7 +246,7 @@ const handleSave = async () => {
   try {
     isSaving.value = true;
     console.log('[WidgetSettings] Saving configuration...', localConfig.value);
-    const updates: Partial<Record<string, Partial<DashboardContracts.WidgetConfigDTO>>> = {};
+    const updates: Partial<Record<string, Partial<WidgetConfigDTO>>> = {};
     Object.entries(localConfig.value).forEach(([widgetId, config]) => {
       updates[widgetId] = config;
     });
@@ -314,3 +315,4 @@ watch(dialogOpen, (newValue) => {
   box-shadow: 0 2px 8px rgba(var(--v-theme-on-surface), 0.1);
 }
 </style>
+

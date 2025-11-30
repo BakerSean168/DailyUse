@@ -2,7 +2,7 @@
  * Resource Repository Interface
  * Resource 仓储接口
  */
-import { Resource } from '@dailyuse/domain-server';
+import { Resource } from '@dailyuse/domain-server/repository';
 
 export interface IResourceRepository {
   findById(uuid: string): Promise<Resource | null>;

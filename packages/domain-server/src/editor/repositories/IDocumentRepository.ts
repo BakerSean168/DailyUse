@@ -4,9 +4,7 @@
  */
 
 import type { Document } from '../entities/Document';
-import type { EditorContracts } from '@dailyuse/contracts';
-
-type IndexStatus = EditorContracts.IndexStatus;
+import type { IndexStatus } from '@dailyuse/contracts/editor';
 
 /**
  * Document 仓储接口

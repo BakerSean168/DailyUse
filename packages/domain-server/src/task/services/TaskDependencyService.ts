@@ -8,15 +8,15 @@
  * - 依赖关系管理
  */
 
-import { TaskContracts } from '@dailyuse/contracts';
+import type {
+  CircularDependencyValidationResult,
+  TaskDependencyServerDTO,
+} from '@dailyuse/contracts/task';
+import { DependencyStatus, DependencyType } from '@dailyuse/contracts/task';
 import { TaskTemplate } from '../aggregates/TaskTemplate';
 import { TaskDependency } from '../aggregates/TaskDependency';
 
 // Type aliases for easier usage
-type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
-type CircularDependencyValidationResult = TaskContracts.CircularDependencyValidationResult;
-type DependencyStatus = TaskContracts.DependencyStatus;
-type DependencyType = TaskContracts.DependencyType;
 
 export class TaskDependencyService {
   constructor() {}

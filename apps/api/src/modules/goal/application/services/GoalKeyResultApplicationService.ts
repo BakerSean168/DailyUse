@@ -1,7 +1,8 @@
-import type { IGoalRepository } from '@dailyuse/domain-server';
+import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
-import { GoalDomainService } from '@dailyuse/domain-server';
-import type { GoalContracts } from '@dailyuse/contracts';
+import { GoalDomainService } from '@dailyuse/domain-server/goal';
+import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO } from '@dailyuse/contracts/goal';
+import { KeyResultValueType, AggregationMethod } from '@dailyuse/contracts/goal';
 import { GoalEventPublisher } from './GoalEventPublisher';
 
 /**
@@ -52,14 +53,14 @@ export class GoalKeyResultApplicationService {
     goalUuid: string,
     keyResult: {
       title: string;
-      valueType: GoalContracts.KeyResultValueType;
-      aggregationMethod?: GoalContracts.AggregationMethod;
+      valueType: KeyResultValueType;
+      aggregationMethod?: AggregationMethod;
       targetValue: number;
       currentValue?: number;
       unit?: string;
       weight: number;
     },
-  ): Promise<GoalContracts.GoalClientDTO> {
+  ): Promise<GoalClientDTO> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -92,7 +93,7 @@ export class GoalKeyResultApplicationService {
       targetValue?: number;
       unit?: string;
     },
-  ): Promise<GoalContracts.GoalClientDTO> {
+  ): Promise<GoalClientDTO> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -134,7 +135,7 @@ export class GoalKeyResultApplicationService {
     keyResultUuid: string,
     currentValue: number,
     note?: string,
-  ): Promise<GoalContracts.GoalClientDTO> {
+  ): Promise<GoalClientDTO> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -160,7 +161,7 @@ export class GoalKeyResultApplicationService {
   async deleteKeyResult(
     goalUuid: string,
     keyResultUuid: string,
-  ): Promise<GoalContracts.GoalClientDTO> {
+  ): Promise<GoalClientDTO> {
     // 1. 查询目标（包含子实体）
     const goal = await this.goalRepository.findById(goalUuid, { includeChildren: true });
     if (!goal) {
@@ -180,3 +181,4 @@ export class GoalKeyResultApplicationService {
     return goal.toClientDTO(true);
   }
 }
+

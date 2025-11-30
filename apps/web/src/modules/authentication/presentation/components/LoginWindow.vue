@@ -97,7 +97,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 // types
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contracts/authentication';
+// Type alias
+type LoginRequestDTO = LoginRequest;
 // components
 import { useAuthentication } from '../composables/useAuthentication';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -112,7 +114,7 @@ const isCurrentFormValid = computed(() => {
   return formRef.value?.isValid ?? false;
 });
 
-const passwordAuthenticationForm = ref<AuthenticationContracts.LoginRequestDTO>({
+const passwordAuthenticationForm = ref<LoginRequestDTO>({
   identifier: 'Test123123',
   password: 'Llh123123!',
   rememberMe: false,
@@ -165,3 +167,4 @@ const rememberedUsernames = ref([]);
   gap: 8px;
 }
 </style>
+

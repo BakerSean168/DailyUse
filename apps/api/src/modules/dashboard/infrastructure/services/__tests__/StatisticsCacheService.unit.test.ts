@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { StatisticsCacheService } from '../StatisticsCacheService';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, DashboardConfigClientDTO } from '@dailyuse/contracts/dashboard';
 import Redis from 'ioredis';
 
 // Mock ioredis
@@ -11,7 +11,7 @@ describe('StatisticsCacheService - Unit Tests', () => {
   let mockRedis: any;
 
   const TEST_USER_ID = 'user-123';
-  const TEST_DATA: DashboardContracts.DashboardStatisticsClientDTO = {
+  const TEST_DATA: DashboardStatisticsClientDTO = {
     task: {
       totalTaskTemplates: 10,
       totalTaskInstances: 25,
@@ -400,3 +400,4 @@ used_memory:2097152`;
     });
   });
 });
+

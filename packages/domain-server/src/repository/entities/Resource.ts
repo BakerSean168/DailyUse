@@ -2,30 +2,30 @@
  * Resource Entity - Server Implementation
  * 资源实体 - 服务端实现
  */
-import { RepositoryContracts, ResourceStatus, ResourceType } from '@dailyuse/contracts';
+import type {
+  ResourceClientDTO,
+  ResourceMetadataServerDTO,
+  ResourcePersistenceDTO,
+  ResourceServer,
+  ResourceServerDTO,
+  ResourceStatsServerDTO,
+} from '@dailyuse/contracts/repository';
+import { ResourceStatus, ResourceType } from '@dailyuse/contracts/repository';
 import { ResourceMetadata } from '../value-objects/ResourceMetadata';
 import { ResourceStats } from '../value-objects/ResourceStats';
-
-type ResourceServer = RepositoryContracts.ResourceServer;
-type ResourceServerDTO = RepositoryContracts.ResourceServerDTO;
-type ResourcePersistenceDTO = RepositoryContracts.ResourcePersistenceDTO;
-type ResourceTypeEnum = ResourceType;
-type ResourceStatusEnum = ResourceStatus;
-type ResourceMetadataServerDTO = RepositoryContracts.ResourceMetadataServerDTO;
-type ResourceStatsServerDTO = RepositoryContracts.ResourceStatsServerDTO;
 
 export class Resource implements ResourceServer {
   private _uuid: string;
   private _repositoryUuid: string;
   private _folderUuid?: string | null;
   private _name: string;
-  private _type: ResourceTypeEnum;
+  private _type: ResourceType;
   private _path: string;
   private _size: number;
   private _content?: string | null;
   private _metadata: ResourceMetadata;
   private _stats: ResourceStats;
-  private _status: ResourceStatusEnum;
+  private _status: ResourceStatus;
   private _createdAt: number;
   private _updatedAt: number;
 
@@ -33,14 +33,14 @@ export class Resource implements ResourceServer {
     uuid: string;
     repositoryUuid: string;
     name: string;
-    type: ResourceTypeEnum;
+    type: ResourceType;
     path: string;
     size: number;
     folderUuid?: string | null;
     content?: string | null;
     metadata: ResourceMetadata;
     stats: ResourceStats;
-    status: ResourceStatusEnum;
+    status: ResourceStatus;
     createdAt: number;
     updatedAt: number;
   }) {
@@ -76,7 +76,7 @@ export class Resource implements ResourceServer {
     return this._name;
   }
 
-  get type(): ResourceTypeEnum {
+  get type(): ResourceType {
     return this._type;
   }
 
@@ -100,7 +100,7 @@ export class Resource implements ResourceServer {
     return this._stats;
   }
 
-  get status(): ResourceStatusEnum {
+  get status(): ResourceStatus {
     return this._status;
   }
 
@@ -175,6 +175,108 @@ export class Resource implements ResourceServer {
     this._updatedAt = Date.now();
   }
 
+  /**
+   * 记录访问时间
+   */
+  recordAccess(): void {
+    this._stats.incrementViewCount();
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 检查是否可以编辑
+   */
+  canEdit(): boolean {
+    return this._status !== ResourceStatus.DELETED && this._status !== ResourceStatus.ARCHIVED;
+  }
+
+  /**
+   * 更新资源名称
+   */
+  updateName(name: string): void {
+    if (!name || name.trim().length === 0) {
+      throw new Error('Resource name cannot be empty');
+    }
+    this._name = name.trim();
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 更新资源描述
+   */
+  updateDescription(description: string | null): void {
+    this._metadata = ResourceMetadata.create({
+      ...this._metadata.toServerDTO(),
+      description,
+    });
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 设置资源分类
+   */
+  setCategory(category: string): void {
+    this._metadata = ResourceMetadata.create({
+      ...this._metadata.toServerDTO(),
+      category,
+    });
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 添加标签
+   */
+  addTag(tag: string): void {
+    const metadataDTO = this._metadata.toServerDTO();
+    const currentTags: string[] = Array.isArray(metadataDTO.tags) ? metadataDTO.tags : [];
+    if (!currentTags.includes(tag)) {
+      this._metadata = ResourceMetadata.create({
+        ...metadataDTO,
+        tags: [...currentTags, tag],
+      });
+      this._updatedAt = Date.now();
+    }
+  }
+
+  /**
+   * 软删除
+   */
+  softDelete(): void {
+    this._status = ResourceStatus.DELETED;
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 检查是否为 Markdown 资源
+   */
+  isMarkdown(): boolean {
+    return this._type === ResourceType.MARKDOWN;
+  }
+
+  /**
+   * 切换收藏状态
+   */
+  toggleFavorite(): void {
+    const metadataDTO = this._metadata.toServerDTO();
+    const isFavorite = metadataDTO.isFavorite ?? false;
+    this._metadata = ResourceMetadata.create({
+      ...metadataDTO,
+      isFavorite: !isFavorite,
+    });
+    this._updatedAt = Date.now();
+  }
+
+  /**
+   * 发布资源（从草稿变为激活状态）
+   */
+  publish(): void {
+    if (this._status !== ResourceStatus.DRAFT) {
+      throw new Error('Only draft resources can be published');
+    }
+    this._status = ResourceStatus.ACTIVE;
+    this._updatedAt = Date.now();
+  }
+
   // ===== 私有辅助方法 =====
   private calculateWordCount(content: string): number {
     // 移除 Markdown 语法，计算纯文本字数
@@ -214,7 +316,7 @@ export class Resource implements ResourceServer {
     };
   }
 
-  toClientDTO(): RepositoryContracts.ResourceClientDTO {
+  toClientDTO(): ResourceClientDTO {
     // 状态判断
     const isDeleted = this._status === ResourceStatus.DELETED;
     const isArchived = this._status === ResourceStatus.ARCHIVED;
@@ -338,7 +440,7 @@ export class Resource implements ResourceServer {
     uuid: string;
     repositoryUuid: string;
     name: string;
-    type: ResourceTypeEnum;
+    type: ResourceType;
     path: string;
     folderUuid?: string | null;
     content?: string;

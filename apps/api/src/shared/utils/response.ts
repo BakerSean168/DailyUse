@@ -12,13 +12,15 @@ import type { Response } from 'express';
 import {
   ResponseBuilder,
   ResponseCode,
-  type ApiResponse,
-  type SuccessResponse,
-  type ErrorResponse,
-  type ErrorDetail,
-  type PaginationInfo,
   getHttpStatusCode,
-} from '@dailyuse/contracts';
+} from '@dailyuse/contracts/response';
+import type {
+  ApiResponse,
+  SuccessResponse,
+  ErrorResponse,
+  ErrorDetail,
+  PaginationInfo,
+} from '@dailyuse/contracts/response';
 
 /**
  * 获取请求追踪ID

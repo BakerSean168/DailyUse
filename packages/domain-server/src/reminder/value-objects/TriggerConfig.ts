@@ -3,14 +3,8 @@
  * 触发器配置 - 不可变值对象
  */
 
-import type {
-  TriggerConfigServerDTO,
-  TriggerConfigClientDTO,
-  TriggerConfigPersistenceDTO,
-  TriggerType,
-  FixedTimeTrigger,
-  IntervalTrigger,
-} from '@dailyuse/contracts/src/modules/reminder';
+import type { TriggerConfigServerDTO, TriggerConfigClientDTO, TriggerConfigPersistenceDTO, FixedTimeTrigger, IntervalTrigger } from '@dailyuse/contracts/reminder';
+import { TriggerType } from '@dailyuse/contracts/reminder';
 import { ValueObject } from '@dailyuse/utils';
 
 /**

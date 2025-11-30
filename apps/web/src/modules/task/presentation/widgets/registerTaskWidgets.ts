@@ -8,7 +8,8 @@
 
 import { widgetRegistry } from '@/modules/dashboard/infrastructure/WidgetRegistry';
 import { defineAsyncComponent } from 'vue';
-import { DashboardContracts } from '@dailyuse/contracts';
+import type { WidgetConfig, WidgetType } from '@dailyuse/contracts/dashboard';
+import { WidgetSize } from '@dailyuse/contracts/dashboard';
 
 /**
  * 注册 Task 模块的所有 Widgets
@@ -24,7 +25,7 @@ export function registerTaskWidgets(): void {
     component: defineAsyncComponent(() => import('./TaskStatsWidget.vue')),
     defaultVisible: true,
     defaultOrder: 2,
-    defaultSize: DashboardContracts.WidgetSize.MEDIUM,
+    defaultSize: WidgetSize.MEDIUM,
     icon: 'i-heroicons-check-circle',
     category: 'task',
   });
@@ -37,10 +38,11 @@ export function registerTaskWidgets(): void {
     component: defineAsyncComponent(() => import('./TodayTasksWidget.vue')),
     defaultVisible: true,
     defaultOrder: 6,
-    defaultSize: DashboardContracts.WidgetSize.LARGE,
+    defaultSize: WidgetSize.LARGE,
     icon: 'i-heroicons-list-bullet',
     category: 'task',
   });
 
   console.log('[Task] Task widgets registered successfully');
 }
+

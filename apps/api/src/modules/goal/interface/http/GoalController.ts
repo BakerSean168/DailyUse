@@ -4,7 +4,8 @@ import { GoalKeyResultApplicationService } from '../../application/services/Goal
 import { GoalRecordApplicationService } from '../../application/services/GoalRecordApplicationService';
 import { GoalReviewApplicationService } from '../../application/services/GoalReviewApplicationService';
 import { WeightSnapshotApplicationService } from '../../application/services/WeightSnapshotApplicationService';
-import { createResponseBuilder, ResponseCode, type GoalContracts } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
+import type { GoalServerDTO, GoalClientDTO, GoalAggregateViewResponse } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
@@ -781,8 +782,8 @@ export class GoalController {
       const weightInfo = await snapshotService.getWeightSumInfo(uuid);
 
       // 构建聚合视图响应
-      const response: GoalContracts.GoalAggregateViewResponse = {
-        goal: goal as GoalContracts.GoalClientDTO,
+      const response: GoalAggregateViewResponse = {
+        goal: goal as GoalClientDTO,
         keyResults: (goal.keyResults || []).map((kr: any) => ({
           ...kr,
           weight: kr.weight || 0,
@@ -1061,3 +1062,7 @@ export class GoalController {
     }
   }
 }
+
+
+
+

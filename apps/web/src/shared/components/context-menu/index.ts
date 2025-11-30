@@ -3,4 +3,4 @@
  */
 
 export { default as DuContextMenu } from './DuContextMenu.vue';
-export type { ContextMenuItem } from './DuContextMenu.vue';
+export type { ContextMenuItem } from '@dailyuse/contracts/shared';

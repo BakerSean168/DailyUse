@@ -1,8 +1,8 @@
 // @ts-nocheck
-import type { IUserSettingRepository } from '@dailyuse/domain-server';
+import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { SettingContainer } from '../../infrastructure/di/SettingContainer';
-import { UserSetting } from '@dailyuse/domain-server';
-import type { SettingContracts } from '@dailyuse/contracts';
+import { UserSetting } from '@dailyuse/domain-server/setting';
+import type { UserSettingServerDTO } from '@dailyuse/contracts/setting';
 
 /**
  * Setting 应用服务
@@ -53,7 +53,7 @@ export class SettingApplicationService {
   /**
    * 获取用户设置（如果不存在则创建默认设置）
    */
-  async getUserSetting(accountUuid: string): Promise<SettingContracts.UserSettingDTO> {
+  async getUserSetting(accountUuid: string): Promise<UserSettingDTO> {
     let setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
     if (!setting) {
@@ -70,8 +70,8 @@ export class SettingApplicationService {
    */
   async updateUserSetting(
     accountUuid: string,
-    updates: SettingContracts.UpdateUserSettingDTO,
-  ): Promise<SettingContracts.UserSettingDTO> {
+    updates: UpdateUserSettingDTO,
+  ): Promise<UserSettingDTO> {
     let setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
     if (!setting) {
@@ -116,7 +116,7 @@ export class SettingApplicationService {
   /**
    * 重置用户设置为默认值
    */
-  async resetUserSetting(accountUuid: string): Promise<SettingContracts.UserSettingDTO> {
+  async resetUserSetting(accountUuid: string): Promise<UserSettingDTO> {
     const setting = await this.userSettingRepository.findByAccountUuid(accountUuid);
 
     if (!setting) {
@@ -135,7 +135,7 @@ export class SettingApplicationService {
   /**
    * 获取默认设置
    */
-  async getDefaultSettings(): Promise<SettingContracts.UserSettingClientDTO> {
+  async getDefaultSettings(): Promise<UserSettingClientDTO> {
     const defaultSetting = UserSetting.create({ accountUuid: 'temp-uuid' });
     return defaultSetting.toClientDTO();
   }
@@ -179,7 +179,7 @@ export class SettingApplicationService {
       merge?: boolean; // 是否合并现有设置（默认：false，完全替换）
       validate?: boolean; // 是否验证数据（默认：true）
     },
-  ): Promise<SettingContracts.UserSettingDTO> {
+  ): Promise<UserSettingDTO> {
     const { merge = false, validate = true } = options || {};
 
     // 验证导入数据格式
@@ -242,3 +242,7 @@ export class SettingApplicationService {
     }
   }
 }
+
+
+
+

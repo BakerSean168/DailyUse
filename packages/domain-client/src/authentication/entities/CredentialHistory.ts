@@ -3,17 +3,14 @@
  * 兼容 CredentialHistoryClient 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type { CredentialHistoryClient, CredentialHistoryClientDTO } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
-
-type ICredentialHistoryClient = AuthenticationContracts.CredentialHistoryClient;
-type CredentialHistoryClientDTO = AuthenticationContracts.CredentialHistoryClientDTO;
 
 /**
  * CredentialHistory 实体 (Client)
  * 凭证历史记录实体
  */
-export class CredentialHistory extends Entity implements ICredentialHistoryClient {
+export class CredentialHistory extends Entity implements CredentialHistoryClient {
   // ===== 私有字段 =====
   private _credentialUuid: string;
   private _action: string;

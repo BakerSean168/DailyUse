@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
-import { Folder } from '@dailyuse/domain-client';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { FolderClient, FolderClientDTO } from '@dailyuse/contracts/repository';
+
+// 使用 FolderClientDTO 类型，因为这是从 API 获取的数据类型
+type FolderData = FolderClientDTO;
 
 /**
  * Folder Store
@@ -9,8 +11,8 @@ import type { RepositoryContracts } from '@dailyuse/contracts';
 export const useFolderStore = defineStore('folder', {
   state: () => ({
     // ===== 核心数据 =====
-    folders: [] as Folder[],
-    foldersByRepository: {} as Record<string, Folder[]>, // 按仓储UUID索引
+    folders: [] as FolderData[],
+    foldersByRepository: {} as Record<string, FolderData[]>, // 按仓储UUID索引
 
     // ===== 状态管理 =====
     isLoading: false,
@@ -25,7 +27,7 @@ export const useFolderStore = defineStore('folder', {
     /**
      * 获取所有文件夹
      */
-    getAllFolders(state): Folder[] {
+    getAllFolders(state): FolderData[] {
       return state.folders;
     },
 
@@ -34,7 +36,7 @@ export const useFolderStore = defineStore('folder', {
      */
     getFolderByUuid:
       (state) =>
-      (uuid: string): Folder | null => {
+      (uuid: string): FolderData | null => {
         return state.folders.find((f) => f.uuid === uuid) || null;
       },
 
@@ -43,7 +45,7 @@ export const useFolderStore = defineStore('folder', {
      */
     getFoldersByRepositoryUuid:
       (state) =>
-      (repositoryUuid: string): Folder[] => {
+      (repositoryUuid: string): FolderData[] => {
         return state.foldersByRepository[repositoryUuid] || [];
       },
 
@@ -52,7 +54,7 @@ export const useFolderStore = defineStore('folder', {
      */
     getRootFolders:
       (state) =>
-      (repositoryUuid: string): Folder[] => {
+      (repositoryUuid: string): FolderData[] => {
         const folders = state.foldersByRepository[repositoryUuid] || [];
         return folders.filter((f) => !f.parentUuid);
       },
@@ -62,7 +64,7 @@ export const useFolderStore = defineStore('folder', {
      */
     getChildrenFolders:
       (state) =>
-      (parentUuid: string): Folder[] => {
+      (parentUuid: string): FolderData[] => {
         return state.folders.filter((f) => f.parentUuid === parentUuid);
       },
 
@@ -71,7 +73,7 @@ export const useFolderStore = defineStore('folder', {
      */
     getFolderTree:
       (state) =>
-      (repositoryUuid: string): Folder[] => {
+      (repositoryUuid: string): FolderData[] => {
         const allFolders = state.foldersByRepository[repositoryUuid] || [];
         return buildTree(allFolders);
       },
@@ -79,7 +81,7 @@ export const useFolderStore = defineStore('folder', {
     /**
      * 获取当前选中的文件夹
      */
-    getSelectedFolder(state): Folder | null {
+    getSelectedFolder(state): FolderData | null {
       if (!state.selectedFolder) return null;
       return state.folders.find((f) => f.uuid === state.selectedFolder) || null;
     },
@@ -109,7 +111,7 @@ export const useFolderStore = defineStore('folder', {
     /**
      * 设置仓储的文件夹树
      */
-    setFoldersForRepository(repositoryUuid: string, folders: Folder[]) {
+    setFoldersForRepository(repositoryUuid: string, folders: FolderData[]) {
       this.foldersByRepository[repositoryUuid] = folders;
       
       // 同时更新全局文件夹列表
@@ -124,7 +126,7 @@ export const useFolderStore = defineStore('folder', {
     /**
      * 添加单个文件夹
      */
-    addFolder(folder: Folder) {
+    addFolder(folder: FolderData) {
       const existingIndex = this.folders.findIndex((f) => f.uuid === folder.uuid);
       if (existingIndex >= 0) {
         this.folders[existingIndex] = folder;
@@ -152,7 +154,7 @@ export const useFolderStore = defineStore('folder', {
     /**
      * 更新文件夹
      */
-    updateFolder(uuid: string, updatedFolder: Folder) {
+    updateFolder(uuid: string, updatedFolder: FolderData) {
       const index = this.folders.findIndex((f) => f.uuid === uuid);
       if (index >= 0) {
         this.folders[index] = updatedFolder;
@@ -327,25 +329,13 @@ export const useFolderStore = defineStore('folder', {
 
           return {
             ...parsed,
-            folders:
-              parsed.folders?.map((folderDTO: any) => {
-                if (folderDTO && Folder && typeof Folder.fromServerDTO === 'function') {
-                  return Folder.fromServerDTO(folderDTO);
-                }
-                return folderDTO;
-              }) || [],
+            folders: parsed.folders || [],
             foldersByRepository: Object.entries(parsed.foldersByRepository || {}).reduce(
               (acc, [key, folders]: [string, any]) => {
-                acc[key] =
-                  folders?.map((folderDTO: any) => {
-                    if (folderDTO && Folder && typeof Folder.fromServerDTO === 'function') {
-                      return Folder.fromServerDTO(folderDTO);
-                    }
-                    return folderDTO;
-                  }) || [];
+                acc[key] = folders || [];
                 return acc;
               },
-              {} as Record<string, Folder[]>
+              {} as Record<string, FolderData[]>
             ),
           };
         } catch (error) {
@@ -358,22 +348,30 @@ export const useFolderStore = defineStore('folder', {
 });
 
 /**
+ * 树节点类型（用于构建树形结构）
+ */
+interface TreeNode extends FolderClientDTO {
+  children?: TreeNode[];
+}
+
+/**
  * 构建文件夹树
  */
-function buildTree(folders: Folder[]): Folder[] {
-  const folderMap = new Map<string, Folder>();
-  const rootFolders: Folder[] = [];
+function buildTree(folders: FolderData[]): FolderData[] {
+  const folderMap = new Map<string, TreeNode>();
+  const rootFolders: TreeNode[] = [];
 
   // 第一遍：建立索引
   folders.forEach((folder) => {
-    folderMap.set(folder.uuid, folder);
+    folderMap.set(folder.uuid, { ...folder } as TreeNode);
   });
 
   // 第二遍：构建树形结构
   folders.forEach((folder) => {
+    const node = folderMap.get(folder.uuid)!;
     if (!folder.parentUuid) {
       // 根文件夹
-      rootFolders.push(folder);
+      rootFolders.push(node);
     } else {
       // 子文件夹
       const parent = folderMap.get(folder.parentUuid);
@@ -381,7 +379,7 @@ function buildTree(folders: Folder[]): Folder[] {
         if (!parent.children) {
           parent.children = [];
         }
-        parent.children.push(folder);
+        parent.children.push(node);
       }
     }
   });
@@ -390,3 +388,4 @@ function buildTree(folders: Folder[]): Folder[] {
 }
 
 export type FolderStore = ReturnType<typeof useFolderStore>;
+

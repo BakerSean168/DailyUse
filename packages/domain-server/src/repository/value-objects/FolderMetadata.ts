@@ -2,10 +2,7 @@
  * Folder Metadata Value Object - Server Implementation
  * 文件夹元数据值对象 - 服务端实现
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
-
-type FolderMetadataServer = RepositoryContracts.FolderMetadataServer;
-type FolderMetadataServerDTO = RepositoryContracts.FolderMetadataServerDTO;
+import type { FolderMetadataServer, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
 
 export class FolderMetadata implements FolderMetadataServer {
   // ===== 私有字段 =====

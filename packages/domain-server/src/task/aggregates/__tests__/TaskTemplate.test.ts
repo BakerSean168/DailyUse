@@ -15,7 +15,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskTemplate } from '../TaskTemplate';
 import { TaskTimeConfig } from '../../value-objects/TaskTimeConfig';
 import { RecurrenceRule } from '../../value-objects/RecurrenceRule';
-import { TaskContracts, ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import {
+  RecurrenceFrequency,
+  TaskType,
+  TimeType,
+} from '@dailyuse/contracts/task';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import {
   InvalidTaskTemplateStateError,
   TaskTemplateArchivedError,
@@ -23,9 +28,6 @@ import {
   InvalidGoalBindingError,
 } from '../../errors';
 
-type TaskType = TaskContracts.TaskType;
-type TimeType = TaskContracts.TimeType;
-type RecurrenceFrequency = TaskContracts.RecurrenceFrequency;
 
 describe('TaskTemplate Aggregate', () => {
   // ==================== 测试数据准备 ====================

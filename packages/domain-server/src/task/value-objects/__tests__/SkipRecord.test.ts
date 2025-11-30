@@ -15,7 +15,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { SkipRecord } from '../SkipRecord';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { SkipRecordPersistenceDTO, SkipRecordServerDTO } from '@dailyuse/contracts/task';
 
 describe('SkipRecord Value Object', () => {
   // ==================== 测试数据 ====================
@@ -85,7 +85,7 @@ describe('SkipRecord Value Object', () => {
   describe('Factory Methods', () => {
     describe('fromServerDTO()', () => {
       it('应该从 ServerDTO 创建实例', () => {
-        const dto: TaskContracts.SkipRecordServerDTO = {
+        const dto: SkipRecordServerDTO = {
           skippedAt: mockSkippedAt,
           reason: 'No time',
         };
@@ -97,7 +97,7 @@ describe('SkipRecord Value Object', () => {
       });
 
       it('应该处理 null reason', () => {
-        const dto: TaskContracts.SkipRecordServerDTO = {
+        const dto: SkipRecordServerDTO = {
           skippedAt: mockSkippedAt,
           reason: null,
         };
@@ -111,7 +111,7 @@ describe('SkipRecord Value Object', () => {
 
     describe('fromPersistenceDTO()', () => {
       it('应该从 PersistenceDTO 创建实例', () => {
-        const dto: TaskContracts.SkipRecordPersistenceDTO = {
+        const dto: SkipRecordPersistenceDTO = {
           skippedAt: mockSkippedAt,
           reason: 'Persistence reason',
         };
@@ -123,7 +123,7 @@ describe('SkipRecord Value Object', () => {
       });
 
       it('应该处理 null reason', () => {
-        const dto: TaskContracts.SkipRecordPersistenceDTO = {
+        const dto: SkipRecordPersistenceDTO = {
           skippedAt: mockSkippedAt,
           reason: null,
         };

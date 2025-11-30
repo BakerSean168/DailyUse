@@ -3,9 +3,10 @@ import type { authSession as PrismaAuthSession } from '@prisma/client';
 import type {
   IAuthSessionRepository,
   AuthSessionPrismaTransactionClient as PrismaTransactionClient,
-} from '@dailyuse/domain-server';
-import { AuthSession } from '@dailyuse/domain-server';
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+} from '@dailyuse/domain-server/authentication';
+import { AuthSession } from '@dailyuse/domain-server/authentication';
+import type { LoginRequest, RegisterRequest, AuthSessionPersistenceDTO } from '@dailyuse/contracts/authentication';
+import { SessionStatus } from '@dailyuse/contracts/authentication';
 
 export class PrismaAuthSessionRepository implements IAuthSessionRepository {
   constructor(private prisma: PrismaClient) {}
@@ -14,7 +15,7 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
     const device = JSON.parse(data.device);
     const location = data.userAgent ? JSON.parse(data.userAgent) : null;
 
-    const persistenceDTO: AuthenticationContracts.AuthSessionPersistenceDTO = {
+    const persistenceDTO: AuthSessionPersistenceDTO = {
       uuid: data.uuid,
       accountUuid: data.accountUuid,
       accessToken: data.accessToken,
@@ -25,7 +26,7 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
       deviceType: device.deviceType,
       deviceOs: device.os,
       deviceBrowser: device.browser,
-      status: data.status as AuthenticationContracts.SessionStatus,
+      status: data.status as SessionStatus,
       ipAddress: data.ipAddress ?? '',
       locationCountry: location?.country,
       locationRegion: location?.region,
@@ -244,3 +245,4 @@ export class PrismaAuthSessionRepository implements IAuthSessionRepository {
     return result.count;
   }
 }
+

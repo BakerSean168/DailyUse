@@ -3,9 +3,9 @@
  * Story 11.2: Obsidian 风格搜索
  */
 
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { SearchApplicationService } from '../../../application/services';
-import type { SearchRequest, SearchMode } from '@dailyuse/contracts';
+import type { SearchRequest, SearchMode } from '@dailyuse/contracts/repository';
 
 export class SearchController {
   private searchService: SearchApplicationService;
@@ -75,3 +75,7 @@ export class SearchController {
     }
   };
 }
+
+
+
+

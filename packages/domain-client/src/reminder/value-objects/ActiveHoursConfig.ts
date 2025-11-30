@@ -2,12 +2,9 @@
  * ActiveHoursConfig 值对象实现 (Client)
  */
 
-import { ReminderContracts } from '@dailyuse/contracts';
+import type { ActiveHoursConfigClient, ActiveHoursConfigClientDTO, ActiveHoursConfigServerDTO } from '@dailyuse/contracts/reminder';
 
-type ActiveHoursConfigClientDTO = ReminderContracts.ActiveHoursConfigClientDTO;
-type ActiveHoursConfigServerDTO = ReminderContracts.ActiveHoursConfigServerDTO;
-
-export class ActiveHoursConfig implements ReminderContracts.ActiveHoursConfigClient {
+export class ActiveHoursConfig implements ActiveHoursConfigClient {
   private readonly _enabled: boolean;
   private readonly _startHour: number;
   private readonly _endHour: number;
@@ -43,7 +40,7 @@ export class ActiveHoursConfig implements ReminderContracts.ActiveHoursConfigCli
   }
 
   // ===== 业务方法 =====
-  public equals(other: ReminderContracts.ActiveHoursConfigClient): boolean {
+  public equals(other: ActiveHoursConfigClient): boolean {
     return (
       this._enabled === other.enabled &&
       this._startHour === other.startHour &&

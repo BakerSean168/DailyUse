@@ -4,9 +4,7 @@
  */
 
 import { TaskInstance } from '../aggregates';
-import type { TaskContracts } from '@dailyuse/contracts';
-
-type TaskInstanceStatus = TaskContracts.TaskInstanceStatus;
+import { TaskInstanceStatus } from '@dailyuse/contracts/task';
 
 /**
  * TaskInstance 仓储接口
@@ -78,4 +76,13 @@ export interface ITaskInstanceRepository {
    * @param fromDate 起始日期（默认为当前时间）
    */
   countFutureInstances(templateUuid: string, fromDate?: number): Promise<number>;
+
+  /**
+   * 根据模板 UUID 和日期范围查找任务实例
+   */
+  findByTemplateUuidAndDateRange(
+    templateUuid: string,
+    startDate: number,
+    endDate: number,
+  ): Promise<TaskInstance[]>;
 }

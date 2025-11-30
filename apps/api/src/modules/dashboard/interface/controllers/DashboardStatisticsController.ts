@@ -12,6 +12,7 @@
  */
 
 import type { Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { DashboardStatisticsApplicationService } from '../../application/services/DashboardStatisticsApplicationService';
 
 export class DashboardStatisticsController {
@@ -19,7 +20,7 @@ export class DashboardStatisticsController {
    * GET /api/dashboard/statistics
    * 获取 Dashboard 统计数据
    */
-  static async getStatistics(req: Request, res: Response): Promise<void> {
+  static async getStatistics(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       // 从认证中间件获取 accountUuid
       const accountUuid = req.user?.accountUuid;
@@ -60,7 +61,7 @@ export class DashboardStatisticsController {
    * POST /api/dashboard/statistics/invalidate
    * 手动失效缓存
    */
-  static async invalidateCache(req: Request, res: Response): Promise<void> {
+  static async invalidateCache(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const accountUuid = req.user?.accountUuid;
 

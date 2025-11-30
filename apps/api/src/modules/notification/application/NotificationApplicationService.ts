@@ -5,15 +5,11 @@
  */
 
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Notification } from '@dailyuse/domain-server';
-import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse/domain-server';
-import type { NotificationContracts } from '@dailyuse/contracts';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts';
+import { Notification } from '@dailyuse/domain-server/notification';
+import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse/domain-server/notification';
+import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
-type CreateNotificationRequest = NotificationContracts.CreateNotificationRequest;
-type QueryNotificationsRequest = NotificationContracts.QueryNotificationsRequest;
-type NotificationListResponse = NotificationContracts.NotificationListResponse;
 
 @Injectable()
 export class NotificationApplicationService {
@@ -184,3 +180,4 @@ export class NotificationApplicationService {
     return { count };
   }
 }
+

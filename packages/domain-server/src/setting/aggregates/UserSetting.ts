@@ -1,37 +1,33 @@
 /**
  * UserSetting Aggregate Root
  * 用户设置聚合根
- * 
+ *
  * 位置：domain-server/setting/aggregates/UserSetting.ts
  * 文件路径已明确表明这是服务端聚合，无需在类名添加 Server 后缀
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import { SettingContracts } from '@dailyuse/contracts';
-
-type IUserSettingServer = SettingContracts.UserSettingServer;
-type ThemeMode = SettingContracts.ThemeMode;
-type FontSize = SettingContracts.FontSize;
-type DateFormat = SettingContracts.DateFormat;
-type TimeFormat = SettingContracts.TimeFormat;
-type TaskViewType = SettingContracts.TaskViewType;
-type GoalViewType = SettingContracts.GoalViewType;
-type ScheduleViewType = SettingContracts.ScheduleViewType;
-type ProfileVisibility = SettingContracts.ProfileVisibility;
-
-const ThemeMode = SettingContracts.ThemeMode;
-const FontSizeEnum = SettingContracts.FontSize;
-const DateFormatEnum = SettingContracts.DateFormat;
-const TimeFormatEnum = SettingContracts.TimeFormat;
-const TaskViewTypeEnum = SettingContracts.TaskViewType;
-const GoalViewTypeEnum = SettingContracts.GoalViewType;
-const ScheduleViewTypeEnum = SettingContracts.ScheduleViewType;
-const ProfileVisibilityEnum = SettingContracts.ProfileVisibility;
+import type {
+  UserSettingClientDTO,
+  UserSettingPersistenceDTO,
+  UserSettingServer,
+  UserSettingServerDTO,
+} from '@dailyuse/contracts/setting';
+import {
+  DateFormat,
+  FontSize,
+  GoalViewType,
+  ProfileVisibility,
+  ScheduleViewType,
+  TaskViewType,
+  ThemeMode,
+  TimeFormat,
+} from '@dailyuse/contracts/setting';
 
 /**
  * 用户设置聚合根
  */
-export class UserSetting extends AggregateRoot implements IUserSettingServer {
+export class UserSetting extends AggregateRoot implements UserSettingServer {
   private _accountUuid: string;
   private _appearance: {
     theme: ThemeMode;
@@ -220,7 +216,7 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
 
   // ========== DTO 转换 ==========
 
-  toServerDTO(): SettingContracts.UserSettingServerDTO {
+  toServerDTO(): UserSettingServerDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -235,7 +231,7 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
     };
   }
 
-  toClientDTO(): SettingContracts.UserSettingClientDTO {
+  toClientDTO(): UserSettingClientDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -253,7 +249,7 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
     };
   }
 
-  toPersistenceDTO(): SettingContracts.UserSettingPersistenceDTO {
+  toPersistenceDTO(): UserSettingPersistenceDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -306,12 +302,12 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
 
   static create(params: {
     accountUuid: string;
-    appearance?: Partial<SettingContracts.UserSettingServer['appearance']>;
-    locale?: Partial<SettingContracts.UserSettingServer['locale']>;
-    workflow?: Partial<SettingContracts.UserSettingServer['workflow']>;
-    shortcuts?: Partial<SettingContracts.UserSettingServer['shortcuts']>;
-    privacy?: Partial<SettingContracts.UserSettingServer['privacy']>;
-    experimental?: Partial<SettingContracts.UserSettingServer['experimental']>;
+    appearance?: Partial<UserSettingServer['appearance']>;
+    locale?: Partial<UserSettingServer['locale']>;
+    workflow?: Partial<UserSettingServer['workflow']>;
+    shortcuts?: Partial<UserSettingServer['shortcuts']>;
+    privacy?: Partial<UserSettingServer['privacy']>;
+    experimental?: Partial<UserSettingServer['experimental']>;
   }): UserSetting {
     const now = Date.now();
 
@@ -319,7 +315,7 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
     const defaultAppearance: UserSetting['_appearance'] = {
       theme: ThemeMode.AUTO,
       accentColor: '#3B82F6',
-      fontSize: FontSizeEnum.MEDIUM,
+      fontSize: FontSize.MEDIUM,
       fontFamily: null,
       compactMode: false,
     };
@@ -328,17 +324,17 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
     const defaultLocale: UserSetting['_locale'] = {
       language: 'zh-CN',
       timezone: 'Asia/Shanghai',
-      dateFormat: DateFormatEnum.YYYY_MM_DD,
-      timeFormat: TimeFormatEnum.H24,
+      dateFormat: DateFormat.YYYY_MM_DD,
+      timeFormat: TimeFormat.H24,
       weekStartsOn: 1, // Monday
       currency: 'CNY',
     };
 
     // 默认工作流设置
     const defaultWorkflow: UserSetting['_workflow'] = {
-      defaultTaskView: TaskViewTypeEnum.LIST,
-      defaultGoalView: GoalViewTypeEnum.LIST,
-      defaultScheduleView: ScheduleViewTypeEnum.WEEK,
+      defaultTaskView: TaskViewType.LIST,
+      defaultGoalView: GoalViewType.LIST,
+      defaultScheduleView: ScheduleViewType.WEEK,
       autoSave: true,
       autoSaveInterval: 30000, // 30 seconds
       confirmBeforeDelete: true,
@@ -352,7 +348,7 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
 
     // 默认隐私设置
     const defaultPrivacy: UserSetting['_privacy'] = {
-      profileVisibility: ProfileVisibilityEnum.PRIVATE,
+      profileVisibility: ProfileVisibility.PRIVATE,
       showOnlineStatus: true,
       allowSearchByEmail: true,
       allowSearchByPhone: false,
@@ -412,73 +408,83 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
     });
   }
 
-  static fromServerDTO(dto: SettingContracts.UserSettingServerDTO): UserSetting {
+  static fromServerDTO(dto: UserSettingServerDTO): UserSetting {
     // 如果 DTO 是空对象或缺少必需字段，抛出错误
     if (!dto.accountUuid) {
       throw new Error('fromServerDTO requires accountUuid in dto');
     }
-    
+
     // 安全地处理可能缺失的字段，使用默认值
     const experimental = {
       enabled: dto.experimental?.enabled ?? false,
       features: Array.isArray(dto.experimental?.features) ? dto.experimental.features : [],
     };
 
-    const appearance = dto.appearance ? {
-      ...dto.appearance,
-      theme: (dto.appearance.theme as ThemeMode) || ThemeMode.LIGHT,
-      fontSize: (dto.appearance.fontSize as FontSize) || FontSizeEnum.MEDIUM,
-      fontFamily: dto.appearance.fontFamily ?? null,
-    } : {
-      theme: ThemeMode.LIGHT,
-      accentColor: '#1976d2',
-      fontSize: FontSizeEnum.MEDIUM,
-      fontFamily: null,
-      compactMode: false,
-    };
+    const appearance = dto.appearance
+      ? {
+          ...dto.appearance,
+          theme: (dto.appearance.theme as ThemeMode) || ThemeMode.LIGHT,
+          fontSize: (dto.appearance.fontSize as FontSize) || FontSize.MEDIUM,
+          fontFamily: dto.appearance.fontFamily ?? null,
+        }
+      : {
+          theme: ThemeMode.LIGHT,
+          accentColor: '#1976d2',
+          fontSize: FontSize.MEDIUM,
+          fontFamily: null,
+          compactMode: false,
+        };
 
-    const locale = dto.locale ? {
-      ...dto.locale,
-      dateFormat: (dto.locale.dateFormat as DateFormat) || DateFormatEnum.YYYY_MM_DD,
-      timeFormat: (dto.locale.timeFormat as TimeFormat) || TimeFormatEnum.H24,
-    } : {
-      language: 'zh-CN',
-      timezone: 'Asia/Shanghai',
-      dateFormat: DateFormatEnum.YYYY_MM_DD,
-      timeFormat: TimeFormatEnum.H24,
-      weekStartsOn: 1 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
-      currency: 'CNY',
-    };
+    const locale = dto.locale
+      ? {
+          ...dto.locale,
+          dateFormat: (dto.locale.dateFormat as DateFormat) || DateFormat.YYYY_MM_DD,
+          timeFormat: (dto.locale.timeFormat as TimeFormat) || TimeFormat.H24,
+        }
+      : {
+          language: 'zh-CN',
+          timezone: 'Asia/Shanghai',
+          dateFormat: DateFormat.YYYY_MM_DD,
+          timeFormat: TimeFormat.H24,
+          weekStartsOn: 1 as 0 | 1 | 2 | 3 | 4 | 5 | 6,
+          currency: 'CNY',
+        };
 
-    const workflow = dto.workflow ? {
-      ...dto.workflow,
-      defaultTaskView: (dto.workflow.defaultTaskView as TaskViewType) || TaskViewTypeEnum.LIST,
-      defaultGoalView: (dto.workflow.defaultGoalView as GoalViewType) || GoalViewTypeEnum.LIST,
-      defaultScheduleView: (dto.workflow.defaultScheduleView as ScheduleViewType) || ScheduleViewTypeEnum.WEEK,
-    } : {
-      defaultTaskView: TaskViewTypeEnum.LIST,
-      defaultGoalView: GoalViewTypeEnum.LIST,
-      defaultScheduleView: ScheduleViewTypeEnum.WEEK,
-      autoSave: true,
-      autoSaveInterval: 30000,
-      confirmBeforeDelete: true,
-    };
+    const workflow = dto.workflow
+      ? {
+          ...dto.workflow,
+          defaultTaskView: (dto.workflow.defaultTaskView as TaskViewType) || TaskViewType.LIST,
+          defaultGoalView: (dto.workflow.defaultGoalView as GoalViewType) || GoalViewType.LIST,
+          defaultScheduleView:
+            (dto.workflow.defaultScheduleView as ScheduleViewType) || ScheduleViewType.WEEK,
+        }
+      : {
+          defaultTaskView: TaskViewType.LIST,
+          defaultGoalView: GoalViewType.LIST,
+          defaultScheduleView: ScheduleViewType.WEEK,
+          autoSave: true,
+          autoSaveInterval: 30000,
+          confirmBeforeDelete: true,
+        };
 
     const shortcuts = dto.shortcuts || {
       enabled: true,
       custom: {},
     };
 
-    const privacy = dto.privacy ? {
-      ...dto.privacy,
-      profileVisibility: (dto.privacy.profileVisibility as ProfileVisibility) || ProfileVisibilityEnum.PUBLIC,
-    } : {
-      profileVisibility: ProfileVisibilityEnum.PUBLIC,
-      showOnlineStatus: true,
-      allowSearchByEmail: false,
-      allowSearchByPhone: false,
-      shareUsageData: true,
-    };
+    const privacy = dto.privacy
+      ? {
+          ...dto.privacy,
+          profileVisibility:
+            (dto.privacy.profileVisibility as ProfileVisibility) || ProfileVisibility.PUBLIC,
+        }
+      : {
+          profileVisibility: ProfileVisibility.PUBLIC,
+          showOnlineStatus: true,
+          allowSearchByEmail: false,
+          allowSearchByPhone: false,
+          shareUsageData: true,
+        };
 
     return new UserSetting({
       uuid: dto.uuid,
@@ -494,7 +500,7 @@ export class UserSetting extends AggregateRoot implements IUserSettingServer {
     });
   }
 
-  static fromPersistenceDTO(dto: SettingContracts.UserSettingPersistenceDTO): UserSetting {
+  static fromPersistenceDTO(dto: UserSettingPersistenceDTO): UserSetting {
     // 从扁平化的 DTO 重建嵌套结构
     const appearance: UserSetting['_appearance'] = {
       theme: dto.appearanceTheme as ThemeMode,

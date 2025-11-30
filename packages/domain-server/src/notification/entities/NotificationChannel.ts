@@ -3,28 +3,27 @@
  * 实现 NotificationChannelServer 接口
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
-import { ChannelStatus } from '@dailyuse/contracts';
+import type {
+  NotificationChannelType,
+  ChannelErrorServerDTO,
+  ChannelResponseServerDTO,
+  NotificationChannelPersistenceDTO,
+  NotificationChannelServer,
+  NotificationChannelServerDTO,
+} from '@dailyuse/contracts/notification';
+import { ChannelStatus } from '@dailyuse/contracts/notification';
 import { Entity } from '@dailyuse/utils';
 import { ChannelError } from '../value-objects/ChannelError';
 import { ChannelResponse } from '../value-objects/ChannelResponse';
 
-type INotificationChannelServer = NotificationContracts.NotificationChannelServer;
-type NotificationChannelServerDTO = NotificationContracts.NotificationChannelServerDTO;
-type NotificationChannelPersistenceDTO = NotificationContracts.NotificationChannelPersistenceDTO;
-type NotificationChannelType = NotificationContracts.NotificationChannelType;
-type ChannelStatusType = NotificationContracts.ChannelStatus;
-type ChannelErrorDTO = NotificationContracts.ChannelErrorServerDTO;
-type ChannelResponseDTO = NotificationContracts.ChannelResponseServerDTO;
-
 /**
  * NotificationChannel 实体
  */
-export class NotificationChannel extends Entity implements INotificationChannelServer {
+export class NotificationChannel extends Entity implements NotificationChannelServer {
   // ===== 私有字段 =====
   private _notificationUuid: string;
   private _channelType: NotificationChannelType;
-  private _status: ChannelStatusType;
+  private _status: ChannelStatus;
   private _recipient: string | null;
   private _sendAttempts: number;
   private _maxRetries: number;
@@ -40,7 +39,7 @@ export class NotificationChannel extends Entity implements INotificationChannelS
     uuid?: string;
     notificationUuid: string;
     channelType: NotificationChannelType;
-    status: ChannelStatusType;
+    status: ChannelStatus;
     recipient?: string | null;
     sendAttempts: number;
     maxRetries: number;
@@ -76,7 +75,7 @@ export class NotificationChannel extends Entity implements INotificationChannelS
   public get channelType(): NotificationChannelType {
     return this._channelType;
   }
-  public get status(): ChannelStatusType {
+  public get status(): ChannelStatus {
     return this._status;
   }
   public get recipient(): string | null {
@@ -88,10 +87,10 @@ export class NotificationChannel extends Entity implements INotificationChannelS
   public get maxRetries(): number {
     return this._maxRetries;
   }
-  public get error(): ChannelErrorDTO | null {
+  public get error(): ChannelErrorServerDTO | null {
     return this._error?.toContract() ?? null;
   }
-  public get response(): ChannelResponseDTO | null {
+  public get response(): ChannelResponseServerDTO | null {
     return this._response?.toContract() ?? null;
   }
   public get createdAt(): number {
@@ -160,7 +159,7 @@ export class NotificationChannel extends Entity implements INotificationChannelS
   /**
    * 标记为失败
    */
-  public markAsFailed(error: ChannelErrorDTO): void {
+  public markAsFailed(error: ChannelErrorServerDTO): void {
     this._status = ChannelStatus.FAILED;
     this._error = ChannelError.fromContract(error);
     this._failedAt = Date.now();

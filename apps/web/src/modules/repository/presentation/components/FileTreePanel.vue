@@ -150,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import type { TreeNode } from '@dailyuse/contracts';
+import type { TreeNode } from '@dailyuse/contracts/repository';
 import { useFileTreeStore } from '../stores/fileTreeStore';
 import TreeNodeItem from './TreeNodeItem.vue';
 
@@ -370,3 +370,6 @@ onMounted(() => {
   gap: 2px;
 }
 </style>
+
+
+

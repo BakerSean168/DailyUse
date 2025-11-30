@@ -2,10 +2,10 @@ import type {
   ITaskStatisticsRepository,
   ITaskTemplateRepository,
   ITaskInstanceRepository,
-} from '@dailyuse/domain-server';
-import { TaskStatistics } from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
+import { TaskStatistics } from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
 
 /**
  * TaskStatistics 应用服务
@@ -74,7 +74,7 @@ export class TaskStatisticsApplicationService {
   async getStatistics(
     accountUuid: string,
     forceRecalculate = false,
-  ): Promise<TaskContracts.TaskStatisticsServerDTO> {
+  ): Promise<TaskStatisticsServerDTO> {
     // 1. 尝试从数据库获取现有统计数据
     let statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
 

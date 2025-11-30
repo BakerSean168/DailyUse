@@ -2,24 +2,24 @@
  * TaskStatistics 聚合根实现 (Client)
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type {
+  ChartData,
+  CompletionStatsInfo,
+  DistributionStatsInfo,
+  InstanceStatsInfo,
+  TaskStatisticsClient,
+  TaskStatisticsClientDTO,
+  TaskStatisticsServerDTO,
+  TemplateStatsInfo,
+  TimeStatsInfo,
+  TrendData,
+} from '@dailyuse/contracts/task';
 import { AggregateRoot } from '@dailyuse/utils';
-
-type ITaskStatistics = TaskContracts.TaskStatisticsClient;
-type TaskStatisticsDTO = TaskContracts.TaskStatisticsClientDTO;
-type TaskStatisticsServerDTO = TaskContracts.TaskStatisticsServerDTO;
-type TemplateStatsInfo = TaskContracts.TemplateStatsInfo;
-type InstanceStatsInfo = TaskContracts.InstanceStatsInfo;
-type CompletionStatsInfo = TaskContracts.CompletionStatsInfo;
-type TimeStatsInfo = TaskContracts.TimeStatsInfo;
-type DistributionStatsInfo = TaskContracts.DistributionStatsInfo;
-type ChartData = TaskContracts.ChartData;
-type TrendData = TaskContracts.TrendData;
 
 /**
  * TaskStatistics 聚合根 (Client)
  */
-export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
+export class TaskStatistics extends AggregateRoot implements TaskStatistics {
   private _accountUuid: string;
   private _templateStats: TemplateStatsInfo;
   private _instanceStats: InstanceStatsInfo;
@@ -317,7 +317,7 @@ export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
     };
   }
 
-  toClientDTO(): TaskStatisticsDTO {
+  toClientDTO(): TaskStatisticsClientDTO {
     return {
       uuid: this.uuid,
       accountUuid: this._accountUuid,
@@ -407,7 +407,7 @@ export class TaskStatistics extends AggregateRoot implements ITaskStatistics {
   /**
    * 从 Client DTO 创建客户端实体
    */
-  static fromClientDTO(dto: TaskStatisticsDTO): TaskStatistics {
+  static fromClientDTO(dto: TaskStatisticsClientDTO): TaskStatistics {
     return new TaskStatistics({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,

@@ -11,17 +11,17 @@
 import type {
   ITaskDependencyRepository,
   ITaskTemplateRepository,
-  TaskDependencyService,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/task';
+import { TaskDependencyService } from '@dailyuse/domain-server/task';
 import { TaskContainer } from '../../infrastructure/di/TaskContainer';
-import { TaskContracts } from '@dailyuse/contracts';
-
-type TaskDependencyServerDTO = TaskContracts.TaskDependencyServerDTO;
-type CreateTaskDependencyRequest = TaskContracts.CreateTaskDependencyRequest;
-type UpdateTaskDependencyRequest = TaskContracts.UpdateTaskDependencyRequest;
-type ValidateDependencyRequest = TaskContracts.ValidateDependencyRequest;
-type ValidateDependencyResponse = TaskContracts.ValidateDependencyResponse;
-type DependencyChainServerDTO = TaskContracts.DependencyChainServerDTO;
+import type {
+  TaskDependencyServerDTO,
+  CreateTaskDependencyRequest,
+  UpdateTaskDependencyRequest,
+  ValidateDependencyRequest,
+  ValidateDependencyResponse,
+  DependencyChainServerDTO,
+} from '@dailyuse/contracts/task';
 
 export class TaskDependencyApplicationService {
   private static instance: TaskDependencyApplicationService;
@@ -126,7 +126,7 @@ export class TaskDependencyApplicationService {
     );
 
     // 6. 保存到仓储
-    await this.dependencyRepository.create(dependency.toServerDTO());
+    await this.dependencyRepository.create(request);
 
     // 7. 更新后续任务的依赖状态
     await this.updateTaskDependencyStatus(successor.uuid);
@@ -286,10 +286,18 @@ export class TaskDependencyApplicationService {
       predecessorTasks,
     );
 
-    // 4. 更新任务状态
+    // 4. 更新任务状态 (映射 DependencyStatus 到 updateDependencyStatus 参数类型)
+    const statusMap: Record<string, 'PENDING' | 'READY' | 'BLOCKED'> = {
+      NONE: 'READY',
+      WAITING: 'PENDING',
+      READY: 'READY',
+      BLOCKED: 'BLOCKED',
+    };
+    const mappedStatus = statusMap[statusResult.status] ?? 'PENDING';
+
     const task = await this.taskRepository.findByUuid(taskUuid);
     if (task) {
-      task.updateDependencyStatus(statusResult.status);
+      task.updateDependencyStatus(mappedStatus);
       // 如果被阻塞，记录原因
       if (statusResult.isBlocked && statusResult.blockingReason) {
         task.markAsBlocked(statusResult.blockingReason);

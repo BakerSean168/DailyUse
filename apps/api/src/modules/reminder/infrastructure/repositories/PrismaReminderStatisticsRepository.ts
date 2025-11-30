@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import type { IReminderStatisticsRepository } from '@dailyuse/domain-server';
-import { ReminderStatistics } from '@dailyuse/domain-server';
+import type { IReminderStatisticsRepository } from '@dailyuse/domain-server/reminder';
+import { ReminderStatistics } from '@dailyuse/domain-server/reminder';
 
 /**
  * ReminderStatistics Prisma 仓储实现

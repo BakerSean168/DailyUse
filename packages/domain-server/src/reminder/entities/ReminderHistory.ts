@@ -3,14 +3,8 @@
  * 提醒历史记录实体
  */
 
-import type {
-  ReminderHistoryServer,
-  ReminderHistoryServerDTO,
-  ReminderHistoryClientDTO,
-  ReminderHistoryPersistenceDTO,
-  TriggerResult,
-  NotificationChannel,
-} from '@dailyuse/contracts/src/modules/reminder';
+import type { ReminderHistoryServer, ReminderHistoryServerDTO, ReminderHistoryClientDTO, ReminderHistoryPersistenceDTO } from '@dailyuse/contracts/reminder';
+import { TriggerResult, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { Entity } from '@dailyuse/utils';
 
 /**

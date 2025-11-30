@@ -7,11 +7,8 @@
  * - 基于值的相等性
  * - 无标识符
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryStatsClientDTO, RepositoryStatsServerDTO } from '@dailyuse/contracts/repository';
 import { ValueObject } from '@dailyuse/utils';
-
-type RepositoryStatsClientDTO = RepositoryContracts.RepositoryStatsClientDTO;
-type RepositoryStatsServerDTO = RepositoryContracts.RepositoryStatsServerDTO;
 
 export class RepositoryStats extends ValueObject {
   // ===== 公开只读字段 =====

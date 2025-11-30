@@ -7,10 +7,7 @@
  */
 
 import type { NotificationTemplate } from '../aggregates/NotificationTemplate';
-import type { NotificationContracts } from '@dailyuse/contracts';
-
-type NotificationCategory = NotificationContracts.NotificationCategory;
-type NotificationType = NotificationContracts.NotificationType;
+import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 
 /**
  * INotificationTemplateRepository 仓储接口

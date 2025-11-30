@@ -1,4 +1,4 @@
-import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server';
+import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server/editor';
 import { PrismaEditorWorkspaceRepository } from '../repositories/prisma/PrismaEditorWorkspaceRepository';
 import { prisma } from '@/config/prisma';
 

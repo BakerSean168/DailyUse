@@ -2,10 +2,7 @@
  * Resource Stats Value Object - Server Implementation
  * 资源统计值对象 - 服务端实现
  */
-import { RepositoryContracts } from '@dailyuse/contracts';
-
-type ResourceStatsServer = RepositoryContracts.ResourceStatsServer;
-type ResourceStatsServerDTO = RepositoryContracts.ResourceStatsServerDTO;
+import type { ResourceStatsServer, ResourceStatsServerDTO } from '@dailyuse/contracts/repository';
 
 export class ResourceStats implements ResourceStatsServer {
   private _viewCount: number;

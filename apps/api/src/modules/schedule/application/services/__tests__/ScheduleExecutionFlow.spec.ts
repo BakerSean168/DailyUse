@@ -16,8 +16,9 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import { randomUUID } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import { ScheduleTask } from '@dailyuse/domain-server';
-import { ScheduleContracts, SourceModule, Timezone } from '@dailyuse/contracts';
+import { ScheduleTask } from '@dailyuse/domain-server/schedule';
+import { SourceModule, Timezone } from '@dailyuse/contracts/schedule';
+import type { ScheduleTaskServerDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleApplicationService } from '../ScheduleApplicationService';
 
 const logger = createLogger('ScheduleExecutionFlowTest');
@@ -92,7 +93,7 @@ describe('Schedule Execution Flow - End to End', () => {
       const nextRunAt = now - 60000; // 1分钟前就该执行了
 
       // 创建调度配置（每小时执行一次）
-      const scheduleConfig: ScheduleContracts.ScheduleConfigServerDTO = {
+      const scheduleConfig: ScheduleConfigServerDTO = {
         cronExpression: '0 * * * *', // 每小时整点
         timezone: Timezone.SHANGHAI,
         startDate: (now - 3600000).toString(), // 1小时前开始
@@ -318,3 +319,5 @@ describe('Schedule Execution Flow - End to End', () => {
     });
   });
 });
+
+

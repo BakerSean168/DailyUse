@@ -9,20 +9,20 @@
  * - DTO 转换
  */
 
-import type { IAIProviderConfigRepository } from '@dailyuse/domain-server';
-import { AIProviderConfigServer } from '@dailyuse/domain-server';
-import type { AIContracts } from '@dailyuse/contracts';
-import { AIProviderType } from '@dailyuse/contracts';
+import type { IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
+import { AIProviderConfigServer } from '@dailyuse/domain-server/ai';
+import type {
+  AIProviderConfigServerDTO,
+  AIProviderConfigClientDTO,
+  AIModelInfo,
+  CreateAIProviderRequest,
+  UpdateAIProviderRequest,
+  TestAIProviderConnectionRequest,
+  TestAIProviderConnectionResponse,
+} from '@dailyuse/contracts/ai';
+import { AIProviderType } from '@dailyuse/contracts/ai';
 import { createLogger } from '@dailyuse/utils';
 import { AIAdapterFactory } from '../../infrastructure/adapters/AIAdapterFactory';
-
-type AIProviderConfigClientDTO = AIContracts.AIProviderConfigClientDTO;
-type AIProviderConfigServerDTO = AIContracts.AIProviderConfigServerDTO;
-type CreateAIProviderRequest = AIContracts.CreateAIProviderRequest;
-type UpdateAIProviderRequest = AIContracts.UpdateAIProviderRequest;
-type TestAIProviderConnectionRequest = AIContracts.TestAIProviderConnectionRequest;
-type TestAIProviderConnectionResponse = AIContracts.TestAIProviderConnectionResponse;
-type AIModelInfo = AIContracts.AIModelInfo;
 
 const logger = createLogger('AIProviderConfigService');
 
@@ -372,4 +372,30 @@ export class AIProviderConfigService {
         return [{ id: 'default', name: 'Default Model' }];
     }
   }
+
+  /**
+   * 获取 Provider 的 AI 适配器
+   * 用于动态切换用户自定义 Provider
+   */
+  async getAdapterForProvider(
+    providerUuid: string,
+    accountUuid: string,
+  ): Promise<import('../../infrastructure/adapters/BaseAIAdapter').BaseAIAdapter> {
+    const provider = await this.providerRepository.findByUuid(providerUuid);
+    if (!provider) {
+      throw new Error('Provider not found');
+    }
+
+    if (provider.accountUuid !== accountUuid) {
+      throw new Error('Provider does not belong to this account');
+    }
+
+    if (!provider.isActive) {
+      throw new Error('Provider is not active');
+    }
+
+    return AIAdapterFactory.createFromConfig(provider);
+  }
 }
+
+

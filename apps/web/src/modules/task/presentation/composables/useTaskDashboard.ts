@@ -9,10 +9,9 @@
  */
 
 import { ref, computed, readonly, onMounted, onUnmounted } from 'vue';
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO, TaskDashboardResponse } from '@dailyuse/contracts/task';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
 
-type TaskDashboardResponse = TaskContracts.TaskDashboardResponse;
 
 /**
  * 任务仪表板 Composable
@@ -313,3 +312,4 @@ export function useTaskDashboard() {
     stopAutoRefresh,
   };
 }
+

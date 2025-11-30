@@ -1,8 +1,7 @@
 import type { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
-import { DashboardConfig } from '@dailyuse/domain-server';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
+import type { DashboardConfigServerDTO, WidgetConfigDTO, WidgetConfigData } from '@dailyuse/contracts/dashboard';
 
-type WidgetConfigData = DashboardContracts.WidgetConfigData;
 
 /**
  * Dashboard 配置应用服务
@@ -114,3 +113,5 @@ export class DashboardConfigApplicationService {
     }
   }
 }
+
+

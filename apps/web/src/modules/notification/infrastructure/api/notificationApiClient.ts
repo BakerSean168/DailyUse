@@ -5,14 +5,8 @@
 
 // @ts-nocheck - Some types not yet defined in contracts
 import { apiClient } from '@/shared/api/instances';
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
 
-type NotificationClientDTO = NotificationContracts.NotificationClientDTO;
-type CreateNotificationRequestDTO = NotificationContracts.CreateNotificationRequestDTO;
-type QueryNotificationsRequest = NotificationContracts.QueryNotificationsRequest;
-type NotificationListResponseDTO = NotificationContracts.NotificationListResponseDTO;
-type UnreadCountResponse = NotificationContracts.UnreadCountResponse;
-type BatchDeleteNotificationsRequest = NotificationContracts.BatchDeleteNotificationsRequest;
 
 export class NotificationApiClient {
   private readonly baseUrl = '/api/v1/notifications';
@@ -109,3 +103,4 @@ export class NotificationApiClient {
 
 // 导出单例
 export const notificationApiClient = new NotificationApiClient();
+

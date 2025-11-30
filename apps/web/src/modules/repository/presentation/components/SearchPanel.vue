@@ -150,11 +150,8 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useSearchStore } from '../stores/searchStore';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, SearchMode, SearchResultItem, SearchRequest, SearchResponse, SearchMatch } from '@dailyuse/contracts/repository';
 
-type SearchMode = RepositoryContracts.SearchMode;
-type SearchResultItem = RepositoryContracts.SearchResultItem;
-type SearchMatch = RepositoryContracts.SearchMatch;
 
 // Props
 const props = defineProps<{
@@ -283,3 +280,4 @@ function highlightMatchInLine(match: SearchMatch): string {
 <style scoped>
 /* 使用 Vuetify 工具类，无需自定义样式 */
 </style>
+

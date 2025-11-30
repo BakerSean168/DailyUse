@@ -1,6 +1,8 @@
 // @ts-nocheck - This file uses old ReminderTemplate API structure
-import type { ReminderTemplate } from '@dailyuse/domain-client';
-import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
+import type { ReminderTemplate } from '@dailyuse/domain-client/reminder';
+import { ReminderTemplateStatus } from '@dailyuse/contracts/reminder';
+import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO } from '@dailyuse/contracts/reminder';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import {
   addDays,
   addWeeks,
@@ -67,19 +69,19 @@ export function calculateUpcomingReminders(
     if (!timeConfig) continue;
 
     switch (timeConfig.type) {
-      case ReminderContracts.ReminderTimeConfigType.DAILY:
+      case ReminderTimeConfigType.DAILY:
         upcomingReminders.push(...calculateDailyReminders(template, now, endTime));
         break;
 
-      case ReminderContracts.ReminderTimeConfigType.WEEKLY:
+      case ReminderTimeConfigType.WEEKLY:
         upcomingReminders.push(...calculateWeeklyReminders(template, now, endTime));
         break;
 
-      case ReminderContracts.ReminderTimeConfigType.MONTHLY:
+      case ReminderTimeConfigType.MONTHLY:
         upcomingReminders.push(...calculateMonthlyReminders(template, now, endTime));
         break;
 
-      case ReminderContracts.ReminderTimeConfigType.CUSTOM:
+      case ReminderTimeConfigType.CUSTOM:
         // 自定义提醒需要特殊处理，暂不支持
         break;
     }
@@ -102,7 +104,7 @@ function calculateDailyReminders(
   const reminders: UpcomingReminder[] = [];
   const { timeConfig } = template;
 
-  if (timeConfig.type !== ReminderContracts.ReminderTimeConfigType.DAILY || !timeConfig.times) {
+  if (timeConfig.type !== ReminderTimeConfigType.DAILY || !timeConfig.times) {
     return reminders;
   }
 
@@ -148,7 +150,7 @@ function calculateWeeklyReminders(
   const { timeConfig } = template;
 
   if (
-    timeConfig.type !== ReminderContracts.ReminderTimeConfigType.WEEKLY ||
+    timeConfig.type !== ReminderTimeConfigType.WEEKLY ||
     !timeConfig.weekdays ||
     !timeConfig.times
   ) {
@@ -212,7 +214,7 @@ function calculateMonthlyReminders(
   const { timeConfig } = template;
 
   if (
-    timeConfig.type !== ReminderContracts.ReminderTimeConfigType.MONTHLY ||
+    timeConfig.type !== ReminderTimeConfigType.MONTHLY ||
     !timeConfig.monthDays ||
     !timeConfig.times
   ) {
@@ -315,3 +317,4 @@ export function groupByCategory(reminders: UpcomingReminder[]): Record<string, U
     {} as Record<string, UpcomingReminder[]>,
   );
 }
+

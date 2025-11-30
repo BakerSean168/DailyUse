@@ -224,8 +224,8 @@
 import { ref, computed } from 'vue';
 import { useRepositoryStore } from '../../stores';
 import { repositoryApiClient } from '../../../infrastructure/api';
-import { Repository } from '@dailyuse/domain-client';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import { Repository } from '@dailyuse/domain-client/repository';
+import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 
 // Props
 interface Props {
@@ -262,7 +262,7 @@ const languages = [
 
 const formData = ref({
   name: '',
-  type: 'LOCAL' as RepositoryContracts.RepositoryType,
+  type: 'LOCAL' as RepositoryType,
   path: '', // Web 端留空，桌面端使用实际路径
   description: '',
   autoSync: true,
@@ -350,7 +350,7 @@ async function handleSubmit() {
     // Web 端创建虚拟仓储
     const payload = {
       name: formData.value.name,
-      type: 'LOCAL' as RepositoryContracts.RepositoryType, // Web 端统一使用 LOCAL 类型
+      type: 'LOCAL' as RepositoryType, // Web 端统一使用 LOCAL 类型
       path: `/repositories/${formData.value.name}`, // 虚拟路径
       description: formData.value.description || undefined,
       config: {
@@ -392,7 +392,7 @@ function handleClose() {
   formRef.value?.reset();
   formData.value = {
     name: '',
-    type: 'LOCAL' as RepositoryContracts.RepositoryType,
+    type: 'LOCAL' as RepositoryType,
     path: '',
     description: '',
     autoSync: true,
@@ -458,3 +458,4 @@ function handleClose() {
   padding-top: 16px;
 }
 </style>
+

@@ -136,8 +136,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import type { TaskTemplate } from '@dailyuse/domain-client';
-import { TaskGoalBinding } from '@dailyuse/domain-client';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import { TaskGoalBinding } from '@dailyuse/domain-client/task';
 import { CrossModuleAPIClient } from '@/shared/api';
 import type { GoalBindingOption, KeyResultBindingOption } from '@/shared/api';
 

@@ -17,14 +17,10 @@ import type { ReminderTemplate } from '../aggregates/ReminderTemplate';
 import type { ReminderStatistics } from '../aggregates/ReminderStatistics';
 import type { IReminderTemplateRepository } from '../repositories/IReminderTemplateRepository';
 import type { IReminderStatisticsRepository } from '../repositories/IReminderStatisticsRepository';
-import { ReminderContracts } from '@dailyuse/contracts';
+import { RecurrenceType, TriggerResult, TriggerType } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateControlService } from './ReminderTemplateControlService';
 
-type TriggerType = ReminderContracts.TriggerType;
-const TriggerTypeEnum = ReminderContracts.TriggerType;
-type TriggerResult = ReminderContracts.TriggerResult;
-const TriggerResultEnum = ReminderContracts.TriggerResult;
-type RecurrenceType = ReminderContracts.RecurrenceType;
+
 
 /**
  * 触发参数
@@ -84,7 +80,7 @@ export class ReminderTriggerService {
     if (!isEnabled) {
       return {
         success: false,
-        result: TriggerResultEnum.SKIPPED,
+        result: TriggerResult.SKIPPED,
         triggerTime,
         nextTriggerTime: null,
         message: '模板未启用或被分组禁用',
@@ -94,7 +90,7 @@ export class ReminderTriggerService {
     // 记录触发历史（成功）
     const history = template.createHistory({
       triggeredAt: triggerTime,
-      result: TriggerResultEnum.SUCCESS,
+      result: TriggerResult.SUCCESS,
     });
     template.addHistory(history);
 
@@ -107,11 +103,11 @@ export class ReminderTriggerService {
     await this.templateRepository.save(template);
 
     // 更新统计数据
-    await this.updateStatistics(template.accountUuid, TriggerResultEnum.SUCCESS);
+    await this.updateStatistics(template.accountUuid, TriggerResult.SUCCESS);
 
     return {
       success: true,
-      result: TriggerResultEnum.SUCCESS,
+      result: TriggerResult.SUCCESS,
       triggerTime,
       nextTriggerTime,
       message: '触发成功',
@@ -129,13 +125,13 @@ export class ReminderTriggerService {
   ): Promise<void> {
     const history = template.createHistory({
       triggeredAt: triggerTime,
-      result: TriggerResultEnum.FAILED,
+      result: TriggerResult.FAILED,
       error: error,
     });
     template.addHistory(history);
 
     await this.templateRepository.save(template);
-    await this.updateStatistics(template.accountUuid, TriggerResultEnum.FAILED);
+    await this.updateStatistics(template.accountUuid, TriggerResult.FAILED);
   }
 
   /**
@@ -148,13 +144,13 @@ export class ReminderTriggerService {
   ): Promise<void> {
     const history = template.createHistory({
       triggeredAt: triggerTime,
-      result: TriggerResultEnum.SKIPPED,
+      result: TriggerResult.SKIPPED,
       error: reason,
     });
     template.addHistory(history);
 
     await this.templateRepository.save(template);
-    await this.updateStatistics(template.accountUuid, TriggerResultEnum.SKIPPED);
+    await this.updateStatistics(template.accountUuid, TriggerResult.SKIPPED);
   }
 
   /**
@@ -170,7 +166,7 @@ export class ReminderTriggerService {
       } catch (error) {
         results.push({
           success: false,
-          result: TriggerResultEnum.FAILED,
+          result: TriggerResult.FAILED,
           triggerTime: param.triggerTime || Date.now(),
           nextTriggerTime: null,
           message: error instanceof Error ? error.message : '触发失败',

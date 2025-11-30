@@ -1,12 +1,13 @@
 import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { ResponseCode, createResponseBuilder, type ScheduleServerDTO } from '@dailyuse/contracts';
-import { Schedule as DomainSchedule } from '@dailyuse/domain-server';
+import { ResponseCode, createResponseBuilder } from '@dailyuse/contracts/response';
+import type { ScheduleServerDTO } from '@dailyuse/contracts/schedule';
+import { ResolutionStrategy } from '@dailyuse/contracts/schedule';
+import { Schedule as DomainSchedule } from '@dailyuse/domain-server/schedule';
 import { createLogger } from '@dailyuse/utils';
 import { ScheduleConflictDetectionService } from '../../../application/services/ScheduleConflictDetectionService';
 import { ScheduleContainer } from '../../../infrastructure/di/ScheduleContainer';
-import { ResolutionStrategy } from '@dailyuse/contracts';
 
 const logger = createLogger('ScheduleConflictController');
 

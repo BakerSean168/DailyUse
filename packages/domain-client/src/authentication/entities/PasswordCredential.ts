@@ -3,17 +3,16 @@
  * 兼容 PasswordCredentialClient 接口
  */
 
-import { AuthenticationContracts, PasswordAlgorithm } from '@dailyuse/contracts';
+import type { PasswordCredentialClient, PasswordCredentialClientDTO } from '@dailyuse/contracts/authentication';
+import { PasswordAlgorithm } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
 
-type IPasswordCredentialClient = AuthenticationContracts.PasswordCredentialClient;
-type PasswordCredentialClientDTO = AuthenticationContracts.PasswordCredentialClientDTO;
 
 /**
  * PasswordCredential 实体 (Client)
  * 密码凭证实体
  */
-export class PasswordCredential extends Entity implements IPasswordCredentialClient {
+export class PasswordCredential extends Entity implements PasswordCredentialClient {
   // ===== 私有字段 =====
   private _credentialUuid: string;
   private _algorithm: PasswordAlgorithm;

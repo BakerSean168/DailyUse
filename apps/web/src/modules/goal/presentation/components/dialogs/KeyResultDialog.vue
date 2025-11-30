@@ -159,7 +159,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { KeyResult, Goal } from '@dailyuse/domain-client';
+import { KeyResult, Goal } from '@dailyuse/domain-client/goal';
 // composables
 import { useKeyResult } from '../../composables/useKeyResult';
 

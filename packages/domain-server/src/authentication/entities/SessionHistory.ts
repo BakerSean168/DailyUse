@@ -3,14 +3,10 @@
  * 实现 SessionHistoryServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type { SessionHistoryPersistenceDTO, SessionHistoryServer, SessionHistoryServerDTO } from '@dailyuse/contracts/authentication';
 import { Entity, generateUUID } from '@dailyuse/utils';
 
-type ISessionHistoryServer = AuthenticationContracts.SessionHistoryServer;
-type SessionHistoryServerDTO = AuthenticationContracts.SessionHistoryServerDTO;
-type SessionHistoryPersistenceDTO = AuthenticationContracts.SessionHistoryPersistenceDTO;
-
-export class SessionHistory extends Entity implements ISessionHistoryServer {
+export class SessionHistory extends Entity implements SessionHistoryServer {
   public readonly sessionUuid: string;
   public readonly action: string;
   public readonly details?: any | null;

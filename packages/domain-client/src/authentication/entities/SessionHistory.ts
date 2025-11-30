@@ -3,17 +3,14 @@
  * 兼容 SessionHistoryClient 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type { SessionHistoryClient, SessionHistoryClientDTO } from '@dailyuse/contracts/authentication';
 import { Entity } from '@dailyuse/utils';
-
-type ISessionHistoryClient = AuthenticationContracts.SessionHistoryClient;
-type SessionHistoryClientDTO = AuthenticationContracts.SessionHistoryClientDTO;
 
 /**
  * SessionHistory 实体 (Client)
  * 会话历史记录实体
  */
-export class SessionHistory extends Entity implements ISessionHistoryClient {
+export class SessionHistory extends Entity implements SessionHistoryClient {
   // ===== 私有字段 =====
   private _sessionUuid: string;
   private _action: string;

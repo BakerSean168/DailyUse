@@ -11,13 +11,21 @@
  */
 
 import type { Response } from 'express';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
-import type { AIGenerationResult } from '@dailyuse/domain-server';
-import { QuotaExceededError, AIGenerationValidationService } from '@dailyuse/domain-server';
+import { QuotaExceededError, AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import { z } from 'zod';
+
+/**
+ * AI 生成结果类型
+ */
+interface AIGenerationResult {
+  content: string;
+  tokenUsage?: { totalTokens?: number } | null;
+  finishReason?: string;
+}
 
 const logger = createLogger('AIConversationController');
 
@@ -868,7 +876,7 @@ export class AIConversationController {
           .status(404)
           .json(
             AIConversationController.responseBuilder.error(
-              ResponseCode.RESOURCE_NOT_FOUND,
+              ResponseCode.NOT_FOUND,
               'Task not found',
             ),
           );
@@ -998,3 +1006,5 @@ export class AIConversationController {
       );
   }
 }
+
+

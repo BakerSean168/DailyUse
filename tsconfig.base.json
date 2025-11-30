@@ -13,9 +13,9 @@
     // 标准库：默认只包含 ES2020，具体项目可以扩展（如添加 DOM）
     "lib": ["ES2020"],
 
-    // 模块解析策略：使用 Node 策略以获得最佳兼容性
-    // Node 策略会查找 node_modules 和 package.json 的 main/types 字段
-    "moduleResolution": "Node",
+    // 模块解析策略：使用 Bundler 策略以支持 package.json exports 子路径
+    // Bundler 策略支持 exports 字段的条件导出和子路径导出
+    "moduleResolution": "Bundler",
 
     // ============================================================
     // 严格类型检查配置

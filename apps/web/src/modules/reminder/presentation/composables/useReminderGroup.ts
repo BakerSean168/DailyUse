@@ -4,7 +4,7 @@
  */
 
 import { ref, computed } from 'vue';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
 import { reminderGroupApplicationService } from '../../application/services';
 import { getReminderStore } from '../stores/reminderStore';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
@@ -22,7 +22,7 @@ export function useReminderGroup() {
   // ===== 本地状态 =====
   const showCreateGroupDialog = ref(false);
   const showEditGroupDialog = ref(false);
-  const editingGroup = ref<ReminderContracts.ReminderGroupClientDTO | null>(null);
+  const editingGroup = ref<ReminderGroupClientDTO | null>(null);
 
   // ===== 数据获取方法 =====
 
@@ -66,7 +66,7 @@ export function useReminderGroup() {
   /**
    * 创建新分组
    */
-  const createGroup = async (data: ReminderContracts.CreateReminderGroupRequestDTO) => {
+  const createGroup = async (data: CreateReminderGroupRequest) => {
     try {
       const response = await reminderGroupApplicationService.createReminderGroup(data);
       showCreateGroupDialog.value = false;
@@ -83,7 +83,7 @@ export function useReminderGroup() {
    */
   const updateGroup = async (
     uuid: string,
-    data: ReminderContracts.UpdateReminderGroupRequestDTO,
+    data: UpdateReminderGroupRequest,
   ) => {
     try {
       const response = await reminderGroupApplicationService.updateReminderGroup(uuid, data);
@@ -148,3 +148,4 @@ export function useReminderGroup() {
     toggleGroupStatus,
   };
 }
+

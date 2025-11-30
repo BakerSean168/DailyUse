@@ -168,7 +168,7 @@
                       </p>
                       <!-- Live region for progress updates -->
                       <div class="visually-hidden" aria-live="polite" role="status" data-test="progress-live">
-                        进度 {{ progress.value }}%
+                        进度 {{ progress }}%
                       </div>
                     </div>
                   </div>

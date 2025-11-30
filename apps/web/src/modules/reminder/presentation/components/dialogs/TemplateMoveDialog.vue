@@ -150,14 +150,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
 // 导入根分组常量和工具函数（从主包导出，不是从命名空间）
-import { ROOT_GROUP_CONFIG, isRootGroup, getRootGroupUuid, isOnDesktop } from '@dailyuse/contracts';
+import { ROOT_GROUP_CONFIG, isRootGroup, getRootGroupUuid, isOnDesktop } from '@dailyuse/contracts/reminder';
 import { useReminder } from '../../composables/useReminder';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 
-type ReminderTemplate = ReminderContracts.ReminderTemplateClientDTO;
-type ReminderTemplateGroup = ReminderContracts.ReminderGroupClientDTO;
+type ReminderTemplate = ReminderTemplateClientDTO;
+type ReminderTemplateGroup = ReminderGroupClientDTO;
 
 
 
@@ -339,3 +339,4 @@ defineExpose({
   padding-inline-start: 12px;
 }
 </style>
+

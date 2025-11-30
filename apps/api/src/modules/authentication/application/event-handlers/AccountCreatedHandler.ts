@@ -15,8 +15,8 @@
  * - 易于扩展：可以添加更多事件监听器
  */
 
-import type { IAuthCredentialRepository } from '@dailyuse/domain-server';
-import { AuthenticationDomainService } from '@dailyuse/domain-server';
+import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
+import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { AuthenticationContainer } from '../../infrastructure/di/AuthenticationContainer';
 import { createLogger, eventBus } from '@dailyuse/utils';
 import bcrypt from 'bcryptjs';

@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client';
-import { ReminderGroup } from '@dailyuse/domain-server';
-import type { IReminderGroupRepository } from '@dailyuse/domain-server';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import { ReminderGroup } from '@dailyuse/domain-server/reminder';
+import type { IReminderGroupRepository } from '@dailyuse/domain-server/reminder';
+import type { ReminderTemplateServerDTO, ReminderGroupServerDTO } from '@dailyuse/contracts/reminder';
+import { ControlMode, ReminderStatus } from '@dailyuse/contracts/reminder';
 
 /**
  * ReminderGroup Prisma 仓储实现
@@ -79,7 +80,7 @@ export class PrismaReminderGroupRepository implements IReminderGroupRepository {
 
   async findByControlMode(
     accountUuid: string,
-    controlMode: ReminderContracts.ControlMode,
+    controlMode: ControlMode,
     options?: { includeDeleted?: boolean },
   ): Promise<ReminderGroup[]> {
     const groups = await this.prisma.reminderGroup.findMany({
@@ -145,7 +146,7 @@ export class PrismaReminderGroupRepository implements IReminderGroupRepository {
 
   async count(
     accountUuid: string,
-    options?: { status?: ReminderContracts.ReminderStatus; includeDeleted?: boolean },
+    options?: { status?: ReminderStatus; includeDeleted?: boolean },
   ): Promise<number> {
     return this.prisma.reminderGroup.count({
       where: {
@@ -156,3 +157,4 @@ export class PrismaReminderGroupRepository implements IReminderGroupRepository {
     });
   }
 }
+

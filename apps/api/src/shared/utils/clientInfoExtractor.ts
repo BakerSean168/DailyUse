@@ -1,7 +1,5 @@
 import type { Request } from 'express';
-import { sharedContracts } from '@dailyuse/contracts';
-
-type ClientInfo = sharedContracts.ClientInfo;
+import type { ClientInfo } from '@dailyuse/contracts/shared';
 import crypto from 'crypto';
 
 /**

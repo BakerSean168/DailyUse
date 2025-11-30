@@ -98,28 +98,6 @@
                   <p v-if="repository?.description" class="text-body-1 text-medium-emphasis mb-4">
                     {{ repository.description }}
                   </p>
-
-                  <!-- 关联目标 -->
-                  <div
-                    v-if="repository?.relatedGoals && repository.relatedGoals.length > 0"
-                    class="mb-4"
-                  >
-                    <h4 class="text-subtitle-1 font-weight-medium mb-2">关联目标</h4>
-                    <div class="d-flex flex-wrap gap-2">
-                      <v-chip
-                        v-for="goalUuid in repository.relatedGoals"
-                        :key="goalUuid"
-                        color="primary"
-                        variant="tonal"
-                        size="small"
-                        @click="goToGoal(goalUuid)"
-                        class="cursor-pointer"
-                      >
-                        <v-icon start size="small">mdi-target</v-icon>
-                        {{ getGoalTitle(goalUuid) }}
-                      </v-chip>
-                    </div>
-                  </div>
                 </div>
               </v-col>
 
@@ -320,7 +298,8 @@
 import { computed, ref, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { format } from 'date-fns';
-import { Repository, Resource } from '@dailyuse/domain-client';
+import { Repository, Resource } from '@dailyuse/domain-client/repository';
+import { RepositoryStatus } from '@dailyuse/contracts/repository';
 // 组件导入
 import RepoDialog from '../components/dialogs/RepoDialog.vue';
 import ResourceDialog from '../components/dialogs/ResourceDialog.vue';
@@ -368,7 +347,7 @@ const confirmDialog = reactive({
 // 计算属性
 const resourceCount = computed(() => resources.value.length);
 
-const isArchived = computed(() => repository.value?.status === 'archived');
+const isArchived = computed(() => repository.value?.status === RepositoryStatus.ARCHIVED);
 
 const repositorySettings = computed({
   get: () =>
@@ -417,11 +396,12 @@ const formatDate = (date?: Date | number) => {
 
 const getStatusColor = () => {
   switch (repository.value?.status) {
-    case 'active':
+    case RepositoryStatus.ACTIVE:
       return 'success';
-    case 'archived':
+    case RepositoryStatus.ARCHIVED:
       return 'warning';
-    // case 'deleted': return 'error'
+    case RepositoryStatus.DELETED:
+      return 'error';
     default:
       return 'primary';
   }
@@ -429,11 +409,12 @@ const getStatusColor = () => {
 
 const getStatusIcon = () => {
   switch (repository.value?.status) {
-    case 'active':
+    case RepositoryStatus.ACTIVE:
       return 'mdi-check-circle';
-    case 'archived':
+    case RepositoryStatus.ARCHIVED:
       return 'mdi-archive';
-    // case 'deleted': return 'mdi-delete'
+    case RepositoryStatus.DELETED:
+      return 'mdi-delete';
     default:
       return 'mdi-circle';
   }
@@ -441,23 +422,15 @@ const getStatusIcon = () => {
 
 const getStatusText = () => {
   switch (repository.value?.status) {
-    case 'active':
+    case RepositoryStatus.ACTIVE:
       return '活跃';
-    case 'archived':
+    case RepositoryStatus.ARCHIVED:
       return '已归档';
-    // case 'deleted': return '已删除'
+    case RepositoryStatus.DELETED:
+      return '已删除';
     default:
       return repository.value?.status;
   }
-};
-
-const getGoalTitle = (goalUuid: string) => {
-  // TODO: 根据goalUuid获取目标标题
-  return `目标-${goalUuid.slice(0, 8)}`;
-};
-
-const goToGoal = (goalUuid: string) => {
-  router.push({ name: 'goal-detail', params: { id: goalUuid } });
 };
 
 const openInBrowser = () => {

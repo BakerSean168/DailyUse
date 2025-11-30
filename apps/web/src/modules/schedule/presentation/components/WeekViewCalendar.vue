@@ -83,11 +83,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 
 // Props
 const props = defineProps<{
-  schedules: ScheduleContracts.ScheduleClientDTO[];
+  schedules: ScheduleClientDTO[];
   isLoading?: boolean;
 }>();
 
@@ -95,7 +96,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'week-change': [startDate: Date, endDate: Date];
   'create': [];
-  'event-click': [event: ScheduleContracts.ScheduleClientDTO];
+  'event-click': [event: ScheduleClientDTO];
 }>();
 
 // State
@@ -161,7 +162,7 @@ function formatHour(hour: number): string {
   return `${hour.toString().padStart(2, '0')}:00`;
 }
 
-function formatEventTime(event: ScheduleContracts.ScheduleClientDTO): string {
+function formatEventTime(event: ScheduleClientDTO): string {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
   const formatTime = (date: Date) => {
@@ -172,14 +173,14 @@ function formatEventTime(event: ScheduleContracts.ScheduleClientDTO): string {
   return `${formatTime(start)} - ${formatTime(end)}`;
 }
 
-function getEventsForDay(dateStr: string): ScheduleContracts.ScheduleClientDTO[] {
+function getEventsForDay(dateStr: string): ScheduleClientDTO[] {
   return props.schedules.filter((event) => {
     const eventDate = new Date(event.startTime).toISOString().split('T')[0];
     return eventDate === dateStr;
   });
 }
 
-function getEventStyle(event: ScheduleContracts.ScheduleClientDTO) {
+function getEventStyle(event: ScheduleClientDTO) {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
 
@@ -357,3 +358,4 @@ onMounted(() => {
   color: white;
 }
 </style>
+

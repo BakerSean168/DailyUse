@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TreeNode } from '@dailyuse/contracts';
+import type { TreeNode } from '@dailyuse/contracts/repository';
 import { useFileTreeStore } from '../stores/fileTreeStore';
 
 // Props
@@ -270,3 +270,6 @@ function formatDate(date: Date | string): string {
   padding-left: 16px;
 }
 </style>
+
+
+

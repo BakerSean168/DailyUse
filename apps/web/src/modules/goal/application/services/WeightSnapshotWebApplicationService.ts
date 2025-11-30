@@ -1,4 +1,4 @@
-import type { GoalContracts } from '@dailyuse/contracts';
+import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotServerDTO } from '@dailyuse/contracts/goal';
 import { weightSnapshotApiClient } from '../../infrastructure/api/weightSnapshotApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
 import { useSnackbar } from '../../../../shared/composables/useSnackbar';
@@ -122,7 +122,7 @@ export class WeightSnapshotWebApplicationService {
     page: number = 1,
     pageSize: number = 20,
   ): Promise<{
-    snapshots: GoalContracts.KeyResultWeightSnapshotServerDTO[];
+    snapshots: KeyResultWeightSnapshotServerDTO[];
     pagination: {
       total: number;
       page: number;
@@ -160,7 +160,7 @@ export class WeightSnapshotWebApplicationService {
     page: number = 1,
     pageSize: number = 20,
   ): Promise<{
-    snapshots: GoalContracts.KeyResultWeightSnapshotServerDTO[];
+    snapshots: KeyResultWeightSnapshotServerDTO[];
     pagination: {
       total: number;
       page: number;
@@ -309,3 +309,4 @@ export class WeightSnapshotWebApplicationService {
  * Weight Snapshot Web Application Service 单例
  */
 export const weightSnapshotWebApplicationService = new WeightSnapshotWebApplicationService();
+

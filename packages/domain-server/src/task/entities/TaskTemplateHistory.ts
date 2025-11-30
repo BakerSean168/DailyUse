@@ -3,13 +3,13 @@
  * 任务模板历史记录 - 实体
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type {
+  TaskTemplateHistoryClientDTO,
+  TaskTemplateHistoryPersistenceDTO,
+  TaskTemplateHistoryServer,
+  TaskTemplateHistoryServerDTO,
+} from '@dailyuse/contracts/task';
 import { Entity } from '@dailyuse/utils';
-
-type ITaskTemplateHistory = TaskContracts.TaskTemplateHistoryServer;
-type TaskTemplateHistoryServerDTO = TaskContracts.TaskTemplateHistoryServerDTO;
-type TaskTemplateHistoryClientDTO = TaskContracts.TaskTemplateHistoryClientDTO;
-type TaskTemplateHistoryPersistenceDTO = TaskContracts.TaskTemplateHistoryPersistenceDTO;
 
 /**
  * TaskTemplateHistory 实体
@@ -19,7 +19,7 @@ type TaskTemplateHistoryPersistenceDTO = TaskContracts.TaskTemplateHistoryPersis
  * - 有生命周期
  * - 可变性
  */
-export class TaskTemplateHistory extends Entity implements ITaskTemplateHistory {
+export class TaskTemplateHistory extends Entity implements TaskTemplateHistoryServer {
   private _templateUuid: string;
   private _action: string;
   private _changes: any | null;

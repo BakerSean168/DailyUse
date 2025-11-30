@@ -8,7 +8,7 @@ import type {
   AIModel,
   GenerationTaskType,
   TokenUsageServerDTO,
-} from '@dailyuse/contracts';
+} from '@dailyuse/contracts/ai';
 
 /**
  * AI 生成请求参数

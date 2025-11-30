@@ -86,7 +86,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useScheduleEvent } from '../composables/useScheduleEvent';
-import { ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 import CreateScheduleDialog from './CreateScheduleDialog.vue';
 
 // ===== Composables =====
@@ -136,7 +137,7 @@ function getPriorityColor(priority: number | null | undefined): string {
 /**
  * 点击日程
  */
-function handleScheduleClick(schedule: ScheduleContracts.ScheduleClientDTO) {
+function handleScheduleClick(schedule: ScheduleClientDTO) {
   setActiveSchedule(schedule.uuid);
   // TODO: 打开日程详情对话框或导航到详情页面
 }
@@ -168,3 +169,4 @@ function handleScheduleCreated() {
   border-bottom: none;
 }
 </style>
+

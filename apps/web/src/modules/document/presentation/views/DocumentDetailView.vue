@@ -28,17 +28,9 @@
         <v-card>
           <v-card-title class="d-flex justify-space-between align-center">
             <div>
-              <h2>{{ document.title }}</h2>
+              <h2>{{ document.name }}</h2>
               <div class="text-caption text-medium-emphasis mt-1">
-                当前版本: v{{ document.currentVersion || 1 }}
-                <v-chip
-                  v-if="document.currentVersion && document.currentVersion > 1"
-                  size="x-small"
-                  color="info"
-                  class="ml-2"
-                >
-                  已更新
-                </v-chip>
+                {{ document.path }}
               </div>
             </div>
             
@@ -70,10 +62,10 @@
             <div class="mb-4">
               <v-chip size="small" class="mr-2">
                 <v-icon start size="small">mdi-folder</v-icon>
-                {{ document.folderPath }}
+                {{ getFolderPath(document.path) }}
               </v-chip>
               <v-chip
-                v-for="tag in document.tags"
+                v-for="tag in document.metadata.tags"
                 :key="tag"
                 size="small"
                 class="mr-2"
@@ -92,12 +84,12 @@
             <!-- Document Info -->
             <v-divider class="my-4" />
             <div class="text-caption text-medium-emphasis">
-              创建时间: {{ formatDate(document.createdAt) }}
+              创建时间: {{ document.formattedCreatedAt }}
               <span class="mx-2">·</span>
-              更新时间: {{ formatDate(document.updatedAt) }}
-              <span v-if="document.lastVersionedAt" class="mx-2">·</span>
-              <span v-if="document.lastVersionedAt">
-                最后版本化: {{ formatDate(document.lastVersionedAt) }}
+              更新时间: {{ document.formattedUpdatedAt }}
+              <span v-if="document.formattedLastModified" class="mx-2">·</span>
+              <span v-if="document.formattedLastModified">
+                最后修改: {{ document.formattedLastModified }}
               </span>
             </div>
           </v-card-text>
@@ -109,11 +101,11 @@
         <v-expand-transition>
           <div v-show="showVersionHistory">
             <VersionHistoryList
-              :versions="versions"
-              :total-versions="totalVersions"
-              :loading="versionLoading"
-              :has-versions="hasVersions"
-              :has-more-pages="hasMorePages"
+              :versions="versions ?? []"
+              :total-versions="totalVersions ?? 0"
+              :loading="versionLoading ?? false"
+              :has-versions="hasVersions ?? false"
+              :has-more-pages="hasMorePages ?? false"
               @select-version="handleSelectVersion"
               @compare="handleCompareVersion"
               @restore="handleRestoreVersion"
@@ -132,13 +124,13 @@
         <v-card-text>
           <v-form ref="formRef">
             <v-text-field
-              v-model="editForm.title"
-              label="标题"
-              :rules="[(v) => !!v || '标题不能为空']"
+              v-model="editForm.name"
+              label="文件名"
+              :rules="[(v) => !!v || '文件名不能为空']"
             />
             <v-text-field
-              v-model="editForm.folderPath"
-              label="文件夹路径"
+              v-model="editForm.path"
+              label="文件路径"
               :rules="[(v) => !!v || '路径不能为空']"
             />
             <v-textarea
@@ -207,13 +199,18 @@ import { marked } from 'marked';
 import VersionHistoryList from '../components/VersionHistoryList.vue';
 import VersionDiffViewer from '../components/VersionDiffViewer.vue';
 import { useDocumentVersion } from '../composables/useDocumentVersion';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO, DocumentVersionClientDTO } from '@dailyuse/contracts/editor';
+import { DocumentLanguage, IndexStatus } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
-type DocumentVersionClientDTO = DocumentContracts.DocumentVersionClientDTO;
 
 const route = useRoute();
 const router = useRouter();
+
+// Helper function
+function getFolderPath(path: string): string {
+  const lastSlash = path.lastIndexOf('/');
+  return lastSlash > 0 ? path.substring(0, lastSlash) : '/';
+}
 
 // Document State
 const document = ref<DocumentClientDTO | null>(null);
@@ -223,9 +220,9 @@ const error = ref<string | null>(null);
 // Edit State
 const editDialog = ref(false);
 const editForm = ref({
-  title: '',
+  name: '',
   content: '',
-  folderPath: '',
+  path: '',
   tags: [] as string[],
 });
 const formRef = ref();
@@ -279,17 +276,35 @@ async function loadDocument() {
     // document.value = response;
     
     // Mock data for demo
+    const now = Date.now();
     document.value = {
       uuid: documentUuid.value,
-      title: '示例文档',
+      workspaceUuid: 'workspace-1',
+      accountUuid: 'account-1',
+      path: '/personal/notes/example.md',
+      name: '示例文档.md',
+      language: DocumentLanguage.MARKDOWN,
       content: '# 欢迎\n\n这是一个示例文档，支持 Markdown 格式。\n\n## 功能特性\n\n- 版本历史\n- Git 风格 Diff\n- 版本恢复',
-      folderPath: '/personal/notes',
-      tags: ['示例', 'Markdown'],
-      currentVersion: 3,
-      lastVersionedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as DocumentClientDTO;
+      contentHash: 'hash123',
+      metadata: {
+        tags: ['示例', 'Markdown'],
+        category: null,
+        wordCount: 50,
+        characterCount: 200,
+        readingTime: 1,
+        wordCountFormatted: '50 字',
+        readingTimeFormatted: '1 分钟',
+      },
+      indexStatus: IndexStatus.INDEXED,
+      lastIndexedAt: now,
+      lastModifiedAt: now,
+      createdAt: now,
+      updatedAt: now,
+      formattedLastIndexed: new Date(now).toLocaleString('zh-CN'),
+      formattedLastModified: new Date(now).toLocaleString('zh-CN'),
+      formattedCreatedAt: new Date(now).toLocaleString('zh-CN'),
+      formattedUpdatedAt: new Date(now).toLocaleString('zh-CN'),
+    };
     
     // Load version history if composable is available
     if (loadVersions) {
@@ -309,10 +324,16 @@ function handleSelectVersion(version: DocumentVersionClientDTO) {
 }
 
 async function handleCompareVersion(version: DocumentVersionClientDTO) {
-  if (!document.value?.currentVersion || !compareVersions) return;
+  if (!compareVersions) return;
+  
+  const versionsList = versions?.value ?? [];
+  if (!versionsList.length) return;
+  
+  // Compare with latest version
+  const latestVersion = versionsList[0]?.versionNumber || 1;
   
   try {
-    await compareVersions(version.versionNumber, document.value.currentVersion);
+    await compareVersions(version.versionNumber, latestVersion);
     comparisonDialog.value = true;
   } catch (err) {
     console.error('Compare version error:', err);
@@ -348,12 +369,18 @@ async function handleSave() {
     
     // Update local state
     if (document.value) {
+      const now = Date.now();
       document.value = {
         ...document.value,
-        ...editForm.value,
-        currentVersion: (document.value.currentVersion || 1) + 1,
-        updatedAt: new Date().toISOString(),
-        lastVersionedAt: new Date().toISOString(),
+        name: editForm.value.name,
+        path: editForm.value.path,
+        content: editForm.value.content,
+        metadata: {
+          ...document.value.metadata,
+          tags: editForm.value.tags,
+        },
+        updatedAt: now,
+        formattedUpdatedAt: new Date(now).toLocaleString('zh-CN'),
       };
     }
     
@@ -368,11 +395,6 @@ async function handleSave() {
   } finally {
     saving.value = false;
   }
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-CN');
 }
 
 // Lifecycle
@@ -448,3 +470,4 @@ onMounted(() => {
   padding: 0;
 }
 </style>
+

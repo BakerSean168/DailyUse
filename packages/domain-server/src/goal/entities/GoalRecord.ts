@@ -8,17 +8,17 @@
  */
 
 import { Entity } from '@dailyuse/utils';
-import type { GoalContracts } from '@dailyuse/contracts';
-
-type IGoalRecordServer = GoalContracts.GoalRecordServer;
-type GoalRecordServerDTO = GoalContracts.GoalRecordServerDTO;
-type GoalRecordClientDTO = GoalContracts.GoalRecordClientDTO;
-type GoalRecordPersistenceDTO = GoalContracts.GoalRecordPersistenceDTO;
+import type {
+  GoalRecordClientDTO,
+  GoalRecordPersistenceDTO,
+  GoalRecordServer,
+  GoalRecordServerDTO,
+} from '@dailyuse/contracts/goal';
 
 /**
  * GoalRecord 实体
  */
-export class GoalRecord extends Entity implements IGoalRecordServer {
+export class GoalRecord extends Entity implements GoalRecordServer {
   // ===== 私有字段 =====
   private _keyResultUuid: string; // ⚠️ 所属 KeyResult 的 UUID
   private _goalUuid: string; // ⚠️ 所属 Goal 的 UUID

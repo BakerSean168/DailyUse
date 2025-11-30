@@ -3,15 +3,12 @@
  * 任务提醒配置 - 不可变值对象
  */
 
-import type { TaskContracts } from '@dailyuse/contracts';
+import type { ReminderTimeUnit, TaskReminderConfigClientDTO, TaskReminderConfigPersistenceDTO, TaskReminderConfigServer, TaskReminderConfigServerDTO } from '@dailyuse/contracts/task';
+import { TaskReminderType } from '@dailyuse/contracts/task';
 import { ValueObject } from '@dailyuse/utils';
 
-type ITaskReminderConfig = TaskContracts.TaskReminderConfigServerDTO;
-type ReminderType = TaskContracts.ReminderType;
-type ReminderTimeUnit = TaskContracts.ReminderTimeUnit;
-
 interface ReminderTrigger {
-  type: ReminderType;
+  type: TaskReminderType;
   absoluteTime?: number | null;
   relativeValue?: number | null;
   relativeUnit?: ReminderTimeUnit | null;
@@ -26,7 +23,7 @@ interface ReminderTrigger {
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class TaskReminderConfig extends ValueObject implements ITaskReminderConfig {
+export class TaskReminderConfig extends ValueObject implements TaskReminderConfigServer {
   public readonly enabled: boolean;
   public readonly triggers: ReminderTrigger[];
 
@@ -74,14 +71,14 @@ export class TaskReminderConfig extends ValueObject implements ITaskReminderConf
   /**
    * DTO 转换
    */
-  public toServerDTO(): TaskContracts.TaskReminderConfigServerDTO {
+  public toServerDTO(): TaskReminderConfigServerDTO {
     return {
       enabled: this.enabled,
       triggers: this.triggers.map((t) => ({ ...t })),
     };
   }
 
-  public toClientDTO(): TaskContracts.TaskReminderConfigClientDTO {
+  public toClientDTO(): TaskReminderConfigClientDTO {
     return {
       enabled: this.enabled,
       triggers: this.triggers.map((t) => ({ ...t })),
@@ -92,7 +89,7 @@ export class TaskReminderConfig extends ValueObject implements ITaskReminderConf
     };
   }
 
-  public toPersistenceDTO(): TaskContracts.TaskReminderConfigPersistenceDTO {
+  public toPersistenceDTO(): TaskReminderConfigPersistenceDTO {
     return {
       enabled: this.enabled,
       triggers: JSON.stringify(this.triggers),
@@ -102,16 +99,14 @@ export class TaskReminderConfig extends ValueObject implements ITaskReminderConf
   /**
    * 静态工厂方法
    */
-  public static fromServerDTO(dto: TaskContracts.TaskReminderConfigServerDTO): TaskReminderConfig {
+  public static fromServerDTO(dto: TaskReminderConfigServerDTO): TaskReminderConfig {
     return new TaskReminderConfig({
       enabled: dto.enabled,
       triggers: dto.triggers,
     });
   }
 
-  public static fromPersistenceDTO(
-    dto: TaskContracts.TaskReminderConfigPersistenceDTO,
-  ): TaskReminderConfig {
+  public static fromPersistenceDTO(dto: TaskReminderConfigPersistenceDTO): TaskReminderConfig {
     return new TaskReminderConfig({
       enabled: dto.enabled,
       triggers: JSON.parse(dto.triggers),

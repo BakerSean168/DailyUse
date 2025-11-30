@@ -13,12 +13,13 @@
  */
 
 import { AggregateRoot } from '@dailyuse/utils';
-import type { ScheduleContracts } from '@dailyuse/contracts';
-
-type ScheduleServerDTO = ScheduleContracts.ScheduleServerDTO;
-type ConflictDetectionResult = ScheduleContracts.ConflictDetectionResult;
-type ConflictDetail = ScheduleContracts.ConflictDetail;
-type ConflictSuggestion = ScheduleContracts.ConflictSuggestion;
+import type {
+  ConflictDetail,
+  ConflictDetectionResult,
+  ConflictSuggestion,
+  ScheduleClientDTO,
+  ScheduleServerDTO,
+} from '@dailyuse/contracts/schedule';
 
 /**
  * Schedule 聚合根
@@ -326,7 +327,7 @@ export class Schedule extends AggregateRoot {
    * 转换为 ClientDTO (发送给前端)
    * Story 4-1: Schedule Event CRUD
    */
-  public toClientDTO(): ScheduleContracts.ScheduleClientDTO {
+  public toClientDTO(): ScheduleClientDTO {
     return {
       uuid: this._uuid,
       accountUuid: this._accountUuid,

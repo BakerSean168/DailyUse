@@ -26,12 +26,12 @@ import { ScheduleEventPublisher } from '../ScheduleEventPublisher';
 import { ReminderContainer } from '../../../../reminder/infrastructure/di/ReminderContainer';
 import { ScheduleContainer } from '../../../infrastructure/di/ScheduleContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import type { ReminderTemplateClientDTO, ReminderInstanceClientDTO } from '@dailyuse/contracts/reminder';
 import { 
   ScheduleStrategyNotFoundError,
   SourceEntityNoScheduleRequiredError,
   ScheduleTaskCreationError,
-} from '@dailyuse/domain-server';
+} from '@dailyuse/domain-server/schedule';
 
 const logger = createLogger('ReminderToScheduleIntegrationTest');
 
@@ -147,17 +147,17 @@ describe('Reminder to Schedule Integration Test', () => {
         accountUuid: testAccountUuid,
         title: '集成测试提醒',
         description: '这是一个用于测试 Reminder → Schedule 集成流程的提醒',
-        type: 'GENERAL' as ReminderContracts.ReminderType,
+        type: 'GENERAL' as ReminderType,
         trigger: {
-          type: 'TIME' as ReminderContracts.TriggerType,
+          type: 'TIME' as TriggerType,
           timeConfig: {
             scheduleTime: Date.now() + 3600000, // 1小时后
           },
-        } as ReminderContracts.TriggerConfigServerDTO,
+        } as TriggerConfigServerDTO,
         recurrence: {
-          pattern: 'DAILY' as ReminderContracts.RecurrencePattern,
+          pattern: 'DAILY' as RecurrencePattern,
           interval: 1,
-        } as ReminderContracts.RecurrenceConfigServerDTO,
+        } as RecurrenceConfigServerDTO,
         activeTime: {
           enabled: true,
           timeRanges: [
@@ -166,11 +166,11 @@ describe('Reminder to Schedule Integration Test', () => {
               endTime: '18:00',
             },
           ],
-        } as ReminderContracts.ActiveTimeConfigServerDTO,
+        } as ActiveTimeConfigServerDTO,
         notificationConfig: {
-          channels: ['DESKTOP' as ReminderContracts.NotificationChannel],
-          priority: 'NORMAL' as ReminderContracts.NotificationPriority,
-        } as ReminderContracts.NotificationConfigServerDTO,
+          channels: ['DESKTOP' as NotificationChannel],
+          priority: 'NORMAL' as NotificationPriority,
+        } as NotificationConfigServerDTO,
         importanceLevel: 'NORMAL' as any,
         tags: ['integration-test', 'schedule-test'],
       };
@@ -336,13 +336,13 @@ describe('Reminder to Schedule Integration Test', () => {
         const reminderParams = {
           accountUuid: testAccountUuid,
           title: '日志测试提醒',
-          type: 'GENERAL' as ReminderContracts.ReminderType,
+          type: 'GENERAL' as ReminderType,
           trigger: {
-            type: 'TIME' as ReminderContracts.TriggerType,
+            type: 'TIME' as TriggerType,
             timeConfig: {
               scheduleTime: Date.now() + 7200000, // 2小时后
             },
-          } as ReminderContracts.TriggerConfigServerDTO,
+          } as TriggerConfigServerDTO,
           activeTime: {
             enabled: true,
             timeRanges: [
@@ -351,11 +351,11 @@ describe('Reminder to Schedule Integration Test', () => {
                 endTime: '23:59',
               },
             ],
-          } as ReminderContracts.ActiveTimeConfigServerDTO,
+          } as ActiveTimeConfigServerDTO,
           notificationConfig: {
-            channels: ['DESKTOP' as ReminderContracts.NotificationChannel],
-            priority: 'NORMAL' as ReminderContracts.NotificationPriority,
-          } as ReminderContracts.NotificationConfigServerDTO,
+            channels: ['DESKTOP' as NotificationChannel],
+            priority: 'NORMAL' as NotificationPriority,
+          } as NotificationConfigServerDTO,
         };
 
         const reminder = await reminderService.createReminderTemplate(reminderParams);
@@ -409,18 +409,18 @@ describe('Reminder to Schedule Integration Test', () => {
         accountUuid: testAccountUuid,
         title: '端到端测试提醒',
         description: '用于验证数据一致性',
-        type: 'HABIT' as ReminderContracts.ReminderType,
+        type: 'HABIT' as ReminderType,
         trigger: {
-          type: 'TIME' as ReminderContracts.TriggerType,
+          type: 'TIME' as TriggerType,
           timeConfig: {
             scheduleTime: Date.now() + 86400000, // 24小时后
           },
-        } as ReminderContracts.TriggerConfigServerDTO,
+        } as TriggerConfigServerDTO,
         recurrence: {
-          pattern: 'WEEKLY' as ReminderContracts.RecurrencePattern,
+          pattern: 'WEEKLY' as RecurrencePattern,
           interval: 1,
           daysOfWeek: [1, 3, 5], // 周一、周三、周五
-        } as ReminderContracts.RecurrenceConfigServerDTO,
+        } as RecurrenceConfigServerDTO,
         activeTime: {
           enabled: true,
           timeRanges: [
@@ -429,11 +429,11 @@ describe('Reminder to Schedule Integration Test', () => {
               endTime: '20:00',
             },
           ],
-        } as ReminderContracts.ActiveTimeConfigServerDTO,
+        } as ActiveTimeConfigServerDTO,
         notificationConfig: {
-          channels: ['DESKTOP' as ReminderContracts.NotificationChannel, 'EMAIL' as ReminderContracts.NotificationChannel],
-          priority: 'HIGH' as ReminderContracts.NotificationPriority,
-        } as ReminderContracts.NotificationConfigServerDTO,
+          channels: ['DESKTOP' as NotificationChannel, 'EMAIL' as NotificationChannel],
+          priority: 'HIGH' as NotificationPriority,
+        } as NotificationConfigServerDTO,
         importanceLevel: 'HIGH' as any,
         tags: ['e2e-test', 'habit', 'schedule'],
         color: '#FF5733',
@@ -499,3 +499,5 @@ describe('Reminder to Schedule Integration Test', () => {
     }, 10000);
   });
 });
+
+

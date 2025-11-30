@@ -3,9 +3,8 @@
  * Epic 10 Story 10-2: Resource CRUD + Markdown 编辑器
  */
 import type { IApiClient } from '@/shared/api/core/types';
-import type { RepositoryContracts } from '@dailyuse/contracts';
+import type { RepositoryServerDTO, ResourceServerDTO, ResourceClientDTO } from '@dailyuse/contracts/repository';
 
-type ResourceClientDTO = RepositoryContracts.ResourceClientDTO;
 
 export interface CreateResourceDTO {
   repositoryUuid: string;
@@ -63,3 +62,5 @@ export class ResourceApiClient {
     await this.api.delete(`/resources/${uuid}`);
   }
 }
+
+

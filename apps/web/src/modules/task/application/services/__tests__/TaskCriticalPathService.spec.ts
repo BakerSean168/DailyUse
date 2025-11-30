@@ -5,10 +5,10 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { taskCriticalPathService } from '../TaskCriticalPathService';
-import { TaskContracts } from '@dailyuse/contracts';
+import { TaskTemplateStatus, TaskType } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
 
 // 创建测试任务
 function createTestTask(uuid: string, title: string, estimatedMinutes: number): TaskForDAG {
@@ -453,3 +453,4 @@ describe('TaskCriticalPathService', () => {
     });
   });
 });
+

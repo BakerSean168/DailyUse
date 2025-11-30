@@ -33,9 +33,8 @@
 
 <script setup lang="ts">
 import DocumentCard from './DocumentCard.vue';
-import { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
-type DocumentClientDTO = DocumentContracts.DocumentClientDTO;
 
 interface Props {
   documents: DocumentClientDTO[];
@@ -58,3 +57,4 @@ defineEmits<{
   'page-change': [page: number];
 }>();
 </script>
+

@@ -3,12 +3,8 @@
  * 会话布局 - 客户端值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type { ISessionLayoutClient, SessionLayoutClient, SessionLayoutClientDTO, SessionLayoutServerDTO } from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type ISessionLayoutClient = EditorContracts.ISessionLayoutClient;
-type SessionLayoutServerDTO = EditorContracts.SessionLayoutServerDTO;
-type SessionLayoutClientDTO = EditorContracts.SessionLayoutClientDTO;
 
 /**
  * SessionLayout 值对象

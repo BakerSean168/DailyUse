@@ -4,13 +4,9 @@
  * 实现 ITaskMetadataClient 接口
  */
 
-import type { ScheduleContracts } from '@dailyuse/contracts';
+import type { ITaskMetadataClient, TaskMetadataClientDTO, TaskMetadataServerDTO } from '@dailyuse/contracts/schedule';
+import { TaskPriority } from '@dailyuse/contracts/schedule';
 import { ValueObject } from '@dailyuse/utils';
-
-type ITaskMetadataClient = ScheduleContracts.ITaskMetadataClient;
-type TaskMetadataServerDTO = ScheduleContracts.TaskMetadataServerDTO;
-type TaskMetadataClientDTO = ScheduleContracts.TaskMetadataClientDTO;
-type TaskPriority = ScheduleContracts.TaskPriority;
 
 /**
  * TaskMetadataClient 值对象

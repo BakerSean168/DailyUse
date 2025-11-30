@@ -13,21 +13,35 @@
 
 import type {
   ITaskStatisticsRepository,
-  IGoalStatisticsRepository,
-  IReminderStatisticsRepository,
-  IScheduleStatisticsRepository,
-  TaskStatistics,
-  GoalStatistics,
-  ReminderStatistics,
-  ScheduleStatistics,
-} from '@dailyuse/domain-server';
-import { DashboardContracts } from '@dailyuse/contracts';
+} from '@dailyuse/domain-server/task';
 import type {
-  TaskContracts,
-  GoalContracts,
-  ReminderContracts,
-  ScheduleContracts,
-} from '@dailyuse/contracts';
+  IGoalStatisticsRepository,
+} from '@dailyuse/domain-server/goal';
+import type {
+  IReminderStatisticsRepository,
+} from '@dailyuse/domain-server/reminder';
+import type {
+  IScheduleStatisticsRepository,
+} from '@dailyuse/domain-server/schedule';
+import {
+  TaskStatistics,
+} from '@dailyuse/domain-server/task';
+import {
+  GoalStatistics,
+} from '@dailyuse/domain-server/goal';
+import {
+  ReminderStatistics,
+} from '@dailyuse/domain-server/reminder';
+import {
+  ScheduleStatistics,
+} from '@dailyuse/domain-server/schedule';
+import type {
+  DashboardStatisticsClientDTO,
+} from '@dailyuse/contracts/dashboard';
+import type { TaskStatisticsClientDTO } from '@dailyuse/contracts/task';
+import type { GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
+import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
+import type { ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 import { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
 import type { StatisticsCacheService } from '../../infrastructure/services/StatisticsCacheService';
 
@@ -87,7 +101,7 @@ export class DashboardStatisticsApplicationService {
    */
   async getDashboardStatistics(
     accountUuid: string,
-  ): Promise<DashboardContracts.DashboardStatisticsClientDTO> {
+  ): Promise<DashboardStatisticsClientDTO> {
     const startTime = Date.now();
     console.log(`[Dashboard] 开始获取账户 ${accountUuid} 的统计数据`);
 
@@ -128,7 +142,7 @@ export class DashboardStatisticsApplicationService {
    */
   private async aggregateStatistics(
     accountUuid: string,
-  ): Promise<DashboardContracts.DashboardStatisticsClientDTO> {
+  ): Promise<DashboardStatisticsClientDTO> {
     // 并行查询 4 个模块的统计数据
     const [taskStats, goalStats, reminderStats, scheduleStats] = await Promise.all([
       this.getOrCreateTaskStatistics(accountUuid),
@@ -151,21 +165,22 @@ export class DashboardStatisticsApplicationService {
       scheduleStatsDto,
     });
 
-    // 构建 Dashboard DTO
+    // 构建 Dashboard DTO (符合 DashboardStatisticsClientDTO 接口)
     return {
-      userId: accountUuid,
+      accountUuid,
       summary: {
-        totalTasks: taskStatsDto.totalTasks,
-        totalGoals: goalStatsDto.totalGoals,
-        totalReminders: reminderStatsDto.templateStats.totalTemplates,
-        totalSchedules: scheduleStatsDto.totalTasks,
+        totalTasks: taskStatsDto.templateStats?.totalTemplates ?? 0,
+        totalGoals: goalStatsDto.totalGoals ?? 0,
+        totalReminders: reminderStatsDto.templateStats?.totalTemplates ?? 0,
+        totalScheduleTasks: scheduleStatsDto.totalTasks ?? 0,
         overallCompletionRate,
       },
-      taskStatistics: this.mapTaskStatistics(taskStatsDto),
-      goalStatistics: this.mapGoalStatistics(goalStatsDto),
-      reminderStatistics: this.mapReminderStatistics(reminderStatsDto),
-      scheduleStatistics: this.mapScheduleStatistics(scheduleStatsDto),
-      lastUpdated: new Date().toISOString(),
+      taskStats: taskStatsDto,
+      goalStats: goalStatsDto,
+      reminderStats: reminderStatsDto,
+      scheduleStats: scheduleStatsDto,
+      calculatedAt: Date.now(),
+      cacheHit: false,
     };
   }
 
@@ -195,7 +210,7 @@ export class DashboardStatisticsApplicationService {
 
     if (!stats) {
       console.log(`[Dashboard] 账户 ${accountUuid} 没有 GoalStatistics，使用默认值`);
-      return GoalStatistics.createDefault(accountUuid);
+      return GoalStatistics.createEmpty(accountUuid);
     }
 
     return stats;
@@ -206,7 +221,7 @@ export class DashboardStatisticsApplicationService {
 
     if (!stats) {
       console.log(`[Dashboard] 账户 ${accountUuid} 没有 ReminderStatistics，使用默认值`);
-      return ReminderStatistics.createDefault(accountUuid);
+      return ReminderStatistics.create({ accountUuid });
     }
 
     return stats;
@@ -217,7 +232,7 @@ export class DashboardStatisticsApplicationService {
 
     if (!stats) {
       console.log(`[Dashboard] 账户 ${accountUuid} 没有 ScheduleStatistics，使用默认值`);
-      return ScheduleStatistics.createDefault(accountUuid);
+      return ScheduleStatistics.createEmpty(accountUuid);
     }
 
     return stats;
@@ -226,16 +241,18 @@ export class DashboardStatisticsApplicationService {
   // ===== 计算方法 =====
 
   private calculateOverallCompletionRate(stats: {
-    taskStatsDto: TaskContracts.TaskStatisticsClientDTO;
-    goalStatsDto: GoalContracts.GoalStatisticsClientDTO;
-    reminderStatsDto: ReminderContracts.ReminderStatisticsClientDTO;
-    scheduleStatsDto: ScheduleContracts.ScheduleStatisticsClientDTO;
+    taskStatsDto: TaskStatisticsClientDTO;
+    goalStatsDto: GoalStatisticsClientDTO;
+    reminderStatsDto: ReminderStatisticsClientDTO;
+    scheduleStatsDto: ScheduleStatisticsClientDTO;
   }): number {
     const rates: number[] = [];
 
     // Task 完成率（今日任务完成率）
-    if (stats.taskStatsDto.todayTasks > 0) {
-      const taskRate = stats.taskStatsDto.todayCompletedTasks / stats.taskStatsDto.todayTasks;
+    const todayInstances = stats.taskStatsDto.instanceStats?.todayInstances ?? 0;
+    const todayCompleted = stats.taskStatsDto.completionStats?.todayCompleted ?? 0;
+    if (todayInstances > 0) {
+      const taskRate = todayCompleted / todayInstances;
       rates.push(taskRate);
     }
 
@@ -246,9 +263,10 @@ export class DashboardStatisticsApplicationService {
     }
 
     // Reminder 触发成功率
-    const totalTriggers = stats.reminderStatsDto.triggerStats.totalTriggers;
+    const totalTriggers = stats.reminderStatsDto.triggerStats?.totalTriggers ?? 0;
+    const successfulTriggers = stats.reminderStatsDto.triggerStats?.successfulTriggers ?? 0;
     if (totalTriggers > 0) {
-      const reminderRate = stats.reminderStatsDto.triggerStats.successfulTriggers / totalTriggers;
+      const reminderRate = successfulTriggers / totalTriggers;
       rates.push(reminderRate);
     }
 
@@ -267,61 +285,5 @@ export class DashboardStatisticsApplicationService {
     const average = sum / rates.length;
 
     return Math.round(average * 100) / 100;
-  }
-
-  // ===== DTO 映射方法 =====
-
-  private mapTaskStatistics(
-    stats: TaskContracts.TaskStatisticsClientDTO,
-  ): DashboardContracts.DashboardStatisticsClientDTO['taskStatistics'] {
-    return {
-      totalTasks: stats.totalTasks,
-      completedTasks: stats.completedTasks,
-      todayTasks: stats.todayTasks,
-      todayCompleted: stats.todayCompletedTasks,
-      todayCompletionRate: stats.todayTasks > 0 ? stats.todayCompletedTasks / stats.todayTasks : 0,
-      weekStats: stats.weekStats || [],
-      tags: stats.tagStats?.map((tag) => tag.tagName) || [],
-    };
-  }
-
-  private mapGoalStatistics(
-    stats: GoalContracts.GoalStatisticsClientDTO,
-  ): DashboardContracts.DashboardStatisticsClientDTO['goalStatistics'] {
-    return {
-      totalGoals: stats.totalGoals,
-      activeGoals: stats.totalGoals - stats.completedGoals - stats.archivedGoals,
-      completedGoals: stats.completedGoals,
-      averageProgress: stats.averageProgress,
-      keyResults: [],
-    };
-  }
-
-  private mapReminderStatistics(
-    stats: ReminderContracts.ReminderStatisticsClientDTO,
-  ): DashboardContracts.DashboardStatisticsClientDTO['reminderStatistics'] {
-    return {
-      totalReminders: stats.templateStats.totalTemplates,
-      activeReminders: stats.templateStats.activeTemplates,
-      triggeredCount: stats.triggerStats.totalTriggers,
-      successCount: stats.triggerStats.successfulTriggers,
-      triggerSuccessRate:
-        stats.triggerStats.totalTriggers > 0
-          ? stats.triggerStats.successfulTriggers / stats.triggerStats.totalTriggers
-          : 0,
-    };
-  }
-
-  private mapScheduleStatistics(
-    stats: ScheduleContracts.ScheduleStatisticsClientDTO,
-  ): DashboardContracts.DashboardStatisticsClientDTO['scheduleStatistics'] {
-    return {
-      totalSchedules: stats.totalTasks,
-      activeSchedules: stats.activeTasks,
-      executedCount: stats.totalExecutions,
-      successCount: stats.successfulExecutions,
-      executionSuccessRate:
-        stats.totalExecutions > 0 ? stats.successfulExecutions / stats.totalExecutions : 0,
-    };
   }
 }

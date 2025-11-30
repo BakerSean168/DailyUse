@@ -1,12 +1,13 @@
 import type { Response } from 'express';
 import type { AuthenticatedRequest } from '@/shared/middlewares/authMiddleware';
 import { FocusSessionApplicationService } from '../../application/services/FocusSessionApplicationService';
-import { createResponseBuilder, ResponseCode, GoalContracts } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
+import { GoalStatus, FocusSessionStatus } from '@dailyuse/contracts/goal';
+import type { GoalServerDTO } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FocusSessionController');
 
-type FocusSessionStatus = GoalContracts.FocusSessionStatus;
 
 /**
  * FocusSession 控制器
@@ -428,3 +429,7 @@ export class FocusSessionController {
     }
   }
 }
+
+
+
+

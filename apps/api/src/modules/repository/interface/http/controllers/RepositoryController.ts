@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { RepositoryApplicationService } from '../../../application/services';
-import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts';
+import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../../shared/middlewares/authMiddleware';
 
@@ -398,3 +398,5 @@ export class RepositoryController {
     }
   }
 }
+
+

@@ -126,7 +126,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
-import { ScheduleContracts } from '@dailyuse/contracts';
+import { SourceModule } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 import { createLogger } from '@dailyuse/utils';
 
 // 组件
@@ -329,3 +330,4 @@ onMounted(async () => {
   margin: 0 auto;
 }
 </style>
+

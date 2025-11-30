@@ -4,9 +4,7 @@
  */
 
 import type { DocumentVersion } from '../entities/DocumentVersion';
-import type { EditorContracts } from '@dailyuse/contracts';
-
-type VersionChangeType = EditorContracts.VersionChangeType;
+import type { VersionChangeType } from '@dailyuse/contracts/editor';
 
 /**
  * DocumentVersion 仓储接口

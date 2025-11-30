@@ -21,9 +21,11 @@
  * - 其他订阅者（邮件、统计等）：通过事件总线异步通知
  */
 
-import { AccountContracts } from '@dailyuse/contracts';
-import type { IAccountRepository, IAuthCredentialRepository } from '@dailyuse/domain-server';
-import { AccountDomainService, AuthenticationDomainService } from '@dailyuse/domain-server';
+import type { AccountServerDTO, AccountClientDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
+import type { IAccountRepository } from '@dailyuse/domain-server/account';
+import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
+import { AccountDomainService } from '@dailyuse/domain-server/account';
+import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
 import { AuthenticationContainer } from '../../../authentication/infrastructure/di/AuthenticationContainer';
 import prisma from '../../../../shared/db/prisma';
@@ -51,7 +53,7 @@ export interface RegisterUserRequest {
  */
 export interface RegisterUserResponse {
   success: boolean;
-  account: AccountContracts.AccountClientDTO;
+  account: AccountClientDTO;
   message: string;
 }
 
@@ -337,3 +339,4 @@ export class RegistrationApplicationService {
     });
   }
 }
+

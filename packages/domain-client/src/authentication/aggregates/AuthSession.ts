@@ -3,15 +3,13 @@
  * 兼容 AuthSessionClient 接口
  */
 
-import { AuthenticationContracts, SessionStatus } from '@dailyuse/contracts';
+import type { AuthSessionClient, AuthSessionClientDTO, AuthSessionServerDTO } from '@dailyuse/contracts/authentication';
+import { SessionStatus } from '@dailyuse/contracts/authentication';
 import { AggregateRoot } from '@dailyuse/utils';
 import { RefreshToken } from '../entities/RefreshToken';
 import { DeviceInfo } from '../value-objects/DeviceInfo';
 import { SessionHistory } from '../entities/SessionHistory';
 
-type IAuthSessionClient = AuthenticationContracts.AuthSessionClient;
-type AuthSessionClientDTO = AuthenticationContracts.AuthSessionClientDTO;
-type AuthSessionServerDTO = AuthenticationContracts.AuthSessionServerDTO;
 
 /**
  * AuthSession 聚合根 (Client)
@@ -21,7 +19,7 @@ type AuthSessionServerDTO = AuthenticationContracts.AuthSessionServerDTO;
  * - 管理子实体（刷新令牌、会话历史等）
  * - 提供会话相关的业务逻辑
  */
-export class AuthSession extends AggregateRoot implements IAuthSessionClient {
+export class AuthSession extends AggregateRoot implements AuthSessionClient {
   // ===== 私有字段 =====
   private _accountUuid: string;
   private _accessToken: string;

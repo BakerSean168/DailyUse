@@ -4,14 +4,8 @@ import { DocumentLink } from '../domain/DocumentLink';
 import { DocumentLinkRepository, DOCUMENT_LINK_REPOSITORY } from '../domain/DocumentLinkRepository.interface';
 import { DocumentRepository, DOCUMENT_REPOSITORY } from '../domain/DocumentRepository.interface';
 import { LinkParser, ParsedLink } from '../infrastructure/LinkParser';
-import type { DocumentContracts } from '@dailyuse/contracts';
+import type { DocumentServerDTO, DocumentVersionServerDTO, DocumentLinkServerDTO } from '@dailyuse/contracts/editor';
 
-type BacklinkDTO = DocumentContracts.BacklinkDTO;
-type BacklinksResponseDTO = DocumentContracts.BacklinksResponseDTO;
-type LinkGraphNodeDTO = DocumentContracts.LinkGraphNodeDTO;
-type LinkGraphEdgeDTO = DocumentContracts.LinkGraphEdgeDTO;
-type LinkGraphResponseDTO = DocumentContracts.LinkGraphResponseDTO;
-type BrokenLinksResponseDTO = DocumentContracts.BrokenLinksResponseDTO;
 
 @Injectable()
 export class DocumentLinkApplicationService {
@@ -271,3 +265,5 @@ export class DocumentLinkApplicationService {
     }
   }
 }
+
+

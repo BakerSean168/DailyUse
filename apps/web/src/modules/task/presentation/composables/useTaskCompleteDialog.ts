@@ -4,8 +4,9 @@
  */
 
 import { ref } from 'vue';
-import type { TaskContracts } from '@dailyuse/contracts';
-import { GoalContracts } from '@dailyuse/contracts';
+import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO, TaskGoalBindingClientDTO } from '@dailyuse/contracts/task';
+import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import { AggregationMethod } from '@dailyuse/contracts/goal';
 import { useTaskInstance } from './useTaskInstance';
 import { useTaskStore } from '../stores/taskStore';
 import { useGoal } from '@/modules/goal/presentation/composables/useGoal';
@@ -15,7 +16,7 @@ interface GoalBinding {
   goalTitle: string;
   keyResultUuid: string;
   keyResultTitle: string;
-  aggregationMethod: GoalContracts.AggregationMethod;
+  aggregationMethod: AggregationMethod;
   currentValue: number;
   targetValue: number;
   unit?: string;
@@ -83,7 +84,7 @@ export function useTaskCompleteDialog() {
    * 获取 Goal 绑定信息
    */
   async function fetchGoalBindingInfo(
-    binding: TaskContracts.TaskGoalBindingClientDTO
+    binding: TaskGoalBindingClientDTO
   ): Promise<GoalBinding | null> {
     try {
       // 从服务器获取 Goal（会使用缓存）
@@ -96,7 +97,7 @@ export function useTaskCompleteDialog() {
 
       // 查找 KeyResult
       const keyResult = goal.keyResults?.find(
-        (kr: GoalContracts.KeyResultClientDTO) => kr.uuid === binding.keyResultUuid
+        (kr: KeyResultClientDTO) => kr.uuid === binding.keyResultUuid
       );
       if (!keyResult) {
         console.warn('KeyResult not found:', binding.keyResultUuid);
@@ -150,3 +151,4 @@ export function useTaskCompleteDialog() {
     cancelDialog,
   };
 }
+

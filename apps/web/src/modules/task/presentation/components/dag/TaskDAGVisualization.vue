@@ -136,7 +136,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { EChartsOption } from 'echarts';
 import { useEChartsTheme, getEChartsThemeColors } from '@/shared/composables/useEChartsTheme';
 
-import { TaskContracts } from '@dailyuse/contracts';
+import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskDependencyGraphService } from '@/modules/task/application/services/TaskDependencyGraphService';
 import type {
@@ -149,7 +149,6 @@ import { dagExportService } from '@/modules/goal/application/services/DAGExportS
 
 // 类型别名
 type TaskClientDTO = TaskForDAG;
-type TaskDependencyClientDTO = TaskContracts.TaskDependencyClientDTO;
 
 // 注册 ECharts 组件
 use([GraphChart, TitleComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
@@ -766,3 +765,4 @@ onMounted(() => {
   gap: 12px;
 }
 </style>
+

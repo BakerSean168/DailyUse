@@ -160,8 +160,13 @@ import { logo, logo128, defaultAvatar } from '@dailyuse/assets/images';
 import { audioService, type SoundType } from '@/services/AudioService';
 import { AuthManager } from '@/shared/api';
 import { reminderApiClient } from '@/modules/reminder/infrastructure/api/reminderApiClient';
-import { ReminderContracts, ImportanceLevel } from '@dailyuse/contracts';
+import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import type { ReminderTemplateClientDTO, CreateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
+import { ReminderType, TriggerType, RecurrenceType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { generateUUID } from '@dailyuse/utils';
+
+// Type alias
+type CreateReminderTemplateRequestDTO = CreateReminderTemplateRequest;
 
 // 音频控制状态
 const volume = ref(50);
@@ -274,40 +279,40 @@ const createRecurringReminder = async () => {
     const templateUuid = generateUUID();
     const now = Date.now();
 
-    const request: ReminderContracts.CreateReminderTemplateRequestDTO = {
+    const request: CreateReminderTemplateRequestDTO = {
       title: '测试提醒 - 每1分钟',
       description: '这是一个测试提醒，每分钟触发一次',
-      type: ReminderContracts.ReminderType.RECURRING,
+      type: ReminderType.RECURRING,
       trigger: {
-        type: ReminderContracts.TriggerType.FIXED_TIME,
+        type: TriggerType.FIXED_TIME,
         fixedTime: {
           time: '09:00',
         },
         interval: null,
       },
       recurrence: {
-        type: ReminderContracts.RecurrenceType.DAILY,
-        interval: 1,
-        daysOfWeek: null,
-        daysOfMonth: null,
+        type: RecurrenceType.DAILY,
+        daily: { interval: 1 },
+        weekly: null,
+        customDays: null,
       },
       activeTime: {
         activatedAt: now,
       },
-      activeHours: null,
+      activeHours: undefined,
       notificationConfig: {
-        channels: [ReminderContracts.NotificationChannel.IN_APP],
+        channels: [NotificationChannel.IN_APP],
         title: '测试提醒',
         body: '这是一个测试提醒，每分钟触发一次',
-        sound: 'default',
-        vibration: null,
-        actions: null,
+        sound: { enabled: true, soundName: 'default' },
+        vibration: undefined,
+        actions: undefined,
       },
       importanceLevel: ImportanceLevel.Moderate,
       tags: ['测试', '循环'],
-      color: null,
-      icon: null,
-      groupUuid: null,
+      color: undefined,
+      icon: undefined,
+      groupUuid: undefined,
     };
 
     console.log('📤 发送创建请求:', request);
@@ -340,3 +345,4 @@ const createRecurringReminder = async () => {
   padding: 16px;
 }
 </style>
+

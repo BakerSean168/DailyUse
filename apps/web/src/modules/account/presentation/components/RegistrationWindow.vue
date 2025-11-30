@@ -95,12 +95,15 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import type { AuthenticationContracts } from '@dailyuse/contracts';
+import type { RegisterRequest } from '@dailyuse/contracts/authentication';
 // composables
 import { useAuth } from '@/modules/authentication/presentation/composables/useAuth';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 // utils
 import { passwordRules, usernameRules, emailRules } from '@/shared/utils/validations/rules';
+
+// Type alias
+type RegisterRequestDTO = RegisterRequest;
 
 const { register, login } = useAuth();
 const { showSuccess, showError } = useSnackbar();
@@ -128,7 +131,7 @@ const handleRegistration = async (formData: RegistrationByUsernameAndPasswordFor
 
   loading.value = true;
   try {
-    const request: AuthenticationContracts.RegisterRequestDTO = {
+    const request: RegisterRequestDTO = {
       username: formData.username,
       email: formData.email,
       password: formData.password,
@@ -232,3 +235,4 @@ const acceptTerms = () => {
 </script>
 
 <style lang="css" scoped></style>
+

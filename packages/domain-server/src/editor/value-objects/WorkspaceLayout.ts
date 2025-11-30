@@ -3,13 +3,13 @@
  * 工作区布局配置 - 不可变值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type {
+  IWorkspaceLayoutServer,
+  WorkspaceLayoutClientDTO,
+  WorkspaceLayoutPersistenceDTO,
+  WorkspaceLayoutServerDTO,
+} from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type IWorkspaceLayout = EditorContracts.IWorkspaceLayoutServer;
-type WorkspaceLayoutServerDTO = EditorContracts.WorkspaceLayoutServerDTO;
-type WorkspaceLayoutClientDTO = EditorContracts.WorkspaceLayoutClientDTO;
-type WorkspaceLayoutPersistenceDTO = EditorContracts.WorkspaceLayoutPersistenceDTO;
 
 /**
  * WorkspaceLayout 值对象
@@ -20,7 +20,7 @@ type WorkspaceLayoutPersistenceDTO = EditorContracts.WorkspaceLayoutPersistenceD
  * - 无标识符
  * - 可以自由复制和替换
  */
-export class WorkspaceLayout extends ValueObject implements IWorkspaceLayout {
+export class WorkspaceLayout extends ValueObject implements WorkspaceLayout {
   public readonly sidebarPosition: 'left' | 'right';
   public readonly sidebarWidth: number;
   public readonly panelPosition: 'bottom' | 'right';
@@ -75,7 +75,7 @@ export class WorkspaceLayout extends ValueObject implements IWorkspaceLayout {
   /**
    * 值相等性比较
    */
-  public equals(other: IWorkspaceLayout): boolean {
+  public equals(other: IWorkspaceLayoutServer): boolean {
     if (!(other instanceof WorkspaceLayout)) {
       return false;
     }

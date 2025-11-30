@@ -5,7 +5,7 @@
  */
 import type { Request, Response, NextFunction } from 'express';
 import { ResourceApplicationService } from '../../../application/services/ResourceApplicationService';
-import { ResourceType } from '@dailyuse/contracts';
+import { ResourceType } from '@dailyuse/contracts/repository';
 
 export class ResourceController {
   /**
@@ -106,3 +106,5 @@ export class ResourceController {
     }
   };
 }
+
+

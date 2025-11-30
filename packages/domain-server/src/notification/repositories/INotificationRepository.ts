@@ -9,10 +9,7 @@
  */
 
 import type { Notification } from '../aggregates/Notification';
-import type { NotificationContracts } from '@dailyuse/contracts';
-
-type NotificationStatus = NotificationContracts.NotificationStatus;
-type NotificationCategory = NotificationContracts.NotificationCategory;
+import { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
 
 /**
  * INotificationRepository 仓储接口

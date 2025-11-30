@@ -3,15 +3,15 @@
  * GoalStatsWidget - 目标统计 Widget
  */
 import { computed } from 'vue';
-import type { DashboardContracts } from '@dailyuse/contracts';
+import { WidgetSize, type WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 
 interface Props {
-  size?: DashboardContracts.WidgetSize;
+  size?: WidgetSize;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  size: 'medium' as DashboardContracts.WidgetSize,
+  size: 'medium' as WidgetSize,
 });
 
 const goalStore = useGoalStore();
@@ -102,3 +102,4 @@ const totalGoals = computed(() => goalStatistics.value.total);
   transform: translateY(-4px);
 }
 </style>
+

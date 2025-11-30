@@ -3,17 +3,13 @@
  * 通知元数据 - 不可变值对象
  */
 
-import type { NotificationContracts } from '@dailyuse/contracts';
+import type { NotificationMetadataClientDTO, NotificationMetadataPersistenceDTO, NotificationMetadataServerDTO } from '@dailyuse/contracts/notification';
 import { ValueObject } from '@dailyuse/utils';
-
-type INotificationMetadata = NotificationContracts.NotificationMetadataServerDTO;
-type NotificationMetadataPersistenceDTO = NotificationContracts.NotificationMetadataPersistenceDTO;
-type NotificationMetadataClientDTO = NotificationContracts.NotificationMetadataClientDTO;
 
 /**
  * NotificationMetadata 值对象
  */
-export class NotificationMetadata extends ValueObject implements INotificationMetadata {
+export class NotificationMetadata extends ValueObject implements NotificationMetadata {
   public readonly icon?: string | null;
   public readonly image?: string | null;
   public readonly color?: string | null;
@@ -86,7 +82,7 @@ export class NotificationMetadata extends ValueObject implements INotificationMe
   /**
    * 转换为 Server DTO
    */
-  public toServerDTO(): INotificationMetadata {
+  public toServerDTO(): NotificationMetadataServerDTO {
     return {
       icon: this.icon,
       image: this.image,
@@ -131,21 +127,21 @@ export class NotificationMetadata extends ValueObject implements INotificationMe
   /**
    * 转换为 Contract 接口 (兼容旧代码)
    */
-  public toContract(): INotificationMetadata {
+  public toContract(): NotificationMetadataServerDTO {
     return this.toServerDTO();
   }
 
   /**
    * 从 Server DTO 创建值对象
    */
-  public static fromServerDTO(dto: INotificationMetadata): NotificationMetadata {
+  public static fromServerDTO(dto: NotificationMetadataServerDTO): NotificationMetadata {
     return new NotificationMetadata(dto);
   }
 
   /**
    * 从 Contract 接口创建值对象 (兼容旧代码)
    */
-  public static fromContract(metadata: INotificationMetadata): NotificationMetadata {
+  public static fromContract(metadata: NotificationMetadataServerDTO): NotificationMetadata {
     return NotificationMetadata.fromServerDTO(metadata);
   }
 

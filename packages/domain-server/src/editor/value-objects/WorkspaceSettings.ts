@@ -3,18 +3,18 @@
  * 工作区设置 - 不可变值对象
  */
 
-import type { EditorContracts } from '@dailyuse/contracts';
+import type {
+  IWorkspaceSettingsServer,
+  WorkspaceSettingsClientDTO,
+  WorkspaceSettingsPersistenceDTO,
+  WorkspaceSettingsServerDTO,
+} from '@dailyuse/contracts/editor';
 import { ValueObject } from '@dailyuse/utils';
-
-type IWorkspaceSettings = EditorContracts.IWorkspaceSettingsServer;
-type WorkspaceSettingsServerDTO = EditorContracts.WorkspaceSettingsServerDTO;
-type WorkspaceSettingsClientDTO = EditorContracts.WorkspaceSettingsClientDTO;
-type WorkspaceSettingsPersistenceDTO = EditorContracts.WorkspaceSettingsPersistenceDTO;
 
 /**
  * WorkspaceSettings 值对象
  */
-export class WorkspaceSettings extends ValueObject implements IWorkspaceSettings {
+export class WorkspaceSettings extends ValueObject implements WorkspaceSettings {
   public readonly theme: string | null;
   public readonly fontSize: number | null;
   public readonly fontFamily: string | null;
@@ -87,7 +87,7 @@ export class WorkspaceSettings extends ValueObject implements IWorkspaceSettings
   /**
    * 值相等性比较
    */
-  public equals(other: IWorkspaceSettings): boolean {
+  public equals(other: IWorkspaceSettingsServer): boolean {
     if (!(other instanceof WorkspaceSettings)) {
       return false;
     }

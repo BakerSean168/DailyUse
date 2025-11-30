@@ -11,8 +11,8 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, generateText } from 'ai';
-import { AIProvider } from '@dailyuse/contracts';
-import type { AIContracts } from '@dailyuse/contracts';
+import { AIProvider } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigServerDTO, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
 import {
   BaseAIAdapter,
   type AIGenerationRequest,
@@ -20,8 +20,6 @@ import {
   type AIStreamChunk,
 } from './BaseAIAdapter';
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
-
-type TokenUsageServerDTO = AIContracts.TokenUsageServerDTO;
 
 /**
  * 自定义 Provider 配置
@@ -244,3 +242,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
     }
   }
 }
+
+
+
+

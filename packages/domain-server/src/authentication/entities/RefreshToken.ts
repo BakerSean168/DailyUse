@@ -3,14 +3,10 @@
  * 实现 RefreshTokenServer 接口
  */
 
-import { AuthenticationContracts } from '@dailyuse/contracts';
+import type { RefreshTokenPersistenceDTO, RefreshTokenServer, RefreshTokenServerDTO } from '@dailyuse/contracts/authentication';
 import { Entity, generateUUID } from '@dailyuse/utils';
 
-type IRefreshTokenServer = AuthenticationContracts.RefreshTokenServer;
-type RefreshTokenServerDTO = AuthenticationContracts.RefreshTokenServerDTO;
-type RefreshTokenPersistenceDTO = AuthenticationContracts.RefreshTokenPersistenceDTO;
-
-export class RefreshToken extends Entity implements IRefreshTokenServer {
+export class RefreshToken extends Entity implements RefreshTokenServer {
   public readonly sessionUuid: string;
   public readonly token: string;
   public readonly expiresAt: number;

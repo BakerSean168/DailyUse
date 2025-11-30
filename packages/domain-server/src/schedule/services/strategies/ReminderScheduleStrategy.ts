@@ -7,8 +7,9 @@
  * - 支持每日、每周、自定义日期重复
  */
 
-import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts';
-import type { ReminderContracts } from '@dailyuse/contracts';
+import { SourceModule, Timezone, TaskPriority } from '@dailyuse/contracts/schedule';
+import type { FixedTimeTrigger, IntervalTrigger, RecurrenceConfigServerDTO, ReminderTemplateServerDTO, TriggerConfigServerDTO } from '@dailyuse/contracts/reminder';
+import { ReminderType, WeekDay } from '@dailyuse/contracts/reminder';
 import { ScheduleConfig } from '../../value-objects/ScheduleConfig';
 import { TaskMetadata } from '../../value-objects/TaskMetadata';
 import type {
@@ -39,7 +40,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * - RECURRING 类型即使没有 recurrence 配置，也会创建（使用默认配置）
    * - INTERVAL 触发器会创建周期任务
    */
-  shouldCreateSchedule(sourceEntity: ReminderContracts.ReminderTemplateServerDTO): boolean {
+  shouldCreateSchedule(sourceEntity: ReminderTemplateServerDTO): boolean {
     // 必须启用且激活
     if (!sourceEntity.selfEnabled || sourceEntity.status !== 'ACTIVE') {
       return false;
@@ -59,7 +60,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * 从 Reminder 创建调度配置
    */
   createSchedule(input: ScheduleStrategyInput): ScheduleStrategyOutput {
-    const reminder = input.sourceEntity as ReminderContracts.ReminderTemplateServerDTO;
+    const reminder = input.sourceEntity as ReminderTemplateServerDTO;
 
     if (!this.shouldCreateSchedule(reminder)) {
       throw new Error(
@@ -124,9 +125,9 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    *   - 每隔 N 分钟触发一次
    */
   private generateCronExpression(
-    trigger: ReminderContracts.TriggerConfigServerDTO,
-    recurrence: ReminderContracts.RecurrenceConfigServerDTO | null | undefined,
-    type: ReminderContracts.ReminderType,
+    trigger: TriggerConfigServerDTO,
+    recurrence: RecurrenceConfigServerDTO | null | undefined,
+    type: ReminderType,
   ): string {
     if (trigger.type === 'FIXED_TIME' && trigger.fixedTime) {
       return this.generateFixedTimeCron(trigger.fixedTime, recurrence, type);
@@ -142,9 +143,9 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * 生成固定时间 cron
    */
   private generateFixedTimeCron(
-    fixedTime: ReminderContracts.FixedTimeTrigger,
-    recurrence: ReminderContracts.RecurrenceConfigServerDTO | null | undefined,
-    type: ReminderContracts.ReminderType,
+    fixedTime: FixedTimeTrigger,
+    recurrence: RecurrenceConfigServerDTO | null | undefined,
+    type: ReminderType,
   ): string {
     // 解析时间字符串 "HH:mm"
     const [hourStr, minuteStr] = fixedTime.time.split(':');
@@ -193,7 +194,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
   /**
    * 生成间隔触发 cron
    */
-  private generateIntervalCron(interval: ReminderContracts.IntervalTrigger): string {
+  private generateIntervalCron(interval: IntervalTrigger): string {
     const minutes = interval.minutes;
 
     // 简化：每小时的固定分钟数触发
@@ -224,13 +225,13 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * WeekDay: MONDAY, TUESDAY, ..., SUNDAY
    * Cron: 1=周一, 2=周二, ..., 0=周日
    */
-  private convertWeekDaysToCron(weekDays: ReminderContracts.WeekDay[]): string {
+  private convertWeekDaysToCron(weekDays: WeekDay[]): string {
     if (weekDays.length === 0) {
       return '*'; // 每天
     }
 
     const cronDays = weekDays.map((day) => {
-      const map: Record<ReminderContracts.WeekDay, number> = {
+      const map: Record<WeekDay, number> = {
         MONDAY: 1,
         TUESDAY: 2,
         WEDNESDAY: 3,
@@ -250,7 +251,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * 基于 Reminder 的重要性级别
    */
   private calculatePriority(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
+    reminder: ReminderTemplateServerDTO,
   ): TaskPriority {
     const { importanceLevel } = reminder;
 
@@ -273,7 +274,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
   /**
    * 生成任务标签
    */
-  private generateTags(reminder: ReminderContracts.ReminderTemplateServerDTO): string[] {
+  private generateTags(reminder: ReminderTemplateServerDTO): string[] {
     const tags: string[] = [
       'reminder',
       `type:${reminder.type}`,
@@ -304,7 +305,7 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
   /**
    * 生成任务名称
    */
-  private generateTaskName(reminder: ReminderContracts.ReminderTemplateServerDTO): string {
+  private generateTaskName(reminder: ReminderTemplateServerDTO): string {
     return `Reminder: ${reminder.title}`;
   }
 
@@ -312,8 +313,8 @@ export class ReminderScheduleStrategy implements IScheduleStrategy {
    * 生成任务描述
    */
   private generateTaskDescription(
-    reminder: ReminderContracts.ReminderTemplateServerDTO,
-    trigger: ReminderContracts.TriggerConfigServerDTO,
+    reminder: ReminderTemplateServerDTO,
+    trigger: TriggerConfigServerDTO,
   ): string {
     const typeText = reminder.type === 'ONE_TIME' ? '一次性提醒' : '循环提醒';
     const triggerText = trigger.type === 'FIXED_TIME' ? '固定时间触发' : '间隔触发';

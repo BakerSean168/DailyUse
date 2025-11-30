@@ -7,10 +7,10 @@
  */
 
 import { TaskTemplate, TaskInstance } from '../aggregates';
-import { TaskContracts } from '@dailyuse/contracts';
+import { TASK_INSTANCE_GENERATION_CONFIG } from '@dailyuse/contracts/task';
 
 const { TARGET_GENERATE_AHEAD_DAYS, REFILL_THRESHOLD_DAYS } =
-  TaskContracts.TASK_INSTANCE_GENERATION_CONFIG;
+  TASK_INSTANCE_GENERATION_CONFIG;
 
 export class TaskInstanceGenerationService {
   constructor() {}

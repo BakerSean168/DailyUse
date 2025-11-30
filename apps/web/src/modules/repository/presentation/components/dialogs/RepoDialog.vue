@@ -254,8 +254,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { Repository } from '@dailyuse/domain-client';
-import { RepositoryContracts } from '@dailyuse/contracts';
+import { Repository } from '@dailyuse/domain-client/repository';
+import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 // composables
 import { useRepository } from '../../composables/useRepository';
 
@@ -276,9 +276,9 @@ const repositoryData = ref<{
   uuid?: string;
   name: string;
   description?: string;
-  type: RepositoryContracts.RepositoryType;
+  type: RepositoryType;
   path: string;
-  status: RepositoryContracts.RepositoryStatus;
+  status: RepositoryStatus;
   relatedGoals: string[];
   config: {
     enableGit: boolean;
@@ -289,9 +289,9 @@ const repositoryData = ref<{
 }>({
   name: '',
   description: '',
-  type: RepositoryContracts.RepositoryType.LOCAL,
+  type: RepositoryType.MARKDOWN,
   path: '',
-  status: RepositoryContracts.RepositoryStatus.ACTIVE,
+  status: RepositoryStatus.ACTIVE,
   relatedGoals: [],
   config: {
     enableGit: false,
@@ -312,15 +312,15 @@ watch(
         repositoryData.value = {
           uuid: repository.uuid,
           name: repository.name,
-          description: repository.description,
+          description: repository.description ?? '',
           type: repository.type,
           path: repository.path,
           status: repository.status,
-          relatedGoals: repository.relatedGoals || [],
+          relatedGoals: [],
           config: {
-            enableGit: repository.config.enableGit,
-            autoSync: repository.config.autoSync,
-            enableVersionControl: repository.config.enableVersionControl,
+            enableGit: repository.config?.enableGit ?? false,
+            autoSync: repository.config?.autoSync ?? false,
+            enableVersionControl: repository.config?.enableVersionControl ?? false,
           },
           tags: [], // TODO: 从 Repository 实体中获取 tags
         };
@@ -328,9 +328,9 @@ watch(
         repositoryData.value = {
           name: '',
           description: '',
-          type: RepositoryContracts.RepositoryType.LOCAL,
+          type: RepositoryType.MARKDOWN,
           path: '',
-          status: RepositoryContracts.RepositoryStatus.ACTIVE,
+          status: RepositoryStatus.ACTIVE,
           relatedGoals: [],
           config: {
             enableGit: false,
@@ -355,15 +355,15 @@ const tabs = [
 
 // 表单选项
 const repositoryTypeOptions = [
-  { text: '本地仓库', value: RepositoryContracts.RepositoryType.LOCAL },
-  { text: '远程仓库', value: RepositoryContracts.RepositoryType.REMOTE },
-  { text: '同步仓库', value: RepositoryContracts.RepositoryType.SYNCHRONIZED },
+  { text: 'Markdown 仓库', value: RepositoryType.MARKDOWN },
+  { text: '代码仓库', value: RepositoryType.CODE },
+  { text: '混合仓库', value: RepositoryType.MIXED },
 ];
 
 const statusOptions = [
-  { text: '活跃', value: RepositoryContracts.RepositoryStatus.ACTIVE },
-  { text: '停用', value: RepositoryContracts.RepositoryStatus.INACTIVE },
-  { text: '已归档', value: RepositoryContracts.RepositoryStatus.ARCHIVED },
+  { text: '活跃', value: RepositoryStatus.ACTIVE },
+  { text: '已删除', value: RepositoryStatus.DELETED },
+  { text: '已归档', value: RepositoryStatus.ARCHIVED },
 ];
 
 // 校验规则
@@ -386,7 +386,7 @@ const repositoryDescription = computed({
 
 const repositoryType = computed({
   get: () => repositoryData.value.type,
-  set: (val: RepositoryContracts.RepositoryType) => {
+  set: (val: RepositoryType) => {
     repositoryData.value.type = val;
   },
 });
@@ -400,7 +400,7 @@ const repositoryLocation = computed({
 
 const repositoryStatus = computed({
   get: () => repositoryData.value.status,
-  set: (val: RepositoryContracts.RepositoryStatus) => {
+  set: (val: RepositoryStatus) => {
     repositoryData.value.status = val;
   },
 });
@@ -612,3 +612,4 @@ defineExpose({
   }
 }
 </style>
+
