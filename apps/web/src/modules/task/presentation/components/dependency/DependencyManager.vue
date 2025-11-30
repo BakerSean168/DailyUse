@@ -135,8 +135,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import { DependencyType } from '@dailyuse/contracts/task';
+import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
 import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
 import { taskDependencyValidationService } from '@/modules/task/application/services/TaskDependencyValidationService';
 import { taskAutoStatusService } from '@/modules/task/application/services/TaskAutoStatusService';
@@ -147,7 +147,9 @@ import type {
 import DependencyValidationDialog from './DependencyValidationDialog.vue';
 import BlockedTaskInfo from './BlockedTaskInfo.vue';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
+import { useAuthentication } from '@/modules/authentication/presentation/composables/useAuthentication';
 
+const { user } = useAuthentication();
 
 interface Props {
   currentTaskUuid?: string;
@@ -167,7 +169,7 @@ const emit = defineEmits<Emits>();
 // State
 const newDependency = ref({
   predecessorUuid: '',
-  dependencyType: 'FS' as string,
+  dependencyType: DependencyType.FINISH_TO_START,
 });
 
 const isValidating = ref(false);
@@ -289,7 +291,9 @@ const handleAddDependency = async () => {
 
     // 3. 创建依赖
     const newDep = await taskDependencyApiClient.createDependency(props.currentTaskUuid, {
+      accountUuid: user.value?.uuid || '',
       predecessorTaskUuid: newDependency.value.predecessorUuid,
+      successorTaskUuid: props.currentTaskUuid!,
       dependencyType: newDependency.value.dependencyType,
     });
 
@@ -305,7 +309,7 @@ const handleAddDependency = async () => {
 
     // 6. 重置表单
     newDependency.value.predecessorUuid = '';
-    newDependency.value.dependencyType = 'FS';
+    newDependency.value.dependencyType = DependencyType.FINISH_TO_START;
   } catch (error) {
     console.error('Failed to add dependency:', error);
     validationError.value = {

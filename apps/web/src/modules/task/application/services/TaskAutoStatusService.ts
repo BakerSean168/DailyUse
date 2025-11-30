@@ -303,7 +303,7 @@ export class TaskAutoStatusService {
     taskUuid: string,
     allTasks: TaskForDAG[],
     dependencies: TaskDependencyClientDTO[],
-  ): Array<{ uuid: string; title: string; status: string; estimatedMinutes?: number }> {
+  ): Array<{ uuid: string; title: string; status: string; estimatedMinutes?: number | null }> {
     const predecessorDeps = dependencies.filter((dep) => dep.successorTaskUuid === taskUuid);
 
     return predecessorDeps

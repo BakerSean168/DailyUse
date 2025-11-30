@@ -17,7 +17,7 @@ export interface TaskForDAG {
   priority?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   importance?: string;
   urgency?: string;
-  estimatedMinutes?: number;
+  estimatedMinutes?: number | null;
   dueDate?: string;
   tags?: string[];
   templateUuid?: string; // 如果是实例，指向模板
@@ -133,7 +133,7 @@ export function taskInstanceToWidget(
     priority: template
       ? mapImportanceUrgencyToPriority(template.importance, template.urgency)
       : 'MEDIUM',
-    scheduledTime: instance.timeConfig?.startTime ?? null,
+    scheduledTime: instance.timeConfig?.timePoint ?? null,
     dueDate: template?.dueDate ?? null,
     templateUuid: instance.templateUuid,
     templateTitle: template?.title,

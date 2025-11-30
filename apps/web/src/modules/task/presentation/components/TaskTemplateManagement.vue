@@ -101,7 +101,8 @@ import DraggableTaskCard from './cards/DraggableTaskCard.vue';
 import TaskDAGVisualization from './dag/TaskDAGVisualization.vue';
 import TaskTemplateDialog from './dialogs/TaskTemplateDialog.vue';
 import { TaskTemplateStatus, TaskType, TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import type { TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 // composables
 import { taskDependencyApiClient } from '../../infrastructure/api/taskApiClient';
 import { useTaskTemplate } from '../composables/useTaskTemplate';
@@ -111,7 +112,7 @@ const taskStore = useTaskStore();
 const currentStatus = ref<TaskTemplateStatus>(TaskTemplateStatus.ACTIVE); // 使用枚举类型
 const showDeleteDialog = ref(false);
 const showDeleteAllDialog = ref(false);
-const selectedTemplate = ref<TaskTemplateClientDTO | null>(null);
+const selectedTemplate = ref<TaskTemplate | null>(null);
 const showDependencyDialog = ref(false);
 const allDependencies = ref<TaskDependencyClientDTO[]>([]);
 
@@ -253,7 +254,7 @@ const { activateTaskTemplate } = useTaskTemplate();
 /**
  * Handle resume template
  */
-const handleResumeTemplate = async (template: TaskTemplateClientDTO) => {
+const handleResumeTemplate = async (template: TaskTemplate) => {
   try {
     console.log('🔄 [TaskTemplateManagement] 恢复模板:', template.title);
     

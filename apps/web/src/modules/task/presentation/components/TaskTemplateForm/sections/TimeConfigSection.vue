@@ -53,8 +53,8 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { TaskTemplate, TaskTimeConfig } from '@dailyuse/domain-client/task';
-import { TaskTemplateStatus, TaskType, TaskInstanceStatus, TimeType } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
+import { TimeType } from '@dailyuse/contracts/task';
+import type { TaskTimeConfigClientDTO } from '@dailyuse/contracts/task';
 
 const props = defineProps<{
   modelValue: TaskTemplate;
@@ -220,7 +220,6 @@ const updateTimeConfig = () => {
     const newConfig: TaskTimeConfigClientDTO = {
       timeType: timeType.value,
       startDate: parseDateInput(startDate.value),
-      endDate: null, // 时间配置不再包含结束日期
       timePoint: timeType.value === TimeType.TIME_POINT ? parseDateTimeInput(timePoint.value) : null,
       timeRange:
         timeType.value === TimeType.TIME_RANGE && timeRangeStart.value && timeRangeEnd.value
@@ -231,7 +230,6 @@ const updateTimeConfig = () => {
           : null,
       timeTypeText: '',
       formattedStartDate: '',
-      formattedEndDate: '',
       formattedTimePoint: '',
       formattedTimeRange: '',
       displayText: '',

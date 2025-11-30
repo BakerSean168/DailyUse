@@ -99,10 +99,8 @@
 import { computed } from 'vue';
 import { useTaskStore } from '../../stores/taskStore';
 import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import { useRouter } from 'vue-router';
 import type { TaskInstance } from '@dailyuse/domain-client/task';
-import type { Goal } from '@dailyuse/domain-client/goal';
 
 const router = useRouter();
 const taskStore = useTaskStore();

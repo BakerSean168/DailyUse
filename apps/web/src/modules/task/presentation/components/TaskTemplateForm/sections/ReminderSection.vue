@@ -78,8 +78,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { TaskTemplate, TaskReminderConfig } from '@dailyuse/domain-client/task';
-import { TaskTemplateStatus, TaskType, TaskInstanceStatus, TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskReminderConfigClientDTO } from '@dailyuse/contracts/task';
+import { TaskReminderType, ReminderTimeUnit } from '@dailyuse/contracts/task';
+import type { TaskReminderConfigClientDTO } from '@dailyuse/contracts/task';
 
 // 类型别名
 const ReminderType = TaskReminderType;

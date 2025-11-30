@@ -44,9 +44,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { TaskTemplate } from '@dailyuse/domain-client/task';
 
-type SnoozeConfig = TaskTemplate['reminderConfig']['snooze'];
+// 本地 SnoozeConfig 类型定义 (此功能可能尚未实现)
+interface SnoozeConfig {
+  enabled: boolean;
+  interval: number;
+  maxCount: number;
+}
 
 interface Props {
   modelValue: SnoozeConfig;

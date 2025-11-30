@@ -53,7 +53,7 @@ Provides visual feedback and dependency creation via drag-drop. * * @module Drag
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 import TaskTemplateCard from './TaskTemplateCard.vue';
 import { useDragAndDrop } from '@/shared/composables/useDragAndDrop';
 import { TaskDependencyDragDropService } from '@/modules/task/application/services/TaskDependencyDragDropService';
@@ -61,7 +61,7 @@ import { TaskDependencyDragDropService } from '@/modules/task/application/servic
 
 // Props
 interface Props {
-  template: TaskTemplateClientDTO;
+  template: TaskTemplate;
   enableDrag?: boolean;
 }
 
@@ -72,8 +72,8 @@ const props = withDefaults(defineProps<Props>(), {
 // Emits
 const emit = defineEmits<{
   edit: [templateUuid: string]; // Changed: TaskTemplateCard emits uuid string, not full DTO
-  delete: [templateUuid: string];
-  resume: [template: TaskTemplateClientDTO];
+  delete: [template: TaskTemplate];
+  resume: [template: TaskTemplate];
   dependencyCreated: [sourceUuid: string, targetUuid: string];
 }>();
 
@@ -83,11 +83,11 @@ const handleEdit = (templateUuid: string) => {
   emit('edit', templateUuid);
 };
 
-const handleDelete = (templateUuid: string) => {
-  emit('delete', templateUuid);
+const handleDelete = (template: TaskTemplate) => {
+  emit('delete', template);
 };
 
-const handleResume = (template: TaskTemplateClientDTO) => {
+const handleResume = (template: TaskTemplate) => {
   emit('resume', template);
 };
 

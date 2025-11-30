@@ -211,7 +211,6 @@ import { useGoalStore } from '@/modules/goal/presentation/stores/goalStore';
 import { format, startOfDay, isToday, isSameDay } from 'date-fns';
 // types
 import { TaskInstance, TaskTemplate } from '@dailyuse/domain-client/task';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import { Goal, KeyResult } from '@dailyuse/domain-client/goal';
 
 // composables

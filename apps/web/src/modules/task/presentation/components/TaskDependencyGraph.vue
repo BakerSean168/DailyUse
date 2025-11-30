@@ -104,7 +104,9 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import type { ECharts, EChartsOption } from 'echarts';
 import { taskDependencyGraphService } from '@/modules/task/application/services/TaskDependencyGraphService';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, TaskDependencyClientDTO } from '@dailyuse/contracts/task';
+import type { TaskForDAG } from '@/modules/task/types/task-dag.types';
+import { taskTemplateToDAG } from '@/modules/task/types/task-dag.types';
 
 type TaskClientDTO = TaskTemplateClientDTO;
 
@@ -119,6 +121,9 @@ const props = withDefaults(defineProps<Props>(), {
   height: 600,
 });
 
+// 将 TaskTemplateClientDTO 转换为 TaskForDAG
+const tasksForDAG = computed<TaskForDAG[]>(() => props.tasks.map(taskTemplateToDAG));
+
 // State
 const chartContainer = ref<HTMLElement>();
 const chartInstance = ref<ECharts>();
@@ -132,7 +137,7 @@ const hasData = computed(() => props.tasks.length > 0);
 const chartHeight = computed(() => props.height);
 
 const graphStats = computed(() => {
-  const sorted = taskDependencyGraphService.topologicalSort(props.tasks, props.dependencies);
+  const sorted = taskDependencyGraphService.topologicalSort(tasksForDAG.value, props.dependencies);
   return {
     totalTasks: props.tasks.length,
     totalDependencies: props.dependencies.length,
@@ -143,7 +148,7 @@ const graphStats = computed(() => {
 const criticalPathInfo = computed(() => {
   if (!showCriticalPath.value || props.tasks.length === 0) return null;
   try {
-    return taskDependencyGraphService.calculateCriticalPath(props.tasks, props.dependencies);
+    return taskDependencyGraphService.calculateCriticalPath(tasksForDAG.value, props.dependencies);
   } catch {
     return null;
   }
@@ -160,7 +165,7 @@ function updateChart() {
   if (!chartInstance.value) return;
 
   try {
-    let graphData = taskDependencyGraphService.transformToGraphData(props.tasks, props.dependencies);
+    let graphData = taskDependencyGraphService.transformToGraphData(tasksForDAG.value, props.dependencies);
 
     if (showCriticalPath.value && criticalPathInfo.value) {
       graphData = taskDependencyGraphService.highlightCriticalPath(graphData, criticalPathInfo.value);
@@ -185,7 +190,7 @@ function updateChart() {
         type: 'graph',
         layout: layoutType.value,
         data: graphData.nodes,
-        links: graphData.edges,
+        links: graphData.edges as any, // ECharts 类型限制，实际 value 可为 string
         categories: graphData.categories,
         roam: true,
         label: { show: true, position: 'right' },

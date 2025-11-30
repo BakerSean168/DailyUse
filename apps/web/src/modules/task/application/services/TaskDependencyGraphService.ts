@@ -43,7 +43,7 @@ export interface GraphNode {
     title: string;
     status: string;
     priority?: string;
-    estimatedMinutes?: number;
+    estimatedMinutes?: number | null;
     dueDate?: string;
     tags?: string[];
   };
