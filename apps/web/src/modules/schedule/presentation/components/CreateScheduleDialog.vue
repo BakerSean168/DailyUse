@@ -120,10 +120,12 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue';
 import { useScheduleEvent } from '../composables/useScheduleEvent';
+import { useAuthentication } from '@/modules/authentication/presentation/composables/useAuthentication';
 import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, CreateScheduleRequest, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 // ===== Composables =====
 const { createSchedule, updateSchedule, isLoading } = useScheduleEvent();
+const { getAccountUuid } = useAuthentication();
 
 // ===== State =====
 const visible = ref(false);
@@ -226,11 +228,18 @@ async function handleSubmit() {
     }
   } else {
     // 创建模式
+    const accountUuid = getAccountUuid();
+    if (!accountUuid) {
+      alert('请先登录');
+      return;
+    }
     const requestData: CreateScheduleRequest = {
+      accountUuid,
       title: formData.title,
       description: formData.description || undefined,
       startTime: startTimestamp,
       endTime: endTimestamp,
+      duration: endTimestamp - startTimestamp,
       priority: formData.priority || undefined,
       location: formData.location || undefined,
       attendees: formData.attendees.length > 0 ? formData.attendees : undefined,

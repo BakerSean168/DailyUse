@@ -14,7 +14,7 @@ import type { WidgetConfig } from '@dailyuse/contracts/dashboard';
 import { WidgetSize } from '@dailyuse/contracts/dashboard';
 import { useTaskInstance } from '@/modules/task/presentation/composables/useTaskInstance';
 import { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import type { TaskInstance } from '@dailyuse/domain-client/task';
+import type { TaskForWidget } from '@/modules/task/types/task-dag.types';
 
 // ===== Props =====
 interface Props {
@@ -49,7 +49,7 @@ const todayTasks = computed(() => {
     }
 
     return instances
-        .filter((task: TaskInstance) => {
+        .filter((task: TaskForWidget) => {
             if (task.status === TaskInstanceStatus.COMPLETED) return false;
 
             // 检查是否有今天的 scheduledTime
@@ -67,7 +67,7 @@ const todayTasks = computed(() => {
             return false;
         })
         .slice(0, props.size === 'small' ? 3 : props.size === 'medium' ? 5 : 10)
-        .sort((a: TaskInstance, b: TaskInstance) => {
+        .sort((a: TaskForWidget, b: TaskForWidget) => {
             // 按优先级和时间排序
             const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
             const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 3;
@@ -88,9 +88,9 @@ const todayTasks = computed(() => {
  */
 const taskStats = computed(() => ({
     total: todayTasks.value.length,
-    highPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'HIGH').length,
-    mediumPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'MEDIUM').length,
-    lowPriority: todayTasks.value.filter((t: TaskInstance) => t.priority === 'LOW').length,
+    highPriority: todayTasks.value.filter((t: TaskForWidget) => t.priority === 'HIGH').length,
+    mediumPriority: todayTasks.value.filter((t: TaskForWidget) => t.priority === 'MEDIUM').length,
+    lowPriority: todayTasks.value.filter((t: TaskForWidget) => t.priority === 'LOW').length,
 }));
 
 /**

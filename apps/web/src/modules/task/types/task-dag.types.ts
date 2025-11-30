@@ -101,3 +101,43 @@ function extractEstimatedMinutes(timeConfig: any): number | undefined {
   return 30;
 }
 
+/**
+ * 用于 Widget 显示的任务类型
+ * 结合了 TaskInstance 和 TaskTemplate 的显示信息
+ */
+export interface TaskForWidget {
+  uuid: string;
+  title: string;
+  description?: string | null;
+  status: string;
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  scheduledTime?: number | null;
+  dueDate?: number | null;
+  templateUuid: string;
+  templateTitle?: string;
+  instanceDate: number;
+}
+
+/**
+ * 将 TaskInstanceClientDTO 和 TaskTemplateClientDTO 转换为 TaskForWidget
+ */
+export function taskInstanceToWidget(
+  instance: TaskInstanceClientDTO,
+  template?: TaskTemplateClientDTO,
+): TaskForWidget {
+  return {
+    uuid: instance.uuid,
+    title: template?.title || `Task ${instance.uuid.slice(0, 8)}`,
+    description: template?.description,
+    status: instance.status,
+    priority: template
+      ? mapImportanceUrgencyToPriority(template.importance, template.urgency)
+      : 'MEDIUM',
+    scheduledTime: instance.timeConfig?.startTime ?? null,
+    dueDate: template?.dueDate ?? null,
+    templateUuid: instance.templateUuid,
+    templateTitle: template?.title,
+    instanceDate: instance.instanceDate,
+  };
+}
+
