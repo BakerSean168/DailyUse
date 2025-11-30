@@ -88,44 +88,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
-
-/**
- * 菜单项接口
- */
-export interface ContextMenuItem {
-  /** 菜单项标题 */
-  title?: string;
-  
-  /** 前置图标 */
-  icon?: string;
-  
-  /** 图标大小 */
-  iconSize?: number;
-  
-  /** 图标颜色 */
-  iconColor?: string;
-  
-  /** 点击回调 */
-  action?: () => void | Promise<void>;
-  
-  /** 是否为危险操作（红色显示） */
-  danger?: boolean;
-  
-  /** 是否禁用 */
-  disabled?: boolean;
-  
-  /** 是否为分隔线 */
-  divider?: boolean;
-  
-  /** 快捷键提示 */
-  shortcut?: string;
-  
-  /** 后置图标 */
-  suffix?: string;
-  
-  /** 自定义类名 */
-  className?: string;
-}
+import type { ContextMenuItem } from '@dailyuse/contracts/shared';
 
 interface Props {
   /** 是否显示 */

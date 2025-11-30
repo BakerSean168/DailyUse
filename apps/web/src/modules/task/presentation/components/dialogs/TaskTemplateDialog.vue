@@ -44,7 +44,7 @@
               <p>dialogState.visible is {{ dialogState.visible }}</p>
             </v-alert>
           </div>
-          <TaskTemplateForm v-else ref="formRef" :model-value="formData.taskTemplate as TaskTemplate"
+          <TaskTemplateForm v-else ref="formRef" :model-value="(formData.taskTemplate as TaskTemplate)"
             :is-edit-mode="dialogState.mode === 'edit'" :readonly="operationState.loading"
             @update:model-value="handleTemplateUpdate" @update:validation="handleValidationUpdate"
             @close="handleCancel" />
@@ -101,7 +101,6 @@
 import { ref, computed, watch, reactive, defineEmits } from 'vue';
 import TaskTemplateForm from '../TaskTemplateForm/TaskTemplateForm.vue';
 import { TaskTemplate } from '@dailyuse/domain-client/task';
-import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { useTaskTemplate } from '../../composables/useTaskTemplate';
 import { useTaskStore } from '../../stores/taskStore';
 

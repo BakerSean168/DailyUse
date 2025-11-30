@@ -26,16 +26,16 @@
         class="elevation-1"
       >
         <!-- 专注目标列 -->
-        <template #item.focusedGoals="{ item }">
+        <template #item.focusedGoalUuids="{ item }">
           <div class="d-flex flex-wrap gap-1">
             <v-chip
-              v-for="goal in item.focusedGoals"
-              :key="goal.uuid"
+              v-for="goalUuid in item.focusedGoalUuids"
+              :key="goalUuid"
               size="x-small"
               color="primary"
               variant="flat"
             >
-              {{ goal.title }}
+              {{ getGoalTitle(goalUuid) }}
             </v-chip>
           </div>
         </template>
@@ -109,6 +109,7 @@
 import { ref, onMounted } from 'vue';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest, HiddenGoalsMode } from '@dailyuse/contracts/goal';
 import { useFocusMode } from '../composables/useFocusMode';
+import { useGoalStore } from '../../application/stores/goalStore';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FocusModeHistoryPanel');
@@ -122,16 +123,18 @@ const {
   extendFocusMode,
 } = useFocusMode();
 
+const goalStore = useGoalStore();
+
 // ===== 响应式状态 =====
-const headers = ref([
-  { title: '专注目标', key: 'focusedGoals', sortable: false },
-  { title: '状态', key: 'status', sortable: true },
+const headers = [
+  { title: '专注目标', key: 'focusedGoalUuids', sortable: false },
+  { title: '状态', key: 'status', sortable: false },
   { title: '开始时间', key: 'startTime', sortable: true },
   { title: '结束时间', key: 'endTime', sortable: true },
   { title: '持续时间', key: 'duration', sortable: false },
   { title: '隐藏模式', key: 'hiddenGoalsMode', sortable: false },
-  { title: '操作', key: 'actions', sortable: false, align: 'center' },
-]);
+  { title: '操作', key: 'actions', sortable: false, align: 'center' as const },
+];
 
 // ===== 生命周期 =====
 onMounted(async () => {
@@ -152,7 +155,7 @@ const getStatusColor = (item: FocusModeClientDTO): string => {
     if (isExpiredItem(item)) return 'error';
     return 'success';
   }
-  if (item.isExpired) return 'warning';
+  if (isExpiredItem(item)) return 'warning';
   return 'grey';
 };
 
@@ -164,7 +167,7 @@ const getStatusIcon = (item: FocusModeClientDTO): string => {
     if (isExpiredItem(item)) return 'mdi-alert-circle';
     return 'mdi-check-circle';
   }
-  if (item.isExpired) return 'mdi-clock-alert';
+  if (isExpiredItem(item)) return 'mdi-clock-alert';
   return 'mdi-close-circle';
 };
 
@@ -176,7 +179,7 @@ const getStatusText = (item: FocusModeClientDTO): string => {
     if (isExpiredItem(item)) return '已过期';
     return '进行中';
   }
-  if (item.isExpired) return '已过期';
+  if (isExpiredItem(item)) return '已过期';
   return '已关闭';
 };
 
@@ -214,11 +217,19 @@ const calculateDuration = (item: FocusModeClientDTO): string => {
  */
 const getHiddenModeLabel = (mode: HiddenGoalsMode): string => {
   const labels: Record<HiddenGoalsMode, string> = {
-    hide_all: '隐藏所有',
-    hide_folder: '隐藏文件夹',
-    hide_none: '不隐藏',
+    hide: '隐藏',
+    dim: '变暗',
+    collapse: '折叠',
   };
   return labels[mode] || mode;
+};
+
+/**
+ * 根据 UUID 获取目标标题
+ */
+const getGoalTitle = (uuid: string): string => {
+  const goal = goalStore.getGoalByUuid(uuid);
+  return goal?.title ?? uuid;
 };
 
 // ===== 事件处理 =====
@@ -257,7 +268,7 @@ const handleExtend = (item: FocusModeClientDTO) => {
  * 关闭专注周期
  */
 const handleDeactivate = (item: FocusModeClientDTO) => {
-  if (!confirm(`确定要关闭专注周期"${item.focusedGoals.map((g) => g.title).join(', ')}"吗？`)) {
+  if (!confirm(`确定要关闭该专注周期吗？`)) {
     return;
   }
 

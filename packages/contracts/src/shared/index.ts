@@ -14,3 +14,5 @@ export * from './priority';
 export * from './shared';
 // 重新导出共享的DTOs
 export * from './dtos';
+// 重新导出 UI 组件类型
+export * from './ui-components';

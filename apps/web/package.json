@@ -50,6 +50,7 @@
     "@dailyuse/utils": "workspace:*",
     "@mdi/font": "^7.4.47",
     "@milkdown/core": "7.17.1",
+    "@milkdown/ctx": "7.17.1",
     "@milkdown/plugin-cursor": "7.17.1",
     "@milkdown/plugin-history": "7.17.1",
     "@milkdown/plugin-listener": "7.17.1",

@@ -49,19 +49,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import type { SimpleEditorTab } from '@dailyuse/contracts/shared';
 
-/**
- * 标签页数据结构
- */
-export interface EditorTab {
-  uuid: string;
-  title: string;
-  fileType: 'markdown' | 'image' | 'video' | 'audio';
-  filePath: string;
-  content?: string;
-  isDirty: boolean;
-  isPinned?: boolean;
-}
+// 使用 SimpleEditorTab 作为组件的标签类型
+type EditorTab = SimpleEditorTab;
 
 /**
  * Props
