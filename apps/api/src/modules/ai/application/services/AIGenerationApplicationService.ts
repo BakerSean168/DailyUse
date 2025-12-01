@@ -227,11 +227,15 @@ export class AIGenerationApplicationService {
     if (!draft.category || typeof draft.category !== 'string') {
       throw new Error('Generated goal must have a category');
     }
-    if (typeof draft.importance !== 'number' || draft.importance < 1 || draft.importance > 4) {
-      throw new Error('Generated goal must have importance between 1-4');
+    // 验证 importance 是合法的枚举值
+    const validImportance = ['vital', 'important', 'moderate', 'minor', 'trivial'];
+    if (!draft.importance || typeof draft.importance !== 'string' || !validImportance.includes(draft.importance)) {
+      throw new Error(`Generated goal must have valid importance (one of: ${validImportance.join(', ')})`);
     }
-    if (typeof draft.urgency !== 'number' || draft.urgency < 1 || draft.urgency > 4) {
-      throw new Error('Generated goal must have urgency between 1-4');
+    // 验证 urgency 是合法的枚举值
+    const validUrgency = ['critical', 'high', 'medium', 'low', 'none'];
+    if (!draft.urgency || typeof draft.urgency !== 'string' || !validUrgency.includes(draft.urgency)) {
+      throw new Error(`Generated goal must have valid urgency (one of: ${validUrgency.join(', ')})`);
     }
     if (!Array.isArray(draft.tags)) {
       throw new Error('Generated goal must have tags array');

@@ -78,10 +78,13 @@ export function useAIProviders(): UseAIProvidersReturn {
 
     try {
       const response = await aiProviderApiClient.getProviders();
-      providers.value = response.providers;
+      // response 直接是数组（后端返回 data: [...]，apiClient 已提取）
+      providers.value = response || [];
     } catch (err: any) {
       error.value = err.message || '加载 AI Provider 失败';
       console.error('Failed to load AI providers:', err);
+      // 确保出错时也是空数组而不是 undefined
+      providers.value = [];
     } finally {
       loading.value = false;
     }
@@ -97,9 +100,10 @@ export function useAIProviders(): UseAIProvidersReturn {
     error.value = null;
 
     try {
-      const response = await aiProviderApiClient.createProvider(request);
-      providers.value.push(response.provider);
-      return response.provider;
+      // response 直接是 Provider 对象（后端返回 data: {...}，apiClient 已提取）
+      const provider = await aiProviderApiClient.createProvider(request);
+      providers.value.push(provider);
+      return provider;
     } catch (err: any) {
       error.value = err.message || '创建 AI Provider 失败';
       console.error('Failed to create AI provider:', err);
@@ -117,10 +121,11 @@ export function useAIProviders(): UseAIProvidersReturn {
     error.value = null;
 
     try {
-      const response = await aiProviderApiClient.updateProvider(uuid, request);
+      // response 直接是 Provider 对象（后端返回 data: {...}，apiClient 已提取）
+      const provider = await aiProviderApiClient.updateProvider(uuid, request);
       const index = providers.value.findIndex((p) => p.uuid === uuid);
       if (index !== -1) {
-        providers.value[index] = response.provider;
+        providers.value[index] = provider;
       }
       return true;
     } catch (err: any) {

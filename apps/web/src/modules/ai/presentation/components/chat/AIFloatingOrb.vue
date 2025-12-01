@@ -31,7 +31,7 @@
                 </div>
                 <ul class="actions">
                     <li><button @click="emitChat">💬 打开聊天</button></li>
-                    <li><button @click="emitKeyResult">🎯 生成关键结果</button></li>
+                    <li><button @click="emitGenerateGoal">🎯 生成目标</button></li>
                     <li><button @click="emitGoalAssist">📌 目标建议</button></li>
                     <li><button @click="emitTasks">🛠 分解任务</button></li>
                     <li><button @click="emitKnowledge">📘 知识文档</button></li>
@@ -49,7 +49,7 @@ import { logo48 as avatar } from '@dailyuse/assets';
 
 const emit = defineEmits<{
     (e: 'open-chat'): void;
-    (e: 'create-key-result'): void;
+    (e: 'generate-goal'): void;
     (e: 'assist-goal'): void;
     (e: 'generate-tasks'): void;
     (e: 'generate-knowledge'): void;
@@ -58,7 +58,7 @@ const emit = defineEmits<{
 const showMenu = ref(false);
 const showHint = ref(false);
 const hovering = ref(false);
-const currentHint = ref('我可以帮你创建关键结果');
+const currentHint = ref('我可以帮你规划目标和任务');
 const emittedInitialHint = ref(false);
 
 const dragMoved = ref(false);
@@ -141,9 +141,9 @@ function emitChat() {
     emit('open-chat');
 }
 
-function emitKeyResult() {
+function emitGenerateGoal() {
     showMenu.value = false;
-    emit('create-key-result');
+    emit('generate-goal');
 }
 
 function emitGoalAssist() {

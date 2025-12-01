@@ -3,7 +3,7 @@
  */
 import { ref, computed } from 'vue';
 import type { ChatMessage, SendOptions } from '../types/chat';
-import { httpAiConversationRepository } from '@dailyuse/domain-client/ai';
+import { AuthManager } from '@/shared/api/core/interceptors';
 
 interface SSEEventPayload {
   content?: string;
@@ -115,22 +115,75 @@ export function useAIChat() {
     abortController.value = new AbortController();
 
     try {
-      await httpAiConversationRepository.streamChat(
-        { message: content, conversationUuid: opts.conversationUuid },
-        (evt) => {
-          switch (evt.type) {
-            case 'chunk':
-              updateAssistantContent(assistantId, evt.content);
-              break;
-            case 'error':
-              markAssistantError(assistantId, evt.error);
-              break;
-            case 'complete':
-              markAssistantDone(assistantId);
-              break;
+      // Use AuthManager for consistent authentication (same as other modules)
+      const authHeader = AuthManager.getAuthorizationHeader();
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (authHeader) {
+        headers['Authorization'] = authHeader;
+      }
+
+      const response = await fetch('/api/ai/chat/stream', {
+        method: 'POST',
+        headers,
+        credentials: 'include', // Include cookies for refresh token
+        body: JSON.stringify({ 
+          message: content, 
+          conversationUuid: opts.conversationUuid 
+        }),
+        signal: abortController.value.signal,
+      });
+
+      // Handle 401 - token expired, trigger refresh
+      if (response.status === 401) {
+        // Dispatch event to trigger token refresh
+        window.dispatchEvent(new CustomEvent('auth:session-expired', {
+          detail: { message: '会话已过期，请重新登录', reason: 'token-expired' }
+        }));
+        throw new Error('认证已过期，请重新登录后重试');
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('Readable stream not available');
+
+      let buffered = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffered += new TextDecoder().decode(value);
+        const lastBreak = buffered.lastIndexOf('\n\n');
+        
+        if (lastBreak !== -1) {
+          const processPart = buffered.slice(0, lastBreak + 2);
+          buffered = buffered.slice(lastBreak + 2);
+          
+          for (const pkt of parseSSEChunk(processPart)) {
+            switch (pkt.event) {
+              case 'chunk':
+                if (pkt.data.content) {
+                  updateAssistantContent(assistantId, pkt.data.content);
+                }
+                break;
+              case 'error':
+                markAssistantError(assistantId, pkt.data.error || 'Stream error');
+                break;
+              case 'complete':
+                markAssistantDone(assistantId);
+                break;
+            }
           }
-        },
-      );
+        }
+      }
+      
       markAssistantDone(assistantId);
       isStreaming.value = false;
       abortController.value = null;

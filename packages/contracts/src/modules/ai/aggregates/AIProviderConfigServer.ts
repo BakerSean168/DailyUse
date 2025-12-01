@@ -31,6 +31,8 @@ export interface AIProviderConfigServerDTO {
   isActive: boolean;
   /** 是否为默认 Provider */
   isDefault: boolean;
+  /** 优先级（数字越小优先级越高，用于故障转移） */
+  priority: number;
   /** 创建时间戳 */
   createdAt: number;
   /** 更新时间戳 */

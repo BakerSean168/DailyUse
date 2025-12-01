@@ -13,6 +13,10 @@ import type { AIProviderConfigServerDTO } from '@dailyuse/contracts/ai';
 import { BaseAIAdapter } from './BaseAIAdapter';
 import { OpenAIAdapter } from './OpenAIAdapter';
 import { CustomOpenAICompatibleAdapter } from './CustomOpenAICompatibleAdapter';
+import { OpenRouterAdapter } from './OpenRouterAdapter';
+import { GroqAdapter } from './GroqAdapter';
+import { DeepSeekAdapter } from './DeepSeekAdapter';
+import { SiliconFlowAdapter } from './SiliconFlowAdapter';
 
 /**
  * 适配器缓存 Key 生成
@@ -59,6 +63,39 @@ export class AIAdapterFactory {
         );
         break;
 
+      case AIProviderType.OPENROUTER:
+        adapter = new OpenRouterAdapter({
+          apiKey: config.apiKey,
+          defaultModel: config.defaultModel || 'google/gemini-2.0-flash-exp:free',
+          appName: 'DailyUse',
+          timeoutMs: 60000,
+        });
+        break;
+
+      case AIProviderType.GROQ:
+        adapter = new GroqAdapter({
+          apiKey: config.apiKey,
+          defaultModel: config.defaultModel || 'llama-3.3-70b-versatile',
+          timeoutMs: 30000, // Groq 速度快，超时短
+        });
+        break;
+
+      case AIProviderType.DEEPSEEK:
+        adapter = new DeepSeekAdapter({
+          apiKey: config.apiKey,
+          defaultModel: config.defaultModel || 'deepseek-chat',
+          timeoutMs: 60000,
+        });
+        break;
+
+      case AIProviderType.SILICONFLOW:
+        adapter = new SiliconFlowAdapter({
+          apiKey: config.apiKey,
+          defaultModel: config.defaultModel || 'deepseek-ai/DeepSeek-V3',
+          timeoutMs: 60000,
+        });
+        break;
+
       case AIProviderType.QINIU:
         adapter = new CustomOpenAICompatibleAdapter({
           providerName: config.name || 'Qiniu',
@@ -69,8 +106,18 @@ export class AIAdapterFactory {
         });
         break;
 
+      case AIProviderType.GOOGLE:
+        adapter = new CustomOpenAICompatibleAdapter({
+          providerName: config.name || 'Google AI',
+          baseUrl: config.baseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai',
+          apiKey: config.apiKey,
+          defaultModel: config.defaultModel || 'gemini-2.0-flash-exp',
+          timeoutMs: 60000,
+        });
+        break;
+
       case AIProviderType.ANTHROPIC:
-        // TODO: 实现 Anthropic 适配器
+        // TODO: 实现 Anthropic 原生适配器（使用 x-api-key 认证）
         // 暂时使用 OpenAI 兼容模式（如果 API 兼容）
         adapter = new CustomOpenAICompatibleAdapter({
           providerName: config.name || 'Anthropic',
@@ -180,6 +227,7 @@ export class AIAdapterFactory {
         availableModels: [],
         isActive: true,
         isDefault: false,
+        priority: 100,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };

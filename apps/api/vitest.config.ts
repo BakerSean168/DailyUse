@@ -6,7 +6,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@dailyuse/domain-server/ai': path.resolve(__dirname, '../../packages/domain-server/src/ai'),
       '@dailyuse/domain-server': path.resolve(__dirname, '../../packages/domain-server/src'),
+      '@dailyuse/contracts/ai': path.resolve(__dirname, '../../packages/contracts/src/modules/ai'),
+      '@dailyuse/contracts/goal': path.resolve(__dirname, '../../packages/contracts/src/modules/goal'),
+      '@dailyuse/contracts/response': path.resolve(__dirname, '../../packages/contracts/src/response'),
       '@dailyuse/contracts': path.resolve(__dirname, '../../packages/contracts/src'),
       '@dailyuse/utils': path.resolve(__dirname, '../../packages/utils/src'),
     },
@@ -14,7 +18,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./src/test/setup-database.ts'], // ✅ 使用真实数据库（Docker 已启动）
+    setupFiles: ['./src/test/setup.ts'], // 使用轻量 setup（无需数据库）
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}'],
     exclude: [
       'node_modules',

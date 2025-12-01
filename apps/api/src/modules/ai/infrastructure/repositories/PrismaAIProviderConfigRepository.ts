@@ -72,6 +72,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
         availableModels: availableModelsJson,
         isActive: config.isActive,
         isDefault: config.isDefault,
+        priority: config.priority ?? 100,
         createdAt: new Date(config.createdAt),
         updatedAt: new Date(config.updatedAt),
       },
@@ -84,6 +85,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
         availableModels: availableModelsJson,
         isActive: config.isActive,
         isDefault: config.isDefault,
+        priority: config.priority ?? 100,
         updatedAt: new Date(config.updatedAt),
       },
     });
@@ -106,7 +108,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
   async findByAccountUuid(accountUuid: string): Promise<AIProviderConfigServerDTO[]> {
     const records = await this.prismaWithAI.aiProviderConfig.findMany({
       where: { accountUuid },
-      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+      orderBy: [{ priority: 'asc' }, { isDefault: 'desc' }, { createdAt: 'asc' }],
     });
 
     return records.map((record: any) => this.toServerDTO(record));
@@ -233,6 +235,21 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
       case 'ANTHROPIC':
         providerType = AIProviderType.ANTHROPIC;
         break;
+      case 'OPENROUTER':
+        providerType = AIProviderType.OPENROUTER;
+        break;
+      case 'GROQ':
+        providerType = AIProviderType.GROQ;
+        break;
+      case 'DEEPSEEK':
+        providerType = AIProviderType.DEEPSEEK;
+        break;
+      case 'SILICONFLOW':
+        providerType = AIProviderType.SILICONFLOW;
+        break;
+      case 'GOOGLE':
+        providerType = AIProviderType.GOOGLE;
+        break;
       case 'CUSTOM_OPENAI_COMPATIBLE':
         providerType = AIProviderType.CUSTOM_OPENAI_COMPATIBLE;
         break;
@@ -259,6 +276,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
       availableModels,
       isActive: record.isActive,
       isDefault: record.isDefault,
+      priority: record.priority ?? 100,
       createdAt: record.createdAt.getTime(),
       updatedAt: record.updatedAt.getTime(),
     };

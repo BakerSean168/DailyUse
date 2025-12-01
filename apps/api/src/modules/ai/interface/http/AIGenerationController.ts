@@ -94,6 +94,112 @@ export class AIGenerationController {
   }
 
   /**
+   * 从用户想法生成 Goal 和 Key Results
+   * POST /api/ai/generate/goal-with-krs
+   */
+  static async generateGoalWithKRs(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { idea, category, timeRange, startDate, endDate, context, keyResultCount, providerUuid } = req.body;
+      const accountUuid = req.user?.accountUuid;
+
+      // 验证必需参数
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIGenerationController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      if (!idea || typeof idea !== 'string' || idea.trim().length === 0) {
+        res
+          .status(400)
+          .json(
+            AIGenerationController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              'idea is required and must be a non-empty string',
+            ),
+          );
+        return;
+      }
+
+      // 计算日期
+      let computedStartDate = startDate || Date.now();
+      let computedEndDate = endDate;
+      
+      // 如果没有明确的结束日期，根据 timeRange 计算
+      if (!computedEndDate && timeRange && timeRange !== 'unlimited') {
+        const now = Date.now();
+        switch (timeRange) {
+          case 'week':
+            computedEndDate = now + 7 * 24 * 60 * 60 * 1000;
+            break;
+          case 'month':
+            computedEndDate = now + 30 * 24 * 60 * 60 * 1000;
+            break;
+          case 'quarter':
+            computedEndDate = now + 90 * 24 * 60 * 60 * 1000;
+            break;
+          case 'half-year':
+            computedEndDate = now + 180 * 24 * 60 * 60 * 1000;
+            break;
+          case 'year':
+            computedEndDate = now + 365 * 24 * 60 * 60 * 1000;
+            break;
+          default:
+            computedEndDate = undefined; // unlimited
+        }
+      }
+
+      logger.info('Generating goal with KRs from idea', {
+        accountUuid,
+        ideaLength: idea.length,
+        category,
+        timeRange,
+        hasContext: !!context,
+        keyResultCount: keyResultCount || 'auto',
+        providerUuid,
+      });
+
+      // 调用 ApplicationService
+      const service = AIGenerationController.container.getGoalGenerationService();
+      const result = await service.generateGoal({
+        accountUuid,
+        idea: idea.trim(),
+        category,
+        timeRange, // 传递给 AI 让它理解时间范围
+        startDate: computedStartDate,
+        endDate: computedEndDate,
+        context: context?.trim(),
+        includeKeyResults: true,
+        keyResultCount: keyResultCount, // 如果是 undefined，AI 会自动决定
+        providerUuid,
+      });
+
+      // 返回成功响应
+      res
+        .status(200)
+        .json(
+          AIGenerationController.responseBuilder.success(result, 'Goal with Key Results generated successfully'),
+        );
+    } catch (error) {
+      logger.error('Failed to generate goal with KRs', { error });
+      res
+        .status(500)
+        .json(
+          AIGenerationController.responseBuilder.error(
+            ResponseCode.INTERNAL_ERROR,
+            error instanceof Error ? error.message : 'Internal server error',
+          ),
+        );
+    }
+  }
+
+  /**
    * 生成关键结果（Key Results）
    * POST /api/ai/generate/key-results
    */

@@ -30,6 +30,8 @@ export interface AIProviderConfigClientDTO {
   isActive: boolean;
   /** 是否为默认 Provider */
   isDefault: boolean;
+  /** 优先级（数字越小优先级越高，用于故障转移） */
+  priority: number;
   /** 创建时间戳 */
   createdAt: number;
   /** 更新时间戳 */
@@ -48,6 +50,10 @@ export interface AIModelInfo {
   description?: string;
   /** 上下文窗口大小（可选） */
   contextWindow?: number;
+  /** 每百万输入 token 成本（美元） */
+  inputCostPer1M?: number;
+  /** 每百万输出 token 成本（美元） */
+  outputCostPer1M?: number;
 }
 
 /**
@@ -61,4 +67,5 @@ export interface AIProviderConfigSummary {
   defaultModel: string | null;
   isActive: boolean;
   isDefault: boolean;
+  priority: number;
 }

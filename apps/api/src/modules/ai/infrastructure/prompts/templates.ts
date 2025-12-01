@@ -24,9 +24,29 @@ export const GENERATE_GOAL_PROMPT: PromptTemplate = {
 3. **动机**: 为什么这个目标重要，对用户有什么价值
 4. **类别**: work(工作)/health(健康)/learning(学习)/personal(个人)/finance(财务)/relationship(人际)/other(其他)
 5. **时间建议**: 根据目标复杂度建议合理的起止日期（Unix 时间戳毫秒）
-6. **重要性/紧急性**: 1-4级评估（1=最低，4=最高）
-7. **标签**: 3-5个相关标签
-8. **可行性分析**: 简要分析实现的可能性和挑战
+6. **重要性**: 使用以下枚举值之一
+   - "vital": 极其重要 - 对生活/工作有重大影响
+   - "important": 非常重要 - 对目标实现很关键
+   - "moderate": 中等重要 - 值得做但不是关键
+   - "minor": 不太重要 - 可做可不做
+   - "trivial": 无关紧要 - 纯粹消遣
+7. **紧急性**: 使用以下枚举值之一
+   - "critical": 非常紧急 - 需要立即处理
+   - "high": 高度紧急 - 今天必须处理
+   - "medium": 中等紧急 - 近期需要处理
+   - "low": 低度紧急 - 可以稍后处理
+   - "none": 无期限 - 没有具体时间要求
+8. **标签**: 3-5个相关标签
+9. **可行性分析**: 简要分析实现的可能性和挑战
+10. **关键结果** (如需要): 3-5个可衡量的关键结果
+
+## 关键结果格式 (当 includeKeyResults=true 时)
+每个关键结果需包含:
+- title: 清晰的标题，描述要达成的结果
+- description: 详细说明
+- valueType: percentage(百分比)/number(数值)/boolean(是否完成)
+- targetValue: 目标值
+- unit: 单位（可选）
 
 ## 输出格式
 
@@ -38,20 +58,44 @@ export const GENERATE_GOAL_PROMPT: PromptTemplate = {
   "category": "work|health|learning|personal|finance|relationship|other",
   "suggestedStartDate": 1700000000000,
   "suggestedEndDate": 1703000000000,
-  "importance": 3,
-  "urgency": 2,
+  "importance": "moderate",
+  "urgency": "medium",
   "tags": ["标签1", "标签2", "标签3"],
   "feasibilityAnalysis": "可行性分析...",
-  "aiInsights": "AI 对目标的理解和建议..."
+  "aiInsights": "AI 对目标的理解和建议...",
+  "keyResults": [
+    {
+      "title": "关键结果标题",
+      "description": "详细说明",
+      "valueType": "percentage",
+      "targetValue": 100,
+      "unit": "%"
+    }
+  ]
 }
 
-IMPORTANT: 仅返回 JSON 对象，不要包含任何 markdown 代码块或其他文字。`,
+注意: 
+- 仅返回 JSON 对象，不要包含任何 markdown 代码块或其他文字
+- keyResults 字段仅在请求中 includeKeyResults=true 时才包含
+- 如果时间范围为 "unlimited" 或无期限，suggestedEndDate 可以设为 null 或不包含
+- importance 和 urgency 必须使用指定的枚举字符串值，不能使用数字`,
 
   user: (context) => {
-    const { idea, category, timeframe, additionalContext } = context as {
+    const { 
+      idea, 
+      category, 
+      timeRange,
+      timeframe, 
+      includeKeyResults,
+      keyResultCount,
+      additionalContext 
+    } = context as {
       idea: string;
       category?: string;
+      timeRange?: string;
       timeframe?: { startDate?: number; endDate?: number };
+      includeKeyResults?: boolean;
+      keyResultCount?: number;
       additionalContext?: string;
     };
 
@@ -61,13 +105,36 @@ IMPORTANT: 仅返回 JSON 对象，不要包含任何 markdown 代码块或其�
       prompt += `\n## 期望类别\n${category}\n`;
     }
 
+    // 时间范围描述
+    if (timeRange) {
+      const timeRangeDescriptions: Record<string, string> = {
+        'unlimited': '无期限（长期目标，可以持续进行）',
+        'week': '大约一周',
+        'month': '大约一个月',
+        'quarter': '大约三个月',
+        'half-year': '大约半年',
+        'year': '大约一年',
+        'custom': '用户自定义',
+      };
+      prompt += `\n## 期望时间周期\n${timeRangeDescriptions[timeRange] || timeRange}\n`;
+    }
+
     if (timeframe) {
-      const formatDate = (ts?: number) => (ts ? new Date(ts).toISOString().split('T')[0] : '不限');
+      const formatDate = (ts?: number) => (ts ? new Date(ts).toISOString().split('T')[0] : '无期限');
       prompt += `\n## 期望时间范围\n开始: ${formatDate(timeframe.startDate)}\n结束: ${formatDate(timeframe.endDate)}\n`;
     }
 
     if (additionalContext) {
       prompt += `\n## 补充信息\n${additionalContext}\n`;
+    }
+
+    // 关键结果请求
+    if (includeKeyResults) {
+      if (keyResultCount) {
+        prompt += `\n## 关键结果要求\n请同时生成 ${keyResultCount} 个可衡量的关键结果（Key Results）\n`;
+      } else {
+        prompt += `\n## 关键结果要求\n请同时生成 3-5 个可衡量的关键结果（Key Results），数量根据目标复杂度自行决定\n`;
+      }
     }
 
     prompt += `\n当前时间: ${new Date().toISOString()}\n`;

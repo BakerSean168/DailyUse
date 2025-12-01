@@ -3,8 +3,11 @@
  * DDD Architecture: Application Layer
  */
 
+// Application Services
+export {
+  GoalGenerationApplicationService,
+  goalGenerationApplicationService,
+} from './services';
+
 // 应用层 Composables（未来添加）
 // export { useAIApplicationService } from './composables/useAIApplicationService';
-
-// 应用服务（未来添加）
-// export { AIGenerationApplicationService } from './services/AIGenerationApplicationService';

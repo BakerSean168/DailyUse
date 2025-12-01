@@ -6,6 +6,7 @@
 import type { TokenUsageClientDTO } from '../value-objects/TokenUsage';
 import type { KeyResultPreview } from './GenerateKeyResultsResponse';
 import type { GoalCategory } from '../api-requests/GenerateGoalRequest';
+import type { ImportanceLevel, UrgencyLevel } from '../../../shared';
 
 /**
  * AI 生成的目标草稿
@@ -29,11 +30,11 @@ export interface GeneratedGoalDraft {
   /** 建议结束日期时间戳 */
   suggestedEndDate: number;
 
-  /** 重要性评分 (1-4) */
-  importance: number;
+  /** 重要性级别（枚举值） */
+  importance: ImportanceLevel;
 
-  /** 紧急性评分 (1-4) */
-  urgency: number;
+  /** 紧急性级别（枚举值） */
+  urgency: UrgencyLevel;
 
   /** 建议标签 */
   tags: string[];

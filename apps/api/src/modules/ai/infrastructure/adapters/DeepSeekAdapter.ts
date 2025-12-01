@@ -1,18 +1,20 @@
 /**
- * Custom OpenAI Compatible Adapter
- * 自定义 OpenAI 兼容接口适配器
+ * DeepSeek Adapter
+ * DeepSeek 国产高性价比模型适配器
  *
- * 支持：七牛云、Azure OpenAI、其他 OpenAI 兼容 API
+ * 特点：
+ * - 高性价比，价格优惠
+ * - 支持 deepseek-chat, deepseek-coder 等模型
+ * - 新用户有免费额度
+ * - OpenAI 兼容接口
  *
- * 依赖：
- * - ai: Vercel AI SDK 核心包
- * - @ai-sdk/openai: OpenAI provider (支持自定义 baseURL)
+ * @see https://platform.deepseek.com/api-docs
  */
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, generateText } from 'ai';
 import { AIProvider } from '@dailyuse/contracts/ai';
-import type { AIProviderConfigServerDTO, TokenUsageServerDTO } from '@dailyuse/contracts/ai';
+import type { TokenUsageServerDTO } from '@dailyuse/contracts/ai';
 import {
   BaseAIAdapter,
   type AIGenerationRequest,
@@ -22,66 +24,64 @@ import {
 import { AIGenerationTimeoutError, AIProviderError } from '../errors/AIErrors';
 
 /**
- * 自定义 Provider 配置
+ * DeepSeek 配置
  */
-export interface CustomProviderConfig {
-  /** 提供商名称（用于日志和错误信息） */
-  providerName: string;
-  /** API 基础地址 */
-  baseUrl: string;
+export interface DeepSeekConfig {
   /** API Key */
   apiKey: string;
   /** 默认模型 ID */
   defaultModel: string;
-  /** 超时时间（毫秒，默认 30000） */
+  /** 超时时间（毫秒，默认 60000） */
   timeoutMs?: number;
 }
 
 /**
- * Custom OpenAI Compatible Adapter 实现
+ * DeepSeek Adapter 实现
  *
- * 用于连接 OpenAI 兼容的第三方服务：
- * - 七牛云 AI: https://openai.qiniu.com/v1
- * - Azure OpenAI
- * - 其他兼容 API
+ * 用法：
+ * ```typescript
+ * const adapter = new DeepSeekAdapter({
+ *   apiKey: 'sk-xxx',
+ *   defaultModel: 'deepseek-chat',
+ * });
+ * const response = await adapter.generateText(request);
+ * ```
  */
-export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
+export class DeepSeekAdapter extends BaseAIAdapter {
+  /** DeepSeek API 基础地址 */
+  private static readonly BASE_URL = 'https://api.deepseek.com/v1';
+  /** 提供商名称 */
+  private static readonly PROVIDER_NAME = 'DeepSeek';
+
   private readonly openai: ReturnType<typeof createOpenAI>;
-  private readonly providerName: string;
   private readonly modelId: string;
   private readonly timeoutMs: number;
 
-  constructor(config: CustomProviderConfig) {
-    // 使用 CUSTOM 作为基础 provider 类型
+  constructor(config: DeepSeekConfig) {
     super(AIProvider.CUSTOM, config.defaultModel as any);
 
-    this.providerName = config.providerName;
     this.modelId = config.defaultModel;
-    this.timeoutMs = config.timeoutMs ?? 30000;
+    this.timeoutMs = config.timeoutMs ?? 60000;
 
-    // 创建自定义 OpenAI 兼容 provider
-    // AI SDK 5.x 默认使用 OpenAI Responses API，对于第三方兼容服务也适用
     this.openai = createOpenAI({
       apiKey: config.apiKey,
-      baseURL: config.baseUrl,
+      baseURL: DeepSeekAdapter.BASE_URL,
     });
   }
 
   /**
-   * 一次性生成文本（带超时和 JSON 解析）
+   * 一次性生成文本
    */
   async generateText<T = unknown>(request: AIGenerationRequest): Promise<AIGenerationResponse<T>> {
     try {
       const fullPrompt = this.buildPrompt(request);
 
-      // 创建超时 Promise
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
           reject(new AIGenerationTimeoutError(this.timeoutMs / 1000));
         }, this.timeoutMs);
       });
 
-      // AI 生成 Promise - 使用 .chat() 方法调用 Chat Completions API
       const generationPromise = generateText({
         model: this.openai.chat(this.modelId),
         prompt: fullPrompt,
@@ -89,10 +89,8 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
         maxOutputTokens: request.maxTokens,
       });
 
-      // 竞速：生成 vs 超时
       const result = await Promise.race([generationPromise, timeoutPromise]);
 
-      // 提取 token 使用统计
       const usage = result.usage as any;
       const tokenUsage: TokenUsageServerDTO = {
         promptTokens: usage?.promptTokens ?? 0,
@@ -101,7 +99,6 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
           usage?.totalTokens ?? (usage?.promptTokens ?? 0) + (usage?.completionTokens ?? 0),
       };
 
-      // 尝试解析 JSON
       const parsedContent = this.tryParseJSON<T>(result.text);
 
       return {
@@ -116,7 +113,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
         throw error;
       }
       throw new AIProviderError(
-        this.providerName,
+        DeepSeekAdapter.PROVIDER_NAME,
         error instanceof Error ? error.message : 'Unknown error',
         error instanceof Error ? error : undefined,
       );
@@ -124,7 +121,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 流式生成文本（AsyncGenerator）
+   * 流式生成文本
    */
   async *streamText(request: AIGenerationRequest): AsyncGenerator<AIStreamChunk, void, unknown> {
     try {
@@ -148,7 +145,6 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
         };
       }
 
-      // 等待最终结果以获取 token 统计
       const finalResult = await result;
       const usage = (await finalResult.usage) as any;
 
@@ -167,7 +163,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
       };
     } catch (error) {
       throw new AIProviderError(
-        this.providerName,
+        DeepSeekAdapter.PROVIDER_NAME,
         error instanceof Error ? error.message : 'Stream error',
         error instanceof Error ? error : undefined,
       );
@@ -194,7 +190,7 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
    * 获取提供商名称
    */
   getProviderName(): string {
-    return this.providerName;
+    return DeepSeekAdapter.PROVIDER_NAME;
   }
 
   /**
@@ -224,13 +220,12 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
   }
 
   /**
-   * 尝试解析 JSON（支持 Markdown 代码块）
+   * 尝试解析 JSON
    */
   private tryParseJSON<T>(text: string): T | null {
     try {
       return JSON.parse(text) as T;
     } catch {
-      // 尝试提取 Markdown 代码块中的 JSON
       const jsonMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
       if (jsonMatch && jsonMatch[1]) {
         try {
@@ -243,7 +238,3 @@ export class CustomOpenAICompatibleAdapter extends BaseAIAdapter {
     }
   }
 }
-
-
-
-

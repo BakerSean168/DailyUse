@@ -304,6 +304,31 @@ export class AIProviderConfigService {
   }
 
   /**
+   * 获取 Provider 的模型列表（公开方法，用于配置过程中获取模型）
+   * 不需要保存 Provider 配置即可调用
+   */
+  async fetchModelsFromProvider(
+    providerType: AIProviderType,
+    baseUrl: string,
+    apiKey: string,
+  ): Promise<{ models: AIModelInfo[]; success: boolean; error?: string }> {
+    try {
+      const models = await this.fetchModels(providerType, baseUrl, apiKey);
+      return {
+        models,
+        success: true,
+      };
+    } catch (error) {
+      logger.error('Failed to fetch models from provider', { error, providerType });
+      return {
+        models: this.getDefaultModels(providerType),
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch models',
+      };
+    }
+  }
+
+  /**
    * 获取 Provider 的模型列表
    * 注意：这是一个简化实现，不同 Provider 可能有不同的 API
    */

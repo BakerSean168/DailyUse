@@ -484,7 +484,26 @@ export class InterceptorManager {
         } as any,
       );
 
-      const { accessToken, expiresIn } = response.data;
+      // 🔥 修复：后端返回标准 API 响应格式 { success, code, data: { accessToken, expiresAt }, message }
+      // 需要从 response.data.data 提取 accessToken（因为使用原始 axios 实例，不经过 ApiClient.extractData）
+      const apiResponse = response.data;
+      
+      // 检查 API 响应是否成功
+      if (!apiResponse || apiResponse.success !== true) {
+        const errorMessage = apiResponse?.message || 'Token 刷新失败';
+        LogManager.error('Token refresh API returned error', { apiResponse });
+        throw new Error(errorMessage);
+      }
+
+      const { accessToken, expiresAt } = apiResponse.data;
+      
+      if (!accessToken) {
+        LogManager.error('Token refresh response missing accessToken', { apiResponse });
+        throw new Error('Token 刷新响应缺少 accessToken');
+      }
+
+      // 计算 expiresIn（秒）：从 expiresAt（毫秒时间戳）计算
+      const expiresIn = expiresAt ? Math.floor((expiresAt - Date.now()) / 1000) : 3600;
 
       // 🔥 更新 Access Token（Refresh Token 由后端自动更新到 Cookie）
       AuthManager.updateAccessToken(accessToken, expiresIn);

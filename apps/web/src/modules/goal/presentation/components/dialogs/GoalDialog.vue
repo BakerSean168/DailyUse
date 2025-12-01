@@ -132,6 +132,99 @@
               <StatusRuleEditor />
             </div>
           </v-window-item>
+
+          <!-- Key Results Tab -->
+          <v-window-item :value="tabs.findIndex(t => t.name === '关键结果')">
+            <div class="key-results-section px-4 py-2">
+              <!-- Empty state when no key results -->
+              <v-alert 
+                v-if="!goalModel?.keyResults?.length" 
+                type="info" 
+                variant="tonal" 
+                density="compact"
+                class="mb-4"
+              >
+                <div class="d-flex align-center justify-space-between">
+                  <span>暂无关键结果，请添加可衡量的关键结果来追踪目标进度</span>
+                  <v-btn 
+                    variant="elevated" 
+                    color="primary" 
+                    size="small"
+                    prepend-icon="mdi-plus"
+                    @click="openKeyResultDialog()"
+                  >
+                    添加关键结果
+                  </v-btn>
+                </div>
+              </v-alert>
+
+              <!-- Key Results List -->
+              <v-list v-else class="key-results-list" density="compact">
+                <v-list-item
+                  v-for="(kr, index) in goalModel?.keyResults"
+                  :key="kr.uuid"
+                  class="kr-item mb-2 pa-3"
+                  rounded
+                >
+                  <template #prepend>
+                    <v-avatar size="32" :color="goalColor" class="mr-2">
+                      <span class="text-white font-weight-bold">{{ index + 1 }}</span>
+                    </v-avatar>
+                  </template>
+
+                  <v-list-item-title class="font-weight-medium">
+                    {{ kr.title || '未命名关键结果' }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle v-if="kr.description" class="text-caption">
+                    {{ kr.description }}
+                  </v-list-item-subtitle>
+                  <v-list-item-subtitle class="mt-1">
+                    <v-chip size="x-small" color="primary" variant="tonal" class="mr-1">
+                      {{ kr.progress?.valueType === 'PERCENTAGE' ? '百分比' : '数值' }}
+                    </v-chip>
+                    <v-chip size="x-small" color="secondary" variant="tonal">
+                      目标: {{ kr.progress?.targetValue ?? 100 }}{{ kr.progress?.unit || '' }}
+                    </v-chip>
+                  </v-list-item-subtitle>
+
+                  <template #append>
+                    <div class="d-flex align-center">
+                      <v-btn
+                        icon
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        @click="editKeyResult((kr as KeyResult))"
+                      >
+                        <v-icon size="18">mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn
+                        icon
+                        variant="text"
+                        size="small"
+                        color="error"
+                        @click="removeKeyResultFromList(kr.uuid)"
+                      >
+                        <v-icon size="18">mdi-delete</v-icon>
+                      </v-btn>
+                    </div>
+                  </template>
+                </v-list-item>
+
+                <!-- Add more button at bottom -->
+                <v-btn 
+                  block 
+                  variant="outlined" 
+                  color="primary" 
+                  class="mt-3"
+                  prepend-icon="mdi-plus"
+                  @click="openKeyResultDialog()"
+                >
+                  添加关键结果
+                </v-btn>
+              </v-list>
+            </div>
+          </v-window-item>
         </v-window>
       </v-card-text>
     </v-card>
@@ -181,7 +274,20 @@ const prefillData = ref<{
   description?: string;
   category?: string;
   timeframe?: string;
-  keyResults?: Array<{ title: string; description?: string }>;
+  motivation?: string;
+  feasibilityAnalysis?: string;
+  importance?: ImportanceLevel;
+  urgency?: UrgencyLevel;
+  tags?: string[];
+  suggestedStartDate?: number;
+  suggestedEndDate?: number;
+  keyResults?: Array<{
+    title: string;
+    description?: string;
+    valueType?: string;
+    targetValue?: number;
+    unit?: string;
+  }>;
 } | null>(null);
 
 // 组件对象
@@ -286,6 +392,37 @@ const startRemoveKeyResult = async (goal: Goal, keyResultUuid: string) => {
   }
 };
 
+// 打开关键结果对话框（添加新的 KR）
+const openKeyResultDialog = () => {
+  if (goalModel.value && keyResultDialogRef.value) {
+    // 使用 openForCreateKeyResultInGoalEditing 方法
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    keyResultDialogRef.value.openForCreateKeyResultInGoalEditing(goalModel.value as any);
+  }
+};
+
+// 编辑关键结果
+const editKeyResult = (kr: KeyResult) => {
+  if (keyResultDialogRef.value && goalModel.value) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    keyResultDialogRef.value.openForUpdateKeyResultInGoalEditing(goalModel.value as any, kr);
+  }
+};
+
+// 从列表中移除关键结果（新建模式下）
+const removeKeyResultFromList = async (keyResultUuid: string) => {
+  if (!goalModel.value) return;
+  
+  try {
+    const confirmed = await message.delConfirm('确定要删除这个关键结果吗？', '确认删除');
+    if (confirmed) {
+      goalModel.value.removeKeyResult(keyResultUuid);
+    }
+  } catch {
+    console.log('取消删除关键结果');
+  }
+};
+
 // 监听弹窗和传入对象，初始化本地对象
 watch(
   [visible, () => propGoal.value],
@@ -343,18 +480,64 @@ watch(
 
         // 应用 AI 预填充数据
         if (prefillData.value) {
+          console.log('[GoalDialog] 应用 AI 预填充数据:', prefillData.value);
+          
           if (prefillData.value.title) {
             goalModel.value.updateTitle(prefillData.value.title);
           }
           if (prefillData.value.description) {
             goalModel.value.updateDescription(prefillData.value.description);
           }
-          // TODO: 可以添加更多字段的预填充，如 category 映射到 folder
+          if (prefillData.value.motivation) {
+            goalModel.value.updateMotivation(prefillData.value.motivation);
+          }
+          if (prefillData.value.feasibilityAnalysis) {
+            goalModel.value.updateFeasibilityAnalysis(prefillData.value.feasibilityAnalysis);
+          }
+          if (prefillData.value.importance !== undefined) {
+            goalModel.value.updateImportance(prefillData.value.importance as ImportanceLevel);
+          }
+          if (prefillData.value.urgency !== undefined) {
+            goalModel.value.updateUrgency(prefillData.value.urgency as UrgencyLevel);
+          }
+          if (prefillData.value.tags?.length) {
+            goalModel.value.updateTags(prefillData.value.tags);
+          }
+          // 使用 AI 建议的日期
+          if (prefillData.value.suggestedStartDate) {
+            goalModel.value.updateStartDate(prefillData.value.suggestedStartDate);
+          }
+          if (prefillData.value.suggestedEndDate) {
+            goalModel.value.updateTargetDate(prefillData.value.suggestedEndDate);
+          }
+          // TODO: 可以添加 category 映射到 folder 的逻辑
 
-          // 如果有 keyResults，可以提示用户添加
+          // 如果有 keyResults，直接添加到 goal 中
           if (prefillData.value.keyResults?.length) {
             console.log(`[GoalDialog] AI 建议的 ${prefillData.value.keyResults.length} 个关键结果:`,
               prefillData.value.keyResults);
+            
+            // 为每个 AI 生成的 KeyResult 创建 KeyResult 实例并添加到 goal
+            prefillData.value.keyResults.forEach((krData: any, index: number) => {
+              const kr = KeyResult.forCreate(goalModel.value!.uuid);
+              if (krData.title) {
+                kr.updateTitle(krData.title);
+              }
+              if (krData.description) {
+                kr.updateDescription(krData.description);
+              }
+              // 更新进度配置
+              kr.updateProgressConfig({
+                valueType: krData.valueType || 'percentage',
+                targetValue: krData.targetValue ?? 100,
+                currentValue: 0,
+                unit: krData.unit || undefined,
+              });
+              kr.updateOrder(index);
+              goalModel.value!.addKeyResult(kr);
+            });
+            
+            console.log(`[GoalDialog] 已添加 ${goalModel.value?.keyResults?.length || 0} 个关键结果到目标`);
           }
 
           // 清空预填充数据
@@ -371,6 +554,7 @@ const activeTab = ref(0);
 
 const allTabs = [
   { name: '基本信息', icon: 'mdi-information', color: 'primary' },
+  { name: '关键结果', icon: 'mdi-target', color: 'success' },
   { name: '动机分析', icon: 'mdi-lightbulb', color: 'warning' },
   { name: '规则设置', icon: 'mdi-robot', color: 'info' },
 ];
@@ -756,6 +940,26 @@ defineExpose({
 
 .key-results-overview {
   padding: 16px 0;
+}
+
+.key-results-section {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.key-results-list {
+  background: transparent;
+}
+
+.kr-item {
+  background: rgba(var(--v-theme-surface-light), 0.3);
+  border: 1px solid rgba(var(--v-theme-primary), 0.1);
+  transition: all 0.2s ease;
+}
+
+.kr-item:hover {
+  background: rgba(var(--v-theme-surface-light), 0.5);
+  border-color: rgba(var(--v-theme-primary), 0.3);
 }
 
 .add-kr-btn {

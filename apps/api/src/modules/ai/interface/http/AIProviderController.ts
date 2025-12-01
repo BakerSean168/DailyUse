@@ -32,6 +32,13 @@ export class AIProviderController {
   }
 
   /**
+   * 获取 Switching Service
+   */
+  private static getSwitchingService() {
+    return AIContainer.getInstance().getProviderSwitchingService();
+  }
+
+  /**
    * 创建新的 AI Provider 配置
    * POST /api/ai/providers
    */
@@ -554,6 +561,370 @@ export class AIProviderController {
         .json(
           AIProviderController.responseBuilder.error(
             statusCode === 404 ? ResponseCode.NOT_FOUND : ResponseCode.INTERNAL_ERROR,
+            error instanceof Error ? error.message : 'Internal server error',
+          ),
+        );
+    }
+  }
+
+  /**
+   * 获取模型列表（不需要保存 Provider）
+   * POST /api/ai/providers/fetch-models
+   * 
+   * 用于配置过程中获取 AI 服务提供商的可用模型列表
+   * 用户输入 API 地址和 API Key 后，点击"获取模型"按钮调用此接口
+   */
+  static async fetchModels(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      const { providerType, baseUrl, apiKey } = req.body;
+
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      if (!providerType || !baseUrl || !apiKey) {
+        res
+          .status(400)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              'providerType, baseUrl, and apiKey are required',
+            ),
+          );
+        return;
+      }
+
+      logger.info('Fetching AI Provider models', { accountUuid, providerType, baseUrl });
+
+      const service = AIProviderController.getService();
+      const result = await service.fetchModelsFromProvider(providerType, baseUrl, apiKey);
+
+      res
+        .status(200)
+        .json(
+          AIProviderController.responseBuilder.success(result, 'Models fetched successfully'),
+        );
+    } catch (error) {
+      logger.error('Failed to fetch AI Provider models', { error });
+      res
+        .status(500)
+        .json(
+          AIProviderController.responseBuilder.error(
+            ResponseCode.INTERNAL_ERROR,
+            error instanceof Error ? error.message : 'Internal server error',
+          ),
+        );
+    }
+  }
+
+  // ===== 智能切换相关端点 =====
+
+  /**
+   * 获取按优先级排序的活跃 Provider 列表
+   * GET /api/ai/providers/prioritized
+   */
+  static async getProvidersByPriority(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      const switchingService = AIProviderController.getSwitchingService();
+      const providers = await switchingService.getActiveProvidersByPriority(accountUuid);
+
+      // 转换为客户端 DTO（隐藏 API Key）
+      const service = AIProviderController.getService();
+      const clientProviders = await service.getProviders(accountUuid);
+
+      // 按 priority 排序
+      const sortedProviders = clientProviders
+        .filter(p => p.isActive)
+        .sort((a, b) => (a.priority ?? 100) - (b.priority ?? 100));
+
+      res
+        .status(200)
+        .json(
+          AIProviderController.responseBuilder.success(
+            sortedProviders,
+            'Prioritized providers retrieved successfully',
+          ),
+        );
+    } catch (error) {
+      logger.error('Failed to get prioritized providers', { error });
+      res
+        .status(500)
+        .json(
+          AIProviderController.responseBuilder.error(
+            ResponseCode.INTERNAL_ERROR,
+            error instanceof Error ? error.message : 'Internal server error',
+          ),
+        );
+    }
+  }
+
+  /**
+   * 批量更新 Provider 优先级
+   * PUT /api/ai/providers/priorities
+   * 
+   * Request Body:
+   * { priorities: [{ providerUuid: string, priority: number }] }
+   */
+  static async updatePriorities(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      const { priorities } = req.body;
+
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      if (!Array.isArray(priorities) || priorities.length === 0) {
+        res
+          .status(400)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              'priorities array is required',
+            ),
+          );
+        return;
+      }
+
+      // 验证每个优先级条目
+      for (const item of priorities) {
+        if (!item.providerUuid || typeof item.priority !== 'number') {
+          res
+            .status(400)
+            .json(
+              AIProviderController.responseBuilder.error(
+                ResponseCode.VALIDATION_ERROR,
+                'Each priority must have providerUuid and priority number',
+              ),
+            );
+          return;
+        }
+        if (item.priority < 1 || item.priority > 999) {
+          res
+            .status(400)
+            .json(
+              AIProviderController.responseBuilder.error(
+                ResponseCode.VALIDATION_ERROR,
+                'Priority must be between 1 and 999',
+              ),
+            );
+          return;
+        }
+      }
+
+      logger.info('Updating provider priorities', { accountUuid, count: priorities.length });
+
+      const switchingService = AIProviderController.getSwitchingService();
+      await switchingService.updateProviderPriorities(accountUuid, priorities);
+
+      res
+        .status(200)
+        .json(
+          AIProviderController.responseBuilder.success(null, 'Priorities updated successfully'),
+        );
+    } catch (error) {
+      logger.error('Failed to update provider priorities', { error });
+      res
+        .status(500)
+        .json(
+          AIProviderController.responseBuilder.error(
+            ResponseCode.INTERNAL_ERROR,
+            error instanceof Error ? error.message : 'Internal server error',
+          ),
+        );
+    }
+  }
+
+  /**
+   * 获取所有 Provider 的健康状态
+   * GET /api/ai/providers/health
+   */
+  static async getHealthStatuses(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      const switchingService = AIProviderController.getSwitchingService();
+      const statuses = await switchingService.getHealthStatuses(accountUuid);
+
+      res
+        .status(200)
+        .json(
+          AIProviderController.responseBuilder.success(
+            statuses,
+            'Health statuses retrieved successfully',
+          ),
+        );
+    } catch (error) {
+      logger.error('Failed to get health statuses', { error });
+      res
+        .status(500)
+        .json(
+          AIProviderController.responseBuilder.error(
+            ResponseCode.INTERNAL_ERROR,
+            error instanceof Error ? error.message : 'Internal server error',
+          ),
+        );
+    }
+  }
+
+  /**
+   * 检查单个 Provider 的健康状态
+   * POST /api/ai/providers/:uuid/health-check
+   */
+  static async checkProviderHealth(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      const { uuid } = req.params;
+
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      if (!uuid) {
+        res
+          .status(400)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              'Provider UUID is required',
+            ),
+          );
+        return;
+      }
+
+      logger.info('Checking provider health', { accountUuid, providerUuid: uuid });
+
+      const switchingService = AIProviderController.getSwitchingService();
+      const status = await switchingService.checkProviderHealth(uuid);
+
+      res
+        .status(200)
+        .json(
+          AIProviderController.responseBuilder.success(status, 'Health check completed'),
+        );
+    } catch (error) {
+      logger.error('Failed to check provider health', { error });
+      const statusCode = (error as Error).message === 'Provider not found' ? 404 : 500;
+      res
+        .status(statusCode)
+        .json(
+          AIProviderController.responseBuilder.error(
+            statusCode === 404 ? ResponseCode.NOT_FOUND : ResponseCode.INTERNAL_ERROR,
+            error instanceof Error ? error.message : 'Internal server error',
+          ),
+        );
+    }
+  }
+
+  /**
+   * 比较成本估算
+   * POST /api/ai/providers/compare-costs
+   * 
+   * Request Body:
+   * { estimatedInputTokens: number, estimatedOutputTokens: number }
+   */
+  static async compareCosts(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const accountUuid = req.user?.accountUuid;
+      const { estimatedInputTokens, estimatedOutputTokens } = req.body;
+
+      if (!accountUuid) {
+        res
+          .status(401)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.UNAUTHORIZED,
+              'Authentication required',
+            ),
+          );
+        return;
+      }
+
+      if (
+        typeof estimatedInputTokens !== 'number' ||
+        typeof estimatedOutputTokens !== 'number'
+      ) {
+        res
+          .status(400)
+          .json(
+            AIProviderController.responseBuilder.error(
+              ResponseCode.VALIDATION_ERROR,
+              'estimatedInputTokens and estimatedOutputTokens are required numbers',
+            ),
+          );
+        return;
+      }
+
+      const switchingService = AIProviderController.getSwitchingService();
+      const costs = await switchingService.compareCosts(
+        accountUuid,
+        estimatedInputTokens,
+        estimatedOutputTokens,
+      );
+
+      res
+        .status(200)
+        .json(
+          AIProviderController.responseBuilder.success(costs, 'Cost comparison retrieved'),
+        );
+    } catch (error) {
+      logger.error('Failed to compare costs', { error });
+      res
+        .status(500)
+        .json(
+          AIProviderController.responseBuilder.error(
+            ResponseCode.INTERNAL_ERROR,
             error instanceof Error ? error.message : 'Internal server error',
           ),
         );

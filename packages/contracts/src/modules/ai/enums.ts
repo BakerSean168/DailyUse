@@ -55,6 +55,16 @@ export enum AIProviderType {
   QINIU = 'QINIU',
   /** Anthropic Claude */
   ANTHROPIC = 'ANTHROPIC',
+  /** OpenRouter 聚合服务 */
+  OPENROUTER = 'OPENROUTER',
+  /** Groq 高速推理 */
+  GROQ = 'GROQ',
+  /** DeepSeek */
+  DEEPSEEK = 'DEEPSEEK',
+  /** SiliconFlow 硅基流动 */
+  SILICONFLOW = 'SILICONFLOW',
+  /** Google AI Studio */
+  GOOGLE = 'GOOGLE',
   /** 自定义 OpenAI 兼容接口 */
   CUSTOM_OPENAI_COMPATIBLE = 'CUSTOM_OPENAI_COMPATIBLE',
 }

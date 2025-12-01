@@ -13,16 +13,19 @@
  * - 应用服务协调所有依赖
  */
 
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
+import { prisma } from '../../../../config/prisma';
 import { AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import { AIGenerationApplicationService } from '../../application/services/AIGenerationApplicationService';
 import { AIConversationService } from '../../application/services/AIConversationService';
 import { AIProviderConfigService } from '../../application/services/AIProviderConfigService';
+import { AIProviderSwitchingService } from '../../application/services/AIProviderSwitchingService';
+import { GoalGenerationApplicationService } from '../../application/services/GoalGenerationApplicationService';
 import { PrismaAIUsageQuotaRepository } from '../repositories/PrismaAIUsageQuotaRepository';
 import { PrismaAIConversationRepository } from '../repositories/PrismaAIConversationRepository';
 import { PrismaAIProviderConfigRepository } from '../repositories/PrismaAIProviderConfigRepository';
 import { KnowledgeGenerationTaskRepository } from '../repositories/KnowledgeGenerationTaskRepository';
-import { OpenAIAdapter } from '../adapters/OpenAIAdapter';
+import { AIAdapterFactory } from '../adapters/AIAdapterFactory';
 import type { BaseAIAdapter } from '../adapters/BaseAIAdapter';
 
 /**
@@ -34,6 +37,8 @@ export class AIContainer {
   private applicationService?: AIGenerationApplicationService;
   private conversationService?: AIConversationService;
   private providerConfigService?: AIProviderConfigService;
+  private providerSwitchingService?: AIProviderSwitchingService;
+  private goalGenerationService?: GoalGenerationApplicationService;
   private validationService?: AIGenerationValidationService;
   private conversationRepository?: PrismaAIConversationRepository;
   private quotaRepository?: PrismaAIUsageQuotaRepository;
@@ -42,8 +47,8 @@ export class AIContainer {
   private aiAdapter?: BaseAIAdapter;
 
   private constructor() {
-    // 初始化 Prisma Client（共享实例）
-    this.prisma = new PrismaClient();
+    // 使用全局共享的 Prisma 实例（已在应用启动时连接）
+    this.prisma = prisma;
   }
 
   /**
@@ -98,12 +103,29 @@ export class AIContainer {
 
   /**
    * 获取 AI Adapter（基础设施）
-   * @deprecated 使用 getProviderConfigService().getAdapterForProvider() 获取指定 Provider 的 Adapter
+   * 
+   * 注意：这个方法仅用于需要快速获取一个 AI Adapter 的场景
+   * 对于用户相关的 AI 调用，应该使用 getProviderConfigService().getAdapterForProvider()
+   * 
+   * @deprecated 使用 getProviderConfigService().getAdapterForProvider() 获取指定用户 Provider 的 Adapter
    */
   getAIAdapter(): BaseAIAdapter {
     if (!this.aiAdapter) {
-      const apiKey = process.env.OPENAI_API_KEY || '';
-      this.aiAdapter = new OpenAIAdapter(apiKey);
+      // 尝试从环境变量创建一个临时适配器
+      // 优先使用青牛云配置，因为它不依赖特定的 OpenAI API
+      try {
+        this.aiAdapter = AIAdapterFactory.getQiniuAdapterFromEnv();
+      } catch {
+        // 如果青牛云配置不存在，尝试默认 OpenAI
+        try {
+          this.aiAdapter = AIAdapterFactory.getDefaultAdapter();
+        } catch {
+          throw new Error(
+            'No AI Provider configured in environment. ' +
+            'Please set QI_NIU_YUN_API_KEY + QI_NIU_YUN_BASE_URL or OPENAI_API_KEY.',
+          );
+        }
+      }
     }
     return this.aiAdapter;
   }
@@ -117,6 +139,17 @@ export class AIContainer {
       this.providerConfigService = new AIProviderConfigService(repository);
     }
     return this.providerConfigService;
+  }
+
+  /**
+   * 获取 Provider Switching Service（智能切换 + 故障转移）
+   */
+  getProviderSwitchingService(): AIProviderSwitchingService {
+    if (!this.providerSwitchingService) {
+      const repository = this.getProviderConfigRepository();
+      this.providerSwitchingService = new AIProviderSwitchingService(repository);
+    }
+    return this.providerSwitchingService;
   }
 
   /**
@@ -138,6 +171,27 @@ export class AIContainer {
       this.conversationService = new AIConversationService(conversationRepository);
     }
     return this.conversationService;
+  }
+
+  /**
+   * 获取 GoalGenerationApplicationService（目标生成服务）
+   * 
+   * 注意：此服务不再绑定固定的 AI Adapter
+   * 每次调用时会根据用户配置动态获取对应的 AI Provider
+   */
+  getGoalGenerationService(): GoalGenerationApplicationService {
+    if (!this.goalGenerationService) {
+      const validationService = this.getValidationService();
+      const providerConfigRepository = this.getProviderConfigRepository();
+      const quotaRepository = this.getQuotaRepository();
+
+      this.goalGenerationService = new GoalGenerationApplicationService(
+        validationService,
+        providerConfigRepository,
+        quotaRepository,
+      );
+    }
+    return this.goalGenerationService;
   }
 
   /**
@@ -168,8 +222,20 @@ export class AIContainer {
 
   /**
    * 清理资源
+   * 注意：不断开 Prisma 连接，因为使用的是全局共享实例
    */
   async dispose(): Promise<void> {
-    await this.prisma.$disconnect();
+    // 清理服务实例缓存，但不断开 Prisma 连接（由应用全局管理）
+    this.applicationService = undefined;
+    this.conversationService = undefined;
+    this.providerConfigService = undefined;
+    this.providerSwitchingService = undefined;
+    this.goalGenerationService = undefined;
+    this.validationService = undefined;
+    this.conversationRepository = undefined;
+    this.quotaRepository = undefined;
+    this.providerConfigRepository = undefined;
+    this.taskRepository = undefined;
+    this.aiAdapter = undefined;
   }
 }

@@ -12,6 +12,12 @@
 // ===== Initialization =====
 export { initializeAIModule } from './initialization';
 
+// ===== Application Layer - Services =====
+export {
+  GoalGenerationApplicationService,
+  goalGenerationApplicationService,
+} from './application';
+
 // ===== Presentation Layer - Composables =====
 export { useAIGeneration } from './presentation/composables/useAIGeneration';
 export { useAIProviders } from './presentation/composables/useAIProviders';

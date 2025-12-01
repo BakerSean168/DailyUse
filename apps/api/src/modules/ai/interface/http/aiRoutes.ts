@@ -12,6 +12,13 @@
  * - DELETE /api/ai/providers/:uuid - 删除 Provider 配置
  * - POST /api/ai/providers/:uuid/test - 测试 Provider 连接
  * - POST /api/ai/providers/:uuid/set-default - 设为默认 Provider
+ * - POST /api/ai/providers/:uuid/health-check - 检查 Provider 健康状态
+ *
+ * === 智能切换 ===
+ * - GET /api/ai/providers/prioritized - 获取按优先级排序的活跃 Provider
+ * - PUT /api/ai/providers/priorities - 批量更新 Provider 优先级
+ * - GET /api/ai/providers/health - 获取所有 Provider 健康状态
+ * - POST /api/ai/providers/compare-costs - 比较成本估算
  *
  * === AI 生成相关 ===
  * - POST /api/ai/generate/goal - 生成 Goal（从用户想法）
@@ -88,6 +95,63 @@ router.use(authMiddleware);
  *         description: Provider 创建成功
  */
 router.post('/providers', AIProviderController.createProvider);
+
+/**
+ * @swagger
+ * /api/ai/providers/fetch-models:
+ *   post:
+ *     tags: [AI Provider]
+ *     summary: 获取 AI 服务提供商的可用模型列表（配置过程中使用）
+ *     description: 在保存 Provider 配置之前，用于获取可用的模型列表供用户选择
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - providerType
+ *               - baseUrl
+ *               - apiKey
+ *             properties:
+ *               providerType:
+ *                 type: string
+ *                 enum: [OPENAI, ANTHROPIC, QINIU, CUSTOM_OPENAI_COMPATIBLE]
+ *                 description: 提供商类型
+ *               baseUrl:
+ *                 type: string
+ *                 description: API 地址
+ *                 example: https://openai.qiniu.com/v1
+ *               apiKey:
+ *                 type: string
+ *                 description: API Key
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 models:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                 success:
+ *                   type: boolean
+ *                 error:
+ *                   type: string
+ */
+router.post('/providers/fetch-models', AIProviderController.fetchModels);
 
 /**
  * @swagger
@@ -187,7 +251,7 @@ router.delete('/providers/:uuid', AIProviderController.deleteProvider);
  * /api/ai/providers/{uuid}/test:
  *   post:
  *     tags: [AI Provider]
- *     summary: 测试 Provider 连接
+ *     summary: 测试已保存的 Provider 连接
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -200,7 +264,7 @@ router.delete('/providers/:uuid', AIProviderController.deleteProvider);
  *       200:
  *         description: 测试成功
  */
-router.post('/providers/:uuid/test', AIProviderController.testConnection);
+router.post('/providers/:uuid/test', AIProviderController.testSavedProvider);
 
 /**
  * @swagger
@@ -221,6 +285,118 @@ router.post('/providers/:uuid/test', AIProviderController.testConnection);
  *         description: 设置成功
  */
 router.post('/providers/:uuid/set-default', AIProviderController.setDefaultProvider);
+
+/**
+ * @swagger
+ * /api/ai/providers/{uuid}/health-check:
+ *   post:
+ *     tags: [AI Provider]
+ *     summary: 检查 Provider 健康状态
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uuid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 检查完成
+ */
+router.post('/providers/:uuid/health-check', AIProviderController.checkProviderHealth);
+
+// ==================== 智能切换路由 ====================
+
+/**
+ * @swagger
+ * /api/ai/providers/prioritized:
+ *   get:
+ *     tags: [AI Provider]
+ *     summary: 获取按优先级排序的活跃 Provider 列表
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ */
+router.get('/providers/prioritized', AIProviderController.getProvidersByPriority);
+
+/**
+ * @swagger
+ * /api/ai/providers/priorities:
+ *   put:
+ *     tags: [AI Provider]
+ *     summary: 批量更新 Provider 优先级
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - priorities
+ *             properties:
+ *               priorities:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     providerUuid:
+ *                       type: string
+ *                     priority:
+ *                       type: number
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ */
+router.put('/providers/priorities', AIProviderController.updatePriorities);
+
+/**
+ * @swagger
+ * /api/ai/providers/health:
+ *   get:
+ *     tags: [AI Provider]
+ *     summary: 获取所有 Provider 的健康状态
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ */
+router.get('/providers/health', AIProviderController.getHealthStatuses);
+
+/**
+ * @swagger
+ * /api/ai/providers/compare-costs:
+ *   post:
+ *     tags: [AI Provider]
+ *     summary: 比较不同 Provider 的成本估算
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - estimatedInputTokens
+ *               - estimatedOutputTokens
+ *             properties:
+ *               estimatedInputTokens:
+ *                 type: number
+ *                 description: 预估输入 token 数量
+ *               estimatedOutputTokens:
+ *                 type: number
+ *                 description: 预估输出 token 数量
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ */
+router.post('/providers/compare-costs', AIProviderController.compareCosts);
 
 // ==================== AI 生成路由 ====================
 
@@ -255,6 +431,50 @@ router.post('/providers/:uuid/set-default', AIProviderController.setDefaultProvi
  *         description: 生成成功，返回 Goal 预览
  */
 router.post('/generate/goal', AIGenerationController.generateGoal);
+
+/**
+ * @swagger
+ * /api/ai/generate/goal-with-krs:
+ *   post:
+ *     tags: [AI Generation]
+ *     summary: 从用户想法生成 Goal 和 Key Results
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idea
+ *             properties:
+ *               idea:
+ *                 type: string
+ *                 description: 用户的原始想法
+ *               category:
+ *                 type: string
+ *                 description: 目标分类（可选）
+ *               startDate:
+ *                 type: number
+ *                 description: 开始日期时间戳
+ *               endDate:
+ *                 type: number
+ *                 description: 结束日期时间戳
+ *               context:
+ *                 type: string
+ *                 description: 额外上下文（可选）
+ *               keyResultCount:
+ *                 type: number
+ *                 description: 要生成的 KR 数量（2-5，默认3）
+ *               providerUuid:
+ *                 type: string
+ *                 description: 指定使用的 AI Provider（可选）
+ *     responses:
+ *       200:
+ *         description: 生成成功，返回 Goal 和 Key Results
+ */
+router.post('/generate/goal-with-krs', AIGenerationController.generateGoalWithKRs);
 
 /**
  * @swagger

@@ -80,13 +80,13 @@ onUnmounted(() => {
 </script>
 <style scoped>
 .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
-.chat-window { display:flex; flex-direction:column; height:100%; }
-.chat-header { display:flex; align-items:center; justify-content:space-between; padding:.5rem 1rem; border-bottom:1px solid #ddd; }
-.chat-messages { flex:1; overflow-y:auto; padding:1rem; }
+.chat-window { display:flex; flex-direction:column; height:100%; background: rgb(var(--v-theme-surface)); }
+.chat-header { display:flex; align-items:center; justify-content:space-between; padding:.5rem 1rem; border-bottom:1px solid rgba(var(--v-theme-on-surface), 0.12); background: rgba(var(--v-theme-surface), 0.95); }
+.chat-messages { flex:1; overflow-y:auto; padding:1rem; background: rgba(var(--v-theme-background), 0.5); }
 .chat-messages::-webkit-scrollbar { width:6px; }
-.chat-messages::-webkit-scrollbar-track { background:rgba(0,0,0,0.02); }
-.chat-messages::-webkit-scrollbar-thumb { background:rgba(74,108,247,0.3); border-radius:3px; }
-.chat-messages::-webkit-scrollbar-thumb:hover { background:rgba(74,108,247,0.5); }
-.error-banner { background:#ffebee; color:#c62828; padding:.5rem 1rem; font-size:.875rem; }
-.status { font-size:11px; color:#555; }
+.chat-messages::-webkit-scrollbar-track { background:rgba(var(--v-theme-on-surface), 0.02); }
+.chat-messages::-webkit-scrollbar-thumb { background:rgba(var(--v-theme-primary), 0.3); border-radius:3px; }
+.chat-messages::-webkit-scrollbar-thumb:hover { background:rgba(var(--v-theme-primary), 0.5); }
+.error-banner { background:rgba(var(--v-theme-error), 0.1); color:rgb(var(--v-theme-error)); padding:.5rem 1rem; font-size:.875rem; }
+.status { font-size:11px; color:rgba(var(--v-theme-on-surface), 0.7); }
 </style>

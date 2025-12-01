@@ -2,10 +2,20 @@
     <v-container fluid>
         <v-row>
             <v-col cols="12">
-                <h3 class="text-h5 mb-4">
-                    <v-icon class="mr-2">mdi-robot</v-icon>
-                    AI 服务提供商
-                </h3>
+                <div class="d-flex align-center justify-space-between mb-4">
+                    <h3 class="text-h5">
+                        <v-icon class="mr-2">mdi-robot</v-icon>
+                        AI 服务提供商
+                    </h3>
+                    <v-btn
+                        v-if="providers.length > 0"
+                        color="primary"
+                        prepend-icon="mdi-plus"
+                        @click="openCreateDialog"
+                    >
+                        添加提供商
+                    </v-btn>
+                </div>
             </v-col>
         </v-row>
 
@@ -15,8 +25,8 @@
                 <v-alert type="info" variant="tonal" prominent border="start" class="mb-4">
                     <v-alert-title>配置您的 AI 服务</v-alert-title>
                     <div class="text-body-2">
-                        配置自定义 AI 服务提供商（如七牛云、Azure OpenAI 等）以使用 AI 功能。
-                        您可以添加多个提供商并设置一个默认提供商。
+                        配置 AI 服务提供商以使用 AI 功能。支持 OpenRouter、Groq、七牛云等多种服务，
+                        部分服务提供免费额度。您可以添加多个提供商并设置一个默认提供商。
                     </div>
                 </v-alert>
             </v-col>
@@ -43,15 +53,51 @@
         <v-row v-else>
             <v-col cols="12">
                 <!-- 空状态 -->
-                <v-card v-if="!providers.length" variant="outlined" class="text-center pa-8">
-                    <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-robot-off</v-icon>
-                    <p class="text-h6 mb-2">尚未配置 AI 服务</p>
-                    <p class="text-body-2 text-medium-emphasis mb-4">
-                        添加您的第一个 AI 服务提供商以开始使用 AI 功能
-                    </p>
-                    <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreateDialog">
-                        添加提供商
-                    </v-btn>
+                <v-card v-if="!providers.length" variant="outlined" class="pa-8">
+                    <div class="text-center mb-6">
+                        <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-robot-off</v-icon>
+                        <p class="text-h6 mb-2">尚未配置 AI 服务</p>
+                        <p class="text-body-2 text-medium-emphasis mb-4">
+                            添加您的第一个 AI 服务提供商以开始使用 AI 功能
+                        </p>
+                    </div>
+                    
+                    <!-- 快速入门模板 -->
+                    <div class="mb-4">
+                        <p class="text-subtitle-2 text-medium-emphasis mb-3">🚀 推荐的免费服务（快速开始）</p>
+                        <v-row dense>
+                            <v-col 
+                                v-for="template in freeTemplates" 
+                                :key="template.id" 
+                                cols="6" 
+                                sm="4" 
+                                md="3"
+                            >
+                                <v-card
+                                    variant="outlined"
+                                    hover
+                                    class="quick-template-card"
+                                    @click="openCreateDialogWithTemplate(template)"
+                                >
+                                    <v-card-text class="text-center pa-3">
+                                        <v-avatar :color="template.color" size="40" class="mb-2">
+                                            <v-icon color="white" size="20">{{ template.icon }}</v-icon>
+                                        </v-avatar>
+                                        <div class="text-subtitle-2">{{ template.name }}</div>
+                                        <v-chip color="success" size="x-small" variant="tonal" class="mt-1">
+                                            免费
+                                        </v-chip>
+                                    </v-card-text>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </div>
+                    
+                    <div class="text-center">
+                        <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreateDialog">
+                            查看所有提供商
+                        </v-btn>
+                    </div>
                 </v-card>
 
                 <!-- Provider 卡片列表 -->
@@ -123,70 +169,18 @@
                             </v-card>
                         </v-col>
                     </v-row>
-
-                    <!-- 添加按钮 -->
-                    <v-row class="mt-4">
-                        <v-col cols="12">
-                            <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreateDialog">
-                                添加提供商
-                            </v-btn>
-                        </v-col>
-                    </v-row>
                 </template>
             </v-col>
         </v-row>
 
         <!-- 创建/编辑对话框 -->
-        <v-dialog v-model="dialogVisible" max-width="600" persistent>
-            <v-card>
-                <v-card-title>
-                    {{ editingProvider ? '编辑提供商' : '添加提供商' }}
-                </v-card-title>
-
-                <v-card-text>
-                    <v-form ref="formRef" v-model="formValid">
-                        <!-- 名称 -->
-                        <v-text-field v-model="formData.name" label="名称" placeholder="例如：我的七牛云"
-                            :rules="[rules.required, rules.maxLength(50)]" prepend-icon="mdi-tag" class="mb-3" />
-
-                        <!-- 提供商类型 -->
-                        <v-select v-model="formData.providerType" label="提供商类型" :items="providerTypeOptions"
-                            item-title="label" item-value="value" :rules="[rules.required]" prepend-icon="mdi-cloud"
-                            class="mb-3" />
-
-                        <!-- API 地址 -->
-                        <v-text-field v-model="formData.baseUrl" label="API 地址" placeholder="https://api.example.com/v1"
-                            :rules="[rules.required, rules.url]" prepend-icon="mdi-link" class="mb-3" />
-
-                        <!-- API Key -->
-                        <v-text-field v-model="formData.apiKey"
-                            :label="editingProvider ? 'API Key (留空保持不变)' : 'API Key'"
-                            :placeholder="editingProvider ? '••••••••' : '输入您的 API Key'"
-                            :rules="editingProvider ? [] : [rules.required]" :type="showApiKey ? 'text' : 'password'"
-                            prepend-icon="mdi-key" :append-inner-icon="showApiKey ? 'mdi-eye-off' : 'mdi-eye'"
-                            @click:append-inner="showApiKey = !showApiKey" class="mb-3" />
-
-                        <!-- 默认模型 -->
-                        <v-text-field v-model="formData.defaultModel" label="默认模型" placeholder="例如：deepseek-v3"
-                            prepend-icon="mdi-brain" class="mb-3" />
-
-                        <!-- 设为默认 -->
-                        <v-checkbox v-model="formData.isDefault" label="设为默认提供商" color="primary" />
-
-                        <!-- 启用状态 -->
-                        <v-checkbox v-model="formData.isActive" label="启用此提供商" color="primary" />
-                    </v-form>
-                </v-card-text>
-
-                <v-card-actions>
-                    <v-spacer />
-                    <v-btn variant="text" @click="closeDialog">取消</v-btn>
-                    <v-btn color="primary" :loading="loading" :disabled="!formValid" @click="handleSave">
-                        {{ editingProvider ? '保存' : '创建' }}
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
+        <ProviderConfigDialog
+            v-model="dialogVisible"
+            :editing-provider="editingProvider"
+            :existing-providers-count="providers.length"
+            @save="handleDialogSave"
+            @close="closeDialog"
+        />
 
         <!-- 删除确认对话框 -->
         <v-dialog v-model="deleteDialogVisible" max-width="400">
@@ -214,10 +208,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useAIProviders } from '../composables/useAIProviders';
-import { AIProviderType } from '@dailyuse/contracts/ai';
-import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
+import { AIProviderType, AI_PROVIDER_TEMPLATES } from '@dailyuse/contracts/ai';
+import type { AIProviderConfigClientDTO, AIProviderTemplate } from '@dailyuse/contracts/ai';
+import ProviderConfigDialog from './ProviderConfigDialog.vue';
+
+// ===== Types =====
+interface DialogSaveData {
+    name: string;
+    providerType: AIProviderType;
+    baseUrl: string;
+    apiKey: string;
+    defaultModel?: string;
+    isDefault: boolean;
+    isActive: boolean;
+}
 
 // ===== Composables =====
 const {
@@ -238,20 +244,6 @@ const dialogVisible = ref(false);
 const deleteDialogVisible = ref(false);
 const editingProvider = ref<AIProviderConfigClientDTO | null>(null);
 const deletingProvider = ref<AIProviderConfigClientDTO | null>(null);
-const formRef = ref();
-const formValid = ref(false);
-const showApiKey = ref(false);
-
-// ===== 表单数据 =====
-const formData = reactive({
-    name: '',
-    providerType: AIProviderType.QINIU as string,
-    baseUrl: '',
-    apiKey: '',
-    defaultModel: '',
-    isDefault: false,
-    isActive: true,
-});
 
 // ===== Snackbar =====
 const snackbar = reactive({
@@ -260,28 +252,23 @@ const snackbar = reactive({
     color: 'success' as 'success' | 'error' | 'info',
 });
 
+// ===== Computed =====
+const freeTemplates = computed(() => {
+    return AI_PROVIDER_TEMPLATES.filter(t => t.hasFreeQuota && t.id !== 'custom').slice(0, 4);
+});
+
 // ===== 提供商类型选项 =====
 const providerTypeOptions = [
+    { label: 'OpenRouter', value: AIProviderType.OPENROUTER },
+    { label: 'Groq', value: AIProviderType.GROQ },
+    { label: 'DeepSeek', value: AIProviderType.DEEPSEEK },
     { label: '七牛云 AI', value: AIProviderType.QINIU },
+    { label: 'SiliconFlow', value: AIProviderType.SILICONFLOW },
     { label: 'OpenAI', value: AIProviderType.OPENAI },
     { label: 'Anthropic Claude', value: AIProviderType.ANTHROPIC },
+    { label: 'Google AI Studio', value: AIProviderType.GOOGLE },
     { label: '自定义 OpenAI 兼容', value: AIProviderType.CUSTOM_OPENAI_COMPATIBLE },
 ];
-
-// ===== 验证规则 =====
-const rules = {
-    required: (v: string) => !!v || '此字段必填',
-    maxLength: (max: number) => (v: string) => !v || v.length <= max || `最多 ${max} 个字符`,
-    url: (v: string) => {
-        if (!v) return true;
-        try {
-            new URL(v);
-            return true;
-        } catch {
-            return '请输入有效的 URL';
-        }
-    },
-};
 
 // ===== 工具方法 =====
 function getProviderIcon(type: string): string {
@@ -291,7 +278,17 @@ function getProviderIcon(type: string): string {
         case AIProviderType.QINIU:
             return 'mdi-cloud';
         case AIProviderType.ANTHROPIC:
+            return 'mdi-account-voice';
+        case AIProviderType.OPENROUTER:
+            return 'mdi-router-wireless';
+        case AIProviderType.GROQ:
+            return 'mdi-lightning-bolt';
+        case AIProviderType.DEEPSEEK:
             return 'mdi-brain';
+        case AIProviderType.SILICONFLOW:
+            return 'mdi-chip';
+        case AIProviderType.GOOGLE:
+            return 'mdi-google';
         default:
             return 'mdi-robot';
     }
@@ -305,6 +302,16 @@ function getProviderColor(type: string): string {
             return 'blue';
         case AIProviderType.ANTHROPIC:
             return 'orange';
+        case AIProviderType.OPENROUTER:
+            return 'indigo';
+        case AIProviderType.GROQ:
+            return 'deep-orange';
+        case AIProviderType.DEEPSEEK:
+            return 'blue-darken-2';
+        case AIProviderType.SILICONFLOW:
+            return 'purple';
+        case AIProviderType.GOOGLE:
+            return 'blue';
         default:
             return 'purple';
     }
@@ -324,27 +331,17 @@ function showMessage(message: string, color: 'success' | 'error' | 'info' = 'suc
 // ===== 对话框操作 =====
 function openCreateDialog() {
     editingProvider.value = null;
-    formData.name = '';
-    formData.providerType = AIProviderType.QINIU;
-    formData.baseUrl = 'https://openai.qiniu.com/v1';
-    formData.apiKey = '';
-    formData.defaultModel = 'deepseek-v3';
-    formData.isDefault = providers.value.length === 0;
-    formData.isActive = true;
-    showApiKey.value = false;
     dialogVisible.value = true;
+}
+
+function openCreateDialogWithTemplate(template: AIProviderTemplate) {
+    editingProvider.value = null;
+    dialogVisible.value = true;
+    // 模板会在 ProviderConfigDialog 中处理
 }
 
 function openEditDialog(provider: AIProviderConfigClientDTO) {
     editingProvider.value = provider;
-    formData.name = provider.name;
-    formData.providerType = provider.providerType;
-    formData.baseUrl = provider.baseUrl || '';
-    formData.apiKey = '';
-    formData.defaultModel = provider.defaultModel || '';
-    formData.isDefault = provider.isDefault;
-    formData.isActive = provider.isActive;
-    showApiKey.value = false;
     dialogVisible.value = true;
 }
 
@@ -359,21 +356,19 @@ function confirmDelete(provider: AIProviderConfigClientDTO) {
 }
 
 // ===== 操作处理 =====
-async function handleSave() {
-    if (!formRef.value?.validate()) return;
-
+async function handleDialogSave(data: DialogSaveData) {
     if (editingProvider.value) {
         // 更新
         const success = await updateProvider(editingProvider.value.uuid, {
-            name: formData.name,
-            baseUrl: formData.baseUrl,
-            apiKey: formData.apiKey || undefined,
-            defaultModel: formData.defaultModel || undefined,
-            isActive: formData.isActive,
+            name: data.name,
+            baseUrl: data.baseUrl,
+            apiKey: data.apiKey || undefined,
+            defaultModel: data.defaultModel || undefined,
+            isActive: data.isActive,
         });
         if (success) {
             // 如果需要设为默认，调用专门的 API
-            if (formData.isDefault && !editingProvider.value.isDefault) {
+            if (data.isDefault && !editingProvider.value.isDefault) {
                 await setDefaultProvider(editingProvider.value.uuid);
             }
             showMessage('提供商更新成功');
@@ -382,12 +377,12 @@ async function handleSave() {
     } else {
         // 创建
         const result = await createProvider({
-            name: formData.name,
-            providerType: formData.providerType as any,
-            baseUrl: formData.baseUrl,
-            apiKey: formData.apiKey,
-            defaultModel: formData.defaultModel || undefined,
-            setAsDefault: formData.isDefault,
+            name: data.name,
+            providerType: data.providerType,
+            baseUrl: data.baseUrl,
+            apiKey: data.apiKey,
+            defaultModel: data.defaultModel || undefined,
+            setAsDefault: data.isDefault,
         });
         if (result) {
             showMessage('提供商创建成功');
@@ -430,7 +425,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Vuetify 组件自带样式，无需额外 CSS */
+.quick-template-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quick-template-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 </style>
 
 

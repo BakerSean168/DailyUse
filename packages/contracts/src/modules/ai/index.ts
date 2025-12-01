@@ -139,6 +139,11 @@ export type {
   GenerateGoalWithKRsResponse,
 } from './api-responses/GenerateGoalResponse';
 
+export type {
+  KeyResultPreview,
+  GenerateKeyResultsResponse,
+} from './api-responses/GenerateKeyResultsResponse';
+
 export type { SummarizationResultDTO } from './api-responses/SummarizationResultDTO';
 
 export type {
@@ -157,3 +162,12 @@ export type {
 } from './api-requests/GenerateGoalRequest';
 
 export { GoalCategory } from './api-requests/GenerateGoalRequest';
+
+// ============ Templates ============
+export type { AIProviderTemplate } from './templates/AIProviderTemplate';
+export {
+  AI_PROVIDER_TEMPLATES,
+  getTemplateById,
+  getTemplatesByType,
+  getFreeTemplates,
+} from './templates/AIProviderTemplate';

@@ -36,6 +36,7 @@ export class AIProviderConfigServer extends AggregateRoot {
   private _availableModels: AIModelInfo[];
   private _isActive: boolean;
   private _isDefault: boolean;
+  private _priority: number;
   private _createdAt: number;
   private _updatedAt: number;
 
@@ -50,6 +51,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     availableModels: AIModelInfo[];
     isActive: boolean;
     isDefault: boolean;
+    priority: number;
     createdAt: number;
     updatedAt: number;
   }) {
@@ -63,6 +65,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     this._availableModels = params.availableModels;
     this._isActive = params.isActive;
     this._isDefault = params.isDefault;
+    this._priority = params.priority;
     this._createdAt = params.createdAt;
     this._updatedAt = params.updatedAt;
   }
@@ -109,6 +112,10 @@ export class AIProviderConfigServer extends AggregateRoot {
     return this._isDefault;
   }
 
+  public get priority(): number {
+    return this._priority;
+  }
+
   public get createdAt(): number {
     return this._createdAt;
   }
@@ -130,6 +137,7 @@ export class AIProviderConfigServer extends AggregateRoot {
     apiKey: string;
     defaultModel?: string;
     isDefault?: boolean;
+    priority?: number;
   }): AIProviderConfigServer {
     const now = Date.now();
     const instance = new AIProviderConfigServer({
@@ -142,6 +150,7 @@ export class AIProviderConfigServer extends AggregateRoot {
       availableModels: [],
       isActive: true,
       isDefault: params.isDefault ?? false,
+      priority: params.priority ?? 100,
       createdAt: now,
       updatedAt: now,
     });
@@ -176,6 +185,7 @@ export class AIProviderConfigServer extends AggregateRoot {
       availableModels: dto.availableModels,
       isActive: dto.isActive,
       isDefault: dto.isDefault,
+      priority: dto.priority ?? 100,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
     });
@@ -293,6 +303,18 @@ export class AIProviderConfigServer extends AggregateRoot {
     this._updatedAt = Date.now();
   }
 
+  /**
+   * 更新优先级
+   * @param priority 优先级数字，数字越小优先级越高（1 最高）
+   */
+  public updatePriority(priority: number): void {
+    if (priority < 1 || priority > 999) {
+      throw new Error('Priority must be between 1 and 999');
+    }
+    this._priority = priority;
+    this._updatedAt = Date.now();
+  }
+
   // ===== DTO Conversion =====
 
   /**
@@ -310,6 +332,7 @@ export class AIProviderConfigServer extends AggregateRoot {
       availableModels: [...this._availableModels],
       isActive: this._isActive,
       isDefault: this._isDefault,
+      priority: this._priority,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     };
@@ -330,6 +353,7 @@ export class AIProviderConfigServer extends AggregateRoot {
       availableModels: [...this._availableModels],
       isActive: this._isActive,
       isDefault: this._isDefault,
+      priority: this._priority,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     };
