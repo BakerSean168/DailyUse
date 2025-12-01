@@ -117,24 +117,32 @@ export class RepositoryConfig extends ValueObject {
   }
 
   // ===== 静态工厂方法 =====
-  public static fromServerDTO(dto: RepositoryConfigServerDTO): RepositoryConfig {
+  public static fromServerDTO(dto: RepositoryConfigServerDTO | undefined | null): RepositoryConfig {
+    // 处理空数据情况，返回默认配置
+    if (!dto) {
+      return RepositoryConfig.create();
+    }
     const { searchEngine, enableGit, autoSync, syncInterval, ...rest } = dto;
     return new RepositoryConfig({
-      searchEngine,
-      enableGit,
-      autoSync,
-      syncInterval,
+      searchEngine: searchEngine || 'postgres',
+      enableGit: enableGit ?? false,
+      autoSync: autoSync ?? false,
+      syncInterval: syncInterval ?? 300,
       extensible: rest,
     });
   }
 
-  public static fromClientDTO(dto: RepositoryConfigClientDTO): RepositoryConfig {
+  public static fromClientDTO(dto: RepositoryConfigClientDTO | undefined | null): RepositoryConfig {
+    // 处理空数据情况，返回默认配置
+    if (!dto) {
+      return RepositoryConfig.create();
+    }
     const { searchEngine, enableGit, autoSync, syncInterval, searchEngineText, gitStatusText, syncStatusText, ...rest } = dto;
     return new RepositoryConfig({
-      searchEngine,
-      enableGit,
-      autoSync,
-      syncInterval,
+      searchEngine: searchEngine || 'postgres',
+      enableGit: enableGit ?? false,
+      autoSync: autoSync ?? false,
+      syncInterval: syncInterval ?? 300,
       extensible: rest,
     });
   }

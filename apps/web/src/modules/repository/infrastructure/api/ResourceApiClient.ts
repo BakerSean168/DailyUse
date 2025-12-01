@@ -20,20 +20,22 @@ export interface UpdateMarkdownContentDTO {
 }
 
 export class ResourceApiClient {
+  private readonly baseUrl = '/repositories';
+
   constructor(private readonly api: IApiClient) {}
 
   /**
    * 创建资源
    */
   async createResource(dto: CreateResourceDTO): Promise<ResourceClientDTO> {
-    return await this.api.post<ResourceClientDTO>('/resources', dto);
+    return await this.api.post<ResourceClientDTO>(`${this.baseUrl}/resources`, dto);
   }
 
   /**
    * 获取资源详情
    */
   async getResourceById(uuid: string): Promise<ResourceClientDTO> {
-    return await this.api.get<ResourceClientDTO>(`/resources/${uuid}`);
+    return await this.api.get<ResourceClientDTO>(`${this.baseUrl}/resources/${uuid}`);
   }
 
   /**
@@ -41,7 +43,7 @@ export class ResourceApiClient {
    */
   async getResourcesByRepository(repositoryUuid: string): Promise<ResourceClientDTO[]> {
     return await this.api.get<ResourceClientDTO[]>(
-      `/repositories/${repositoryUuid}/resources`
+      `${this.baseUrl}/${repositoryUuid}/resources`
     );
   }
 
@@ -52,14 +54,14 @@ export class ResourceApiClient {
     uuid: string,
     content: string
   ): Promise<void> {
-    await this.api.put(`/resources/${uuid}/content`, { content });
+    await this.api.put(`${this.baseUrl}/resources/${uuid}/content`, { content });
   }
 
   /**
    * 删除资源 (软删除)
    */
   async deleteResource(uuid: string): Promise<void> {
-    await this.api.delete(`/resources/${uuid}`);
+    await this.api.delete(`${this.baseUrl}/resources/${uuid}`);
   }
 }
 

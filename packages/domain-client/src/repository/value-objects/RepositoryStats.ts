@@ -108,22 +108,30 @@ export class RepositoryStats extends ValueObject {
   }
 
   // ===== 静态工厂方法 =====
-  public static fromServerDTO(dto: RepositoryStatsServerDTO): RepositoryStats {
+  public static fromServerDTO(dto: RepositoryStatsServerDTO | undefined | null): RepositoryStats {
+    // 处理空数据情况，返回默认统计
+    if (!dto) {
+      return RepositoryStats.create();
+    }
     const { resourceCount, folderCount, totalSize, ...rest } = dto;
     return new RepositoryStats({
-      resourceCount,
-      folderCount,
-      totalSize,
+      resourceCount: resourceCount ?? 0,
+      folderCount: folderCount ?? 0,
+      totalSize: totalSize ?? 0,
       extensible: rest,
     });
   }
 
-  public static fromClientDTO(dto: RepositoryStatsClientDTO): RepositoryStats {
+  public static fromClientDTO(dto: RepositoryStatsClientDTO | undefined | null): RepositoryStats {
+    // 处理空数据情况，返回默认统计
+    if (!dto) {
+      return RepositoryStats.create();
+    }
     const { resourceCount, folderCount, totalSize, formattedSize, hasResources, hasFolders, ...rest } = dto;
     return new RepositoryStats({
-      resourceCount,
-      folderCount,
-      totalSize,
+      resourceCount: resourceCount ?? 0,
+      folderCount: folderCount ?? 0,
+      totalSize: totalSize ?? 0,
       extensible: rest,
     });
   }

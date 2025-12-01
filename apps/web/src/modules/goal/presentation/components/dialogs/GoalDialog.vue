@@ -290,6 +290,9 @@ const prefillData = ref<{
   }>;
 } | null>(null);
 
+// 创建完成后的回调（用于 AI 知识文档生成等后续操作）
+const onCreatedCallback = ref<((goalDto: GoalClientDTO) => void) | null>(null);
+
 // 组件对象
 const keyResultDialogRef = ref<InstanceType<typeof KeyResultDialog> | null>(null);
 const weightSuggestionRef = ref<InstanceType<typeof WeightSuggestionPanel> | null>(null);
@@ -767,7 +770,12 @@ const handleSave = async () => {
       };
 
       console.log('✅ 创建目标请求数据（accountUuid 由后端注入）:', createData);
-      await createGoal(createData);
+      const createdGoal = await createGoal(createData);
+      
+      // 调用创建完成回调（如果有）
+      if (onCreatedCallback.value && createdGoal) {
+        onCreatedCallback.value(createdGoal);
+      }
     }
     closeDialog();
   } catch (error) {
@@ -797,6 +805,7 @@ const openDialog = (goal?: Goal) => {
 /**
  * 打开创建目标对话框
  * @param data 预填充数据（可选，来自 AI 生成或模板）
+ * @param onCreated 创建成功后的回调函数（可选，用于 AI 知识文档生成等）
  */
 const openForCreate = (data?: {
   title?: string;
@@ -804,9 +813,10 @@ const openForCreate = (data?: {
   category?: string;
   timeframe?: string;
   keyResults?: Array<{ title: string; description?: string }>;
-}) => {
+}, onCreated?: (goalDto: GoalClientDTO) => void) => {
   propGoal.value = null;
   prefillData.value = data || null;
+  onCreatedCallback.value = onCreated || null;
   visible.value = true;
   activeTab.value = 0; // 定位到基本信息标签
 };
@@ -830,6 +840,7 @@ watch(visible, (newVal) => {
     // 重置表单
     propGoal.value = null;
     prefillData.value = null;
+    onCreatedCallback.value = null;
     goalModel.value = null;
     activeTab.value = 0;
     loading.value = false;

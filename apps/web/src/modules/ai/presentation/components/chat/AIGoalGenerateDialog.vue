@@ -174,6 +174,26 @@
             </div>
           </v-expand-transition>
         </v-card>
+
+        <!-- Knowledge Document Options -->
+        <v-card variant="outlined" class="pa-3 mt-2">
+          <div class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center">
+              <v-icon color="secondary" class="mr-2">mdi-book-open-page-variant</v-icon>
+              <span class="text-body-1 font-weight-medium">同时生成知识文档</span>
+            </div>
+            <v-switch
+              v-model="formData.includeKnowledgeDoc"
+              color="secondary"
+              hide-details
+              :disabled="isGenerating"
+              density="compact"
+            />
+          </div>
+          <div v-if="formData.includeKnowledgeDoc" class="text-caption text-medium-emphasis mt-2">
+            将在知识库中自动创建目标相关的学习资料
+          </div>
+        </v-card>
       </v-form>
 
       <!-- Error Alert -->
@@ -219,6 +239,12 @@ import ObsidianDialog from '@/shared/components/ObsidianDialog.vue';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
 import { useSnackbar } from '@/shared/composables/useSnackbar';
 import { api } from '@/shared/api/instances';
+import { aiService } from '@/shared/services/aiService';
+import { repositoryApiClient } from '@/modules/repository/infrastructure/api/repositoryApiClient';
+import { useRepositoryStore } from '@/modules/repository/presentation/stores/repositoryStore';
+import { useFolderStore } from '@/modules/repository/presentation/stores/folderStore';
+import { useResourceStore } from '@/modules/repository/presentation/stores/resourceStore';
+import { Folder, Resource } from '@dailyuse/domain-client/repository';
 
 // Define local types for the API requests/responses
 interface GenerateGoalRequest {
@@ -270,6 +296,7 @@ const formData = ref({
   context: '',
   includeKeyResults: true,
   keyResultCount: 'auto' as string | number, // 默认由 AI 决定
+  includeKnowledgeDoc: false, // 是否生成关联知识文档
 });
 
 // Category Options
@@ -325,7 +352,7 @@ const { showSuccess, showError } = useSnackbar();
 
 // Emits
 const emit = defineEmits<{
-  (e: 'generated', result: GenerateGoalResponse | GenerateGoalWithKRsResponse): void;
+  (e: 'generated', result: GenerateGoalResponse | GenerateGoalWithKRsResponse, options: { includeKnowledgeDoc: boolean }): void;
   (e: 'error', msg: string): void;
 }>();
 
@@ -411,6 +438,7 @@ function resetForm() {
     context: '',
     includeKeyResults: true,
     keyResultCount: 'auto',
+    includeKnowledgeDoc: false,
   };
   error.value = null;
   formRef.value?.reset();
@@ -458,7 +486,7 @@ async function handleGenerate() {
       showSuccess('成功生成目标！');
     }
 
-    emit('generated', result);
+    emit('generated', result, { includeKnowledgeDoc: formData.value.includeKnowledgeDoc });
 
     // Close the dialog - parent component will open GoalDialog for preview/edit
     close();

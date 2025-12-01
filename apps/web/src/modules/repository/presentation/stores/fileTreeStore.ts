@@ -97,13 +97,17 @@ export const useFileTreeStore = defineStore('fileTree', {
       try {
         console.log(`📦 [FileTreeStore] 加载文件树: ${repositoryUuid}`);
         
-        const response = await repositoryApiClient.getFileTree(repositoryUuid);
+        // apiClient.get 会自动提取 response.data，所以这里直接得到 { repositoryUuid, tree }
+        const data = await repositoryApiClient.getFileTree(repositoryUuid);
         
-        if (response.success && response.data) {
-          this.setTreeForRepository(repositoryUuid, response.data.tree);
-          console.log(`✅ [FileTreeStore] 文件树加载成功: ${response.data.tree.length} 个节点`);
+        // 直接使用返回的 tree 数组
+        if (data && data.tree) {
+          this.setTreeForRepository(repositoryUuid, data.tree);
+          console.log(`✅ [FileTreeStore] 文件树加载成功: ${data.tree.length} 个节点`);
         } else {
-          throw new Error(response.message || '加载文件树失败');
+          // 如果没有数据，设置空数组
+          this.setTreeForRepository(repositoryUuid, []);
+          console.log(`ℹ️ [FileTreeStore] 文件树为空`);
         }
       } catch (error: any) {
         this.error = error.message || '加载文件树失败';

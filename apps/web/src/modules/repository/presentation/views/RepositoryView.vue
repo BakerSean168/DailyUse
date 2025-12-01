@@ -40,9 +40,11 @@
           :selected-repository="selectedRepository"
           @create-folder="handleCreateFolder"
           @create-resource="handleCreateResource"
-          @rename-folder="handleRenameFolder"
-          @delete-folder="handleDeleteFolder"
-          @select-folder="handleSelectFolder"
+          @rename-folder="handleRenameFolderNode"
+          @delete-folder="handleDeleteFolderNode"
+          @rename-resource="handleRenameResourceNode"
+          @delete-resource="handleDeleteResourceNode"
+          @ai-generate-knowledge="handleAIGenerateKnowledge"
         />
 
         <!-- 搜索视图 -->
@@ -180,7 +182,7 @@
 
         <!-- 编辑器 -->
         <div v-if="activeResourceUuid" class="editor-wrapper">
-          <ResourceEditor :resource-uuid="activeResourceUuid" />
+          <ObsidianEditor :resource-uuid="activeResourceUuid" />
         </div>
 
         <!-- 空状态 -->
@@ -210,6 +212,7 @@
       v-if="selectedRepository"
       v-model="showCreateResourceDialog"
       :repository-uuid="selectedRepository"
+      :folder-uuid="resourceFolderUuid"
       @created="handleResourceCreated"
     />
 
@@ -250,6 +253,14 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- AI 知识文档生成对话框 -->
+    <AIKnowledgeGeneratorDialog
+      v-model="showAIKnowledgeDialog"
+      :repository-uuid="selectedRepository"
+      :parent-folder-uuid="aiKnowledgeParentUuid"
+      @generated="handleAIKnowledgeGenerated"
+    />
   </div>
 </template>
 
@@ -259,6 +270,7 @@ import { useRepositoryStore, useFolderStore } from '../stores';
 import { useResourceStore } from '../stores/resourceStore';
 import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClient';
 import { Repository, Folder } from '@dailyuse/domain-client/repository';
+import type { TreeNode } from '@dailyuse/contracts/repository';
 import FilesPanel from '../components/FilesPanel.vue';
 import SearchPanel from '../components/SearchPanel.vue';
 import BookmarksPanel from '../components/BookmarksPanel.vue';
@@ -266,7 +278,8 @@ import TagsPanel from '../components/TagsPanel.vue';
 import CreateRepositoryDialog from '../components/dialogs/CreateRepositoryDialog.vue';
 import CreateFolderDialog from '../components/dialogs/CreateFolderDialog.vue';
 import CreateResourceDialog from '../components/dialogs/CreateResourceDialog.vue';
-import ResourceEditor from '../components/ResourceEditor.vue';
+import AIKnowledgeGeneratorDialog from '../components/dialogs/AIKnowledgeGeneratorDialog.vue';
+import ObsidianEditor from '../components/ObsidianEditor.vue';
 import TabManager from '../components/TabManager.vue';
 
 // Stores
@@ -292,9 +305,12 @@ const showCreateFolderDialog = ref(false);
 const showCreateResourceDialog = ref(false);
 const showRenameFolderDialog = ref(false);
 const showDeleteFolderDialog = ref(false);
+const showAIKnowledgeDialog = ref(false);
 
 // Folder operations
 const folderParentUuid = ref<string | undefined>(undefined);
+const resourceFolderUuid = ref<string | null>(null); // 创建资源时的目标文件夹
+const aiKnowledgeParentUuid = ref<string | null>(null); // AI 知识生成的父文件夹
 const folderToRename = ref<Folder | null>(null);
 const folderToDelete = ref<Folder | null>(null);
 const newFolderName = ref('');
@@ -315,8 +331,11 @@ async function loadRepositories() {
   error.value = null;
 
   try {
+    // apiClient.get 自动提取 response.data，直接得到 RepositoryClientDTO[]
     const data = await repositoryApiClient.getRepositories();
-    const repos = data.repositories.map((dto: any) => Repository.fromClientDTO(dto));
+    // data 可能是数组，也可能是 { repositories: [...] } 格式，需要兼容处理
+    const repoList = Array.isArray(data) ? data : (data.repositories || []);
+    const repos = repoList.map((dto: any) => Repository.fromClientDTO(dto));
     repositoryStore.setRepositories(repos);
 
     // 如果有仓储，默认选中第一个
@@ -382,10 +401,6 @@ function handleCreateFolder(parentUuid?: string) {
   showCreateFolderDialog.value = true;
 }
 
-function handleCreateResource() {
-  showCreateResourceDialog.value = true;
-}
-
 function handleFolderCreated(folder: Folder) {
   console.log('文件夹已创建:', folder.name);
   filesPanelRef.value?.refresh();
@@ -393,18 +408,43 @@ function handleFolderCreated(folder: Folder) {
 
 async function handleResourceCreated(resourceUuid: string) {
   console.log('笔记已创建:', resourceUuid);
-  // 刷新资源列表
+  // 刷新文件树和资源列表
+  filesPanelRef.value?.refresh();
   await resourceStore.loadResources(selectedRepository.value!);
+  // 清除创建资源的目标文件夹
+  resourceFolderUuid.value = null;
   // 查找并打开新创建的笔记
-  const resource = resourceStore.resources.find(r => r.uuid === resourceUuid);
+  const resource = resourceStore.resources.find((r: any) => r.uuid === resourceUuid);
   if (resource) {
     await resourceStore.openInTab(resource);
   }
 }
 
+// AI 知识文档生成
+function handleAIGenerateKnowledge(parentFolderUuid?: string) {
+  aiKnowledgeParentUuid.value = parentFolderUuid || null;
+  showAIKnowledgeDialog.value = true;
+}
+
+function handleAIKnowledgeGenerated(data: { folderUuid: string; resourceUuid: string }) {
+  console.log('AI 知识文档已生成:', data);
+  // 刷新文件树
+  filesPanelRef.value?.refresh();
+  // 清除状态
+  aiKnowledgeParentUuid.value = null;
+}
+
 function handleRenameFolder(folder: Folder) {
   folderToRename.value = folder;
   newFolderName.value = folder.name;
+  showRenameFolderDialog.value = true;
+}
+
+// 处理 TreeNode 类型的文件夹重命名
+function handleRenameFolderNode(node: TreeNode) {
+  // 转换为兼容 Folder 的格式
+  folderToRename.value = { uuid: node.uuid, name: node.name } as Folder;
+  newFolderName.value = node.name;
   showRenameFolderDialog.value = true;
 }
 
@@ -434,6 +474,34 @@ function handleDeleteFolder(folder: Folder) {
   showDeleteFolderDialog.value = true;
 }
 
+// 处理 TreeNode 类型的文件夹删除
+function handleDeleteFolderNode(node: TreeNode) {
+  folderToDelete.value = { uuid: node.uuid, name: node.name } as Folder;
+  showDeleteFolderDialog.value = true;
+}
+
+// 处理 TreeNode 类型的资源重命名
+function handleRenameResourceNode(node: TreeNode) {
+  const newName = prompt('请输入新名称:', node.name);
+  if (newName && newName !== node.name) {
+    // TODO: 实现资源重命名 API
+    console.log('重命名资源:', node.uuid, newName);
+    filesPanelRef.value?.refresh();
+  }
+}
+
+// 处理 TreeNode 类型的资源删除
+async function handleDeleteResourceNode(node: TreeNode) {
+  if (!confirm(`确定要删除 "${node.name}" 吗？`)) return;
+  try {
+    await resourceStore.deleteResource(node.uuid);
+    filesPanelRef.value?.refresh();
+  } catch (error) {
+    console.error('删除资源失败:', error);
+    alert('删除失败，请稍后重试');
+  }
+}
+
 async function handleSubmitDelete() {
   if (!folderToDelete.value) return;
 
@@ -453,6 +521,14 @@ async function handleSubmitDelete() {
 
 function handleSelectFolder(folder: Folder | null) {
   selectedFolder.value = folder;
+}
+
+// 创建资源时支持可选的 folderUuid
+function handleCreateResource(folderUuid?: string) {
+  // 设置目标文件夹
+  resourceFolderUuid.value = folderUuid || null;
+  console.log('创建资源，父文件夹:', folderUuid);
+  showCreateResourceDialog.value = true;
 }
 
 // 搜索相关事件处理
@@ -522,10 +598,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 使用 Vuetify 工具类和主题变量 */
+/* Obsidian 风格布局 */
 .repository-view {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: 0;
   height: 100vh;
   overflow: hidden;
@@ -533,7 +609,7 @@ onMounted(async () => {
 
 @media (max-width: 1024px) {
   .repository-view {
-    grid-template-columns: 250px 1fr;
+    grid-template-columns: 240px 1fr;
   }
 }
 
@@ -544,9 +620,10 @@ onMounted(async () => {
   }
 }
 
+/* 侧边栏 */
 .sidebar {
   height: 100%;
-  border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-right: 1px solid rgba(var(--v-border-color), 0.08);
   background: rgb(var(--v-theme-surface));
   z-index: 10;
   display: flex;
@@ -561,7 +638,7 @@ onMounted(async () => {
     width: 280px;
     transform: translateX(-100%);
     transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
   .sidebar.mobile-open {
@@ -569,6 +646,38 @@ onMounted(async () => {
   }
 }
 
+/* 侧边栏 Tabs - Obsidian 风格 */
+.sidebar-tabs {
+  padding: 4px;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.08);
+  flex-shrink: 0;
+}
+
+.sidebar-tabs .tab-group {
+  width: 100%;
+  justify-content: space-around;
+}
+
+.sidebar-tabs .v-btn {
+  min-width: 36px !important;
+  height: 32px !important;
+  padding: 0 8px !important;
+  border-radius: 4px !important;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.sidebar-tabs .v-btn:hover {
+  opacity: 1;
+  background-color: rgba(var(--v-theme-on-surface), 0.04);
+}
+
+.sidebar-tabs .v-btn--active {
+  opacity: 1;
+  background-color: rgba(var(--v-theme-primary), 0.12) !important;
+}
+
+/* 侧边栏内容区 */
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
@@ -576,6 +685,28 @@ onMounted(async () => {
   position: relative;
 }
 
+/* 仓储选择器 - Obsidian 风格 */
+.repository-selector {
+  border-top: 1px solid rgba(var(--v-border-color), 0.08);
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.repository-selector-btn {
+  justify-content: flex-start !important;
+  text-transform: none !important;
+  font-weight: normal !important;
+  padding: 8px 12px !important;
+  height: auto !important;
+  min-height: 40px !important;
+  border-radius: 4px !important;
+}
+
+.repository-selector-btn:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.04) !important;
+}
+
+/* 编辑器面板 */
 .resource-editor-panel {
   height: 100%;
   overflow: hidden;
@@ -584,8 +715,48 @@ onMounted(async () => {
   background: rgb(var(--v-theme-background));
 }
 
+.resource-editor-panel > .v-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .editor-wrapper {
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 空状态 - Obsidian 风格 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 32px;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.empty-state .v-icon {
+  opacity: 0.4;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.empty-state .text-h6 {
+  font-weight: 400 !important;
+  font-size: 1rem !important;
+}
+
+.empty-state .text-caption {
+  margin-top: 4px;
+  opacity: 0.7;
 }
 </style>

@@ -8,3 +8,12 @@ export {
   GoalGenerationApplicationService,
   goalGenerationApplicationService,
 } from './GoalGenerationApplicationService';
+
+// Knowledge Generation Application Service
+export {
+  KnowledgeGenerationApplicationService,
+  knowledgeGenerationApplicationService,
+  type GenerateKnowledgeRequest,
+  type GenerateKnowledgeResponse,
+  type GenerateGoalKnowledgeRequest,
+} from './KnowledgeGenerationApplicationService';

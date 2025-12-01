@@ -69,6 +69,8 @@ import GoalDialog from '@/modules/goal/presentation/components/dialogs/GoalDialo
 import ObsidianDialog from '@/shared/components/ObsidianDialog.vue';
 import { useSettingStore } from '@/modules/setting/presentation/stores/settingStore';
 import { useSnackbarStore } from '@/shared/stores/snackbarStore';
+import { knowledgeGenerationApplicationService } from '@/modules/ai/application/services';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
 import InAppNotification from '@/modules/notification/presentation/components/InAppNotification.vue';
 import { DuMessageProvider } from '@dailyuse/ui';
@@ -195,7 +197,7 @@ function handleAssistGoal() {
   }, 50);
 }
 
-function onGoalGenerated(result: any) {
+function onGoalGenerated(result: any, options: { includeKnowledgeDoc: boolean }) {
   const goalTitle = result?.goal?.title || '未命名目标';
   snackbarStore.show({ message: `成功生成目标：${goalTitle}，请查看并编辑`, type: 'success' });
   
@@ -228,15 +230,46 @@ function onGoalGenerated(result: any) {
       })),
     };
     
-    console.log('[App] AI 生成目标数据:', { goal, keyResults: result.keyResults, prefillData });
+    console.log('[App] AI 生成目标数据:', { goal, keyResults: result.keyResults, prefillData, options });
+    
+    // 创建目标后的回调（用于生成知识文档）
+    const onGoalCreated = options.includeKnowledgeDoc 
+      ? async (goalDto: GoalClientDTO) => {
+          try {
+            await generateKnowledgeForGoal(goalDto);
+          } catch (error) {
+            console.error('[App] 生成知识文档失败:', error);
+            snackbarStore.show({ message: '知识文档生成失败，请稍后重试', type: 'warning' });
+          }
+        }
+      : undefined;
     
     // Short delay to ensure AI dialog is closed first
     setTimeout(() => {
-      globalGoalDialogRef.value?.openForCreate(prefillData);
+      globalGoalDialogRef.value?.openForCreate(prefillData, onGoalCreated);
     }, 100);
   } else {
     // Fallback: open chat if no goal dialog available
     openChat();
+  }
+}
+
+/**
+ * 为目标生成知识文档
+ * 使用 KnowledgeGenerationApplicationService 处理
+ */
+async function generateKnowledgeForGoal(goalDto: GoalClientDTO) {
+  try {
+    await knowledgeGenerationApplicationService.generateGoalKnowledge({
+      goalUuid: goalDto.uuid,
+      goalTitle: goalDto.title,
+      goalDescription: goalDto.description || undefined,
+      goalCategory: goalDto.category || undefined,
+    });
+    // 成功提示已在 service 中处理
+  } catch (error) {
+    // 错误提示已在 service 中处理
+    console.error('[App] 生成目标知识文档失败:', error);
   }
 }
 

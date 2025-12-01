@@ -6,7 +6,8 @@
 import type { TokenUsageClientDTO } from '../value-objects/TokenUsage';
 import type { KeyResultPreview } from './GenerateKeyResultsResponse';
 import type { GoalCategory } from '../api-requests/GenerateGoalRequest';
-import type { ImportanceLevel, UrgencyLevel } from '../../../shared';
+import { ImportanceLevel } from '../../../shared/importance';
+import { UrgencyLevel } from '../../../shared/urgency';
 
 /**
  * AI 生成的目标草稿

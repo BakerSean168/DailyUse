@@ -7,7 +7,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO, TagStatisticsDto, TagResourceReferenceDto } from '@dailyuse/contracts/repository';
-import axios from 'axios';
+import { apiClient } from '@/shared/api/instances';
 
 type TagStatistics = TagStatisticsDto;
 type TagResourceReference = TagResourceReferenceDto;
@@ -45,12 +45,16 @@ export const useTagsStore = defineStore('tags', () => {
     error.value = null;
 
     try {
-      const response = await axios.get(`/api/tags/statistics/${repositoryUuid}`);
+      // 使用正确的 API 路径: /repositories/tags/statistics/:repositoryUuid
+      const data = await apiClient.get(`/repositories/tags/statistics/${repositoryUuid}`);
       
-      if (response.data.success) {
-        statistics.value = response.data.data;
+      // apiClient 会自动提取 response.data，所以直接使用返回值
+      if (Array.isArray(data)) {
+        statistics.value = data;
+      } else if (data && typeof data === 'object') {
+        statistics.value = data.statistics || data.data || [];
       } else {
-        throw new Error(response.data.message || 'Failed to load tag statistics');
+        statistics.value = [];
       }
     } catch (err: any) {
       error.value = err.message || 'Failed to load tag statistics';

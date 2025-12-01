@@ -50,10 +50,12 @@ import { apiClient } from '@/shared/api/instances';
 interface Props {
   modelValue: boolean;
   repositoryUuid: string;
+  folderUuid?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
+  folderUuid: null,
 });
 
 // Emits
@@ -114,7 +116,7 @@ tags: []
       name: formData.value.name.endsWith('.md') ? formData.value.name : `${formData.value.name}.md`,
       type: 'MARKDOWN',
       path: `/${formData.value.name}.md`,
-      folderUuid: undefined, // 根目录
+      folderUuid: props.folderUuid || undefined, // 使用传入的文件夹 UUID
       content: defaultContent,
     });
 

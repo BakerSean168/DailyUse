@@ -1,28 +1,28 @@
+<!--
+  FilesPanel - 文件面板
+  
+  使用统一的 FileTree 组件替代分离的 FileExplorer + ResourceList
+-->
+
 <template>
   <div class="files-panel">
-    <FileExplorer
-      ref="fileExplorerRef"
-      :selected-repository="selectedRepository"
-      @create-folder="$emit('create-folder', $event)"
-      @create-resource="$emit('create-resource')"
-      @rename-folder="$emit('rename-folder', $event)"
-      @delete-folder="$emit('delete-folder', $event)"
-      @select-folder="$emit('select-folder', $event)"
-    />
-    
-    <ResourceList
-      v-if="selectedRepository"
+    <FileTree
+      ref="fileTreeRef"
       :repository-uuid="selectedRepository"
-      class="resource-list-section"
+      @create-folder="$emit('create-folder', $event)"
+      @create-resource="$emit('create-resource', $event)"
+      @rename-node="handleRenameNode"
+      @delete-node="handleDeleteNode"
+      @open-resource="handleOpenResource"
+      @ai-generate-knowledge="$emit('ai-generate-knowledge', $event)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import FileExplorer from './FileExplorer.vue';
-import ResourceList from './ResourceList.vue';
-import type { Folder } from '@dailyuse/domain-client/repository';
+import FileTree from './FileTree.vue';
+import type { TreeNode } from '@dailyuse/contracts/repository';
 
 // Props
 interface Props {
@@ -32,20 +32,46 @@ interface Props {
 defineProps<Props>();
 
 // Emits
-defineEmits<{
+const emit = defineEmits<{
   (e: 'create-folder', parentUuid?: string): void;
-  (e: 'create-resource'): void;
-  (e: 'rename-folder', folder: Folder): void;
-  (e: 'delete-folder', folder: Folder): void;
-  (e: 'select-folder', folder: Folder | null): void;
+  (e: 'create-resource', folderUuid?: string): void;
+  (e: 'rename-folder', node: TreeNode): void;
+  (e: 'delete-folder', node: TreeNode): void;
+  (e: 'rename-resource', node: TreeNode): void;
+  (e: 'delete-resource', node: TreeNode): void;
+  (e: 'select-folder', node: TreeNode | null): void;
+  (e: 'ai-generate-knowledge', parentFolderUuid?: string): void;
 }>();
 
 // Refs
-const fileExplorerRef = ref<InstanceType<typeof FileExplorer> | null>(null);
+const fileTreeRef = ref<InstanceType<typeof FileTree> | null>(null);
+
+// 处理重命名节点
+function handleRenameNode(node: TreeNode) {
+  if (node.type === 'folder') {
+    emit('rename-folder', node);
+  } else {
+    emit('rename-resource', node);
+  }
+}
+
+// 处理删除节点
+function handleDeleteNode(node: TreeNode) {
+  if (node.type === 'folder') {
+    emit('delete-folder', node);
+  } else {
+    emit('delete-resource', node);
+  }
+}
+
+// 处理打开资源
+function handleOpenResource(node: TreeNode) {
+  console.log('打开资源:', node.name);
+}
 
 // Expose refresh method
 defineExpose({
-  refresh: () => fileExplorerRef.value?.refresh(),
+  refresh: () => fileTreeRef.value?.refresh(),
 });
 </script>
 
@@ -54,9 +80,5 @@ defineExpose({
   height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.resource-list-section {
-  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 </style>
