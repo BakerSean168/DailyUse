@@ -237,7 +237,7 @@
 import { ref, computed, watch } from 'vue';
 import ObsidianDialog from '@/shared/components/ObsidianDialog.vue';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { api } from '@/shared/api/instances';
 import { aiService } from '@/shared/services/aiService';
 import { repositoryApiClient } from '@/modules/repository/infrastructure/api/repositoryApiClient';
@@ -348,7 +348,7 @@ const {
 const isGenerating = ref(false);
 const error = ref<string | null>(null);
 
-const { showSuccess, showError } = useSnackbar();
+const { showSuccess, showError } = useMessage();
 
 // Emits
 const emit = defineEmits<{
@@ -470,7 +470,7 @@ async function handleGenerate() {
       result = await api.post<GenerateGoalWithKRsResponse>('/ai/generate/goal-with-krs', request);
 
       const krCount = (result as GenerateGoalWithKRsResponse).keyResults?.length || 0;
-      showSuccess(`成功生成目标及 ${krCount} 个关键结果！`);
+      message.success(`成功生成目标及 ${krCount} 个关键结果！`);
     } else {
       // Generate Goal only
       const request: GenerateGoalRequest = {
@@ -483,7 +483,7 @@ async function handleGenerate() {
       };
 
       result = await api.post<GenerateGoalResponse>('/ai/generate/goal', request);
-      showSuccess('成功生成目标！');
+      message.success('成功生成目标！');
     }
 
     emit('generated', result, { includeKnowledgeDoc: formData.value.includeKnowledgeDoc });
@@ -494,7 +494,7 @@ async function handleGenerate() {
     const errorMsg = err?.response?.data?.message || err?.message || '生成目标失败，请重试';
     error.value = errorMsg;
     emit('error', errorMsg);
-    showError(errorMsg);
+    message.error(errorMsg);
   } finally {
     isGenerating.value = false;
   }

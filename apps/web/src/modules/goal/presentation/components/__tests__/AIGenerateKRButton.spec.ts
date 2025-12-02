@@ -45,13 +45,13 @@ vi.mock('../../../../ai/presentation/composables/useAIGeneration', () => ({
   }),
 }));
 
-// Mock useSnackbar
+// Mock useMessage
 const mockShowSuccess = vi.fn();
 const mockShowError = vi.fn();
-vi.mock('../../../../shared/composables/useSnackbar', () => ({
-  useSnackbar: () => ({
-    showSuccess: mockShowSuccess,
-    showError: mockShowError,
+vi.mock('@dailyuse/ui', () => ({
+  useMessage: () => ({
+    success: mockShowSuccess,
+    error: mockShowError,
   }),
 }));
 

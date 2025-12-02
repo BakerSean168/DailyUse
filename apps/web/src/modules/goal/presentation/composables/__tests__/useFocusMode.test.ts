@@ -14,10 +14,10 @@ vi.mock('../../infrastructure/api/focusModeApiClient', () => ({
 }));
 
 // Mock snackbar
-vi.mock('../../../../../shared/composables/useSnackbar', () => ({
-  useSnackbar: () => ({
-    showSuccess: vi.fn(),
-    showError: vi.fn(),
+vi.mock('@dailyuse/ui', () => ({
+  useMessage: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
   }),
 }));
 

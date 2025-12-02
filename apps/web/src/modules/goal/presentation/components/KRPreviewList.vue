@@ -273,7 +273,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 // ===== Types =====
 interface KeyResultPreview {
@@ -302,7 +302,7 @@ const emit = defineEmits<{
 }>();
 
 // ===== Composables =====
-const { showSuccess, showWarning } = useSnackbar();
+const { success: showSuccess, warning: showWarning } = getGlobalMessage();
 
 // ===== State =====
 const keyResults = ref<KeyResultPreview[]>([]);

@@ -18,7 +18,7 @@ import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClient
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 import { taskInstanceApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 
 /**
@@ -27,7 +27,7 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 export function useTaskInstance() {
   // ===== 服务和存储 =====
   const taskStore = useTaskStore();
-  const { showSuccess, showError } = useSnackbar();
+  const { success, error: showError } = useMessage();
 
   // ===== 本地状态 =====
   const isOperating = ref(false);
@@ -173,7 +173,7 @@ export function useTaskInstance() {
       taskStore.removeTaskInstance(uuid);
       
       // ✅ 全局通知
-      showSuccess('任务实例已删除');
+      success('任务实例已删除');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '删除任务实例失败';
       operationError.value = errorMessage;
@@ -213,7 +213,7 @@ export function useTaskInstance() {
       taskStore.updateTaskInstance(uuid, instance);
       
       // ✅ 全局通知
-      showSuccess('🎉 任务已完成');
+      success('🎉 任务已完成');
       
       return instance;
     } catch (err) {

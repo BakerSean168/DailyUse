@@ -247,9 +247,8 @@ import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
 import TaskAIGenerationDialog from '@/modules/task/presentation/components/TaskAIGenerationDialog.vue';
-// 引入 snackbar 和 message
-import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { useMessage } from '@dailyuse/ui';
+// 引入 message
+import { getGlobalMessage, useMessage } from '@dailyuse/ui';
 import type { KeyResult, Goal } from '@dailyuse/domain-client/goal';
 import { useAuthStore } from '@/modules/authentication/presentation/stores/authStore';
 
@@ -257,6 +256,7 @@ const router = useRouter();
 const route = useRoute();
 const { goals, getGoalRecordsByKeyResult, deleteKeyResultForGoal, fetchGoalById } = useGoal();
 const authStore = useAuthStore();
+const message = getGlobalMessage();
 
 const recordDialogRef = ref<InstanceType<typeof GoalRecordDialog> | null>(null);
 const records = ref<GoalRecordClientDTO[]>([]);
@@ -394,7 +394,7 @@ const loadRecords = async () => {
 
 // 编辑 KeyResult
 const handleEditKeyResult = () => {
-  snackbar.showInfo('编辑功能待实现');
+  message.info('编辑功能待实现');
 };
 
 // 删除 KeyResult - 使用优雅的确认对话框
@@ -448,11 +448,11 @@ const handleDeleteRecord = async (recordUuid: string) => {
     const { goalApiClient } = await import('../../infrastructure/api/goalApiClient');
     await goalApiClient.deleteGoalRecord(goalUuid.value, keyResultUuid.value, recordUuid);
 
-    snackbar.showSuccess('记录删除成功');
+    message.success('记录删除成功');
     await loadRecords();
   } catch (err) {
     console.error('删除记录失败', err);
-    snackbar.showError('删除记录失败');
+    message.error('删除记录失败');
   }
 };
 
@@ -463,7 +463,7 @@ const openGenerateTasksDialog = () => {
 
 // Handle tasks imported (Story 2.4)
 const handleTasksImported = (count: number) => {
-  snackbar.showSuccess(`成功导入 ${count} 个任务`);
+  message.success(`成功导入 ${count} 个任务`);
   showGenerateTasksDialog.value = false;
 };
 
@@ -517,7 +517,6 @@ const getChangeAmountText = (record: GoalRecordClientDTO, index: number): string
 };
 
 
-const snackbar = useSnackbar();
 const message = useMessage();
 
 onMounted(() => {

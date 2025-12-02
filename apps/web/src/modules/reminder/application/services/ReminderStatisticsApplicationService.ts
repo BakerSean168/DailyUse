@@ -16,7 +16,7 @@ import { ReminderStatus } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO, ReminderHistoryClientDTO, ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 export class ReminderStatisticsApplicationService {
   private static instance: ReminderStatisticsApplicationService;
@@ -34,7 +34,7 @@ export class ReminderStatisticsApplicationService {
    * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
    */
   private get snackbar() {
-    return useSnackbar();
+    return useMessage();
   }
 
   /**
@@ -68,7 +68,7 @@ export class ReminderStatisticsApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒统计失败';
       this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);

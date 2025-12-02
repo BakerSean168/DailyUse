@@ -6,7 +6,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { UserSettingWebApplicationService } from '../../application/services/UserSettingWebApplicationService';
 import { useUserSettingStore } from '../stores/userSettingStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import type {
   UserSettingClientDTO,
   UpdateUserSettingRequest,
@@ -24,7 +24,7 @@ import type {
  */
 export function useUserSetting() {
   const userSettingStore = useUserSettingStore();
-  const snackbar = useSnackbar();
+  const message = useMessage();
 
   // ===== 本地状态 =====
   const loading = ref(false);
@@ -101,11 +101,11 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.getCurrentUserSettings();
-      snackbar.showSuccess('用户设置加载成功');
+      message.success('用户设置加载成功');
     } catch (err: any) {
       const errorMsg = err.message || '加载用户设置失败';
       error.value = errorMsg;
-      snackbar.showError(errorMsg);
+      message.error(errorMsg);
       throw err;
     } finally {
       loading.value = false;
@@ -123,10 +123,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.getOrCreateUserSetting(accountUuid);
-      snackbar.showSuccess('用户设置加载成功');
+      message.success('用户设置加载成功');
     } catch (err: any) {
       error.value = err.message || '加载用户设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -145,7 +145,7 @@ export function useUserSetting() {
       await service.getOrCreateUserSetting(accountUuid);
     } catch (err: any) {
       error.value = err.message || '获取或创建用户设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -165,10 +165,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.getOrCreateUserSetting(request.accountUuid);
-      snackbar.showSuccess('用户设置创建成功');
+      message.success('用户设置创建成功');
     } catch (err: any) {
       error.value = err.message || '创建用户设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -188,10 +188,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updateUserSettings(request);
-      snackbar.showSuccess('用户设置更新成功');
+      message.success('用户设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新用户设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -207,7 +207,7 @@ export function useUserSetting() {
     appearance: UpdateAppearanceRequest,
   ): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -217,10 +217,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updateAppearance(appearance);
-      snackbar.showSuccess('外观设置更新成功');
+      message.success('外观设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新外观设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -232,7 +232,7 @@ export function useUserSetting() {
    */
   const updateLocale = async (locale: UpdateLocaleRequest): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -242,10 +242,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updateLocale(locale);
-      snackbar.showSuccess('本地化设置更新成功');
+      message.success('本地化设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新本地化设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -259,7 +259,7 @@ export function useUserSetting() {
     workflow: UpdateWorkflowRequest,
   ): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -269,10 +269,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updateWorkflow(workflow);
-      snackbar.showSuccess('工作流设置更新成功');
+      message.success('工作流设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新工作流设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -284,7 +284,7 @@ export function useUserSetting() {
    */
   const updatePrivacy = async (privacy: UpdatePrivacyRequest): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -294,10 +294,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updatePrivacy(privacy);
-      snackbar.showSuccess('隐私设置更新成功');
+      message.success('隐私设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新隐私设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -311,7 +311,7 @@ export function useUserSetting() {
     experimental: UpdateExperimentalRequest,
   ): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -321,10 +321,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updateExperimental(experimental);
-      snackbar.showSuccess('实验性功能设置更新成功');
+      message.success('实验性功能设置更新成功');
     } catch (err: any) {
       error.value = err.message || '更新实验性功能设置失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -336,7 +336,7 @@ export function useUserSetting() {
    */
   const switchTheme = async (theme: 'LIGHT' | 'DARK' | 'AUTO'): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -346,10 +346,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updateTheme(theme);
-      snackbar.showSuccess(`主题已切换为：${theme}`);
+      message.success(`主题已切换为：${theme}`);
     } catch (err: any) {
       error.value = err.message || '切换主题失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -361,7 +361,7 @@ export function useUserSetting() {
    */
   const switchLanguage = async (language: string): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -371,10 +371,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updateLanguage(language);
-      snackbar.showSuccess(`语言已切换为：${language}`);
+      message.success(`语言已切换为：${language}`);
     } catch (err: any) {
       error.value = err.message || '切换语言失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -386,7 +386,7 @@ export function useUserSetting() {
    */
   const setShortcut = async (action: string, shortcut: string): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -396,10 +396,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.updateShortcut(action, shortcut);
-      snackbar.showSuccess(`快捷键 ${action} 已设置为：${shortcut}`);
+      message.success(`快捷键 ${action} 已设置为：${shortcut}`);
     } catch (err: any) {
       error.value = err.message || '设置快捷键失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -411,7 +411,7 @@ export function useUserSetting() {
    */
   const removeShortcut = async (action: string): Promise<void> => {
     if (!userSetting.value) {
-      snackbar.showError('未找到用户设置');
+      message.error('未找到用户设置');
       return;
     }
 
@@ -421,10 +421,10 @@ export function useUserSetting() {
     try {
       const service = await UserSettingWebApplicationService.getInstance();
       await service.deleteShortcut(action);
-      snackbar.showSuccess(`快捷键 ${action} 已删除`);
+      message.success(`快捷键 ${action} 已删除`);
     } catch (err: any) {
       error.value = err.message || '删除快捷键失败';
-      snackbar.showError(error.value);
+      message.error(error.value);
       throw err;
     } finally {
       loading.value = false;

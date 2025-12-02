@@ -15,7 +15,7 @@
 import { ref, computed, readonly, onMounted, onBeforeUnmount } from 'vue';
 import { taskSyncApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 /**
  * 任务数据同步 Composable
@@ -23,7 +23,7 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 export function useTaskSync() {
   // ===== 服务和存储 =====
   const taskStore = useTaskStore();
-  const { showSuccess, showError, showInfo } = useSnackbar();
+  const { success, error: showError, info } = useMessage();
 
   // ===== 本地状态 =====
   const isSyncing = ref(false);
@@ -71,7 +71,7 @@ export function useTaskSync() {
       );
       
       // ✅ 全局通知
-      showSuccess(`同步完成: ${result.templatesCount} 个模板, ${result.instancesCount} 个实例`);
+      success(`同步完成: ${result.templatesCount} 个模板, ${result.instancesCount} 个实例`);
 
       return result;
     } catch (err) {
@@ -107,7 +107,7 @@ export function useTaskSync() {
 
       console.log('✅ [useTaskSync] 强制同步完成');
       // ✅ 全局通知
-      showSuccess('🔄 数据同步完成');
+      success('🔄 数据同步完成');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '强制同步失败';
       syncError.value = errorMessage;

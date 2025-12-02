@@ -59,11 +59,11 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useFocusMode } from '../composables/useFocusMode';
-import { useSnackbar } from '../../../../shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FocusModeStatusBar');
-const snackbar = useSnackbar();
+const message = getGlobalMessage();
 
 const {
   hasActiveFocusMode,

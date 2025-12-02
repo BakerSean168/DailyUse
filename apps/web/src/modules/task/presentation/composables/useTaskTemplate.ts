@@ -18,7 +18,7 @@ import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClient
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 import { taskTemplateApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 
 /**
@@ -27,7 +27,7 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 export function useTaskTemplate() {
   // ===== 服务和存储 =====
   const taskStore = useTaskStore();
-  const { showSuccess, showError } = useSnackbar();
+  const { success, error: showError } = useMessage();
 
   // ===== 本地状态 =====
   const isOperating = ref(false);
@@ -104,7 +104,7 @@ export function useTaskTemplate() {
       taskStore.updateLastSyncTime();
 
       // ✅ 全局通知
-      showSuccess('任务模板创建成功');
+      success('任务模板创建成功');
 
       return template;
     } catch (err) {
@@ -210,7 +210,7 @@ export function useTaskTemplate() {
       taskStore.removeTaskTemplate(uuid);
 
       // ✅ 全局通知
-      showSuccess('任务模板已删除');
+      success('任务模板已删除');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '删除任务模板失败';
       operationError.value = errorMessage;
@@ -248,7 +248,7 @@ export function useTaskTemplate() {
       taskStore.updateLastSyncTime();
 
       // ✅ 全局通知
-      showSuccess(`🚀 任务模板已激活，生成 ${instances.length} 个任务实例`);
+      success(`🚀 任务模板已激活，生成 ${instances.length} 个任务实例`);
 
       return template;
     } catch (err) {
@@ -279,7 +279,7 @@ export function useTaskTemplate() {
       taskStore.updateTaskTemplate(uuid, template);
 
       // ✅ 全局通知
-      showSuccess('任务模板已暂停');
+      success('任务模板已暂停');
 
       return template;
     } catch (err) {

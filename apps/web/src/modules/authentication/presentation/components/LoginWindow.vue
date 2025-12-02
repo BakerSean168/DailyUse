@@ -102,12 +102,12 @@ import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contra
 type LoginRequestDTO = LoginRequest;
 // components
 import { useAuthentication } from '../composables/useAuthentication';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 // utils
 import { usernameRules, passwordRules } from '@/shared/utils/validations/rules';
 
 const { login: handleLogin, isLoading: authLoading } = useAuthentication();
-const { showError } = useSnackbar();
+const { error: showError } = useMessage();
 const loading = computed(() => authLoading.value);
 const formRef = ref();
 const isCurrentFormValid = computed(() => {

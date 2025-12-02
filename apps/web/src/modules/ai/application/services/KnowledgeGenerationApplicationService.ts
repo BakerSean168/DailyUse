@@ -21,7 +21,7 @@ import { useFolderStore } from '@/modules/repository/presentation/stores/folderS
 import { useResourceStore } from '@/modules/repository/presentation/stores/resourceStore';
 import { useFileTreeStore } from '@/modules/repository/presentation/stores/fileTreeStore';
 import { Folder, Resource, Repository } from '@dailyuse/domain-client/repository';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('KnowledgeGenerationApplicationService');
@@ -97,7 +97,7 @@ export class KnowledgeGenerationApplicationService {
    * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
    */
   private get snackbar() {
-    return useSnackbar();
+    return useMessage();
   }
 
   /**
@@ -236,7 +236,7 @@ export class KnowledgeGenerationApplicationService {
         fileName,
       });
 
-      this.snackbar.showSuccess(`知识文档「${request.topic}」已生成`);
+      this.message.success(`知识文档「${request.topic}」已生成`);
 
       return {
         resourceUuid: resourceDTO.uuid,
@@ -364,7 +364,7 @@ export class KnowledgeGenerationApplicationService {
         folderUuid: folder.uuid,
       });
 
-      this.snackbar.showSuccess(`已为目标「${request.goalTitle}」生成知识文档`);
+      this.message.success(`已为目标「${request.goalTitle}」生成知识文档`);
 
       return {
         resourceUuid: resourceDTO.uuid,
@@ -464,7 +464,7 @@ export class KnowledgeGenerationApplicationService {
       originalError: error,
     });
 
-    this.snackbar.showError(errorMessage);
+    this.message.error(errorMessage);
     return errorMessage;
   }
 

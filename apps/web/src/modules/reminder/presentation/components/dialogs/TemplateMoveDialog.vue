@@ -154,7 +154,7 @@ import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyus
 // 导入根分组常量和工具函数（从主包导出，不是从命名空间）
 import { ROOT_GROUP_CONFIG, isRootGroup, getRootGroupUuid, isOnDesktop } from '@dailyuse/contracts/reminder';
 import { useReminder } from '../../composables/useReminder';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 type ReminderTemplate = ReminderTemplateClientDTO;
 type ReminderTemplateGroup = ReminderGroupClientDTO;
@@ -178,7 +178,7 @@ const emit = defineEmits<{
 
 // Composables
 const { reminderTemplates, reminderGroups, refreshAll } = useReminder();
-const snackbar = useSnackbar();
+const message = useMessage();
 
 // 响应式状态
 const visible = ref(false);

@@ -197,7 +197,7 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 import GoalProgressChart from '../components/echarts/GoalProgressChart.vue';
 import KrProgressChart from '../components/echarts/KrProgressChart.vue';
 import KrCompletionChart from '../components/echarts/KrCompletionChart.vue';
@@ -216,7 +216,7 @@ const showConfirmDialog = ref(false);
 const route = useRoute();
 const router = useRouter();
 const goalStore = useGoalStore();
-const snackbar = useSnackbar();
+const message = getGlobalMessage();
 
 // 业务逻辑
 const { createGoalReview, getGoalAggregateView, fetchGoalById } = useGoal();
@@ -312,7 +312,7 @@ const initializeReview = async () => {
     reviewModel.value = GoalReview.forCreate(goalUuid);
   } catch (error) {
     console.error('初始化复盘失败:', error);
-    snackbar.showError('加载目标信息失败，请重试');
+    message.error('加载目标信息失败，请重试');
   } finally {
     loading.value = false;
   }
@@ -321,7 +321,7 @@ const initializeReview = async () => {
 // 保存复盘
 const handleSaveReview = () => {
   if (!canSave.value) {
-    snackbar.showWarning('请至少填写一项复盘内容');
+    message.warning('请至少填写一项复盘内容');
     return;
   }
   showConfirmDialog.value = true;
@@ -348,7 +348,7 @@ const confirmSaveReview = async () => {
 
     console.log('[GoalReviewCreationView] ✅ Review 创建成功:', createdReview);
     
-    snackbar.showSuccess('目标复盘创建成功');
+    message.success('目标复盘创建成功');
     showConfirmDialog.value = false;
 
     // 等待 store 更新完成（给 refreshGoalWithReviews 时间完成）
@@ -362,7 +362,7 @@ const confirmSaveReview = async () => {
     router.push({ name: 'goal-detail', params: { id: goalUuid } });
   } catch (error) {
     console.error('保存复盘失败:', error);
-    snackbar.showError('保存复盘失败，请重试');
+    message.error('保存复盘失败，请重试');
   } finally {
     saving.value = false;
   }

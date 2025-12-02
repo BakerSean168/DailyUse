@@ -19,10 +19,10 @@ import * as directives from 'vuetify/directives';
 import KRPreviewList from '../KRPreviewList.vue';
 import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
-// Mock useSnackbar
+// Mock useMessage
 const mockShowSnackbar = vi.fn();
-vi.mock('../../../../shared/composables/useSnackbar', () => ({
-  useSnackbar: () => ({
+vi.mock('@dailyuse/ui', () => ({
+  useMessage: () => ({
     showSnackbar: mockShowSnackbar,
   }),
 }));

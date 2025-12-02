@@ -66,12 +66,12 @@ vi.mock('../stores/goalStore', () => ({
   })),
 }));
 
-vi.mock('../../../../shared/composables/useSnackbar', () => ({
-  useSnackbar: vi.fn(() => ({
-    showSuccess: vi.fn(),
-    showError: vi.fn(),
-    showWarning: vi.fn(),
-    showInfo: vi.fn(),
+vi.mock('@dailyuse/ui', () => ({
+  useMessage: vi.fn(() => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
   })),
 }));
 

@@ -11,7 +11,7 @@
 import { ref, computed, readonly } from 'vue';
 import { taskStatisticsApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 /**
  * 任务统计 Composable
@@ -19,7 +19,7 @@ import { useSnackbar } from '@/shared/composables/useSnackbar';
 export function useTaskStatistics() {
   // ===== 服务和存储 =====
   const taskStore = useTaskStore();
-  const { showSuccess, showError } = useSnackbar();
+  const { success, error: showError } = useMessage();
 
   // ===== 本地状态 =====
   const isLoading = ref(false);

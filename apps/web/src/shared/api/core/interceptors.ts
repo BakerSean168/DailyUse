@@ -651,6 +651,13 @@ export class InterceptorManager {
 
     if (retryCount >= maxRetries) return false;
 
+    // ❌ 不重试：非幂等方法（POST, PATCH, DELETE）- 可能导致重复操作
+    const method = error.config?.method?.toUpperCase();
+    if (method && ['POST', 'PATCH', 'DELETE'].includes(method)) {
+      LogManager.warn(`⚠️ [API Retry] 非幂等方法 ${method}，跳过重试: ${error.config?.url}`);
+      return false;
+    }
+
     // 自定义重试条件
     if (this.config.retryCondition) {
       return this.config.retryCondition(error);
@@ -667,7 +674,7 @@ export class InterceptorManager {
       return false;
     }
 
-    // ✅ 重试：网络错误、超时、5xx错误
+    // ✅ 重试：网络错误、超时、5xx错误（仅限幂等方法 GET, HEAD, OPTIONS）
     return (
       !error.response ||
       error.code === 'ECONNABORTED' ||

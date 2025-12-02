@@ -10,7 +10,6 @@ export { default as DuDialog } from './components/dialog/DuDialog.vue';
 export { default as DuConfirmDialog } from './components/dialog/DuConfirmDialog.vue';
 
 // Components - Feedback
-export { default as DuSnackbar } from './components/feedback/DuSnackbar.vue';
 export { default as DuMessageProvider } from './components/feedback/DuMessageProvider.vue';
 export { default as DuLoadingOverlay } from './components/feedback/DuLoadingOverlay.vue';
 
@@ -22,7 +21,6 @@ export { default as ColorPicker } from './components/ColorPicker.vue';
 export { default as IconPicker } from './components/IconPicker.vue';
 
 // Composables
-export { useSnackbar } from './composables/useSnackbar';
 export { useFormRules } from './composables/useFormValidation';
 export { usePasswordStrength, generateStrongPassword } from './composables/usePasswordStrength';
 export {

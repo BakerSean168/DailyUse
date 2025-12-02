@@ -768,7 +768,8 @@ export class GoalController {
       }
 
       const service = await GoalController.getGoalService();
-      const goal = await service.getGoal(uuid);
+      // 需要传递 includeChildren: true 以获取 keyResults
+      const goal = await service.getGoal(uuid, { includeChildren: true });
 
       if (!goal) {
         return GoalController.responseBuilder.sendError(res, {
@@ -782,26 +783,30 @@ export class GoalController {
       const weightInfo = await snapshotService.getWeightSumInfo(uuid);
 
       // 构建聚合视图响应
+      // 注意：goal 是 GoalClientDTO，keyResults 也是 DTO，不是实体对象
+      const keyResultsData = goal.keyResults || [];
+      
       const response: GoalAggregateViewResponse = {
         goal: goal as GoalClientDTO,
-        keyResults: (goal.keyResults || []).map((kr: any) => ({
+        keyResults: keyResultsData.map((kr: any) => ({
           ...kr,
           weight: kr.weight || 0,
           weightPercentage: weightInfo.keyResults.find((w: any) => w.uuid === kr.uuid)?.percentage || 0,
         })),
         statistics: {
-          totalKeyResults: goal.keyResults?.length || 0,
-          completedKeyResults: (goal.keyResults || []).filter((kr: any) => kr.isCompleted()).length || 0,
-          totalRecords: (goal.keyResults || []).reduce((sum: number, kr: any) => sum + (kr.records?.length || 0), 0) || 0,
-          totalReviews: 0,
+          totalKeyResults: keyResultsData.length,
+          // DTO 的 isCompleted 是布尔值，不是方法
+          completedKeyResults: keyResultsData.filter((kr: any) => kr.isCompleted === true).length,
+          totalRecords: keyResultsData.reduce((sum: number, kr: any) => sum + (kr.records?.length || 0), 0),
+          totalReviews: goal.reviews?.length || 0,
           overallProgress: Math.round(
-            (goal.keyResults || []).reduce((sum: number, kr: any) => {
+            keyResultsData.reduce((sum: number, kr: any) => {
               const totalWeight = weightInfo.totalWeight;
               if (totalWeight === 0) return sum;
-              const progressPercentage = kr.progress.targetValue !== 0
-                ? (kr.progress.currentValue / kr.progress.targetValue) * 100
+              const progressPercentage = kr.progress?.targetValue !== 0
+                ? ((kr.progress?.currentValue || 0) / kr.progress.targetValue) * 100
                 : 0;
-              return sum + (progressPercentage * (kr.weight / totalWeight));
+              return sum + (progressPercentage * ((kr.weight || 0) / totalWeight));
             }, 0)
           ),
         },

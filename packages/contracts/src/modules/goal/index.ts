@@ -9,6 +9,14 @@
  * ```
  */
 
+// ============ Events ============
+export { GoalEvents } from './events';
+export type {
+  GoalAggregateRefreshEvent,
+  GoalAggregateRefreshReason,
+  GoalEventType,
+} from './events';
+
 // ============ Enums ============
 export {
   GoalStatus,

@@ -130,7 +130,7 @@ import { useRouter } from 'vue-router';
 import { useGoalManagement } from '../composables/useGoalManagement';
 import { useGoalFolder } from '../composables/useGoalFolder';
 import { useGoalStore } from '../stores/goalStore';
-import { useSnackbar } from '../../../../shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 import type { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
 
 // 组件导入
@@ -162,8 +162,8 @@ const { folders: GoalFolders, fetchFolders: fetchGoalFolders } = goalFolderCompo
 
 const goalStore = useGoalStore();
 
-// 获取 snackbar 用于错误提示
-const snackbar = useSnackbar();
+// 获取 message 用于错误提示
+const message = getGlobalMessage();
 
 // ===== 本地状态 =====
 
@@ -291,10 +291,10 @@ const handleDeleteGoal = async () => {
   try {
     await deleteGoal(deleteDialog.goalUuid);
     deleteDialog.show = false;
-    snackbar.showSuccess('删除目标成功');
+    message.success('删除目标成功');
   } catch (error) {
     console.error('删除目标失败:', error);
-    snackbar.showError('删除目标失败');
+    message.error('删除目标失败');
   }
 };
 
@@ -310,10 +310,10 @@ const handleDeleteFolder = async (folderUuid: string) => {
       if (selectedDirUuid.value === folderUuid) {
         selectedDirUuid.value = 'all';
       }
-      snackbar.showSuccess('删除分类成功');
+      message.success('删除分类成功');
     } catch (error) {
       console.error('删除分类失败:', error);
-      snackbar.showError('删除分类失败');
+      message.error('删除分类失败');
     }
   }
 };
@@ -330,7 +330,7 @@ const handleAIGoalCreated = async (goalData: any) => {
   console.log('AI 创建的目标数据:', goalData);
   // 打开 GoalDialog 并预填充 AI 生成的数据
   goalDialogRef.value?.openForCreate(goalData);
-  snackbar.showSuccess('AI 生成的目标已加载，请确认后保存');
+  message.success('AI 生成的目标已加载，请确认后保存');
 };
 
 /**
@@ -365,7 +365,7 @@ onMounted(async () => {
     await fetchGoalFolders();
   } catch (error) {
     console.error('初始化失败:', error);
-    snackbar.showError('初始化失败');
+    message.error('初始化失败');
   }
 });
 </script>

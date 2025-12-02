@@ -178,7 +178,7 @@ import { ref, computed } from 'vue';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, RecurrenceConfigClient  } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { useReminder } from '../../composables/useReminder';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { reminderGroupApplicationService } from '../../../application/services';
 import TemplateDesktopCard from './TemplateDesktopCard.vue';
 
@@ -187,7 +187,7 @@ type ReminderTemplate = ReminderTemplateClientDTO;
 
 // Composables
 const { reminderTemplates, toggleTemplateStatus, getReminderGroupByUuid } = useReminder();
-const snackbar = useSnackbar();
+const message = useMessage();
 
 // Emits
 const emit = defineEmits<{
@@ -302,10 +302,10 @@ const handleToggleStatus = async (enabled: boolean | null) => {
   isTogglingStatus.value = true;
   try {
     await reminderGroupApplicationService.toggleReminderGroupStatus(group.value.uuid);
-    snackbar.showSuccess(enabled ? '已启用分组' : '已禁用分组');
+    message.success(enabled ? '已启用分组' : '已禁用分组');
   } catch (error) {
     console.error('切换分组状态失败:', error);
-    snackbar.showError('切换状态失败');
+    message.error('切换状态失败');
   } finally {
     isTogglingStatus.value = false;
   }
@@ -321,10 +321,10 @@ const handleToggleControlMode = async (isGroup: boolean | null) => {
   isTogglingMode.value = true;
   try {
     await reminderGroupApplicationService.toggleReminderGroupControlMode(group.value.uuid);
-    snackbar.showSuccess(isGroup ? '已切换到组控制' : '已切换到个体控制');
+    message.success(isGroup ? '已切换到组控制' : '已切换到个体控制');
   } catch (error) {
     console.error('切换控制模式失败:', error);
-    snackbar.showError('切换控制模式失败');
+    message.error('切换控制模式失败');
   } finally {
     isTogglingMode.value = false;
   }
@@ -369,7 +369,7 @@ const handleEditTemplate = (template: ReminderTemplate) => {
 const handleShowAll = () => {
   // TODO: 打开完整列表视图或滚动查看
   console.log('显示所有模板');
-  snackbar.showInfo('该功能正在开发中');
+  message.info('该功能正在开发中');
 };
 
 /**
@@ -403,10 +403,10 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
         action: async () => {
           try {
             await toggleTemplateStatus(template.uuid, !template.effectiveEnabled);
-            snackbar.showSuccess(template.effectiveEnabled ? '已禁用模板' : '已启用模板');
+            message.success(template.effectiveEnabled ? '已禁用模板' : '已启用模板');
           } catch (error) {
             console.error('切换模板状态失败:', error);
-            snackbar.showError('操作失败');
+            message.error('操作失败');
           }
           contextMenu.value.show = false;
         },
@@ -418,7 +418,7 @@ const handleTemplateContextMenu = (template: ReminderTemplate, event: MouseEvent
           // TODO: 实现移出分组功能
           console.log('移出分组:', template.uuid);
           contextMenu.value.show = false;
-          snackbar.showInfo('该功能正在开发中');
+          message.info('该功能正在开发中');
         },
       },
     ],

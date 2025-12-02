@@ -1,64 +1,21 @@
 /**
  * Goal 相关的事件定义
- * 
- * 事件流程：
- * 1. 用户创建/更新 KeyResult 或 GoalRecord
- * 2. 后端服务发布 GoalAggregateRefreshEvent
- * 3. 前端通过 eventBus 监听该事件
- * 4. 触发 GoalSyncService 从服务器刷新 Goal
- * 5. 更新 Pinia store
- * 6. UI 自动响应
+ *
+ * @deprecated 请直接从 @dailyuse/contracts/goal 导入
+ * 此文件保留用于向后兼容，将在未来版本中移除
+ *
+ * 迁移示例：
+ * ```typescript
+ * // 旧的导入方式
+ * import { GoalEvents, GoalAggregateRefreshEvent } from '@dailyuse/utils';
+ *
+ * // 新的导入方式
+ * import { GoalEvents, GoalAggregateRefreshEvent } from '@dailyuse/contracts/goal';
+ * ```
  */
-
-/**
- * Goal 聚合根刷新事件
- * 
- * 场景：
- * - KeyResult 被创建/更新/删除
- * - GoalRecord 被创建/更新/删除
- * - Goal 的计算属性（进度、状态等）需要重新评估
- * 
- * 发布者：
- * - KeyResultApplicationService
- * - GoalRecordApplicationService
- * 
- * 监听者：
- * - GoalSyncService (前端)
- * - 可能的其他模块（如统计、报告等）
- */
-export interface GoalAggregateRefreshEvent {
-  goalUuid: string;
-  reason: 'key-result-created' | 'key-result-updated' | 'key-result-deleted' | 'goal-record-created' | 'goal-record-updated' | 'goal-record-deleted' | 'goal-updated';
-  timestamp: number;
-  metadata?: {
-    keyResultUuid?: string;
-    goalRecordUuid?: string;
-    changeData?: any;
-  };
-}
-
-/**
- * 事件名常量 - 便于维护和查找
- */
-export const GoalEvents = {
-  /** Goal 聚合根需要刷新 */
-  AGGREGATE_REFRESH: 'goal:aggregate:refresh',
-  
-  /** KeyResult 被创建 */
-  KEY_RESULT_CREATED: 'goal:key-result:created',
-  
-  /** KeyResult 被更新 */
-  KEY_RESULT_UPDATED: 'goal:key-result:updated',
-  
-  /** KeyResult 被删除 */
-  KEY_RESULT_DELETED: 'goal:key-result:deleted',
-  
-  /** GoalRecord 被创建 */
-  RECORD_CREATED: 'goal:record:created',
-  
-  /** GoalRecord 被更新 */
-  RECORD_UPDATED: 'goal:record:updated',
-  
-  /** GoalRecord 被删除 */
-  RECORD_DELETED: 'goal:record:deleted',
-} as const;
+export {
+  GoalEvents,
+  type GoalAggregateRefreshEvent,
+  type GoalAggregateRefreshReason,
+  type GoalEventType,
+} from '@dailyuse/contracts/goal';

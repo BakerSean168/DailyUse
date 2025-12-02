@@ -1,39 +1,37 @@
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
-import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
-import { goalApiClient, goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
-import { getGoalStore } from '../../presentation/stores/goalStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { eventBus, GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/utils';
-
 /**
  * Goal Sync Application Service
  * 目标数据同步应用服务 - 负责 Goal 和 GoalFolder 的数据同步
- * 
+ *
+ * 🔄 特殊服务说明：
+ * - 这是一个特殊的同步服务，需要直接操作 Store
+ * - 负责批量数据同步和事件监听
+ * - 与其他 ApplicationService 不同，它需要保持 Store 依赖
+ *
  * 核心职责：
  * 1. 初始化时同步所有数据
  * 2. 监听事件总线上的 Goal 刷新事件
  * 3. 当事件触发时，从服务器刷新对应的 Goal 数据
  * 4. 更新 Pinia store
- * 
+ *
  * 事件驱动架构：
  * - KeyResult/GoalRecord 更新 → 发布 GoalAggregateRefreshEvent
  * - GoalSyncApplicationService 监听此事件
  * - 自动从服务器刷新 Goal 数据
  * - Store 更新 → UI 自动响应
  */
+
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
+import { goalApiClient, goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
+import { getGoalStore } from '../../presentation/stores/goalStore';
+import { eventBus, GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/utils';
+
 export class GoalSyncApplicationService {
   private static instance: GoalSyncApplicationService;
   private unsubscribeFunctions: Map<string, () => void> = new Map();
   private isInitialized = false;
 
   private constructor() {}
-
-  /**
-   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
-   */
-  private get snackbar() {
-    return useSnackbar();
-  }
 
   static getInstance(): GoalSyncApplicationService {
     if (!GoalSyncApplicationService.instance) {
@@ -99,19 +97,16 @@ export class GoalSyncApplicationService {
       // 更新 store
       this.goalStore.addOrUpdateGoal(goal);
 
-      console.log(
-        `✅ [GoalSyncApplicationService] Goal 已更新到 store:`,
-        {
-          uuid: goal.uuid,
-          title: goal.title,
-          keyResultCount: goal.keyResultCount,
-          reason: event.reason,
-        }
-      );
+      console.log(`✅ [GoalSyncApplicationService] Goal 已更新到 store:`, {
+        uuid: goal.uuid,
+        title: goal.title,
+        keyResultCount: goal.keyResultCount,
+        reason: event.reason,
+      });
     } catch (error) {
       console.error(
         `❌ [GoalSyncApplicationService] 刷新 Goal 失败: ${event.goalUuid}`,
-        error
+        error,
       );
     }
   }
@@ -160,11 +155,13 @@ export class GoalSyncApplicationService {
       });
 
       // 转换为客户端实体
-      const goals = (goalsData?.goals || []).map((goalData: any) => Goal.fromClientDTO(goalData));
+      const goals = (goalsData?.goals || []).map((goalData: GoalClientDTO) =>
+        Goal.fromClientDTO(goalData),
+      );
       const folders = (foldersData?.folders || []).map((folderData: any) =>
         GoalFolder.fromClientDTO(folderData),
       );
-      console.log("tongbuqian ========= goal ", goals)
+
       // 批量同步到 store
       this.goalStore.setGoals(goals);
       this.goalStore.setGoalFolders(folders);

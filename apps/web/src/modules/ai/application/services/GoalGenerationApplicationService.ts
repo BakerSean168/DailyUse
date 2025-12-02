@@ -23,7 +23,7 @@ import type {
   GoalCategory,
 } from '@dailyuse/contracts/ai';
 import { goalGenerationApiClient } from '../../infrastructure/api/goalGenerationApiClient';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('GoalGenerationApplicationService');
@@ -57,7 +57,7 @@ export class GoalGenerationApplicationService {
    * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
    */
   private get snackbar() {
-    return useSnackbar();
+    return useMessage();
   }
 
   /**
@@ -156,7 +156,7 @@ export class GoalGenerationApplicationService {
         modelUsed: response.modelUsed,
       });
 
-      this.snackbar.showSuccess(`目标已生成：${response.goal.title}`);
+      this.message.success(`目标已生成：${response.goal.title}`);
       return response;
     } catch (error) {
       const errorMessage = this.handleError(error, '生成目标失败');
@@ -231,7 +231,7 @@ export class GoalGenerationApplicationService {
         modelUsed: response.modelUsed,
       });
 
-      this.snackbar.showSuccess(`目标和 ${response.keyResults.length} 个关键结果已生成`);
+      this.message.success(`目标和 ${response.keyResults.length} 个关键结果已生成`);
       return response;
     } catch (error) {
       const errorMessage = this.handleError(error, '生成目标和关键结果失败');
@@ -312,7 +312,7 @@ export class GoalGenerationApplicationService {
       originalError: error,
     });
 
-    this.snackbar.showError(errorMessage);
+    this.message.error(errorMessage);
     return errorMessage;
   }
 

@@ -2,7 +2,7 @@ import { ref, computed, reactive } from 'vue';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotServerDTO } from '@dailyuse/contracts/goal';
 import { WeightSnapshotWebApplicationService } from '../../application/services/WeightSnapshotWebApplicationService';
 import { getGoalStore } from '../stores/goalStore';
-import { useSnackbar } from '../../../../shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 /**
  * Weight Snapshot 业务逻辑 Composable
@@ -17,7 +17,7 @@ import { useSnackbar } from '../../../../shared/composables/useSnackbar';
 export function useWeightSnapshot() {
   const service = new WeightSnapshotWebApplicationService();
   const goalStore = getGoalStore();
-  const snackbar = useSnackbar();
+  const message = getGlobalMessage();
 
   // ===== 响应式状态 =====
   const isLoading = computed(() => goalStore.isLoading);

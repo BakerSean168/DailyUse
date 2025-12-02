@@ -1,30 +1,38 @@
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, AddKeyResultRequest, KeyResultsResponse, UpdateKeyResultRequest, ProgressBreakdown } from '@dailyuse/contracts/goal';
-import { goalApiClient } from '../../infrastructure/api/goalApiClient';
-import { getGoalStore } from '../../presentation/stores/goalStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
-import { eventBus, GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/utils';
-
 /**
  * Key Result Application Service
  * 关键结果应用服务 - 负责 KeyResult 的 CRUD 和管理
- * 
+ *
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - ApplicationService 只负责 API 调用 + DTO → Entity 转换
+ * - 不再直接依赖 Store，返回数据给调用方
+ * - Store 操作由 Composable 层负责
+ * - 这样确保无循环依赖，且 Service 可独立测试
+ *
+ * 📝 错误处理说明：
+ * - axios 拦截器已处理 API 错误，success: false 会抛出 Error
+ * - Service 直接抛出错误，由 Composable 层统一处理
+ *
  * 架构设计：
  * 1. 不再直接调用 refreshGoalWithKeyResults()
  * 2. 代之以发布 GoalAggregateRefreshEvent 事件
  * 3. GoalSyncApplicationService 监听此事件并自动刷新
  * 4. 完全解耦，便于维护和扩展
  */
+
+import type {
+  KeyResultClientDTO,
+  AddKeyResultRequest,
+  KeyResultsResponse,
+  UpdateKeyResultRequest,
+  ProgressBreakdown,
+} from '@dailyuse/contracts/goal';
+import { goalApiClient } from '../../infrastructure/api/goalApiClient';
+import { eventBus, GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/utils';
+
 export class KeyResultApplicationService {
   private static instance: KeyResultApplicationService;
 
   private constructor() {}
-
-  /**
-   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
-   */
-  private get snackbar() {
-    return useSnackbar();
-  }
 
   static getInstance(): KeyResultApplicationService {
     if (!KeyResultApplicationService.instance) {
@@ -34,122 +42,65 @@ export class KeyResultApplicationService {
   }
 
   /**
-   * 懒加载获取 Goal Store
-   */
-  private get goalStore() {
-    return getGoalStore();
-  }
-
-  /**
    * 为目标创建关键结果
+   * @returns 返回创建的 KeyResult DTO
    */
   async createKeyResultForGoal(
     goalUuid: string,
     request: Omit<AddKeyResultRequest, 'goalUuid'>,
   ): Promise<KeyResultClientDTO> {
-    try {
-      this.goalStore.setLoading(true);
-      this.goalStore.setError(null);
+    const data = await goalApiClient.addKeyResultForGoal(goalUuid, request);
 
-      const data = await goalApiClient.addKeyResultForGoal(goalUuid, request);
+    // 发布事件通知 Goal 需要刷新
+    this.publishGoalRefreshEvent(goalUuid, 'key-result-created', {
+      keyResultUuid: data.uuid,
+    });
 
-      // 发布事件通知 Goal 需要刷新
-      this.publishGoalRefreshEvent(goalUuid, 'key-result-created', {
-        keyResultUuid: data.uuid,
-      });
-
-      this.snackbar.showSuccess('关键结果创建成功');
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '创建关键结果失败';
-      this.goalStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
-      throw error;
-    } finally {
-      this.goalStore.setLoading(false);
-    }
+    return data;
   }
 
   /**
    * 获取目标的所有关键结果
+   * @returns 返回 KeyResults 列表
    */
   async getKeyResultsByGoal(goalUuid: string): Promise<KeyResultsResponse> {
-    try {
-      this.goalStore.setLoading(true);
-      this.goalStore.setError(null);
-
-      const data = await goalApiClient.getKeyResultsByGoal(goalUuid);
-
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取关键结果列表失败';
-      this.goalStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
-      throw error;
-    } finally {
-      this.goalStore.setLoading(false);
-    }
+    return await goalApiClient.getKeyResultsByGoal(goalUuid);
   }
 
   /**
    * 更新关键结果
+   * @returns 返回更新后的 KeyResult DTO
    */
   async updateKeyResultForGoal(
     goalUuid: string,
     keyResultUuid: string,
     request: UpdateKeyResultRequest,
   ): Promise<KeyResultClientDTO> {
-    try {
-      this.goalStore.setLoading(true);
-      this.goalStore.setError(null);
+    const data = await goalApiClient.updateKeyResultForGoal(goalUuid, keyResultUuid, request);
 
-      const data = await goalApiClient.updateKeyResultForGoal(goalUuid, keyResultUuid, request);
+    // 发布事件通知 Goal 需要刷新
+    this.publishGoalRefreshEvent(goalUuid, 'key-result-updated', {
+      keyResultUuid: keyResultUuid,
+    });
 
-      // 发布事件通知 Goal 需要刷新
-      this.publishGoalRefreshEvent(goalUuid, 'key-result-updated', {
-        keyResultUuid: keyResultUuid,
-      });
-
-      this.snackbar.showSuccess('关键结果更新成功');
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '更新关键结果失败';
-      this.goalStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
-      throw error;
-    } finally {
-      this.goalStore.setLoading(false);
-    }
+    return data;
   }
 
   /**
    * 删除关键结果
    */
   async deleteKeyResultForGoal(goalUuid: string, keyResultUuid: string): Promise<void> {
-    try {
-      this.goalStore.setLoading(true);
-      this.goalStore.setError(null);
+    await goalApiClient.deleteKeyResultForGoal(goalUuid, keyResultUuid);
 
-      await goalApiClient.deleteKeyResultForGoal(goalUuid, keyResultUuid);
-
-      // 发布事件通知 Goal 需要刷新
-      this.publishGoalRefreshEvent(goalUuid, 'key-result-deleted', {
-        keyResultUuid: keyResultUuid,
-      });
-
-      this.snackbar.showSuccess('关键结果删除成功');
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '删除关键结果失败';
-      this.goalStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
-      throw error;
-    } finally {
-      this.goalStore.setLoading(false);
-    }
+    // 发布事件通知 Goal 需要刷新
+    this.publishGoalRefreshEvent(goalUuid, 'key-result-deleted', {
+      keyResultUuid: keyResultUuid,
+    });
   }
 
   /**
    * 批量更新关键结果权重
+   * @returns 返回更新后的 KeyResults 列表
    */
   async batchUpdateKeyResultWeights(
     goalUuid: string,
@@ -160,46 +111,20 @@ export class KeyResultApplicationService {
       }>;
     },
   ): Promise<KeyResultsResponse> {
-    try {
-      this.goalStore.setLoading(true);
-      this.goalStore.setError(null);
+    const data = await goalApiClient.batchUpdateKeyResultWeights(goalUuid, request);
 
-      const data = await goalApiClient.batchUpdateKeyResultWeights(goalUuid, request);
+    // 发布事件通知 Goal 需要刷新
+    this.publishGoalRefreshEvent(goalUuid, 'key-result-updated', {});
 
-      // 发布事件通知 Goal 需要刷新
-      this.publishGoalRefreshEvent(goalUuid, 'key-result-updated', {});
-
-      this.snackbar.showSuccess('关键结果权重更新成功');
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '批量更新关键结果权重失败';
-      this.goalStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
-      throw error;
-    } finally {
-      this.goalStore.setLoading(false);
-    }
+    return data;
   }
 
   /**
    * 获取目标进度分解详情
+   * @returns 返回进度分解数据
    */
   async getProgressBreakdown(goalUuid: string): Promise<ProgressBreakdown> {
-    try {
-      this.goalStore.setLoading(true);
-      this.goalStore.setError(null);
-
-      const data = await goalApiClient.getProgressBreakdown(goalUuid);
-
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取进度详情失败';
-      this.goalStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
-      throw error;
-    } finally {
-      this.goalStore.setLoading(false);
-    }
+    return await goalApiClient.getProgressBreakdown(goalUuid);
   }
 
   // ===== 辅助方法 =====

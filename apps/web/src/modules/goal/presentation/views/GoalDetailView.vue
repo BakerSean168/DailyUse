@@ -511,7 +511,9 @@ const openCreateKeyResultDialog = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 400px;
+  /* 确保有最小高度用于显示 DAG */
+  max-height: calc(100vh - 450px);
 }
 
 .tab-content {
@@ -524,6 +526,8 @@ const openCreateKeyResultDialog = () => {
   height: 100%;
   overflow-y: auto;
   padding: 16px;
+  /* 确保底部有足够的空间 */
+  padding-bottom: 24px;
 }
 
 .progress-text-container {

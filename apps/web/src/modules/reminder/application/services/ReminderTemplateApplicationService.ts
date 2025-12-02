@@ -17,7 +17,7 @@ import type { CreateReminderTemplateRequest, UpdateReminderTemplateRequest, Remi
 import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 export class ReminderTemplateApplicationService {
   private static instance: ReminderTemplateApplicationService;
@@ -35,7 +35,7 @@ export class ReminderTemplateApplicationService {
    * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
    */
   private get snackbar() {
-    return useSnackbar();
+    return useMessage();
   }
 
   /**
@@ -65,12 +65,12 @@ export class ReminderTemplateApplicationService {
   const template = ReminderTemplate.fromClientDTO(templateData);
   this.reminderStore.addOrUpdateReminderTemplate(template);
 
-      this.snackbar.showSuccess('提醒模板创建成功');
+      this.message.success('提醒模板创建成功');
   return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '创建提醒模板失败';
       this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -104,7 +104,7 @@ export class ReminderTemplateApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒模板失败';
       this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -128,7 +128,7 @@ export class ReminderTemplateApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒模板详情失败';
       this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -151,12 +151,12 @@ export class ReminderTemplateApplicationService {
   const template = ReminderTemplate.fromClientDTO(templateData);
   this.reminderStore.addOrUpdateReminderTemplate(template);
 
-      this.snackbar.showSuccess('提醒模板更新成功');
+      this.message.success('提醒模板更新成功');
   return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '更新提醒模板失败';
       this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -175,11 +175,11 @@ export class ReminderTemplateApplicationService {
 
   this.reminderStore.removeReminderTemplate(uuid);
 
-      this.snackbar.showSuccess('提醒模板删除成功');
+      this.message.success('提醒模板删除成功');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '删除提醒模板失败';
       this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -228,7 +228,7 @@ export class ReminderTemplateApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '搜索模板失败';
       this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -254,12 +254,12 @@ export class ReminderTemplateApplicationService {
       const template = ReminderTemplate.fromClientDTO(templateData);
       this.reminderStore.addOrUpdateReminderTemplate(template);
 
-      this.snackbar.showSuccess(targetGroupUuid ? '模板已移动到分组' : '模板已移动到桌面');
+      this.message.success(targetGroupUuid ? '模板已移动到分组' : '模板已移动到桌面');
       return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '移动模板失败';
       this.reminderStore.setError(errorMessage);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);

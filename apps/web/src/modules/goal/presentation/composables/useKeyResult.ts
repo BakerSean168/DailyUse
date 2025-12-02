@@ -1,31 +1,40 @@
 /**
  * Key Result Composable
  * 关键结果相关的业务逻辑
+ *
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和 Store
+ * - Service 直接返回 DTO 或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 显示通知
+ * - KeyResult 操作会触发事件，由 GoalSyncService 自动刷新 Goal
  */
 
-import { ref } from 'vue';
-import { AggregationMethod, KeyResultValueType, GoalStatus as GC_GoalStatus } from '@dailyuse/contracts/goal';
+import { ref, computed, readonly } from 'vue';
+import { AggregationMethod, KeyResultValueType } from '@dailyuse/contracts/goal';
 import type {
-  GoalClientDTO,
   KeyResultClientDTO,
-  CreateGoalRequest,
-  UpdateGoalRequest,
-  GoalServerDTO,
-  KeyResultServerDTO,
   AddKeyResultRequest,
   UpdateKeyResultRequest,
 } from '@dailyuse/contracts/goal';
 import { keyResultApplicationService } from '../../application/services';
-import { useSnackbar } from '../../../../shared/composables/useSnackbar';
+import { getGoalStore } from '../stores/goalStore';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 export function useKeyResult() {
-  const snackbar = useSnackbar();
+  const goalStore = getGoalStore();
+  const { success: showSuccess, error: showError } = getGlobalMessage();
 
   // ===== 本地状态 =====
+  const isOperating = ref(false);
+  const operationError = ref<string | null>(null);
   const showCreateKeyResultDialog = ref(false);
   const showEditKeyResultDialog = ref(false);
-  const editingKeyResult = ref<any | null>(null);
+  const editingKeyResult = ref<KeyResultClientDTO | null>(null);
   const currentGoalUuid = ref<string | null>(null);
+
+  // ===== 计算属性 =====
+  const isLoading = computed(() => goalStore.isLoading || isOperating.value);
+  const error = computed(() => goalStore.error || operationError.value);
 
   // ===== CRUD 操作 =====
 
@@ -34,11 +43,18 @@ export function useKeyResult() {
    */
   const fetchKeyResultsByGoal = async (goalUuid: string) => {
     try {
+      isOperating.value = true;
+      operationError.value = null;
+
       const result = await keyResultApplicationService.getKeyResultsByGoal(goalUuid);
       return result;
-    } catch (error) {
-      snackbar.showError('获取关键结果列表失败');
-      throw error;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '获取关键结果列表失败';
+      operationError.value = errorMessage;
+      showError(errorMessage);
+      throw err;
+    } finally {
+      isOperating.value = false;
     }
   };
 
@@ -60,6 +76,9 @@ export function useKeyResult() {
     },
   ) => {
     try {
+      isOperating.value = true;
+      operationError.value = null;
+
       // 构建符合 AddKeyResultRequest 的请求
       const request: Omit<AddKeyResultRequest, 'goalUuid'> = {
         title: data.title,
@@ -72,13 +91,20 @@ export function useKeyResult() {
         weight: data.weight,
       };
 
+      // ✅ Service 返回 DTO，事件驱动刷新 Goal
       const response = await keyResultApplicationService.createKeyResultForGoal(goalUuid, request);
+
       showCreateKeyResultDialog.value = false;
-      snackbar.showSuccess('关键结果创建成功');
+      showSuccess('关键结果创建成功');
+
       return response;
-    } catch (error) {
-      snackbar.showError('创建关键结果失败');
-      throw error;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '创建关键结果失败';
+      operationError.value = errorMessage;
+      showError(errorMessage);
+      throw err;
+    } finally {
+      isOperating.value = false;
     }
   };
 
@@ -91,18 +117,28 @@ export function useKeyResult() {
     data: UpdateKeyResultRequest,
   ) => {
     try {
+      isOperating.value = true;
+      operationError.value = null;
+
+      // ✅ Service 返回 DTO，事件驱动刷新 Goal
       const response = await keyResultApplicationService.updateKeyResultForGoal(
         goalUuid,
         keyResultUuid,
         data,
       );
+
       showEditKeyResultDialog.value = false;
       editingKeyResult.value = null;
-      snackbar.showSuccess('关键结果更新成功');
+      showSuccess('关键结果更新成功');
+
       return response;
-    } catch (error) {
-      snackbar.showError('更新关键结果失败');
-      throw error;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '更新关键结果失败';
+      operationError.value = errorMessage;
+      showError(errorMessage);
+      throw err;
+    } finally {
+      isOperating.value = false;
     }
   };
 
@@ -111,26 +147,96 @@ export function useKeyResult() {
    */
   const deleteKeyResult = async (goalUuid: string, keyResultUuid: string) => {
     try {
+      isOperating.value = true;
+      operationError.value = null;
+
+      // ✅ Service 返回 void，事件驱动刷新 Goal
       await keyResultApplicationService.deleteKeyResultForGoal(goalUuid, keyResultUuid);
-      snackbar.showSuccess('关键结果删除成功');
-    } catch (error) {
-      snackbar.showError('删除关键结果失败');
-      throw error;
+
+      showSuccess('关键结果删除成功');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '删除关键结果失败';
+      operationError.value = errorMessage;
+      showError(errorMessage);
+      throw err;
+    } finally {
+      isOperating.value = false;
     }
+  };
+
+  /**
+   * 批量更新关键结果权重
+   */
+  const batchUpdateWeights = async (
+    goalUuid: string,
+    updates: Array<{ keyResultUuid: string; weight: number }>,
+  ) => {
+    try {
+      isOperating.value = true;
+      operationError.value = null;
+
+      const response = await keyResultApplicationService.batchUpdateKeyResultWeights(goalUuid, {
+        updates,
+      });
+
+      showSuccess('权重更新成功');
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '批量更新权重失败';
+      operationError.value = errorMessage;
+      showError(errorMessage);
+      throw err;
+    } finally {
+      isOperating.value = false;
+    }
+  };
+
+  /**
+   * 获取进度分解详情
+   */
+  const fetchProgressBreakdown = async (goalUuid: string) => {
+    try {
+      isOperating.value = true;
+      operationError.value = null;
+
+      return await keyResultApplicationService.getProgressBreakdown(goalUuid);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '获取进度详情失败';
+      operationError.value = errorMessage;
+      showError(errorMessage);
+      throw err;
+    } finally {
+      isOperating.value = false;
+    }
+  };
+
+  // ===== 工具方法 =====
+
+  const clearError = () => {
+    operationError.value = null;
   };
 
   return {
     // 状态
+    isLoading: readonly(isLoading),
+    error: readonly(error),
     showCreateKeyResultDialog,
     showEditKeyResultDialog,
     editingKeyResult,
     currentGoalUuid,
 
-    // 方法
+    // CRUD 方法
     fetchKeyResultsByGoal,
     createKeyResult,
     updateKeyResult,
     deleteKeyResult,
+
+    // 额外方法
+    batchUpdateWeights,
+    fetchProgressBreakdown,
+
+    // 工具方法
+    clearError,
   };
 }
 

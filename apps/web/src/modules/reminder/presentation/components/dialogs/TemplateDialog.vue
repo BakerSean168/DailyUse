@@ -231,7 +231,7 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ColorPicker, IconPicker } from '@dailyuse/ui';
 import { useReminder } from '../../composables/useReminder';
 import { useReminderGroup } from '../../composables/useReminderGroup';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 
 
@@ -244,7 +244,7 @@ const isEditMode = computed(() => !!currentTemplate.value?.uuid);
 
 const { createReminderTemplate, updateTemplate, refreshAll } = useReminder();
 const { groups } = useReminderGroup();
-const snackbar = useSnackbar();
+const message = useMessage();
 
 // 分组选项
 const groupOptions = computed(() => groups.value || []);
@@ -392,7 +392,7 @@ const handleSave = async () => {
       };
       
       await updateTemplate(currentTemplate.value.uuid, updateRequest);
-      snackbar.showSuccess('提醒模板已更新');
+      message.success('提醒模板已更新');
     } else {
       // 创建模式 - 固定使用 RECURRING 类型
       const createRequest: CreateReminderTemplateRequest = {
@@ -410,7 +410,7 @@ const handleSave = async () => {
       };
       
       await createReminderTemplate(createRequest);
-      snackbar.showSuccess('提醒模板已创建');
+      message.success('提醒模板已创建');
     }
 
     // 保存后自动刷新数据
@@ -418,7 +418,7 @@ const handleSave = async () => {
     close();
   } catch (error) {
     console.error('保存提醒模板失败:', error);
-    snackbar.showError(isEditMode.value ? '更新失败' : '创建失败');
+    message.error(isEditMode.value ? '更新失败' : '创建失败');
   } finally {
     saving.value = false;
   }

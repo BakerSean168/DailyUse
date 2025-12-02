@@ -29,12 +29,12 @@ vi.mock('../../../infrastructure/api/goalGenerationApiClient', () => ({
   },
 }));
 
-vi.mock('@/shared/composables/useSnackbar', () => ({
-  useSnackbar: () => ({
-    showSuccess: vi.fn(),
-    showError: vi.fn(),
-    showInfo: vi.fn(),
-    showWarning: vi.fn(),
+vi.mock('@dailyuse/ui', () => ({
+  useMessage: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
   }),
 }));
 

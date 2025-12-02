@@ -143,13 +143,13 @@ import { ref, computed, reactive, watch } from 'vue';
 import { ControlMode } from '@dailyuse/contracts/reminder';
 import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
 import { ColorPicker, IconPicker } from '@dailyuse/ui';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { useReminderGroup } from '../../composables/useReminderGroup';
 
 type ReminderTemplateGroup = ReminderGroupClientDTO;
 
 // Composables
-const snackbar = useSnackbar();
+const message = useMessage();
 const { createGroup, updateGroup, fetchGroups } = useReminderGroup();
 
 // 响应式状态
@@ -268,7 +268,7 @@ const handleSave = async () => {
   // 验证表单
   const { valid } = await formRef.value?.validate();
   if (!valid) {
-    snackbar.showError('请检查表单填写');
+    message.error('请检查表单填写');
     return;
   }
 
@@ -288,11 +288,11 @@ const handleSave = async () => {
     if (isEditMode.value && currentGroup.value) {
       // 编辑模式 - 调用 API 更新分组
       await updateGroup(currentGroup.value.uuid, groupData);
-      snackbar.showSuccess('分组已更新');
+      message.success('分组已更新');
     } else {
       // 创建模式 - 调用 API 创建分组
       await createGroup(groupData);
-      snackbar.showSuccess('分组已创建');
+      message.success('分组已创建');
     }
 
     // 保存后自动刷新数据
@@ -300,7 +300,7 @@ const handleSave = async () => {
     close();
   } catch (error) {
     console.error('保存分组失败:', error);
-    snackbar.showError('保存失败: ' + (error instanceof Error ? error.message : '未知错误'));
+    message.error('保存失败: ' + (error instanceof Error ? error.message : '未知错误'));
   } finally {
     isSaving.value = false;
   }

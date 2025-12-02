@@ -46,15 +46,15 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 const show = ref(false); const formRef = ref(); const formValid = ref(false);
 const form = ref({ keyResultTitle: '', keyResultDescription: '', targetValue: 0, currentValue: 0, unit: '', timeRemaining: 30 });
 const rules = { required: (v: any) => (v !== undefined && v !== null && v !== '' ? true : '必填') };
 const { generateTasks, isGenerating, error, hasQuota, quota, clearError } = useAIGeneration();
-const { showError, showSuccess } = useSnackbar();
+const { showError, showSuccess } = useMessage();
 function openDialog(initial?: Partial<typeof form.value>) { if (initial) Object.assign(form.value, initial); show.value = true; }
 function close() { if (!isGenerating.value) show.value = false; }
-async function handleGenerate() { try { const result = await generateTasks({ keyResultTitle: form.value.keyResultTitle, keyResultDescription: form.value.keyResultDescription || undefined, targetValue: form.value.targetValue, currentValue: form.value.currentValue, unit: form.value.unit || undefined, timeRemaining: form.value.timeRemaining }); showSuccess(`生成 ${result.tasks.length} 个任务模板`); close(); const list = result.tasks.map((t: any, i: number) => `${i + 1}. ${t.title || t.name}`).join('\n'); window.dispatchEvent(new CustomEvent('ai-chat:inject', { detail: { content: `已生成任务列表:\n\n${list}\n\n请帮我基于这些任务制定执行优先级与时间安排。` } })); } catch (e: any) { showError(e?.message || '生成任务失败'); } }
+async function handleGenerate() { try { const result = await generateTasks({ keyResultTitle: form.value.keyResultTitle, keyResultDescription: form.value.keyResultDescription || undefined, targetValue: form.value.targetValue, currentValue: form.value.currentValue, unit: form.value.unit || undefined, timeRemaining: form.value.timeRemaining }); message.success(`生成 ${result.tasks.length} 个任务模板`); close(); const list = result.tasks.map((t: any, i: number) => `${i + 1}. ${t.title || t.name}`).join('\n'); window.dispatchEvent(new CustomEvent('ai-chat:inject', { detail: { content: `已生成任务列表:\n\n${list}\n\n请帮我基于这些任务制定执行优先级与时间安排。` } })); } catch (e: any) { message.error(e?.message || '生成任务失败'); } }
 const emit = defineEmits<{ (e: 'generated', result: any): void; (e: 'error', msg: string): void }>();
 defineExpose({ openDialog, close });
 </script>

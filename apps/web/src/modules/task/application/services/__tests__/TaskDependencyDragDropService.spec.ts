@@ -24,11 +24,11 @@ vi.mock('../TaskDependencyValidationService', () => ({
   })),
 }));
 
-vi.mock('../../../../shared/composables/useSnackbar', () => ({
-  useSnackbar: vi.fn(() => ({
-    showSuccess: vi.fn(),
-    showError: vi.fn(),
-    showWarning: vi.fn(),
+vi.mock('@dailyuse/ui', () => ({
+  useMessage: vi.fn(() => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
   })),
 }));
 
@@ -235,12 +235,12 @@ describe('TaskDependencyDragDropService', () => {
 
   describe('notifications', () => {
     it.skip('should show success notification on successful creation', async () => {
-      // This test is skipped because useSnackbar mocking is complex
+      // This test is skipped because useMessage mocking is complex
       // Notifications are tested in integration tests
     });
 
     it.skip('should show error notification on failure', async () => {
-      // This test is skipped because useSnackbar mocking is complex
+      // This test is skipped because useMessage mocking is complex
       // Notifications are tested in integration tests
     });
   });

@@ -8,9 +8,6 @@
     </div>
     <router-view v-else></router-view>
 
-    <!-- 全局 Snackbar 组件 -->
-    <GlobalSnackbar />
-
     <!-- 应用内通知组件 -->
     <InAppNotification />
 
@@ -68,10 +65,9 @@ import AIKnowledgeDocQuickDialog from '@/modules/ai/presentation/components/chat
 import GoalDialog from '@/modules/goal/presentation/components/dialogs/GoalDialog.vue';
 import ObsidianDialog from '@/shared/components/ObsidianDialog.vue';
 import { useSettingStore } from '@/modules/setting/presentation/stores/settingStore';
-import { useSnackbarStore } from '@/shared/stores/snackbarStore';
+import { useMessage } from '@dailyuse/ui';
 import { knowledgeGenerationApplicationService } from '@/modules/ai/application/services';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import GlobalSnackbar from '@/shared/components/GlobalSnackbar.vue';
 import InAppNotification from '@/modules/notification/presentation/components/InAppNotification.vue';
 import { DuMessageProvider } from '@dailyuse/ui';
 import { logo128 as logo } from '@dailyuse/assets';
@@ -80,7 +76,7 @@ import { getThemeService } from '@/modules/setting/application/services/ThemeSer
 const isLoading = ref(true);
 const showCommandPalette = ref(false);
 const settingStore = useSettingStore();
-const snackbarStore = useSnackbarStore();
+const message = useMessage();
 
 // 懒加载命令面板组件和搜索数据
 const CommandPalette = shallowRef<any>(null);
@@ -93,21 +89,11 @@ const activeConversationUuid = ref<string | null>(null);
 
 // 🔔 监听 Session 过期事件，显示友好提示
 const handleSessionExpired = (event: CustomEvent) => {
-  const { message, reason, errorCode } = event.detail;
-  console.log('🚨 [App] Session 过期事件:', { message, reason, errorCode });
+  const { message: msg, reason, errorCode } = event.detail;
+  console.log('🚨 [App] Session 过期事件:', { message: msg, reason, errorCode });
 
   // 显示友好的错误提示
-  snackbarStore.show({
-    message: message || '登录已过期，请重新登录',
-    type: 'warning',
-    timeout: 5000,
-    action: {
-      text: '立即登录',
-      handler: () => {
-        window.location.href = '/auth/login';
-      },
-    },
-  });
+  message.warning(msg || '登录已过期，请重新登录');
 };
 
 // 监听快捷键，按需加载命令面板

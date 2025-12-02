@@ -160,6 +160,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { KeyResult, Goal } from '@dailyuse/domain-client/goal';
+import { AggregationMethod } from '@dailyuse/contracts/goal';
 // composables
 import { useKeyResult } from '../../composables/useKeyResult';
 
@@ -242,11 +243,11 @@ const weightRules = [
 
 // 计算方法选项
 const calculationMethods = [
-  { title: '累加 - 适用于递增指标', value: 'SUM' },
-  { title: '平均值 - 适用于波动指标', value: 'AVERAGE' },
-  { title: '最大值 - 取最高值', value: 'MAX' },
-  { title: '最小值 - 取最低值', value: 'MIN' },
-  { title: '取最后一次 - 适用于绝对值', value: 'LAST' },
+  { title: '累加 - 适用于递增指标', value: AggregationMethod.SUM },
+  { title: '平均值 - 适用于波动指标', value: AggregationMethod.AVERAGE },
+  { title: '最大值 - 取最高值', value: AggregationMethod.MAX },
+  { title: '最小值 - 取最低值', value: AggregationMethod.MIN },
+  { title: '取最后一次 - 适用于绝对值', value: AggregationMethod.LAST },
 ];
 
 // 进度颜色计算
@@ -268,56 +269,57 @@ const progressBarColor = computed(() => {
 
 // 处理保存
 const handleSave = async () => {
-  if (!isFormValid.value) return;
-  if (isEditing.value) {
-    if (isInGoalEditing.value) {
-      // 如果在目标编辑页面，直接修改 Goal 中的 KeyResult
-      // 由于我们已经在 localKeyResult 上直接修改，这里不需要额外操作
-      // propGoal 中的 keyResults 已经是引用，修改会反映在父组件中
+  if (!isFormValid.value || loading.value) return;
+  
+  loading.value = true;
+  try {
+    if (isEditing.value) {
+      if (isInGoalEditing.value) {
+        // 如果在目标编辑页面，直接修改 Goal 中的 KeyResult
+        // 由于我们已经在 localKeyResult 上直接修改，这里不需要额外操作
+        // propGoal 中的 keyResults 已经是引用，修改会反映在父组件中
+      } else {
+        // 转换为 UpdateKeyResultRequest 格式
+        const updateRequest = {
+          title: localKeyResult.value.title,
+          description: localKeyResult.value.description || undefined, // null 转为 undefined
+          weight: localKeyResult.value.weight,
+          order: localKeyResult.value.order,
+          progress: {
+            valueType: localKeyResult.value.progress.valueType,
+            aggregationMethod: localKeyResult.value.progress.aggregationMethod,
+            targetValue: localKeyResult.value.progress.targetValue,
+            currentValue: localKeyResult.value.progress.currentValue,
+            unit: localKeyResult.value.progress.unit || undefined,
+          },
+        };
+        await updateKeyResult(propGoalUuid.value!, localKeyResult.value.uuid, updateRequest);
+      }
     } else {
-      // 转换为 UpdateKeyResultRequest 格式
-      const updateRequest = {
+      if (isInGoalEditing.value) {
+        // 如果在目标编辑页面，使用变更跟踪方法添加关键结果
+        propGoal.value?.addKeyResult(localKeyResult.value as KeyResult);
+        // 不调用创建接口，等保存目标时统一创建
+        closeDialog();
+        return;
+      }
+      // 转换为 AddKeyResultRequest 格式
+      const createRequest = {
         title: localKeyResult.value.title,
-        description: localKeyResult.value.description || undefined, // null 转为 undefined
+        description: localKeyResult.value.description || undefined,
+        targetValue: localKeyResult.value.progress.targetValue,
+        currentValue: localKeyResult.value.progress.currentValue,
+        unit: localKeyResult.value.progress.unit || undefined,
         weight: localKeyResult.value.weight,
-        order: localKeyResult.value.order,
-        progress: {
-          valueType: localKeyResult.value.progress.valueType,
-          aggregationMethod: localKeyResult.value.progress.aggregationMethod,
-          targetValue: localKeyResult.value.progress.targetValue,
-          currentValue: localKeyResult.value.progress.currentValue,
-          unit: localKeyResult.value.progress.unit || undefined,
-        },
+        valueType: localKeyResult.value.progress.valueType,
+        aggregationMethod: localKeyResult.value.progress.aggregationMethod,
       };
-      await updateKeyResult(propGoalUuid.value!, localKeyResult.value.uuid, updateRequest);
+      await createKeyResult(propGoalUuid.value!, createRequest);
     }
-  } else {
-    if (isInGoalEditing.value) {
-      // 如果在目标编辑页面，使用变更跟踪方法添加关键结果
-      propGoal.value?.addKeyResult(localKeyResult.value as KeyResult);
-      // 不调用创建接口，等保存目标时统一创建
-      closeDialog();
-      return;
-    }
-    // 转换为旧的 CreateKeyResultRequest 格式（兼容现有 API）
-    const createRequest = {
-      title: localKeyResult.value.title, // title -> name
-      description: localKeyResult.value.description || undefined,
-      startValue: localKeyResult.value.progress.currentValue, // initialValue，当前实现中默认为0
-      targetValue: localKeyResult.value.progress.targetValue,
-      currentValue: localKeyResult.value.progress.currentValue,
-      unit: localKeyResult.value.progress.unit || '', // null -> ''
-      weight: localKeyResult.value.weight,
-      calculationMethod: localKeyResult.value.progress.aggregationMethod.toLowerCase() as
-        | 'sum'
-        | 'average'
-        | 'max'
-        | 'min'
-        | 'custom',
-    };
-    await createKeyResult(propGoalUuid.value!, createRequest);
+    closeDialog();
+  } finally {
+    loading.value = false;
   }
-  closeDialog();
 };
 
 const handleCancel = () => {

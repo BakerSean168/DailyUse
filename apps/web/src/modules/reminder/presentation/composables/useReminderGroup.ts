@@ -7,11 +7,11 @@ import { ref, computed } from 'vue';
 import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
 import { reminderGroupApplicationService } from '../../application/services';
 import { getReminderStore } from '../stores/reminderStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 export function useReminderGroup() {
   const reminderStore = getReminderStore();
-  const snackbar = useSnackbar();
+  const message = useMessage();
 
   // ===== 响应式状态 =====
   const isLoading = computed(() => reminderStore.isLoading);
@@ -38,7 +38,7 @@ export function useReminderGroup() {
       const result = await reminderGroupApplicationService.getReminderGroups();
       return result.items;
     } catch (error) {
-      snackbar.showError('获取分组列表失败');
+      message.error('获取分组列表失败');
       throw error;
     }
   };
@@ -56,7 +56,7 @@ export function useReminderGroup() {
       const group = await reminderGroupApplicationService.getReminderGroup(uuid);
       return group;
     } catch (error) {
-      snackbar.showError('获取分组详情失败');
+      message.error('获取分组详情失败');
       throw error;
     }
   };
@@ -70,10 +70,10 @@ export function useReminderGroup() {
     try {
       const response = await reminderGroupApplicationService.createReminderGroup(data);
       showCreateGroupDialog.value = false;
-      snackbar.showSuccess('分组创建成功');
+      message.success('分组创建成功');
       return response;
     } catch (error) {
-      snackbar.showError('创建分组失败');
+      message.error('创建分组失败');
       throw error;
     }
   };
@@ -89,10 +89,10 @@ export function useReminderGroup() {
       const response = await reminderGroupApplicationService.updateReminderGroup(uuid, data);
       showEditGroupDialog.value = false;
       editingGroup.value = null;
-      snackbar.showSuccess('分组更新成功');
+      message.success('分组更新成功');
       return response;
     } catch (error) {
-      snackbar.showError('更新分组失败');
+      message.error('更新分组失败');
       throw error;
     }
   };
@@ -108,9 +108,9 @@ export function useReminderGroup() {
         reminderStore.setSelectedGroup(null);
       }
 
-      snackbar.showSuccess('分组删除成功');
+      message.success('分组删除成功');
     } catch (error) {
-      snackbar.showError('删除分组失败');
+      message.error('删除分组失败');
       throw error;
     }
   };
@@ -121,10 +121,10 @@ export function useReminderGroup() {
   const toggleGroupStatus = async (uuid: string) => {
     try {
       const response = await reminderGroupApplicationService.toggleReminderGroupStatus(uuid);
-      snackbar.showSuccess(`分组已${response.enabled ? '启用' : '禁用'}`);
+      message.success(`分组已${response.enabled ? '启用' : '禁用'}`);
       return response;
     } catch (error) {
-      snackbar.showError('切换分组状态失败');
+      message.error('切换分组状态失败');
       throw error;
     }
   };

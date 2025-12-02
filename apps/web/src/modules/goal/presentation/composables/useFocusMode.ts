@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest } from '@dailyuse/contracts/goal';
 import { focusModeApiClient } from '../../infrastructure/api/focusModeApiClient';
-import { useSnackbar } from '../../../../shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('useFocusMode');
@@ -30,7 +30,7 @@ const logger = createLogger('useFocusMode');
  * ```
  */
 export function useFocusMode() {
-  const snackbar = useSnackbar();
+  const message = getGlobalMessage();
 
   // ===== 响应式状态 =====
   const isLoading = ref(false);
@@ -66,14 +66,14 @@ export function useFocusMode() {
       const focusMode = await focusModeApiClient.activateFocusMode(request);
       activeFocusMode.value = focusMode;
 
-      snackbar.showSuccess('专注模式已启用');
+      message.success('专注模式已启用');
       logger.info('Focus mode activated', { uuid: focusMode.uuid });
 
       return focusMode;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '启用专注模式失败';
       error.value = errorMessage;
-      snackbar.showError(errorMessage);
+      message.error(errorMessage);
       logger.error('Failed to activate focus mode', err);
       throw err;
     } finally {
@@ -95,7 +95,7 @@ export function useFocusMode() {
     if (!targetUuid) {
       const errorMessage = '没有活跃的专注周期';
       error.value = errorMessage;
-      snackbar.showError(errorMessage);
+      message.error(errorMessage);
       throw new Error(errorMessage);
     }
 
@@ -109,14 +109,14 @@ export function useFocusMode() {
         activeFocusMode.value = null;
       }
 
-      snackbar.showSuccess('专注模式已关闭');
+      message.success('专注模式已关闭');
       logger.info('Focus mode deactivated', { uuid: targetUuid });
 
       return focusMode;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '关闭专注模式失败';
       error.value = errorMessage;
-      snackbar.showError(errorMessage);
+      message.error(errorMessage);
       logger.error('Failed to deactivate focus mode', err);
       throw err;
     } finally {
@@ -142,7 +142,7 @@ export function useFocusMode() {
     if (!targetUuid) {
       const errorMessage = '没有活跃的专注周期';
       error.value = errorMessage;
-      snackbar.showError(errorMessage);
+      message.error(errorMessage);
       throw new Error(errorMessage);
     }
 
@@ -156,14 +156,14 @@ export function useFocusMode() {
         activeFocusMode.value = focusMode;
       }
 
-      snackbar.showSuccess('专注周期已延期');
+      message.success('专注周期已延期');
       logger.info('Focus mode extended', { uuid: targetUuid });
 
       return focusMode;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '延期专注模式失败';
       error.value = errorMessage;
-      snackbar.showError(errorMessage);
+      message.error(errorMessage);
       logger.error('Failed to extend focus mode', err);
       throw err;
     } finally {
@@ -200,7 +200,7 @@ export function useFocusMode() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取活跃专注周期失败';
       error.value = errorMessage;
-      snackbar.showError(errorMessage);
+      message.error(errorMessage);
       logger.error('Failed to fetch active focus mode', err);
       throw err;
     } finally {
@@ -237,7 +237,7 @@ export function useFocusMode() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取专注周期历史失败';
       error.value = errorMessage;
-      snackbar.showError(errorMessage);
+      message.error(errorMessage);
       logger.error('Failed to fetch focus mode history', err);
       throw err;
     } finally {

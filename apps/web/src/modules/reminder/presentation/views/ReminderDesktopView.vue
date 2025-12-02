@@ -172,7 +172,7 @@ import ReminderInstanceSidebar from '../components/ReminderInstanceSidebar.vue';
 
 // Composables
 import { useReminder } from '../composables/useReminder';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { reminderGroupApplicationService } from '../../application/services';
 
 // 类型导入 - 使用 Contracts DTO
@@ -187,7 +187,7 @@ type ReminderTemplateGroup = ReminderGroupClientDTO;
 const { isLoading, error, reminderTemplates, reminderGroups, initialize, refreshAll, deleteTemplate, updateTemplate, toggleTemplateStatus } =
   useReminder();
 
-const snackbar = useSnackbar();
+const message = useMessage();
 
 // 别名以保持兼容性
 const templates = computed(() => reminderTemplates.value);
@@ -215,10 +215,10 @@ const loadGroups = async () => {
 const deleteGroup = async (uuid: string) => {
   try {
     await reminderGroupApplicationService.deleteReminderGroup(uuid);
-    snackbar.showSuccess('分组删除成功');
+    message.success('分组删除成功');
   } catch (error: any) {
     console.error('删除分组失败:', error);
-    snackbar.showError('删除分组失败');
+    message.error('删除分组失败');
   }
 };
 
@@ -494,10 +494,10 @@ const toggleTemplateEnabled = async (template: ReminderTemplate) => {
     await toggleTemplateStatus(template.uuid, !template.effectiveEnabled);
     // 刷新列表
     await refreshAll();
-    snackbar.showSuccess(template.effectiveEnabled ? '已禁用提醒' : '已启用提醒');
+    message.success(template.effectiveEnabled ? '已禁用提醒' : '已启用提醒');
   } catch (error) {
     console.error('切换模板状态失败:', error);
-    snackbar.showError('切换状态失败');
+    message.error('切换状态失败');
   }
 };
 
@@ -524,10 +524,10 @@ const duplicateTemplate = async (template: ReminderTemplate) => {
     // TODO: 实现模板复制功能
     // 需要根据新的 DTO 结构创建请求
     console.log('复制模板:', template.title);
-    snackbar.showInfo('复制功能待实现');
+    message.info('复制功能待实现');
   } catch (error) {
     console.error('复制模板失败:', error);
-    snackbar.showError('复制失败');
+    message.error('复制失败');
   }
 };
 
@@ -560,10 +560,10 @@ const duplicateGroup = async (group: ReminderTemplateGroup) => {
     // 创建分组副本
     // TODO: 实现分组复制功能
     console.log('复制分组:', group.name);
-    snackbar.showInfo('分组复制功能待实现');
+    message.info('分组复制功能待实现');
   } catch (error) {
     console.error('复制分组失败:', error);
-    snackbar.showError('复制失败');
+    message.error('复制失败');
   }
 };
 

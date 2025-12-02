@@ -59,11 +59,32 @@
         </v-alert>
 
         <!-- 加载状态 -->
-        <v-progress-linear v-if="isLoading" indeterminate color="primary" />
+        <v-alert v-if="isLoading && !loadError" type="info" variant="tonal" class="mb-4">
+          <v-progress-linear indeterminate color="primary" class="mb-2" />
+          正在加载目标数据...
+        </v-alert>
+
+        <!-- 错误状态 -->
+        <v-alert v-else-if="loadError" type="error" variant="tonal" class="mb-4">
+          <template #title>加载失败</template>
+          {{ loadError }}
+          <template #append>
+            <v-btn 
+              color="error" 
+              variant="text" 
+              size="small" 
+              :loading="isRetrying"
+              @click="retryLoad"
+            >
+              <v-icon start>mdi-refresh</v-icon>
+              重试
+            </v-btn>
+          </template>
+        </v-alert>
 
         <!-- 空状态 -->
-        <v-alert v-else-if="!currentGoal || !hasKeyResults" type="info" variant="tonal">
-          {{ !currentGoal ? '正在加载目标数据...' : '该 Goal 暂无 KeyResult' }}
+        <v-alert v-else-if="!localGoal || !hasKeyResults" type="info" variant="tonal">
+          {{ !localGoal ? '正在加载目标数据...' : '该 Goal 暂无 KeyResult' }}
         </v-alert>
 
         <!-- DAG 图表 -->
@@ -138,13 +159,21 @@ const emit = defineEmits<{
   (e: 'viewport-change', viewport: { zoom: number; center: [number, number] }): void;
 }>();
 
-const { currentGoal, isLoading, getGoalAggregateView } = useGoal();
+const { getGoalAggregateView } = useGoal();
 const chartRef = ref();
 const exportDialog = ref();
 const containerRef = ref<HTMLElement>();
 const layoutType = ref<'force' | 'hierarchical'>('force');
 const hasCustomLayout = ref(false);
 const containerSize = ref({ width: 800, height: 600 });
+
+// 本地 goal 数据（不依赖 store 的 currentGoal）
+const localGoal = ref<any>(null);
+const isLoading = ref(false);
+
+// 加载错误状态
+const loadError = ref<string | null>(null);
+const isRetrying = ref(false);
 
 // 视口同步相关状态
 const currentZoom = ref(1);
@@ -153,12 +182,12 @@ const isUpdatingViewport = ref(false); // 防止循环更新
 
 // 计算属性
 const hasKeyResults = computed(() => {
-  return currentGoal.value?.keyResults && currentGoal.value.keyResults.length > 0;
+  return localGoal.value?.keyResults && localGoal.value.keyResults.length > 0;
 });
 
 const totalWeight = computed(() => {
-  if (!currentGoal.value?.keyResults) return 0;
-  return currentGoal.value.keyResults.reduce((sum: number, kr: any) => sum + kr.weight, 0);
+  if (!localGoal.value?.keyResults) return 0;
+  return localGoal.value.keyResults.reduce((sum: number, kr: any) => sum + kr.weight, 0);
 });
 
 // 颜色映射函数 (权重范围: 1-10)
@@ -170,19 +199,19 @@ const getWeightColor = (weight: number): string => {
 
 // 分层布局计算
 const calculateHierarchicalLayout = () => {
-  if (!currentGoal.value) return { nodes: [], links: [] };
+  if (!localGoal.value) return { nodes: [], links: [] };
 
   const containerWidth = 800;
   const goalY = 100;
   const krY = 300;
-  const krs = currentGoal.value.keyResults;
+  const krs = localGoal.value.keyResults;
 
   const nodes = [];
 
   // Goal 节点居中
   nodes.push({
-    id: currentGoal.value.uuid,
-    name: currentGoal.value.title,
+    id: localGoal.value.uuid,
+    name: localGoal.value.title,
     x: containerWidth / 2,
     y: goalY,
     symbolSize: 80,
@@ -208,7 +237,7 @@ const calculateHierarchicalLayout = () => {
   });
 
   const links = krs.map((kr: any) => ({
-    source: currentGoal.value!.uuid,
+    source: localGoal.value!.uuid,
     target: kr.uuid,
     lineStyle: {
       width: Math.max(1, kr.weight / 2),
@@ -221,14 +250,14 @@ const calculateHierarchicalLayout = () => {
 
 // Force 布局配置
 const calculateForceLayout = () => {
-  if (!currentGoal.value) return { nodes: [], links: [] };
+  if (!localGoal.value) return { nodes: [], links: [] };
 
-  const krs = currentGoal.value.keyResults;
+  const krs = localGoal.value.keyResults;
 
   const nodes = [
     {
-      id: currentGoal.value.uuid,
-      name: currentGoal.value.title,
+      id: localGoal.value.uuid,
+      name: localGoal.value.title,
       symbolSize: 80,
       itemStyle: { color: '#2196F3' },
       category: 0,
@@ -244,7 +273,7 @@ const calculateForceLayout = () => {
   ];
 
   const links = krs.map((kr: any) => ({
-    source: currentGoal.value!.uuid,
+    source: localGoal.value!.uuid,
     target: kr.uuid,
     lineStyle: {
       width: Math.max(1, kr.weight / 2),
@@ -257,7 +286,7 @@ const calculateForceLayout = () => {
 
 // DAG 图表配置
 const dagOption = computed<EChartsOption>(() => {
-  if (!currentGoal.value || !hasKeyResults.value) return {};
+  if (!localGoal.value || !hasKeyResults.value) return {};
 
   // 从 localStorage 加载保存的布局
   const savedLayout = loadLayout(props.goalUuid);
@@ -509,7 +538,7 @@ const handleExport = async (options: ExportOptions) => {
         break;
       case 'pdf':
         blob = await dagExportService.exportPDF(chartInstance, options, {
-          title: currentGoal.value?.title || 'Goal DAG',
+          title: localGoal.value?.title || 'Goal DAG',
           author: 'DailyUse User',
           date: new Date().toLocaleString('zh-CN'),
         });
@@ -518,7 +547,7 @@ const handleExport = async (options: ExportOptions) => {
 
     // 生成文件名并下载
     const filename = dagExportService.generateFilename(
-      currentGoal.value?.title || 'goal',
+      localGoal.value?.title || 'goal',
       options.format,
     );
     dagExportService.downloadBlob(blob, filename);
@@ -590,7 +619,36 @@ defineExpose({
   updateViewport,
   chartRef,
   exportDialog,
+  retryLoad,
 });
+
+// 加载目标数据
+const loadGoalData = async () => {
+  if (!props.goalUuid) return;
+  
+  loadError.value = null;
+  isLoading.value = true;
+  try {
+    const { goal } = await getGoalAggregateView(props.goalUuid);
+    // 将 Goal 实体转换为可用的数据格式
+    localGoal.value = goal.toClientDTO ? goal.toClientDTO(true) : goal;
+  } catch (error) {
+    console.error('Failed to load goal aggregate view:', error);
+    loadError.value = error instanceof Error ? error.message : '加载目标数据失败，请重试';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// 重试加载
+const retryLoad = async () => {
+  isRetrying.value = true;
+  try {
+    await loadGoalData();
+  } finally {
+    isRetrying.value = false;
+  }
+};
 
 // 初始化
 onMounted(async () => {
@@ -605,8 +663,8 @@ onMounted(async () => {
   }
 
   // 加载 Goal 数据
-  if (props.goalUuid && props.goalUuid !== currentGoal.value?.uuid) {
-    await getGoalAggregateView(props.goalUuid);
+  if (props.goalUuid) {
+    await loadGoalData();
   }
 });
 </script>
@@ -619,8 +677,8 @@ onMounted(async () => {
 .dag-container {
   width: 100%;
   min-width: 600px;
-  min-height: 400px;
-  height: 600px;
+  /* 使用 aspect-ratio 保持比例，同时设置合理的高度范围 */
+  height: clamp(400px, 50vh, 600px);
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.02);
@@ -629,8 +687,7 @@ onMounted(async () => {
 
 .dag-container.compact {
   min-width: 300px;
-  min-height: 300px;
-  height: 400px;
+  height: clamp(250px, 40vh, 400px);
 }
 
 .chart {

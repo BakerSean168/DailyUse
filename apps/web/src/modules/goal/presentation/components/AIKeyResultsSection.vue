@@ -124,7 +124,7 @@
 import { ref, computed, watch } from 'vue';
 import AIGenerateKRButton from './AIGenerateKRButton.vue';
 import KRPreviewList from './KRPreviewList.vue';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 // ===== Types =====
 interface KeyResultData {
@@ -152,7 +152,7 @@ const emit = defineEmits<{
 }>();
 
 // ===== Composables =====
-const { showSuccess, showError } = useSnackbar();
+const { success: showSuccess, error: showError } = getGlobalMessage();
 
 // ===== State =====
 const generateButtonRef = ref();

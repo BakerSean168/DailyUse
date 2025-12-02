@@ -231,7 +231,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 import { Goal, GoalReview } from '@dailyuse/domain-client/goal';
 import { format } from 'date-fns';
 import ReviewProgressChart from '../components/echarts/ReviewProgressChart.vue';
@@ -243,7 +243,7 @@ const error = ref('');
 const route = useRoute();
 const router = useRouter();
 const goalStore = useGoalStore();
-const snackbar = useSnackbar();
+const message = getGlobalMessage();
 
 // 业务逻辑
 const { fetchGoalById } = useGoal();
@@ -371,14 +371,14 @@ const loadReview = async () => {
   } catch (err) {
     console.error('[GoalReviewDetailView] ❌ 加载复盘详情失败:', err);
     error.value = typeof err === 'string' ? err : '加载复盘详情失败，请重试';
-    snackbar.showError('加载复盘详情失败');
+    message.error('加载复盘详情失败');
   } finally {
     loading.value = false;
   }
 };
 
 const editReview = () => {
-  snackbar.showInfo('编辑功能尚未实现');
+  message.info('编辑功能尚未实现');
 };
 
 // 初始化

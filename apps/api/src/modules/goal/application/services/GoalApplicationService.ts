@@ -58,6 +58,8 @@ export class GoalApplicationService {
 
   /**
    * 创建目标
+   * 
+   * 支持在创建目标时同时创建关键结果（KeyResults）
    */
   async createGoal(params: {
     accountUuid: string;
@@ -74,6 +76,15 @@ export class GoalApplicationService {
     color?: string;
     feasibilityAnalysis?: string;
     motivation?: string;
+    // 新增：支持在创建时同时添加关键结果
+    keyResults?: Array<{
+      title: string;
+      description?: string;
+      valueType?: string;
+      targetValue?: number;
+      unit?: string;
+      weight?: number;
+    }>;
   }): Promise<GoalClientDTO> {
     // 1. 如果有父目标，先查询
     let parentGoal: Goal | undefined;
@@ -88,14 +99,28 @@ export class GoalApplicationService {
     // 2. 委托领域服务创建聚合根（不持久化）
     const goal = this.domainService.createGoal(params, parentGoal);
 
-    // 3. 持久化
+    // 3. 如果有 keyResults，添加到目标中
+    if (params.keyResults && params.keyResults.length > 0) {
+      for (const krParams of params.keyResults) {
+        this.domainService.addKeyResultToGoal(goal, {
+          title: krParams.title,
+          description: krParams.description,
+          valueType: krParams.valueType || 'INCREMENTAL',
+          targetValue: krParams.targetValue ?? 100,
+          unit: krParams.unit,
+          weight: krParams.weight ?? 5,
+        });
+      }
+    }
+
+    // 4. 持久化
     await this.goalRepository.save(goal);
 
-    // 4. 发布领域事件
+    // 5. 发布领域事件
     await GoalEventPublisher.publishGoalEvents(goal);
 
-    // 5. 返回 ClientDTO
-    return goal.toClientDTO();
+    // 6. 返回 ClientDTO（包含 keyResults）
+    return goal.toClientDTO(true);
   }
 
   /**

@@ -10,7 +10,7 @@
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO, ValidateDependencyRequest, CreateTaskDependencyRequest, DependencyType } from '@dailyuse/contracts/task';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
 import { TaskDependencyValidationService } from './TaskDependencyValidationService';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 
 /**
@@ -29,10 +29,10 @@ export class TaskDependencyDragDropService {
   private validationService = new TaskDependencyValidationService();
 
   /**
-   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
+   * 延迟获取 Message（避免在 Pinia 初始化前访问）
    */
-  private get snackbar() {
-    return useSnackbar();
+  private get message() {
+    return useMessage();
   }
 
   /**
@@ -69,7 +69,7 @@ export class TaskDependencyDragDropService {
       const validation = await this.validateDependency(sourceTask, targetTask);
 
       if (!validation.isValid) {
-        this.snackbar.showError(`无法创建依赖: ${validation.reason || '验证失败'}`);
+        this.message.error(`无法创建依赖: ${validation.reason || '验证失败'}`);
         return {
           success: false,
           error: validation.reason,
@@ -105,7 +105,7 @@ export class TaskDependencyDragDropService {
       const errorMessage = error instanceof Error ? error.message : '创建依赖关系失败';
 
       console.error('[DragDropService] Failed to create dependency:', error);
-      this.snackbar.showError(errorMessage);
+      this.message.error(errorMessage);
 
       return {
         success: false,
@@ -160,7 +160,7 @@ export class TaskDependencyDragDropService {
   ): void {
     const message = `✓ 依赖关系已创建\n"${sourceTask.title}" 现在依赖于 "${targetTask.title}"`;
 
-    this.snackbar.showSuccess(message, 5000);
+    this.message.success(message, 5000);
   }
 
   /**

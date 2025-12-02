@@ -7,7 +7,7 @@ import { ref, computed } from 'vue';
 import { apiClient } from '@/shared/api/instances';
 import type { SummaryResult, SummarizationRequest } from '../types/summarization';
 import { createLogger } from '@dailyuse/utils';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 
 const logger = createLogger('useDocumentSummarizer');
 
@@ -20,7 +20,7 @@ export function useDocumentSummarizer() {
   const includeActions = ref<boolean>(true);
   const language = ref<'zh-CN' | 'en'>('zh-CN');
 
-  const snackbar = useSnackbar();
+  const message = useMessage();
 
   // ============ Computed ============
   const characterCount = computed(() => inputText.value.length);
@@ -80,7 +80,7 @@ export function useDocumentSummarizer() {
   async function copyToClipboard(): Promise<void> {
     if (!summary.value) {
       logger.warn('No summary to copy');
-      snackbar.showError('没有可复制的摘要');
+      message.error('没有可复制的摘要');
       return;
     }
 
@@ -89,12 +89,12 @@ export function useDocumentSummarizer() {
 
       await navigator.clipboard.writeText(formattedText);
 
-      snackbar.showSuccess('摘要已复制到剪贴板');
+      message.success('摘要已复制到剪贴板');
 
       logger.info('Summary copied to clipboard');
     } catch (err: any) {
       logger.error('Failed to copy to clipboard', { error: err });
-      snackbar.showError('复制失败，请手动复制');
+      message.error('复制失败，请手动复制');
     }
   }
 

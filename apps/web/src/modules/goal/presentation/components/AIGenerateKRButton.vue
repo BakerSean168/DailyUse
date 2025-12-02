@@ -181,7 +181,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 // ===== Props & Emits =====
 interface Props {
@@ -210,7 +210,7 @@ const {
   clearError,
 } = useAIGeneration();
 
-const { showSuccess, showError } = useSnackbar();
+const { success: showSuccess, error: showError } = getGlobalMessage();
 
 // ===== State =====
 const showDialog = ref(false);

@@ -94,7 +94,7 @@ import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
 import { taskTemplateApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { useTaskStore } from '@/modules/task/presentation/stores/taskStore';
 import { TaskType, TimeType } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
@@ -121,7 +121,7 @@ const emit = defineEmits<{
 
 // Composables
 const { generateTasks } = useAIGeneration();
-const snackbar = useSnackbar();
+const message = useMessage();
 const router = useRouter();
 const taskStore = useTaskStore();
 
@@ -205,18 +205,18 @@ async function loadTasks() {
             selected: true, // Auto-select all tasks by default
         }));
 
-        snackbar.showSuccess(`已生成 ${result.tasks.length} 个任务`);
+        message.success(`已生成 ${result.tasks.length} 个任务`);
     } catch (err) {
         const errorMessage = err instanceof Error ? err.message : '生成任务失败';
         error.value = errorMessage;
 
         // Handle specific error codes
         if (errorMessage.includes('429')) {
-            snackbar.showError('已达到每日配额限制。配额将在明天重置。');
+            message.error('已达到每日配额限制。配额将在明天重置。');
         } else if (errorMessage.includes('504')) {
-            snackbar.showWarning('生成任务超时，请重试');
+            message.warning('生成任务超时，请重试');
         } else {
-            snackbar.showError(errorMessage);
+            message.error(errorMessage);
         }
     } finally {
         isGenerating.value = false;
@@ -287,7 +287,7 @@ async function importSelectedTasks() {
 
         // Show results
         if (failedTasks.length === 0) {
-            snackbar.showSuccess(`成功导入 ${importedCount} 个任务`);
+            message.success(`成功导入 ${importedCount} 个任务`);
             emit('tasksImported', importedCount);
 
             // Navigate to task list
@@ -300,13 +300,13 @@ async function importSelectedTasks() {
             closeDialog();
         } else {
             const successCount = importedCount - failedTasks.length;
-            snackbar.showWarning(
+            message.warning(
                 `成功导入 ${successCount} 个任务。${failedTasks.length} 个任务导入失败。`
             );
             emit('tasksImported', successCount);
         }
     } catch (err) {
-        snackbar.showError('导入任务时发生错误');
+        message.error('导入任务时发生错误');
     } finally {
         importing.value = false;
         importProgress.value = 0;

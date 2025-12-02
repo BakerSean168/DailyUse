@@ -208,7 +208,7 @@ import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { useReminder } from '../../composables/useReminder';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
@@ -216,7 +216,7 @@ type ReminderTemplateDTO = ReminderTemplateClientDTO;
 
 // Composables
 const { toggleTemplateStatus, getReminderTemplateByUuid } = useReminder();
-const snackbar = useSnackbar();
+const message = useMessage();
 
 // Emits
 const emit = defineEmits<{
@@ -296,10 +296,10 @@ const handleToggleStatus = async (enabled: boolean | null) => {
   try {
     await toggleTemplateStatus(template.value.uuid, enabled);
     emit('status-changed', template.value, enabled);
-    snackbar.showSuccess(enabled ? '已启用模板' : '已禁用模板');
+    message.success(enabled ? '已启用模板' : '已禁用模板');
   } catch (error) {
     console.error('切换状态失败:', error);
-    snackbar.showError('切换状态失败');
+    message.error('切换状态失败');
   } finally {
     isTogglingStatus.value = false;
   }

@@ -2,7 +2,7 @@ import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, ReminderHistory
 import { ReminderTemplate, ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { getReminderStore } from '../../presentation/stores/reminderStore';
-import { useSnackbar } from '@/shared/composables/useSnackbar';
+import { useMessage } from '@dailyuse/ui';
 import { eventBus } from '@dailyuse/utils';
 
 /**
@@ -70,7 +70,7 @@ export class ReminderSyncApplicationService {
    * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
    */
   private get snackbar() {
-    return useSnackbar();
+    return useMessage();
   }
 
   static getInstance(): ReminderSyncApplicationService {
