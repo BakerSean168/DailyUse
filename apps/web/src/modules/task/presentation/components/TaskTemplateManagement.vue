@@ -91,6 +91,54 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- 删除所有模板确认对话框 -->
+    <v-dialog v-model="showDeleteAllDialog" max-width="500px" persistent>
+      <v-card>
+        <v-card-title class="d-flex align-center bg-error">
+          <v-icon color="white" class="mr-2">mdi-alert-circle</v-icon>
+          <span class="text-white">确认删除所有模板</span>
+        </v-card-title>
+        <v-card-text class="pt-4">
+          <v-alert type="warning" variant="tonal" class="mb-4">
+            <strong>此操作不可撤销！</strong>
+          </v-alert>
+          <p class="text-body-1 mb-4">
+            您确定要删除所有 <strong>{{ taskStore.getAllTaskTemplates.length }}</strong> 个任务模板吗？
+          </p>
+          <p class="text-body-2 text-medium-emphasis">
+            这将同时删除所有关联的任务实例和历史记录。
+          </p>
+          
+          <!-- 确认输入 -->
+          <v-text-field
+            v-model="deleteConfirmText"
+            label="请输入 'DELETE' 确认删除"
+            placeholder="DELETE"
+            variant="outlined"
+            class="mt-4"
+            :error="deleteConfirmText.length > 0 && deleteConfirmText !== 'DELETE'"
+            :error-messages="deleteConfirmText.length > 0 && deleteConfirmText !== 'DELETE' ? '请输入正确的确认文字' : ''"
+          />
+        </v-card-text>
+        <v-card-actions class="px-4 pb-4">
+          <v-spacer />
+          <v-btn variant="text" :disabled="isDeletingAll" @click="cancelDeleteAll">
+            取消
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="elevated"
+            :disabled="deleteConfirmText !== 'DELETE' || isDeletingAll"
+            :loading="isDeletingAll"
+            @click="confirmDeleteAll"
+          >
+            <v-icon start>mdi-delete-forever</v-icon>
+            确认删除全部
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -112,6 +160,8 @@ const taskStore = useTaskStore();
 const currentStatus = ref<TaskTemplateStatus>(TaskTemplateStatus.ACTIVE); // 使用枚举类型
 const showDeleteDialog = ref(false);
 const showDeleteAllDialog = ref(false);
+const deleteConfirmText = ref('');
+const isDeletingAll = ref(false);
 const selectedTemplate = ref<TaskTemplate | null>(null);
 const showDependencyDialog = ref(false);
 const allDependencies = ref<TaskDependencyClientDTO[]>([]);
@@ -249,7 +299,7 @@ const loadAllDependencies = async () => {
 loadAllDependencies();
 
 // Use task template composable
-const { activateTaskTemplate } = useTaskTemplate();
+const { activateTaskTemplate, deleteTaskTemplate } = useTaskTemplate();
 
 /**
  * Handle resume template
@@ -264,6 +314,44 @@ const handleResumeTemplate = async (template: TaskTemplate) => {
     console.log('✅ [TaskTemplateManagement] 模板已恢复:', template.title);
   } catch (error) {
     console.error('❌ [TaskTemplateManagement] 恢复模板失败:', error);
+  }
+};
+
+/**
+ * Cancel delete all operation
+ */
+const cancelDeleteAll = () => {
+  showDeleteAllDialog.value = false;
+  deleteConfirmText.value = '';
+};
+
+/**
+ * Confirm delete all templates
+ */
+const confirmDeleteAll = async () => {
+  if (deleteConfirmText.value !== 'DELETE' || isDeletingAll.value) return;
+  
+  isDeletingAll.value = true;
+  
+  try {
+    // 先复制一份 UUID 列表，避免在删除过程中数组变化导致跳过
+    const templateUuids = taskStore.getAllTaskTemplates.map(t => t.uuid);
+    console.log('🗑️ [TaskTemplateManagement] 开始删除所有模板, 共:', templateUuids.length);
+    
+    // Delete templates one by one using the copied UUID list
+    for (const uuid of templateUuids) {
+      await deleteTaskTemplate(uuid);
+    }
+    
+    console.log('✅ [TaskTemplateManagement] 所有模板已删除');
+    
+    // Close dialog and reset
+    showDeleteAllDialog.value = false;
+    deleteConfirmText.value = '';
+  } catch (error) {
+    console.error('❌ [TaskTemplateManagement] 删除所有模板失败:', error);
+  } finally {
+    isDeletingAll.value = false;
   }
 };
 

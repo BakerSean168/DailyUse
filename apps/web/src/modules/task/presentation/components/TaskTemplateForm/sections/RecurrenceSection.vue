@@ -82,8 +82,17 @@
 <script setup lang="ts">
 import { TaskTemplate, RecurrenceRule } from '@dailyuse/domain-client/task';
 import { computed, ref, watch } from 'vue';
-import { RecurrenceFrequency, DayOfWeek } from '@dailyuse/contracts/task';
+import { RecurrenceFrequency, DayOfWeek, RECURRENCE_RULE_DEFAULTS } from '@dailyuse/contracts/task';
 import type { RecurrenceRuleClientDTO } from '@dailyuse/contracts/task';
+
+/**
+ * 获取默认结束日期（今天 + 配置的天数）
+ */
+const getDefaultEndDate = (): string => {
+  const date = new Date();
+  date.setDate(date.getDate() + RECURRENCE_RULE_DEFAULTS.DEFAULT_END_DATE_DAYS);
+  return date.toISOString().split('T')[0];
+};
 
 interface Props {
   modelValue: TaskTemplate;
@@ -234,14 +243,20 @@ watch(endConditionType, (newValue) => {
       updateRecurrenceRule({ endDate: null, occurrences: null });
       break;
     case 'date':
-      if (endDate.value) {
-        updateRecurrenceRule({
-          endDate: new Date(endDate.value).getTime(),
-          occurrences: null,
-        });
+      // 如果没有设置结束日期，使用默认值（今天 + 30 天）
+      if (!endDate.value) {
+        endDate.value = getDefaultEndDate();
       }
+      updateRecurrenceRule({
+        endDate: new Date(endDate.value).getTime(),
+        occurrences: null,
+      });
       break;
     case 'count':
+      // 如果没有设置次数，使用默认值
+      if (!occurrences.value || occurrences.value < 1) {
+        occurrences.value = RECURRENCE_RULE_DEFAULTS.DEFAULT_OCCURRENCES;
+      }
       updateRecurrenceRule({
         endDate: null,
         occurrences: occurrences.value,

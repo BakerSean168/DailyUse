@@ -1,6 +1,16 @@
 /**
  * Task Instance Composable
  * 任务实例相关的组合式函数
+ * 
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和 Store
+ * - Service 直接返回实体对象或抛出错误（不包装 ServiceResult）
+ * - Composable 使用 try/catch 处理错误
+ * - 数据流：API → Service(转换) → Composable(存储) → Store → Component
+ * 
+ * 📝 错误处理：
+ * - axios 拦截器已处理 API 错误，success: false 会抛出 Error
+ * - Composable 捕获错误并设置 error 状态
  */
 
 import { ref, computed, readonly } from 'vue';
@@ -8,6 +18,7 @@ import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClient
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 import { taskInstanceApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
+import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 
 /**
@@ -16,6 +27,7 @@ import { useTaskStore } from '../stores/taskStore';
 export function useTaskInstance() {
   // ===== 服务和存储 =====
   const taskStore = useTaskStore();
+  const { showSuccess, showError } = useSnackbar();
 
   // ===== 本地状态 =====
   const isOperating = ref(false);
@@ -95,21 +107,10 @@ export function useTaskInstance() {
 
   /**
    * 创建任务实例
+   * @deprecated 后端不支持直接创建实例
    */
-  async function createTaskInstance(request: any) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.createTaskInstance(request);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '创建任务实例失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+  async function createTaskInstance(_request: any): Promise<never> {
+    throw new Error('createTaskInstance is not supported - use TaskTemplate.generateInstances instead');
   }
 
   /**
@@ -119,6 +120,7 @@ export function useTaskInstance() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
       // 先从缓存获取
       const cached = taskStore.getTaskInstanceByUuid(uuid);
@@ -127,34 +129,32 @@ export function useTaskInstance() {
       }
 
       // 缓存中没有，从服务器获取
-      const result = await taskInstanceApplicationService.getTaskInstanceById(uuid);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取任务实例详情失败';
+      // ✅ Service 直接返回实体对象或抛出错误
+      const instance = await taskInstanceApplicationService.getTaskInstanceById(uuid);
+
+      // ✅ Composable 负责存储到 Store
+      taskStore.addTaskInstance(instance);
+      
+      return instance;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '获取任务实例详情失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      // ✅ 全局通知
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
   /**
    * 更新任务实例
+   * @deprecated 后端不支持更新实例
    */
-  async function updateTaskInstance(uuid: string, request: any) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.updateTaskInstance(uuid, request);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '更新任务实例失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+  async function updateTaskInstance(_uuid: string, _request: any): Promise<never> {
+    throw new Error('updateTaskInstance is not supported - use start/complete/skip methods instead');
   }
 
   /**
@@ -164,14 +164,26 @@ export function useTaskInstance() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
+      // ✅ Service 返回 void 或抛出错误
       await taskInstanceApplicationService.deleteTaskInstance(uuid);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '删除任务实例失败';
+
+      // ✅ Composable 负责从 Store 移除
+      taskStore.removeTaskInstance(uuid);
+      
+      // ✅ 全局通知
+      showSuccess('任务实例已删除');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '删除任务实例失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      // ✅ 全局通知
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
@@ -182,7 +194,7 @@ export function useTaskInstance() {
    */
   async function completeTaskInstance(
     uuid: string,
-    result?: {
+    resultData?: {
       recordValue?: number;
       duration?: number;
       note?: string;
@@ -192,73 +204,53 @@ export function useTaskInstance() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
-      const completedTask = await taskInstanceApplicationService.completeTaskInstance(uuid, result);
-      return completedTask;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '完成任务失败';
+      // ✅ Service 直接返回实体对象或抛出错误
+      const instance = await taskInstanceApplicationService.completeTaskInstance(uuid, resultData);
+
+      // ✅ Composable 负责更新 Store
+      taskStore.updateTaskInstance(uuid, instance);
+      
+      // ✅ 全局通知
+      showSuccess('🎉 任务已完成');
+      
+      return instance;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '完成任务失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      // ✅ 全局通知
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
   /**
    * 撤销完成任务
+   * @deprecated 后端不支持撤销完成
    */
-  async function undoCompleteTaskInstance(uuid: string) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.undoCompleteTaskInstance(uuid);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '撤销完成任务失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+  async function undoCompleteTaskInstance(_uuid: string): Promise<never> {
+    throw new Error('undoCompleteTaskInstance is not supported');
   }
 
   /**
    * 重新安排任务
+   * @deprecated 后端不支持重新安排
    */
-  async function rescheduleTaskInstance(uuid: string, request: any) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.rescheduleTaskInstance(uuid, request);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '重新安排任务失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+  async function rescheduleTaskInstance(_uuid: string, _request: any): Promise<never> {
+    throw new Error('rescheduleTaskInstance is not supported');
   }
 
   /**
    * 取消任务
+   * @deprecated 后端不支持取消，请使用 skipTaskInstance
    */
-  async function cancelTaskInstance(uuid: string, reason?: string) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskInstanceApplicationService.cancelTaskInstance(uuid, reason);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '取消任务失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+  async function cancelTaskInstance(_uuid: string, _reason?: string): Promise<never> {
+    throw new Error('cancelTaskInstance is not supported - use skipTaskInstance instead');
   }
 
   // ===== 查询方法 =====
@@ -311,6 +303,7 @@ export function useTaskInstance() {
    */
   function clearError() {
     operationError.value = null;
+    taskStore.setError(null);
   }
 
   /**

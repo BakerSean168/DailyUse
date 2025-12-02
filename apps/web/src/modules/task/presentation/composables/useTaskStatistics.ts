@@ -1,11 +1,17 @@
 /**
  * Task Statistics Composable
  * 任务统计相关的组合式函数
+ * 
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和 Store
+ * - Service 直接返回数据或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 全局通知
  */
 
 import { ref, computed, readonly } from 'vue';
 import { taskStatisticsApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
+import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 /**
  * 任务统计 Composable
@@ -13,6 +19,7 @@ import { useTaskStore } from '../stores/taskStore';
 export function useTaskStatistics() {
   // ===== 服务和存储 =====
   const taskStore = useTaskStore();
+  const { showSuccess, showError } = useSnackbar();
 
   // ===== 本地状态 =====
   const isLoading = ref(false);

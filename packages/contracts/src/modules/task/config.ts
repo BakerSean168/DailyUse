@@ -38,3 +38,25 @@ export const TASK_INSTANCE_VIEW_CONFIG = {
    */
   MAX_VIEW_RANGE_DAYS: 100,
 } as const;
+
+/**
+ * 重复规则默认配置
+ */
+export const RECURRENCE_RULE_DEFAULTS = {
+  /**
+   * 默认结束日期距离今天的天数
+   * 当选择"结束日期"时，默认设置为 30 天后
+   */
+  DEFAULT_END_DATE_DAYS: 30,
+
+  /**
+   * 默认重复次数
+   * 当选择"次数限制"时的默认次数
+   */
+  DEFAULT_OCCURRENCES: 10,
+
+  /**
+   * 默认重复间隔
+   */
+  DEFAULT_INTERVAL: 1,
+} as const;

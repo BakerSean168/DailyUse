@@ -653,13 +653,24 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
 
   // 静态工厂方法
   public static fromClientDTO(dto: TaskTemplateClientDTO): TaskTemplate {
+    // 对于 timeConfig，如果为 null/undefined 或结构不完整，创建默认配置（全天无时间范围）
+    const defaultTimeConfig: TaskTimeConfig =
+      dto.timeConfig && dto.timeConfig.timeType
+        ? TaskTimeConfig.fromClientDTO(dto.timeConfig)
+        : TaskTimeConfig.fromClientDTO({
+            timeType: TimeType.ALL_DAY,
+            startDate: null,
+            timePoint: null,
+            timeRange: null,
+          });
+
     return new TaskTemplate({
       uuid: dto.uuid,
       accountUuid: dto.accountUuid,
       title: dto.title,
       description: dto.description,
       taskType: dto.taskType,
-      timeConfig: TaskTimeConfig.fromClientDTO(dto.timeConfig),
+      timeConfig: defaultTimeConfig,
       recurrenceRule: dto.recurrenceRule ? RecurrenceRule.fromClientDTO(dto.recurrenceRule) : null,
       reminderConfig: dto.reminderConfig
         ? TaskReminderConfig.fromClientDTO(dto.reminderConfig)

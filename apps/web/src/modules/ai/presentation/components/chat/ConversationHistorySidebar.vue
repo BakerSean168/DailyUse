@@ -31,14 +31,29 @@
     </div>
 </template>
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { watch, ref } from 'vue';
 import { useConversationHistory } from '../../composables/useConversationHistory';
+import { useAuthStore } from '@/modules/authentication/presentation/stores/authStore';
 import ConversationItem from './ConversationItem.vue';
 interface Props { isOpen: boolean }
-defineProps<Props>();
+const props = defineProps<Props>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'conversation-selected', uuid: string | null): void }>();
+const authStore = useAuthStore();
 const { groupedConversations, activeConversationUuid, isLoading, error, fetchConversations, selectConversation, createNewConversation, deleteConversation } = useConversationHistory();
-onMounted(() => { fetchConversations(); });
+
+// 只在侧栏打开且用户已登录时才获取对话历史
+const hasFetched = ref(false);
+watch(
+  () => props.isOpen,
+  (isOpen) => {
+    if (isOpen && authStore.isAuthenticated && !hasFetched.value) {
+      fetchConversations();
+      hasFetched.value = true;
+    }
+  },
+  { immediate: true }
+);
+
 function handleSelect(uuid: string) { selectConversation(uuid); emit('conversation-selected', uuid); }
 function handleNewChat() { createNewConversation(); emit('conversation-selected', null); }
 async function handleDelete(uuid: string) { if (!confirm('确定删除此对话？')) return; try { await deleteConversation(uuid); } catch (e) { console.error('Delete failed:', e); } }

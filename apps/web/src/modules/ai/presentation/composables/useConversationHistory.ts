@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue';
 import type { Conversation, ConversationGroup, DateGroup } from '../types/conversation';
-import { httpAiConversationRepository } from '@dailyuse/domain-client/ai';
+import { aiConversationApiClient } from '../../infrastructure/api/aiConversationApiClient';
 
 // Conversation history management (migrated from legacy ai-chat module)
 const conversations = ref<Conversation[]>([]);
@@ -46,7 +46,7 @@ export function useConversationHistory() {
     isLoading.value = true;
     error.value = null;
     try {
-      const list = await httpAiConversationRepository.listConversations({ page, limit });
+      const list = await aiConversationApiClient.listConversations({ page, limit });
       conversations.value = list.map((conv) => ({
         conversationUuid: conv.uuid,
         accountUuid: conv.accountUuid,
@@ -70,7 +70,7 @@ export function useConversationHistory() {
   }
   async function deleteConversation(uuid: string) {
     try {
-      await httpAiConversationRepository.deleteConversation(uuid);
+      await aiConversationApiClient.deleteConversation(uuid);
       conversations.value = conversations.value.filter((c) => c.conversationUuid !== uuid);
       if (activeConversationUuid.value === uuid) activeConversationUuid.value = null;
     } catch (e: any) {

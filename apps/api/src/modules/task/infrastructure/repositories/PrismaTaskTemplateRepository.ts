@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import type { ITaskTemplateRepository } from '@dailyuse/domain-server/task';
 import { TaskTemplate, TaskTemplateHistory } from '@dailyuse/domain-server/task';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
+import { withRetry } from '@/config/prismaRetry';
 
 /**
  * TaskTemplate Prisma 仓库
@@ -240,39 +241,49 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
   }
 
   async findByUuid(uuid: string): Promise<TaskTemplate | null> {
-    const data = await this.prisma.taskTemplate.findUnique({ where: { uuid } });
+    const data = await withRetry(() =>
+      this.prisma.taskTemplate.findUnique({ where: { uuid } })
+    );
     return data ? this.mapToEntity(data, false) : null;
   }
 
   async findByUuidWithChildren(uuid: string): Promise<TaskTemplate | null> {
-    const data = await this.prisma.taskTemplate.findUnique({
-      where: { uuid },
-      // Note: history relation not defined in Prisma schema
-    });
+    const data = await withRetry(() =>
+      this.prisma.taskTemplate.findUnique({
+        where: { uuid },
+        // Note: history relation not defined in Prisma schema
+      })
+    );
     return data ? this.mapToEntity(data, true) : null;
   }
 
   async findByAccount(accountUuid: string): Promise<TaskTemplate[]> {
-    const templates = await this.prisma.taskTemplate.findMany({
-      where: { accountUuid, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    const templates = await withRetry(() =>
+      this.prisma.taskTemplate.findMany({
+        where: { accountUuid, deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+      })
+    );
     return templates.map((t) => this.mapToEntity(t));
   }
 
   async findByStatus(accountUuid: string, status: TaskTemplateStatus): Promise<TaskTemplate[]> {
-    const templates = await this.prisma.taskTemplate.findMany({
-      where: { accountUuid, status, deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    const templates = await withRetry(() =>
+      this.prisma.taskTemplate.findMany({
+        where: { accountUuid, status, deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+      })
+    );
     return templates.map((t) => this.mapToEntity(t));
   }
 
   async findActiveTemplates(accountUuid: string): Promise<TaskTemplate[]> {
-    const templates = await this.prisma.taskTemplate.findMany({
-      where: { accountUuid, status: 'ACTIVE', deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    const templates = await withRetry(() =>
+      this.prisma.taskTemplate.findMany({
+        where: { accountUuid, status: 'ACTIVE', deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+      })
+    );
     return templates.map((t) => this.mapToEntity(t));
   }
 
@@ -324,10 +335,16 @@ export class PrismaTaskTemplateRepository implements ITaskTemplateRepository {
   }
 
   async delete(uuid: string): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      await tx.taskTemplateHistory.deleteMany({ where: { templateUuid: uuid } });
-      await tx.taskTemplate.delete({ where: { uuid } });
-    });
+    await withRetry(() =>
+      this.prisma.$transaction(async (tx) => {
+        // 先删除所有关联的 taskInstance
+        await tx.taskInstance.deleteMany({ where: { templateUuid: uuid } });
+        // 删除历史记录
+        await tx.taskTemplateHistory.deleteMany({ where: { templateUuid: uuid } });
+        // 最后删除模板本身
+        await tx.taskTemplate.delete({ where: { uuid } });
+      })
+    );
   }
 
   async softDelete(uuid: string): Promise<void> {

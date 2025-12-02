@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
 import { TaskInstance } from '@dailyuse/domain-server/task';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
+import { withRetry } from '@/config/prismaRetry';
 
 /**
  * TaskInstance Prisma Ө��
@@ -48,17 +49,19 @@ export class PrismaTaskInstanceRepository implements ITaskInstanceRepository {
       updatedAt: new Date(persistence.updatedAt),
     };
 
-    await this.prisma.taskInstance.upsert({
-      where: { uuid: persistence.uuid },
-      create: data,
-      update: {
-        ...data,
-        uuid: undefined, // Cannot update uuid
-        templateUuid: undefined,
-        accountUuid: undefined,
-        createdAt: undefined,
-      },
-    });
+    await withRetry(() =>
+      this.prisma.taskInstance.upsert({
+        where: { uuid: persistence.uuid },
+        create: data,
+        update: {
+          ...data,
+          uuid: undefined, // Cannot update uuid
+          templateUuid: undefined,
+          accountUuid: undefined,
+          createdAt: undefined,
+        },
+      })
+    );
   }
 
   async saveMany(instances: TaskInstance[]): Promise<void> {
@@ -70,23 +73,29 @@ export class PrismaTaskInstanceRepository implements ITaskInstanceRepository {
   }
 
   async findByUuid(uuid: string): Promise<TaskInstance | null> {
-    const data = await this.prisma.taskInstance.findUnique({ where: { uuid } });
+    const data = await withRetry(() =>
+      this.prisma.taskInstance.findUnique({ where: { uuid } })
+    );
     return data ? this.mapToEntity(data) : null;
   }
 
   async findByTemplate(templateUuid: string): Promise<TaskInstance[]> {
-    const instances = await this.prisma.taskInstance.findMany({
-      where: { templateUuid },
-      orderBy: { instanceDate: 'desc' },
-    });
+    const instances = await withRetry(() =>
+      this.prisma.taskInstance.findMany({
+        where: { templateUuid },
+        orderBy: { instanceDate: 'desc' },
+      })
+    );
     return instances.map(this.mapToEntity);
   }
 
   async findByAccount(accountUuid: string): Promise<TaskInstance[]> {
-    const instances = await this.prisma.taskInstance.findMany({
-      where: { accountUuid },
-      orderBy: { instanceDate: 'desc' },
-    });
+    const instances = await withRetry(() =>
+      this.prisma.taskInstance.findMany({
+        where: { accountUuid },
+        orderBy: { instanceDate: 'desc' },
+      })
+    );
     return instances.map(this.mapToEntity);
   }
 
@@ -95,60 +104,74 @@ export class PrismaTaskInstanceRepository implements ITaskInstanceRepository {
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]> {
-    const instances = await this.prisma.taskInstance.findMany({
-      where: {
-        accountUuid,
-        instanceDate: {
-          gte: new Date(startDate), // Convert timestamp to Date
-          lte: new Date(endDate), // Convert timestamp to Date
+    const instances = await withRetry(() =>
+      this.prisma.taskInstance.findMany({
+        where: {
+          accountUuid,
+          instanceDate: {
+            gte: new Date(startDate), // Convert timestamp to Date
+            lte: new Date(endDate), // Convert timestamp to Date
+          },
         },
-      },
-      orderBy: { instanceDate: 'asc' },
-    });
+        orderBy: { instanceDate: 'asc' },
+      })
+    );
     return instances.map(this.mapToEntity);
   }
 
   async findByStatus(accountUuid: string, status: TaskInstanceStatus): Promise<TaskInstance[]> {
-    const instances = await this.prisma.taskInstance.findMany({
-      where: { accountUuid, status },
-      orderBy: { instanceDate: 'desc' },
-    });
+    const instances = await withRetry(() =>
+      this.prisma.taskInstance.findMany({
+        where: { accountUuid, status },
+        orderBy: { instanceDate: 'desc' },
+      })
+    );
     return instances.map(this.mapToEntity);
   }
 
   async findOverdueInstances(accountUuid: string): Promise<TaskInstance[]> {
     const oneDayAgo = new Date(Date.now() - 86400000); // Convert to Date
-    const instances = await this.prisma.taskInstance.findMany({
-      where: {
-        accountUuid,
-        status: { in: ['PENDING', 'IN_PROGRESS'] },
-        instanceDate: { lt: oneDayAgo },
-      },
-      orderBy: { instanceDate: 'asc' },
-    });
+    const instances = await withRetry(() =>
+      this.prisma.taskInstance.findMany({
+        where: {
+          accountUuid,
+          status: { in: ['PENDING', 'IN_PROGRESS'] },
+          instanceDate: { lt: oneDayAgo },
+        },
+        orderBy: { instanceDate: 'asc' },
+      })
+    );
     return instances.map(this.mapToEntity);
   }
 
   async delete(uuid: string): Promise<void> {
-    await this.prisma.taskInstance.delete({ where: { uuid } });
+    await withRetry(() =>
+      this.prisma.taskInstance.delete({ where: { uuid } })
+    );
   }
 
   async deleteMany(uuids: string[]): Promise<void> {
-    await this.prisma.taskInstance.deleteMany({ where: { uuid: { in: uuids } } });
+    await withRetry(() =>
+      this.prisma.taskInstance.deleteMany({ where: { uuid: { in: uuids } } })
+    );
   }
 
   async deleteByTemplate(templateUuid: string): Promise<void> {
-    await this.prisma.taskInstance.deleteMany({ where: { templateUuid } });
+    await withRetry(() =>
+      this.prisma.taskInstance.deleteMany({ where: { templateUuid } })
+    );
   }
 
   async countFutureInstances(templateUuid: string, fromDate?: number): Promise<number> {
     const date = fromDate ? new Date(fromDate) : new Date();
-    return await this.prisma.taskInstance.count({
-      where: {
-        templateUuid,
-        instanceDate: { gte: date },
-      },
-    });
+    return await withRetry(() =>
+      this.prisma.taskInstance.count({
+        where: {
+          templateUuid,
+          instanceDate: { gte: date },
+        },
+      })
+    );
   }
 
   async findByTemplateUuidAndDateRange(
@@ -156,16 +179,18 @@ export class PrismaTaskInstanceRepository implements ITaskInstanceRepository {
     startDate: number,
     endDate: number,
   ): Promise<TaskInstance[]> {
-    const instances = await this.prisma.taskInstance.findMany({
-      where: {
-        templateUuid,
-        instanceDate: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
+    const instances = await withRetry(() =>
+      this.prisma.taskInstance.findMany({
+        where: {
+          templateUuid,
+          instanceDate: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+          },
         },
-      },
-      orderBy: { instanceDate: 'asc' },
-    });
+        orderBy: { instanceDate: 'asc' },
+      })
+    );
     return instances.map(this.mapToEntity);
   }
 }

@@ -66,9 +66,9 @@ export function useTheme() {
   function applyTheme(mode: string) {
     if (mode === 'system') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      vuetifyTheme.global.name.value = prefersDark ? 'dark' : 'light';
+      (vuetifyTheme as any).change(prefersDark ? 'dark' : 'light');
     } else {
-      vuetifyTheme.global.name.value = mode;
+      (vuetifyTheme as any).change(mode);
     }
   }
 

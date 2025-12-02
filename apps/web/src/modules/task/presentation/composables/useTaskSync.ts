@@ -1,11 +1,21 @@
 /**
  * Task Sync Composable
  * 任务数据同步相关的组合式函数
+ * 
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和 Store
+ * - Service 直接返回数据或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 全局通知
+ * 
+ * ⚠️ 特殊说明：
+ * - TaskSyncApplicationService 是特殊的，需要直接操作 Store 进行批量同步
+ * - 因此 Composable 主要负责调用 Service + 通知用户
  */
 
 import { ref, computed, readonly, onMounted, onBeforeUnmount } from 'vue';
 import { taskSyncApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
+import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 /**
  * 任务数据同步 Composable
@@ -13,6 +23,7 @@ import { useTaskStore } from '../stores/taskStore';
 export function useTaskSync() {
   // ===== 服务和存储 =====
   const taskStore = useTaskStore();
+  const { showSuccess, showError, showInfo } = useSnackbar();
 
   // ===== 本地状态 =====
   const isSyncing = ref(false);
@@ -58,13 +69,18 @@ export function useTaskSync() {
       console.log(
         `✅ [useTaskSync] 同步完成: ${result.templatesCount} 个模板, ${result.instancesCount} 个实例`,
       );
+      
+      // ✅ 全局通知
+      showSuccess(`同步完成: ${result.templatesCount} 个模板, ${result.instancesCount} 个实例`);
 
       return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '同步任务数据失败';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '同步任务数据失败';
       syncError.value = errorMessage;
-      console.error('❌ [useTaskSync] 同步失败:', error);
-      throw error;
+      console.error('❌ [useTaskSync] 同步失败:', err);
+      // ✅ 全局通知
+      showError(errorMessage);
+      throw err;
     } finally {
       isSyncing.value = false;
     }
@@ -90,11 +106,15 @@ export function useTaskSync() {
       lastSyncTime.value = new Date();
 
       console.log('✅ [useTaskSync] 强制同步完成');
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '强制同步失败';
+      // ✅ 全局通知
+      showSuccess('🔄 数据同步完成');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '强制同步失败';
       syncError.value = errorMessage;
-      console.error('❌ [useTaskSync] 强制同步失败:', error);
-      throw error;
+      console.error('❌ [useTaskSync] 强制同步失败:', err);
+      // ✅ 全局通知
+      showError(errorMessage);
+      throw err;
     } finally {
       isSyncing.value = false;
     }
@@ -113,16 +133,19 @@ export function useTaskSync() {
       if (result.synced) {
         lastSyncTime.value = new Date();
         console.log('✅ [useTaskSync] 智能同步完成:', result.reason);
+        // ✅ 全局通知（静默，不打扰用户）
       } else {
         console.log('⏭️ [useTaskSync] 跳过同步:', result.reason);
       }
 
       return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '智能同步失败';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '智能同步失败';
       syncError.value = errorMessage;
-      console.error('❌ [useTaskSync] 智能同步失败:', error);
-      throw error;
+      console.error('❌ [useTaskSync] 智能同步失败:', err);
+      // ✅ 全局通知
+      showError(errorMessage);
+      throw err;
     } finally {
       isSyncing.value = false;
     }
@@ -141,15 +164,17 @@ export function useTaskSync() {
       if (didRefresh) {
         lastSyncTime.value = new Date();
         console.log('✅ [useTaskSync] 缓存已刷新');
+        // ✅ 静默刷新，不通知用户
       } else {
         console.log('✅ [useTaskSync] 缓存仍然有效');
       }
 
       return didRefresh;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '刷新数据失败';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '刷新数据失败';
       syncError.value = errorMessage;
-      console.error('❌ [useTaskSync] 刷新失败:', error);
+      console.error('❌ [useTaskSync] 刷新失败:', err);
+      // 静默失败，不打扰用户
       return false;
     } finally {
       isSyncing.value = false;
@@ -168,11 +193,11 @@ export function useTaskSync() {
       console.log('[useTaskSync] 初始化模块（仅本地缓存）...');
       await taskSyncApplicationService.initializeModule();
       console.log('✅ [useTaskSync] 模块初始化完成');
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '初始化模块失败';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '初始化模块失败';
       syncError.value = errorMessage;
-      console.error('❌ [useTaskSync] 初始化失败:', error);
-      throw error;
+      console.error('❌ [useTaskSync] 初始化失败:', err);
+      throw err;
     } finally {
       isSyncing.value = false;
     }
@@ -190,11 +215,13 @@ export function useTaskSync() {
       await taskSyncApplicationService.initialize();
       lastSyncTime.value = new Date();
       console.log('✅ [useTaskSync] 完整初始化完成');
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '初始化失败';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '初始化失败';
       syncError.value = errorMessage;
-      console.error('❌ [useTaskSync] 初始化失败:', error);
-      throw error;
+      console.error('❌ [useTaskSync] 初始化失败:', err);
+      // ✅ 初始化失败时通知用户
+      showError('任务数据加载失败，请刷新页面重试');
+      throw err;
     } finally {
       isSyncing.value = false;
     }

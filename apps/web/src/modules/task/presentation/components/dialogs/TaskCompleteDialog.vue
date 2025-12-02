@@ -204,13 +204,14 @@
 
       <v-card-actions class="px-4 pb-4">
         <v-spacer />
-        <v-btn variant="text" @click="cancel">
+        <v-btn variant="text" :disabled="isSubmitting" @click="cancel">
           取消
         </v-btn>
         <v-btn
           color="success"
           variant="elevated"
-          :disabled="!isValid"
+          :disabled="!isValid || isSubmitting"
+          :loading="isSubmitting"
           @click="confirm"
         >
           <v-icon start>mdi-check</v-icon>
@@ -268,6 +269,7 @@ const show = ref(true);
 const recordValue = ref<number | null>(null);
 const note = ref('');
 const duration = ref<number | null>(null);
+const isSubmitting = ref(false);
 
 // ===================== 计算属性 =====================
 
@@ -502,20 +504,22 @@ const formatDate = (date: number | Date) => {
 // ===================== 事件处理 =====================
 
 const confirm = () => {
-  if (isValid.value) {
-    const data: CompleteTaskData = {
-      note: note.value || undefined,
-      duration: duration.value || undefined,
-    };
+  if (!isValid.value || isSubmitting.value) return;
+  
+  isSubmitting.value = true;
+  
+  const data: CompleteTaskData = {
+    note: note.value || undefined,
+    duration: duration.value || undefined,
+  };
 
-    // 只有在有目标绑定且用户输入了值时才传递 recordValue
-    if (props.goalBinding && recordValue.value !== null && recordValue.value > 0) {
-      data.recordValue = recordValue.value;
-    }
-
-    emit('confirm', data);
-    show.value = false;
+  // 只有在有目标绑定且用户输入了值时才传递 recordValue
+  if (props.goalBinding && recordValue.value !== null && recordValue.value > 0) {
+    data.recordValue = recordValue.value;
   }
+
+  emit('confirm', data);
+  show.value = false;
 };
 
 const cancel = () => {

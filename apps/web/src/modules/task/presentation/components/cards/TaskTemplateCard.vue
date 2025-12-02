@@ -69,8 +69,8 @@
     <!-- 卡片内容 -->
     <v-card-text class="template-content">
       <!-- 描述 -->
-      <p v-if="template.description" class="template-description">
-        {{ template.description }}
+      <p class="template-description">
+        {{ template.description || '暂无描述' }}
       </p>
 
       <!-- 元信息 -->
@@ -443,6 +443,11 @@ const handleResume = () => {
   font-weight: 600;
   margin: 0;
   color: rgb(var(--v-theme-on-surface));
+  /* 标题固定1行，超出省略 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .template-actions {
@@ -468,6 +473,13 @@ const handleResume = () => {
   font-size: 0.9rem;
   line-height: 1.5;
   margin-bottom: 1rem;
+  /* 描述固定2行，超出省略 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(0.9rem * 1.5 * 2); /* 固定高度：字体大小 × 行高 × 2行 */
 }
 
 .time-summary {

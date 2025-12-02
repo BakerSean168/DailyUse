@@ -1,16 +1,22 @@
 /**
  * Task Synchronization Application Service
  * 任务数据同步应用服务 - 负责任务数据的同步与缓存管理
+ * 
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - ApplicationService 只负责 API 调用 + DTO → Entity 转换
+ * - 返回数据给调用方，由 Composable 层负责存储到 Store
+ * - 直接返回数据或抛出错误（不包装 ServiceResult）
+ * 
+ * ⚠️ 特殊说明：
+ * - TaskSyncApplicationService 是一个特殊的服务，负责初始化和同步
+ * - 它需要直接操作 Store 来完成批量同步功能
+ * - 这是有意为之的设计，因为同步操作需要原子性地更新整个 Store
  */
 
 import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO } from '@dailyuse/contracts/task';
 import { useTaskStore } from '../../presentation/stores/taskStore';
 import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
-
-// 导入类实现
-
-// 类型别名
 
 export class TaskSyncApplicationService {
   private static instance: TaskSyncApplicationService;
@@ -37,6 +43,7 @@ export class TaskSyncApplicationService {
 
   /**
    * 懒加载获取 Task Store
+   * ⚠️ SyncService 是特殊的，需要直接操作 Store 进行批量同步
    */
   private get taskStore(): ReturnType<typeof useTaskStore> {
     return useTaskStore();
@@ -46,15 +53,17 @@ export class TaskSyncApplicationService {
    * 同步所有任务数据到 store
    * 用于应用初始化时加载所有数据
    * 使用聚合根模式：从 TaskTemplate 中提取 TaskInstance，避免额外的 API 调用
+   * 
+   * ⚠️ 这个方法直接操作 Store，因为同步需要原子性地更新整个数据集
    */
   async syncAllTaskData(): Promise<{
     templatesCount: number;
     instancesCount: number;
   }> {
-    try {
-      this.taskStore.setLoading(true);
-      this.taskStore.setError(null);
+    this.taskStore.setLoading(true);
+    this.taskStore.setError(null);
 
+    try {
       // 获取任务模板（包含实例数据）
       const templates = await taskTemplateApiClient.getTaskTemplates({ limit: 1000 });
 
@@ -77,7 +86,7 @@ export class TaskSyncApplicationService {
         }
       });
 
-      // 批量设置到 store
+      // 批量设置到 store（原子操作）
       this.taskStore.setTaskTemplates(entityTemplates);
       this.taskStore.setTaskInstances(instances);
 
@@ -138,15 +147,10 @@ export class TaskSyncApplicationService {
    */
   async forceSync(): Promise<void> {
     console.log('🔄 [强制同步] 开始重新同步所有数据...');
-    try {
-      const result = await this.syncAllTaskData();
-      console.log(
-        `✅ [强制同步] 完成: ${result.templatesCount} 个模板，${result.instancesCount} 个实例`,
-      );
-    } catch (error) {
-      console.error('❌ [强制同步] 失败:', error);
-      throw error;
-    }
+    const result = await this.syncAllTaskData();
+    console.log(
+      `✅ [强制同步] 完成: ${result.templatesCount} 个模板，${result.instancesCount} 个实例`,
+    );
   }
 
   /**
@@ -157,16 +161,11 @@ export class TaskSyncApplicationService {
       return { synced: false, reason: '缓存有效，无需同步' };
     }
 
-    try {
-      const result = await this.syncAllTaskData();
-      console.log(
-        `✅ [智能同步] 完成: ${result.templatesCount} 个模板，${result.instancesCount} 个实例`,
-      );
-      return { synced: true, reason: '同步完成' };
-    } catch (error) {
-      console.error('❌ [智能同步] 失败:', error);
-      throw error;
-    }
+    const result = await this.syncAllTaskData();
+    console.log(
+      `✅ [智能同步] 完成: ${result.templatesCount} 个模板，${result.instancesCount} 个实例`,
+    );
+    return { synced: true, reason: '同步完成' };
   }
 
   /**

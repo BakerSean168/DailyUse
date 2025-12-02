@@ -1,6 +1,16 @@
 /**
  * Task Template Composable
  * 任务模板相关的组合式函数
+ * 
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和 Store
+ * - Service 直接返回实体对象或抛出错误（不包装 ServiceResult）
+ * - Composable 使用 try/catch 处理错误
+ * - 数据流：API → Service(转换) → Composable(存储+通知) → Store → Component
+ * 
+ * 📝 错误处理：
+ * - axios 拦截器已处理 API 错误，success: false 会抛出 Error
+ * - Composable 捕获错误并设置 error 状态 + 全局通知
  */
 
 import { ref, computed, readonly } from 'vue';
@@ -8,6 +18,7 @@ import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClient
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 import { taskTemplateApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
+import { useSnackbar } from '@/shared/composables/useSnackbar';
 
 
 /**
@@ -16,6 +27,7 @@ import { useTaskStore } from '../stores/taskStore';
 export function useTaskTemplate() {
   // ===== 服务和存储 =====
   const taskStore = useTaskStore();
+  const { showSuccess, showError } = useSnackbar();
 
   // ===== 本地状态 =====
   const isOperating = ref(false);
@@ -82,15 +94,28 @@ export function useTaskTemplate() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
-      const result = await taskTemplateApplicationService.createTaskTemplate(request);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '创建任务模板失败';
+      // ✅ Service 直接返回实体对象
+      const template = await taskTemplateApplicationService.createTaskTemplate(request);
+
+      // ✅ Composable 负责存储到 Store
+      taskStore.addTaskTemplate(template);
+      taskStore.updateLastSyncTime();
+
+      // ✅ 全局通知
+      showSuccess('任务模板创建成功');
+
+      return template;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '创建任务模板失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
@@ -106,15 +131,24 @@ export function useTaskTemplate() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
-      const result = await taskTemplateApplicationService.getTaskTemplates(params);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取任务模板列表失败';
+      // ✅ Service 直接返回实体对象数组
+      const templates = await taskTemplateApplicationService.getTaskTemplates(params);
+
+      // ✅ Composable 负责存储到 Store
+      taskStore.setTaskTemplates(templates);
+
+      return templates;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '获取任务模板列表失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
@@ -125,6 +159,7 @@ export function useTaskTemplate() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
       // 先从缓存获取
       const cached = taskStore.getTaskTemplateByUuid(uuid);
@@ -132,35 +167,31 @@ export function useTaskTemplate() {
         return cached;
       }
 
-      // 缓存中没有，从服务器获取
-      const result = await taskTemplateApplicationService.getTaskTemplateById(uuid);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '获取任务模板详情失败';
+      // ✅ Service 直接返回实体对象
+      const template = await taskTemplateApplicationService.getTaskTemplateById(uuid);
+
+      // ✅ Composable 负责存储到 Store
+      taskStore.addTaskTemplate(template);
+
+      return template;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '获取任务模板详情失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
   /**
    * 更新任务模板
+   * @deprecated 后端不支持部分更新
    */
-  async function updateTaskTemplate(uuid: string, request: any) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskTemplateApplicationService.updateTaskTemplate(uuid, request);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '更新任务模板失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+  async function updateTaskTemplate(_uuid: string, _request: any): Promise<never> {
+    throw new Error('updateTaskTemplate is not supported - use specific update methods instead');
   }
 
   /**
@@ -170,14 +201,25 @@ export function useTaskTemplate() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
+      // ✅ Service 返回 void 或抛出错误
       await taskTemplateApplicationService.deleteTaskTemplate(uuid);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '删除任务模板失败';
+
+      // ✅ Composable 负责从 Store 移除
+      taskStore.removeTaskTemplate(uuid);
+
+      // ✅ 全局通知
+      showSuccess('任务模板已删除');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '删除任务模板失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
@@ -190,15 +232,34 @@ export function useTaskTemplate() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
-      const result = await taskTemplateApplicationService.activateTaskTemplate(uuid);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '激活任务模板失败';
+      // ✅ Service 返回模板和生成的实例
+      const { template, instances } = await taskTemplateApplicationService.activateTaskTemplate(uuid);
+
+      // ✅ Composable 负责更新 Store
+      taskStore.updateTaskTemplate(uuid, template);
+      
+      // 同步 instances 到 store
+      if (instances.length > 0) {
+        taskStore.setTaskInstances(instances);
+      }
+      
+      taskStore.updateLastSyncTime();
+
+      // ✅ 全局通知
+      showSuccess(`🚀 任务模板已激活，生成 ${instances.length} 个任务实例`);
+
+      return template;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '激活任务模板失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
@@ -209,15 +270,27 @@ export function useTaskTemplate() {
     try {
       isOperating.value = true;
       operationError.value = null;
+      taskStore.setLoading(true);
 
-      const result = await taskTemplateApplicationService.pauseTaskTemplate(uuid);
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '暂停任务模板失败';
+      // ✅ Service 直接返回实体对象
+      const template = await taskTemplateApplicationService.pauseTaskTemplate(uuid);
+
+      // ✅ Composable 负责更新 Store
+      taskStore.updateTaskTemplate(uuid, template);
+
+      // ✅ 全局通知
+      showSuccess('任务模板已暂停');
+
+      return template;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '暂停任务模板失败';
       operationError.value = errorMessage;
-      throw error;
+      taskStore.setError(errorMessage);
+      showError(errorMessage);
+      throw err;
     } finally {
       isOperating.value = false;
+      taskStore.setLoading(false);
     }
   }
 
@@ -225,30 +298,15 @@ export function useTaskTemplate() {
 
   /**
    * 搜索任务模板
+   * @deprecated 后端不支持搜索，请使用 fetchTaskTemplates 过滤
    */
-  async function searchTaskTemplates(params: {
+  async function searchTaskTemplates(_params: {
     query: string;
     page?: number;
     limit?: number;
     status?: string;
-  }) {
-    try {
-      isOperating.value = true;
-      operationError.value = null;
-
-      const result = await taskTemplateApplicationService.searchTaskTemplates({
-        query: params.query,
-        page: params.page,
-        limit: params.limit,
-      });
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '搜索任务模板失败';
-      operationError.value = errorMessage;
-      throw error;
-    } finally {
-      isOperating.value = false;
-    }
+  }): Promise<never> {
+    throw new Error('searchTaskTemplates is not supported - use fetchTaskTemplates with filters instead');
   }
 
   // ===== 工具方法 =====
@@ -258,6 +316,7 @@ export function useTaskTemplate() {
    */
   function clearError() {
     operationError.value = null;
+    taskStore.setError(null);
   }
 
   /**
