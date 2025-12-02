@@ -142,6 +142,7 @@ const handleMouseLeave = () => {
 .sidebar-avatar {
   width: 44px;
   height: 44px;
+  min-height: 44px;
   margin: 8px 0;
   background: none;
   border: none;
@@ -150,7 +151,7 @@ const handleMouseLeave = () => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .sidebar-divider {

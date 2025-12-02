@@ -10,7 +10,7 @@
       transition="slide-x-transition"
     >
       <template #activator="{ props }">
-        <v-avatar v-bind="props" :size="size" class="mb-4" color="primary" style="cursor: pointer">
+        <v-avatar v-bind="props" :size="size" color="primary" class="profile-avatar" style="cursor: pointer">
           <template v-if="avatarUrl">
             <img :src="avatarUrl" alt="用户头像" />
           </template>
@@ -110,5 +110,16 @@ const showInfo = ref(false);
 .default-avatar-text {
   font-size: 1.5rem;
   font-weight: bold;
+}
+
+.profile-avatar {
+  flex-shrink: 0;
+}
+
+.profile-avatar :deep(img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 </style>

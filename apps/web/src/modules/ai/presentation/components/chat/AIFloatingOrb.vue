@@ -131,7 +131,7 @@ function toggleMenu() {
     showMenu.value = !showMenu.value;
     if (showMenu.value) {
         showHint.value = false;
-        snapToEdge();
+        // 不再自动吸附到边缘，保持当前位置
     }
 }
 
@@ -168,6 +168,11 @@ function dismissHint() {
 function startDrag(event: PointerEvent) {
     if (event.button !== 0) return;
     if (typeof window === 'undefined') return;
+    
+    // 阻止默认行为和事件传播
+    event.preventDefault();
+    event.stopPropagation();
+    
     dragMoved.value = false;
     isDragging.value = true;
     showMenu.value = false;
@@ -181,6 +186,9 @@ function startDrag(event: PointerEvent) {
 
 function onDragMove(event: PointerEvent) {
     if (!isDragging.value) return;
+    
+    event.preventDefault();
+    
     const dx = event.clientX - pointerOrigin.value.x;
     const dy = event.clientY - pointerOrigin.value.y;
 
@@ -201,9 +209,9 @@ function endDrag(event: PointerEvent) {
     window.removeEventListener('pointerup', endDrag);
     isDragging.value = false;
 
-    if (dragMoved.value) {
-        snapToEdge();
-    }
+    // 拖动结束后不再自动吸附到边缘，保持当前位置
+    // 只更新 dockingSide 用于菜单方向判断
+    updateDockingSide();
 
     if (typeof window !== 'undefined') {
         window.requestAnimationFrame(() => {
@@ -212,6 +220,13 @@ function endDrag(event: PointerEvent) {
     } else {
         dragMoved.value = false;
     }
+}
+
+// 更新停靠方向（用于菜单显示方向），但不移动位置
+function updateDockingSide() {
+    const midpoint = position.value.x + ORB_SIZE / 2;
+    const viewportMid = viewport.value.width / 2;
+    dockingSide.value = midpoint < viewportMid ? 'left' : 'right';
 }
 
 function snapToEdge() {
@@ -231,7 +246,8 @@ function snapToEdge() {
 function handleResize() {
     updateViewportDimensions();
     position.value = clampPosition(position.value.x, position.value.y);
-    snapToEdge();
+    // resize 时只更新方向，不自动吸附
+    updateDockingSide();
 }
 
 onMounted(() => {
@@ -414,8 +430,6 @@ onBeforeUnmount(() => {
 
 .ai-orb-menu {
     position: absolute;
-    bottom: 82px;
-    right: 0;
     width: 260px;
     background: color-mix(in srgb, var(--v-theme-surface) 96%, transparent);
     border: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 12%, transparent);
@@ -429,6 +443,14 @@ onBeforeUnmount(() => {
     -webkit-backdrop-filter: blur(12px);
 }
 
+/* 默认：菜单在上方 */
+.ai-orb-menu {
+    bottom: 82px;
+    right: 0;
+    transform-origin: bottom right;
+}
+
+/* 左侧停靠时：菜单在右侧 */
 .ai-orb-wrapper.dock-left .ai-orb-menu {
     left: 0;
     right: auto;

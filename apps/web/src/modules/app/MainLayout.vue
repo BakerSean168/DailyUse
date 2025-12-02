@@ -8,14 +8,13 @@
       <div class="content">
         <v-main class="main-content">
           <!-- 路由加载时显示骨架屏 -->
-          <Transition name="skeleton-fade" mode="out-in">
-            <PageSkeleton v-if="isRouteLoading" key="skeleton" />
-            <router-view v-else v-slot="{ Component }" key="content">
-              <Transition name="page-fade" mode="out-in">
-                <component :is="Component" />
-              </Transition>
-            </router-view>
-          </Transition>
+          <PageSkeleton v-if="isRouteLoading" class="page-skeleton-overlay" />
+          <!-- 路由视图 -->
+          <router-view v-slot="{ Component, route }">
+            <div class="route-wrapper" :key="route.path">
+              <component :is="Component" />
+            </div>
+          </router-view>
         </v-main>
       </div>
     </div>
@@ -53,37 +52,40 @@ const isRouteLoading = computed(() => isLoading.value);
   height: 100%;
   overflow: hidden;
 }
+
 .main-content {
   height: 100%;
   overflow: auto;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-/* 骨架屏切换动画 */
-.skeleton-fade-enter-active,
-.skeleton-fade-leave-active {
-  transition: opacity 0.2s ease;
+/* 路由包装器 - 确保每个路由组件都有一个容器 */
+.route-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
-.skeleton-fade-enter-from,
-.skeleton-fade-leave-to {
-  opacity: 0;
+/* 骨架屏覆盖层 */
+.page-skeleton-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  animation: fadeIn 0.15s ease-out;
 }
 
-/* 页面切换过渡动画 */
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.page-fade-enter-from {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.page-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 </style>
