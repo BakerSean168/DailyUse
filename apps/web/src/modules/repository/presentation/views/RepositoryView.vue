@@ -16,6 +16,10 @@
             <v-icon icon="mdi-folder-outline" />
             <v-tooltip activator="parent" location="bottom">文件</v-tooltip>
           </v-btn>
+          <v-btn value="resources" size="small">
+            <v-icon icon="mdi-image-multiple-outline" />
+            <v-tooltip activator="parent" location="bottom">资源</v-tooltip>
+          </v-btn>
           <v-btn value="search" size="small">
             <v-icon icon="mdi-magnify" />
             <v-tooltip activator="parent" location="bottom">搜索</v-tooltip>
@@ -45,6 +49,14 @@
           @rename-resource="handleRenameResourceNode"
           @delete-resource="handleDeleteResourceNode"
           @ai-generate-knowledge="handleAIGenerateKnowledge"
+        />
+
+        <!-- 资源管理视图 -->
+        <ResourcesPanel
+          v-if="selectedRepository"
+          v-show="activeTab === 'resources'"
+          ref="resourcesPanelRef"
+          :repository-uuid="selectedRepository"
         />
 
         <!-- 搜索视图 -->
@@ -272,6 +284,7 @@ import { repositoryApiClient } from '../../infrastructure/api/repositoryApiClien
 import { Repository, Folder } from '@dailyuse/domain-client/repository';
 import type { TreeNode } from '@dailyuse/contracts/repository';
 import FilesPanel from '../components/FilesPanel.vue';
+import ResourcesPanel from '../components/ResourcesPanel.vue';
 import SearchPanel from '../components/SearchPanel.vue';
 import BookmarksPanel from '../components/BookmarksPanel.vue';
 import TagsPanel from '../components/TagsPanel.vue';
@@ -289,6 +302,7 @@ const resourceStore = useResourceStore();
 
 // Refs
 const filesPanelRef = ref<InstanceType<typeof FilesPanel> | null>(null);
+const resourcesPanelRef = ref<InstanceType<typeof ResourcesPanel> | null>(null);
 
 // Local state
 const isLoading = ref(false);
@@ -297,7 +311,7 @@ const selectedRepository = ref<string | null>(null);
 const selectedFolder = ref<Folder | null>(null);
 
 // 侧边栏标签页状态
-const activeTab = ref<'files' | 'search' | 'bookmarks' | 'tags'>('files');
+const activeTab = ref<'files' | 'resources' | 'search' | 'bookmarks' | 'tags'>('files');
 
 // Dialogs
 const showCreateRepositoryDialog = ref(false);

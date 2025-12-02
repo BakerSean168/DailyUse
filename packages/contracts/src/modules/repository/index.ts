@@ -139,3 +139,24 @@ export type {
 
 // ============ DTOs (Tags - Story 11.5) ============
 export type { TagStatisticsDto, TagResourceReferenceDto } from '../../repository/TagsContracts';
+
+// ============ DTOs (Resource Upload - Story 11.x) ============
+export type {
+  ImageEmbedMode,
+  ResourceUploadResult,
+  ResourceUploadRequest,
+  BatchUploadResult,
+  Resource,
+  ResourceMetadata,
+  ResourceListQuery,
+  ResourceListResponse,
+  ResourceMoveRequest,
+  ResourceRenameRequest,
+  ResourceDeleteRequest,
+  ImageCompressionSettings,
+  ImageEmbedSettings,
+} from '../../repository/ResourceContracts';
+
+// ============ Constants (Upload) ============
+export { RESOURCE_UPLOAD_CONFIG } from '../../repository/ResourceContracts';
+export type { ResourceUploadConfig } from '../../repository/ResourceContracts';

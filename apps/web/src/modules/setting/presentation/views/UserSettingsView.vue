@@ -96,6 +96,32 @@
 
           <v-divider class="my-8" />
 
+          <!-- 仓储设置 -->
+          <section id="section-repository" class="settings-section mb-8">
+            <h3 class="text-h5 font-weight-bold mb-2">
+              {{ t('settings.nav.repository', '仓储') }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis mb-4">
+              {{ t('settings.repository.description', '配置仓储的资源管理和图片处理') }}
+            </p>
+            <RepositorySettings :auto-save="true" />
+          </section>
+
+          <v-divider class="my-8" />
+
+          <!-- 编辑器设置 -->
+          <section id="section-editor" class="settings-section mb-8">
+            <h3 class="text-h5 font-weight-bold mb-2">
+              {{ t('settings.nav.editor', '编辑器') }}
+            </h3>
+            <p class="text-body-2 text-medium-emphasis mb-4">
+              {{ t('settings.editor.description', '配置笔记编辑器的行为和显示') }}
+            </p>
+            <EditorSettings :auto-save="true" />
+          </section>
+
+          <v-divider class="my-8" />
+
           <!-- 快捷键设置 -->
           <section id="section-shortcuts" class="settings-section mb-8">
             <h3 class="text-h5 font-weight-bold mb-2">
@@ -183,6 +209,8 @@ import PrivacySettings from '../components/PrivacySettings.vue';
 import ExperimentalSettings from '../components/ExperimentalSettings.vue';
 import SettingAdvancedActions from '../components/SettingAdvancedActions.vue';
 import AIProviderSettings from '@/modules/ai/presentation/components/AIProviderSettings.vue';
+import RepositorySettings from '../components/RepositorySettings.vue';
+import EditorSettings from '../components/EditorSettings.vue';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -225,6 +253,16 @@ const navItems = computed<NavItem[]>(() => [
     key: 'workflow',
     label: t('settings.nav.workflow', '工作流'),
     icon: 'mdi-arrow-decision',
+  },
+  {
+    key: 'repository',
+    label: t('settings.nav.repository', '仓储'),
+    icon: 'mdi-database-outline',
+  },
+  {
+    key: 'editor',
+    label: t('settings.nav.editor', '编辑器'),
+    icon: 'mdi-file-document-edit-outline',
   },
   {
     key: 'shortcuts',

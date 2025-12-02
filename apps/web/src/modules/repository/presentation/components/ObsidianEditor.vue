@@ -9,7 +9,37 @@
 -->
 
 <template>
-  <div class="obsidian-editor" :class="{ 'reading-mode': isReadingMode }">
+  <div 
+    class="obsidian-editor" 
+    :class="{ 'reading-mode': isReadingMode, 'drag-over': isDragOver }"
+    @dragenter.prevent="handleDragEnter"
+    @dragover.prevent="handleDragOver"
+    @dragleave.prevent="handleDragLeave"
+    @drop.prevent="handleDrop"
+  >
+    <!-- 拖拽上传提示层 -->
+    <Transition name="fade">
+      <div v-if="isDragOver" class="drop-overlay">
+        <div class="drop-content">
+          <v-icon icon="mdi-cloud-upload" size="64" color="primary" />
+          <p>释放以上传文件</p>
+          <span class="drop-hint">支持图片、音频、视频、PDF 等</span>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- 上传进度条 -->
+    <Transition name="slide-down">
+      <div v-if="isUploading" class="upload-progress-bar">
+        <v-progress-linear 
+          :model-value="uploadProgress" 
+          color="primary" 
+          height="3"
+        />
+        <span class="upload-status">{{ uploadStatusText }}</span>
+      </div>
+    </Transition>
+
     <!-- 编辑器工具栏 -->
     <div class="editor-toolbar">
       <div class="toolbar-left">
@@ -144,6 +174,7 @@
             class="markdown-textarea"
             placeholder="开始写作..."
             @input="handleContentChange"
+            @paste="handlePaste"
           ></textarea>
         </div>
       </div>
@@ -171,7 +202,14 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { useResourceStore } from '../stores/resourceStore';
+import { useRepositoryViewStore } from '../stores/repositoryViewStore';
 import { marked } from 'marked';
+import { 
+  processImageForEmbed, 
+  uploadResource, 
+  generateEmbedSyntax, 
+  getFileType 
+} from '../../application/services/ResourceUploadService';
 
 // Props
 interface Props {
@@ -182,6 +220,7 @@ const props = defineProps<Props>();
 
 // Store
 const resourceStore = useResourceStore();
+const viewStore = useRepositoryViewStore();
 
 // State
 const isReadingMode = ref(true); // 默认阅读模式
@@ -189,6 +228,13 @@ const propertiesExpanded = ref(true);
 const isBookmarked = ref(false);
 const editorTextarea = ref<HTMLTextAreaElement | null>(null);
 const fullContent = ref(''); // 完整内容（包含 frontmatter）
+
+// 拖拽上传状态
+const isDragOver = ref(false);
+const isUploading = ref(false);
+const uploadProgress = ref(0);
+const uploadStatusText = ref('');
+let dragCounter = 0; // 用于处理嵌套拖拽事件
 
 // Computed
 const resource = computed(() => resourceStore.selectedResource);
@@ -236,10 +282,91 @@ const folderPath = computed(() => {
   return '';
 });
 
+/**
+ * 处理 Obsidian 风格的媒体嵌入语法
+ * 支持: ![[filename.ext]] 和标准 markdown 图片
+ */
+function processMediaEmbeds(content: string): string {
+  if (!viewStore.editorSettings.enableMediaEmbed) {
+    return content;
+  }
+
+  // 处理 Obsidian 风格嵌入: ![[filename]]
+  let processed = content.replace(
+    /!\[\[([^\]]+)\]\]/g,
+    (match, filename) => {
+      const ext = filename.split('.').pop()?.toLowerCase() || '';
+      const resourceUrl = getResourceUrl(filename);
+      
+      // 图片
+      if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) {
+        return `<div class="embedded-media embedded-image"><img src="${resourceUrl}" alt="${filename}" loading="lazy" /></div>`;
+      }
+      // 音频
+      if (['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac'].includes(ext)) {
+        return `<div class="embedded-media embedded-audio"><audio controls src="${resourceUrl}"><a href="${resourceUrl}">${filename}</a></audio></div>`;
+      }
+      // 视频
+      if (['mp4', 'webm', 'ogv', 'mov', 'avi'].includes(ext)) {
+        return `<div class="embedded-media embedded-video"><video controls src="${resourceUrl}"><a href="${resourceUrl}">${filename}</a></video></div>`;
+      }
+      // PDF
+      if (ext === 'pdf') {
+        return `<div class="embedded-media embedded-pdf"><iframe src="${resourceUrl}" title="${filename}"></iframe><a href="${resourceUrl}" target="_blank">📄 ${filename}</a></div>`;
+      }
+      // 其他文件 - 显示链接
+      return `<a href="${resourceUrl}" class="embedded-link" target="_blank">📎 ${filename}</a>`;
+    }
+  );
+
+  // 处理网页视频嵌入 (YouTube, Bilibili 等)
+  processed = processVideoEmbeds(processed);
+
+  return processed;
+}
+
+/**
+ * 处理视频网站嵌入
+ */
+function processVideoEmbeds(content: string): string {
+  const supportedSites = viewStore.editorSettings.supportedVideoSites;
+  
+  // YouTube
+  if (supportedSites.includes('youtube.com')) {
+    content = content.replace(
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[^\s]*)?/g,
+      '<div class="embedded-media embedded-video-iframe"><iframe src="https://www.youtube.com/embed/$1" frameborder="0" allowfullscreen></iframe></div>'
+    );
+  }
+  
+  // Bilibili
+  if (supportedSites.includes('bilibili.com')) {
+    content = content.replace(
+      /(?:https?:\/\/)?(?:www\.)?bilibili\.com\/video\/(BV[a-zA-Z0-9]+)(?:[^\s]*)?/g,
+      '<div class="embedded-media embedded-video-iframe"><iframe src="//player.bilibili.com/player.html?bvid=$1" frameborder="0" allowfullscreen></iframe></div>'
+    );
+  }
+
+  return content;
+}
+
+/**
+ * 获取资源 URL
+ */
+function getResourceUrl(filename: string): string {
+  // TODO: 根据当前仓储和文件名获取实际 URL
+  // 暂时返回相对路径，后续需要对接 API
+  const repoUuid = resource.value?.repositoryUuid || '';
+  return `/api/repositories/${repoUuid}/assets/${encodeURIComponent(filename)}`;
+}
+
 // 渲染后的 HTML 内容
 const renderedContent = computed(() => {
   try {
-    return marked(markdownBody.value || '');
+    const markdown = markdownBody.value || '';
+    // 先处理媒体嵌入，再用 marked 渲染
+    const processedMarkdown = processMediaEmbeds(markdown);
+    return marked(processedMarkdown);
   } catch (e) {
     return '<p>渲染错误</p>';
   }
@@ -392,6 +519,174 @@ function handleContentChange() {
   }
 }
 
+// ========== 拖拽上传处理 ==========
+
+/**
+ * 处理拖拽进入
+ */
+function handleDragEnter(e: DragEvent) {
+  dragCounter++;
+  if (e.dataTransfer?.types.includes('Files')) {
+    isDragOver.value = true;
+  }
+}
+
+/**
+ * 处理拖拽悬停
+ */
+function handleDragOver(e: DragEvent) {
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'copy';
+  }
+}
+
+/**
+ * 处理拖拽离开
+ */
+function handleDragLeave() {
+  dragCounter--;
+  if (dragCounter === 0) {
+    isDragOver.value = false;
+  }
+}
+
+/**
+ * 处理文件拖放
+ */
+async function handleDrop(e: DragEvent) {
+  dragCounter = 0;
+  isDragOver.value = false;
+
+  const files = e.dataTransfer?.files;
+  if (!files || files.length === 0) return;
+
+  await uploadFiles(Array.from(files));
+}
+
+/**
+ * 处理粘贴事件
+ */
+async function handlePaste(e: ClipboardEvent) {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  const files: File[] = [];
+  
+  for (const item of items) {
+    if (item.kind === 'file') {
+      const file = item.getAsFile();
+      if (file) {
+        files.push(file);
+      }
+    }
+  }
+
+  if (files.length > 0) {
+    e.preventDefault(); // 阻止默认粘贴行为
+    await uploadFiles(files);
+  }
+}
+
+/**
+ * 上传文件并插入到编辑器
+ */
+async function uploadFiles(files: File[]) {
+  if (!resource.value?.repositoryUuid) {
+    console.error('No repository UUID');
+    return;
+  }
+
+  const repositoryUuid = resource.value.repositoryUuid;
+  isUploading.value = true;
+  uploadProgress.value = 0;
+
+  try {
+    const embedSyntaxList: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      uploadStatusText.value = `上传中: ${file.name} (${i + 1}/${files.length})`;
+      uploadProgress.value = Math.round((i / files.length) * 100);
+
+      const fileType = getFileType(file.name);
+      
+      // 处理图片 - 根据设置决定嵌入方式
+      if (fileType === 'image') {
+        const result = await processImageForEmbed(file, repositoryUuid);
+        if (result.type === 'base64') {
+          // Base64 嵌入 - 直接插入 markdown 图片语法
+          embedSyntaxList.push(`![${file.name}](${result.content})`);
+        } else {
+          // 链接引用
+          embedSyntaxList.push(result.content);
+        }
+      } else {
+        // 非图片文件 - 上传后链接引用
+        const uploadResult = await uploadResource(file, repositoryUuid);
+        const embedType = fileType === 'pdf' ? 'other' : fileType;
+        embedSyntaxList.push(generateEmbedSyntax(uploadResult.name, embedType as 'image' | 'audio' | 'video' | 'link' | 'other'));
+      }
+    }
+
+    uploadProgress.value = 100;
+    uploadStatusText.value = '上传完成';
+
+    // 插入到编辑器
+    if (embedSyntaxList.length > 0) {
+      insertAtCursor(embedSyntaxList.join('\n\n'));
+    }
+
+    // 延迟隐藏进度条
+    setTimeout(() => {
+      isUploading.value = false;
+      uploadProgress.value = 0;
+      uploadStatusText.value = '';
+    }, 1000);
+
+  } catch (error) {
+    console.error('Upload failed:', error);
+    uploadStatusText.value = '上传失败';
+    setTimeout(() => {
+      isUploading.value = false;
+    }, 2000);
+  }
+}
+
+/**
+ * 在光标位置插入文本
+ */
+function insertAtCursor(text: string) {
+  const textarea = editorTextarea.value;
+  if (!textarea) {
+    // 如果在阅读模式，追加到内容末尾
+    fullContent.value += '\n\n' + text;
+    handleContentChange();
+    return;
+  }
+
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const before = fullContent.value.substring(0, start);
+  const after = fullContent.value.substring(end);
+
+  // 确保前后有换行
+  const prefix = before.endsWith('\n') || before === '' ? '' : '\n';
+  const suffix = after.startsWith('\n') || after === '' ? '' : '\n';
+
+  fullContent.value = before + prefix + text + suffix + after;
+  
+  // 触发保存
+  handleContentChange();
+
+  // 恢复光标位置
+  nextTick(() => {
+    const newPos = start + prefix.length + text.length + suffix.length;
+    textarea.selectionStart = newPos;
+    textarea.selectionEnd = newPos;
+    textarea.focus();
+  });
+}
+
 // 监听资源变化
 watch(
   () => resource.value?.content,
@@ -421,6 +716,80 @@ onMounted(() => {
   background: rgb(var(--v-theme-background));
   color: rgb(var(--v-theme-on-background));
   position: relative;
+}
+
+/* 拖拽状态 */
+.obsidian-editor.drag-over {
+  outline: 2px dashed rgb(var(--v-theme-primary));
+  outline-offset: -2px;
+}
+
+/* 拖拽上传遮罩 */
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--v-theme-surface), 0.95);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.drop-content {
+  text-align: center;
+}
+
+.drop-content p {
+  margin-top: 16px;
+  font-size: 18px;
+  font-weight: 500;
+  color: rgb(var(--v-theme-primary));
+}
+
+.drop-hint {
+  font-size: 13px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+/* 上传进度条 */
+.upload-progress-bar {
+  position: absolute;
+  top: 40px; /* 工具栏下方 */
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgb(var(--v-theme-surface));
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.08);
+}
+
+.upload-status {
+  display: block;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+}
+
+/* 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.2s ease;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 /* 工具栏 */
@@ -741,5 +1110,105 @@ onMounted(() => {
 /* 阅读模式特殊样式 - 同样填满容器 */
 .reading-mode .editor-content {
   padding: 32px 64px;
+}
+
+/* ===== 媒体嵌入样式 ===== */
+
+.reading-view :deep(.embedded-media) {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 嵌入图片 */
+.reading-view :deep(.embedded-image) {
+  text-align: center;
+}
+
+.reading-view :deep(.embedded-image img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 嵌入音频 */
+.reading-view :deep(.embedded-audio) {
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.reading-view :deep(.embedded-audio audio) {
+  width: 100%;
+}
+
+/* 嵌入视频 */
+.reading-view :deep(.embedded-video) {
+  background: #000;
+  border-radius: 8px;
+}
+
+.reading-view :deep(.embedded-video video) {
+  width: 100%;
+  max-height: 480px;
+  display: block;
+}
+
+/* 嵌入 iframe 视频 (YouTube, Bilibili) */
+.reading-view :deep(.embedded-video-iframe) {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 比例 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #000;
+}
+
+.reading-view :deep(.embedded-video-iframe iframe) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 嵌入 PDF */
+.reading-view :deep(.embedded-pdf) {
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.reading-view :deep(.embedded-pdf iframe) {
+  width: 100%;
+  height: 500px;
+  border: none;
+}
+
+.reading-view :deep(.embedded-pdf a) {
+  display: block;
+  padding: 8px 16px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  text-align: center;
+  font-size: 14px;
+}
+
+/* 嵌入链接 */
+.reading-view :deep(.embedded-link) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.reading-view :deep(.embedded-link:hover) {
+  background: rgba(var(--v-theme-on-surface), 0.1);
+  text-decoration: none;
 }
 </style>
