@@ -288,6 +288,13 @@ export const applyRouterGuards = (router: any) => {
       try {
         console.log(`🔀 [Router] 导航: ${from.path} → ${to.path}`);
 
+        // 🦴 路由加载状态：立即显示骨架屏（仅在主应用内导航时）
+        if (from.path !== to.path && from.matched.some(r => r.name === 'app') && to.matched.some(r => r.name === 'app')) {
+          const { useRouteLoadingStore } = await import('../stores/routeLoadingStore');
+          const routeLoadingStore = useRouteLoadingStore();
+          routeLoadingStore.startLoading(to.path);
+        }
+
         // 0. 预加载优化：用户进入登录页时，开始预加载业务模块（不阻塞导航）
         if (to.name === 'auth' && from.name !== 'auth') {
           const { AppInitializationManager } = await import('../initialization/AppInitializationManager');
@@ -315,7 +322,19 @@ export const applyRouterGuards = (router: any) => {
   );
 
   // 全局后置钩子
-  router.afterEach((to: RouteLocationNormalized) => {
+  router.afterEach(async (to: RouteLocationNormalized) => {
+    // 🦴 结束路由加载状态
+    try {
+      const { useRouteLoadingStore } = await import('../stores/routeLoadingStore');
+      const routeLoadingStore = useRouteLoadingStore();
+      // 添加微小延迟确保组件已渲染，避免闪烁
+      setTimeout(() => {
+        routeLoadingStore.finishLoading();
+      }, 50);
+    } catch (e) {
+      // 忽略 store 未初始化的情况
+    }
+
     // 设置页面标题
     const title = to.matched
       .slice()
