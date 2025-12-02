@@ -95,3 +95,10 @@ async function startApp() {
 
 // 启动应用
 startApp();
+
+// 注册 Service Worker（生产环境）
+if (import.meta.env.PROD) {
+  import('./shared/services/ServiceWorkerService').then(({ registerServiceWorker }) => {
+    registerServiceWorker();
+  });
+}

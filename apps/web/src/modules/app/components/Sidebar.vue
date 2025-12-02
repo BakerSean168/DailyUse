@@ -16,6 +16,8 @@
       :title="item.title"
       :class="{ active: isActiveRoute(item.path) }"
       @click="navigateTo(item.path)"
+      @mouseenter="handleMouseEnter(item.path)"
+      @mouseleave="handleMouseLeave"
     >
       <v-icon :icon="item.icon" size="24" />
     </button>
@@ -30,6 +32,8 @@
         :title="item.title"
         :class="{ active: isActiveRoute(item.path) }"
         @click="navigateTo(item.path)"
+        @mouseenter="handleMouseEnter(item.path)"
+        @mouseleave="handleMouseLeave"
       >
         <v-icon :icon="item.icon" size="24" />
       </button>
@@ -45,6 +49,7 @@ import { useI18n } from 'vue-i18n';
 import ProfileAvatar from '@/modules/account/presentation/components/ProfileAvatar.vue';
 import SidebarMoreMenu from './SidebarMoreMenu.vue';
 import { getNavigationRoutes } from '@/shared/router/routes';
+import { handleNavMouseEnter, handleNavMouseLeave } from '@/shared/services/RoutePrefetchService';
 
 const router = useRouter();
 const route = useRoute();
@@ -83,6 +88,18 @@ const isActiveRoute = (path: string) => {
     return route.path === '/';
   }
   return route.path.startsWith(path);
+};
+
+// 预加载处理
+const handleMouseEnter = (path: string) => {
+  // 不预加载当前页面
+  if (!isActiveRoute(path)) {
+    handleNavMouseEnter(path);
+  }
+};
+
+const handleMouseLeave = () => {
+  handleNavMouseLeave();
 };
 </script>
 
