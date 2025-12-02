@@ -8,7 +8,8 @@
  */
 
 import { ref, type Ref, type ComputedRef } from 'vue';
-import { goalGenerationApiClient } from '../../infrastructure/api/goalGenerationApiClient';
+import { goalGenerationApplicationService } from '../../application/services/GoalGenerationApplicationService';
+import { getGlobalMessage } from '@dailyuse/ui';
 import type { GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 interface TokenUsage {
@@ -37,6 +38,7 @@ interface UseGoalGenerationReturn {
  * Goal Generation Composable
  */
 export function useGoalGeneration(): UseGoalGenerationReturn {
+  const { success: showSuccess, error: showError } = getGlobalMessage();
   // ===== 状态 =====
   const loading = ref(false);
   const error: Ref<string | null> = ref(null);
@@ -59,21 +61,26 @@ export function useGoalGeneration(): UseGoalGenerationReturn {
     generatedGoal.value = null;
 
     try {
-      const response = await goalGenerationApiClient.generateGoal({
-        idea: params.idea,
-        context: params.context,
-        providerUuid: params.providerUuid,
-        category: params.category as any,
-      });
+      const response = await goalGenerationApplicationService.generateGoal(
+        params.idea,
+        {
+          context: params.context,
+          providerUuid: params.providerUuid,
+          category: params.category as any,
+        }
+      );
 
       generatedGoal.value = response.goal;
       tokenUsage.value = response.tokenUsage;
       providerUsed.value = response.providerUsed;
       modelUsed.value = response.modelUsed;
 
+      showSuccess('目标生成成功');
       return response.goal;
     } catch (err: any) {
-      error.value = err.message || '生成目标失败';
+      const errorMsg = err.message || '生成目标失败';
+      error.value = errorMsg;
+      showError(errorMsg);
       console.error('Failed to generate goal:', err);
       return null;
     } finally {

@@ -8,9 +8,8 @@
  * - 处理错误和异常
  * - 提供统一的接口给 Presentation 层
  *
- * 依赖：
- * - goalGenerationApiClient（基础设施层 - HTTP 请求）
- * - Snackbar（用户反馈）
+ * Pattern A: ApplicationService 只负责 API 调用和 DTO 转换
+ * UI 反馈（success/error 消息）由 Composable 层处理
  */
 
 import type {
@@ -23,7 +22,6 @@ import type {
   GoalCategory,
 } from '@dailyuse/contracts/ai';
 import { goalGenerationApiClient } from '../../infrastructure/api/goalGenerationApiClient';
-import { useMessage } from '@dailyuse/ui';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('GoalGenerationApplicationService');
@@ -52,13 +50,6 @@ export class GoalGenerationApplicationService {
   private _lastGeneratedKeyResults: KeyResultPreview[] = [];
 
   private constructor() {}
-
-  /**
-   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
-   */
-  private get snackbar() {
-    return useMessage();
-  }
 
   /**
    * 获取服务单例
@@ -156,7 +147,6 @@ export class GoalGenerationApplicationService {
         modelUsed: response.modelUsed,
       });
 
-      this.message.success(`目标已生成：${response.goal.title}`);
       return response;
     } catch (error) {
       const errorMessage = this.handleError(error, '生成目标失败');
@@ -231,7 +221,6 @@ export class GoalGenerationApplicationService {
         modelUsed: response.modelUsed,
       });
 
-      this.message.success(`目标和 ${response.keyResults.length} 个关键结果已生成`);
       return response;
     } catch (error) {
       const errorMessage = this.handleError(error, '生成目标和关键结果失败');
@@ -284,6 +273,7 @@ export class GoalGenerationApplicationService {
 
   /**
    * 统一错误处理
+   * Pattern A: 只记录日志和设置内部状态，不显示 UI 消息
    */
   private handleError(error: unknown, defaultMessage: string): string {
     let errorMessage: string;
@@ -312,7 +302,6 @@ export class GoalGenerationApplicationService {
       originalError: error,
     });
 
-    this.message.error(errorMessage);
     return errorMessage;
   }
 

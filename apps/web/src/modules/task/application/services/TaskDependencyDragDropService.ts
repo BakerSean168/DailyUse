@@ -2,15 +2,16 @@
  * Task Dependency Drag-Drop Service
  *
  * Handles dependency creation via drag-and-drop operations.
- * Includes validation, user confirmation, and integration with DAG updates.
+ * Includes validation and integration with DAG updates.
+ *
+ * Pattern A: ApplicationService only handles API calls
+ * UI feedback (success/error messages) should be handled by Composables
  *
  * @module TaskDependencyDragDropService
  */
 
 import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskDependencyServerDTO, TaskDependencyClientDTO, ValidateDependencyRequest, CreateTaskDependencyRequest, DependencyType } from '@dailyuse/contracts/task';
 import { taskDependencyApiClient } from '@/modules/task/infrastructure/api/taskApiClient';
-import { TaskDependencyValidationService } from './TaskDependencyValidationService';
-import { useMessage } from '@dailyuse/ui';
 
 
 /**
@@ -26,15 +27,6 @@ export interface DependencyCreationResult {
  * Service for drag-and-drop dependency creation
  */
 export class TaskDependencyDragDropService {
-  private validationService = new TaskDependencyValidationService();
-
-  /**
-   * 延迟获取 Message（避免在 Pinia 初始化前访问）
-   */
-  private get message() {
-    return useMessage();
-  }
-
   /**
    * Create dependency from drag-and-drop operation
    *
@@ -69,10 +61,9 @@ export class TaskDependencyDragDropService {
       const validation = await this.validateDependency(sourceTask, targetTask);
 
       if (!validation.isValid) {
-        this.message.error(`无法创建依赖: ${validation.reason || '验证失败'}`);
         return {
           success: false,
-          error: validation.reason,
+          error: validation.reason || '验证失败',
         };
       }
 
@@ -94,9 +85,6 @@ export class TaskDependencyDragDropService {
 
       const dependency = await taskDependencyApiClient.createDependency(sourceTask.uuid, request);
 
-      // Step 4: Show success notification
-      this.showSuccessNotification(sourceTask, targetTask);
-
       return {
         success: true,
         dependency,
@@ -105,7 +93,6 @@ export class TaskDependencyDragDropService {
       const errorMessage = error instanceof Error ? error.message : '创建依赖关系失败';
 
       console.error('[DragDropService] Failed to create dependency:', error);
-      this.message.error(errorMessage);
 
       return {
         success: false,
@@ -146,21 +133,6 @@ export class TaskDependencyDragDropService {
         reason: error instanceof Error ? error.message : '验证失败',
       };
     }
-  }
-
-  /**
-   * Show success notification with dependency details
-   *
-   * @param sourceTask Source task
-   * @param targetTask Target task
-   */
-  private showSuccessNotification(
-    sourceTask: TaskTemplateClientDTO,
-    targetTask: TaskTemplateClientDTO,
-  ): void {
-    const message = `✓ 依赖关系已创建\n"${sourceTask.title}" 现在依赖于 "${targetTask.title}"`;
-
-    this.message.success(message, 5000);
   }
 
   /**

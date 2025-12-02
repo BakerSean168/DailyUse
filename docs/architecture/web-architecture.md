@@ -287,6 +287,243 @@ modules/[module-name]/
 | **Initialization** | 模块启动、依赖注入 | → All Layers |
 \\\
 
+---
+
+## 🔄 Pattern A 架构规范
+
+### 概述
+
+Pattern A 是 DailyUse Web 应用中 Presentation → Application → Infrastructure 层之间的标准数据流和职责划分模式。
+
+### 架构图
+
+\\\
+┌─────────────────────────────────────────────────────────────────┐
+│                    Vue Component (视图层)                        │
+│  - 用户交互触发事件                                               │
+│  - 绑定 Composable 返回的状态和方法                               │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ 调用 Composable 方法
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              Composable (Presentation 层逻辑)                    │
+│  职责：                                                          │
+│  - try/catch 包装 ApplicationService 调用                        │
+│  - 用户反馈：getGlobalMessage() → showSuccess/showError          │
+│  - 状态管理：更新 Pinia Store                                     │
+│  - Loading 状态控制                                              │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ 调用 ApplicationService
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              ApplicationService (应用层)                         │
+│  职责：                                                          │
+│  - 调用 ApiClient 执行 HTTP 请求                                  │
+│  - DTO → Domain Entity 转换                                      │
+│  - 业务编排（多个 API 调用协调）                                   │
+│  ⚠️ 禁止：直接使用 useMessage/getGlobalMessage                   │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ 调用 ApiClient
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   ApiClient (基础设施层)                         │
+│  职责：                                                          │
+│  - HTTP 请求封装 (Axios)                                         │
+│  - 请求/响应拦截                                                  │
+│  - 错误处理（抛出 Error）                                         │
+└─────────────────────────────────────────────────────────────────┘
+\\\
+
+### 核心原则
+
+#### 1. 职责分离
+
+| 层级 | 负责 | 禁止 |
+|------|------|------|
+| **Composable** | UI 反馈、Store 更新、Loading 状态 | 直接调用 ApiClient |
+| **ApplicationService** | API 调用、DTO 转换、业务编排 | 使用 useMessage/getGlobalMessage |
+| **ApiClient** | HTTP 请求、拦截器 | 业务逻辑 |
+
+#### 2. 用户反馈规范
+
+用户反馈（成功/错误消息）**只能**在 Composable 层处理：
+
+\\\typescript
+// ✅ 正确：在 Composable 中处理用户反馈
+export function useGoal() {
+  const { success: showSuccess, error: showError } = getGlobalMessage();
+  
+  async function createGoal(data: CreateGoalDto) {
+    try {
+      const goal = await goalApplicationService.createGoal(data);
+      showSuccess('目标创建成功');
+      return goal;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : '创建目标失败';
+      showError(errorMsg);
+      throw err;
+    }
+  }
+}
+
+// ❌ 错误：在 ApplicationService 中处理用户反馈
+export class GoalApplicationService {
+  async createGoal(data: CreateGoalDto) {
+    const goal = await goalApiClient.create(data);
+    // ❌ 禁止在 ApplicationService 中调用 useMessage
+    // this.message.success('目标创建成功');
+    return goal;
+  }
+}
+\\\
+
+### 代码模板
+
+#### Composable 模板
+
+\\\typescript
+import { ref, computed } from 'vue';
+import { getGlobalMessage } from '@dailyuse/ui';
+import { xxxApplicationService } from '../../application/services';
+import { useXxxStore } from '../stores/xxxStore';
+
+export function useXxx() {
+  const store = useXxxStore();
+  const { success: showSuccess, error: showError } = getGlobalMessage();
+  
+  const loading = ref(false);
+  const error = ref<string | null>(null);
+
+  // Computed - 从 Store 读取数据
+  const items = computed(() => store.items);
+
+  // Action - 调用 ApplicationService
+  async function createItem(request: CreateItemRequest) {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      const item = await xxxApplicationService.createItem(request);
+      store.addItem(item);
+      showSuccess('创建成功');
+      return item;
+    } catch (err: any) {
+      const errorMsg = err.message || '创建失败';
+      error.value = errorMsg;
+      showError(errorMsg);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    // State
+    items,
+    loading: computed(() => loading.value),
+    error: computed(() => error.value),
+    
+    // Actions
+    createItem,
+  };
+}
+\\\
+
+#### ApplicationService 模板
+
+\\\typescript
+import { xxxApiClient } from '../../infrastructure/api/xxxApiClient';
+import type { CreateItemRequest, ItemClientDTO } from '@dailyuse/contracts';
+
+/**
+ * XXX Application Service
+ * 
+ * Pattern A: ApplicationService 只负责 API 调用和 DTO 转换
+ * UI 反馈（success/error 消息）由 Composable 层处理
+ */
+export class XxxApplicationService {
+  private static instance: XxxApplicationService;
+
+  private constructor() {}
+
+  static getInstance(): XxxApplicationService {
+    if (!XxxApplicationService.instance) {
+      XxxApplicationService.instance = new XxxApplicationService();
+    }
+    return XxxApplicationService.instance;
+  }
+
+  /**
+   * 创建项目
+   * @returns 返回创建的 DTO，不包含 UI 反馈
+   */
+  async createItem(request: CreateItemRequest): Promise<ItemClientDTO> {
+    return await xxxApiClient.createItem(request);
+  }
+
+  /**
+   * 获取项目列表
+   */
+  async getItems(params?: { page?: number; limit?: number }): Promise<ItemClientDTO[]> {
+    return await xxxApiClient.getItems(params);
+  }
+}
+
+export const xxxApplicationService = XxxApplicationService.getInstance();
+\\\
+
+### 迁移指南
+
+如果现有 ApplicationService 违反 Pattern A（直接使用 useMessage），按以下步骤重构：
+
+1. **移除 useMessage 导入**
+   \\\typescript
+   // 删除这行
+   import { useMessage } from '@dailyuse/ui';
+   \\\
+
+2. **移除 snackbar/message getter**
+   \\\typescript
+   // 删除这个 getter
+   private get snackbar() {
+     return useMessage();
+   }
+   \\\
+
+3. **移除所有 this.message.success/error 调用**
+   \\\typescript
+   // 删除这些调用
+   this.message.success('操作成功');
+   this.message.error(errorMessage);
+   \\\
+
+4. **在对应的 Composable 中添加用户反馈**
+   \\\typescript
+   const { success: showSuccess, error: showError } = getGlobalMessage();
+   
+   try {
+     const result = await applicationService.method();
+     showSuccess('操作成功');
+   } catch (err) {
+     showError(err.message);
+   }
+   \\\
+
+### 已遵循 Pattern A 的模块
+
+| 模块 | ApplicationService | Composable | 状态 |
+|------|---------------------|------------|------|
+| Goal | ✅ | ✅ | 完成 |
+| Task | ✅ | ✅ | 完成 |
+| Schedule | ✅ | ✅ | 完成 |
+| Reminder | ✅ | ✅ | 完成 |
+| AI | ✅ | ✅ | 完成 |
+| Notification | ✅ | ✅ | 完成 |
+| Document | ✅ | ✅ | 完成 |
+| Authentication | ✅ | ✅ | 完成 |
+
+---
+
 ### 模块示例：Goal 模块（DDD 结构）
 
 \\\
@@ -856,4 +1093,4 @@ test('create goal flow', async ({ page }) => {
 ---
 
 **文档维护**: BMAD v6 Analyst  
-**最后更新**: 2025-10-28 14:32:51
+**最后更新**: 2025-12-02 (Pattern A 架构规范添加)

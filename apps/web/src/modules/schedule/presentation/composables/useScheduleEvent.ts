@@ -1,12 +1,22 @@
 import { ref, computed } from 'vue';
-import type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest, GetSchedulesByTimeRangeRequest } from '@dailyuse/contracts/schedule';
-import { scheduleEventApiClient } from '../../infrastructure/api/scheduleEventApiClient';
-import { useMessage } from '@dailyuse/ui';
+import type {
+  ScheduleClientDTO,
+  CreateScheduleRequest,
+  UpdateScheduleRequest,
+  GetSchedulesByTimeRangeRequest,
+} from '@dailyuse/contracts/schedule';
+import { scheduleEventApplicationService } from '../../application';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 /**
  * Schedule Event Composable
  * 日程事件状态管理
- * 
+ *
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和状态管理
+ * - Service 直接返回 DTO 或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 显示通知
+ *
  * Story 4-1: Schedule Event CRUD
  */
 
@@ -22,7 +32,7 @@ const error = ref<Error | null>(null);
  * useScheduleEvent Composable
  */
 export function useScheduleEvent() {
-  const message = useMessage();
+  const { success: showSuccess, error: showError, warning: showWarning } = getGlobalMessage();
 
   // ============ Computed ============
 
@@ -45,18 +55,18 @@ export function useScheduleEvent() {
    * 创建日程事件
    */
   async function createSchedule(data: CreateScheduleRequest): Promise<ScheduleClientDTO | null> {
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      const schedule = await scheduleEventApiClient.createSchedule(data);
+      isLoading.value = true;
+      error.value = null;
+
+      const schedule = await scheduleEventApplicationService.createSchedule(data);
       schedules.value.set(schedule.uuid, schedule);
-      message.success('日程创建成功');
+      showSuccess('日程创建成功');
       return schedule;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '创建日程失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      message.error(errorMsg);
+      showError(errorMsg);
       return null;
     } finally {
       isLoading.value = false;
@@ -76,18 +86,18 @@ export function useScheduleEvent() {
       }
     }
 
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      const schedule = await scheduleEventApiClient.getSchedule(uuid);
+      isLoading.value = true;
+      error.value = null;
+
+      const schedule = await scheduleEventApplicationService.getSchedule(uuid);
       schedules.value.set(schedule.uuid, schedule);
       activeScheduleUuid.value = uuid;
       return schedule;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '获取日程详情失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      message.error(errorMsg);
+      showError(errorMsg);
       return null;
     } finally {
       isLoading.value = false;
@@ -103,11 +113,11 @@ export function useScheduleEvent() {
       return schedulesList.value;
     }
 
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      const fetchedSchedules = await scheduleEventApiClient.getSchedulesByAccount();
+      isLoading.value = true;
+      error.value = null;
+
+      const fetchedSchedules = await scheduleEventApplicationService.getSchedulesByAccount();
       // Clear old cache and update
       schedules.value.clear();
       fetchedSchedules.forEach((schedule) => {
@@ -117,7 +127,7 @@ export function useScheduleEvent() {
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '获取日程列表失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      message.error(errorMsg);
+      showError(errorMsg);
       return [];
     } finally {
       isLoading.value = false;
@@ -128,13 +138,14 @@ export function useScheduleEvent() {
    * 获取指定时间范围内的日程事件
    */
   async function getSchedulesByTimeRange(
-    params: GetSchedulesByTimeRangeRequest
+    params: GetSchedulesByTimeRangeRequest,
   ): Promise<ScheduleClientDTO[]> {
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      const fetchedSchedules = await scheduleEventApiClient.getSchedulesByTimeRange(params);
+      isLoading.value = true;
+      error.value = null;
+
+      const fetchedSchedules =
+        await scheduleEventApplicationService.getSchedulesByTimeRange(params);
       // Update cache (merge with existing)
       fetchedSchedules.forEach((schedule) => {
         schedules.value.set(schedule.uuid, schedule);
@@ -143,7 +154,7 @@ export function useScheduleEvent() {
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '获取日程列表失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      message.error(errorMsg);
+      showError(errorMsg);
       return [];
     } finally {
       isLoading.value = false;
@@ -155,20 +166,20 @@ export function useScheduleEvent() {
    */
   async function updateSchedule(
     uuid: string,
-    data: UpdateScheduleRequest
+    data: UpdateScheduleRequest,
   ): Promise<ScheduleClientDTO | null> {
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      const updatedSchedule = await scheduleEventApiClient.updateSchedule(uuid, data);
+      isLoading.value = true;
+      error.value = null;
+
+      const updatedSchedule = await scheduleEventApplicationService.updateSchedule(uuid, data);
       schedules.value.set(updatedSchedule.uuid, updatedSchedule);
-      message.success('日程更新成功');
+      showSuccess('日程更新成功');
       return updatedSchedule;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '更新日程失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      message.error(errorMsg);
+      showError(errorMsg);
       return null;
     } finally {
       isLoading.value = false;
@@ -179,21 +190,21 @@ export function useScheduleEvent() {
    * 删除日程事件
    */
   async function deleteSchedule(uuid: string): Promise<boolean> {
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      await scheduleEventApiClient.deleteSchedule(uuid);
+      isLoading.value = true;
+      error.value = null;
+
+      await scheduleEventApplicationService.deleteSchedule(uuid);
       schedules.value.delete(uuid);
       if (activeScheduleUuid.value === uuid) {
         activeScheduleUuid.value = null;
       }
-      message.success('日程删除成功');
+      showSuccess('日程删除成功');
       return true;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : '删除日程失败';
       error.value = err instanceof Error ? err : new Error(errorMsg);
-      message.error(errorMsg);
+      showError(errorMsg);
       return false;
     } finally {
       isLoading.value = false;
@@ -205,7 +216,7 @@ export function useScheduleEvent() {
    */
   function setActiveSchedule(uuid: string | null) {
     if (uuid && !schedules.value.has(uuid)) {
-      message.warning('日程不存在');
+      showWarning('日程不存在');
       return;
     }
     activeScheduleUuid.value = uuid;

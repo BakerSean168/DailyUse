@@ -7,11 +7,13 @@
  */
 
 import { ref, computed } from 'vue';
-import { documentVersionApi } from '../../infrastructure/api/DocumentVersionApiClient';
+import { documentVersionApplicationService } from '../../application/DocumentVersionApplicationService';
+import { getGlobalMessage } from '@dailyuse/ui';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
 
 export function useDocumentVersion(documentUuid: string) {
+  const { success: showSuccess, error: showError } = getGlobalMessage();
   // ==================== State ====================
   const versions = ref<DocumentVersionClientDTO[]>([]);
   const currentPage = ref(1);
@@ -41,7 +43,7 @@ export function useDocumentVersion(documentUuid: string) {
     error.value = null;
     
     try {
-      const response = await documentVersionApi.getVersionHistory(documentUuid, {
+      const response = await documentVersionApplicationService.getVersionHistory(documentUuid, {
         page,
         pageSize: pageSize.value,
       });
@@ -51,7 +53,9 @@ export function useDocumentVersion(documentUuid: string) {
       totalVersions.value = response.total;
       totalPages.value = response.totalPages;
     } catch (err: any) {
-      error.value = err.message || '加载版本历史失败';
+      const errorMsg = err.message || '加载版本历史失败';
+      error.value = errorMsg;
+      showError(errorMsg);
       console.error('Load versions error:', err);
     } finally {
       loading.value = false;
@@ -68,7 +72,7 @@ export function useDocumentVersion(documentUuid: string) {
     loading.value = true;
     
     try {
-      const response = await documentVersionApi.getVersionHistory(documentUuid, {
+      const response = await documentVersionApplicationService.getVersionHistory(documentUuid, {
         page: nextPage,
         pageSize: pageSize.value,
       });
@@ -76,7 +80,9 @@ export function useDocumentVersion(documentUuid: string) {
       versions.value.push(...response.items);
       currentPage.value = response.page;
     } catch (err: any) {
-      error.value = err.message || '加载更多版本失败';
+      const errorMsg = err.message || '加载更多版本失败';
+      error.value = errorMsg;
+      showError(errorMsg);
       console.error('Load more versions error:', err);
     } finally {
       loading.value = false;
@@ -91,7 +97,7 @@ export function useDocumentVersion(documentUuid: string) {
     error.value = null;
     
     try {
-      const result = await documentVersionApi.compareVersions(
+      const result = await documentVersionApplicationService.compareVersions(
         documentUuid,
         fromVersion,
         toVersion
@@ -99,7 +105,9 @@ export function useDocumentVersion(documentUuid: string) {
       comparison.value = result;
       return result;
     } catch (err: any) {
-      error.value = err.message || '比较版本失败';
+      const errorMsg = err.message || '比较版本失败';
+      error.value = errorMsg;
+      showError(errorMsg);
       console.error('Compare versions error:', err);
       throw err;
     } finally {
@@ -115,14 +123,17 @@ export function useDocumentVersion(documentUuid: string) {
     error.value = null;
     
     try {
-      await documentVersionApi.restoreVersion(documentUuid, versionNumber);
+      await documentVersionApplicationService.restoreVersion(documentUuid, versionNumber);
       
       // 恢复成功后重新加载版本历史
       await loadVersions(1);
       
+      showSuccess(`已恢复到版本 ${versionNumber}`);
       return true;
     } catch (err: any) {
-      error.value = err.message || '恢复版本失败';
+      const errorMsg = err.message || '恢复版本失败';
+      error.value = errorMsg;
+      showError(errorMsg);
       console.error('Restore version error:', err);
       return false;
     } finally {

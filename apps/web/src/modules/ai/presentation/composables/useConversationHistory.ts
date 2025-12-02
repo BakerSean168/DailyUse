@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue';
 import type { Conversation, ConversationGroup, DateGroup } from '../types/conversation';
-import { aiConversationApiClient } from '../../infrastructure/api/aiConversationApiClient';
+import { aiConversationApplicationService } from '../../application/services/AIConversationApplicationService';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 // Conversation history management (migrated from legacy ai-chat module)
 const conversations = ref<Conversation[]>([]);
@@ -41,12 +42,13 @@ function groupByDate(convs: Conversation[]): ConversationGroup[] {
 }
 
 export function useConversationHistory() {
+  const { success: showSuccess, error: showError } = getGlobalMessage();
   const groupedConversations = computed(() => groupByDate(conversations.value));
   async function fetchConversations(page = 1, limit = 50) {
     isLoading.value = true;
     error.value = null;
     try {
-      const list = await aiConversationApiClient.listConversations({ page, limit });
+      const list = await aiConversationApplicationService.listConversations({ page, limit });
       conversations.value = list.map((conv) => ({
         conversationUuid: conv.uuid,
         accountUuid: conv.accountUuid,
@@ -57,7 +59,9 @@ export function useConversationHistory() {
         lastMessagePreview: `${conv.messageCount} messages`,
       }));
     } catch (e: any) {
-      error.value = e.message || 'Failed to load conversations';
+      const errorMsg = e.message || '加载对话历史失败';
+      error.value = errorMsg;
+      showError(errorMsg);
     } finally {
       isLoading.value = false;
     }
@@ -70,11 +74,14 @@ export function useConversationHistory() {
   }
   async function deleteConversation(uuid: string) {
     try {
-      await aiConversationApiClient.deleteConversation(uuid);
+      await aiConversationApplicationService.deleteConversation(uuid);
       conversations.value = conversations.value.filter((c) => c.conversationUuid !== uuid);
       if (activeConversationUuid.value === uuid) activeConversationUuid.value = null;
+      showSuccess('对话已删除');
     } catch (e: any) {
-      error.value = e.message || 'Delete failed';
+      const errorMsg = e.message || '删除对话失败';
+      error.value = errorMsg;
+      showError(errorMsg);
       throw e;
     }
   }

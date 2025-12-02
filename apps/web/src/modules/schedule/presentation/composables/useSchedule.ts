@@ -1,11 +1,16 @@
 /**
  * useSchedule Composable
  * Schedule 模块的核心组合函数 - 严格参考 Repository 模块
+ *
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和状态管理
+ * - Service 直接返回 DTO 或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 显示通知
  */
 
 import { ref, onMounted } from 'vue';
 import { scheduleWebApplicationService } from '../../services/ScheduleWebApplicationService';
-import { scheduleApiClient } from '../../infrastructure/api/scheduleApiClient';
+import { scheduleConflictApplicationService } from '../../application';
 import { SourceModule } from '@dailyuse/contracts/schedule';
 import type {
   ScheduleStatisticsClientDTO,
@@ -17,15 +22,14 @@ import type {
   ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/domain-client/schedule';
-import { createLogger } from '@dailyuse/utils';
-
-const logger = createLogger('useSchedule');
+import { getGlobalMessage } from '@dailyuse/ui';
 
 /**
  * Schedule 模块的核心组合函数
  * 提供任务和统计信息的状态管理
  */
 export function useSchedule() {
+  const { success: showSuccess, error: showError } = getGlobalMessage();
   // ===== 状态 =====
   const tasks = ref<ScheduleTask[]>([]);
   const statistics = ref<ScheduleStatisticsClientDTO | null>(null);
@@ -68,17 +72,15 @@ export function useSchedule() {
    * 获取所有任务
    */
   async function fetchTasks() {
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      logger.info('Fetching all schedule tasks');
+      isLoading.value = true;
+      error.value = null;
+
       tasks.value = await scheduleWebApplicationService.getAllTasks();
-      logger.info('Schedule tasks fetched successfully', { count: tasks.value.length });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch schedule tasks';
       error.value = message;
-      logger.error('Error fetching schedule tasks', { error: err });
+      showError(message);
     } finally {
       isLoading.value = false;
     }
@@ -88,20 +90,15 @@ export function useSchedule() {
    * 根据模块获取任务
    */
   async function fetchTasksByModule(module: SourceModule) {
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      logger.info('Fetching tasks by module', { module });
+      isLoading.value = true;
+      error.value = null;
+
       tasks.value = await scheduleWebApplicationService.getTasksByModule(module);
-      logger.info('Tasks fetched by module successfully', {
-        module,
-        count: tasks.value.length,
-      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch tasks by module';
       error.value = message;
-      logger.error('Error fetching tasks by module', { error: err, module });
+      showError(message);
     } finally {
       isLoading.value = false;
     }
@@ -110,22 +107,19 @@ export function useSchedule() {
   /**
    * 创建任务
    */
-  async function createTask(
-    request: CreateScheduleTaskRequest,
-  ): Promise<ScheduleTask> {
-    isLoading.value = true;
-    error.value = null;
-
+  async function createTask(request: CreateScheduleTaskRequest): Promise<ScheduleTask> {
     try {
-      logger.info('Creating schedule task', { name: request.name });
+      isLoading.value = true;
+      error.value = null;
+
       const newTask = await scheduleWebApplicationService.createTask(request);
       tasks.value.push(newTask);
-      logger.info('Schedule task created successfully', { taskUuid: newTask.uuid });
+      showSuccess('调度任务创建成功');
       return newTask;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create schedule task';
       error.value = message;
-      logger.error('Error creating schedule task', { error: err });
+      showError(message);
       throw err;
     } finally {
       isLoading.value = false;
@@ -137,7 +131,6 @@ export function useSchedule() {
    */
   async function pauseTask(taskUuid: string) {
     try {
-      logger.info('Pausing task', { taskUuid });
       await scheduleWebApplicationService.pauseTask(taskUuid);
 
       // 更新本地状态
@@ -147,11 +140,11 @@ export function useSchedule() {
         tasks.value.splice(index, 1, pausedTask);
       }
 
-      logger.info('Task paused successfully', { taskUuid });
+      showSuccess('任务已暂停');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to pause task';
       error.value = message;
-      logger.error('Error pausing task', { error: err, taskUuid });
+      showError(message);
       throw err;
     }
   }
@@ -161,7 +154,6 @@ export function useSchedule() {
    */
   async function resumeTask(taskUuid: string) {
     try {
-      logger.info('Resuming task', { taskUuid });
       await scheduleWebApplicationService.resumeTask(taskUuid);
 
       // 更新本地状态
@@ -171,11 +163,11 @@ export function useSchedule() {
         tasks.value.splice(index, 1, resumedTask);
       }
 
-      logger.info('Task resumed successfully', { taskUuid });
+      showSuccess('任务已恢复');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to resume task';
       error.value = message;
-      logger.error('Error resuming task', { error: err, taskUuid });
+      showError(message);
       throw err;
     }
   }
@@ -185,7 +177,6 @@ export function useSchedule() {
    */
   async function deleteTask(taskUuid: string) {
     try {
-      logger.info('Deleting task', { taskUuid });
       await scheduleWebApplicationService.deleteTask(taskUuid);
 
       // 从本地列表移除
@@ -194,11 +185,11 @@ export function useSchedule() {
         tasks.value.splice(index, 1);
       }
 
-      logger.info('Task deleted successfully', { taskUuid });
+      showSuccess('任务已删除');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete task';
       error.value = message;
-      logger.error('Error deleting task', { error: err, taskUuid });
+      showError(message);
       throw err;
     }
   }
@@ -207,7 +198,7 @@ export function useSchedule() {
 
   /**
    * 检测日程冲突
-   * 
+   *
    * @param userId 用户ID
    * @param startTime 开始时间（Unix毫秒时间戳）
    * @param endTime 结束时间（Unix毫秒时间戳）
@@ -219,13 +210,11 @@ export function useSchedule() {
     endTime: number,
     excludeUuid?: string,
   ) {
-    isDetectingConflicts.value = true;
-    conflictError.value = null;
-
     try {
-      logger.info('Detecting schedule conflicts', { userId, startTime, endTime, excludeUuid });
+      isDetectingConflicts.value = true;
+      conflictError.value = null;
 
-      const result = await scheduleApiClient.detectConflicts({
+      const result = await scheduleConflictApplicationService.detectConflicts({
         userId,
         startTime,
         endTime,
@@ -233,17 +222,11 @@ export function useSchedule() {
       });
 
       conflicts.value = result;
-
-      logger.info('Conflicts detected', {
-        hasConflict: result.hasConflict,
-        conflictCount: result.conflicts.length,
-      });
-
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to detect conflicts';
       conflictError.value = message;
-      logger.error('Error detecting conflicts', { error: err });
+      showError(message);
       throw err;
     } finally {
       isDetectingConflicts.value = false;
@@ -252,30 +235,23 @@ export function useSchedule() {
 
   /**
    * 创建日程（带冲突检测）
-   * 
+   *
    * @param request 创建日程请求
    */
   async function createSchedule(request: CreateScheduleRequest) {
-    isCreatingSchedule.value = true;
-    createScheduleError.value = null;
-
     try {
-      logger.info('Creating schedule with conflict detection', { title: request.title });
+      isCreatingSchedule.value = true;
+      createScheduleError.value = null;
 
-      const result = await scheduleApiClient.createSchedule(request);
-
+      const result = await scheduleConflictApplicationService.createSchedule(request);
       lastCreatedSchedule.value = result;
 
-      logger.info('Schedule created', {
-        scheduleUuid: result.schedule.uuid,
-        hasConflicts: result.conflicts?.hasConflict,
-      });
-
+      showSuccess('日程创建成功');
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create schedule';
       createScheduleError.value = message;
-      logger.error('Error creating schedule', { error: err });
+      showError(message);
       throw err;
     } finally {
       isCreatingSchedule.value = false;
@@ -284,35 +260,27 @@ export function useSchedule() {
 
   /**
    * 解决日程冲突
-   * 
+   *
    * @param scheduleUuid 日程UUID
    * @param request 解决冲突请求
    */
-  async function resolveConflict(
-    scheduleUuid: string,
-    request: ResolveConflictRequest,
-  ) {
-    isResolvingConflict.value = true;
-    resolveConflictError.value = null;
-
+  async function resolveConflict(scheduleUuid: string, request: ResolveConflictRequest) {
     try {
-      logger.info('Resolving conflict', { scheduleUuid, strategy: request.resolution });
+      isResolvingConflict.value = true;
+      resolveConflictError.value = null;
 
-      const result = await scheduleApiClient.resolveConflict(scheduleUuid, request);
-
+      const result = await scheduleConflictApplicationService.resolveConflict(
+        scheduleUuid,
+        request,
+      );
       resolvedConflict.value = result;
 
-      logger.info('Conflict resolved', {
-        scheduleUuid,
-        strategy: result.applied.strategy,
-        hasConflicts: result.conflicts.hasConflict,
-      });
-
+      showSuccess('冲突已解决');
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to resolve conflict';
       resolveConflictError.value = message;
-      logger.error('Error resolving conflict', { error: err, scheduleUuid });
+      showError(message);
       throw err;
     } finally {
       isResolvingConflict.value = false;
@@ -325,17 +293,15 @@ export function useSchedule() {
    * 获取统计信息
    */
   async function fetchStatistics() {
-    isLoadingStats.value = true;
-    error.value = null;
-
     try {
-      logger.info('Fetching schedule statistics');
+      isLoadingStats.value = true;
+      error.value = null;
+
       statistics.value = await scheduleWebApplicationService.getStatistics();
-      logger.info('Schedule statistics fetched successfully');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch statistics';
       error.value = message;
-      logger.error('Error fetching statistics', { error: err });
+      showError(message);
     } finally {
       isLoadingStats.value = false;
     }
@@ -345,17 +311,15 @@ export function useSchedule() {
    * 获取所有模块统计
    */
   async function fetchAllModuleStatistics() {
-    isLoadingStats.value = true;
-    error.value = null;
-
     try {
-      logger.info('Fetching all module statistics');
+      isLoadingStats.value = true;
+      error.value = null;
+
       moduleStatistics.value = await scheduleWebApplicationService.getAllModuleStatistics();
-      logger.info('All module statistics fetched successfully');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch module statistics';
       error.value = message;
-      logger.error('Error fetching module statistics', { error: err });
+      showError(message);
     } finally {
       isLoadingStats.value = false;
     }
@@ -365,17 +329,16 @@ export function useSchedule() {
    * 重新计算统计信息
    */
   async function recalculateStatistics() {
-    isLoadingStats.value = true;
-    error.value = null;
-
     try {
-      logger.info('Recalculating statistics');
+      isLoadingStats.value = true;
+      error.value = null;
+
       statistics.value = await scheduleWebApplicationService.recalculateStatistics();
-      logger.info('Statistics recalculated successfully');
+      showSuccess('统计信息已重新计算');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to recalculate statistics';
       error.value = message;
-      logger.error('Error recalculating statistics', { error: err });
+      showError(message);
       throw err;
     } finally {
       isLoadingStats.value = false;

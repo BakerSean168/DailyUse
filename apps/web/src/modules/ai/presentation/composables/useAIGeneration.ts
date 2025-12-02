@@ -2,11 +2,10 @@
  * useAIGeneration Composable
  * AI 生成功能组合式 API
  *
- * 职责：
- * - 连接 Pinia Store 和 API Client
- * - 提供响应式的状态和方法
- * - 处理错误和加载状态
- * - 提供友好的 API 接口给组件使用
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和 Store
+ * - Service 直接返回 DTO 或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 显示通知
  *
  * 使用示例：
  * ```vue
@@ -28,17 +27,16 @@
 
 import { computed } from 'vue';
 import { useAIGenerationStore } from '@/stores/ai/aiGenerationStore';
-import { goalApiClient } from '@/modules/goal/infrastructure/api/goalApiClient';
-import { aiGenerationApiClient } from '../../infrastructure/api/aiGenerationApiClient';
-import { createLogger } from '@dailyuse/utils';
-
-const logger = createLogger('useAIGeneration');
+import { keyResultApplicationService } from '@/modules/goal/application/services/KeyResultApplicationService';
+import { aiGenerationApplicationService } from '../../application/services';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 /**
  * AI Generation Composable
  */
 export function useAIGeneration() {
   const store = useAIGenerationStore();
+  const { success: showSuccess, error: showError } = getGlobalMessage();
 
   // ============ Computed Properties ============
 
@@ -104,26 +102,18 @@ export function useAIGeneration() {
       store.setGenerating(true);
       store.clearError();
 
-      logger.info('Generating key results', { goalTitle: params.goalTitle });
-
-      // 调用 Goal 模块的 API 客户端 (DDD架构)
-      const result = await goalApiClient.generateKeyResults(params);
+      // 调用 Goal 模块的 ApplicationService (DDD架构)
+      const result = await keyResultApplicationService.generateKeyResults(params);
 
       // 更新 Store (Note: Epic 2 API returns tokenUsage/generatedAt instead of quota/taskUuid)
       store.addKeyResults(result.keyResults, result.generatedAt.toString());
-      // Quota needs to be fetched separately or from response if backend returns it
-      // store.setQuota(result.quota);
 
-      logger.info('Key results generated successfully', {
-        count: result.keyResults.length,
-        generatedAt: result.generatedAt,
-      });
-
+      showSuccess(`已生成 ${result.keyResults.length} 个关键结果`);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate key results';
       store.setError(errorMessage);
-      logger.error('Failed to generate key results', { error: err });
+      showError(errorMessage);
       throw err;
     } finally {
       store.setGenerating(false);
@@ -143,15 +133,14 @@ export function useAIGeneration() {
       store.setGenerating(true);
       store.clearError();
 
-      const result = await aiGenerationApiClient.generateTaskTemplate(params);
+      const result = await aiGenerationApplicationService.generateTaskTemplate(params);
 
-      logger.info('Task template generated successfully');
-
+      showSuccess('任务模板生成成功');
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate task template';
       store.setError(errorMessage);
-      logger.error('Failed to generate task template', { error: err });
+      showError(errorMessage);
       throw err;
     } finally {
       store.setGenerating(false);
@@ -174,20 +163,14 @@ export function useAIGeneration() {
       store.setGenerating(true);
       store.clearError();
 
-      logger.info('Generating tasks', { keyResultTitle: params.keyResultTitle });
+      const result = await aiGenerationApplicationService.generateTasks(params);
 
-      const result = await aiGenerationApiClient.generateTasks(params);
-
-      logger.info('Tasks generated successfully', {
-        count: result.tasks.length,
-        generatedAt: result.generatedAt,
-      });
-
+      showSuccess(`已生成 ${result.tasks.length} 个任务`);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate tasks';
       store.setError(errorMessage);
-      logger.error('Failed to generate tasks', { error: err });
+      showError(errorMessage);
       throw err;
     } finally {
       store.setGenerating(false);
@@ -206,16 +189,15 @@ export function useAIGeneration() {
       store.setGenerating(true);
       store.clearError();
 
-      const result = await aiGenerationApiClient.generateKnowledgeDocument(params);
+      const result = await aiGenerationApplicationService.generateKnowledgeDocument(params);
 
-      logger.info('Knowledge document generated successfully');
-
+      showSuccess('知识文档生成成功');
       return result;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to generate knowledge document';
       store.setError(errorMessage);
-      logger.error('Failed to generate knowledge document', { error: err });
+      showError(errorMessage);
       throw err;
     } finally {
       store.setGenerating(false);
@@ -230,16 +212,14 @@ export function useAIGeneration() {
       store.setLoadingQuota(true);
       store.clearError();
 
-      const quotaData = await aiGenerationApiClient.getQuotaStatus();
+      const quotaData = await aiGenerationApplicationService.getQuotaStatus();
       store.setQuota(quotaData);
-
-      logger.info('Quota status loaded', { quota: quotaData });
 
       return quotaData;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load quota status';
       store.setError(errorMessage);
-      logger.error('Failed to load quota status', { error: err });
+      showError(errorMessage);
       throw err;
     } finally {
       store.setLoadingQuota(false);

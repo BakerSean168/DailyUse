@@ -40,3 +40,8 @@ export {
   GoalSyncApplicationService,
   goalSyncApplicationService,
 } from './GoalSyncApplicationService';
+
+export {
+  FocusModeApplicationService,
+  focusModeApplicationService,
+} from './FocusModeApplicationService';

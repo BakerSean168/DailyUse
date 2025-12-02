@@ -2,23 +2,18 @@ import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, ReminderHistory
 import { ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { getReminderStore } from '../../presentation/stores/reminderStore';
-import { useMessage } from '@dailyuse/ui';
 
 /**
  * Reminder Group Application Service
  * 提醒分组应用服务 - 负责分组管理
+ *
+ * Pattern A: ApplicationService 只负责 API 调用和 DTO 转换
+ * UI 反馈（success/error 消息）由 Composable 层处理
  */
 export class ReminderGroupApplicationService {
   private static instance: ReminderGroupApplicationService;
 
   private constructor() {}
-
-  /**
-   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
-   */
-  private get snackbar() {
-    return useMessage();
-  }
 
   static getInstance(): ReminderGroupApplicationService {
     if (!ReminderGroupApplicationService.instance) {
@@ -47,12 +42,10 @@ export class ReminderGroupApplicationService {
       const group = ReminderGroup.fromClientDTO(groupData);
       this.reminderStore.addOrUpdateReminderGroup(group);
 
-      this.message.success('分组创建成功');
       return groupData;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '创建分组失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -98,7 +91,6 @@ export class ReminderGroupApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取分组列表失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -123,7 +115,6 @@ export class ReminderGroupApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取分组详情失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -147,12 +138,10 @@ export class ReminderGroupApplicationService {
       const group = ReminderGroup.fromClientDTO(data);
       this.reminderStore.addOrUpdateReminderGroup(group);
 
-      this.message.success('分组更新成功');
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '更新分组失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -172,11 +161,9 @@ export class ReminderGroupApplicationService {
       // 从 store 中移除
       this.reminderStore.removeReminderGroup(uuid);
 
-      this.message.success('分组删除成功');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '删除分组失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -199,12 +186,10 @@ export class ReminderGroupApplicationService {
       const group = ReminderGroup.fromClientDTO(data);
       this.reminderStore.addOrUpdateReminderGroup(group);
 
-      this.message.success(`分组已${data.enabled ? '启用' : '禁用'}`);
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '切换分组状态失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -227,14 +212,10 @@ export class ReminderGroupApplicationService {
       const group = ReminderGroup.fromClientDTO(data);
       this.reminderStore.addOrUpdateReminderGroup(group);
 
-      this.message.success(
-        `已切换到${data.controlMode === 'GROUP' ? '组控制' : '个体控制'}模式`,
-      );
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '切换控制模式失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);

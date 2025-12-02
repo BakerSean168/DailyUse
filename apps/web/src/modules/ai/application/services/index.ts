@@ -17,3 +17,31 @@ export {
   type GenerateKnowledgeResponse,
   type GenerateGoalKnowledgeRequest,
 } from './KnowledgeGenerationApplicationService';
+
+// AI Generation Application Service (Tasks & Knowledge Documents)
+export {
+  AIGenerationApplicationService,
+  aiGenerationApplicationService,
+  type GenerateTaskTemplateRequest,
+  type GenerateTasksRequest,
+  type GenerateTasksResponse,
+  type GenerateKnowledgeDocumentRequest,
+} from './AIGenerationApplicationService';
+
+// Document Summarizer Application Service
+export {
+  DocumentSummarizerApplicationService,
+  documentSummarizerApplicationService,
+} from './DocumentSummarizerApplicationService';
+
+// AI Provider Application Service
+export {
+  AIProviderApplicationService,
+  aiProviderApplicationService,
+} from './AIProviderApplicationService';
+
+// AI Conversation Application Service
+export {
+  AIConversationApplicationService,
+  aiConversationApplicationService,
+} from './AIConversationApplicationService';

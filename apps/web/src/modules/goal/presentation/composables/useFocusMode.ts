@@ -1,20 +1,19 @@
 import { ref, computed } from 'vue';
-import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, FocusModeClientDTO, ActivateFocusModeRequest, ExtendFocusModeRequest } from '@dailyuse/contracts/goal';
-import { focusModeApiClient } from '../../infrastructure/api/focusModeApiClient';
+import type {
+  FocusModeClientDTO,
+  ActivateFocusModeRequest,
+} from '@dailyuse/contracts/goal';
+import { focusModeApplicationService } from '../../application/services';
 import { getGlobalMessage } from '@dailyuse/ui';
-import { createLogger } from '@dailyuse/utils';
-
-const logger = createLogger('useFocusMode');
 
 /**
  * FocusMode Composable
  * 专注周期模式业务逻辑
  *
- * 职责：
- * - 封装 FocusMode 相关的业务逻辑
- * - 管理本地状态（加载、错误、当前专注周期）
- * - 提供用户友好的错误提示
- * - 处理异步操作
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和状态管理
+ * - Service 直接返回 DTO 或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 显示通知
  *
  * 使用示例：
  * ```typescript
@@ -30,7 +29,7 @@ const logger = createLogger('useFocusMode');
  * ```
  */
 export function useFocusMode() {
-  const message = getGlobalMessage();
+  const { success: showSuccess, error: showError } = getGlobalMessage();
 
   // ===== 响应式状态 =====
   const isLoading = ref(false);
@@ -50,31 +49,21 @@ export function useFocusMode() {
 
   /**
    * 启用专注模式
-   *
-   * @param request - 启用专注模式请求参数
-   * @returns 专注周期 DTO
    */
-  const activateFocusMode = async (
-    request: ActivateFocusModeRequest,
-  ): Promise<FocusModeClientDTO> => {
-    isLoading.value = true;
-    error.value = null;
-
+  const activate = async (request: ActivateFocusModeRequest): Promise<FocusModeClientDTO> => {
     try {
-      logger.info('Activating focus mode', { goalCount: request.focusedGoalUuids.length });
+      isLoading.value = true;
+      error.value = null;
 
-      const focusMode = await focusModeApiClient.activateFocusMode(request);
+      const focusMode = await focusModeApplicationService.activateFocusMode(request);
       activeFocusMode.value = focusMode;
 
-      message.success('专注模式已启用');
-      logger.info('Focus mode activated', { uuid: focusMode.uuid });
-
+      showSuccess('专注模式已启用');
       return focusMode;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '启用专注模式失败';
       error.value = errorMessage;
-      message.error(errorMessage);
-      logger.error('Failed to activate focus mode', err);
+      showError(errorMessage);
       throw err;
     } finally {
       isLoading.value = false;
@@ -83,41 +72,33 @@ export function useFocusMode() {
 
   /**
    * 关闭专注模式（手动失效）
-   *
-   * @param uuid - 专注周期 UUID（可选，默认使用当前活跃周期）
-   * @returns 失效后的专注周期 DTO
    */
-  const deactivateFocusMode = async (uuid?: string): Promise<FocusModeClientDTO> => {
-    isLoading.value = true;
-    error.value = null;
-
+  const deactivate = async (uuid?: string): Promise<FocusModeClientDTO> => {
     const targetUuid = uuid || activeFocusMode.value?.uuid;
     if (!targetUuid) {
       const errorMessage = '没有活跃的专注周期';
       error.value = errorMessage;
-      message.error(errorMessage);
+      showError(errorMessage);
       throw new Error(errorMessage);
     }
 
     try {
-      logger.info('Deactivating focus mode', { uuid: targetUuid });
+      isLoading.value = true;
+      error.value = null;
 
-      const focusMode = await focusModeApiClient.deactivateFocusMode(targetUuid);
-      
+      const focusMode = await focusModeApplicationService.deactivateFocusMode(targetUuid);
+
       // 如果关闭的是当前活跃周期，清空状态
       if (activeFocusMode.value?.uuid === targetUuid) {
         activeFocusMode.value = null;
       }
 
-      message.success('专注模式已关闭');
-      logger.info('Focus mode deactivated', { uuid: targetUuid });
-
+      showSuccess('专注模式已关闭');
       return focusMode;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '关闭专注模式失败';
       error.value = errorMessage;
-      message.error(errorMessage);
-      logger.error('Failed to deactivate focus mode', err);
+      showError(errorMessage);
       throw err;
     } finally {
       isLoading.value = false;
@@ -126,45 +107,35 @@ export function useFocusMode() {
 
   /**
    * 延期专注模式
-   *
-   * @param uuid - 专注周期 UUID（可选，默认使用当前活跃周期）
-   * @param newEndTime - 新的结束时间戳
-   * @returns 延期后的专注周期 DTO
    */
-  const extendFocusMode = async (
-    newEndTime: number,
-    uuid?: string,
-  ): Promise<FocusModeClientDTO> => {
-    isLoading.value = true;
-    error.value = null;
-
+  const extend = async (newEndTime: number, uuid?: string): Promise<FocusModeClientDTO> => {
     const targetUuid = uuid || activeFocusMode.value?.uuid;
     if (!targetUuid) {
       const errorMessage = '没有活跃的专注周期';
       error.value = errorMessage;
-      message.error(errorMessage);
+      showError(errorMessage);
       throw new Error(errorMessage);
     }
 
     try {
-      logger.info('Extending focus mode', { uuid: targetUuid, newEndTime });
+      isLoading.value = true;
+      error.value = null;
 
-      const focusMode = await focusModeApiClient.extendFocusMode(targetUuid, { newEndTime });
-      
+      const focusMode = await focusModeApplicationService.extendFocusMode(targetUuid, {
+        newEndTime,
+      });
+
       // 更新当前活跃周期
       if (activeFocusMode.value?.uuid === targetUuid) {
         activeFocusMode.value = focusMode;
       }
 
-      message.success('专注周期已延期');
-      logger.info('Focus mode extended', { uuid: targetUuid });
-
+      showSuccess('专注周期已延期');
       return focusMode;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '延期专注模式失败';
       error.value = errorMessage;
-      message.error(errorMessage);
-      logger.error('Failed to extend focus mode', err);
+      showError(errorMessage);
       throw err;
     } finally {
       isLoading.value = false;
@@ -173,35 +144,25 @@ export function useFocusMode() {
 
   /**
    * 获取当前活跃的专注周期
-   *
-   * @param forceRefresh - 是否强制刷新（默认 false，使用缓存）
-   * @returns 活跃的专注周期 DTO，不存在则返回 null
    */
-  const fetchActiveFocusMode = async (
-    forceRefresh = false,
-  ): Promise<FocusModeClientDTO | null> => {
+  const fetchActive = async (forceRefresh = false): Promise<FocusModeClientDTO | null> => {
     // 如果有缓存且不强制刷新，直接返回
     if (!forceRefresh && activeFocusMode.value) {
       return activeFocusMode.value;
     }
 
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      logger.info('Fetching active focus mode');
+      isLoading.value = true;
+      error.value = null;
 
-      const focusMode = await focusModeApiClient.getActiveFocusMode();
+      const focusMode = await focusModeApplicationService.getActiveFocusMode();
       activeFocusMode.value = focusMode;
-
-      logger.info('Active focus mode fetched', { hasActive: focusMode !== null });
 
       return focusMode;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取活跃专注周期失败';
       error.value = errorMessage;
-      message.error(errorMessage);
-      logger.error('Failed to fetch active focus mode', err);
+      showError(errorMessage);
       throw err;
     } finally {
       isLoading.value = false;
@@ -210,35 +171,25 @@ export function useFocusMode() {
 
   /**
    * 获取专注周期历史
-   *
-   * @param forceRefresh - 是否强制刷新（默认 false，使用缓存）
-   * @returns 专注周期 DTO 列表
    */
-  const fetchFocusModeHistory = async (
-    forceRefresh = false,
-  ): Promise<FocusModeClientDTO[]> => {
+  const fetchHistory = async (forceRefresh = false): Promise<FocusModeClientDTO[]> => {
     // 如果有缓存且不强制刷新，直接返回
     if (!forceRefresh && focusModeHistory.value.length > 0) {
       return focusModeHistory.value;
     }
 
-    isLoading.value = true;
-    error.value = null;
-
     try {
-      logger.info('Fetching focus mode history');
+      isLoading.value = true;
+      error.value = null;
 
-      const history = await focusModeApiClient.getFocusModeHistory();
+      const history = await focusModeApplicationService.getFocusModeHistory();
       focusModeHistory.value = history;
-
-      logger.info('Focus mode history fetched', { count: history.length });
 
       return history;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取专注周期历史失败';
       error.value = errorMessage;
-      message.error(errorMessage);
-      logger.error('Failed to fetch focus mode history', err);
+      showError(errorMessage);
       throw err;
     } finally {
       isLoading.value = false;
@@ -267,11 +218,11 @@ export function useFocusMode() {
     remainingDays,
 
     // 方法
-    activateFocusMode,
-    deactivateFocusMode,
-    extendFocusMode,
-    fetchActiveFocusMode,
-    fetchFocusModeHistory,
+    activateFocusMode: activate,
+    deactivateFocusMode: deactivate,
+    extendFocusMode: extend,
+    fetchActiveFocusMode: fetchActive,
+    fetchFocusModeHistory: fetchHistory,
     clearState,
   };
 }

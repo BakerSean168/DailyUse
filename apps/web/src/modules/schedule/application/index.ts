@@ -5,6 +5,16 @@
  * @date 2025-01-09
  */
 
+export {
+  ScheduleEventApplicationService,
+  scheduleEventApplicationService,
+} from './services/ScheduleEventApplicationService';
+
+export {
+  ScheduleConflictApplicationService,
+  scheduleConflictApplicationService,
+} from './services/ScheduleConflictApplicationService';
+
 // export {
 //   ScheduleWebApplicationService,
 //   scheduleWebApplicationService,

@@ -1,7 +1,7 @@
 /**
  * Task Batch Operations Composable
  * 任务批量操作组合式函数
- * 
+ *
  * 职责：
  * - 批量任务选择管理
  * - 批量操作执行
@@ -9,8 +9,7 @@
  */
 
 import { ref, computed, readonly } from 'vue';
-import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
-import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
+import { TaskTemplate } from '@dailyuse/domain-client/task';
 
 
 /**

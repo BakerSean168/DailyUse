@@ -6,6 +6,9 @@
  * - 提醒统计数据查询
  * - 统计数据缓存管理
  *
+ * Pattern A: ApplicationService 只负责 API 调用和 DTO 转换
+ * UI 反馈（success/error 消息）由 Composable 层处理
+ *
  * 特性：
  * - 单例模式
  * - 依赖注入支持
@@ -16,7 +19,6 @@ import { ReminderStatus } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO, ReminderHistoryClientDTO, ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
-import { useMessage } from '@dailyuse/ui';
 
 export class ReminderStatisticsApplicationService {
   private static instance: ReminderStatisticsApplicationService;
@@ -28,13 +30,6 @@ export class ReminderStatisticsApplicationService {
    */
   private get reminderStore() {
     return useReminderStore();
-  }
-
-  /**
-   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
-   */
-  private get snackbar() {
-    return useMessage();
   }
 
   /**
@@ -68,7 +63,6 @@ export class ReminderStatisticsApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒统计失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);

@@ -8,10 +8,8 @@
  * - 处理错误和异常
  * - 提供统一的接口给 Presentation 层
  *
- * 依赖：
- * - aiService（AI 流式聊天服务）
- * - repositoryApiClient（仓储 API）
- * - folderStore / resourceStore（状态管理）
+ * Pattern A: ApplicationService 只负责 API 调用和 DTO 转换
+ * UI 反馈（success/error 消息）由 Composable 层处理
  */
 
 import { aiService } from '@/shared/services/aiService';
@@ -21,7 +19,6 @@ import { useFolderStore } from '@/modules/repository/presentation/stores/folderS
 import { useResourceStore } from '@/modules/repository/presentation/stores/resourceStore';
 import { useFileTreeStore } from '@/modules/repository/presentation/stores/fileTreeStore';
 import { Folder, Resource, Repository } from '@dailyuse/domain-client/repository';
-import { useMessage } from '@dailyuse/ui';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('KnowledgeGenerationApplicationService');
@@ -92,13 +89,6 @@ export class KnowledgeGenerationApplicationService {
   private _progress = 0;
 
   private constructor() {}
-
-  /**
-   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
-   */
-  private get snackbar() {
-    return useMessage();
-  }
 
   /**
    * 获取服务单例
@@ -236,8 +226,6 @@ export class KnowledgeGenerationApplicationService {
         fileName,
       });
 
-      this.message.success(`知识文档「${request.topic}」已生成`);
-
       return {
         resourceUuid: resourceDTO.uuid,
         folderUuid: targetFolderUuid || undefined,
@@ -364,8 +352,6 @@ export class KnowledgeGenerationApplicationService {
         folderUuid: folder.uuid,
       });
 
-      this.message.success(`已为目标「${request.goalTitle}」生成知识文档`);
-
       return {
         resourceUuid: resourceDTO.uuid,
         folderUuid: folder.uuid,
@@ -464,7 +450,6 @@ export class KnowledgeGenerationApplicationService {
       originalError: error,
     });
 
-    this.message.error(errorMessage);
     return errorMessage;
   }
 

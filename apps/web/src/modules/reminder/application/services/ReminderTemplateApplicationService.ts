@@ -7,6 +7,9 @@
  * - 模板状态管理（启用/禁用）
  * - 模板搜索和查询
  *
+ * Pattern A: ApplicationService 只负责 API 调用和 DTO 转换
+ * UI 反馈（success/error 消息）由 Composable 层处理
+ *
  * 特性：
  * - 单例模式
  * - 依赖注入支持
@@ -17,7 +20,6 @@ import type { CreateReminderTemplateRequest, UpdateReminderTemplateRequest, Remi
 import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { reminderApiClient } from '../../infrastructure/api/reminderApiClient';
 import { useReminderStore } from '../../presentation/stores/reminderStore';
-import { useMessage } from '@dailyuse/ui';
 
 export class ReminderTemplateApplicationService {
   private static instance: ReminderTemplateApplicationService;
@@ -29,13 +31,6 @@ export class ReminderTemplateApplicationService {
    */
   private get reminderStore() {
     return useReminderStore();
-  }
-
-  /**
-   * 延迟获取 Snackbar（避免在 Pinia 初始化前访问）
-   */
-  private get snackbar() {
-    return useMessage();
   }
 
   /**
@@ -65,12 +60,10 @@ export class ReminderTemplateApplicationService {
   const template = ReminderTemplate.fromClientDTO(templateData);
   this.reminderStore.addOrUpdateReminderTemplate(template);
 
-      this.message.success('提醒模板创建成功');
   return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '创建提醒模板失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -104,7 +97,6 @@ export class ReminderTemplateApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒模板失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -128,7 +120,6 @@ export class ReminderTemplateApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '获取提醒模板详情失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -151,12 +142,10 @@ export class ReminderTemplateApplicationService {
   const template = ReminderTemplate.fromClientDTO(templateData);
   this.reminderStore.addOrUpdateReminderTemplate(template);
 
-      this.message.success('提醒模板更新成功');
   return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '更新提醒模板失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -175,11 +164,9 @@ export class ReminderTemplateApplicationService {
 
   this.reminderStore.removeReminderTemplate(uuid);
 
-      this.message.success('提醒模板删除成功');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '删除提醒模板失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -228,7 +215,6 @@ export class ReminderTemplateApplicationService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '搜索模板失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
@@ -254,16 +240,26 @@ export class ReminderTemplateApplicationService {
       const template = ReminderTemplate.fromClientDTO(templateData);
       this.reminderStore.addOrUpdateReminderTemplate(template);
 
-      this.message.success(targetGroupUuid ? '模板已移动到分组' : '模板已移动到桌面');
       return template;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '移动模板失败';
       this.reminderStore.setError(errorMessage);
-      this.message.error(errorMessage);
       throw error;
     } finally {
       this.reminderStore.setLoading(false);
     }
+  }
+
+  /**
+   * 获取即将到来的提醒
+   */
+  async getUpcomingReminders(options?: {
+    limit?: number;
+    days?: number;
+    importanceLevel?: string;
+    type?: string;
+  }) {
+    return await reminderApiClient.getUpcomingReminders(options);
   }
 }
 

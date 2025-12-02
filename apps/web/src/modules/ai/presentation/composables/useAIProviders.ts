@@ -2,19 +2,20 @@
  * useAIProviders Composable
  * AI 服务提供商配置 Composable
  *
- * 职责：
- * - 管理 AI Provider 配置列表
- * - 提供 CRUD 操作
- * - 连接测试
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和状态管理
+ * - Service 直接返回 DTO 或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 显示通知
  */
 
 import { ref, computed, type Ref, type ComputedRef } from 'vue';
-import { aiProviderApiClient } from '../../infrastructure/api/aiProviderApiClient';
+import { aiProviderApplicationService } from '../../application/services';
 import type {
   AIProviderConfigClientDTO,
   CreateAIProviderRequest,
   UpdateAIProviderRequest,
 } from '@dailyuse/contracts/ai';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 interface TestConnectionResult {
   success: boolean;
@@ -54,6 +55,8 @@ export function useAIProviders(): UseAIProvidersReturn {
   const error: Ref<string | null> = ref(null);
   const testingProviderUuid: Ref<string | null> = ref(null);
 
+  const { success: showSuccess, error: showError } = getGlobalMessage();
+
   // ===== 计算属性 =====
   const defaultProvider = computed(() => {
     return providers.value.find((p) => p.isDefault) || null;
@@ -73,17 +76,15 @@ export function useAIProviders(): UseAIProvidersReturn {
    * 加载 Provider 列表
    */
   async function loadProviders(): Promise<void> {
-    loading.value = true;
-    error.value = null;
-
     try {
-      const response = await aiProviderApiClient.getProviders();
-      // response 直接是数组（后端返回 data: [...]，apiClient 已提取）
+      loading.value = true;
+      error.value = null;
+
+      const response = await aiProviderApplicationService.getProviders();
       providers.value = response || [];
     } catch (err: any) {
       error.value = err.message || '加载 AI Provider 失败';
-      console.error('Failed to load AI providers:', err);
-      // 确保出错时也是空数组而不是 undefined
+      showError(error.value);
       providers.value = [];
     } finally {
       loading.value = false;
@@ -96,17 +97,17 @@ export function useAIProviders(): UseAIProvidersReturn {
   async function createProvider(
     request: CreateAIProviderRequest,
   ): Promise<AIProviderConfigClientDTO | null> {
-    loading.value = true;
-    error.value = null;
-
     try {
-      // response 直接是 Provider 对象（后端返回 data: {...}，apiClient 已提取）
-      const provider = await aiProviderApiClient.createProvider(request);
+      loading.value = true;
+      error.value = null;
+
+      const provider = await aiProviderApplicationService.createProvider(request);
       providers.value.push(provider);
+      showSuccess('AI Provider 创建成功');
       return provider;
     } catch (err: any) {
       error.value = err.message || '创建 AI Provider 失败';
-      console.error('Failed to create AI provider:', err);
+      showError(error.value);
       return null;
     } finally {
       loading.value = false;
@@ -117,20 +118,20 @@ export function useAIProviders(): UseAIProvidersReturn {
    * 更新 Provider
    */
   async function updateProvider(uuid: string, request: UpdateAIProviderRequest): Promise<boolean> {
-    loading.value = true;
-    error.value = null;
-
     try {
-      // response 直接是 Provider 对象（后端返回 data: {...}，apiClient 已提取）
-      const provider = await aiProviderApiClient.updateProvider(uuid, request);
+      loading.value = true;
+      error.value = null;
+
+      const provider = await aiProviderApplicationService.updateProvider(uuid, request);
       const index = providers.value.findIndex((p) => p.uuid === uuid);
       if (index !== -1) {
         providers.value[index] = provider;
       }
+      showSuccess('AI Provider 更新成功');
       return true;
     } catch (err: any) {
       error.value = err.message || '更新 AI Provider 失败';
-      console.error('Failed to update AI provider:', err);
+      showError(error.value);
       return false;
     } finally {
       loading.value = false;
@@ -141,16 +142,17 @@ export function useAIProviders(): UseAIProvidersReturn {
    * 删除 Provider
    */
   async function deleteProvider(uuid: string): Promise<boolean> {
-    loading.value = true;
-    error.value = null;
-
     try {
-      await aiProviderApiClient.deleteProvider(uuid);
+      loading.value = true;
+      error.value = null;
+
+      await aiProviderApplicationService.deleteProvider(uuid);
       providers.value = providers.value.filter((p) => p.uuid !== uuid);
+      showSuccess('AI Provider 已删除');
       return true;
     } catch (err: any) {
       error.value = err.message || '删除 AI Provider 失败';
-      console.error('Failed to delete AI provider:', err);
+      showError(error.value);
       return false;
     } finally {
       loading.value = false;
@@ -161,16 +163,19 @@ export function useAIProviders(): UseAIProvidersReturn {
    * 测试连接
    */
   async function testConnection(uuid: string): Promise<TestConnectionResult> {
-    testingProviderUuid.value = uuid;
-    error.value = null;
-
     try {
-      const response = await aiProviderApiClient.testConnection(uuid);
+      testingProviderUuid.value = uuid;
+      error.value = null;
+
+      const response = await aiProviderApplicationService.testConnection(uuid);
+      if (response.success) {
+        showSuccess('连接测试成功');
+      }
       return response;
     } catch (err: any) {
       const errorMsg = err.message || '连接测试失败';
       error.value = errorMsg;
-      console.error('Failed to test AI provider connection:', err);
+      showError(errorMsg);
       return { success: false, error: errorMsg };
     } finally {
       testingProviderUuid.value = null;
@@ -181,19 +186,20 @@ export function useAIProviders(): UseAIProvidersReturn {
    * 设为默认 Provider
    */
   async function setDefaultProvider(uuid: string): Promise<boolean> {
-    loading.value = true;
-    error.value = null;
-
     try {
-      await aiProviderApiClient.setDefaultProvider(uuid);
+      loading.value = true;
+      error.value = null;
+
+      await aiProviderApplicationService.setDefaultProvider(uuid);
       // 更新本地状态
       providers.value.forEach((p) => {
         p.isDefault = p.uuid === uuid;
       });
+      showSuccess('已设置为默认 Provider');
       return true;
     } catch (err: any) {
       error.value = err.message || '设置默认 Provider 失败';
-      console.error('Failed to set default AI provider:', err);
+      showError(error.value);
       return false;
     } finally {
       loading.value = false;

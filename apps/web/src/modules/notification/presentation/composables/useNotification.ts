@@ -1,14 +1,19 @@
 /**
  * useNotification Composable
  * 通知管理 Composable
+ *
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和状态管理
+ * - Service 直接返回 DTO 或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 显示通知
  */
 
 // @ts-nocheck - Some types not yet defined, needs refactoring
 import { ref, computed } from 'vue';
-import { notificationApiClient } from '../../infrastructure/api/notificationApiClient';
-import type { NotificationClientDTO, NotificationPreferenceClientDTO } from '@dailyuse/contracts/notification';
+import { notificationApplicationService } from '../../application/services';
+import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { useWebSocket } from './useWebSocket';
-
+import { getGlobalMessage } from '@dailyuse/ui';
 
 export function useNotification() {
   const notifications = ref<NotificationClientDTO[]>([]);
@@ -21,16 +26,17 @@ export function useNotification() {
 
   // WebSocket 连接
   const { connect, disconnect, isConnected } = useWebSocket();
+  const { success: showSuccess, error: showError } = getGlobalMessage();
 
   /**
    * 加载通知列表
    */
   async function loadNotifications(query: QueryNotificationsRequest = {}) {
-    loading.value = true;
-    error.value = null;
-
     try {
-      const response = await notificationApiClient.findNotifications({
+      loading.value = true;
+      error.value = null;
+
+      const response = await notificationApplicationService.findNotifications({
         page: page.value,
         limit: limit.value,
         ...query,
@@ -41,7 +47,7 @@ export function useNotification() {
       unreadCount.value = response.unreadCount;
     } catch (err: any) {
       error.value = err.message || '加载通知失败';
-      console.error('Failed to load notifications:', err);
+      showError(error.value);
     } finally {
       loading.value = false;
     }
@@ -59,10 +65,10 @@ export function useNotification() {
    */
   async function markAsRead(uuid: string) {
     try {
-      await notificationApiClient.markAsRead(uuid);
+      await notificationApplicationService.markAsRead(uuid);
 
       // 更新本地状态
-      const notification = notifications.value.find(n => n.uuid === uuid);
+      const notification = notifications.value.find((n) => n.uuid === uuid);
       if (notification && !notification.isRead) {
         notification.isRead = true;
         notification.readAt = new Date().toISOString();
@@ -70,7 +76,7 @@ export function useNotification() {
       }
     } catch (err: any) {
       error.value = err.message || '标记已读失败';
-      console.error('Failed to mark as read:', err);
+      showError(error.value);
       throw err;
     }
   }
@@ -80,19 +86,20 @@ export function useNotification() {
    */
   async function markAllAsRead() {
     try {
-      const response = await notificationApiClient.markAllAsRead();
+      const response = await notificationApplicationService.markAllAsRead();
 
       // 更新本地状态
-      notifications.value.forEach(n => {
+      notifications.value.forEach((n) => {
         n.isRead = true;
         n.readAt = new Date().toISOString();
       });
       unreadCount.value = 0;
 
+      showSuccess('已标记所有通知为已读');
       return response;
     } catch (err: any) {
       error.value = err.message || '标记所有已读失败';
-      console.error('Failed to mark all as read:', err);
+      showError(error.value);
       throw err;
     }
   }
@@ -102,10 +109,10 @@ export function useNotification() {
    */
   async function deleteNotification(uuid: string) {
     try {
-      await notificationApiClient.deleteNotification(uuid);
+      await notificationApplicationService.deleteNotification(uuid);
 
       // 从列表中移除
-      const index = notifications.value.findIndex(n => n.uuid === uuid);
+      const index = notifications.value.findIndex((n) => n.uuid === uuid);
       if (index !== -1) {
         const notification = notifications.value[index];
         if (!notification.isRead) {
@@ -114,9 +121,11 @@ export function useNotification() {
         notifications.value.splice(index, 1);
         total.value = Math.max(0, total.value - 1);
       }
+
+      showSuccess('通知已删除');
     } catch (err: any) {
       error.value = err.message || '删除通知失败';
-      console.error('Failed to delete notification:', err);
+      showError(error.value);
       throw err;
     }
   }
@@ -126,18 +135,19 @@ export function useNotification() {
    */
   async function batchDeleteNotifications(uuids: string[]) {
     try {
-      const response = await notificationApiClient.batchDeleteNotifications(uuids);
+      const response = await notificationApplicationService.batchDeleteNotifications(uuids);
 
       // 从列表中移除
-      notifications.value = notifications.value.filter(n => !uuids.includes(n.uuid));
-      
+      notifications.value = notifications.value.filter((n) => !uuids.includes(n.uuid));
+
       // 刷新未读数量
       await refreshUnreadCount();
 
+      showSuccess(`已删除 ${response.count} 条通知`);
       return response;
     } catch (err: any) {
       error.value = err.message || '批量删除失败';
-      console.error('Failed to batch delete:', err);
+      showError(error.value);
       throw err;
     }
   }
@@ -147,10 +157,10 @@ export function useNotification() {
    */
   async function refreshUnreadCount() {
     try {
-      const response = await notificationApiClient.getUnreadCount();
+      const response = await notificationApplicationService.getUnreadCount();
       unreadCount.value = response.count;
     } catch (err: any) {
-      console.error('Failed to refresh unread count:', err);
+      // 静默失败，不显示错误
     }
   }
 

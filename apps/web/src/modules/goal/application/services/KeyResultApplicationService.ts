@@ -127,6 +127,24 @@ export class KeyResultApplicationService {
     return await goalApiClient.getProgressBreakdown(goalUuid);
   }
 
+  /**
+   * AI 生成关键结果
+   * @returns 返回生成的关键结果列表和元数据
+   */
+  async generateKeyResults(request: {
+    goalTitle: string;
+    goalDescription?: string;
+    startDate: number;
+    endDate: number;
+    goalContext?: string;
+  }): Promise<{
+    keyResults: any[];
+    tokenUsage: any;
+    generatedAt: number;
+  }> {
+    return await goalApiClient.generateKeyResults(request);
+  }
+
   // ===== 辅助方法 =====
 
   /**

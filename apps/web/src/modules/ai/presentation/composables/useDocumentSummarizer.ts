@@ -1,15 +1,17 @@
 /**
  * useDocumentSummarizer Composable
  * 文档摘要功能的状态管理和业务逻辑
+ *
+ * 🔄 重构说明（方案 A - 简化版）：
+ * - Composable 负责协调 ApplicationService 和状态管理
+ * - Service 直接返回 DTO 或抛出错误
+ * - Composable 使用 try/catch 处理错误 + 显示通知
  */
 
 import { ref, computed } from 'vue';
-import { apiClient } from '@/shared/api/instances';
-import type { SummaryResult, SummarizationRequest } from '../types/summarization';
-import { createLogger } from '@dailyuse/utils';
-import { useMessage } from '@dailyuse/ui';
-
-const logger = createLogger('useDocumentSummarizer');
+import { documentSummarizerApplicationService } from '../../application/services';
+import type { SummaryResult } from '../types/summarization';
+import { getGlobalMessage } from '@dailyuse/ui';
 
 export function useDocumentSummarizer() {
   // ============ State ============
@@ -20,7 +22,7 @@ export function useDocumentSummarizer() {
   const includeActions = ref<boolean>(true);
   const language = ref<'zh-CN' | 'en'>('zh-CN');
 
-  const message = useMessage();
+  const { success: showSuccess, error: showError } = getGlobalMessage();
 
   // ============ Computed ============
   const characterCount = computed(() => inputText.value.length);
@@ -34,10 +36,6 @@ export function useDocumentSummarizer() {
    */
   async function summarize(): Promise<void> {
     if (!canSummarize.value) {
-      logger.warn('Cannot summarize: invalid state', {
-        isTextValid: isTextValid.value,
-        isLoading: isLoading.value,
-      });
       return;
     }
 
@@ -47,28 +45,17 @@ export function useDocumentSummarizer() {
     isLoading.value = true;
 
     try {
-      logger.info('Starting summarization', {
-        textLength: inputText.value.length,
-        includeActions: includeActions.value,
-        language: language.value,
-      });
-
-      const request: SummarizationRequest = {
+      const response = await documentSummarizerApplicationService.summarize({
         text: inputText.value,
         language: language.value,
         includeActions: includeActions.value,
-      };
-
-      const response = await apiClient.post<SummaryResult>('/api/ai/summarize', request);
+      });
 
       summary.value = response;
-      logger.info('Summarization successful', {
-        tokensUsed: response.metadata.tokensUsed,
-        compressionRatio: response.metadata.compressionRatio,
-      });
+      showSuccess('摘要生成成功');
     } catch (err: any) {
-      logger.error('Summarization failed', { error: err });
       error.value = mapErrorToMessage(err);
+      showError(error.value);
     } finally {
       isLoading.value = false;
     }
@@ -79,22 +66,16 @@ export function useDocumentSummarizer() {
    */
   async function copyToClipboard(): Promise<void> {
     if (!summary.value) {
-      logger.warn('No summary to copy');
-      message.error('没有可复制的摘要');
+      showError('没有可复制的摘要');
       return;
     }
 
     try {
       const formattedText = formatSummaryForClipboard(summary.value);
-
       await navigator.clipboard.writeText(formattedText);
-
-      message.success('摘要已复制到剪贴板');
-
-      logger.info('Summary copied to clipboard');
+      showSuccess('摘要已复制到剪贴板');
     } catch (err: any) {
-      logger.error('Failed to copy to clipboard', { error: err });
-      message.error('复制失败，请手动复制');
+      showError('复制失败，请手动复制');
     }
   }
 
@@ -106,7 +87,6 @@ export function useDocumentSummarizer() {
     summary.value = null;
     error.value = null;
     isLoading.value = false;
-    logger.info('State reset');
   }
 
   // ============ Helper Functions ============

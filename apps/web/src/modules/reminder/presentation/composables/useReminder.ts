@@ -91,8 +91,7 @@ export function useReminder() {
     importanceLevel?: string;
     type?: string;
   }) {
-    const { reminderApiClient } = await import('../../infrastructure/api/reminderApiClient');
-    return await reminderApiClient.getUpcomingReminders(options);
+    return await reminderTemplateApplicationService.getUpcomingReminders(options);
   }
 
   return {

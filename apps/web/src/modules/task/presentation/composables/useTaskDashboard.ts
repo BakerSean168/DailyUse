@@ -1,7 +1,7 @@
 /**
  * Task Dashboard Composable
  * 任务仪表板组合式函数
- * 
+ *
  * 职责：
  * - 提供仪表板数据
  * - 统计数据计算
@@ -9,8 +9,7 @@
  */
 
 import { ref, computed, readonly, onMounted, onUnmounted } from 'vue';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClientDTO, TaskDashboardResponse } from '@dailyuse/contracts/task';
-import { taskTemplateApiClient } from '../../infrastructure/api/taskApiClient';
+import type { TaskDashboardResponse } from '@dailyuse/contracts/task';
 
 
 /**

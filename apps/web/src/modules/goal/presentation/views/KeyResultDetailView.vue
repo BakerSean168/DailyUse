@@ -516,9 +516,6 @@ const getChangeAmountText = (record: GoalRecordClientDTO, index: number): string
   return '无变化';
 };
 
-
-const message = useMessage();
-
 onMounted(() => {
   loadData();
 });
