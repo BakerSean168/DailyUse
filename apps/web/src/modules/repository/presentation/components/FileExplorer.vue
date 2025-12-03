@@ -124,6 +124,7 @@ import { useFolderStore } from '../stores';
 import { useBookmarkStore } from '../stores/bookmarkStore';
 import { repositoryApiClient } from '../../infrastructure/api';
 import { Folder } from '@dailyuse/domain-client/repository';
+import type { FolderClient } from '@dailyuse/contracts/repository';
 
 // Props
 interface Props {
@@ -138,9 +139,9 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'create-folder', parentUuid?: string): void;
   (e: 'create-resource'): void;
-  (e: 'rename-folder', folder: Folder): void;
-  (e: 'delete-folder', folder: Folder): void;
-  (e: 'select-folder', folder: Folder | null): void;
+  (e: 'rename-folder', folder: FolderClient): void;
+  (e: 'delete-folder', folder: FolderClient): void;
+  (e: 'select-folder', folder: FolderClient | null): void;
 }>();
 
 // Store
@@ -180,7 +181,7 @@ async function loadFolderTree() {
   }
 }
 
-function buildTreeItems(folders: Folder[]): any[] {
+function buildTreeItems(folders: FolderClient[]): any[] {
   const folderMap = new Map<string, any>();
   const roots: any[] = [];
 
@@ -212,7 +213,7 @@ function buildTreeItems(folders: Folder[]): any[] {
 }
 
 function getFolderIcon(item: any): string {
-  const folder = item.raw as Folder;
+  const folder = item.raw as FolderClient;
   
   if (folder.metadata?.icon) {
     return folder.metadata.icon;
@@ -231,19 +232,19 @@ function handleCreateResource() {
   emit('create-resource');
 }
 
-function handleCreateSubfolder(folder: Folder) {
+function handleCreateSubfolder(folder: FolderClient) {
   emit('create-folder', folder.uuid);
 }
 
-function handleRenameFolder(folder: Folder) {
+function handleRenameFolder(folder: FolderClient) {
   emit('rename-folder', folder);
 }
 
-function handleDeleteFolder(folder: Folder) {
+function handleDeleteFolder(folder: FolderClient) {
   emit('delete-folder', folder);
 }
 
-function handleAddToBookmarks(folder: Folder) {
+function handleAddToBookmarks(folder: FolderClient) {
   if (!props.selectedRepository) return;
   
   if (bookmarkStore.hasBookmark(folder.uuid)) {

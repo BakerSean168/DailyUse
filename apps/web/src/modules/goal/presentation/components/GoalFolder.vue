@@ -151,7 +151,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
 import type { GoalFolderClient } from '@dailyuse/contracts/goal';
-import { GoalFolder } from '@dailyuse/domain-client/goal';
 import { useGoalStore } from '../stores/goalStore';
 import { DuContextMenu, type ContextMenuItem } from '@/shared/components/context-menu';
 
@@ -179,7 +178,7 @@ const contextMenu = reactive<{
   x: number;
   y: number;
   items: ContextMenuItem[];
-  currentFolder: GoalFolder | null;
+  currentFolder: GoalFolderClient | null;
 }>({
   show: false,
   x: 0,
@@ -191,7 +190,7 @@ const contextMenu = reactive<{
 /**
  * 处理文件夹右键菜单
  */
-const handleFolderContextMenu = (event: MouseEvent, folder: GoalFolder) => {
+const handleFolderContextMenu = (event: MouseEvent, folder: GoalFolderClient) => {
   event.preventDefault();
   event.stopPropagation();
 

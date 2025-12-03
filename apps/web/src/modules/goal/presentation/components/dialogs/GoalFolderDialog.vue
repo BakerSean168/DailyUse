@@ -57,6 +57,7 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue';
 import { GoalFolder } from '@dailyuse/domain-client/goal';
+import type { GoalFolderClient } from '@dailyuse/contracts/goal';
 // composables
 import { useGoalFolder } from '../../composables/useGoalFolder';
 
@@ -147,8 +148,9 @@ const openForCreate = () => {
   openDialog();
 };
 
-const openForEdit = (goalFolder: GoalFolder) => {
-  openDialog(goalFolder);
+const openForEdit = (goalFolder: GoalFolderClient) => {
+  // Convert interface to entity for internal use
+  openDialog(goalFolder as GoalFolder);
 };
 
 const closeDialog = () => {
