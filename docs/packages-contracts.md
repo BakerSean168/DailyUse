@@ -2,7 +2,8 @@
 
 > **生成时间**: 2025-10-28  
 > **包版本**: 0.0.1  
-> **文档类型**: TypeScript 类型契约层文档
+> **文档类型**: TypeScript 类型契约层文档  
+> **最后更新**: 2025-12-03
 
 ---
 
@@ -12,9 +13,9 @@
 
 ### 核心职责
 
-- 📝 **DTO 定义**: 数据传输对象类型
+- 📝 **DTO 定义**: 数据传输对象类型（ServerDTO / ClientDTO）
 - 🔗 **API 契约**: 请求/响应类型定义
-- 🏗️ **领域模型接口**: 业务实体类型
+- 🏗️ **实体接口**: 业务实体的公共 API 契约
 - 🎯 **枚举和常量**: 业务状态、类型枚举
 - ✅ **Zod 验证**: 运行时类型验证
 - 🔄 **跨应用共享**: 确保类型一致性
@@ -23,12 +24,80 @@
 
 ## 🏗️ 架构设计
 
+### 类型层次结构（2025-12 更新）
+
+每个实体/聚合根包含以下类型层次：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      ServerDTO                              │
+│  - 与数据库/API 完全对应的纯数据结构                          │
+│  - 不包含计算属性和方法                                      │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ extends
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      ClientDTO                              │
+│  - 继承 ServerDTO 的所有字段                                 │
+│  - 添加 UI 所需的计算属性（progressPercentage, statusText） │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ extends
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Interface                              │
+│  - 继承 ClientDTO 的所有属性                                 │
+│  - 添加方法签名（rename(), toDTO(), etc.）                  │
+│  - 供 domain 包中的类实现                                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 类型定义示例
+
+```typescript
+// contracts/src/modules/goal/entities/KeyResultClient.ts
+
+// 1. ServerDTO - 与数据库完全对应
+export interface KeyResultServerDTO {
+  uuid: string;
+  goalUuid: string;
+  title: string;
+  currentValue: number;
+  targetValue: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// 2. ClientDTO - 添加计算属性
+export interface KeyResultClientDTO extends KeyResultServerDTO {
+  progressPercentage: number;
+  isCompleted: boolean;
+  remainingValue: number;
+  statusText: string;
+}
+
+// 3. Interface - 添加方法签名
+export interface KeyResultClient extends KeyResultClientDTO {
+  updateProgress(value: number): void;
+  complete(): void;
+  toClientDTO(): KeyResultClientDTO;
+  toServerDTO(): KeyResultServerDTO;
+}
+
+// 4. Static Interface - 工厂方法
+export interface KeyResultClientStatic {
+  fromServerDTO(dto: KeyResultServerDTO): KeyResultClient;
+  fromClientDTO(dto: KeyResultClientDTO): KeyResultClient;
+  forCreate(goalUuid: string): KeyResultClient;
+}
+```
+
 ### 类型系统分层
 
 ```
 @dailyuse/contracts/
 ├── dto/                # 数据传输对象 (Data Transfer Objects)
 │   ├── request/       # API 请求 DTO
+
 │   └── response/      # API 响应 DTO
 ├── entities/          # 实体类型接口
 ├── aggregates/        # 聚合根类型接口
@@ -632,5 +701,45 @@ export interface GoalFactory {
 
 ---
 
-**文档维护**: BMAD v6 Analyst (Mary)  
-**最后更新**: 2025-10-28 16:50:00
+## 🏷️ 命名规范（2025-12 更新）
+
+### 类型命名模式
+
+| 类型 | 命名模式 | 示例 | 用途 |
+|------|----------|------|------|
+| Server DTO | `{Name}ServerDTO` | `GoalServerDTO` | 数据库/API 数据结构 |
+| Client DTO | `{Name}ClientDTO` | `GoalClientDTO` | UI 展示数据（含计算属性） |
+| Persistence DTO | `{Name}PersistenceDTO` | `GoalPersistenceDTO` | 数据库持久化专用 |
+| Server Interface | `{Name}Server` | `GoalServer` | 服务端实体契约 |
+| Client Interface | `{Name}Client` | `GoalClient` | 客户端实体契约 |
+| Static Interface | `{Name}ClientStatic` | `GoalClientStatic` | 工厂方法契约 |
+
+### 文件组织
+
+```
+contracts/src/modules/{module}/
+├── entities/
+│   ├── {Entity}Server.ts      # ServerDTO + Server 接口
+│   └── {Entity}Client.ts      # ClientDTO + Client 接口
+├── aggregates/
+│   ├── {Aggregate}Server.ts
+│   └── {Aggregate}Client.ts
+├── value-objects/
+│   └── {ValueObject}.ts
+├── enums.ts
+├── api-requests.ts
+└── index.ts
+```
+
+---
+
+## 📚 相关文档
+
+- [DDD 类型架构规范](./architecture/ddd-type-architecture.md) ⭐ 新增
+- [@dailyuse/domain-client 包文档](./packages-domain-client.md)
+- [@dailyuse/domain-server 包文档](./packages-domain-server.md)
+
+---
+
+**文档维护**: BMAD Agent  
+**最后更新**: 2025-12-03

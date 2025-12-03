@@ -39,7 +39,9 @@ updated: 2025-11-23T15:00:00
 └─────────────────────────────────────┘
 ```
 
-详细了解：[[../concepts/ddd-patterns|DDD 模式指南]]
+详细了解：
+- [[../concepts/ddd-patterns|DDD 模式指南]]
+- [[ddd-type-architecture|DDD 类型架构规范]] ⭐ 新增（2025-12）
 
 ### 架构决策记录 (ADR)
 

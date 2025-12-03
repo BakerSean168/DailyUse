@@ -3,7 +3,8 @@
 > **包名**: `@dailyuse/domain-client`  
 > **职责**: 客户端领域层（Domain Layer for Web & Desktop）  
 > **依赖**: `@dailyuse/contracts`, `@dailyuse/utils`  
-> **使用者**: `apps/web`, `apps/desktop`
+> **使用者**: `apps/web`, `apps/desktop`  
+> **最后更新**: 2025-12-03
 
 ---
 
@@ -636,8 +637,90 @@ const goal = Goal.create({ /* ... */ });
 - [集成架构](../../integration-architecture.md)
 - [@dailyuse/contracts 包文档](./packages-contracts.md)
 - [@dailyuse/domain-server 包文档](./packages-domain-server.md)
+- [DDD 类型架构规范](./architecture/ddd-type-architecture.md) ⭐ 新增
 
 ---
 
-**文档维护**: BMAD v6 Analyst  
-**最后更新**: 2025-10-28
+## 🔧 Store 中使用实体的规范（2025-12 更新）
+
+### 核心原则
+
+> **Store 类型声明使用 Interface，运行时存储 Entity 实例**
+
+### 问题背景
+
+TypeScript 在处理 Pinia store 的 state 时，会展开类的结构，导致私有字段出现在类型推断中：
+
+```typescript
+// ❌ 问题
+state: () => ({
+  folders: [] as Folder[],
+})
+// TS 推断为：{ _uuid: string; _name: string; ... }[]
+// 与 Folder 类型不匹配
+```
+
+### 解决方案
+
+```typescript
+// ✅ 正确做法
+import type { FolderClient } from '@dailyuse/contracts/repository';
+import { Folder } from '@dailyuse/domain-client/repository';
+
+type FolderData = FolderClient;  // 使用接口类型
+
+export const useFolderStore = defineStore('folder', {
+  state: () => ({
+    folders: [] as FolderData[],  // 类型声明用接口
+  }),
+  
+  getters: {
+    getFolderByUuid: (state) => (uuid: string): FolderData | null => {
+      return state.folders.find(f => f.uuid === uuid) || null;
+    },
+  },
+  
+  actions: {
+    setFolders(folders: FolderData[]) {
+      // 运行时传入 Folder 实例，方法可用
+      this.folders = folders;
+    }
+  },
+  
+  persist: {
+    serializer: {
+      serialize: (value) => {
+        // 序列化时转为纯 DTO
+        return JSON.stringify({
+          folders: value.folders.map((f: any) => 
+            f.toServerDTO ? f.toServerDTO() : f
+          )
+        });
+      },
+      deserialize: (value) => {
+        // 反序列化时重建实体实例
+        const parsed = JSON.parse(value);
+        return {
+          folders: parsed.folders.map((dto: any) => 
+            Folder.fromServerDTO(dto)
+          )
+        };
+      }
+    }
+  }
+});
+```
+
+### 关键点
+
+| 方面 | 说明 |
+|------|------|
+| **类型声明** | 使用 `FolderClient` 接口（只含公共成员） |
+| **运行时存储** | 存储 `Folder` 实体实例（保留方法） |
+| **持久化序列化** | 调用 `toServerDTO()` 转为纯数据 |
+| **持久化反序列化** | 调用 `Folder.fromServerDTO()` 重建实例 |
+
+---
+
+**文档维护**: BMAD Agent  
+**最后更新**: 2025-12-03
