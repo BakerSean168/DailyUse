@@ -106,7 +106,7 @@ import { passwordRules, usernameRules, emailRules } from '@/shared/utils/validat
 type RegisterRequestDTO = RegisterRequest;
 
 const { register, login } = useAuth();
-const { success, error: showError } = useMessage();
+const { success: showSuccess, error: showError } = useMessage();
 
 // 定义 emit（用于切换到登录模式）
 const emit = defineEmits<{
@@ -140,7 +140,7 @@ const handleRegistration = async (formData: RegistrationByUsernameAndPasswordFor
 
     // 注册成功（返回账户信息和提示消息）
     const response = await register(request);
-    success(response.message || '注册成功！正在为您登录...');
+    showSuccess(response.message || '注册成功！正在为您登录...');
 
     // 🔧 保存用户名和密码，避免 resetForm() 后丢失
     const savedUsername = formData.username;

@@ -140,7 +140,7 @@ import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../../stores/repositoryStore';
 import { useMessage } from '@dailyuse/ui';
 import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
-import { repositoryManagementApplicationService } from '@/modules/repository/application/services/RepositoryManagementApplicationService';
+import { repositoryManagementService } from '@/modules/repository/application/services/RepositoryManagementApplicationService';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -278,7 +278,7 @@ async function createRepository() {
   try {
     creating.value = true;
 
-    await repositoryManagementApplicationService.createRepository({
+    await repositoryManagementService.createRepository({
       name: newRepository.value.name,
       path: newRepository.value.path,
       type: newRepository.value.type,
@@ -305,7 +305,7 @@ async function deleteRepository(uuid: string) {
   try {
     await message.delConfirm('确定要删除此仓库吗？此操作不可撤销。');
 
-    await repositoryManagementApplicationService.deleteRepository(uuid);
+    await repositoryManagementService.deleteRepository(uuid);
     message.success('删除成功');
 
     // 如果删除的是当前选中的仓库，清除选中状态

@@ -1,5 +1,5 @@
 import { aiConversationApiClient } from '../../infrastructure/api/aiConversationApiClient';
-import type { ConversationDto } from '@dailyuse/contracts';
+import type { AIConversation } from '@dailyuse/domain-client/ai';
 
 /**
  * AI Conversation Application Service
@@ -21,7 +21,7 @@ export class AIConversationApplicationService {
   /**
    * List conversations with pagination
    */
-  async listConversations(params: { page: number; limit: number }): Promise<ConversationDto[]> {
+  async listConversations(params: { page: number; limit: number }): Promise<AIConversation[]> {
     return await aiConversationApiClient.listConversations(params);
   }
 

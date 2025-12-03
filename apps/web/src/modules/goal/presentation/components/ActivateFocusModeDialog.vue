@@ -232,9 +232,8 @@ const handleSubmit = async () => {
   try {
     const request: ActivateFocusModeRequest = {
       focusedGoalUuids: formData.value.focusedGoalUuids,
-      startTime: new Date(formData.value.startTime).getTime(),
       endTime: new Date(formData.value.endTime).getTime(),
-      hiddenGoalsMode: formData.value.hiddenGoalsMode,
+      hiddenGoalsMode: formData.value.hiddenGoalsMode as 'hide' | 'dim' | 'collapse',
     };
 
     logger.info('Submitting activate focus mode request', request);
@@ -264,7 +263,7 @@ const resetForm = () => {
     focusedGoalUuids: [],
     startTime: new Date().toISOString().slice(0, 16),
     endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-    hiddenGoalsMode: 'hide_all',
+    hiddenGoalsMode: 'hide',
   };
   formRef.value?.resetValidation();
 };

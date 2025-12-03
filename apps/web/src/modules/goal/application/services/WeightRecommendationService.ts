@@ -1,4 +1,4 @@
-import type { KeyResult } from '@dailyuse/domain-client/goal';
+import type { KeyResultClient } from '@dailyuse/contracts/goal';
 
 /**
  * 权重分配策略
@@ -110,7 +110,7 @@ export class WeightRecommendationService {
   /**
    * 推荐权重分配策略
    */
-  recommendWeights(keyResults: KeyResult[]): WeightStrategy[] {
+  recommendWeights(keyResults: KeyResultClient[]): WeightStrategy[] {
     if (!keyResults || keyResults.length === 0) {
       return [];
     }
@@ -128,7 +128,7 @@ export class WeightRecommendationService {
   /**
    * 计算 KeyResult 优先级分数（基于关键词分析）
    */
-  private calculatePriorities(keyResults: KeyResult[]): number[] {
+  private calculatePriorities(keyResults: KeyResultClient[]): number[] {
     return keyResults.map((kr) => {
       let score = 50; // 基础分数
       const title = kr.title.toLowerCase();
@@ -191,7 +191,7 @@ export class WeightRecommendationService {
    * 
    * **新策略**: 生成 1-10 范围的权重（而不是 0-100）
    */
-  private focusedStrategy(keyResults: KeyResult[], priorities: number[]): WeightStrategy {
+  private focusedStrategy(keyResults: KeyResultClient[], priorities: number[]): WeightStrategy {
     const count = keyResults.length;
     
     // 将优先级分数 (0-100) 映射到权重范围 (1-10)
@@ -221,7 +221,7 @@ export class WeightRecommendationService {
    * 
    * **新策略**: 生成 1-10 范围的权重（而不是 0-100）
    */
-  private steppedStrategy(keyResults: KeyResult[], priorities: number[]): WeightStrategy {
+  private steppedStrategy(keyResults: KeyResultClient[], priorities: number[]): WeightStrategy {
     const count = keyResults.length;
 
     // 创建优先级排序映射

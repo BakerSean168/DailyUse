@@ -230,9 +230,9 @@
       <!-- TaskAIGenerationDialog (Story 2.4) -->
       <TaskAIGenerationDialog v-if="keyResult" v-model="showGenerateTasksDialog" :key-result-title="keyResult.title"
         :key-result-description="keyResult.description || ''" :target-value="keyResult.progress.targetValue"
-        :current-value="keyResult.progress.currentValue || 0" :unit="keyResult.progress.unit"
+        :current-value="keyResult.progress.currentValue || 0" :unit="keyResult.progress.unit || undefined"
         :time-remaining="timeRemainingDays" :goal-uuid="goalUuid" :key-result-uuid="keyResultUuid"
-        :account-uuid="authStore.accountUuid || ''" @tasks-imported="handleTasksImported" />
+        :account-uuid="accountStore.currentAccountUuid || ''" @tasks-imported="handleTasksImported" />
     </template>
   </v-container>
 </template>
@@ -251,11 +251,13 @@ import TaskAIGenerationDialog from '@/modules/task/presentation/components/TaskA
 import { getGlobalMessage, useMessage } from '@dailyuse/ui';
 import type { KeyResult, Goal } from '@dailyuse/domain-client/goal';
 import { useAuthStore } from '@/modules/authentication/presentation/stores/authStore';
+import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
 
 const router = useRouter();
 const route = useRoute();
 const { goals, getGoalRecordsByKeyResult, deleteKeyResultForGoal, fetchGoalById } = useGoal();
 const authStore = useAuthStore();
+const accountStore = useAccountStore();
 const message = getGlobalMessage();
 
 const recordDialogRef = ref<InstanceType<typeof GoalRecordDialog> | null>(null);

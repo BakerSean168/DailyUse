@@ -71,12 +71,18 @@ interface LinkGraphNodeDTO {
   uuid: string;
   title: string;
   isCenter: boolean;
+  isCurrent: boolean;
+  linkCount: number;
+  backlinkCount: number;
   depth: number;
 }
 
 interface LinkGraphEdgeDTO {
   sourceUuid: string;
   targetUuid: string;
+  source: string;
+  target: string;
+  linkText?: string;
 }
 
 interface LinkGraphResponseDTO {

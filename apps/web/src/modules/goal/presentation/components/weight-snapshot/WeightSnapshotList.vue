@@ -169,7 +169,7 @@ const currentPage = ref(1);
 const expandedItems = ref<Set<string>>(new Set());
 
 // 时间范围选项
-const timeRanges = [
+const timeRanges: Array<{ label: string; value: 'all' | '7d' | '30d' | '90d' }> = [
   { label: '全部', value: 'all' },
   { label: '7天', value: '7d' },
   { label: '30天', value: '30d' },

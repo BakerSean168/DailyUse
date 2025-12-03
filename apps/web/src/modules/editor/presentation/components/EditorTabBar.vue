@@ -52,7 +52,7 @@ import { ref, computed, watch } from 'vue';
 import type { SimpleEditorTab } from '@dailyuse/contracts/shared';
 
 // 使用 SimpleEditorTab 作为组件的标签类型
-type EditorTab = SimpleEditorTab;
+export type EditorTab = SimpleEditorTab;
 
 /**
  * Props

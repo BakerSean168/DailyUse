@@ -31,7 +31,7 @@
               <div class="d-flex align-center justify-space-between">
                 <div class="d-flex align-center flex-grow-1">
                   <v-icon class="drag-handle mr-3" size="small" color="grey">mdi-drag</v-icon>
-                  <v-icon :icon="getVuetifyIcon(widget.icon)" color="primary" class="mr-3" />
+                  <v-icon :icon="getVuetifyIcon(widget.icon || '')" color="primary" class="mr-3" />
                   <div class="flex-grow-1">
                     <div class="text-subtitle-1 font-weight-medium">{{ widget.name }}</div>
                     <div class="text-caption text-medium-emphasis">{{ widget.description }}</div>
@@ -39,7 +39,7 @@
                 </div>
                 <v-switch
                   :model-value="localConfig[widget.id]?.visible ?? widget.defaultVisible"
-                  @update:model-value="toggleVisibility(widget.id, $event)"
+                  @update:model-value="widget.id && toggleVisibility(widget.id, $event)"
                   color="primary"
                   hide-details
                   density="compact"
@@ -55,7 +55,7 @@
                   <span class="text-body-2 mr-3">尺寸:</span>
                   <v-btn-toggle
                     :model-value="localConfig[widget.id]?.size ?? widget.defaultSize"
-                    @update:model-value="changeSize(widget.id, $event)"
+                    @update:model-value="widget.id && changeSize(widget.id, $event)"
                     mandatory
                     density="compact"
                     color="primary"
@@ -196,8 +196,9 @@ const initializeLocalConfig = async () => {
   console.log('[WidgetSettings] Local config initialized:', newConfig);
 };
 
-const toggleVisibility = (widgetId: string, visible: boolean) => {
+const toggleVisibility = (widgetId: string, visible: boolean | null) => {
   console.log(`[WidgetSettings] Toggling visibility for ${widgetId}:`, visible);
+  if (visible === null) return;
   if (!localConfig.value[widgetId]) {
     const widget = widgetRegistry.getWidget(widgetId);
     if (widget) {
@@ -211,8 +212,9 @@ const toggleVisibility = (widgetId: string, visible: boolean) => {
   localConfig.value[widgetId].visible = visible;
 };
 
-const changeSize = (widgetId: string, size: WidgetSize) => {
+const changeSize = (widgetId: string, size: WidgetSize | string | undefined) => {
   console.log(`[WidgetSettings] Changing size for ${widgetId}:`, size);
+  if (size === undefined || typeof size !== 'string') return;
   if (!localConfig.value[widgetId]) {
     const widget = widgetRegistry.getWidget(widgetId);
     if (widget) {
@@ -223,7 +225,7 @@ const changeSize = (widgetId: string, size: WidgetSize) => {
       };
     }
   }
-  localConfig.value[widgetId].size = size;
+  localConfig.value[widgetId].size = size as WidgetSize;
 };
 
 const handleReset = async () => {

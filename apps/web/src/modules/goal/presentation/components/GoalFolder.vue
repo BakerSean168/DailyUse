@@ -150,18 +150,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue';
-import type { GoalFolder } from '@dailyuse/domain-client/goal';
+import type { GoalFolderClient } from '@dailyuse/contracts/goal';
+import { GoalFolder } from '@dailyuse/domain-client/goal';
 import { useGoalStore } from '../stores/goalStore';
 import { DuContextMenu, type ContextMenuItem } from '@/shared/components/context-menu';
 
 interface Props {
-  goalFolders: GoalFolder[];
+  goalFolders: readonly GoalFolderClient[];
 }
 
 interface Emits {
   (e: 'selected-goal-folder', folderUuid: string): void;
   (e: 'create-goal-folder'): void;
-  (e: 'edit-goal-folder', goalFolder: GoalFolder): void;
+  (e: 'edit-goal-folder', goalFolder: GoalFolderClient): void;
   (e: 'delete-goal-folder', folderUuid: string): void;
 }
 

@@ -22,7 +22,11 @@ export {
 } from './enums';
 
 // ============ Config Constants ============
-export { TASK_INSTANCE_GENERATION_CONFIG, TASK_INSTANCE_VIEW_CONFIG } from './config';
+export {
+  TASK_INSTANCE_GENERATION_CONFIG,
+  TASK_INSTANCE_VIEW_CONFIG,
+  RECURRENCE_RULE_DEFAULTS,
+} from './config';
 
 // ============ Value Objects ============
 export type {

@@ -183,7 +183,8 @@ import { ref, computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../stores/repositoryStore';
 import { useMessage, useGlobalLoading } from '@dailyuse/ui';
-import { repositoryApplicationService } from '../application/services/repositoryApplicationService';
+import { repositoryManagementService } from '../../application/services/RepositoryManagementApplicationService';
+import { resourceManagementService } from '../../application/services/ResourceManagementApplicationService';
 import RepositoryManagementDialog from '../components/dialogs/RepositoryManagementDialog.vue';
 import RepoHeader from '../components/RepoHeader.vue';
 
@@ -258,7 +259,7 @@ async function handleRepositorySelected(uuid: string) {
 async function loadRepositoryResources(repositoryUuid: string) {
   await globalLoading.withLoading(async () => {
     try {
-      await repositoryApplicationService.getRepositoryResources(repositoryUuid);
+      await resourceManagementService.getRepositoryResources(repositoryUuid);
       message.success('资源加载成功');
     } catch (error: any) {
       message.error(error.message || '加载失败');
@@ -322,7 +323,7 @@ function editResource(uuid: string) {
 async function deleteResource(uuid: string) {
   try {
     await message.delConfirm('确定要删除此文件吗？');
-    await repositoryApplicationService.deleteResource(uuid);
+    await resourceManagementService.deleteResource(uuid);
     message.success('删除成功');
   } catch {
     // 用户取消
@@ -333,7 +334,7 @@ async function deleteResource(uuid: string) {
 onMounted(async () => {
   await globalLoading.withLoading(async () => {
     try {
-      await repositoryApplicationService.getAllRepositories();
+      await repositoryManagementService.getRepositories();
 
       // 如果有仓库，自动选择第一个
       if (repositories.value.length > 0 && !repositoryStore.selectedRepository) {

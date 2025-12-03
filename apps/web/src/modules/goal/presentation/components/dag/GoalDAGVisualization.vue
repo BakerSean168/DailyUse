@@ -614,14 +614,6 @@ const updateViewport = (viewport: { zoom: number; center: [number, number] }) =>
   }
 };
 
-// 暴露方法给父组件
-defineExpose({
-  updateViewport,
-  chartRef,
-  exportDialog,
-  retryLoad,
-});
-
 // 加载目标数据
 const loadGoalData = async () => {
   if (!props.goalUuid) return;
@@ -649,6 +641,14 @@ const retryLoad = async () => {
     isRetrying.value = false;
   }
 };
+
+// 暴露方法给父组件
+defineExpose({
+  updateViewport,
+  chartRef,
+  exportDialog,
+  retryLoad,
+});
 
 // 初始化
 onMounted(async () => {

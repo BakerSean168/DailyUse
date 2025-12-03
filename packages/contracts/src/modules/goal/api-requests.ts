@@ -13,7 +13,9 @@ import type {
 } from './aggregates';
 import type {
   KeyResultServerDTO,
+  KeyResultClientDTO,
   GoalReviewServerDTO,
+  GoalReviewClientDTO,
   GoalRecordServerDTO,
   GoalRecordClientDTO,
 } from './entities';
@@ -88,16 +90,18 @@ export interface QueryGoalsRequest {
 
 /**
  * 目标响应
+ * 注意：API 返回的是 GoalClientDTO，包含计算属性
  */
 export interface GoalResponse {
-  goal: GoalServerDTO | GoalClientDTO;
+  goal: GoalClientDTO;
 }
 
 /**
  * 目标列表响应
+ * 注意：API 返回的是 GoalClientDTO，包含计算属性
  */
 export interface GoalsResponse {
-  goals: (GoalServerDTO | GoalClientDTO)[];
+  goals: GoalClientDTO[];
   total: number;
   page: number;
   pageSize: number;
@@ -172,14 +176,14 @@ export interface CreateGoalRecordRequest {
  * 目标记录响应
  */
 export interface GoalRecordResponse {
-  record: GoalRecordServerDTO | GoalRecordClientDTO;
+  record: GoalRecordClientDTO;
 }
 
 /**
  * 目标记录列表响应
  */
 export interface GoalRecordsResponse {
-  records: (GoalRecordServerDTO | GoalRecordClientDTO)[];
+  records: GoalRecordClientDTO[];
   total: number;
 }
 
@@ -232,10 +236,10 @@ export interface GoalReviewsResponse {
  * 包含目标及其所有关联实体的完整视图
  */
 export interface GoalAggregateViewResponse {
-  goal: GoalServerDTO | GoalClientDTO;
-  keyResults?: KeyResultServerDTO[];
-  records?: (GoalRecordServerDTO | GoalRecordClientDTO)[];
-  reviews?: GoalReviewServerDTO[];
+  goal: GoalClientDTO;
+  keyResults?: KeyResultClientDTO[];
+  records?: GoalRecordClientDTO[];
+  reviews?: GoalReviewClientDTO[];
   statistics?: {
     totalKeyResults: number;
     completedKeyResults: number;
@@ -285,14 +289,14 @@ export interface QueryGoalFoldersRequest {
  * 文件夹响应
  */
 export interface GoalFolderResponse {
-  folder: GoalFolderServerDTO | GoalFolderClientDTO;
+  folder: GoalFolderClientDTO;
 }
 
 /**
  * 文件夹列表响应
  */
 export interface GoalFoldersResponse {
-  folders: (GoalFolderServerDTO | GoalFolderClientDTO)[];
+  folders: GoalFolderClientDTO[];
   total: number;
 }
 
@@ -314,7 +318,7 @@ export interface GetGoalStatisticsRequest {
  * 统计响应
  */
 export interface GoalStatisticsResponse {
-  statistics: GoalStatisticsServerDTO | GoalStatisticsClientDTO;
+  statistics: GoalStatisticsClientDTO;
 }
 
 // ============ 批量操作 ============

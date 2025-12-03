@@ -189,7 +189,7 @@ watch(
       if (propRecord.value) {
         // 编辑模式：显示已有记录
         localRecord.value = {
-          changeAmount: propRecord.value.changeAmount,
+          changeAmount: propRecord.value.value,  // 使用 value 属性
           note: propRecord.value.note || '',
         };
       } else {

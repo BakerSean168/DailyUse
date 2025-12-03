@@ -95,7 +95,7 @@ export function registerGoalInitializationTasks(): void {
               getGoalFolderService.getGoalFolders({ limit: 100 }),
             ]);
             console.log(`✅ [Goal] 成功获取 ${goalsResp.goals?.length || 0} 个 Goal`);
-            console.log(`✅ [Goal] 成功获取 ${foldersResp.folders?.length || 0} 个 Folder`);
+            console.log(`✅ [Goal] 成功获取 ${foldersResp?.length || 0} 个 Folder`);
           } catch (error) {
             console.warn('⚠️ [Goal] 获取 Goal/Folder 失败，继续初始化', error);
           }

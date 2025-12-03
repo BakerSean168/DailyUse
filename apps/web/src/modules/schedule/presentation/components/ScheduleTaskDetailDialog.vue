@@ -214,8 +214,8 @@
 
                 <v-list-item-subtitle class="text-caption">
                   <span v-if="execution.duration">耗时: {{ execution.duration }}ms</span>
-                  <span v-if="execution.errorMessage" class="text-error ml-2">
-                    {{ execution.errorMessage }}
+                  <span v-if="execution.error" class="text-error ml-2">
+                    {{ execution.error }}
                   </span>
                 </v-list-item-subtitle>
 

@@ -108,7 +108,7 @@ const statusText = computed(() => {
 const detailText = computed(() => {
   if (!activeFocusMode.value) return '';
   
-  const goalCount = activeFocusMode.value.focusedGoals.length;
+  const goalCount = activeFocusMode.value.focusedGoalUuids.length;
   const endDate = new Date(activeFocusMode.value.endTime).toLocaleDateString('zh-CN');
   
   return `${goalCount} 个目标 · 截止 ${endDate}`;

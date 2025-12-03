@@ -196,14 +196,6 @@
                       />
 
                       <v-switch
-                        v-model="repositorySettings.enableVersionControl"
-                        label="启用版本控制"
-                        color="primary"
-                        hide-details
-                        class="mb-4"
-                      />
-
-                      <v-switch
                         v-model="repositorySettings.enableGit"
                         label="启用 Git"
                         color="primary"
@@ -283,7 +275,6 @@ const repositoryData = ref<{
   config: {
     enableGit: boolean;
     autoSync: boolean;
-    enableVersionControl: boolean;
   };
   tags: string[];
 }>({
@@ -296,7 +287,6 @@ const repositoryData = ref<{
   config: {
     enableGit: false,
     autoSync: false,
-    enableVersionControl: false,
   },
   tags: [],
 });
@@ -320,7 +310,6 @@ watch(
           config: {
             enableGit: repository.config?.enableGit ?? false,
             autoSync: repository.config?.autoSync ?? false,
-            enableVersionControl: repository.config?.enableVersionControl ?? false,
           },
           tags: [], // TODO: 从 Repository 实体中获取 tags
         };
@@ -335,7 +324,6 @@ watch(
           config: {
             enableGit: false,
             autoSync: false,
-            enableVersionControl: false,
           },
           tags: [],
         };

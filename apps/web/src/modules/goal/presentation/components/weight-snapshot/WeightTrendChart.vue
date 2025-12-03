@@ -85,7 +85,7 @@ const {
 const selectedRange = ref<'7d' | '30d' | '90d' | '180d'>('30d');
 
 // 时间范围选项
-const timeRanges = [
+const timeRanges: Array<{ label: string; value: '7d' | '30d' | '90d' | '180d' }> = [
   { label: '7天', value: '7d' },
   { label: '30天', value: '30d' },
   { label: '90天', value: '90d' },

@@ -279,7 +279,8 @@ function handleTriggerSuggestion(position: { x: number; y: number; query: string
   showSuggestion.value = true;
 }
 
-function handleLinkSelect(document: DocumentContracts.DocumentClientDTO | null) {
+// TODO: 双向链接功能待迁移到 repository 模块，暂用 any 类型
+function handleLinkSelect(document: { name: string } | null) {
   if (!document || !editorRef.value) return;
   
   // Insert [[name]] at cursor position

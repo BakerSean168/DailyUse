@@ -39,10 +39,10 @@ const form = ref({ topic: '', context: '', templateType: 'SUMMARY' });
 const templateTypes = ['SUMMARY', 'GUIDE', 'CHECKLIST', 'FAQ'];
 const rules = { required: (v: any) => (v ? true : '必填') };
 const { generateKnowledgeDocument, isGenerating, error, hasQuota, quota, clearError } = useAIGeneration();
-const { showError, showSuccess } = useMessage();
+const message = useMessage();
 function openDialog(initial?: Partial<typeof form.value>) { if (initial) Object.assign(form.value, initial); show.value = true; }
 function close() { if (!isGenerating.value) show.value = false; }
-async function handleGenerate() { try { const result = await generateKnowledgeDocument({ topic: form.value.topic, context: form.value.context || undefined, templateType: form.value.templateType }); message.success('文档生成完成'); close(); const content = result.document?.content || '[内容未返回]'; window.dispatchEvent(new CustomEvent('ai-chat:inject', { detail: { content: `以下是关于 “${form.value.topic}” 的文档草稿:\n\n${content}\n\n请帮助我审阅并提出改进建议。` } })); } catch (e: any) { message.error(e?.message || '生成文档失败'); } }
+async function handleGenerate() { try { const result = await generateKnowledgeDocument({ topic: form.value.topic, context: form.value.context || undefined, templateType: form.value.templateType }); message.success('文档生成完成'); close(); const content = result.document?.content || '[内容未返回]'; window.dispatchEvent(new CustomEvent('ai-chat:inject', { detail: { content: `以下是关于 "${form.value.topic}" 的文档草稿:\n\n${content}\n\n请帮助我审阅并提出改进建议。` } })); } catch (e: any) { message.error(e?.message || '生成文档失败'); } }
 const emit = defineEmits<{ (e: 'generated', result: any): void; (e: 'error', msg: string): void }>();
 defineExpose({ openDialog, close });
 </script>

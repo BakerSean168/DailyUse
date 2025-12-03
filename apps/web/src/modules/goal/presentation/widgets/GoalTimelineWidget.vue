@@ -44,7 +44,7 @@ const activeGoals = computed(() => {
 
     return allGoals
         .filter(goal => {
-            if (goal.status !== GoalStatus.IN_PROGRESS) return false;
+            if (goal.status !== GoalStatus.ACTIVE) return false;
             return goal.startDate && goal.targetDate;
         })
         .map(goal => {
@@ -60,7 +60,7 @@ const activeGoals = computed(() => {
             // 实际完成进度（如果有 keyResults）
             let completionProgress = 0;
             if (goal.keyResults && goal.keyResults.length > 0) {
-                const completedKRs = goal.keyResults.filter(kr => kr.isCompleted).length;
+                const completedKRs = goal.keyResults.filter((kr: { isCompleted?: boolean }) => kr.isCompleted).length;
                 completionProgress = (completedKRs / goal.keyResults.length) * 100;
             }
 

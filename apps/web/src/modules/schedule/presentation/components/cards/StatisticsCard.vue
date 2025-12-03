@@ -155,7 +155,7 @@
                   <div class="d-flex justify-space-between text-caption">
                     <span>活跃: {{ stats.activeTasks }}</span>
                     <span>执行: {{ stats.totalExecutions }}</span>
-                    <span>成功: {{ stats.successfulExecutions }}</span>
+                    <span>成功率: {{ stats.successRateFormatted }}</span>
                   </div>
                 </v-card-text>
               </v-card>
@@ -176,14 +176,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { SourceModule } from '@dailyuse/contracts/schedule';
-import type { ScheduleClientDTO, ScheduleTaskClientDTO, ConflictDetectionResult, ScheduleStatisticsClientDTO, ScheduleStatisticsServerDTO, ModuleStatisticsServerDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleStatisticsClientDTO, ModuleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 
 // Props
 const props = defineProps<{
-  statistics: ScheduleStatisticsServerDTO | null;
+  statistics: ScheduleStatisticsClientDTO | null;
   moduleStatistics?: Record<
     SourceModule,
-    ModuleStatisticsServerDTO
+    ModuleStatisticsClientDTO
   > | null;
   isLoading?: boolean;
   error?: string | null;

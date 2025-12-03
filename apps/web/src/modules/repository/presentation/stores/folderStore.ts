@@ -1,12 +1,19 @@
 import { defineStore } from 'pinia';
-import type { FolderClient, FolderClientDTO } from '@dailyuse/contracts/repository';
+import type { FolderClient } from '@dailyuse/contracts/repository';
+import { Folder } from '@dailyuse/domain-client/repository';
 
-// 使用 FolderClientDTO 类型，因为这是从 API 获取的数据类型
-type FolderData = FolderClientDTO;
+// 类型声明使用 FolderClient 接口（避免 TS 展开类的私有字段）
+// 运行时实际存储的是 Folder 实体实例
+type FolderData = FolderClient;
 
 /**
  * Folder Store
  * 管理文件夹数据，支持树形结构
+ * 
+ * 注意：Pinia 响应式系统会保留类实例的方法。
+ * 持久化时通过自定义 serializer 处理：
+ * - serialize: 调用 toServerDTO() 转为纯数据
+ * - deserialize: 调用 Folder.fromServerDTO() 重建实体实例
  */
 export const useFolderStore = defineStore('folder', {
   state: () => ({
@@ -329,10 +336,11 @@ export const useFolderStore = defineStore('folder', {
 
           return {
             ...parsed,
-            folders: parsed.folders || [],
+            // 将 DTO 转换回 Folder 实体
+            folders: (parsed.folders || []).map((dto: any) => Folder.fromServerDTO(dto)),
             foldersByRepository: Object.entries(parsed.foldersByRepository || {}).reduce(
               (acc, [key, folders]: [string, any]) => {
-                acc[key] = folders || [];
+                acc[key] = (folders || []).map((dto: any) => Folder.fromServerDTO(dto));
                 return acc;
               },
               {} as Record<string, FolderData[]>
@@ -348,43 +356,12 @@ export const useFolderStore = defineStore('folder', {
 });
 
 /**
- * 树节点类型（用于构建树形结构）
- */
-interface TreeNode extends FolderClientDTO {
-  children?: TreeNode[];
-}
-
-/**
  * 构建文件夹树
+ * 注意：Folder 实体已经带有 children 属性，此函数只是返回根文件夹
  */
 function buildTree(folders: FolderData[]): FolderData[] {
-  const folderMap = new Map<string, TreeNode>();
-  const rootFolders: TreeNode[] = [];
-
-  // 第一遍：建立索引
-  folders.forEach((folder) => {
-    folderMap.set(folder.uuid, { ...folder } as TreeNode);
-  });
-
-  // 第二遍：构建树形结构
-  folders.forEach((folder) => {
-    const node = folderMap.get(folder.uuid)!;
-    if (!folder.parentUuid) {
-      // 根文件夹
-      rootFolders.push(node);
-    } else {
-      // 子文件夹
-      const parent = folderMap.get(folder.parentUuid);
-      if (parent) {
-        if (!parent.children) {
-          parent.children = [];
-        }
-        parent.children.push(node);
-      }
-    }
-  });
-
-  return rootFolders;
+  // Folder 实体本身已包含 children，直接返回根文件夹
+  return folders.filter((f) => !f.parentUuid);
 }
 
 export type FolderStore = ReturnType<typeof useFolderStore>;

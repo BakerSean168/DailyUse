@@ -145,6 +145,7 @@
 
 <script setup lang="ts">
 import { ref, computed, defineExpose, watch } from 'vue';
+import type { GoalClient } from '@dailyuse/contracts/goal';
 import { Goal, GoalReview } from '@dailyuse/domain-client/goal';
 import { format } from 'date-fns';
 import { useRouter } from 'vue-router';
@@ -154,7 +155,7 @@ const router = useRouter();
 const goalComposable = useGoal();
 
 const props = defineProps<{
-  goal: Goal;
+  goal: GoalClient;
 }>();
 
 // 内部状态控制

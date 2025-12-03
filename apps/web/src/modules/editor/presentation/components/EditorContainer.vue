@@ -25,8 +25,9 @@
         <!-- Markdown 编辑器 -->
         <markdown-editor
           v-if="activeTab.fileType === 'markdown'"
-          v-model="activeTab.content"
+          :model-value="activeTab.content ?? ''"
           :placeholder="`编辑 ${activeTab.title ?? '文档'}...`"
+          @update:model-value="handleContentChange"
           @change="handleContentChange"
         />
 

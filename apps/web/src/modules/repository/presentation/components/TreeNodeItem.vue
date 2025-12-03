@@ -55,7 +55,7 @@
         @select="$emit('select', $event)"
         @toggle="$emit('toggle', $event)"
         @open="$emit('open', $event)"
-        @context-menu="$emit('context-menu', $event)"
+        @contextMenu="$emit('contextMenu', $event)"
       />
     </div>
   </div>
@@ -168,7 +168,7 @@ function toggleExpand() {
 }
 
 function handleContextMenu(event: MouseEvent) {
-  emit('context-menu', { node: props.node, mouseEvent: event });
+  emit('contextMenu', { node: props.node, mouseEvent: event });
 }
 
 function formatFileSize(bytes: number): string {

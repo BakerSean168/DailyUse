@@ -348,7 +348,7 @@ const {
 const isGenerating = ref(false);
 const error = ref<string | null>(null);
 
-const { showSuccess, showError } = useMessage();
+const message = useMessage();
 
 // Emits
 const emit = defineEmits<{

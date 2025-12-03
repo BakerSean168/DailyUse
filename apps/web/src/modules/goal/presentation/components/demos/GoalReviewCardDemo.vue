@@ -25,7 +25,7 @@
         <v-select
           v-model="selectedGoal"
           :items="goals"
-          item-title="name"
+          item-title="title"
           item-value="uuid"
           return-object
           label="选择一个目标查看复盘"
@@ -40,7 +40,7 @@
                 </v-avatar>
               </template>
               <template #title>
-                <span class="font-weight-medium">{{ item.raw.name }}</span>
+                <span class="font-weight-medium">{{ item.raw.title }}</span>
               </template>
               <template #subtitle>
                 <span class="text-caption text-medium-emphasis">
@@ -56,11 +56,11 @@
     <!-- 选中目标信息 -->
     <v-card v-if="selectedGoal" class="mb-4" variant="outlined">
       <v-card-title class="d-flex align-center">
-        <v-avatar :color="selectedGoal.color" size="40" class="mr-3">
+        <v-avatar :color="selectedGoal.color || 'primary'" size="40" class="mr-3">
           <v-icon color="white">mdi-target</v-icon>
         </v-avatar>
         <div>
-          <div class="text-h6 font-weight-bold">{{ selectedGoal.name }}</div>
+          <div class="text-h6 font-weight-bold">{{ selectedGoal.title }}</div>
           <div class="text-caption text-medium-emphasis">{{ selectedGoal.uuid }}</div>
         </div>
       </v-card-title>
@@ -71,8 +71,8 @@
         <div class="d-flex gap-4">
           <v-chip color="primary" size="small" variant="tonal">
             <v-icon start size="12">mdi-calendar-range</v-icon>
-            {{ format(selectedGoal.startTime, 'yyyy-MM-dd') }} -
-            {{ format(selectedGoal.endTime, 'yyyy-MM-dd') }}
+            {{ selectedGoal.startDate ? format(selectedGoal.startDate, 'yyyy-MM-dd') : 'N/A' }} -
+            {{ selectedGoal.targetDate ? format(selectedGoal.targetDate, 'yyyy-MM-dd') : 'N/A' }}
           </v-chip>
           <v-chip color="success" size="small" variant="tonal">
             <v-icon start size="12">mdi-chart-line</v-icon>
@@ -106,6 +106,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import type { GoalClient } from '@dailyuse/contracts/goal';
 import { Goal } from '@dailyuse/domain-client/goal';
 import { format } from 'date-fns';
 import { useGoal } from '../../composables/useGoal';
@@ -115,7 +116,7 @@ const goalComposable = useGoal();
 
 // 响应式状态
 const reviewCardRef = ref<InstanceType<typeof GoalReviewCard> | null>(null);
-const selectedGoal = ref<Goal | null>(null);
+const selectedGoal = ref<GoalClient | null>(null);
 
 // 计算属性
 const goals = computed(() => goalComposable.goals.value);

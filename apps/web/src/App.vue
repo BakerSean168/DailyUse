@@ -165,7 +165,7 @@ const globalGoalDialogRef = ref<InstanceType<typeof GoalDialog> | null>(null);
 
 function handleGenerateGoal() {
   if (!aiGoalGenerateRef.value) {
-    snackbarStore.show({ message: '目标生成组件尚未加载', type: 'error' });
+    message.error('目标生成组件尚未加载');
     return;
   }
   aiGoalGenerateRef.value.openDialog();
@@ -185,7 +185,7 @@ function handleAssistGoal() {
 
 function onGoalGenerated(result: any, options: { includeKnowledgeDoc: boolean }) {
   const goalTitle = result?.goal?.title || '未命名目标';
-  snackbarStore.show({ message: `成功生成目标：${goalTitle}，请查看并编辑`, type: 'success' });
+  message.success(`成功生成目标：${goalTitle}，请查看并编辑`);
   
   // Open GoalDialog with AI-generated data for preview and editing
   if (globalGoalDialogRef.value && result?.goal) {
@@ -225,7 +225,7 @@ function onGoalGenerated(result: any, options: { includeKnowledgeDoc: boolean })
             await generateKnowledgeForGoal(goalDto);
           } catch (error) {
             console.error('[App] 生成知识文档失败:', error);
-            snackbarStore.show({ message: '知识文档生成失败，请稍后重试', type: 'warning' });
+            message.warning('知识文档生成失败，请稍后重试');
           }
         }
       : undefined;
@@ -260,12 +260,12 @@ async function generateKnowledgeForGoal(goalDto: GoalClientDTO) {
 }
 
 function onGoalError(error: string) {
-  snackbarStore.show({ message: error || '生成目标失败', type: 'error' });
+  message.error(error || '生成目标失败');
 }
 
 function handleGenerateTasks() {
   if (!aiTasksRef.value) {
-    snackbarStore.show({ message: '任务生成组件未加载', type: 'error' });
+    message.error('任务生成组件未加载');
     return;
   }
   aiTasksRef.value.openDialog();
@@ -273,7 +273,7 @@ function handleGenerateTasks() {
 
 function handleGenerateKnowledge() {
   if (!aiKnowledgeRef.value) {
-    snackbarStore.show({ message: '知识文档组件未加载', type: 'error' });
+    message.error('知识文档组件未加载');
     return;
   }
   aiKnowledgeRef.value.openDialog();

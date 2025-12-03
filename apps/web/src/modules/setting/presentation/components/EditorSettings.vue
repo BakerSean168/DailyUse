@@ -316,14 +316,14 @@ function handleAutoSaveDelayChange(value: number) {
   }
 }
 
-function handleLinkPreviewChange(value: boolean) {
-  if (props.autoSave) {
+function handleLinkPreviewChange(value: boolean | null) {
+  if (props.autoSave && value !== null) {
     viewStore.updateEditorSettings({ enableLinkPreview: value });
   }
 }
 
-function handleMediaEmbedChange(value: boolean) {
-  if (props.autoSave) {
+function handleMediaEmbedChange(value: boolean | null) {
+  if (props.autoSave && value !== null) {
     viewStore.updateEditorSettings({ enableMediaEmbed: value });
   }
 }
@@ -334,8 +334,8 @@ function handleVideoSitesChange(value: string[]) {
   }
 }
 
-function handleLineNumbersChange(value: boolean) {
-  if (props.autoSave) {
+function handleLineNumbersChange(value: boolean | null) {
+  if (props.autoSave && value !== null) {
     viewStore.updateEditorSettings({ showLineNumbers: value });
   }
 }
@@ -346,8 +346,8 @@ function handleFontSizeChange(value: number) {
   }
 }
 
-function handleWordCountChange(value: boolean) {
-  if (props.autoSave) {
+function handleWordCountChange(value: boolean | null) {
+  if (props.autoSave && value !== null) {
     viewStore.updateEditorSettings({ showWordCount: value });
   }
 }

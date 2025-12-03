@@ -84,7 +84,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       providers.value = response || [];
     } catch (err: any) {
       error.value = err.message || '加载 AI Provider 失败';
-      showError(error.value);
+      showError(error.value ?? '加载失败');
       providers.value = [];
     } finally {
       loading.value = false;
@@ -107,7 +107,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       return provider;
     } catch (err: any) {
       error.value = err.message || '创建 AI Provider 失败';
-      showError(error.value);
+      showError(error.value ?? '创建失败');
       return null;
     } finally {
       loading.value = false;
@@ -131,7 +131,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       return true;
     } catch (err: any) {
       error.value = err.message || '更新 AI Provider 失败';
-      showError(error.value);
+      showError(error.value ?? '更新失败');
       return false;
     } finally {
       loading.value = false;
@@ -152,7 +152,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       return true;
     } catch (err: any) {
       error.value = err.message || '删除 AI Provider 失败';
-      showError(error.value);
+      showError(error.value ?? '删除失败');
       return false;
     } finally {
       loading.value = false;
@@ -199,7 +199,7 @@ export function useAIProviders(): UseAIProvidersReturn {
       return true;
     } catch (err: any) {
       error.value = err.message || '设置默认 Provider 失败';
-      showError(error.value);
+      showError(error.value ?? '设置失败');
       return false;
     } finally {
       loading.value = false;

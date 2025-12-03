@@ -98,7 +98,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { SummaryResult } from '../types/summarization';
+import type { SummaryResult } from '../../types/summarization';
 
 // ============ Props ============
 interface Props {

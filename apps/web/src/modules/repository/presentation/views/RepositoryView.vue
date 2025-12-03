@@ -440,7 +440,7 @@ function handleAIGenerateKnowledge(parentFolderUuid?: string) {
   showAIKnowledgeDialog.value = true;
 }
 
-function handleAIKnowledgeGenerated(data: { folderUuid: string; resourceUuid: string }) {
+function handleAIKnowledgeGenerated(data: { folderUuid?: string; resourceUuid: string }) {
   console.log('AI 知识文档已生成:', data);
   // 刷新文件树
   filesPanelRef.value?.refresh();
