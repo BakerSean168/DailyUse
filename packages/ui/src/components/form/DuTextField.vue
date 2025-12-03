@@ -134,10 +134,10 @@ const passwordStrengthData = computed(() => {
 const passwordStrength = computed(() => {
   if (passwordStrengthData.value) {
     return {
-      score: passwordStrengthData.value.strength.value.score,
-      text: passwordStrengthData.value.strength.value.text,
-      color: passwordStrengthData.value.strength.value.color,
-      percentage: passwordStrengthData.value.strengthPercentage.value,
+      score: passwordStrengthData.value.score.value,
+      text: passwordStrengthData.value.text.value,
+      color: passwordStrengthData.value.color.value,
+      percentage: passwordStrengthData.value.percentage.value,
     };
   }
   return { score: 0, text: '', color: 'grey', percentage: 0 };

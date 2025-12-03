@@ -1,7 +1,24 @@
-import { computed } from 'vue';
-import type { FormRule, PasswordStrength } from '../types';
+/**
+ * Form Validation Composables
+ *
+ * Re-exports from @dailyuse/ui-vue with Vuetify-compatible format.
+ * Maintained for backward compatibility.
+ */
 
-// 表单验证规则
+import type { FormRule } from '../types';
+
+// Re-export from ui-vue
+export {
+  useFormValidation,
+  useFormValidationAll,
+} from '@dailyuse/ui-vue';
+
+/**
+ * Get pre-configured form validation rules (Vuetify-compatible)
+ *
+ * These rules return string | boolean which is compatible with
+ * Vuetify's v-text-field rules prop.
+ */
 export function useFormRules() {
   const usernameRules: FormRule[] = [
     (v: string) => !!v || '请输入用户名',
@@ -28,7 +45,7 @@ export function useFormRules() {
     (v: string) => !v || /^(\+86\s?)?1[3-9]\d{9}$/.test(v) || '请输入有效的手机号码',
   ];
 
-  const requiredRule: FormRule = (v: any) => !!v || '此字段为必填项';
+  const requiredRule: FormRule = (v: unknown) => !!v || '此字段为必填项';
 
   return {
     usernameRules,
@@ -37,26 +54,4 @@ export function useFormRules() {
     phoneRules,
     requiredRule,
   };
-}
-
-// 密码强度计算
-export function usePasswordStrength(password: string): PasswordStrength {
-  if (!password) return { score: 0, text: '', color: 'grey' };
-
-  let score = 0;
-  const checks = [
-    password.length >= 8,
-    /[a-z]/.test(password),
-    /[A-Z]/.test(password),
-    /[0-9]/.test(password),
-    /[^a-zA-Z0-9]/.test(password),
-    password.length >= 12,
-  ];
-
-  score = checks.filter(Boolean).length;
-
-  if (score <= 2) return { score: 1, text: '弱', color: 'error' };
-  if (score <= 4) return { score: 2, text: '中等', color: 'warning' };
-  if (score <= 5) return { score: 3, text: '强', color: 'success' };
-  return { score: 4, text: '很强', color: 'success' };
 }

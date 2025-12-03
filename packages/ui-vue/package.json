@@ -1,0 +1,47 @@
+{
+  "name": "@dailyuse/ui-vue",
+  "version": "0.0.1",
+  "description": "Vue 3 composables for DailyUse headless UI",
+  "private": false,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./composables": {
+      "types": "./dist/composables/index.d.ts",
+      "import": "./dist/composables/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@dailyuse/ui-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.8.3",
+    "vue": "^3.4.0",
+    "vue-tsc": "^2.2.12"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "composables",
+    "headless-ui"
+  ]
+}

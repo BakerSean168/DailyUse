@@ -1,0 +1,32 @@
+{
+  "name": "@dailyuse/ui-core",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/ui-core/src",
+  "projectType": "library",
+  "tags": ["scope:ui", "type:core"],
+  "implicitDependencies": [],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "cwd": "packages/ui-core",
+        "command": "pnpm run build"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/ui-core",
+        "command": "pnpm run typecheck"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/ui-core",
+        "command": "pnpm run dev"
+      }
+    }
+  }
+}

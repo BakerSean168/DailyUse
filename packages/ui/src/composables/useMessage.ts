@@ -1,10 +1,24 @@
 /**
- * Vuetify 消息提示封装
+ * Vuetify Message/Dialog Composables
  * @module useMessage
- * @description 提供统一的消息提示、确认框、对话框等 UI 交互功能
+ * @description Vuetify-specific message, snackbar, and dialog implementations.
+ *
+ * Note: For framework-agnostic message logic, see @dailyuse/ui-core.
+ * For Vue composables, see @dailyuse/ui-vue.
+ * This file provides Vuetify-specific implementations with backward compatibility.
  */
 
-import { ref, type Ref } from 'vue';
+import { ref } from 'vue';
+
+// Re-export core composables from ui-vue for convenience
+export {
+  useSnackbar as useCoreSnackbar,
+  useDialog as useCoreDialog,
+  useGlobalMessage as useCoreGlobalMessage,
+  useGlobalDialog as useCoreGlobalDialog,
+  type MessageType as CoreMessageType,
+  type MessageOptions as CoreMessageOptions,
+} from '@dailyuse/ui-vue';
 
 /**
  * 消息类型

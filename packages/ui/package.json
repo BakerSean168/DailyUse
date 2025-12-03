@@ -23,6 +23,9 @@
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit"
   },
+  "dependencies": {
+    "@dailyuse/ui-vue": "workspace:*"
+  },
   "peerDependencies": {
     "@mdi/font": "^7.0.0",
     "vue": "^3.4.0",

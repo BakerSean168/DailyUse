@@ -1,11 +1,23 @@
 /**
- * Vuetify 加载状态 Composable
+ * Vuetify Loading State Composables
  * @module useLoading
- * @description 提供 Vuetify 特定的加载状态管理和全局 Loading 遮罩
+ * @description Vuetify-specific loading state management with global overlay support.
+ *
+ * Note: For framework-agnostic loading logic, see @dailyuse/ui-core.
+ * For Vue composables, see @dailyuse/ui-vue.
+ * This file provides Vuetify-specific implementations with backward compatibility.
  */
 
 import { ref, computed, type Ref } from 'vue';
-import { LoadingState, createLoadingWrapper } from '@dailyuse/utils';
+import { createLoadingWrapper } from '@dailyuse/utils';
+
+// Re-export core loading composables from ui-vue for convenience
+export {
+  useLoading as useCoreLoading,
+  useGlobalLoading as useCoreGlobalLoading,
+  useButtonLoading as useCoreButtonLoading,
+  useTableLoading as useCoreTableLoading,
+} from '@dailyuse/ui-vue';
 
 /**
  * Loading 覆盖层选项
