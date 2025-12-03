@@ -24,7 +24,8 @@ import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
 import { goalApiClient, goalFolderApiClient } from '../../infrastructure/api/goalApiClient';
 import { getGoalStore } from '../../presentation/stores/goalStore';
-import { eventBus, GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils';
+import { GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/contracts/goal';
 
 export class GoalSyncApplicationService {
   private static instance: GoalSyncApplicationService;

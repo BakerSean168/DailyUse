@@ -9,3 +9,6 @@ export { TaskGoalBinding } from './TaskGoalBinding';
 export { TaskTimeConfig } from './TaskTimeConfig';
 export { CompletionRecord } from './CompletionRecord';
 export { SkipRecord } from './SkipRecord';
+
+// 错误类
+export * from './TaskErrors';

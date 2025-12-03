@@ -7,7 +7,7 @@ import type { TabType } from '../enums';
 import type { EditorTabServerDTO } from './EditorTabServer';
 
 // 从值对象导入类型
-import type { TabViewStateClientDTO } from '../valueObjects';
+import type { TabViewStateClientDTO } from '../value-objects';
 
 /**
  * Editor Tab Client DTO

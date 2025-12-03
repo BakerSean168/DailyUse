@@ -10,8 +10,8 @@ export * from './entities/Folder';
 export * from './entities/Resource';
 
 // Domain Services
-export * from './domain-services/FolderHierarchyService';
-export * from './domain-services/RepositoryStatisticsDomainService';
+export * from './services/FolderHierarchyService';
+export * from './services/RepositoryStatisticsDomainService';
 
 // Repository Interfaces
 export * from './repositories/IRepositoryRepository';

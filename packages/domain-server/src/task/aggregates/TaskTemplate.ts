@@ -28,7 +28,7 @@ import {
   InvalidGoalBindingError,
   InvalidDateRangeError,
   InstanceGenerationFailedError,
-} from '../errors';
+} from '../value-objects/TaskErrors';
 
 /**
  * TaskTemplate 聚合根

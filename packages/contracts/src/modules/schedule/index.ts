@@ -129,7 +129,7 @@ export type {
   ConflictDetectionResult,
   ConflictDetail,
   ConflictSuggestion,
-} from './ConflictDetectionResult';
+} from './value-objects/ConflictDetectionResult';
 
 // ============ API Requests ============
 export { ResolutionStrategy } from './api-requests';

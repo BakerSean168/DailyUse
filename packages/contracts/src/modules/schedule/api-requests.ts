@@ -7,7 +7,7 @@ import type { ScheduleTaskClientDTO } from './aggregates/ScheduleTaskClient';
 import type { ScheduleStatisticsClientDTO } from './aggregates/ScheduleStatisticsClient';
 import type { ScheduleExecutionClientDTO } from './entities/ScheduleExecutionClient';
 import type { ScheduleClientDTO } from './aggregates/ScheduleClient';
-import type { ConflictDetectionResult } from './ConflictDetectionResult';
+import type { ConflictDetectionResult } from './value-objects/ConflictDetectionResult';
 import type {
   ScheduleTaskStatus,
   ExecutionStatus,

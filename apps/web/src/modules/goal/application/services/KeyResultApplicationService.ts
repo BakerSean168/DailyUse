@@ -27,7 +27,8 @@ import type {
   ProgressBreakdown,
 } from '@dailyuse/contracts/goal';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
-import { eventBus, GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils';
+import { GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/contracts/goal';
 
 export class KeyResultApplicationService {
   private static instance: KeyResultApplicationService;

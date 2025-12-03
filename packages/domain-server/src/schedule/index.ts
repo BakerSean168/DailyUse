@@ -6,7 +6,7 @@
  */
 
 // ============ 错误类 ============
-export * from './errors/ScheduleErrors';
+export * from './value-objects/ScheduleErrors';
 
 // ============ 值对象 ============
 export * from './value-objects';

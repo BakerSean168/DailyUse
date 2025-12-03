@@ -18,7 +18,7 @@ import {
   SourceEntityNoScheduleRequiredError,
   ScheduleTaskCreationError,
   ScheduleTaskUpdateError,
-} from '../errors/ScheduleErrors';
+} from '../value-objects/ScheduleErrors';
 
 /**
  * ScheduleTaskFactory 领域服务

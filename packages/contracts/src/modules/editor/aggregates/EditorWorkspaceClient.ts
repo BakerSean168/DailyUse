@@ -11,7 +11,7 @@ import type {
   WorkspaceLayoutClientDTO,
   WorkspaceSettingsClient,
   WorkspaceSettingsClientDTO,
-} from '../valueObjects';
+} from '../value-objects';
 import type { EditorWorkspaceServerDTO } from './EditorWorkspaceServer';
 
 // 从实体导入类型

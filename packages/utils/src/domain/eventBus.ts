@@ -1,4 +1,4 @@
-import { CrossPlatformEventBus, type IUnifiedEvent } from '../event/CrossPlatformEventBus';
+import { CrossPlatformEventBus, type IUnifiedEvent } from './CrossPlatformEventBus';
 
 // ===================== 兼容性类型定义 =====================
 
@@ -256,13 +256,13 @@ export const eventBus = EventBus.getInstance();
 export { EventBus };
 
 // 导出跨平台事件系统相关类和类型
-export { CrossPlatformEventBus } from '../event/CrossPlatformEventBus';
+export { CrossPlatformEventBus } from './CrossPlatformEventBus';
 export type {
   IUnifiedEvent,
   IRequestResponse,
   IEventHandler,
   IRequestHandler,
-} from '../event/CrossPlatformEventBus';
+} from './CrossPlatformEventBus';
 
 // 导出工具函数
-export { createEvent, sendTypedEvent, invokeTypedRequest } from '../event/CrossPlatformEventBus';
+export { createEvent, sendTypedEvent, invokeTypedRequest } from './CrossPlatformEventBus';

@@ -7,7 +7,7 @@ import type { ProjectType } from '../enums';
 import type { EditorWorkspaceClientDTO } from './EditorWorkspaceClient';
 
 // 从值对象导入类型
-import type { WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '../valueObjects';
+import type { WorkspaceLayoutServerDTO, WorkspaceSettingsServerDTO } from '../value-objects';
 
 // 从实体导入类型
 import type { EditorSessionServerDTO } from '../entities/EditorSessionServer';

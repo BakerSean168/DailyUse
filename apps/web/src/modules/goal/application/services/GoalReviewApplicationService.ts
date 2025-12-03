@@ -19,7 +19,8 @@ import type {
   GoalReviewsResponse,
 } from '@dailyuse/contracts/goal';
 import { goalApiClient } from '../../infrastructure/api/goalApiClient';
-import { eventBus, GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/utils';
+import { eventBus } from '@dailyuse/utils';
+import { GoalEvents, type GoalAggregateRefreshEvent } from '@dailyuse/contracts/goal';
 
 export class GoalReviewApplicationService {
   private static instance: GoalReviewApplicationService;

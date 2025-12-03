@@ -1,4 +1,4 @@
-import { generateUUID } from '../uuid';
+import { generateUUID } from '../shared/uuid';
 
 export abstract class Entity {
   protected constructor(protected readonly _uuid: string) {}

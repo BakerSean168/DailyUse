@@ -1,17 +1,37 @@
-export * from './time';
+/**
+ * @dailyuse/utils - 通用工具库
+ *
+ * 模块结构:
+ * - shared/     共享工具（uuid, date, time, recurrence, priority）
+ * - domain/     DDD 基础类（Entity, AggregateRoot, ValueObject, EventBus）
+ * - errors/     错误处理
+ * - validation/ 验证工具
+ * - response/   HTTP 响应工具
+ * - frontend/   前端专用工具
+ * - logger/     日志系统
+ */
+
+// 共享工具
+export * from './shared/index';
+
+// DDD 基础类和事件系统
+export * from './domain/index';
+
+// 错误处理
 export * from './errors/index';
-export * from './uuid';
-export * from './date';
-export * from './recurrence';
-export * from './domain/index'; // 包含 CrossPlatformEventBus 和所有事件系统导出
-export * from './initializationManager';
-export * from './webInitializationManager'; // Web 端专用初始化管理器
+
+// 验证工具
+export * from './validation/index';
+
+// HTTP 响应工具
 export * from './response/index';
+
+// 前端工具
 export * from './frontend/index';
-export * from './priority-calculator';
 
-// Logger system exports - 跨平台日志系统
+// 初始化管理器
+export * from './initializationManager';
+export * from './webInitializationManager';
+
+// 日志系统
 export * from './logger/index';
-
-// Goal events - 应用级 Goal 事件定义
-export { GoalEvents, type GoalAggregateRefreshEvent } from './event/GoalEvents';

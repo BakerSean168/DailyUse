@@ -9,7 +9,7 @@ import type { EditorGroupServerDTO, EditorGroupPersistenceDTO } from './EditorGr
 import type {
   SessionLayoutServerDTO,
   SessionLayoutPersistenceDTO,
-} from '../valueObjects/SessionLayout';
+} from '../value-objects/SessionLayout';
 
 export interface EditorSessionServerDTO {
   // ===== 基础属性 =====

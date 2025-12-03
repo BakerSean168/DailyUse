@@ -47,15 +47,6 @@ export { BuiltinValidators } from './builtin-validators';
 //   useFieldValidation as useReactFieldValidation,
 // } from './adapters/react-adapter';
 
-// 使用示例
-export {
-  createUserRegistrationForm,
-  createProductForm,
-  demonstrateUsage,
-  createCustomValidationRules,
-  demonstrateDynamicRules,
-} from './examples';
-
 /**
  * 快速开始工具函数
  */

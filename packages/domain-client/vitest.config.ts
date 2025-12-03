@@ -1,34 +1,30 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vitest/config';
-import path from 'node:path';
+import { defineConfig, mergeConfig } from 'vitest/config';
+import { createSharedConfig } from '../../vitest.shared';
 
-export default defineConfig({
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@dailyuse/contracts': path.resolve(__dirname, '../contracts/src'),
-      '@dailyuse/utils': path.resolve(__dirname, '../utils/src'),
-    },
-  },
-  test: {
-    globals: true,
-    environment: 'happy-dom', // 客户端需要 DOM 环境
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['node_modules', 'dist', '.git', '.cache', 'src/test/setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'src/test/', '**/*.d.ts', '**/*.config.*', 'dist/'],
-    },
-    // 客户端测试超时设置
-    testTimeout: 5000,
-    // 允许并发测试
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: false,
+/**
+ * Vitest Configuration for domain-client package
+ *
+ * This configuration merges with the shared config and adds project-specific settings.
+ * The workspace configuration (vitest.workspace.ts) takes precedence when running tests
+ * from the workspace root.
+ */
+export default mergeConfig(
+  createSharedConfig({
+    projectRoot: __dirname,
+    environment: 'happy-dom',
+  }),
+  defineConfig({
+    test: {
+      name: 'domain-client',
+      setupFiles: ['./src/test/setup.ts'],
+      testTimeout: 5000,
+      pool: 'forks',
+      poolOptions: {
+        forks: {
+          singleFork: false,
+        },
       },
     },
-  },
-});
+  }),
+);

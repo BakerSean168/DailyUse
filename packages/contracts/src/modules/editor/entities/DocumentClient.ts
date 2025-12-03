@@ -7,7 +7,7 @@ import type { DocumentLanguage, IndexStatus } from '../enums';
 import type { DocumentServerDTO } from './DocumentServer';
 
 // 从值对象导入类型
-import type { DocumentMetadataClientDTO } from '../valueObjects';
+import type { DocumentMetadataClientDTO } from '../value-objects';
 
 /**
  * Document Client DTO

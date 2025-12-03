@@ -6,7 +6,7 @@
  */
 
 import type { EditorGroupClientDTO } from './EditorGroupClient';
-import type { SessionLayoutClientDTO } from '../valueObjects/SessionLayout';
+import type { SessionLayoutClientDTO } from '../value-objects/SessionLayout';
 
 export interface EditorSessionClientDTO {
   // ===== 基础属性 =====

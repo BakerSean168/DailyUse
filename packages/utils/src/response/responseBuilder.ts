@@ -12,7 +12,7 @@ import type {
   ListResponse,
   BatchResponse,
 } from '@dailyuse/contracts/response';
-import { newId } from '../id';
+import { newId } from '../shared/uuid';
 
 /**
  * 响应构建器类

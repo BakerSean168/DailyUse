@@ -16,7 +16,7 @@ import type {
   SessionLayoutServerDTO,
   TabViewStateServerDTO,
   DocumentMetadataServerDTO,
-} from './valueObjects';
+} from './value-objects';
 
 // ==================== EditorWorkspace API DTOs ====================
 

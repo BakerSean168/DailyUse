@@ -27,8 +27,8 @@ export type {
   WorkspaceLayoutPersistenceDTO,
   WorkspaceLayoutServer,
   WorkspaceLayoutClient,
-} from './valueObjects/WorkspaceLayout';
-export { DEFAULT_WORKSPACE_LAYOUT } from './valueObjects/WorkspaceLayout';
+} from './value-objects/WorkspaceLayout';
+export { DEFAULT_WORKSPACE_LAYOUT } from './value-objects/WorkspaceLayout';
 
 export type {
   // WorkspaceSettings
@@ -39,8 +39,8 @@ export type {
   WorkspaceSettingsPersistenceDTO,
   WorkspaceSettingsServer,
   WorkspaceSettingsClient,
-} from './valueObjects/WorkspaceSettings';
-export { DEFAULT_WORKSPACE_SETTINGS } from './valueObjects/WorkspaceSettings';
+} from './value-objects/WorkspaceSettings';
+export { DEFAULT_WORKSPACE_SETTINGS } from './value-objects/WorkspaceSettings';
 
 export type {
   // SessionLayout
@@ -51,8 +51,8 @@ export type {
   SessionLayoutPersistenceDTO,
   SessionLayoutServer,
   SessionLayoutClient,
-} from './valueObjects/SessionLayout';
-export { DEFAULT_SESSION_LAYOUT } from './valueObjects/SessionLayout';
+} from './value-objects/SessionLayout';
+export { DEFAULT_SESSION_LAYOUT } from './value-objects/SessionLayout';
 
 export type {
   // TabViewState
@@ -63,7 +63,7 @@ export type {
   TabViewStatePersistenceDTO,
   TabViewStateServer,
   TabViewStateClient,
-} from './valueObjects/TabViewState';
+} from './value-objects/TabViewState';
 
 export type {
   // DocumentMetadata
@@ -74,7 +74,7 @@ export type {
   DocumentMetadataPersistenceDTO,
   DocumentMetadataServer,
   DocumentMetadataClient,
-} from './valueObjects/DocumentMetadata';
+} from './value-objects/DocumentMetadata';
 
 // ============ Aggregates ============
 export type {

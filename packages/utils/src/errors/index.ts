@@ -4,4 +4,3 @@
  */
 
 export * from './DomainError';
-export * from './ReminderErrors';

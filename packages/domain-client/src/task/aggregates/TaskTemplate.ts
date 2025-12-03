@@ -657,12 +657,7 @@ export class TaskTemplate extends AggregateRoot implements TaskTemplate {
     const defaultTimeConfig: TaskTimeConfig =
       dto.timeConfig && dto.timeConfig.timeType
         ? TaskTimeConfig.fromClientDTO(dto.timeConfig)
-        : TaskTimeConfig.fromClientDTO({
-            timeType: TimeType.ALL_DAY,
-            startDate: null,
-            timePoint: null,
-            timeRange: null,
-          });
+        : TaskTimeConfig.createDefault();
 
     return new TaskTemplate({
       uuid: dto.uuid,

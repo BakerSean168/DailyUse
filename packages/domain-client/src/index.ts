@@ -155,11 +155,3 @@ export { WidgetConfig } from './dashboard/value-objects/WidgetConfig';
 // ==================== AI 模块 ====================
 export { AIConversation } from './ai/aggregates/AIConversation';
 export { AIMessage } from './ai/entities/AIMessage';
-export type {
-  AiConversationRepository,
-  StreamEvent,
-  StreamEventChunk,
-  StreamEventError,
-  StreamEventComplete,
-} from './ai/repositories/AiConversationRepository';
-export { httpAiConversationRepository } from './ai/repositories/HttpAiConversationRepository';

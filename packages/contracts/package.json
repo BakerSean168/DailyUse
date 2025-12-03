@@ -50,10 +50,6 @@
       "types": "./dist/modules/notification/index.d.ts",
       "import": "./dist/modules/notification/index.js"
     },
-    "./document": {
-      "types": "./dist/document.contracts.d.ts",
-      "import": "./dist/document.contracts.js"
-    },
     "./ai": {
       "types": "./dist/modules/ai/index.d.ts",
       "import": "./dist/modules/ai/index.js"

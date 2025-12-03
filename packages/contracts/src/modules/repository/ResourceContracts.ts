@@ -3,7 +3,7 @@
  * 资源管理模块契约 - 用于前后端共享类型定义
  */
 
-import { ResourceType } from '../modules/repository/enums';
+import { ResourceType } from './enums';
 
 // Re-export for convenience
 export { ResourceType };

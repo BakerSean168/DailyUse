@@ -116,7 +116,7 @@ export type {
 } from './entities/ResourceClient';
 
 // ============ DTOs (File Tree - Story 11.1) ============
-export type { TreeNodeType, TreeNode, FileTreeResponse } from '../../repository/TreeNode';
+export type { TreeNodeType, TreeNode, FileTreeResponse } from './TreeNode';
 
 // ============ DTOs (Search - Story 11.2) ============
 export type {
@@ -126,7 +126,7 @@ export type {
   MatchType,
   SearchResultItem,
   SearchResponse,
-} from '../../repository/SearchContracts';
+} from './SearchContracts';
 
 // ============ DTOs (Bookmark - Story 11.4) ============
 export type {
@@ -135,10 +135,10 @@ export type {
   CreateBookmarkRequest,
   UpdateBookmarkRequest,
   BookmarkListResponse,
-} from '../../repository/BookmarkContracts';
+} from './BookmarkContracts';
 
 // ============ DTOs (Tags - Story 11.5) ============
-export type { TagStatisticsDto, TagResourceReferenceDto } from '../../repository/TagsContracts';
+export type { TagStatisticsDto, TagResourceReferenceDto } from './TagsContracts';
 
 // ============ DTOs (Resource Upload - Story 11.x) ============
 export type {
@@ -155,8 +155,8 @@ export type {
   ResourceDeleteRequest,
   ImageCompressionSettings,
   ImageEmbedSettings,
-} from '../../repository/ResourceContracts';
+} from './ResourceContracts';
 
 // ============ Constants (Upload) ============
-export { RESOURCE_UPLOAD_CONFIG } from '../../repository/ResourceContracts';
-export type { ResourceUploadConfig } from '../../repository/ResourceContracts';
+export { RESOURCE_UPLOAD_CONFIG } from './ResourceContracts';
+export type { ResourceUploadConfig } from './ResourceContracts';

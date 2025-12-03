@@ -145,4 +145,16 @@ export class TaskTimeConfig extends ValueObject implements TaskTimeConfig {
       timeRange: dto.timeRange,
     });
   }
+
+  /**
+   * 创建默认的全天配置（无具体时间）
+   */
+  public static createDefault(): TaskTimeConfig {
+    return new TaskTimeConfig({
+      timeType: TimeType.ALL_DAY,
+      startDate: null,
+      timePoint: null,
+      timeRange: null,
+    });
+  }
 }

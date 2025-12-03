@@ -18,4 +18,4 @@ export * from './repositories';
 export * from './services';
 
 // 错误类
-export * from './errors';
+export * from './value-objects/TaskErrors';
