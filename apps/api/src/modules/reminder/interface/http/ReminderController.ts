@@ -9,7 +9,7 @@ import {
   ReminderTemplateUpdateError,
   isDomainError,
 } from '@dailyuse/utils';
-import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 const logger = createLogger('ReminderController');
 

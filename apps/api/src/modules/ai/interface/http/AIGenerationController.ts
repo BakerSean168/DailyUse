@@ -12,7 +12,7 @@
 import type { Response } from 'express';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
-import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { AIContainer } from '../../infrastructure/di/AIContainer';
 
 const logger = createLogger('AIGenerationController');

@@ -15,7 +15,7 @@ import { PasswordManagementApplicationService } from '../../../authentication/ap
 import { SessionManagementApplicationService } from '../../../authentication/application/services/SessionManagementApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
-import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { z } from 'zod';
 
 const logger = createLogger('AccountMeController');

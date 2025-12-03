@@ -2,7 +2,7 @@ import '../../../../../test/setup-database'; // 导入全局数据库清理钩�
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
 import app from '../../../../../app';
-import { prisma } from '../../../../../config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 import { createTestAccount } from '../../../../../test/helpers/database-helpers';
 
 /**

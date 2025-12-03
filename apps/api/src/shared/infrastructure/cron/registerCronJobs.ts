@@ -1,5 +1,5 @@
 import { CronSchedulerManager } from './CronSchedulerManager';
-import { DailyAnalysisCronJob } from '../../modules/reminder/infrastructure/cron/dailyAnalysisCronJob';
+import { DailyAnalysisCronJob } from '@/modules/reminder/infrastructure/cron/dailyAnalysisCronJob';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('CronJobRegistration');

@@ -1,4 +1,4 @@
-import { DomainError } from '../../../shared/errors/DomainError';
+import { DomainError } from '../../../shared/domain/errors/DomainError';
 
 /**
  * Reminder 模块专用错误类

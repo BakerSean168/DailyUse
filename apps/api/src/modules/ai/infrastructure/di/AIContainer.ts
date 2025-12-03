@@ -14,7 +14,7 @@
  */
 
 import type { PrismaClient } from '@prisma/client';
-import { prisma } from '../../../../config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 import { AIGenerationValidationService } from '@dailyuse/domain-server/ai';
 import { AIGenerationApplicationService } from '../../application/services/AIGenerationApplicationService';
 import { AIConversationService } from '../../application/services/AIConversationService';

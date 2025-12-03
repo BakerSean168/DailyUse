@@ -1,6 +1,6 @@
 import type { IEditorWorkspaceRepository } from '@dailyuse/domain-server/editor';
 import { PrismaEditorWorkspaceRepository } from '../repositories/prisma/PrismaEditorWorkspaceRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Editor Module DI Container

@@ -7,7 +7,7 @@ import { PrismaScheduleTaskRepository } from '../repositories/PrismaScheduleTask
 import { PrismaScheduleStatisticsRepository } from '../repositories/PrismaScheduleStatisticsRepository';
 import { PrismaScheduleRepository } from '../repositories/PrismaScheduleRepository';
 import { PrismaScheduleExecutionRepository } from '../repositories/PrismaScheduleExecutionRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Schedule Module DI Container

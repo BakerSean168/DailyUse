@@ -12,7 +12,7 @@ import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/respons
 import { createLogger } from '@dailyuse/utils';
 import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
 import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 import { GoalNotFoundError, KeyResultNotFoundError } from '../../application/errors/WeightSnapshotErrors';
 
 const logger = createLogger('WeightSnapshotController');

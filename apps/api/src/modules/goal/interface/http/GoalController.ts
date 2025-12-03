@@ -7,10 +7,10 @@ import { WeightSnapshotApplicationService } from '../../application/services/Wei
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import type { GoalServerDTO, GoalClientDTO, GoalAggregateViewResponse } from '@dailyuse/contracts/goal';
 import { createLogger } from '@dailyuse/utils';
-import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
 import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 const logger = createLogger('GoalController');
 

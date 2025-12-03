@@ -4,7 +4,7 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import { GoalCrossModuleQueryService } from '../../modules/goal/application/services/GoalCrossModuleQueryService';
+import { GoalCrossModuleQueryService } from '@/modules/goal/application/services/GoalCrossModuleQueryService';
 
 const router: Router = Router();
 

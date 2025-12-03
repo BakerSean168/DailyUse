@@ -4,7 +4,7 @@ import { SettingApplicationService } from '../../application/services/SettingApp
 import { SettingCloudSyncService } from '../../application/services/SettingCloudSyncService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
-import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 const logger = createLogger('SettingController');
 

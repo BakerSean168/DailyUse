@@ -12,7 +12,7 @@
 import { Router } from 'express';
 import { AIGenerationController } from './AIGenerationController';
 import { AIConversationController } from './AIConversationController';
-import { authMiddleware } from '../../../../shared/middlewares/authMiddleware';
+import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 const router: Router = Router();
 

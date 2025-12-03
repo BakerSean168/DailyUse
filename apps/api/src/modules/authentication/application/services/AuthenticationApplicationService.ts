@@ -25,7 +25,7 @@ import { AuthenticationDomainService } from '@dailyuse/domain-server/authenticat
 import { AuthenticationContainer } from '../../infrastructure/di/AuthenticationContainer';
 import { AccountContainer } from '../../../account/infrastructure/di/AccountContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 

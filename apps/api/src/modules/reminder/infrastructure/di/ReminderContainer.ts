@@ -1,4 +1,4 @@
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 import type {
   IReminderTemplateRepository,
   IReminderGroupRepository,

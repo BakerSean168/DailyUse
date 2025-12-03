@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import type { ITaskTemplateRepository } from '@dailyuse/domain-server/task';
 import { TaskTemplate, TaskTemplateHistory } from '@dailyuse/domain-server/task';
 import type { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import { withRetry } from '@/config/prisma';
+import { withRetry } from '@/shared/infrastructure/config/prisma';
 
 /**
  * TaskTemplate Prisma 仓库

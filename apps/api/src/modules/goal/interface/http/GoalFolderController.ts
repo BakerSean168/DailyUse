@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import type { AuthenticatedRequest } from '@/shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '@/shared/infrastructure/http/middlewares/authMiddleware';
 import { GoalFolderApplicationService } from '../../application/services/GoalFolderApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';

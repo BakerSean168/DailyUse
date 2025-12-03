@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import type { AuthenticatedRequest } from '@/shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '@/shared/infrastructure/http/middlewares/authMiddleware';
 import { FocusSessionApplicationService } from '../../application/services/FocusSessionApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { GoalStatus, FocusSessionStatus } from '@dailyuse/contracts/goal';

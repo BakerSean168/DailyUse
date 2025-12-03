@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { AuthenticationController } from './AuthenticationController';
 import { SessionManagementController } from './SessionManagementController';
 import { RegistrationController } from '../../../account/interface/http/RegistrationController';
-import { deviceInfoMiddleware } from '../../../../shared/middlewares/index';
+import { deviceInfoMiddleware } from '../../../../shared/infrastructure/http/middlewares/index';
 
 const router: ExpressRouter = Router();
 

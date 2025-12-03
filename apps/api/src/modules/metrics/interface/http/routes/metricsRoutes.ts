@@ -1,5 +1,5 @@
 import { Router, type Request, type Response, type Router as ExpressRouter } from 'express';
-import { getAllMetrics } from '../../../../../middleware/performance.middleware';
+import { getAllMetrics } from '@/shared/infrastructure/http/middlewares/performance.middleware';
 
 const router: ExpressRouter = Router();
 

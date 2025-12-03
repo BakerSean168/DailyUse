@@ -7,7 +7,7 @@ import type { Router as ExpressRouter } from 'express';
 import { Router } from 'express';
 import { DashboardStatisticsController } from './controllers/DashboardStatisticsController';
 import { DashboardConfigController } from './controllers/DashboardConfigController';
-import { authMiddleware } from '../../../shared/middlewares/index';
+import { authMiddleware } from '../../../shared/infrastructure/http/middlewares/index';
 
 /**
  * @swagger

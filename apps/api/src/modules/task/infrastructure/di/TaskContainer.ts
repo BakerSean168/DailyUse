@@ -9,7 +9,7 @@ import { PrismaTaskInstanceRepository } from '../repositories/PrismaTaskInstance
 import { PrismaTaskTemplateRepository } from '../repositories/PrismaTaskTemplateRepository';
 import { PrismaTaskDependencyRepository } from '../repositories/PrismaTaskDependencyRepository';
 import { PrismaTaskStatisticsRepository } from '../repositories/PrismaTaskStatisticsRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Task Module DI Container

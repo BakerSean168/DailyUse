@@ -7,7 +7,7 @@ import { beforeEach, afterEach, vi } from 'vitest';
 import { mockPrismaClient, resetMockData } from './mocks/prismaMock';
 
 // Mock Prisma config module (unified config after cleanup)
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../shared/infrastructure/config/prisma.js', () => ({
   prisma: mockPrismaClient,
   connectPrisma: vi.fn(),
   disconnectPrisma: vi.fn(),

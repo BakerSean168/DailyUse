@@ -7,7 +7,7 @@ import type {
 import { PrismaRepositoryRepository } from '../repositories/PrismaRepositoryRepository';
 import { PrismaResourceRepository } from '../repositories/PrismaResourceRepository';
 import { PrismaFolderRepository } from '../repositories/PrismaFolderRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Repository 模块依赖注入容器

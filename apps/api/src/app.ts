@@ -28,13 +28,13 @@ import repositoryRouter from './modules/repository/interface/http/routes/reposit
 import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes';
 import aiRouter from './modules/ai/interface/http/aiRoutes';
 import dashboardRouter from './modules/dashboard/interface/routes';
-import crossModuleRouter from './shared/api/crossModuleRoutes';
+import crossModuleRouter from './shared/infrastructure/http/routes/crossModuleRoutes';
 import logsRouter from './modules/system/interface/http/logsRoutes';
 
-import { authMiddleware, optionalAuthMiddleware } from './shared/middlewares/index';
-import { setupSwagger } from './config/swagger';
+import { authMiddleware, optionalAuthMiddleware } from './shared/infrastructure/http/middlewares/index';
+import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createLogger } from '@dailyuse/utils';
-import { performanceMiddleware } from './middleware/performance.middleware';
+import { performanceMiddleware } from './shared/infrastructure/http/middlewares/performance.middleware';
 
 const logger = createLogger('Express');
 const app: Express = express();

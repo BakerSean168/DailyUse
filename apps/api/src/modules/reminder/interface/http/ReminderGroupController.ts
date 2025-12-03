@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { ReminderApplicationService } from '../../application/services/ReminderApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
-import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 const logger = createLogger('ReminderGroupController');
 

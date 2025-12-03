@@ -1,6 +1,6 @@
 import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import { PrismaAccountRepository } from '../repositories/PrismaAccountRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Account 模块依赖注入容器

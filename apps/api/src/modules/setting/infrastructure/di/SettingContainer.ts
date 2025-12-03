@@ -1,6 +1,6 @@
 import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { PrismaUserSettingRepository } from '../repositories/PrismaUserSettingRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Setting 模块依赖注入容器

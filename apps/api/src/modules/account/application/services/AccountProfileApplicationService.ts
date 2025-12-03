@@ -18,7 +18,7 @@ import type { AccountServerDTO, AccountClientDTO, CreateAccountRequest } from '@
 import type { IAccountRepository, Account } from '@dailyuse/domain-server/account';
 import { AccountDomainService } from '@dailyuse/domain-server/account';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 import { eventBus, createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('AccountProfileApplicationService');

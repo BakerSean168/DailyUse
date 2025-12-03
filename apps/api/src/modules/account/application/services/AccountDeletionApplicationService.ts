@@ -26,7 +26,7 @@ import { AuthenticationDomainService } from '@dailyuse/domain-server/authenticat
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
 import { AuthenticationContainer } from '../../../authentication/infrastructure/di/AuthenticationContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 import bcrypt from 'bcryptjs';
 
 const logger = createLogger('AccountDeletionApplicationService');

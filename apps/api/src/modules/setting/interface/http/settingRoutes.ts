@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { SettingController } from './SettingController';
-import { authMiddleware } from '../../../../shared/middlewares/authMiddleware';
+import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 /**
  * Setting 模块路由

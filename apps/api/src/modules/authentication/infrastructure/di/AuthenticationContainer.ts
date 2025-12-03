@@ -1,7 +1,7 @@
 import type { IAuthCredentialRepository, IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
 import { PrismaAuthCredentialRepository } from '../repositories/PrismaAuthCredentialRepository';
 import { PrismaAuthSessionRepository } from '../repositories/PrismaAuthSessionRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Authentication 依赖注入容器

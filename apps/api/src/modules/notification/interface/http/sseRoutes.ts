@@ -7,7 +7,7 @@ import type { Router as ExpressRouter, Request, Response, NextFunction } from 'e
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { createLogger } from '@dailyuse/utils';
-import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 const logger = createLogger('SSERoutes');
 const router: ExpressRouter = Router();

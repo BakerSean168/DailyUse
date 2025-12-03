@@ -11,13 +11,13 @@ const __dirname = dirname(__filename);
 config({ path: resolve(__dirname, '../.env') });
 
 import app from './app';
-import { connectPrisma, disconnectPrisma, prisma } from './config/prisma';
+import { connectPrisma, disconnectPrisma, prisma } from './shared/infrastructure/config/prisma';
 import { initializeApp } from './shared/initialization/initializer';
 // import { ScheduleTaskScheduler } from './modules/schedule/infrastructure/scheduler/ScheduleTaskScheduler'; // DISABLED: Schedule module needs refactoring
 // import { PriorityQueueScheduler } from './modules/schedule/infrastructure/scheduler/PriorityQueueScheduler'; // DISABLED: Schedule module needs refactoring
 // import { sseController } from './modules/schedule/interface/http/SSEController'; // DISABLED: Schedule module needs refactoring
 import { eventBus } from '@dailyuse/utils';
-import { initializeLogger, getStartupInfo } from './config/logger.config';
+import { initializeLogger, getStartupInfo } from './shared/infrastructure/config/logger.config';
 import { createLogger } from '@dailyuse/utils';
 import {
   startFocusModeCronJob,
@@ -27,7 +27,7 @@ import {
   startReminderTriggerCronJob,
   stopReminderTriggerCronJob,
 } from './modules/reminder/infrastructure/cron/reminderTriggerCronJob';
-import { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './infrastructure/cron';
+import { registerAllCronJobs, startCronScheduler, stopCronScheduler } from './shared/infrastructure/cron';
 import { registerTaskEventListeners } from './modules/task/application/event-handlers/registerTaskEventListeners';
 
 // 初始化日志系统

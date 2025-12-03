@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { AccountController } from './AccountController';
 import { AccountDeletionController } from './AccountDeletionController';
 import { AccountMeController } from './AccountMeController';
-import { authMiddleware } from '../../../../shared/middlewares/authMiddleware';
+import { authMiddleware } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 const router: ExpressRouter = Router();
 

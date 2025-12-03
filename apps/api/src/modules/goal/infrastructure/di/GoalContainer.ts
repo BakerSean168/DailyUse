@@ -10,7 +10,7 @@ import { PrismaFocusSessionRepository } from '../repositories/PrismaFocusSession
 import { PrismaGoalStatisticsRepository } from '../repositories/PrismaGoalStatisticsRepository';
 import { PrismaGoalFolderRepository } from '../repositories/PrismaGoalFolderRepository';
 import { PrismaFocusModeRepository } from '../repositories/PrismaFocusModeRepository';
-import { prisma } from '@/config/prisma';
+import { prisma } from '@/shared/infrastructure/config/prisma';
 
 /**
  * Goal 模块依赖注入容器

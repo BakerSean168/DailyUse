@@ -12,7 +12,7 @@
  */
 
 import type { Request, Response } from 'express';
-import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 import { DashboardStatisticsApplicationService } from '../../application/services/DashboardStatisticsApplicationService';
 
 export class DashboardStatisticsController {
