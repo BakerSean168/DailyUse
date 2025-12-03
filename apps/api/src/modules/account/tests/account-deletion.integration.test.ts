@@ -11,7 +11,7 @@ import { AuthenticationApplicationService } from '../../authentication/applicati
 import type { LoginRequest } from '../../authentication/application/services/AuthenticationApplicationService';
 import { AuthenticationContainer } from '../../authentication/infrastructure/di/AuthenticationContainer';
 import { AccountContainer } from '../../account/infrastructure/di/AccountContainer';
-import prisma from '../../../shared/db/prisma';
+import { prisma } from '@/config/prisma';
 
 describe('账号注销集成测试', () => {
   let deletionService: AccountDeletionApplicationService;

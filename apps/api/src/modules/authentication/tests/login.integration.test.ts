@@ -9,7 +9,7 @@ import { RegistrationApplicationService } from '../../account/application/servic
 import type { RegisterUserRequest } from '../../account/application/services/RegistrationApplicationService';
 import { AuthenticationContainer } from '../infrastructure/di/AuthenticationContainer';
 import { AccountContainer } from '../../account/infrastructure/di/AccountContainer';
-import prisma from '../../../shared/db/prisma';
+import { prisma } from '@/config/prisma';
 
 describe('用户登录集成测试', () => {
   let authService: AuthenticationApplicationService;

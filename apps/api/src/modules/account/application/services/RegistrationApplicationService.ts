@@ -28,7 +28,7 @@ import { AccountDomainService } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import { AccountContainer } from '../../infrastructure/di/AccountContainer';
 import { AuthenticationContainer } from '../../../authentication/infrastructure/di/AuthenticationContainer';
-import prisma from '../../../../shared/db/prisma';
+import { prisma } from '@/config/prisma';
 import { eventBus, createLogger } from '@dailyuse/utils';
 import bcrypt from 'bcryptjs';
 

@@ -16,7 +16,7 @@ import { GoalContainer } from '@/modules/goal/infrastructure/di/GoalContainer';
 import { ReminderContainer } from '@/modules/reminder/infrastructure/di/ReminderContainer';
 import { ScheduleContainer } from '@/modules/schedule/infrastructure/di/ScheduleContainer';
 import type { StatisticsCacheService } from '../services/StatisticsCacheService';
-import prisma from '../../../../shared/db/prisma';
+import { prisma } from '@/config/prisma';
 import { DashboardConfigPrismaRepository } from '../repositories/DashboardConfigPrismaRepository';
 import { StatisticsCacheService as CacheServiceImpl } from '../services/StatisticsCacheService';
 

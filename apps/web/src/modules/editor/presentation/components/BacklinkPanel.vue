@@ -81,12 +81,18 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
+// TODO: Document API 已移除，双向链接功能待迁移到 repository 模块
+// import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
-import type { DocumentContracts } from '@dailyuse/contracts/document';
+// import type { DocumentContracts } from '@dailyuse/contracts/document';
 import { useRouter } from 'vue-router';
 
-type BacklinkDTO = DocumentContracts.BacklinkDTO;
+// 临时类型定义（待迁移到 repository 模块）
+interface BacklinkDTO {
+  link: { uuid: string; isBroken: boolean };
+  sourceDocument: { uuid: string; title: string; updatedAt: number };
+  context: string;
+}
 
 // ==================== Props ====================
 interface Props {
@@ -117,8 +123,11 @@ async function loadBacklinks() {
   error.value = null;
 
   try {
-    const response = await documentApiClient.getBacklinks(props.documentUuid);
-    backlinks.value = response.backlinks || [];
+    // TODO: 双向链接功能待迁移到 repository 模块
+    // const response = await documentApiClient.getBacklinks(props.documentUuid);
+    // backlinks.value = response.backlinks || [];
+    backlinks.value = []; // 暂时返回空数组
+    error.value = '反向引用功能正在开发中';
   } catch (err: any) {
     console.error('Load backlinks failed:', err);
     error.value = err.message || '加载反向引用失败';

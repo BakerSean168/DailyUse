@@ -14,7 +14,7 @@ import type { RegisterUserRequest } from '../application/services/RegistrationAp
 import { AccountContainer } from '../infrastructure/di/AccountContainer';
 import { AuthenticationContainer } from '../../authentication/infrastructure/di/AuthenticationContainer';
 import { AccountCreatedHandler } from '../../authentication/application/event-handlers/AccountCreatedHandler';
-import prisma from '../../../shared/db/prisma';
+import { prisma } from '@/config/prisma';
 
 describe('Event-Driven Registration Flow', () => {
   let registrationService: RegistrationApplicationService;

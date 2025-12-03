@@ -6,16 +6,11 @@
 import { beforeEach, afterEach, vi } from 'vitest';
 import { mockPrismaClient, resetMockData } from './mocks/prismaMock';
 
-// Mock Prisma config module
+// Mock Prisma config module (unified config after cleanup)
 vi.mock('../config/prisma.js', () => ({
   prisma: mockPrismaClient,
   connectPrisma: vi.fn(),
   disconnectPrisma: vi.fn(),
-}));
-
-// Mock Prisma shared module (used in tests)
-vi.mock('../shared/db/prisma.js', () => ({
-  default: mockPrismaClient,
 }));
 
 // Mock PrismaClient 构造函数

@@ -87,46 +87,8 @@ app.use(
 // Performance monitoring middleware
 app.use(performanceMiddleware);
 
-// 临时调试：记录所有请求
-app.use((req, res, next) => {
-  if (req.path.includes('sse') || req.path.includes('notifications')) {
-    console.log('🔍 [DEBUG] 收到请求:', {
-      method: req.method,
-      path: req.path,
-      url: req.url,
-      query: req.query,
-      headers: {
-        authorization: req.headers.authorization?.substring(0, 20) + '...',
-      },
-    });
-  }
-  next();
-});
-
 // API v1 router
 const api = Router();
-
-// 临时调试：记录所有进入 api router 的请求
-api.use((req, res, next) => {
-  console.log('📍 [API Router] 进入 API Router:', {
-    method: req.method,
-    path: req.path,
-    url: req.url,
-    baseUrl: req.baseUrl,
-    fullUrl: req.originalUrl,
-  });
-
-  // 检查是否匹配 SSE 路由
-  if (req.path.startsWith('/sse')) {
-    console.log('✅ [API Router] SSE 路由匹配检查:', {
-      shouldMatch: true,
-      path: req.path,
-      registered: '/sse',
-    });
-  }
-
-  next();
-});
 
 api.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
@@ -234,36 +196,9 @@ api.use('/ai', aiRouter); // authMiddleware 在路由文件内部应用
  */
 // 挂载通知 SSE 路由 - 使用独立路径避免被 /notifications 路由拦截
 // token 通过 URL 参数传递，路由内部自行验证
-console.log('🚀 [App Init] 注册 SSE 路由到 /sse');
-console.log('🚀 [App Init] SSE Router 类型:', typeof notificationSSERouter);
-console.log('🚀 [App Init] SSE Router 是否为函数:', typeof notificationSSERouter === 'function');
-
-// 在 SSE 路由之前添加调试中间件
-api.use('/sse', (req, res, next) => {
-  console.log('🔥 [SSE 路由前置] 请求进入 /sse 路径!', {
-    method: req.method,
-    path: req.path,
-    url: req.url,
-    baseUrl: req.baseUrl,
-    originalUrl: req.originalUrl,
-  });
-  next();
-});
-
 api.use('/sse', notificationSSERouter);
 
-// 在 SSE 路由之后添加调试中间件（用于捕获未匹配的请求）
-api.use('/sse', (req, res, next) => {
-  console.log('⚠️ [SSE 路由后置] 请求未被 SSE Router 处理!', {
-    method: req.method,
-    path: req.path,
-  });
-  // 返回 401 是为了测试
-  res.status(401).json({ error: 'SSE 路由未匹配' });
-});
-
 // 挂载通知管理路由 - 需要认证
-console.log('🚀 [App Init] 注册通知路由到 /notifications');
 api.use('/notifications', authMiddleware, notificationRouter);
 
 // 注意：所有模块的初始化都通过 shared/initialization/initializer.ts 统一管理
@@ -275,20 +210,6 @@ logger.info('Notification and event system initialized successfully');
 
 // Setup Swagger documentation
 setupSwagger(app);
-
-// 临时调试：在挂载到 /api/v1 之前，记录 api router 中的所有路由
-console.log('🔍 [Debug] API Router 的路由栈:');
-api.stack.forEach((layer: any, index: number) => {
-  if (layer.route) {
-    console.log(
-      `  ${index}: Route ${layer.route.path} [${Object.keys(layer.route.methods).join(', ')}]`,
-    );
-  } else if (layer.name === 'router') {
-    console.log(`  ${index}: Router mounted at ${layer.regexp}`);
-  } else {
-    console.log(`  ${index}: Middleware ${layer.name}`);
-  }
-});
 
 // Mount API routes at both /api (for backward compatibility) and /api/v1
 app.use('/api', api);

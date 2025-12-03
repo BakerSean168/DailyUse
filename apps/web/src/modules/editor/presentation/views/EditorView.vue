@@ -147,8 +147,9 @@ import BacklinkPanel from '../components/BacklinkPanel.vue';
 import LinkGraphView from '../components/LinkGraphView.vue';
 import { useMarkdownEditor } from '../composables/useMarkdownEditor';
 import { useAutoSave } from '../composables/useAutoSave';
-import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
-import type { DocumentContracts } from '@dailyuse/contracts/document';
+// TODO: Document API 已移除，双向链接功能待迁移到 repository 模块
+// import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
+// import type { DocumentContracts } from '@dailyuse/contracts/document';
 
 // ==================== Props ====================
 interface Props {
@@ -308,18 +309,19 @@ function handleLinkClick(title: string) {
 }
 
 async function navigateByTitle(title: string) {
-  try {
-    // Search for document by exact title
-    const results = await documentApiClient.searchDocuments(title, 1);
-    if (results.length > 0) {
-      navigateToDocument(results[0].uuid);
-    } else {
-      console.warn('Document not found:', title);
-      // TODO: Show snackbar notification
-    }
-  } catch (error) {
-    console.error('Error navigating to document:', error);
-  }
+  // TODO: 双向链接功能待迁移到 repository 模块
+  console.warn('Document navigation not implemented:', title);
+  // try {
+  //   // Search for document by exact title
+  //   const results = await documentApiClient.searchDocuments(title, 1);
+  //   if (results.length > 0) {
+  //     navigateToDocument(results[0].uuid);
+  //   } else {
+  //     console.warn('Document not found:', title);
+  //   }
+  // } catch (error) {
+  //   console.error('Error navigating to document:', error);
+  // }
 }
 
 function navigateToDocument(uuid: string) {

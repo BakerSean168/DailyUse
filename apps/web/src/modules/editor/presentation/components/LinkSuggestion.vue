@@ -64,7 +64,8 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
-import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
+// TODO: Document API 已移除，链接建议功能待迁移到 repository 模块
+// import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
 
 
@@ -121,8 +122,10 @@ async function searchDocumentsImpl(query: string) {
 
   loading.value = true;
   try {
-    const results = await documentApiClient.searchDocuments(query, 10);
-    documents.value = results;
+    // TODO: 链接建议功能待迁移到 repository 模块
+    // const results = await documentApiClient.searchDocuments(query, 10);
+    // documents.value = results;
+    documents.value = []; // 暂时返回空数组
     selectedIndex.value = 0;
   } catch (error) {
     console.error('Search documents failed:', error);

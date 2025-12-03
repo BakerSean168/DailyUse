@@ -30,6 +30,7 @@ ADR (Architecture Decision Record) 是一种记录软件架构决策的轻量级
 | [[001-use-nx-monorepo|ADR-001]] | 使用 Nx Monorepo | 2024-08-15 | ✅ 已采纳 |
 | [[002-ddd-pattern|ADR-002]] | 采用 DDD 架构模式 | 2024-08-20 | ✅ 已采纳 |
 | [[003-event-driven-architecture|ADR-003]] | 事件驱动架构 | 2024-09-01 | ✅ 已采纳 |
+| [[004-electron-desktop-architecture|ADR-004]] | Electron 桌面应用架构与包提取策略 | 2025-12-03 | ✅ 已采纳 |
 
 ### 提议中 (Proposed)
 

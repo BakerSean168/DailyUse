@@ -60,14 +60,31 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
+// TODO: Document API 已移除，链接图谱功能待迁移到 repository 模块
+// import { documentApiClient } from '@/modules/document/api/DocumentApiClient';
 import type { DocumentClientDTO } from '@dailyuse/contracts/editor';
-import type { DocumentContracts } from '@dailyuse/contracts/document';
+// import type { DocumentContracts } from '@dailyuse/contracts/document';
 import * as echarts from 'echarts';
 
-type LinkGraphResponseDTO = DocumentContracts.LinkGraphResponseDTO;
-type LinkGraphNodeDTO = DocumentContracts.LinkGraphNodeDTO;
-type LinkGraphEdgeDTO = DocumentContracts.LinkGraphEdgeDTO;
+// 临时类型定义（待迁移到 repository 模块）
+interface LinkGraphNodeDTO {
+  uuid: string;
+  title: string;
+  isCenter: boolean;
+  depth: number;
+}
+
+interface LinkGraphEdgeDTO {
+  sourceUuid: string;
+  targetUuid: string;
+}
+
+interface LinkGraphResponseDTO {
+  nodes: LinkGraphNodeDTO[];
+  edges: LinkGraphEdgeDTO[];
+  centerUuid: string;
+  depth: number;
+}
 
 // ==================== Props ====================
 interface Props {
@@ -107,11 +124,16 @@ async function loadLinkGraph() {
   error.value = null;
 
   try {
-    const response = await documentApiClient.getLinkGraph(
-      props.documentUuid,
-      currentDepth.value
-    );
-    graphData.value = response;
+    // TODO: 链接图谱功能待迁移到 repository 模块
+    // const response = await documentApiClient.getLinkGraph(
+    //   props.documentUuid,
+    //   currentDepth.value
+    // );
+    // graphData.value = response;
+    
+    // 暂时返回空数据
+    graphData.value = { nodes: [], edges: [], centerUuid: props.documentUuid, depth: currentDepth.value };
+    error.value = '链接图谱功能正在开发中';
     
     await nextTick();
     renderGraph();

@@ -10,7 +10,7 @@ import { createLogger } from '@dailyuse/utils';
 import type { AuthenticatedRequest } from '../../../../shared/middlewares/authMiddleware';
 import { PrismaGoalRepository } from '../../infrastructure/repositories/PrismaGoalRepository';
 import { PrismaWeightSnapshotRepository } from '../../infrastructure/repositories/PrismaWeightSnapshotRepository';
-import prisma from '../../../../shared/db/prisma';
+import { prisma } from '@/config/prisma';
 
 const logger = createLogger('GoalController');
 

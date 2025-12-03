@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
 import { TaskInstance } from '@dailyuse/domain-server/task';
 import type { TaskInstanceStatus } from '@dailyuse/contracts/task';
-import { withRetry } from '@/config/prismaRetry';
+import { withRetry } from '@/config/prisma';
 
 /**
  * TaskInstance Prisma Ө��

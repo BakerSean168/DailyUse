@@ -1,6 +1,6 @@
 // @ts-nocheck
 import type { PrismaClient } from '@prisma/client';
-import prisma from '../../../../shared/db/prisma';
+import { prisma } from '@/config/prisma';
 import type { NotificationRepository as INotificationRepository } from '@dailyuse/domain-server/notification';
 import { Notification, NotificationChannel, NotificationHistory } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
