@@ -7,9 +7,15 @@
 
 // API Client Ports
 export {
+  // Goal Module
   type IGoalApiClient,
   type IGoalFolderApiClient,
-  type ITaskApiClient,
+  // Task Module
+  type ITaskTemplateApiClient,
+  type ITaskInstanceApiClient,
+  type ITaskDependencyApiClient,
+  type ITaskStatisticsApiClient,
+  // Other Modules
   type IScheduleApiClient,
   type IReminderApiClient,
   type IAccountApiClient,

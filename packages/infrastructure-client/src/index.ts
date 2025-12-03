@@ -17,9 +17,15 @@
 // Ports (Interfaces)
 // ============================================================
 export {
+  // Goal Module
   type IGoalApiClient,
   type IGoalFolderApiClient,
-  type ITaskApiClient,
+  // Task Module
+  type ITaskTemplateApiClient,
+  type ITaskInstanceApiClient,
+  type ITaskDependencyApiClient,
+  type ITaskStatisticsApiClient,
+  // Other Modules
   type IScheduleApiClient,
   type IReminderApiClient,
   type IAccountApiClient,
@@ -31,10 +37,21 @@ export {
 // HTTP Adapters (for Web)
 // ============================================================
 export {
+  // Goal
   GoalHttpAdapter,
   createGoalHttpAdapter,
   GoalFolderHttpAdapter,
   createGoalFolderHttpAdapter,
+  // Task
+  TaskTemplateHttpAdapter,
+  createTaskTemplateHttpAdapter,
+  TaskInstanceHttpAdapter,
+  createTaskInstanceHttpAdapter,
+  TaskDependencyHttpAdapter,
+  createTaskDependencyHttpAdapter,
+  TaskStatisticsHttpAdapter,
+  createTaskStatisticsHttpAdapter,
+  // Types
   type HttpClient,
   type HttpClientConfig,
 } from './adapters/http';
@@ -43,10 +60,21 @@ export {
 // IPC Adapters (for Desktop Renderer)
 // ============================================================
 export {
+  // Goal
   GoalIpcAdapter,
   createGoalIpcAdapter,
   GoalFolderIpcAdapter,
   createGoalFolderIpcAdapter,
+  // Task
+  TaskTemplateIpcAdapter,
+  createTaskTemplateIpcAdapter,
+  TaskInstanceIpcAdapter,
+  createTaskInstanceIpcAdapter,
+  TaskDependencyIpcAdapter,
+  createTaskDependencyIpcAdapter,
+  TaskStatisticsIpcAdapter,
+  createTaskStatisticsIpcAdapter,
+  // Types
   type IpcClient,
   type ElectronAPI,
 } from './adapters/ipc';

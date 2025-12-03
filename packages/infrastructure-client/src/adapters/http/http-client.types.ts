@@ -37,3 +37,8 @@ export interface HttpClient {
   patch<T>(url: string, data?: unknown, options?: HttpRequestOptions): Promise<T>;
   delete<T>(url: string, options?: HttpRequestOptions): Promise<T>;
 }
+
+/**
+ * Type alias for HttpClient (more explicit naming)
+ */
+export type IHttpClient = HttpClient;

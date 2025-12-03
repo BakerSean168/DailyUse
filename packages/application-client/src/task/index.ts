@@ -1,8 +1,7 @@
 /**
  * Task Application Module (Client)
  *
- * TODO: Extract from apps/web/src/modules/task/application/
+ * Re-exports all task-related application services.
  */
 
-// Placeholder - to be implemented
-export const TASK_MODULE_PLACEHOLDER = 'task-module';
+export * from './services';
