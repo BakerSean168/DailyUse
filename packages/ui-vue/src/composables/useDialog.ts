@@ -1,193 +1,65 @@
-/**
- * @dailyuse/ui-vue - Dialog Composables
- *
- * Vue 3 composables wrapping @dailyuse/ui-core dialog state.
- */
+import { ref, computed, type ComputedRef } from 'vue';
+import { createDialogStore, type DialogState } from '@dailyuse/ui-core';
 
-import {
-  ref,
-  readonly,
-  onUnmounted,
-  type Ref,
-  type DeepReadonly,
-} from 'vue';
-import {
-  createDialogController,
-  createDeleteConfirmDialog,
-  type DialogState,
-  type DialogOptions,
-  type DialogButton,
-  type DialogType,
-  type DeleteConfirmOptions,
-} from '@dailyuse/ui-core';
-
-// Re-export types
-export type {
-  DialogState,
-  DialogOptions,
-  DialogButton,
-  DialogType,
-  DeleteConfirmOptions,
-};
-
-// ============================================================================
-// Dialog Composable
-// ============================================================================
-
-/**
- * Dialog composable
- */
-export function useDialog(): {
-  /** Reactive dialog state */
-  state: DeepReadonly<Ref<DialogState>>;
-  /** Whether dialog is visible */
-  isVisible: Ref<boolean>;
+export interface UseDialogReturn {
+  /** Whether dialog is open */
+  isOpen: ComputedRef<boolean>;
   /** Dialog title */
-  title: Ref<string>;
+  title: ComputedRef<string | undefined>;
   /** Dialog message */
-  message: Ref<string>;
-  /** Dialog type */
-  type: Ref<DialogType>;
-  /** Confirm button */
-  confirmButton: Ref<DialogButton>;
-  /** Cancel button */
-  cancelButton: Ref<DialogButton | null>;
-  /** Input value (for prompt) */
-  inputValue: Ref<string>;
-  /** Show confirmation dialog */
-  confirm: (options: DialogOptions) => Promise<boolean>;
-  /** Show alert dialog */
-  alert: (options: Omit<DialogOptions, 'cancelButton'>) => Promise<void>;
-  /** Show prompt dialog */
-  prompt: (options: DialogOptions) => Promise<string | null>;
-  /** Set input value */
-  setInputValue: (value: string) => void;
-  /** Handle confirm action */
-  handleConfirm: () => void;
-  /** Handle cancel action */
-  handleCancel: () => void;
+  message: ComputedRef<string | undefined>;
+  /** Current state */
+  state: ComputedRef<DialogState>;
+  /** Open dialog */
+  open: (options?: { title?: string; message?: string }) => void;
   /** Close dialog */
   close: () => void;
-  /** Delete confirmation helper */
-  confirmDelete: (options?: DeleteConfirmOptions) => Promise<boolean>;
-} {
-  const controller = createDialogController();
-  const state = ref<DialogState>(controller.getState());
-  const isVisible = ref(false);
-  const title = ref('');
-  const message = ref('');
-  const type = ref<DialogType>('confirm');
-  const confirmButton = ref<DialogButton>({ text: '确定', variant: 'primary' });
-  const cancelButton = ref<DialogButton | null>({ text: '取消', variant: 'text' });
-  const inputValue = ref('');
+  /** Show confirm dialog and return promise */
+  confirm: (options: { title?: string; message: string }) => Promise<boolean>;
+}
 
-  const unsubscribe = controller.subscribe((newState: DialogState) => {
-    state.value = newState;
-    isVisible.value = newState.isVisible;
-    title.value = newState.title;
-    message.value = newState.message;
-    type.value = newState.type;
-    confirmButton.value = newState.confirmButton;
-    cancelButton.value = newState.cancelButton;
-    inputValue.value = newState.inputValue;
+/**
+ * Vue composable for dialog state management
+ * Wraps @dailyuse/ui-core dialog logic with Vue reactivity
+ */
+export function useDialog(): UseDialogReturn {
+  const stateRef = ref<DialogState>({
+    isOpen: false,
+    title: undefined,
+    message: undefined,
   });
 
-  onUnmounted(() => {
-    unsubscribe();
+  let resolveConfirm: ((value: boolean) => void) | null = null;
+
+  const store = createDialogStore({
+    getState: () => stateRef.value,
+    setState: (state) => {
+      stateRef.value = state;
+    },
   });
 
-  const confirmDelete = createDeleteConfirmDialog(controller);
-
-  return {
-    state: readonly(state),
-    isVisible,
-    title,
-    message,
-    type,
-    confirmButton,
-    cancelButton,
-    inputValue,
-    confirm: controller.confirm.bind(controller),
-    alert: controller.alert.bind(controller),
-    prompt: controller.prompt.bind(controller),
-    setInputValue: controller.setInputValue.bind(controller),
-    handleConfirm: controller.handleConfirm.bind(controller),
-    handleCancel: controller.handleCancel.bind(controller),
-    close: controller.close.bind(controller),
-    confirmDelete,
+  const confirm = (options: { title?: string; message: string }): Promise<boolean> => {
+    return new Promise((resolve) => {
+      resolveConfirm = resolve;
+      store.open(options);
+    });
   };
-}
 
-// ============================================================================
-// Global Dialog (Singleton)
-// ============================================================================
-
-let globalDialogController: ReturnType<typeof createDialogController> | null = null;
-
-function getGlobalDialogController() {
-  if (!globalDialogController) {
-    globalDialogController = createDialogController();
-  }
-  return globalDialogController;
-}
-
-/**
- * Get the global dialog controller (for use outside Vue components)
- */
-export function getGlobalDialog() {
-  return getGlobalDialogController();
-}
-
-/**
- * Global dialog composable (singleton)
- */
-export function useGlobalDialog(): {
-  /** Whether dialog is visible */
-  isVisible: Ref<boolean>;
-  /** Dialog state */
-  state: DeepReadonly<Ref<DialogState>>;
-  /** Show confirmation dialog */
-  confirm: (options: DialogOptions) => Promise<boolean>;
-  /** Show alert dialog */
-  alert: (options: Omit<DialogOptions, 'cancelButton'>) => Promise<void>;
-  /** Show prompt dialog */
-  prompt: (options: DialogOptions) => Promise<string | null>;
-  /** Set input value */
-  setInputValue: (value: string) => void;
-  /** Handle confirm action */
-  handleConfirm: () => void;
-  /** Handle cancel action */
-  handleCancel: () => void;
-  /** Close dialog */
-  close: () => void;
-  /** Delete confirmation helper */
-  confirmDelete: (options?: DeleteConfirmOptions) => Promise<boolean>;
-} {
-  const controller = getGlobalDialogController();
-  const state = ref<DialogState>(controller.getState());
-  const isVisible = ref(false);
-
-  const unsubscribe = controller.subscribe((newState: DialogState) => {
-    state.value = newState;
-    isVisible.value = newState.isVisible;
-  });
-
-  onUnmounted(() => {
-    unsubscribe();
-  });
-
-  const confirmDelete = createDeleteConfirmDialog(controller);
+  const close = () => {
+    if (resolveConfirm) {
+      resolveConfirm(false);
+      resolveConfirm = null;
+    }
+    store.close();
+  };
 
   return {
-    isVisible,
-    state: readonly(state),
-    confirm: controller.confirm.bind(controller),
-    alert: controller.alert.bind(controller),
-    prompt: controller.prompt.bind(controller),
-    setInputValue: controller.setInputValue.bind(controller),
-    handleConfirm: controller.handleConfirm.bind(controller),
-    handleCancel: controller.handleCancel.bind(controller),
-    close: controller.close.bind(controller),
-    confirmDelete,
+    isOpen: computed(() => stateRef.value.isOpen),
+    title: computed(() => stateRef.value.title),
+    message: computed(() => stateRef.value.message),
+    state: computed(() => stateRef.value),
+    open: store.open,
+    close,
+    confirm,
   };
 }

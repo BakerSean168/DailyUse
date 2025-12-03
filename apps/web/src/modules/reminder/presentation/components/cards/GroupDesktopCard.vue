@@ -178,7 +178,7 @@ import { ref, computed } from 'vue';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, RecurrenceConfigClient  } from '@dailyuse/contracts/reminder';
 import { ReminderGroup } from '@dailyuse/domain-client/reminder';
 import { useReminder } from '../../composables/useReminder';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 import { reminderGroupApplicationService } from '../../../application/services';
 import TemplateDesktopCard from './TemplateDesktopCard.vue';
 

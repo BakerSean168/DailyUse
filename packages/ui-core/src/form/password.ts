@@ -1,262 +1,155 @@
 /**
- * @dailyuse/ui-core - Password Strength
- *
- * Framework-agnostic password strength calculation and generation.
+ * Password strength analysis - Framework agnostic
  */
 
-// ============================================================================
-// Types
-// ============================================================================
-
-export type PasswordStrengthLevel = 'weak' | 'medium' | 'strong' | 'very-strong';
+export type PasswordStrengthLevel = 'weak' | 'fair' | 'good' | 'strong' | 'very-strong';
 
 export interface PasswordStrengthResult {
-  /** Strength score from 0 to 100 */
-  score: number;
-  /** Strength level */
   level: PasswordStrengthLevel;
-  /** Human-readable strength text */
-  text: string;
-  /** Suggestions for improving the password */
-  suggestions: string[];
-  /** Whether the password meets minimum requirements */
-  isValid: boolean;
-  /** Whether the password is strong enough for sensitive operations */
-  isStrong: boolean;
+  score: number;
+  label: string;
+  color: string;
 }
 
-export interface PasswordStrengthOptions {
-  /** Minimum length required */
-  minLength?: number;
-  /** Minimum score for isValid (0-100) */
-  minValidScore?: number;
-  /** Minimum score for isStrong (0-100) */
-  minStrongScore?: number;
+interface PasswordCriteria {
+  hasLowercase: boolean;
+  hasUppercase: boolean;
+  hasNumbers: boolean;
+  hasSpecial: boolean;
+  length: number;
 }
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-const STRENGTH_LEVELS: Record<
-  PasswordStrengthLevel,
-  { min: number; max: number; text: string }
-> = {
-  weak: { min: 0, max: 25, text: '弱' },
-  medium: { min: 25, max: 50, text: '中等' },
-  strong: { min: 50, max: 75, text: '强' },
-  'very-strong': { min: 75, max: 100, text: '非常强' },
-};
-
-const LOWERCASE_CHARS = 'abcdefghijklmnopqrstuvwxyz';
-const UPPERCASE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const NUMBER_CHARS = '0123456789';
-const SPECIAL_CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-
-// ============================================================================
-// Core Functions
-// ============================================================================
 
 /**
- * Calculate password strength score (0-100)
- *
- * Scoring factors:
- * - Length: up to 30 points
- * - Lowercase letters: 10 points
- * - Uppercase letters: 15 points
- * - Numbers: 15 points
- * - Special characters: 20 points
- * - Mixed character types bonus: 10 points
+ * Analyze password criteria
  */
-export function calculatePasswordScore(password: string): number {
-  if (!password) return 0;
+function analyzeCriteria(password: string): PasswordCriteria {
+  return {
+    hasLowercase: /[a-z]/.test(password),
+    hasUppercase: /[A-Z]/.test(password),
+    hasNumbers: /\d/.test(password),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    length: password.length,
+  };
+}
 
+/**
+ * Calculate password score (0-100)
+ */
+function calculateScore(criteria: PasswordCriteria): number {
   let score = 0;
 
-  // Length scoring (up to 30 points)
-  const length = password.length;
-  if (length >= 16) {
-    score += 30;
-  } else if (length >= 12) {
-    score += 25;
-  } else if (length >= 8) {
-    score += 20;
-  } else if (length >= 6) {
-    score += 10;
-  } else {
-    score += 5;
-  }
+  // Length scoring
+  if (criteria.length >= 8) score += 20;
+  if (criteria.length >= 12) score += 10;
+  if (criteria.length >= 16) score += 10;
 
-  // Character type scoring
-  const hasLowercase = /[a-z]/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasNumbers = /\d/.test(password);
-  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password);
-
-  if (hasLowercase) score += 10;
-  if (hasUppercase) score += 15;
-  if (hasNumbers) score += 15;
-  if (hasSpecial) score += 20;
-
-  // Bonus for using multiple character types
-  const typesUsed = [hasLowercase, hasUppercase, hasNumbers, hasSpecial].filter(
-    Boolean
-  ).length;
-  if (typesUsed >= 3) {
-    score += 10;
-  }
-
-  // Penalty for common patterns
-  const commonPatterns = [
-    /^123/,
-    /abc/i,
-    /qwerty/i,
-    /password/i,
-    /111|222|333|444|555|666|777|888|999|000/,
-  ];
-  for (const pattern of commonPatterns) {
-    if (pattern.test(password)) {
-      score = Math.max(0, score - 15);
-      break;
-    }
-  }
+  // Character diversity
+  if (criteria.hasLowercase) score += 15;
+  if (criteria.hasUppercase) score += 15;
+  if (criteria.hasNumbers) score += 15;
+  if (criteria.hasSpecial) score += 15;
 
   return Math.min(100, score);
 }
 
 /**
- * Get password strength level from score
+ * Get strength level from score
  */
-export function getStrengthLevel(score: number): PasswordStrengthLevel {
-  if (score >= 75) return 'very-strong';
-  if (score >= 50) return 'strong';
-  if (score >= 25) return 'medium';
-  return 'weak';
+function getLevel(score: number): PasswordStrengthLevel {
+  if (score < 20) return 'weak';
+  if (score < 40) return 'fair';
+  if (score < 60) return 'good';
+  if (score < 80) return 'strong';
+  return 'very-strong';
 }
 
 /**
- * Get improvement suggestions for a password
+ * Get display label for level
  */
-export function getPasswordSuggestions(password: string): string[] {
-  const suggestions: string[] = [];
-
-  if (!password) {
-    suggestions.push('请输入密码');
-    return suggestions;
-  }
-
-  if (password.length < 8) {
-    suggestions.push('建议使用至少 8 个字符');
-  }
-
-  if (password.length < 12) {
-    suggestions.push('使用 12 个或更多字符可以提高安全性');
-  }
-
-  if (!/[a-z]/.test(password)) {
-    suggestions.push('添加小写字母');
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    suggestions.push('添加大写字母');
-  }
-
-  if (!/\d/.test(password)) {
-    suggestions.push('添加数字');
-  }
-
-  if (!/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
-    suggestions.push('添加特殊字符 (!@#$%^&* 等)');
-  }
-
-  return suggestions;
+function getLabel(level: PasswordStrengthLevel): string {
+  const labels: Record<PasswordStrengthLevel, string> = {
+    weak: '弱',
+    fair: '一般',
+    good: '良好',
+    strong: '强',
+    'very-strong': '非常强',
+  };
+  return labels[level];
 }
 
 /**
- * Calculate full password strength result
+ * Get color for level
  */
-export function calculatePasswordStrength(
-  password: string,
-  options: PasswordStrengthOptions = {}
-): PasswordStrengthResult {
-  const { minLength = 6, minValidScore = 25, minStrongScore = 50 } = options;
+function getColor(level: PasswordStrengthLevel): string {
+  const colors: Record<PasswordStrengthLevel, string> = {
+    weak: '#f44336',
+    fair: '#ff9800',
+    good: '#ffeb3b',
+    strong: '#8bc34a',
+    'very-strong': '#4caf50',
+  };
+  return colors[level];
+}
 
-  const score = calculatePasswordScore(password);
-  const level = getStrengthLevel(score);
-  const suggestions = getPasswordSuggestions(password);
+export interface PasswordStrengthStore {
+  analyze: (password: string) => PasswordStrengthResult;
+}
 
+/**
+ * Create a password strength analyzer
+ */
+export function createPasswordStrength(): PasswordStrengthStore {
   return {
-    score,
-    level,
-    text: STRENGTH_LEVELS[level].text,
-    suggestions,
-    isValid: (password?.length ?? 0) >= minLength && score >= minValidScore,
-    isStrong: score >= minStrongScore,
+    analyze: (password: string): PasswordStrengthResult => {
+      if (!password) {
+        return {
+          level: 'weak',
+          score: 0,
+          label: '弱',
+          color: '#f44336',
+        };
+      }
+
+      const criteria = analyzeCriteria(password);
+      const score = calculateScore(criteria);
+      const level = getLevel(score);
+
+      return {
+        level,
+        score,
+        label: getLabel(level),
+        color: getColor(level),
+      };
+    },
   };
 }
 
-// ============================================================================
-// Password Generation
-// ============================================================================
-
 /**
- * Generate a strong random password
+ * Generate a random password
  */
-export function generateStrongPassword(length = 16): string {
-  if (length < 8) {
-    throw new Error('Password length must be at least 8 characters');
-  }
+export function generatePassword(length = 16): string {
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  const special = '!@#$%^&*';
 
-  const allChars = LOWERCASE_CHARS + UPPERCASE_CHARS + NUMBER_CHARS + SPECIAL_CHARS;
-  const result: string[] = [];
+  const allChars = lowercase + uppercase + numbers + special;
 
   // Ensure at least one of each type
-  result.push(LOWERCASE_CHARS[Math.floor(Math.random() * LOWERCASE_CHARS.length)]);
-  result.push(UPPERCASE_CHARS[Math.floor(Math.random() * UPPERCASE_CHARS.length)]);
-  result.push(NUMBER_CHARS[Math.floor(Math.random() * NUMBER_CHARS.length)]);
-  result.push(SPECIAL_CHARS[Math.floor(Math.random() * SPECIAL_CHARS.length)]);
+  let password = '';
+  password += lowercase[Math.floor(Math.random() * lowercase.length)];
+  password += uppercase[Math.floor(Math.random() * uppercase.length)];
+  password += numbers[Math.floor(Math.random() * numbers.length)];
+  password += special[Math.floor(Math.random() * special.length)];
 
-  // Fill the rest with random characters
-  for (let i = result.length; i < length; i++) {
-    result.push(allChars[Math.floor(Math.random() * allChars.length)]);
+  // Fill the rest randomly
+  for (let i = password.length; i < length; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)];
   }
 
-  // Shuffle the result
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-
-  return result.join('');
-}
-
-/**
- * Generate a memorable passphrase (word-based)
- */
-export function generatePassphrase(wordCount = 4, separator = '-'): string {
-  // Simple word list for demonstration
-  // In production, you'd use a larger word list
-  const words = [
-    'apple', 'banana', 'cherry', 'dragon', 'eagle', 'forest',
-    'garden', 'harbor', 'island', 'jungle', 'knight', 'lemon',
-    'mountain', 'night', 'ocean', 'planet', 'queen', 'river',
-    'sunset', 'thunder', 'umbrella', 'volcano', 'winter', 'yellow',
-    'zebra', 'autumn', 'breeze', 'crystal', 'diamond', 'emerald',
-  ];
-
-  const selected: string[] = [];
-  for (let i = 0; i < wordCount; i++) {
-    const randomIndex = Math.floor(Math.random() * words.length);
-    selected.push(words[randomIndex]);
-  }
-
-  // Capitalize first letter of each word and add a number
-  const passphrase = selected
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(separator);
-
-  // Add a random number for extra entropy
-  const randomNum = Math.floor(Math.random() * 100);
-
-  return `${passphrase}${separator}${randomNum}`;
+  // Shuffle the password
+  return password
+    .split('')
+    .sort(() => Math.random() - 0.5)
+    .join('');
 }

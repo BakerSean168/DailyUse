@@ -46,7 +46,7 @@
     "@dailyuse/assets": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-client": "workspace:*",
-    "@dailyuse/ui": "workspace:*",
+    "@dailyuse/ui-vuetify": "workspace:*",
     "@dailyuse/utils": "workspace:*",
     "@mdi/font": "^7.4.47",
     "@milkdown/core": "7.17.1",

@@ -7,7 +7,7 @@ import { ref, computed } from 'vue';
 import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
 import { reminderGroupApplicationService } from '../../application/services';
 import { getReminderStore } from '../stores/reminderStore';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 
 export function useReminderGroup() {
   const reminderStore = getReminderStore();

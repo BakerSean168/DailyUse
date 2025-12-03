@@ -6,7 +6,7 @@ import type {
   GetSchedulesByTimeRangeRequest,
 } from '@dailyuse/contracts/schedule';
 import { scheduleEventApplicationService } from '../../application';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
  * Schedule Event Composable

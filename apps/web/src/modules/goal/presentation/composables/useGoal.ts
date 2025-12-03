@@ -37,7 +37,7 @@ import {
   goalSyncApplicationService,
 } from '../../application/services';
 import { getGoalStore } from '../stores/goalStore';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
  * Goal 业务逻辑 Composable - 聚合版本

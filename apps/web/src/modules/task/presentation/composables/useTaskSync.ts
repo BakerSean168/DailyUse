@@ -15,7 +15,7 @@
 import { ref, computed, readonly, onMounted, onBeforeUnmount } from 'vue';
 import { taskSyncApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 
 /**
  * 任务数据同步 Composable

@@ -197,7 +197,7 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 import GoalProgressChart from '../components/echarts/GoalProgressChart.vue';
 import KrProgressChart from '../components/echarts/KrProgressChart.vue';
 import KrCompletionChart from '../components/echarts/KrCompletionChart.vue';

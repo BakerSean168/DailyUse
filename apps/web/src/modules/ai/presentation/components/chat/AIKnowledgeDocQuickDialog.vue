@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 const show = ref(false); const formRef = ref(); const formValid = ref(false);
 const form = ref({ topic: '', context: '', templateType: 'SUMMARY' });
 const templateTypes = ['SUMMARY', 'GUIDE', 'CHECKLIST', 'FAQ'];

@@ -181,7 +181,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 // ===== Props & Emits =====
 interface Props {

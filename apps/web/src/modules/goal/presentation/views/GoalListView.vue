@@ -130,7 +130,7 @@ import { useRouter } from 'vue-router';
 import { useGoalManagement } from '../composables/useGoalManagement';
 import { useGoalFolder } from '../composables/useGoalFolder';
 import { useGoalStore } from '../stores/goalStore';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 import type { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
 
 // 组件导入

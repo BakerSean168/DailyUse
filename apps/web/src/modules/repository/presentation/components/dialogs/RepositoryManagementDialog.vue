@@ -138,7 +138,7 @@
 import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRepositoryStore } from '../../stores/repositoryStore';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 import { RepositoryStatus, RepositoryType, type RepositoryClientDTO, type ResourceClientDTO, type FolderClientDTO } from '@dailyuse/contracts/repository';
 import { repositoryManagementService } from '@/modules/repository/application/services/RepositoryManagementApplicationService';
 

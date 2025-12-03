@@ -1,82 +1,49 @@
-/**
- * @dailyuse/ui-vue - Password Strength Composable
- *
- * Vue 3 composable wrapping @dailyuse/ui-core password strength.
- */
-
-import { computed, type Ref, type ComputedRef, unref } from 'vue';
+import { ref, computed, watch, type Ref, type ComputedRef } from 'vue';
 import {
-  calculatePasswordStrength,
-  generateStrongPassword,
-  generatePassphrase,
+  createPasswordStrength,
+  generatePassword,
+  type PasswordStrengthLevel,
   type PasswordStrengthResult,
-  type PasswordStrengthOptions,
 } from '@dailyuse/ui-core';
 
-// Re-export for convenience
-export { generateStrongPassword, generatePassphrase };
-export type { PasswordStrengthResult, PasswordStrengthOptions };
-
-/**
- * Type for value that can be a Ref or a plain value
- */
-export type MaybeRef<T> = T | Ref<T>;
-
-/**
- * Reactive password strength calculation
- */
-export function usePasswordStrength(
-  password: MaybeRef<string>,
-  options?: PasswordStrengthOptions
-): {
-  /** Full strength result */
-  strength: ComputedRef<PasswordStrengthResult>;
+export interface UsePasswordStrengthReturn {
+  /** The password being analyzed */
+  password: Ref<string>;
+  /** Current strength level */
+  level: ComputedRef<PasswordStrengthLevel>;
   /** Strength score (0-100) */
   score: ComputedRef<number>;
-  /** Strength percentage for progress bars */
-  percentage: ComputedRef<number>;
-  /** Strength level text */
-  text: ComputedRef<string>;
-  /** Strength level */
-  level: ComputedRef<string>;
-  /** Improvement suggestions */
-  suggestions: ComputedRef<string[]>;
-  /** Whether password meets minimum requirements */
-  isValid: ComputedRef<boolean>;
-  /** Whether password is strong enough */
-  isStrong: ComputedRef<boolean>;
-  /** Color for strength indicator */
+  /** Display label for current strength */
+  label: ComputedRef<string>;
+  /** Color for current strength */
   color: ComputedRef<string>;
-} {
-  const strength = computed(() =>
-    calculatePasswordStrength(unref(password), options)
-  );
+  /** Full strength result */
+  strength: ComputedRef<PasswordStrengthResult>;
+  /** Generate a random password */
+  generate: (length?: number) => string;
+}
 
-  const score = computed(() => strength.value.score);
-  const percentage = computed(() => Math.min(100, strength.value.score));
-  const text = computed(() => strength.value.text);
+/**
+ * Vue composable for password strength analysis
+ * Wraps @dailyuse/ui-core password strength logic with Vue reactivity
+ */
+export function usePasswordStrength(initialPassword = ''): UsePasswordStrengthReturn {
+  const password = ref(initialPassword);
+  const core = createPasswordStrength();
+
+  const strength = computed(() => core.analyze(password.value));
   const level = computed(() => strength.value.level);
-  const suggestions = computed(() => strength.value.suggestions);
-  const isValid = computed(() => strength.value.isValid);
-  const isStrong = computed(() => strength.value.isStrong);
-
-  const color = computed(() => {
-    const s = strength.value.score;
-    if (s >= 75) return 'success';
-    if (s >= 50) return 'info';
-    if (s >= 25) return 'warning';
-    return 'error';
-  });
+  const score = computed(() => strength.value.score);
+  const label = computed(() => strength.value.label);
+  const color = computed(() => strength.value.color);
 
   return {
-    strength,
-    score,
-    percentage,
-    text,
+    password,
     level,
-    suggestions,
-    isValid,
-    isStrong,
+    score,
+    label,
     color,
+    strength,
+    generate: generatePassword,
   };
 }

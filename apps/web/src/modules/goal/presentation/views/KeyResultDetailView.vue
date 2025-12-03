@@ -248,7 +248,7 @@ import { zhCN } from 'date-fns/locale';
 import GoalRecordDialog from '../components/dialogs/GoalRecordDialog.vue';
 import TaskAIGenerationDialog from '@/modules/task/presentation/components/TaskAIGenerationDialog.vue';
 // 引入 message
-import { getGlobalMessage, useMessage } from '@dailyuse/ui';
+import { getGlobalMessage, useMessage } from '@dailyuse/ui-vuetify';
 import type { KeyResult, Goal } from '@dailyuse/domain-client/goal';
 import { useAuthStore } from '@/modules/authentication/presentation/stores/authStore';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';

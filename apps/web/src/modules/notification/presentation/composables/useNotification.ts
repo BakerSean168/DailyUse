@@ -13,7 +13,7 @@ import { ref, computed } from 'vue';
 import { notificationApplicationService } from '../../application/services';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import { useWebSocket } from './useWebSocket';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 export function useNotification() {
   const notifications = ref<NotificationClientDTO[]>([]);

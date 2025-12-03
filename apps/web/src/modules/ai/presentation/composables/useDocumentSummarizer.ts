@@ -11,7 +11,7 @@
 import { ref, computed } from 'vue';
 import { documentSummarizerApplicationService } from '../../application/services';
 import type { SummaryResult } from '../types/summarization';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 export function useDocumentSummarizer() {
   // ============ State ============

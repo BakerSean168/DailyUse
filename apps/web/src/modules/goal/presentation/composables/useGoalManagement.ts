@@ -18,7 +18,7 @@ import type { CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/g
 import type { Goal } from '@dailyuse/domain-client/goal';
 import { goalManagementApplicationService, goalSyncApplicationService } from '../../application/services';
 import { getGoalStore } from '../stores/goalStore';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 export function useGoalManagement() {
   const goalStore = getGoalStore();

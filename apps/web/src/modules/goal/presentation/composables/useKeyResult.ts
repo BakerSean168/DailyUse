@@ -18,7 +18,7 @@ import type {
 } from '@dailyuse/contracts/goal';
 import { keyResultApplicationService } from '../../application/services';
 import { getGoalStore } from '../stores/goalStore';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 export function useKeyResult() {
   const goalStore = getGoalStore();

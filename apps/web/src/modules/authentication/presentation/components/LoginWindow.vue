@@ -102,7 +102,7 @@ import type { LoginRequest, RegisterRequest, AuthTokens } from '@dailyuse/contra
 type LoginRequestDTO = LoginRequest;
 // components
 import { useAuthentication } from '../composables/useAuthentication';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 // utils
 import { usernameRules, passwordRules } from '@/shared/utils/validations/rules';
 

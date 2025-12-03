@@ -9,7 +9,7 @@
 
 import { ref, type Ref, type ComputedRef } from 'vue';
 import { goalGenerationApplicationService } from '../../application/services/GoalGenerationApplicationService';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 import type { GeneratedGoalDraft } from '@dailyuse/contracts/ai';
 
 interface TokenUsage {

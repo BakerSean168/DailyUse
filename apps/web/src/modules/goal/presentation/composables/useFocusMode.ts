@@ -4,7 +4,7 @@ import type {
   ActivateFocusModeRequest,
 } from '@dailyuse/contracts/goal';
 import { focusModeApplicationService } from '../../application/services';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
  * FocusMode Composable

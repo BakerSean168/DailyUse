@@ -237,7 +237,7 @@
 import { ref, computed, watch } from 'vue';
 import ObsidianDialog from '@/shared/components/ObsidianDialog.vue';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 import { api } from '@/shared/api/instances';
 import { aiService } from '@/shared/services/aiService';
 import { repositoryApiClient } from '@/modules/repository/infrastructure/api/repositoryApiClient';

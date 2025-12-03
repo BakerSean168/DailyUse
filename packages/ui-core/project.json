@@ -1,31 +1,37 @@
 {
   "name": "@dailyuse/ui-core",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/ui-core/src",
   "projectType": "library",
+  "sourceRoot": "packages/ui-core/src",
   "tags": ["scope:ui", "type:core"],
-  "implicitDependencies": [],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/dist"],
+      "outputs": ["{workspaceRoot}/packages/ui-core/dist"],
       "options": {
-        "cwd": "packages/ui-core",
-        "command": "pnpm run build"
-      }
-    },
-    "typecheck": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "packages/ui-core",
-        "command": "pnpm run typecheck"
+        "command": "pnpm build",
+        "cwd": "packages/ui-core"
       }
     },
     "dev": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "packages/ui-core",
-        "command": "pnpm run dev"
+        "command": "pnpm dev",
+        "cwd": "packages/ui-core"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm test",
+        "cwd": "packages/ui-core"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/ui-core/**/*.ts"]
       }
     }
   }

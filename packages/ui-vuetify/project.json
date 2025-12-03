@@ -1,31 +1,31 @@
 {
-  "name": "@dailyuse/ui",
+  "name": "@dailyuse/ui-vuetify",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
-  "sourceRoot": "packages/ui/src",
+  "sourceRoot": "packages/ui-vuetify/src",
   "tags": ["scope:ui", "type:vuetify"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/packages/ui/dist"],
+      "outputs": ["{workspaceRoot}/packages/ui-vuetify/dist"],
       "dependsOn": ["^build"],
       "options": {
         "command": "pnpm build",
-        "cwd": "packages/ui"
+        "cwd": "packages/ui-vuetify"
       }
     },
     "dev": {
       "executor": "nx:run-commands",
       "options": {
         "command": "pnpm dev",
-        "cwd": "packages/ui"
+        "cwd": "packages/ui-vuetify"
       }
     },
     "lint": {
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/ui/**/*.{ts,js,vue}"]
+        "lintFilePatterns": ["packages/ui-vuetify/**/*.{ts,js,vue}"]
       }
     }
   },

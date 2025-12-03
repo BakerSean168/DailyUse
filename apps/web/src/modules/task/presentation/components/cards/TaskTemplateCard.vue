@@ -209,7 +209,7 @@ import type { Goal, KeyResult } from '@dailyuse/domain-client/goal';
 
 // composables
 import { useTaskTemplate } from '../../composables/useTaskTemplate';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 const { deleteTaskTemplate, pauseTaskTemplate, activateTaskTemplate } = useTaskTemplate();
 // 🔥 使用全局单例，确保与 DuMessageProvider 共享同一个实例

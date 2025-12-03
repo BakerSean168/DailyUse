@@ -310,7 +310,7 @@ import { useGoalStore } from '../stores/goalStore';
 
 // composables
 import { useGoal } from '../composables/useGoal';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 // domain
 import { Goal } from '@dailyuse/domain-client/goal';
 

@@ -73,7 +73,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { createDebounce } from '@dailyuse/utils';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 
 const props = defineProps<{
   modelValue: 'preview' | 'manage';

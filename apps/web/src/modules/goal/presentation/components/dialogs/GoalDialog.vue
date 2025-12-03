@@ -254,7 +254,7 @@ import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRe
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { useGoalManagement } from '../../composables/useGoalManagement';
 import { useKeyResult } from '../../composables/useKeyResult';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 
 const goalManagement = useGoalManagement();
 const keyResultComposable = useKeyResult();

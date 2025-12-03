@@ -231,7 +231,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGoalStore } from '../stores/goalStore';
 import { useGoal } from '../composables/useGoal';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 import { Goal, GoalReview } from '@dailyuse/domain-client/goal';
 import { format } from 'date-fns';
 import ReviewProgressChart from '../components/echarts/ReviewProgressChart.vue';

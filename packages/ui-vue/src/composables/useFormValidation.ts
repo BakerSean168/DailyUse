@@ -1,138 +1,39 @@
-/**
- * @dailyuse/ui-vue - Form Validation Composables
- *
- * Vue 3 composables wrapping @dailyuse/ui-core form validation.
- */
-
-import { computed, type Ref, type ComputedRef, unref } from 'vue';
+import { ref, computed, type Ref, type ComputedRef } from 'vue';
 import {
+  createFormValidation,
+  VALIDATION_RULES,
   type ValidationRule,
-  type ValidationResult,
-  validate,
-  validateAll,
-  usernameRules,
-  passwordRules,
-  emailRules,
-  phoneRules,
-  required,
-  minLength,
-  maxLength,
-  pattern,
-  email,
-  phone,
-  url,
-  combine,
+  type ValidationRules,
 } from '@dailyuse/ui-core';
 
-// Re-export core utilities for convenience
-export {
-  type ValidationRule,
-  type ValidationResult,
-  required,
-  minLength,
-  maxLength,
-  pattern,
-  email,
-  phone,
-  url,
-  combine,
-  validate,
-  validateAll,
-};
-
-/**
- * Type for value that can be a Ref or a plain value
- */
-export type MaybeRef<T> = T | Ref<T>;
-
-/**
- * Create reactive form validation
- */
-export function useFormValidation<T>(
-  value: MaybeRef<T>,
-  rules: ValidationRule<T>[]
-): {
-  result: ComputedRef<ValidationResult>;
-  isValid: ComputedRef<boolean>;
-  errors: ComputedRef<string[]>;
-  firstError: ComputedRef<string | undefined>;
-} {
-  const result = computed(() => validate(unref(value), rules));
-  const isValid = computed(() => result.value.isValid);
-  const errors = computed(() => result.value.errors);
-  const firstError = computed(() => result.value.errors[0]);
-
-  return {
-    result,
-    isValid,
-    errors,
-    firstError,
-  };
+export interface UseFormValidationReturn {
+  /** All validation rules */
+  rules: ValidationRules;
+  /** Validate a single field */
+  validateField: (value: unknown, fieldRules: ValidationRule[]) => string | true;
+  /** Create a required rule with custom message */
+  requiredRule: (message?: string) => ValidationRule;
+  /** Create an email rule with custom message */
+  emailRule: (message?: string) => ValidationRule;
+  /** Create a min length rule */
+  minLengthRule: (min: number, message?: string) => ValidationRule;
+  /** Create a max length rule */
+  maxLengthRule: (max: number, message?: string) => ValidationRule;
 }
 
 /**
- * Create reactive form validation that collects all errors
+ * Vue composable for form validation
+ * Wraps @dailyuse/ui-core form validation logic with Vue reactivity
  */
-export function useFormValidationAll<T>(
-  value: MaybeRef<T>,
-  rules: ValidationRule<T>[]
-): {
-  result: ComputedRef<ValidationResult>;
-  isValid: ComputedRef<boolean>;
-  errors: ComputedRef<string[]>;
-} {
-  const result = computed(() => validateAll(unref(value), rules));
-  const isValid = computed(() => result.value.isValid);
-  const errors = computed(() => result.value.errors);
+export function useFormValidation(): UseFormValidationReturn {
+  const core = createFormValidation();
 
   return {
-    result,
-    isValid,
-    errors,
-  };
-}
-
-/**
- * Get pre-configured form validation rules
- *
- * Returns Vuetify-compatible rule arrays that can be used directly
- * with v-text-field and other Vuetify form components.
- */
-export function useFormRules() {
-  return {
-    /**
-     * Username validation rules
-     */
-    username: usernameRules(),
-
-    /**
-     * Password validation rules
-     */
-    password: passwordRules(),
-
-    /**
-     * Email validation rules
-     */
-    email: emailRules(),
-
-    /**
-     * Phone validation rules
-     */
-    phone: phoneRules(),
-
-    /**
-     * Required field rule
-     */
-    required: [required()],
-
-    /**
-     * Create custom rules
-     */
-    custom: {
-      username: usernameRules,
-      password: passwordRules,
-      email: emailRules,
-      phone: phoneRules,
-    },
+    rules: VALIDATION_RULES,
+    validateField: core.validateField,
+    requiredRule: core.requiredRule,
+    emailRule: core.emailRule,
+    minLengthRule: core.minLengthRule,
+    maxLengthRule: core.maxLengthRule,
   };
 }

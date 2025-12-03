@@ -15,7 +15,7 @@ import type {
   CreateAIProviderRequest,
   UpdateAIProviderRequest,
 } from '@dailyuse/contracts/ai';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 interface TestConnectionResult {
   success: boolean;

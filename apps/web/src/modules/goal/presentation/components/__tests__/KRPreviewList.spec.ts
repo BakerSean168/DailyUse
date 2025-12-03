@@ -21,7 +21,7 @@ import type { AIProviderConfigClientDTO, AIUsageQuotaClientDTO, GeneratedGoalDra
 
 // Mock useMessage
 const mockShowSnackbar = vi.fn();
-vi.mock('@dailyuse/ui', () => ({
+vi.mock('@dailyuse/ui-vuetify', () => ({
   useMessage: () => ({
     showSnackbar: mockShowSnackbar,
   }),

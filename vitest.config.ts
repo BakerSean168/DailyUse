@@ -161,7 +161,7 @@ export default defineConfig({
             '@dailyuse/domain-client': path.resolve(__dirname, './packages/domain-client/src'),
             '@dailyuse/contracts': path.resolve(__dirname, './packages/contracts/src'),
             '@dailyuse/utils': path.resolve(__dirname, './packages/utils/src'),
-            '@dailyuse/ui': path.resolve(__dirname, './packages/ui/src'),
+            '@dailyuse/ui-vuetify': path.resolve(__dirname, './packages/ui-vuetify/src'),
           },
         },
         plugins: [vue()],

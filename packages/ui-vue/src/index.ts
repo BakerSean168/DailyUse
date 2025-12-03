@@ -1,29 +1,43 @@
 /**
  * @dailyuse/ui-vue
- *
- * Vue 3 composables for DailyUse headless UI.
- *
- * This package provides Vue 3 composables that wrap the framework-agnostic
- * logic from @dailyuse/ui-core, making it reactive and easy to use in Vue.
- *
- * @example
- * ```vue
- * <script setup lang="ts">
- * import { useDialog, useSnackbar, usePasswordStrength } from '@dailyuse/ui-vue';
- *
- * const dialog = useDialog();
- * const snackbar = useSnackbar();
- * const { score, suggestions } = usePasswordStrength(password);
- *
- * async function handleDelete() {
- *   const confirmed = await dialog.confirmDelete({ itemName: 'Item' });
- *   if (confirmed) {
- *     // Delete the item
- *     snackbar.success('Item deleted!');
- *   }
- * }
- * </script>
- * ```
+ * 
+ * Vue 3 composables wrapping @dailyuse/ui-core headless logic.
+ * This package provides reactive Vue composables that can be used
+ * by any Vue-based UI library (Vuetify, Element Plus, etc.)
  */
 
-export * from './composables';
+// Re-export core types for convenience
+export type {
+  ValidationRule,
+  ValidationRules,
+  PasswordStrengthLevel,
+  PasswordStrengthResult,
+  LoadingState,
+  LoadingStore,
+  MessageType,
+  MessageOptions,
+  MessageState,
+  MessageStore,
+  DialogState,
+  DialogStore,
+  ColorPickerState,
+  ColorPickerStore,
+  UseColorPickerOptions,
+} from '@dailyuse/ui-core';
+
+// Export core utilities
+export {
+  VALIDATION_RULES,
+  generatePassword,
+  isLightColor,
+  hexToRgb,
+  rgbToHex,
+} from '@dailyuse/ui-core';
+
+// Export Vue composables
+export { useFormValidation, type UseFormValidationReturn } from './composables/useFormValidation';
+export { usePasswordStrength, type UsePasswordStrengthReturn } from './composables/usePasswordStrength';
+export { useLoading, type UseLoadingReturn } from './composables/useLoading';
+export { useMessage, type UseMessageReturn } from './composables/useMessage';
+export { useDialog, type UseDialogReturn } from './composables/useDialog';
+export { useColorPicker, type UseColorPickerReturn } from './composables/useColorPicker';

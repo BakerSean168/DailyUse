@@ -142,8 +142,8 @@
 import { ref, computed, reactive, watch } from 'vue';
 import { ControlMode } from '@dailyuse/contracts/reminder';
 import type { ReminderGroupClientDTO, CreateReminderGroupRequest, UpdateReminderGroupRequest } from '@dailyuse/contracts/reminder';
-import { ColorPicker, IconPicker } from '@dailyuse/ui';
-import { useMessage } from '@dailyuse/ui';
+import { ColorPicker, IconPicker } from '@dailyuse/ui-vuetify';
+import { useMessage } from '@dailyuse/ui-vuetify';
 import { useReminderGroup } from '../../composables/useReminderGroup';
 
 type ReminderTemplateGroup = ReminderGroupClientDTO;

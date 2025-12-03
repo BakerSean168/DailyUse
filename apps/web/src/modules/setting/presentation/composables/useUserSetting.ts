@@ -6,7 +6,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { UserSettingWebApplicationService } from '../../application/services/UserSettingWebApplicationService';
 import { useUserSettingStore } from '../stores/userSettingStore';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 import type {
   UserSettingClientDTO,
   UpdateUserSettingRequest,

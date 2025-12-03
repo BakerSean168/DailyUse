@@ -208,7 +208,7 @@ import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { useReminder } from '../../composables/useReminder';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAIGeneration } from '@/modules/ai/presentation/composables/useAIGeneration';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 const show = ref(false); const formRef = ref(); const formValid = ref(false);
 const form = ref({ keyResultTitle: '', keyResultDescription: '', targetValue: 0, currentValue: 0, unit: '', timeRemaining: 30 });
 const rules = { required: (v: any) => (v !== undefined && v !== null && v !== '' ? true : '必填') };

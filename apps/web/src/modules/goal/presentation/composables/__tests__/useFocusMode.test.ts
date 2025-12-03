@@ -14,7 +14,7 @@ vi.mock('../../infrastructure/api/focusModeApiClient', () => ({
 }));
 
 // Mock snackbar
-vi.mock('@dailyuse/ui', () => ({
+vi.mock('@dailyuse/ui-vuetify', () => ({
   useMessage: () => ({
     success: vi.fn(),
     error: vi.fn(),

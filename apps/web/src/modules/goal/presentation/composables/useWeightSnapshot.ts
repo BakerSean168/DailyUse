@@ -2,7 +2,7 @@ import { ref, computed, reactive } from 'vue';
 import type { GoalClientDTO, KeyResultClientDTO, CreateGoalRequest, UpdateGoalRequest, KeyResultWeightSnapshotServerDTO } from '@dailyuse/contracts/goal';
 import { WeightSnapshotWebApplicationService } from '../../application/services/WeightSnapshotWebApplicationService';
 import { getGoalStore } from '../stores/goalStore';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
  * Weight Snapshot 业务逻辑 Composable

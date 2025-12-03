@@ -18,7 +18,7 @@ import type { TaskTemplateClientDTO, TaskInstanceClientDTO, TaskTimeConfigClient
 import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 import { taskInstanceApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 
 
 /**

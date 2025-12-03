@@ -24,7 +24,7 @@ var workspacePkgs = [
   '@dailyuse/domain-client',
   '@dailyuse/domain-server',
   '@dailyuse/contracts',
-  '@dailyuse/ui',
+  '@dailyuse/ui-vuetify',
 ];
 // https://vitejs.dev/config/
 export default defineConfig({

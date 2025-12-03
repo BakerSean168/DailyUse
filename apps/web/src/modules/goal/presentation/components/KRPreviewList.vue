@@ -273,7 +273,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 // ===== Types =====
 interface KeyResultPreview {

@@ -228,10 +228,10 @@ import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
 import { TriggerType, ReminderType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import type { ReminderTemplateClientDTO, ReminderGroupClientDTO, CreateReminderTemplateRequest, UpdateReminderTemplateRequest, TriggerConfigServerDTO, ActiveTimeConfigServerDTO, NotificationConfigServerDTO } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
-import { ColorPicker, IconPicker } from '@dailyuse/ui';
+import { ColorPicker, IconPicker } from '@dailyuse/ui-vuetify';
 import { useReminder } from '../../composables/useReminder';
 import { useReminderGroup } from '../../composables/useReminderGroup';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 
 
 

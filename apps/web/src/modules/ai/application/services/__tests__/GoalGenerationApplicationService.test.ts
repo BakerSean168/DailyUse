@@ -29,7 +29,7 @@ vi.mock('../../../infrastructure/api/goalGenerationApiClient', () => ({
   },
 }));
 
-vi.mock('@dailyuse/ui', () => ({
+vi.mock('@dailyuse/ui-vuetify', () => ({
   useMessage: () => ({
     success: vi.fn(),
     error: vi.fn(),

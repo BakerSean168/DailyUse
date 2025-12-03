@@ -11,7 +11,7 @@
 import { ref, computed, readonly } from 'vue';
 import { taskStatisticsApplicationService } from '../../application/services';
 import { useTaskStore } from '../stores/taskStore';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 
 /**
  * 任务统计 Composable

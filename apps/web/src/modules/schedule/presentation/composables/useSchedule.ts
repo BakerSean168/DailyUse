@@ -22,7 +22,7 @@ import type {
   ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
 import { ScheduleTask } from '@dailyuse/domain-client/schedule';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
  * Schedule 模块的核心组合函数

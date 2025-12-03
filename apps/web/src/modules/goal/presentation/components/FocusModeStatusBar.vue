@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useFocusMode } from '../composables/useFocusMode';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FocusModeStatusBar');

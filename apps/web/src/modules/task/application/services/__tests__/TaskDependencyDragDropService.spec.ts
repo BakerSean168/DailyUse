@@ -24,7 +24,7 @@ vi.mock('../TaskDependencyValidationService', () => ({
   })),
 }));
 
-vi.mock('@dailyuse/ui', () => ({
+vi.mock('@dailyuse/ui-vuetify', () => ({
   useMessage: vi.fn(() => ({
     success: vi.fn(),
     error: vi.fn(),

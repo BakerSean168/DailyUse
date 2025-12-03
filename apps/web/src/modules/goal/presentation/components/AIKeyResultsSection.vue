@@ -124,7 +124,7 @@
 import { ref, computed, watch } from 'vue';
 import AIGenerateKRButton from './AIGenerateKRButton.vue';
 import KRPreviewList from './KRPreviewList.vue';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 // ===== Types =====
 interface KeyResultData {

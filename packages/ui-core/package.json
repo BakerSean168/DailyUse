@@ -10,26 +10,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./color-picker": {
-      "types": "./dist/color-picker/index.d.ts",
-      "import": "./dist/color-picker/index.js"
-    },
-    "./dialog": {
-      "types": "./dist/dialog/index.d.ts",
-      "import": "./dist/dialog/index.js"
-    },
-    "./message": {
-      "types": "./dist/message/index.d.ts",
-      "import": "./dist/message/index.js"
-    },
-    "./form": {
-      "types": "./dist/form/index.d.ts",
-      "import": "./dist/form/index.js"
-    },
-    "./loading": {
-      "types": "./dist/loading/index.d.ts",
-      "import": "./dist/loading/index.js"
     }
   },
   "files": [
@@ -37,19 +17,16 @@
   ],
   "scripts": {
     "clean": "rimraf dist",
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "build": "node ../../node_modules/tsup/dist/cli-default.js",
+    "dev": "node ../../node_modules/tsup/dist/cli-default.js --watch",
+    "type-check": "node ../../node_modules/typescript/lib/tsc.js --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "rimraf": "^6.0.1",
-    "tsup": "^8.3.5",
-    "typescript": "^5.8.3"
-  },
-  "keywords": [
-    "headless",
-    "ui",
-    "framework-agnostic",
-    "typescript"
-  ]
+    "tsup": "^8.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
 }

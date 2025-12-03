@@ -98,7 +98,7 @@ import { ref, reactive, computed } from 'vue';
 import type { RegisterRequest } from '@dailyuse/contracts/authentication';
 // composables
 import { useAuth } from '@/modules/authentication/presentation/composables/useAuth';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 // utils
 import { passwordRules, usernameRules, emailRules } from '@/shared/utils/validations/rules';
 

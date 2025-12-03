@@ -11,7 +11,7 @@
     <!-- 应用内通知组件 -->
     <InAppNotification />
 
-    <!-- @dailyuse/ui 消息提示组件 (用于 useMessage 确认框) -->
+    <!-- @dailyuse/ui-vuetify 消息提示组件 (用于 useMessage 确认框) -->
     <DuMessageProvider />
 
     <!-- 命令面板 (Cmd/Ctrl + K) - 按需加载 -->
@@ -65,11 +65,11 @@ import AIKnowledgeDocQuickDialog from '@/modules/ai/presentation/components/chat
 import GoalDialog from '@/modules/goal/presentation/components/dialogs/GoalDialog.vue';
 import ObsidianDialog from '@/shared/components/ObsidianDialog.vue';
 import { useSettingStore } from '@/modules/setting/presentation/stores/settingStore';
-import { useMessage } from '@dailyuse/ui';
+import { useMessage } from '@dailyuse/ui-vuetify';
 import { knowledgeGenerationApplicationService } from '@/modules/ai/application/services';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import InAppNotification from '@/modules/notification/presentation/components/InAppNotification.vue';
-import { DuMessageProvider } from '@dailyuse/ui';
+import { DuMessageProvider } from '@dailyuse/ui-vuetify';
 import { logo128 as logo } from '@dailyuse/assets';
 import { getThemeService } from '@/modules/setting/application/services/ThemeService';
 

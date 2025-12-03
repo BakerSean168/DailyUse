@@ -1,33 +1,33 @@
 {
   "name": "@dailyuse/ui-vue",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/ui-vue/src",
   "projectType": "library",
+  "sourceRoot": "packages/ui-vue/src",
   "tags": ["scope:ui", "type:vue"],
-  "implicitDependencies": ["@dailyuse/ui-core"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/dist"],
+      "outputs": ["{workspaceRoot}/packages/ui-vue/dist"],
       "dependsOn": ["^build"],
       "options": {
-        "cwd": "packages/ui-vue",
-        "command": "pnpm run build"
-      }
-    },
-    "typecheck": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "packages/ui-vue",
-        "command": "pnpm run typecheck"
+        "command": "pnpm build",
+        "cwd": "packages/ui-vue"
       }
     },
     "dev": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "packages/ui-vue",
-        "command": "pnpm run dev"
+        "command": "pnpm dev",
+        "cwd": "packages/ui-vue"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/ui-vue/**/*.ts"]
       }
     }
-  }
+  },
+  "implicitDependencies": ["@dailyuse/ui-core"]
 }

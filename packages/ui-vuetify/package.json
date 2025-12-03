@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/ui",
+  "name": "@dailyuse/ui-vuetify",
   "version": "0.0.1",
   "description": "Reusable Vue 3 + Vuetify UI components for DailyUse applications",
   "private": false,

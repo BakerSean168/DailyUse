@@ -29,7 +29,7 @@ import { computed } from 'vue';
 import { useAIGenerationStore } from '@/stores/ai/aiGenerationStore';
 import { keyResultApplicationService } from '@/modules/goal/application/services/KeyResultApplicationService';
 import { aiGenerationApplicationService } from '../../application/services';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 /**
  * AI Generation Composable

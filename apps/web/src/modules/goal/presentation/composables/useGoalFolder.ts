@@ -14,7 +14,7 @@ import type { CreateGoalFolderRequest, UpdateGoalFolderRequest } from '@dailyuse
 import type { GoalFolder } from '@dailyuse/domain-client/goal';
 import { goalFolderApplicationService } from '../../application/services';
 import { getGoalStore } from '../stores/goalStore';
-import { getGlobalMessage } from '@dailyuse/ui';
+import { getGlobalMessage } from '@dailyuse/ui-vuetify';
 
 export function useGoalFolder() {
   const goalStore = getGoalStore();

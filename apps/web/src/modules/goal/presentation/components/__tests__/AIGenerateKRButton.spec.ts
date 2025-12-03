@@ -48,7 +48,7 @@ vi.mock('../../../../ai/presentation/composables/useAIGeneration', () => ({
 // Mock useMessage
 const mockShowSuccess = vi.fn();
 const mockShowError = vi.fn();
-vi.mock('@dailyuse/ui', () => ({
+vi.mock('@dailyuse/ui-vuetify', () => ({
   useMessage: () => ({
     success: mockShowSuccess,
     error: mockShowError,

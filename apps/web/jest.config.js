@@ -35,7 +35,7 @@ export default {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@dailyuse/contracts$': '<rootDir>/../../packages/contracts/src/index.ts',
     '^@dailyuse/domain-client$': '<rootDir>/../../packages/domain-client/src/index.ts',
-    '^@dailyuse/ui$': '<rootDir>/../../packages/ui/src/index.ts',
+    '^@dailyuse/ui-vuetify$': '<rootDir>/../../packages/ui-vuetify/src/index.ts',
     '^@dailyuse/utils$': '<rootDir>/../../packages/utils/src/index.ts',
     // CSS 模块处理
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
