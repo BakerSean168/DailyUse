@@ -28,7 +28,7 @@
     "build:api": "pnpm --filter @dailyuse/api build",
     "build:web": "pnpm --filter @dailyuse/web build",
     "build:desktop": "pnpm --filter @dailyuse/desktop build",
-    "build:packages": "pnpm nx run-many --target=build --projects=contracts,domain-server,domain-client,ui-vuetify,ui-vue,ui-core,ui-react,ui-shadcn,utils --parallel=5",
+    "build:packages": "pnpm nx run-many --target=build --projects=contracts,domain-server,domain-client,application-server,application-client,infrastructure-server,infrastructure-client,ui-vuetify,ui-vue,ui-core,ui-react,ui-shadcn,utils --parallel=5",
     "build:all": "pnpm build",
     "// ========== Type Checking ==========": "",
     "typecheck": "pnpm nx run-many --target=typecheck --all --parallel=5",

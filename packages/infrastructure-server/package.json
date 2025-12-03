@@ -1,0 +1,44 @@
+{
+  "name": "@dailyuse/infrastructure-server",
+  "version": "0.0.1",
+  "description": "DailyUse Server Infrastructure Layer - Repositories, External Services for API/Desktop main process",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./ports": {
+      "types": "./dist/ports/index.d.ts",
+      "import": "./dist/ports/index.js"
+    },
+    "./adapters/prisma": {
+      "types": "./dist/adapters/prisma/index.d.ts",
+      "import": "./dist/adapters/prisma/index.js"
+    },
+    "./adapters/memory": {
+      "types": "./dist/adapters/memory/index.d.ts",
+      "import": "./dist/adapters/memory/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node ../../node_modules/tsup/dist/cli-default.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/domain-server": "workspace:*",
+    "@dailyuse/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false
+}

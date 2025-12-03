@@ -1,0 +1,48 @@
+{
+  "name": "@dailyuse/infrastructure-client",
+  "version": "0.0.1",
+  "description": "DailyUse Client Infrastructure Layer - API Clients, Storage Adapters for Web/Desktop renderer",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./ports": {
+      "types": "./dist/ports/index.d.ts",
+      "import": "./dist/ports/index.js"
+    },
+    "./adapters/http": {
+      "types": "./dist/adapters/http/index.d.ts",
+      "import": "./dist/adapters/http/index.js"
+    },
+    "./adapters/ipc": {
+      "types": "./dist/adapters/ipc/index.d.ts",
+      "import": "./dist/adapters/ipc/index.js"
+    },
+    "./adapters/storage": {
+      "types": "./dist/adapters/storage/index.d.ts",
+      "import": "./dist/adapters/storage/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node ../../node_modules/tsup/dist/cli-default.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/domain-client": "workspace:*",
+    "@dailyuse/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false
+}

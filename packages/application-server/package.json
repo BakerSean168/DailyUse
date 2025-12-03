@@ -1,0 +1,53 @@
+{
+  "name": "@dailyuse/application-server",
+  "version": "0.0.1",
+  "description": "DailyUse Server Application Layer - Use Cases and Application Services for API/Desktop main process",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./goal": {
+      "types": "./dist/goal/index.d.ts",
+      "import": "./dist/goal/index.js"
+    },
+    "./task": {
+      "types": "./dist/task/index.d.ts",
+      "import": "./dist/task/index.js"
+    },
+    "./schedule": {
+      "types": "./dist/schedule/index.d.ts",
+      "import": "./dist/schedule/index.js"
+    },
+    "./reminder": {
+      "types": "./dist/reminder/index.d.ts",
+      "import": "./dist/reminder/index.js"
+    },
+    "./account": {
+      "types": "./dist/account/index.d.ts",
+      "import": "./dist/account/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node ../../node_modules/tsup/dist/cli-default.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dailyuse/contracts": "workspace:*",
+    "@dailyuse/domain-server": "workspace:*",
+    "@dailyuse/infrastructure-server": "workspace:*",
+    "@dailyuse/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false
+}

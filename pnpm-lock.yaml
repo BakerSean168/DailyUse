@@ -775,6 +775,44 @@ importers:
         specifier: ^2.1.10
         version: 2.2.12(typescript@5.8.3)
 
+  packages/application-client:
+    dependencies:
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dailyuse/domain-client':
+        specifier: workspace:*
+        version: link:../domain-client
+      '@dailyuse/infrastructure-client':
+        specifier: workspace:*
+        version: link:../infrastructure-client
+      '@dailyuse/utils':
+        specifier: workspace:*
+        version: link:../utils
+    devDependencies:
+      typescript:
+        specifier: ^5.8.0
+        version: 5.8.3
+
+  packages/application-server:
+    dependencies:
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dailyuse/domain-server':
+        specifier: workspace:*
+        version: link:../domain-server
+      '@dailyuse/infrastructure-server':
+        specifier: workspace:*
+        version: link:../infrastructure-server
+      '@dailyuse/utils':
+        specifier: workspace:*
+        version: link:../utils
+    devDependencies:
+      typescript:
+        specifier: ^5.8.0
+        version: 5.8.3
+
   packages/assets:
     devDependencies:
       rimraf:
@@ -888,6 +926,38 @@ importers:
       zod:
         specifier: 4.1.12
         version: 4.1.12
+
+  packages/infrastructure-client:
+    dependencies:
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dailyuse/domain-client':
+        specifier: workspace:*
+        version: link:../domain-client
+      '@dailyuse/utils':
+        specifier: workspace:*
+        version: link:../utils
+    devDependencies:
+      typescript:
+        specifier: ^5.8.0
+        version: 5.8.3
+
+  packages/infrastructure-server:
+    dependencies:
+      '@dailyuse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@dailyuse/domain-server':
+        specifier: workspace:*
+        version: link:../domain-server
+      '@dailyuse/utils':
+        specifier: workspace:*
+        version: link:../utils
+    devDependencies:
+      typescript:
+        specifier: ^5.8.0
+        version: 5.8.3
 
   packages/test-utils:
     dependencies:
