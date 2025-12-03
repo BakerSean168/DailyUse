@@ -1,6 +1,6 @@
 ---
 description: "Activates the Bmad Master agent persona."
-tools: ["changes","codebase","createDirectory","createFile","editFiles","fetch","fileSearch","githubRepo","listDirectory","problems","readFile","runInTerminal","runTask","runTests","runVscodeCommand","search","searchResults","terminalLastCommand","terminalSelection","testFailure","textSearch","usages"]
+tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'search', 'new/runVscodeCommand', 'runCommands/terminalSelection', 'runCommands/terminalLastCommand', 'runCommands/runInTerminal', 'runTasks/runTask', 'usages', 'problems', 'changes', 'testFailure', 'fetch', 'githubRepo']
 ---
 
 # Bmad Master Agent

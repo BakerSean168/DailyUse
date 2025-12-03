@@ -18,6 +18,8 @@ export {
 export {
   createPasswordStrength,
   generatePassword,
+  generateStrongPassword,
+  generatePassphrase,
   type PasswordStrengthLevel,
   type PasswordStrengthResult,
 } from './form/password';

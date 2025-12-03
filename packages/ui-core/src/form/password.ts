@@ -153,3 +153,35 @@ export function generatePassword(length = 16): string {
     .sort(() => Math.random() - 0.5)
     .join('');
 }
+
+/**
+ * Alias for generatePassword for backward compatibility
+ */
+export const generateStrongPassword = generatePassword;
+
+/**
+ * Generate a memorable passphrase
+ */
+export function generatePassphrase(wordCount = 4, separator = '-'): string {
+  const words = [
+    'apple', 'banana', 'cherry', 'dragon', 'eagle', 'forest',
+    'garden', 'harbor', 'island', 'jungle', 'knight', 'lemon',
+    'mango', 'noble', 'orange', 'palace', 'quest', 'river',
+    'sunset', 'tiger', 'unicorn', 'voyage', 'wizard', 'zenith',
+    'anchor', 'bridge', 'castle', 'diamond', 'ember', 'falcon',
+    'glacier', 'horizon', 'ivory', 'jasmine', 'kindle', 'lunar',
+    'meadow', 'nebula', 'orchid', 'phoenix', 'quartz', 'rainbow',
+    'silver', 'thunder', 'umbrella', 'velvet', 'willow', 'crystal',
+  ];
+
+  const passphrase: string[] = [];
+  for (let i = 0; i < wordCount; i++) {
+    const randomWord = words[Math.floor(Math.random() * words.length)];
+    // Capitalize first letter for readability
+    passphrase.push(randomWord.charAt(0).toUpperCase() + randomWord.slice(1));
+  }
+
+  // Add a random number at the end for extra security
+  const randomNumber = Math.floor(Math.random() * 100);
+  return passphrase.join(separator) + separator + randomNumber;
+}

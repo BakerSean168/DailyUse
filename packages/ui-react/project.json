@@ -1,0 +1,33 @@
+{
+  "name": "@dailyuse/ui-react",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "packages/ui-react/src",
+  "tags": ["scope:ui", "type:react"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/packages/ui-react/dist"],
+      "dependsOn": ["^build"],
+      "options": {
+        "command": "pnpm build",
+        "cwd": "packages/ui-react"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm dev",
+        "cwd": "packages/ui-react"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/ui-react/**/*.{ts,tsx}"]
+      }
+    }
+  },
+  "implicitDependencies": ["@dailyuse/ui-core"]
+}
