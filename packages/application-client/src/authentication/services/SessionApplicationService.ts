@@ -16,7 +16,7 @@ import type {
   TrustDeviceRequest,
   RevokeTrustedDeviceRequest,
 } from '@dailyuse/contracts/authentication';
-import type { IAuthApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 
 export class SessionApplicationService {
   constructor(private readonly authApiClient: IAuthApiClient) {}

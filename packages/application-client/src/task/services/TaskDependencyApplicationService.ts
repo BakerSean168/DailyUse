@@ -10,7 +10,7 @@
  * - 依赖链查询
  */
 
-import type { ITaskDependencyApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { ITaskDependencyApiClient } from '@dailyuse/infrastructure-client';
 import type {
   TaskDependencyClientDTO,
   CreateTaskDependencyRequest,

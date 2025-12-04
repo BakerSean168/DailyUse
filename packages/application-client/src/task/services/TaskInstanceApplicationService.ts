@@ -10,7 +10,7 @@
  * - 批量操作
  */
 
-import type { ITaskInstanceApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { ITaskInstanceApiClient } from '@dailyuse/infrastructure-client';
 import type {
   TaskInstanceClientDTO,
   CompleteTaskInstanceRequest,

@@ -28,3 +28,15 @@ export * from './reminder';
 
 // Account module
 export * from './account';
+
+// Repository module
+export * from './repository';
+
+// Dashboard module
+export * from './dashboard';
+
+// Setting module
+export * from './setting';
+
+// Notification module
+export * from './notification';

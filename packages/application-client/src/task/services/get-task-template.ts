@@ -1,0 +1,59 @@
+/**
+ * Get Task Template
+ *
+ * 获取任务模板详情用例
+ */
+
+import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client';
+import { TaskTemplate } from '@dailyuse/domain-client/task';
+import { TaskContainer } from '../TaskContainer';
+
+/**
+ * Get Task Template
+ */
+export class GetTaskTemplate {
+  private static instance: GetTaskTemplate;
+
+  private constructor(private readonly apiClient: ITaskTemplateApiClient) {}
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(apiClient?: ITaskTemplateApiClient): GetTaskTemplate {
+    const container = TaskContainer.getInstance();
+    const client = apiClient || container.getTaskTemplateApiClient();
+    GetTaskTemplate.instance = new GetTaskTemplate(client);
+    return GetTaskTemplate.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): GetTaskTemplate {
+    if (!GetTaskTemplate.instance) {
+      GetTaskTemplate.instance = GetTaskTemplate.createInstance();
+    }
+    return GetTaskTemplate.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    GetTaskTemplate.instance = undefined as unknown as GetTaskTemplate;
+  }
+
+  /**
+   * 执行用例
+   */
+  async execute(uuid: string, includeChildren = false): Promise<TaskTemplate> {
+    const templateDTO = await this.apiClient.getTaskTemplateById(uuid, includeChildren);
+    return TaskTemplate.fromClientDTO(templateDTO);
+  }
+}
+
+/**
+ * 便捷函数
+ */
+export const getTaskTemplate = (uuid: string, includeChildren = false): Promise<TaskTemplate> =>
+  GetTaskTemplate.getInstance().execute(uuid, includeChildren);

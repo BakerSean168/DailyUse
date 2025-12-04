@@ -1,0 +1,78 @@
+/**
+ * Generate Task Instances
+ *
+ * 生成任务实例用例
+ */
+
+import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client';
+import type { GenerateInstancesRequest } from '@dailyuse/contracts/task';
+import { eventBus } from '@dailyuse/utils';
+import { TaskInstance } from '@dailyuse/domain-client/task';
+import { TaskContainer } from '../TaskContainer';
+import { TaskEvents } from './task-events';
+
+export interface GenerateTaskInstancesInput {
+  templateUuid: string;
+  toDate: number;
+}
+
+/**
+ * Generate Task Instances
+ */
+export class GenerateTaskInstances {
+  private static instance: GenerateTaskInstances;
+
+  private constructor(private readonly apiClient: ITaskTemplateApiClient) {}
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(apiClient?: ITaskTemplateApiClient): GenerateTaskInstances {
+    const container = TaskContainer.getInstance();
+    const client = apiClient || container.getTaskTemplateApiClient();
+    GenerateTaskInstances.instance = new GenerateTaskInstances(client);
+    return GenerateTaskInstances.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): GenerateTaskInstances {
+    if (!GenerateTaskInstances.instance) {
+      GenerateTaskInstances.instance = GenerateTaskInstances.createInstance();
+    }
+    return GenerateTaskInstances.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    GenerateTaskInstances.instance = undefined as unknown as GenerateTaskInstances;
+  }
+
+  /**
+   * 执行用例
+   */
+  async execute(input: GenerateTaskInstancesInput): Promise<TaskInstance[]> {
+    const request: GenerateInstancesRequest = {
+      templateUuid: input.templateUuid,
+      toDate: input.toDate,
+    };
+    const instanceDTOs = await this.apiClient.generateInstances(input.templateUuid, request);
+    const instances = instanceDTOs.map(dto => TaskInstance.fromClientDTO(dto));
+
+    eventBus.emit(TaskEvents.INSTANCES_GENERATED, {
+      templateUuid: input.templateUuid,
+      instances
+    });
+
+    return instances;
+  }
+}
+
+/**
+ * 便捷函数
+ */
+export const generateTaskInstances = (input: GenerateTaskInstancesInput): Promise<TaskInstance[]> =>
+  GenerateTaskInstances.getInstance().execute(input);

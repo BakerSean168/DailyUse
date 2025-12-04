@@ -1,8 +1,14 @@
 /**
  * Reminder Application Module (Server)
  *
- * TODO: Extract from apps/api/src/modules/reminder/application/
+ * 提供 Reminder 模块的所有 Services
  */
 
-// Placeholder - to be implemented
+// ===== Container =====
+export { ReminderContainer } from './ReminderContainer';
+
+// ===== Services =====
+export * from './services';
+
+// Legacy placeholder (to be removed)
 export const REMINDER_MODULE_PLACEHOLDER = 'reminder-module';

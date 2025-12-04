@@ -1,0 +1,170 @@
+/**
+ * Tags Service
+ *
+ * 标签统计与过滤服务
+ */
+
+import type { IResourceRepository } from '@dailyuse/domain-server/repository';
+import type { TagStatisticsDto } from '@dailyuse/contracts/repository';
+import { RepositoryContainer } from '../RepositoryContainer';
+
+/**
+ * Tags Service
+ */
+export class TagsService {
+  private static instance: TagsService;
+
+  private constructor(private readonly resourceRepository: IResourceRepository) {}
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(resourceRepository?: IResourceRepository): TagsService {
+    const container = RepositoryContainer.getInstance();
+    const repo = resourceRepository || container.getResourceRepository();
+
+    TagsService.instance = new TagsService(repo);
+    return TagsService.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): TagsService {
+    if (!TagsService.instance) {
+      TagsService.instance = TagsService.createInstance();
+    }
+    return TagsService.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    TagsService.instance = undefined as unknown as TagsService;
+  }
+
+  /**
+   * 获取仓储的标签统计信息
+   *
+   * @param repositoryUuid 仓储 UUID
+   * @returns 标签统计列表（按使用频率降序）
+   */
+  async getTagStatistics(repositoryUuid: string): Promise<TagStatisticsDto[]> {
+    const resources = await this.resourceRepository.findByRepositoryUuid(repositoryUuid);
+
+    const textTypes = ['MARKDOWN', 'TEXT', 'MD', 'TXT'];
+    const textResources = resources.filter((resource) => {
+      const persistence = (resource as any).persistence;
+      return textTypes.includes(String(persistence?.type).toUpperCase());
+    });
+
+    const tagMap = new Map<string, TagStatisticsDto>();
+
+    for (const resource of textResources) {
+      const tags = this.extractTags(resource);
+
+      for (const tag of tags) {
+        if (!tagMap.has(tag)) {
+          tagMap.set(tag, {
+            tag,
+            count: 0,
+            resources: [],
+          });
+        }
+
+        const stat = tagMap.get(tag)!;
+        stat.count++;
+
+        const updatedAtISO =
+          typeof resource.updatedAt === 'number'
+            ? new Date(resource.updatedAt).toISOString()
+            : new Date().toISOString();
+
+        stat.resources.push({
+          uuid: resource.uuid,
+          title: this.extractTitle(resource),
+          path: this.extractPath(resource),
+          updatedAt: updatedAtISO,
+        });
+      }
+    }
+
+    const statistics = Array.from(tagMap.values()).sort((a, b) => b.count - a.count);
+
+    return statistics;
+  }
+
+  /**
+   * 从资源中提取 tags
+   */
+  private extractTags(resource: any): string[] {
+    const content = (resource as any).persistence?.content;
+    if (!content) return [];
+
+    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!frontmatterMatch) return [];
+
+    const frontmatterText = frontmatterMatch[1];
+    const lines = frontmatterText.split('\n');
+    let inTagsArray = false;
+    const tags: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      if (!line || line.startsWith('#')) continue;
+
+      if (line.toLowerCase().startsWith('tags:')) {
+        const valueText = line.substring(5).trim();
+
+        if (valueText.startsWith('[') && valueText.endsWith(']')) {
+          const arrayContent = valueText.slice(1, -1);
+          const items = arrayContent.split(',').map((item: string) => item.trim());
+          tags.push(...items);
+          break;
+        } else if (valueText === '' || valueText === '[') {
+          inTagsArray = true;
+          continue;
+        } else {
+          tags.push(valueText);
+          break;
+        }
+      }
+
+      if (inTagsArray && line.startsWith('-')) {
+        const tagValue = line.substring(1).trim();
+        if (tagValue) {
+          tags.push(tagValue);
+        }
+      }
+
+      if (inTagsArray && line.includes(':') && !line.startsWith('-')) {
+        break;
+      }
+    }
+
+    return tags.filter((tag) => tag.length > 0);
+  }
+
+  /**
+   * 提取资源标题
+   */
+  private extractTitle(resource: any): string {
+    const metadata = (resource as any).metadata;
+    return metadata?.name || resource.uuid;
+  }
+
+  /**
+   * 提取资源路径
+   */
+  private extractPath(resource: any): string {
+    const metadata = (resource as any).metadata;
+    return metadata?.path || '/';
+  }
+}
+
+// ===== 便捷函数 =====
+
+export const getTagStatistics = (repositoryUuid: string) =>
+  TagsService.getInstance().getTagStatistics(repositoryUuid);

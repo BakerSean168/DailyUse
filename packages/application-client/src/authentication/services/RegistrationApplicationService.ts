@@ -8,7 +8,7 @@
  */
 
 import type { RegisterRequest } from '@dailyuse/contracts/authentication';
-import type { IAuthApiClient, RegisterResponse } from '@dailyuse/infrastructure-client/ports';
+import type { IAuthApiClient, RegisterResponse } from '@dailyuse/infrastructure-client';
 
 export class RegistrationApplicationService {
   constructor(private readonly authApiClient: IAuthApiClient) {}

@@ -1,0 +1,151 @@
+/**
+ * Create Goal Service
+ *
+ * 创建新目标的应用服务
+ */
+
+import type { IGoalRepository } from '@dailyuse/domain-server/goal';
+import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
+import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { eventBus } from '@dailyuse/utils';
+import { GoalContainer } from '../GoalContainer';
+
+/**
+ * Create Goal Input
+ */
+export interface CreateGoalInput {
+  accountUuid: string;
+  title: string;
+  description?: string;
+  importance: ImportanceLevel;
+  urgency: UrgencyLevel;
+  parentGoalUuid?: string;
+  folderUuid?: string;
+  startDate?: number;
+  targetDate?: number;
+  tags?: string[];
+  metadata?: unknown;
+  color?: string;
+  feasibilityAnalysis?: string;
+  motivation?: string;
+  keyResults?: Array<{
+    title: string;
+    description?: string;
+    valueType?: string;
+    targetValue?: number;
+    unit?: string;
+    weight?: number;
+  }>;
+}
+
+/**
+ * Create Goal Output
+ */
+export interface CreateGoalOutput {
+  goal: GoalClientDTO;
+}
+
+/**
+ * Create Goal Service
+ */
+export class CreateGoal {
+  private static instance: CreateGoal;
+  private readonly domainService: GoalDomainService;
+
+  private constructor(private readonly goalRepository: IGoalRepository) {
+    this.domainService = new GoalDomainService();
+  }
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(goalRepository?: IGoalRepository): CreateGoal {
+    const container = GoalContainer.getInstance();
+    const repo = goalRepository || container.getGoalRepository();
+    CreateGoal.instance = new CreateGoal(repo);
+    return CreateGoal.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): CreateGoal {
+    if (!CreateGoal.instance) {
+      CreateGoal.instance = CreateGoal.createInstance();
+    }
+    return CreateGoal.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    CreateGoal.instance = undefined as unknown as CreateGoal;
+  }
+
+  async execute(input: CreateGoalInput): Promise<CreateGoalOutput> {
+    // 1. 验证输入
+    this.validateInput(input);
+
+    // 2. 如果有父目标，先查询
+    let parentGoal: Goal | undefined;
+    if (input.parentGoalUuid) {
+      const found = await this.goalRepository.findById(input.parentGoalUuid);
+      if (!found) {
+        throw new Error(`Parent goal not found: ${input.parentGoalUuid}`);
+      }
+      parentGoal = found;
+    }
+
+    // 3. 委托领域服务创建聚合根
+    const goal = this.domainService.createGoal(input, parentGoal);
+
+    // 4. 如果有 keyResults，添加到目标中
+    if (input.keyResults && input.keyResults.length > 0) {
+      for (const krParams of input.keyResults) {
+        this.domainService.addKeyResultToGoal(goal, {
+          title: krParams.title,
+          description: krParams.description,
+          valueType: krParams.valueType || 'INCREMENTAL',
+          targetValue: krParams.targetValue ?? 100,
+          unit: krParams.unit,
+          weight: krParams.weight ?? 5,
+        });
+      }
+    }
+
+    // 5. 持久化
+    await this.goalRepository.save(goal);
+
+    // 6. 发布领域事件
+    await this.publishEvents(goal);
+
+    // 7. 返回结果
+    return {
+      goal: goal.toClientDTO(true),
+    };
+  }
+
+  private validateInput(input: CreateGoalInput): void {
+    if (!input.title?.trim()) {
+      throw new Error('Title is required');
+    }
+    if (!input.accountUuid?.trim()) {
+      throw new Error('Account UUID is required');
+    }
+  }
+
+  private async publishEvents(goal: Goal): Promise<void> {
+    const events = goal.getUncommittedDomainEvents();
+    for (const event of events) {
+      await eventBus.emit(event.eventType, event);
+    }
+  }
+}
+
+/**
+ * 便捷函数：创建目标
+ */
+export const createGoal = (input: CreateGoalInput): Promise<CreateGoalOutput> =>
+  CreateGoal.getInstance().execute(input);

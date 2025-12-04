@@ -4,18 +4,8 @@
  * 日程管理模块 - 负责日程事件、调度任务和冲突检测
  */
 
-// Services
-export {
-  // Schedule Event
-  ScheduleEventApplicationService,
-  createScheduleEventApplicationService,
-  // Schedule Conflict
-  ScheduleConflictApplicationService,
-  createScheduleConflictApplicationService,
-  type DetectConflictsParams,
-  type CreateScheduleResult,
-  type ResolveConflictResult,
-  // Schedule Task
-  ScheduleTaskApplicationService,
-  createScheduleTaskApplicationService,
-} from './services';
+// Container
+export { ScheduleContainer } from './ScheduleContainer';
+
+// Services (all use cases and legacy services)
+export * from './services';

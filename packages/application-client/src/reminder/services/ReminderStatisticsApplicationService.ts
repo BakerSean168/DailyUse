@@ -5,7 +5,7 @@
  */
 
 import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
-import type { IReminderApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { IReminderApiClient } from '@dailyuse/infrastructure-client';
 
 /**
  * Reminder Statistics Application Service

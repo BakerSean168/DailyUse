@@ -15,7 +15,7 @@ import type {
   ScheduleClientDTO,
   ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
-import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
 
 /**
  * 检测冲突参数

@@ -1,8 +1,14 @@
 /**
  * Account Application Module (Server)
  *
- * TODO: Extract from apps/api/src/modules/account/application/
+ * 提供 Account 模块的所有 Services
  */
 
-// Placeholder - to be implemented
+// ===== Container =====
+export { AccountContainer } from './AccountContainer';
+
+// ===== Services =====
+export * from './services';
+
+// Legacy placeholder (to be removed)
 export const ACCOUNT_MODULE_PLACEHOLDER = 'account-module';

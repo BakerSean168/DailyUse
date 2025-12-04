@@ -19,7 +19,7 @@ import type {
 import type {
   IReminderApiClient,
   ReminderTemplatesResponse,
-} from '@dailyuse/infrastructure-client/ports';
+} from '@dailyuse/infrastructure-client';
 
 /**
  * Reminder Template Application Service

@@ -8,6 +8,10 @@ export default defineConfig({
     'src/schedule/index.ts',
     'src/reminder/index.ts',
     'src/account/index.ts',
+    'src/repository/index.ts',
+    'src/dashboard/index.ts',
+    'src/setting/index.ts',
+    'src/notification/index.ts',
   ],
   format: ['esm'],
   dts: true,
@@ -17,6 +21,7 @@ export default defineConfig({
     '@dailyuse/domain-server',
     '@dailyuse/infrastructure-server',
     '@dailyuse/utils',
+    'uuid',
   ],
   sourcemap: true,
 });

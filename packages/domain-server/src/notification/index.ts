@@ -13,6 +13,8 @@ export { NotificationHistory } from './entities/NotificationHistory';
 
 // Repositories
 export * from './repositories/NotificationRepository.interface';
+export type { INotificationRepository } from './repositories/INotificationRepository';
+export type { INotificationTemplateRepository } from './repositories/INotificationTemplateRepository';
 export type { INotificationPreferenceRepository } from './repositories/INotificationPreferenceRepository';
 
 // Services

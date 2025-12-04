@@ -1,0 +1,67 @@
+/**
+ * Search Templates
+ *
+ * 搜索提醒模板用例
+ */
+
+import type { IReminderApiClient } from '@dailyuse/infrastructure-client';
+import { ReminderTemplate } from '@dailyuse/domain-client/reminder';
+import { ReminderContainer } from '../ReminderContainer';
+
+/**
+ * Search Templates Input
+ */
+export interface SearchTemplatesInput {
+  accountUuid: string;
+  query: string;
+}
+
+/**
+ * Search Templates
+ */
+export class SearchTemplates {
+  private static instance: SearchTemplates;
+
+  private constructor(private readonly apiClient: IReminderApiClient) {}
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(apiClient?: IReminderApiClient): SearchTemplates {
+    const container = ReminderContainer.getInstance();
+    const client = apiClient || container.getReminderApiClient();
+    SearchTemplates.instance = new SearchTemplates(client);
+    return SearchTemplates.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): SearchTemplates {
+    if (!SearchTemplates.instance) {
+      SearchTemplates.instance = SearchTemplates.createInstance();
+    }
+    return SearchTemplates.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    SearchTemplates.instance = undefined as unknown as SearchTemplates;
+  }
+
+  /**
+   * 执行用例
+   */
+  async execute(input: SearchTemplatesInput): Promise<ReminderTemplate[]> {
+    const templateDTOs = await this.apiClient.searchTemplates(input.accountUuid, input.query);
+    return templateDTOs.map((dto) => ReminderTemplate.fromClientDTO(dto));
+  }
+}
+
+/**
+ * 便捷函数
+ */
+export const searchTemplates = (input: SearchTemplatesInput): Promise<ReminderTemplate[]> =>
+  SearchTemplates.getInstance().execute(input);

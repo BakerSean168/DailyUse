@@ -5,3 +5,4 @@
  */
 
 export * from './services';
+export { TaskContainer } from './TaskContainer';

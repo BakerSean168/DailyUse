@@ -10,7 +10,7 @@ import type {
   CancelSubscriptionRequestDTO,
   AccountStatsResponseDTO,
 } from '@dailyuse/contracts/account';
-import type { IAccountApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 
 /**
  * Account Subscription Application Service

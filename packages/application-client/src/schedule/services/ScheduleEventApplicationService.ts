@@ -17,7 +17,7 @@ import type {
   GetSchedulesByTimeRangeRequest,
   ConflictDetectionResult,
 } from '@dailyuse/contracts/schedule';
-import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
 
 /**
  * Schedule Event Application Service

@@ -11,7 +11,7 @@
  * - 目标绑定管理
  */
 
-import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client';
 import type {
   TaskTemplateClientDTO,
   TaskInstanceClientDTO,

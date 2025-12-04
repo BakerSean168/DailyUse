@@ -13,7 +13,7 @@ import type {
   ApiKeyListResponseDTO,
   RevokeApiKeyRequest,
 } from '@dailyuse/contracts/authentication';
-import type { IAuthApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
 
 export class ApiKeyApplicationService {
   constructor(private readonly authApiClient: IAuthApiClient) {}

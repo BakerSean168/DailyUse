@@ -1,8 +1,14 @@
 /**
  * Task Application Module (Server)
  *
- * TODO: Extract from apps/api/src/modules/task/application/
+ * 提供 Task 模块的所有 Services
  */
 
-// Placeholder - to be implemented
+// ===== Container =====
+export { TaskContainer } from './TaskContainer';
+
+// ===== Services =====
+export * from './services';
+
+// Legacy placeholder (to be removed)
 export const TASK_MODULE_PLACEHOLDER = 'task-module';

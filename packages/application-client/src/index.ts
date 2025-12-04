@@ -33,4 +33,4 @@ export * from './account';
 export * from './authentication/services';
 
 // Notification module
-export * from './notification/services';
+export * from './notification';

@@ -1,0 +1,71 @@
+/**
+ * Clone Goal
+ *
+ * 克隆目标用例
+ */
+
+import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
+import { Goal } from '@dailyuse/domain-client/goal';
+import { GoalContainer } from '../GoalContainer';
+
+/**
+ * Clone Goal Input
+ */
+export interface CloneGoalInput {
+  goalUuid: string;
+  name?: string;
+  description?: string;
+  includeKeyResults?: boolean;
+  includeRecords?: boolean;
+}
+
+/**
+ * Clone Goal
+ */
+export class CloneGoal {
+  private static instance: CloneGoal;
+
+  private constructor(private readonly apiClient: IGoalApiClient) {}
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(apiClient?: IGoalApiClient): CloneGoal {
+    const container = GoalContainer.getInstance();
+    const client = apiClient || container.getGoalApiClient();
+    CloneGoal.instance = new CloneGoal(client);
+    return CloneGoal.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): CloneGoal {
+    if (!CloneGoal.instance) {
+      CloneGoal.instance = CloneGoal.createInstance();
+    }
+    return CloneGoal.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    CloneGoal.instance = undefined as unknown as CloneGoal;
+  }
+
+  /**
+   * 执行用例
+   */
+  async execute(input: CloneGoalInput): Promise<Goal> {
+    const { goalUuid, ...request } = input;
+    const data = await this.apiClient.cloneGoal(goalUuid, request);
+    return Goal.fromClientDTO(data);
+  }
+}
+
+/**
+ * 便捷函数
+ */
+export const cloneGoal = (input: CloneGoalInput): Promise<Goal> =>
+  CloneGoal.getInstance().execute(input);

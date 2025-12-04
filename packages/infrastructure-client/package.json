@@ -10,22 +10,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./ports": {
-      "types": "./dist/ports/index.d.ts",
-      "import": "./dist/ports/index.js"
-    },
-    "./adapters/http": {
-      "types": "./dist/adapters/http/index.d.ts",
-      "import": "./dist/adapters/http/index.js"
-    },
-    "./adapters/ipc": {
-      "types": "./dist/adapters/ipc/index.d.ts",
-      "import": "./dist/adapters/ipc/index.js"
-    },
-    "./adapters/storage": {
-      "types": "./dist/adapters/storage/index.d.ts",
-      "import": "./dist/adapters/storage/index.js"
     }
   },
   "scripts": {

@@ -808,7 +808,13 @@ importers:
       '@dailyuse/utils':
         specifier: workspace:*
         version: link:../utils
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
     devDependencies:
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
       typescript:
         specifier: ^5.8.0
         version: 5.8.3
@@ -14699,7 +14705,7 @@ snapshots:
       std-env: 3.10.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.9)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@26.1.0)(msw@2.12.3(@types/node@20.19.9)(typescript@5.8.3))(sass-embedded@1.93.2)(sass@1.93.2)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.11)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@26.1.0)(msw@2.12.3(@types/node@22.18.11)(typescript@5.8.3))(sass-embedded@1.93.2)(sass@1.93.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -14767,7 +14773,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.9)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@26.1.0)(msw@2.12.3(@types/node@20.19.9)(typescript@5.8.3))(sass-embedded@1.93.2)(sass@1.93.2)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.11)(@vitest/ui@3.2.4)(happy-dom@18.0.1)(jsdom@26.1.0)(msw@2.12.3(@types/node@22.18.11)(typescript@5.8.3))(sass-embedded@1.93.2)(sass@1.93.2)
 
   '@vitest/utils@3.2.4':
     dependencies:

@@ -1,0 +1,65 @@
+/**
+ * Create Goal Folder
+ *
+ * 创建目标文件夹用例
+ */
+
+import type { IGoalFolderApiClient } from '@dailyuse/infrastructure-client';
+import type { CreateGoalFolderRequest } from '@dailyuse/contracts/goal';
+import { GoalFolder } from '@dailyuse/domain-client/goal';
+import { GoalContainer } from '../GoalContainer';
+
+/**
+ * Create Goal Folder Input
+ */
+export type CreateGoalFolderInput = CreateGoalFolderRequest;
+
+/**
+ * Create Goal Folder
+ */
+export class CreateGoalFolder {
+  private static instance: CreateGoalFolder;
+
+  private constructor(private readonly apiClient: IGoalFolderApiClient) {}
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(apiClient?: IGoalFolderApiClient): CreateGoalFolder {
+    const container = GoalContainer.getInstance();
+    const client = apiClient || container.getGoalFolderApiClient();
+    CreateGoalFolder.instance = new CreateGoalFolder(client);
+    return CreateGoalFolder.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): CreateGoalFolder {
+    if (!CreateGoalFolder.instance) {
+      CreateGoalFolder.instance = CreateGoalFolder.createInstance();
+    }
+    return CreateGoalFolder.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    CreateGoalFolder.instance = undefined as unknown as CreateGoalFolder;
+  }
+
+  /**
+   * 执行用例
+   */
+  async execute(input: CreateGoalFolderInput): Promise<GoalFolder> {
+    const folderData = await this.apiClient.createGoalFolder(input);
+    return GoalFolder.fromClientDTO(folderData);
+  }
+}
+
+/**
+ * 便捷函数
+ */
+export const createGoalFolder = (input: CreateGoalFolderInput): Promise<GoalFolder> =>
+  CreateGoalFolder.getInstance().execute(input);

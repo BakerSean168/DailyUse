@@ -1,18 +1,8 @@
 /**
  * Reminder Application Module (Client)
  *
- * 提醒模块 - 负责模板、分组和统计管理
+ * Re-exports all reminder-related application services.
  */
 
-// Services
-export {
-  // Template
-  ReminderTemplateApplicationService,
-  createReminderTemplateApplicationService,
-  // Group
-  ReminderGroupApplicationService,
-  createReminderGroupApplicationService,
-  // Statistics
-  ReminderStatisticsApplicationService,
-  createReminderStatisticsApplicationService,
-} from './services';
+export * from './services';
+export { ReminderContainer } from './ReminderContainer';

@@ -1,0 +1,85 @@
+/**
+ * Update Schedule Event
+ *
+ * 更新日程事件用例
+ */
+
+import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
+import type { ScheduleClientDTO, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
+import { eventBus } from '@dailyuse/utils';
+import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
+
+/**
+ * Update Schedule Event Input
+ */
+export interface UpdateScheduleEventInput {
+  uuid: string;
+  data: UpdateScheduleRequest;
+}
+
+/**
+ * Update Schedule Event
+ */
+export class UpdateScheduleEvent {
+  private static instance: UpdateScheduleEvent;
+
+  private constructor(private readonly apiClient: IScheduleEventApiClient) {}
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(apiClient?: IScheduleEventApiClient): UpdateScheduleEvent {
+    const container = ScheduleContainer.getInstance();
+    const client = apiClient || container.getScheduleEventApiClient();
+    UpdateScheduleEvent.instance = new UpdateScheduleEvent(client);
+    return UpdateScheduleEvent.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): UpdateScheduleEvent {
+    if (!UpdateScheduleEvent.instance) {
+      UpdateScheduleEvent.instance = UpdateScheduleEvent.createInstance();
+    }
+    return UpdateScheduleEvent.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    UpdateScheduleEvent.instance = undefined as unknown as UpdateScheduleEvent;
+  }
+
+  /**
+   * 执行用例
+   */
+  async execute(input: UpdateScheduleEventInput): Promise<ScheduleClientDTO> {
+    const schedule = await this.apiClient.updateSchedule(input.uuid, input.data);
+
+    this.publishEvent(schedule.uuid, ScheduleEventEvents.SCHEDULE_UPDATED);
+
+    return schedule;
+  }
+
+  /**
+   * 发布事件
+   */
+  private publishEvent(scheduleUuid: string, eventName: string, metadata?: Record<string, unknown>): void {
+    const event: ScheduleEventRefreshEvent = {
+      scheduleUuid,
+      reason: eventName,
+      timestamp: Date.now(),
+      metadata,
+    };
+    eventBus.emit(eventName, event);
+  }
+}
+
+/**
+ * 便捷函数
+ */
+export const updateScheduleEvent = (input: UpdateScheduleEventInput): Promise<ScheduleClientDTO> =>
+  UpdateScheduleEvent.getInstance().execute(input);

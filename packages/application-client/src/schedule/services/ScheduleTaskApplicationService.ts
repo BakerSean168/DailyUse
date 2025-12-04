@@ -11,7 +11,7 @@ import type {
   ScheduleStatisticsClientDTO,
   ModuleStatisticsClientDTO,
 } from '@dailyuse/contracts/schedule';
-import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
 
 /**
  * Schedule Task Application Service

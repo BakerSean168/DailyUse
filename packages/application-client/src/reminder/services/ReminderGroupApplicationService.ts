@@ -16,7 +16,7 @@ import type {
 import type {
   IReminderApiClient,
   ReminderGroupsResponse,
-} from '@dailyuse/infrastructure-client/ports';
+} from '@dailyuse/infrastructure-client';
 
 /**
  * Reminder Group Application Service

@@ -18,7 +18,7 @@ import type {
   UpdatePhoneRequestDTO,
   VerifyPhoneRequestDTO,
 } from '@dailyuse/contracts/account';
-import type { IAccountApiClient } from '@dailyuse/infrastructure-client/ports';
+import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
 
 /**
  * Account Profile Application Service

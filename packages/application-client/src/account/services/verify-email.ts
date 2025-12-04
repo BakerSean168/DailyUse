@@ -1,0 +1,66 @@
+/**
+ * Verify Email
+ *
+ * 验证邮箱用例
+ */
+
+import type { AccountDTO, VerifyEmailRequestDTO } from '@dailyuse/contracts/account';
+import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
+import { AccountContainer } from '../AccountContainer';
+
+/**
+ * Verify Email Input
+ */
+export interface VerifyEmailInput {
+  accountId: string;
+  request: VerifyEmailRequestDTO;
+}
+
+/**
+ * Verify Email
+ */
+export class VerifyEmail {
+  private static instance: VerifyEmail;
+
+  private constructor(private readonly apiClient: IAccountApiClient) {}
+
+  /**
+   * 创建服务实例（支持依赖注入）
+   */
+  static createInstance(apiClient?: IAccountApiClient): VerifyEmail {
+    const container = AccountContainer.getInstance();
+    const client = apiClient || container.getAccountApiClient();
+    VerifyEmail.instance = new VerifyEmail(client);
+    return VerifyEmail.instance;
+  }
+
+  /**
+   * 获取服务单例
+   */
+  static getInstance(): VerifyEmail {
+    if (!VerifyEmail.instance) {
+      VerifyEmail.instance = VerifyEmail.createInstance();
+    }
+    return VerifyEmail.instance;
+  }
+
+  /**
+   * 重置实例（用于测试）
+   */
+  static resetInstance(): void {
+    VerifyEmail.instance = undefined as unknown as VerifyEmail;
+  }
+
+  /**
+   * 执行用例
+   */
+  async execute(input: VerifyEmailInput): Promise<AccountDTO> {
+    return this.apiClient.verifyEmail(input.accountId, input.request);
+  }
+}
+
+/**
+ * 便捷函数
+ */
+export const verifyEmail = (input: VerifyEmailInput): Promise<AccountDTO> =>
+  VerifyEmail.getInstance().execute(input);

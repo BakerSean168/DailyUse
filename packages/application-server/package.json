@@ -30,6 +30,22 @@
     "./account": {
       "types": "./dist/account/index.d.ts",
       "import": "./dist/account/index.js"
+    },
+    "./repository": {
+      "types": "./dist/repository/index.d.ts",
+      "import": "./dist/repository/index.js"
+    },
+    "./dashboard": {
+      "types": "./dist/dashboard/index.d.ts",
+      "import": "./dist/dashboard/index.js"
+    },
+    "./setting": {
+      "types": "./dist/setting/index.d.ts",
+      "import": "./dist/setting/index.js"
+    },
+    "./notification": {
+      "types": "./dist/notification/index.d.ts",
+      "import": "./dist/notification/index.js"
     }
   },
   "scripts": {
@@ -40,9 +56,11 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-server": "workspace:*",
     "@dailyuse/infrastructure-server": "workspace:*",
-    "@dailyuse/utils": "workspace:*"
+    "@dailyuse/utils": "workspace:*",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/uuid": "^10.0.0",
     "typescript": "^5.8.0"
   },
   "files": [

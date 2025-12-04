@@ -5,16 +5,8 @@
  * Framework-agnostic - can be used in Web or Desktop.
  */
 
-// Application Services
-export {
-  GoalManagementApplicationService,
-  createGoalManagementService,
-  KeyResultApplicationService,
-  createKeyResultService,
-  GoalRecordApplicationService,
-  createGoalRecordService,
-  GoalReviewApplicationService,
-  createGoalReviewService,
-  GoalFolderApplicationService,
-  createGoalFolderService,
-} from './services';
+// Container
+export { GoalContainer } from './GoalContainer';
+
+// All Services
+export * from './services';

@@ -1,8 +1,14 @@
 /**
  * Schedule Application Module (Server)
  *
- * TODO: Extract from apps/api/src/modules/schedule/application/
+ * 提供 Schedule 模块的所有 Services
  */
 
-// Placeholder - to be implemented
+// ===== Container =====
+export { ScheduleContainer } from './ScheduleContainer';
+
+// ===== Services =====
+export * from './services';
+
+// Legacy placeholder (to be removed)
 export const SCHEDULE_MODULE_PLACEHOLDER = 'schedule-module';
