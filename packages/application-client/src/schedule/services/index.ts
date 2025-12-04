@@ -1,21 +1,24 @@
 /**
- * Schedule Application Module (Client)
- *
- * 日程管理模块 - 负责日程事件、调度任务和冲突检测
+ * Schedule Module Services
  */
 
-// Services
+// Schedule Event Service
 export {
-  // Schedule Event
   ScheduleEventApplicationService,
   createScheduleEventApplicationService,
-  // Schedule Conflict
+} from './ScheduleEventApplicationService';
+
+// Schedule Conflict Service
+export {
   ScheduleConflictApplicationService,
   createScheduleConflictApplicationService,
   type DetectConflictsParams,
   type CreateScheduleResult,
   type ResolveConflictResult,
-  // Schedule Task
+} from './ScheduleConflictApplicationService';
+
+// Schedule Task Service
+export {
   ScheduleTaskApplicationService,
   createScheduleTaskApplicationService,
-} from './services';
+} from './ScheduleTaskApplicationService';

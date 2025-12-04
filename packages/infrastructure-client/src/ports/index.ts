@@ -15,9 +15,14 @@ export {
   type ITaskInstanceApiClient,
   type ITaskDependencyApiClient,
   type ITaskStatisticsApiClient,
-  // Other Modules
-  type IScheduleApiClient,
+  // Schedule Module
+  type IScheduleTaskApiClient,
+  type IScheduleEventApiClient,
+  // Reminder Module
   type IReminderApiClient,
+  type ReminderTemplatesResponse,
+  type ReminderGroupsResponse,
+  // Account Module
   type IAccountApiClient,
 } from './api-clients';
 

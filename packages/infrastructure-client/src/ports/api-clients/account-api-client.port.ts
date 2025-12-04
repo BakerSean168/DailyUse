@@ -1,22 +1,167 @@
 /**
  * Account API Client Port Interface
+ *
+ * 定义账户模块的 API 客户端接口。
+ * 包含账户 CRUD、资料管理、订阅管理等功能。
  */
 
-// TODO: Import from @dailyuse/contracts/account when available
+import type {
+  AccountDTO,
+  AccountListResponseDTO,
+  AccountQueryParams,
+  AccountStatsResponseDTO,
+  AccountHistoryListResponseDTO,
+  SubscriptionDTO,
+  CreateAccountRequestDTO,
+  UpdateAccountProfileRequestDTO,
+  UpdateAccountPreferencesRequestDTO,
+  UpdateEmailRequestDTO,
+  VerifyEmailRequestDTO,
+  UpdatePhoneRequestDTO,
+  VerifyPhoneRequestDTO,
+  SubscribePlanRequestDTO,
+  CancelSubscriptionRequestDTO,
+} from '@dailyuse/contracts/account';
 
 /**
- * Account API Client Interface
+ * IAccountApiClient
+ *
+ * 账户模块 API 客户端接口
  */
 export interface IAccountApiClient {
-  /** 获取账户详情 */
-  getAccount(uuid: string): Promise<unknown>;
+  // ===== 账户 CRUD =====
 
-  /** 更新账户 */
-  updateAccount(uuid: string, request: unknown): Promise<unknown>;
+  /**
+   * 创建账户
+   */
+  createAccount(request: CreateAccountRequestDTO): Promise<AccountDTO>;
 
-  /** 获取当前用户 */
-  getCurrentUser(): Promise<unknown>;
+  /**
+   * 获取账户详情
+   */
+  getAccountById(accountId: string): Promise<AccountDTO>;
 
-  /** 更新个人资料 */
-  updateProfile(request: unknown): Promise<unknown>;
+  /**
+   * 获取账户列表
+   */
+  getAccounts(params?: AccountQueryParams): Promise<AccountListResponseDTO>;
+
+  /**
+   * 删除账户（软删除）
+   */
+  deleteAccount(accountId: string): Promise<void>;
+
+  // ===== 当前用户资料（/me 端点）=====
+
+  /**
+   * 获取当前用户资料
+   */
+  getMyProfile(): Promise<AccountDTO>;
+
+  /**
+   * 更新当前用户资料
+   */
+  updateMyProfile(request: UpdateAccountProfileRequestDTO): Promise<AccountDTO>;
+
+  /**
+   * 修改当前用户密码
+   */
+  changeMyPassword(request: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<{ success: boolean; message: string }>;
+
+  // ===== 账户资料管理 =====
+
+  /**
+   * 更新账户资料
+   */
+  updateProfile(
+    accountId: string,
+    request: UpdateAccountProfileRequestDTO,
+  ): Promise<AccountDTO>;
+
+  /**
+   * 更新账户偏好
+   */
+  updatePreferences(
+    accountId: string,
+    request: UpdateAccountPreferencesRequestDTO,
+  ): Promise<AccountDTO>;
+
+  // ===== 邮箱和手机号管理 =====
+
+  /**
+   * 更新邮箱
+   */
+  updateEmail(accountId: string, request: UpdateEmailRequestDTO): Promise<AccountDTO>;
+
+  /**
+   * 验证邮箱
+   */
+  verifyEmail(accountId: string, request: VerifyEmailRequestDTO): Promise<AccountDTO>;
+
+  /**
+   * 更新手机号
+   */
+  updatePhone(accountId: string, request: UpdatePhoneRequestDTO): Promise<AccountDTO>;
+
+  /**
+   * 验证手机号
+   */
+  verifyPhone(accountId: string, request: VerifyPhoneRequestDTO): Promise<AccountDTO>;
+
+  // ===== 账户状态管理 =====
+
+  /**
+   * 停用账户
+   */
+  deactivateAccount(accountId: string): Promise<AccountDTO>;
+
+  /**
+   * 暂停账户
+   */
+  suspendAccount(accountId: string): Promise<AccountDTO>;
+
+  /**
+   * 激活账户
+   */
+  activateAccount(accountId: string): Promise<AccountDTO>;
+
+  // ===== 订阅管理 =====
+
+  /**
+   * 获取订阅信息
+   */
+  getSubscription(accountId: string): Promise<SubscriptionDTO>;
+
+  /**
+   * 订阅计划
+   */
+  subscribePlan(accountId: string, request: SubscribePlanRequestDTO): Promise<SubscriptionDTO>;
+
+  /**
+   * 取消订阅
+   */
+  cancelSubscription(
+    accountId: string,
+    request?: CancelSubscriptionRequestDTO,
+  ): Promise<SubscriptionDTO>;
+
+  // ===== 账户历史 =====
+
+  /**
+   * 获取账户历史
+   */
+  getAccountHistory(
+    accountId: string,
+    params?: { page?: number; limit?: number },
+  ): Promise<AccountHistoryListResponseDTO>;
+
+  // ===== 账户统计 =====
+
+  /**
+   * 获取账户统计
+   */
+  getAccountStats(): Promise<AccountStatsResponseDTO>;
 }

@@ -27,5 +27,27 @@ export {
   createTaskStatisticsHttpAdapter,
 } from './task-statistics-http.adapter';
 
+// Schedule Module
+export {
+  ScheduleTaskHttpAdapter,
+  createScheduleTaskHttpAdapter,
+} from './schedule-task-http.adapter';
+export {
+  ScheduleEventHttpAdapter,
+  createScheduleEventHttpAdapter,
+} from './schedule-event-http.adapter';
+
+// Reminder Module
+export {
+  ReminderHttpAdapter,
+  createReminderHttpAdapter,
+} from './reminder-http.adapter';
+
+// Account Module
+export {
+  AccountHttpAdapter,
+  createAccountHttpAdapter,
+} from './account-http.adapter';
+
 // Re-export types
 export type { HttpClient, IHttpClient, HttpClientConfig } from './http-client.types';

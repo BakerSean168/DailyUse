@@ -27,5 +27,27 @@ export {
   createTaskStatisticsIpcAdapter,
 } from './task-statistics-ipc.adapter';
 
+// Schedule Module
+export {
+  ScheduleTaskIpcAdapter,
+  createScheduleTaskIpcAdapter,
+} from './schedule-task-ipc.adapter';
+export {
+  ScheduleEventIpcAdapter,
+  createScheduleEventIpcAdapter,
+} from './schedule-event-ipc.adapter';
+
+// Reminder Module
+export {
+  ReminderIpcAdapter,
+  createReminderIpcAdapter,
+} from './reminder-ipc.adapter';
+
+// Account Module
+export {
+  AccountIpcAdapter,
+  createAccountIpcAdapter,
+} from './account-ipc.adapter';
+
 // Re-export types
 export type { IpcClient, ElectronAPI } from './ipc-client.types';

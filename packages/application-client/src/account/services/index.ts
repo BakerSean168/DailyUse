@@ -1,15 +1,15 @@
 /**
- * Account Application Module (Client)
- *
- * 账户模块 - 负责账户资料、偏好和订阅管理
+ * Account Module Services
  */
 
-// Services
+// Profile Service
 export {
-  // Profile
   AccountProfileApplicationService,
   createAccountProfileApplicationService,
-  // Subscription
+} from './AccountProfileApplicationService';
+
+// Subscription Service
+export {
   AccountSubscriptionApplicationService,
   createAccountSubscriptionApplicationService,
-} from './services';
+} from './AccountSubscriptionApplicationService';

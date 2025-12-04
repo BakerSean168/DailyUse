@@ -25,10 +25,16 @@ export {
   type ITaskInstanceApiClient,
   type ITaskDependencyApiClient,
   type ITaskStatisticsApiClient,
-  // Other Modules
-  type IScheduleApiClient,
+  // Schedule Module
+  type IScheduleTaskApiClient,
+  type IScheduleEventApiClient,
+  // Reminder Module
   type IReminderApiClient,
+  type ReminderTemplatesResponse,
+  type ReminderGroupsResponse,
+  // Account Module
   type IAccountApiClient,
+  // Storage
   type IStorage,
   type ICacheStorage,
 } from './ports';
@@ -51,6 +57,17 @@ export {
   createTaskDependencyHttpAdapter,
   TaskStatisticsHttpAdapter,
   createTaskStatisticsHttpAdapter,
+  // Schedule
+  ScheduleTaskHttpAdapter,
+  createScheduleTaskHttpAdapter,
+  ScheduleEventHttpAdapter,
+  createScheduleEventHttpAdapter,
+  // Reminder
+  ReminderHttpAdapter,
+  createReminderHttpAdapter,
+  // Account
+  AccountHttpAdapter,
+  createAccountHttpAdapter,
   // Types
   type HttpClient,
   type HttpClientConfig,
@@ -74,6 +91,17 @@ export {
   createTaskDependencyIpcAdapter,
   TaskStatisticsIpcAdapter,
   createTaskStatisticsIpcAdapter,
+  // Schedule
+  ScheduleTaskIpcAdapter,
+  createScheduleTaskIpcAdapter,
+  ScheduleEventIpcAdapter,
+  createScheduleEventIpcAdapter,
+  // Reminder
+  ReminderIpcAdapter,
+  createReminderIpcAdapter,
+  // Account
+  AccountIpcAdapter,
+  createAccountIpcAdapter,
   // Types
   type IpcClient,
   type ElectronAPI,

@@ -16,10 +16,15 @@ export { type ITaskDependencyApiClient } from './task-dependency-api-client.port
 export { type ITaskStatisticsApiClient } from './task-statistics-api-client.port';
 
 // Schedule Module
-export { type IScheduleApiClient } from './schedule-api-client.port';
+export { type IScheduleTaskApiClient } from './schedule-task-api-client.port';
+export { type IScheduleEventApiClient } from './schedule-event-api-client.port';
 
 // Reminder Module
-export { type IReminderApiClient } from './reminder-api-client.port';
+export {
+  type IReminderApiClient,
+  type ReminderTemplatesResponse,
+  type ReminderGroupsResponse,
+} from './reminder-api-client.port';
 
 // Account Module
 export { type IAccountApiClient } from './account-api-client.port';
