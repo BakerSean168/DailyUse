@@ -49,5 +49,17 @@ export {
   createAccountIpcAdapter,
 } from './account-ipc.adapter';
 
+// Authentication Module
+export {
+  AuthIpcAdapter,
+  createAuthIpcAdapter,
+} from './auth-ipc.adapter';
+
+// Notification Module
+export {
+  NotificationIpcAdapter,
+  createNotificationIpcAdapter,
+} from './notification-ipc.adapter';
+
 // Re-export types
 export type { IpcClient, ElectronAPI } from './ipc-client.types';

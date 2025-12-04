@@ -24,6 +24,15 @@ export {
   type ReminderGroupsResponse,
   // Account Module
   type IAccountApiClient,
+  // Authentication Module
+  type IAuthApiClient,
+  type RegisterResponse,
+  // Notification Module
+  type INotificationApiClient,
+  type CreateNotificationRequest,
+  type QueryNotificationsRequest,
+  type NotificationListResponse,
+  type UnreadCountResponse,
 } from './api-clients';
 
 // Storage Ports

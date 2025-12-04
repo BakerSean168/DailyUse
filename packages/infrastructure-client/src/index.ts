@@ -34,6 +34,15 @@ export {
   type ReminderGroupsResponse,
   // Account Module
   type IAccountApiClient,
+  // Authentication Module
+  type IAuthApiClient,
+  type RegisterResponse,
+  // Notification Module
+  type INotificationApiClient,
+  type CreateNotificationRequest,
+  type QueryNotificationsRequest,
+  type NotificationListResponse,
+  type UnreadCountResponse,
   // Storage
   type IStorage,
   type ICacheStorage,
@@ -68,6 +77,12 @@ export {
   // Account
   AccountHttpAdapter,
   createAccountHttpAdapter,
+  // Authentication
+  AuthHttpAdapter,
+  createAuthHttpAdapter,
+  // Notification
+  NotificationHttpAdapter,
+  createNotificationHttpAdapter,
   // Types
   type HttpClient,
   type HttpClientConfig,
@@ -102,6 +117,12 @@ export {
   // Account
   AccountIpcAdapter,
   createAccountIpcAdapter,
+  // Authentication
+  AuthIpcAdapter,
+  createAuthIpcAdapter,
+  // Notification
+  NotificationIpcAdapter,
+  createNotificationIpcAdapter,
   // Types
   type IpcClient,
   type ElectronAPI,

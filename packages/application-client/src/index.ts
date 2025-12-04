@@ -28,3 +28,9 @@ export * from './reminder';
 
 // Account module
 export * from './account';
+
+// Authentication module
+export * from './authentication/services';
+
+// Notification module
+export * from './notification/services';

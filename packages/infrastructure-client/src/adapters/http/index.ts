@@ -49,5 +49,17 @@ export {
   createAccountHttpAdapter,
 } from './account-http.adapter';
 
+// Authentication Module
+export {
+  AuthHttpAdapter,
+  createAuthHttpAdapter,
+} from './auth-http.adapter';
+
+// Notification Module
+export {
+  NotificationHttpAdapter,
+  createNotificationHttpAdapter,
+} from './notification-http.adapter';
+
 // Re-export types
 export type { HttpClient, IHttpClient, HttpClientConfig } from './http-client.types';

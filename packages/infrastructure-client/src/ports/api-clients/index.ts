@@ -28,3 +28,15 @@ export {
 
 // Account Module
 export { type IAccountApiClient } from './account-api-client.port';
+
+// Authentication Module
+export { type IAuthApiClient, type RegisterResponse } from './auth-api-client.port';
+
+// Notification Module
+export {
+  type INotificationApiClient,
+  type CreateNotificationRequest,
+  type QueryNotificationsRequest,
+  type NotificationListResponse,
+  type UnreadCountResponse,
+} from './notification-api-client.port';
