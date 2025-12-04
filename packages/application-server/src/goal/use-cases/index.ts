@@ -10,4 +10,9 @@
  * - Returns DTOs, not domain objects
  */
 
-export { GoalApplicationService, createGoalApplicationService } from './GoalApplicationService';
+export {
+  GoalApplicationService,
+  createGoalApplicationService,
+  type CreateGoalParams,
+  type UpdateGoalParams,
+} from './GoalApplicationService';

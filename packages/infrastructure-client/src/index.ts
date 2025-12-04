@@ -11,53 +11,42 @@
  *   - HTTP: REST API clients for web applications
  *   - IPC: Electron IPC clients for desktop renderer
  *   - Storage: Local storage adapters
+ *
+ * Module Structure:
+ * - goal/          - Goal module ports & adapters
+ * - task/          - Task module ports & adapters
+ * - schedule/      - Schedule module ports & adapters
+ * - reminder/      - Reminder module ports & adapters
+ * - account/       - Account module ports & adapters
+ * - authentication/ - Authentication module ports & adapters
+ * - notification/  - Notification module ports & adapters
+ * - shared/        - Shared types (HTTP/IPC clients, Storage)
  */
 
 // ============================================================
-// Ports (Interfaces)
+// Goal Module
 // ============================================================
 export {
-  // Goal Module
   type IGoalApiClient,
   type IGoalFolderApiClient,
-  // Task Module
-  type ITaskTemplateApiClient,
-  type ITaskInstanceApiClient,
-  type ITaskDependencyApiClient,
-  type ITaskStatisticsApiClient,
-  // Schedule Module
-  type IScheduleTaskApiClient,
-  type IScheduleEventApiClient,
-  // Reminder Module
-  type IReminderApiClient,
-  type ReminderTemplatesResponse,
-  type ReminderGroupsResponse,
-  // Account Module
-  type IAccountApiClient,
-  // Authentication Module
-  type IAuthApiClient,
-  type RegisterResponse,
-  // Notification Module
-  type INotificationApiClient,
-  type CreateNotificationRequest,
-  type QueryNotificationsRequest,
-  type NotificationListResponse,
-  type UnreadCountResponse,
-  // Storage
-  type IStorage,
-  type ICacheStorage,
-} from './ports';
-
-// ============================================================
-// HTTP Adapters (for Web)
-// ============================================================
-export {
-  // Goal
   GoalHttpAdapter,
   createGoalHttpAdapter,
   GoalFolderHttpAdapter,
   createGoalFolderHttpAdapter,
-  // Task
+  GoalIpcAdapter,
+  createGoalIpcAdapter,
+  GoalFolderIpcAdapter,
+  createGoalFolderIpcAdapter,
+} from './goal';
+
+// ============================================================
+// Task Module
+// ============================================================
+export {
+  type ITaskTemplateApiClient,
+  type ITaskInstanceApiClient,
+  type ITaskDependencyApiClient,
+  type ITaskStatisticsApiClient,
   TaskTemplateHttpAdapter,
   createTaskTemplateHttpAdapter,
   TaskInstanceHttpAdapter,
@@ -66,38 +55,6 @@ export {
   createTaskDependencyHttpAdapter,
   TaskStatisticsHttpAdapter,
   createTaskStatisticsHttpAdapter,
-  // Schedule
-  ScheduleTaskHttpAdapter,
-  createScheduleTaskHttpAdapter,
-  ScheduleEventHttpAdapter,
-  createScheduleEventHttpAdapter,
-  // Reminder
-  ReminderHttpAdapter,
-  createReminderHttpAdapter,
-  // Account
-  AccountHttpAdapter,
-  createAccountHttpAdapter,
-  // Authentication
-  AuthHttpAdapter,
-  createAuthHttpAdapter,
-  // Notification
-  NotificationHttpAdapter,
-  createNotificationHttpAdapter,
-  // Types
-  type HttpClient,
-  type HttpClientConfig,
-} from './adapters/http';
-
-// ============================================================
-// IPC Adapters (for Desktop Renderer)
-// ============================================================
-export {
-  // Goal
-  GoalIpcAdapter,
-  createGoalIpcAdapter,
-  GoalFolderIpcAdapter,
-  createGoalFolderIpcAdapter,
-  // Task
   TaskTemplateIpcAdapter,
   createTaskTemplateIpcAdapter,
   TaskInstanceIpcAdapter,
@@ -106,32 +63,86 @@ export {
   createTaskDependencyIpcAdapter,
   TaskStatisticsIpcAdapter,
   createTaskStatisticsIpcAdapter,
-  // Schedule
+} from './task';
+
+// ============================================================
+// Schedule Module
+// ============================================================
+export {
+  type IScheduleTaskApiClient,
+  type IScheduleEventApiClient,
+  ScheduleTaskHttpAdapter,
+  createScheduleTaskHttpAdapter,
+  ScheduleEventHttpAdapter,
+  createScheduleEventHttpAdapter,
   ScheduleTaskIpcAdapter,
   createScheduleTaskIpcAdapter,
   ScheduleEventIpcAdapter,
   createScheduleEventIpcAdapter,
-  // Reminder
-  ReminderIpcAdapter,
-  createReminderIpcAdapter,
-  // Account
-  AccountIpcAdapter,
-  createAccountIpcAdapter,
-  // Authentication
-  AuthIpcAdapter,
-  createAuthIpcAdapter,
-  // Notification
-  NotificationIpcAdapter,
-  createNotificationIpcAdapter,
-  // Types
-  type IpcClient,
-  type ElectronAPI,
-} from './adapters/ipc';
+} from './schedule';
 
 // ============================================================
-// Storage Adapters
+// Reminder Module
 // ============================================================
 export {
+  type IReminderApiClient,
+  type ReminderTemplatesResponse,
+  type ReminderGroupsResponse,
+  ReminderHttpAdapter,
+  createReminderHttpAdapter,
+  ReminderIpcAdapter,
+  createReminderIpcAdapter,
+} from './reminder';
+
+// ============================================================
+// Account Module
+// ============================================================
+export {
+  type IAccountApiClient,
+  AccountHttpAdapter,
+  createAccountHttpAdapter,
+  AccountIpcAdapter,
+  createAccountIpcAdapter,
+} from './account';
+
+// ============================================================
+// Authentication Module
+// ============================================================
+export {
+  type IAuthApiClient,
+  type RegisterResponse,
+  AuthHttpAdapter,
+  createAuthHttpAdapter,
+  AuthIpcAdapter,
+  createAuthIpcAdapter,
+} from './authentication';
+
+// ============================================================
+// Notification Module
+// ============================================================
+export {
+  type INotificationApiClient,
+  type CreateNotificationRequest,
+  type QueryNotificationsRequest,
+  type NotificationListResponse,
+  type UnreadCountResponse,
+  NotificationHttpAdapter,
+  createNotificationHttpAdapter,
+  NotificationIpcAdapter,
+  createNotificationIpcAdapter,
+} from './notification';
+
+// ============================================================
+// Shared (Types and Utilities)
+// ============================================================
+export {
+  type HttpClient,
+  type IHttpClient,
+  type HttpClientConfig,
+  type IpcClient,
+  type ElectronAPI,
+  type IStorage,
+  type ICacheStorage,
   LocalStorageAdapter,
   MemoryCacheAdapter,
-} from './adapters/storage';
+} from './shared';

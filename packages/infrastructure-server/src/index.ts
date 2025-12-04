@@ -1,20 +1,28 @@
 /**
  * @dailyuse/infrastructure-server
  *
- * Server Infrastructure Layer - Ports & Adapters
+ * Server Infrastructure Layer - Ports & Adapters (Module-based)
  *
  * This package implements the Hexagonal Architecture (Ports & Adapters) pattern
- * for server-side applications. It provides:
+ * for server-side applications, organized by business module:
  *
- * - Ports: Repository and service interface definitions
- * - Adapters: Concrete implementations for different environments
- *   - Prisma: PostgreSQL/SQLite via Prisma ORM
- *   - Memory: In-memory implementations for testing
+ * - Goal: Goal persistence
+ * - Task: Task persistence
+ * - Schedule: Schedule persistence
+ * - Reminder: Reminder persistence
+ * - Account: Account persistence
+ *
+ * Each module provides:
+ * - Ports: Repository interface definitions
+ * - Adapters: Prisma (PostgreSQL/SQLite) and Memory (testing) implementations
  */
 
-// Ports (interfaces)
-export * from './ports';
+// Modules
+export * from './goal';
+export * from './task';
+export * from './schedule';
+export * from './reminder';
+export * from './account';
 
-// Adapters
-export * as prismaAdapters from './adapters/prisma';
-export * as memoryAdapters from './adapters/memory';
+// Shared
+export * from './shared';

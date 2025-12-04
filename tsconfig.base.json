@@ -56,8 +56,9 @@
     // 跳过第三方库的类型检查（大幅提升编译速度）
     "skipLibCheck": true,
 
-    // 启用增量编译（生成 .tsbuildinfo 缓存文件）
-    "incremental": true,
+    // 禁用增量编译 - 使用 tsup 生成结果和类型文件
+    // tsup 自带增量构建缓存，不需要 tsc 的 .tsbuildinfo
+    "incremental": false,
 
     // ============================================================
     // 代码生成配置
