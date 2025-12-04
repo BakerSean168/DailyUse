@@ -22,7 +22,7 @@ import { eventBus } from '@dailyuse/utils';
  * Event publisher helper
  */
 async function publishGoalEvents(goal: Goal): Promise<void> {
-  const events = goal.pullDomainEvents();
+  const events = goal.getUncommittedDomainEvents();
   for (const event of events) {
     await eventBus.emit(event.eventType, event);
   }
