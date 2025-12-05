@@ -10,7 +10,7 @@ import { AccountDomainService } from '@dailyuse/domain-server/account';
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { AccountClientDTO } from '@dailyuse/contracts/account';
 import { eventBus } from '@dailyuse/utils';
-import { AccountContainer } from '../AccountContainer';
+import { AccountContainer, AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input
@@ -56,9 +56,10 @@ export class RegisterAccount {
     accountRepository?: IAccountRepository,
     credentialRepository?: IAuthCredentialRepository,
   ): RegisterAccount {
-    const container = AccountContainer.getInstance();
-    const accountRepo = accountRepository || container.getAccountRepository();
-    const credentialRepo = credentialRepository || container.getAuthCredentialRepository();
+    const accountContainer = AccountContainer.getInstance();
+    const authContainer = AuthContainer.getInstance();
+    const accountRepo = accountRepository || accountContainer.getAccountRepository();
+    const credentialRepo = credentialRepository || authContainer.getCredentialRepository();
     RegisterAccount.instance = new RegisterAccount(accountRepo, credentialRepo);
     return RegisterAccount.instance;
   }

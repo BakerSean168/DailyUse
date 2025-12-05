@@ -6,7 +6,7 @@
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List Resources Input

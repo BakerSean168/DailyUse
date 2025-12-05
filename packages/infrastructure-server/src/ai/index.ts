@@ -4,6 +4,9 @@
  * Ports and Adapters for AI module persistence.
  */
 
+// Container
+export { AIContainer } from './ai.container';
+
 // Ports (Interfaces)
 export { type IAIConversationRepository, type AIConversationQueryOptions } from './ports/ai-conversation-repository.port';
 export { type IAIGenerationTaskRepository } from './ports/ai-generation-task-repository.port';

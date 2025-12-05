@@ -4,6 +4,9 @@
  * Ports and Adapters for Schedule module persistence.
  */
 
+// Container
+export { ScheduleContainer } from './schedule.container';
+
 // Ports (Interfaces)
 export { type IScheduleRepository } from './ports/schedule-repository.port';
 

@@ -6,9 +6,9 @@
  */
 
 // ============================================================
-// Container
+// Container (from infrastructure-server)
 // ============================================================
-export { GoalContainer } from './GoalContainer';
+export { GoalContainer } from '@dailyuse/infrastructure-server';
 
 // ============================================================
 // Services (按用例划分)

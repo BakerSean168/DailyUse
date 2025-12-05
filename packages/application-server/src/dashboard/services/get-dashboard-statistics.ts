@@ -17,7 +17,14 @@ import type { TaskStatisticsClientDTO } from '@dailyuse/contracts/task';
 import type { GoalStatisticsClientDTO } from '@dailyuse/contracts/goal';
 import type { ReminderStatisticsClientDTO } from '@dailyuse/contracts/reminder';
 import type { ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
-import { DashboardContainer, type IStatisticsCacheService } from '../DashboardContainer';
+import {
+  DashboardContainer,
+  TaskContainer,
+  GoalContainer,
+  ReminderContainer,
+  ScheduleContainer,
+  type IStatisticsCacheService,
+} from '@dailyuse/infrastructure-server';
 
 /**
  * Get Dashboard Statistics Input
@@ -44,7 +51,7 @@ export class GetDashboardStatistics {
     private readonly goalStatsRepo: IGoalStatisticsRepository,
     private readonly reminderStatsRepo: IReminderStatisticsRepository,
     private readonly scheduleStatsRepo: IScheduleStatisticsRepository,
-    private readonly cacheService: IStatisticsCacheService,
+    private readonly cacheService?: IStatisticsCacheService,
   ) {}
 
   /**
@@ -57,13 +64,17 @@ export class GetDashboardStatistics {
     scheduleStatsRepo?: IScheduleStatisticsRepository,
     cacheService?: IStatisticsCacheService,
   ): GetDashboardStatistics {
-    const container = DashboardContainer.getInstance();
+    const dashboardContainer = DashboardContainer.getInstance();
+    const taskContainer = TaskContainer.getInstance();
+    const goalContainer = GoalContainer.getInstance();
+    const reminderContainer = ReminderContainer.getInstance();
+    const scheduleContainer = ScheduleContainer.getInstance();
 
-    const taskRepo = taskStatsRepo || container.getTaskStatisticsRepository();
-    const goalRepo = goalStatsRepo || container.getGoalStatisticsRepository();
-    const reminderRepo = reminderStatsRepo || container.getReminderStatisticsRepository();
-    const scheduleRepo = scheduleStatsRepo || container.getScheduleStatisticsRepository();
-    const cache = cacheService || container.getCacheService();
+    const taskRepo = taskStatsRepo || taskContainer.getStatisticsRepository();
+    const goalRepo = goalStatsRepo || goalContainer.getStatisticsRepository();
+    const reminderRepo = reminderStatsRepo || reminderContainer.getStatisticsRepository();
+    const scheduleRepo = scheduleStatsRepo || scheduleContainer.getStatisticsRepository();
+    const cache = cacheService || (dashboardContainer.hasCacheService() ? dashboardContainer.getStatisticsCacheService() : undefined);
 
     GetDashboardStatistics.instance = new GetDashboardStatistics(
       taskRepo,
@@ -102,16 +113,20 @@ export class GetDashboardStatistics {
     console.log(`[GetDashboardStatistics] 开始获取账户 ${accountUuid} 的统计数据`);
 
     try {
-      const cached = await this.cacheService.get(accountUuid);
-      if (cached) {
-        const duration = Date.now() - startTime;
-        console.log(`[GetDashboardStatistics] ✅ 缓存命中，耗时 ${duration}ms`);
-        return { statistics: cached };
+      if (this.cacheService) {
+        const cached = await this.cacheService.get<DashboardStatisticsClientDTO>(accountUuid);
+        if (cached) {
+          const duration = Date.now() - startTime;
+          console.log(`[GetDashboardStatistics] ✅ 缓存命中，耗时 ${duration}ms`);
+          return { statistics: cached };
+        }
       }
 
       const stats = await this.aggregateStatistics(accountUuid);
 
-      await this.cacheService.set(accountUuid, stats);
+      if (this.cacheService) {
+        await this.cacheService.set(accountUuid, stats);
+      }
 
       const duration = Date.now() - startTime;
       console.log(`[GetDashboardStatistics] 统计聚合完成，耗时 ${duration}ms (目标: ≤100ms)`);

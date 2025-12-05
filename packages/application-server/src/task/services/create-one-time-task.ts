@@ -8,7 +8,7 @@ import type { ITaskTemplateRepository } from '@dailyuse/domain-server/task';
 import { TaskTemplate } from '@dailyuse/domain-server/task';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

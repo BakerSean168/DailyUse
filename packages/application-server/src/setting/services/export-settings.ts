@@ -5,7 +5,7 @@
  */
 
 import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
-import { SettingContainer } from '../SettingContainer';
+import { SettingContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Export Settings Input

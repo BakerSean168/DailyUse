@@ -4,6 +4,9 @@
  * Ports and Adapters for Setting module persistence.
  */
 
+// Container
+export { SettingContainer } from './setting.container';
+
 // Ports (Interfaces)
 export { type IAppConfigRepository } from './ports/app-config-repository.port';
 export { type ISettingRepository } from './ports/setting-repository.port';

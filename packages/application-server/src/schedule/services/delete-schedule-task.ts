@@ -9,7 +9,7 @@ import type {
   IScheduleStatisticsRepository,
 } from '@dailyuse/domain-server/schedule';
 import { ScheduleDomainService } from '@dailyuse/domain-server/schedule';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

@@ -21,7 +21,7 @@ import type {
 } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderContainer } from '../ReminderContainer';
+import { ReminderContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input
@@ -78,7 +78,7 @@ export class CreateReminderTemplate {
     statisticsRepository?: IReminderStatisticsRepository,
   ): CreateReminderTemplate {
     const container = ReminderContainer.getInstance();
-    const templateRepo = templateRepository || container.getReminderTemplateRepository();
+    const templateRepo = templateRepository || container.getTemplateRepository();
     const groupRepo = groupRepository || container.getGroupRepository();
     const statsRepo = statisticsRepository || container.getStatisticsRepository();
     CreateReminderTemplate.instance = new CreateReminderTemplate(templateRepo, groupRepo, statsRepo);

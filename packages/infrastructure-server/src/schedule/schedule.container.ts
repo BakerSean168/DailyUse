@@ -1,5 +1,5 @@
 /**
- * Schedule Container
+ * Schedule Container (Server)
  *
  * 依赖注入容器，管理 Schedule 模块的 repository 实例
  */
@@ -39,15 +39,17 @@ export class ScheduleContainer {
   /**
    * 注册 ScheduleTaskRepository
    */
-  registerScheduleTaskRepository(repository: IScheduleTaskRepository): void {
+  registerScheduleTaskRepository(repository: IScheduleTaskRepository): this {
     this.scheduleTaskRepository = repository;
+    return this;
   }
 
   /**
    * 注册 ScheduleStatisticsRepository
    */
-  registerStatisticsRepository(repository: IScheduleStatisticsRepository): void {
+  registerStatisticsRepository(repository: IScheduleStatisticsRepository): this {
     this.statisticsRepository = repository;
+    return this;
   }
 
   /**
@@ -68,5 +70,20 @@ export class ScheduleContainer {
       throw new Error('ScheduleStatisticsRepository not registered. Call registerStatisticsRepository first.');
     }
     return this.statisticsRepository;
+  }
+
+  /**
+   * 检查是否已配置
+   */
+  isConfigured(): boolean {
+    return this.scheduleTaskRepository !== null && this.statisticsRepository !== null;
+  }
+
+  /**
+   * 清空所有注册的依赖
+   */
+  clear(): void {
+    this.scheduleTaskRepository = null;
+    this.statisticsRepository = null;
   }
 }

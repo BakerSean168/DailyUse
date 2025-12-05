@@ -44,7 +44,7 @@ import type {
   ChannelErrorServerDTO,
 } from '@dailyuse/contracts/notification';
 import { NotificationChannelType } from '@dailyuse/contracts/notification';
-import { NotificationContainer } from '../NotificationContainer';
+import { NotificationContainer } from '@dailyuse/infrastructure-server';
 
 // =================================================================
 // DTO Converters
@@ -300,8 +300,8 @@ export class NotificationService {
   ): NotificationService {
     const container = NotificationContainer.getInstance();
     const notificationRepo = notificationRepository || container.getNotificationRepository();
-    const templateRepo = templateRepository || container.getNotificationTemplateRepository();
-    const preferenceRepo = preferenceRepository || container.getNotificationPreferenceRepository();
+    const templateRepo = templateRepository || container.getTemplateRepository();
+    const preferenceRepo = preferenceRepository || container.getPreferenceRepository();
 
     NotificationService.instance = new NotificationService(
       notificationRepo,

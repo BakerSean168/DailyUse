@@ -1,5 +1,5 @@
 /**
- * Reminder Container
+ * Reminder Container (Server)
  *
  * 依赖注入容器，管理 Reminder 模块的 repository 实例
  */
@@ -15,7 +15,7 @@ import type {
  */
 export class ReminderContainer {
   private static instance: ReminderContainer;
-  private reminderTemplateRepository: IReminderTemplateRepository | null = null;
+  private templateRepository: IReminderTemplateRepository | null = null;
   private groupRepository: IReminderGroupRepository | null = null;
   private statisticsRepository: IReminderStatisticsRepository | null = null;
 
@@ -41,32 +41,35 @@ export class ReminderContainer {
   /**
    * 注册 ReminderTemplateRepository
    */
-  registerReminderTemplateRepository(repository: IReminderTemplateRepository): void {
-    this.reminderTemplateRepository = repository;
+  registerTemplateRepository(repository: IReminderTemplateRepository): this {
+    this.templateRepository = repository;
+    return this;
   }
 
   /**
    * 注册 ReminderGroupRepository
    */
-  registerGroupRepository(repository: IReminderGroupRepository): void {
+  registerGroupRepository(repository: IReminderGroupRepository): this {
     this.groupRepository = repository;
+    return this;
   }
 
   /**
    * 注册 ReminderStatisticsRepository
    */
-  registerStatisticsRepository(repository: IReminderStatisticsRepository): void {
+  registerStatisticsRepository(repository: IReminderStatisticsRepository): this {
     this.statisticsRepository = repository;
+    return this;
   }
 
   /**
    * 获取 ReminderTemplateRepository
    */
-  getReminderTemplateRepository(): IReminderTemplateRepository {
-    if (!this.reminderTemplateRepository) {
-      throw new Error('ReminderTemplateRepository not registered. Call registerReminderTemplateRepository first.');
+  getTemplateRepository(): IReminderTemplateRepository {
+    if (!this.templateRepository) {
+      throw new Error('ReminderTemplateRepository not registered. Call registerTemplateRepository first.');
     }
-    return this.reminderTemplateRepository;
+    return this.templateRepository;
   }
 
   /**
@@ -87,5 +90,21 @@ export class ReminderContainer {
       throw new Error('ReminderStatisticsRepository not registered. Call registerStatisticsRepository first.');
     }
     return this.statisticsRepository;
+  }
+
+  /**
+   * 检查是否已配置
+   */
+  isConfigured(): boolean {
+    return this.templateRepository !== null && this.groupRepository !== null;
+  }
+
+  /**
+   * 清空所有注册的依赖
+   */
+  clear(): void {
+    this.templateRepository = null;
+    this.groupRepository = null;
+    this.statisticsRepository = null;
   }
 }

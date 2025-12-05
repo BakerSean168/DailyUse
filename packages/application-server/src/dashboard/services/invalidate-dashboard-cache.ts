@@ -4,7 +4,7 @@
  * 失效 Dashboard 缓存
  */
 
-import { DashboardContainer, type IStatisticsCacheService } from '../DashboardContainer';
+import { DashboardContainer, type IStatisticsCacheService } from '@dailyuse/infrastructure-server';
 
 /**
  * Invalidate Dashboard Cache Input
@@ -26,7 +26,7 @@ export class InvalidateDashboardCache {
    */
   static createInstance(cacheService?: IStatisticsCacheService): InvalidateDashboardCache {
     const container = DashboardContainer.getInstance();
-    const cache = cacheService || container.getCacheService();
+    const cache = cacheService || container.getStatisticsCacheService();
     InvalidateDashboardCache.instance = new InvalidateDashboardCache(cache);
     return InvalidateDashboardCache.instance;
   }

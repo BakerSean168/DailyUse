@@ -6,7 +6,7 @@
 
 import type { IReminderTemplateRepository, ReminderTemplate } from '@dailyuse/domain-server/reminder';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
-import { ReminderContainer } from '../ReminderContainer';
+import { ReminderContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input
@@ -39,7 +39,7 @@ export class ListReminderTemplates {
    */
   static createInstance(templateRepository?: IReminderTemplateRepository): ListReminderTemplates {
     const container = ReminderContainer.getInstance();
-    const repo = templateRepository || container.getReminderTemplateRepository();
+    const repo = templateRepository || container.getTemplateRepository();
     ListReminderTemplates.instance = new ListReminderTemplates(repo);
     return ListReminderTemplates.instance;
   }

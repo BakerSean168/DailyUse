@@ -6,7 +6,7 @@
 
 import type { IScheduleTaskRepository } from '@dailyuse/domain-server/schedule';
 import type { ScheduleTaskClientDTO, SourceModule } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

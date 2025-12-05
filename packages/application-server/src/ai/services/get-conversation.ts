@@ -6,7 +6,7 @@
 
 import type { IAIConversationRepository } from '@dailyuse/domain-server/ai';
 import type { ConversationResponse } from '@dailyuse/contracts/ai';
-import { AIContainer } from '../AIContainer';
+import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Get Conversation Input

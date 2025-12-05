@@ -5,7 +5,7 @@
  */
 
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Delete Resource Input

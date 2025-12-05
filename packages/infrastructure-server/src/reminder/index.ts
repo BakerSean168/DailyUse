@@ -4,6 +4,9 @@
  * Ports and Adapters for Reminder module persistence.
  */
 
+// Container
+export { ReminderContainer } from './reminder.container';
+
 // Ports (Interfaces)
 export { type IReminderRepository } from './ports/reminder-repository.port';
 

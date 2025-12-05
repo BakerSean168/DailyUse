@@ -7,7 +7,7 @@
 import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { UserSetting } from '@dailyuse/domain-server/setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
-import { SettingContainer } from '../SettingContainer';
+import { SettingContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Reset User Setting Input

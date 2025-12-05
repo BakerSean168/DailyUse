@@ -9,7 +9,7 @@ import type {
   RepositoryClientDTO,
   RepositoryStatsServerDTO,
 } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Update Repository Stats Input

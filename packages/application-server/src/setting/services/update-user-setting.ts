@@ -7,7 +7,7 @@
 import type { IUserSettingRepository } from '@dailyuse/domain-server/setting';
 import { UserSetting } from '@dailyuse/domain-server/setting';
 import type { UserSettingClientDTO } from '@dailyuse/contracts/setting';
-import { SettingContainer } from '../SettingContainer';
+import { SettingContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * 更新用户设置的 DTO

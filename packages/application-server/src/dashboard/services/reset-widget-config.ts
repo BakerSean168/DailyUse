@@ -7,7 +7,7 @@
 import type { IDashboardConfigRepository } from '@dailyuse/domain-server/dashboard';
 import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
 import type { WidgetConfigData } from '@dailyuse/contracts/dashboard';
-import { DashboardContainer } from '../DashboardContainer';
+import { DashboardContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Reset Widget Config Input

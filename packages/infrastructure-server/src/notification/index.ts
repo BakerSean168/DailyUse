@@ -4,6 +4,9 @@
  * Ports and Adapters for Notification module persistence.
  */
 
+// Container
+export { NotificationContainer } from './notification.container';
+
 // Ports (Interfaces)
 export { type INotificationRepository } from './ports/notification-repository.port';
 export { type INotificationPreferenceRepository } from './ports/notification-preference-repository.port';

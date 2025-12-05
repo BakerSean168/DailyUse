@@ -8,7 +8,7 @@ import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authenti
 import { AuthenticationDomainService } from '@dailyuse/domain-server/authentication';
 import type { Enable2FARequest, Enable2FAResponseDTO } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '../AuthContainer';
+import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Enable 2FA Input

@@ -7,7 +7,7 @@
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
 import { Folder } from '@dailyuse/domain-server/repository';
 import type { FolderClientDTO, FolderMetadataServerDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Create Folder Input

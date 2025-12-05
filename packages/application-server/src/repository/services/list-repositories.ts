@@ -8,7 +8,7 @@ import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
 import { Repository } from '@dailyuse/domain-server/repository';
 import type { RepositoryClientDTO } from '@dailyuse/contracts/repository';
 import { RepositoryStatus } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List Repositories Input

@@ -7,7 +7,7 @@
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import type { RevokeApiKeyRequest } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '../AuthContainer';
+import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Revoke API Key Input

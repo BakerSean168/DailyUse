@@ -4,8 +4,8 @@
  * 提供 Task 模块的所有 Services
  */
 
-// ===== Container =====
-export { TaskContainer } from './TaskContainer';
+// ===== Container (from infrastructure-server) =====
+export { TaskContainer } from '@dailyuse/infrastructure-server';
 
 // ===== Services =====
 export * from './services';

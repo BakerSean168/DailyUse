@@ -4,8 +4,8 @@
  * 提供 Setting 模块的所有 Services
  */
 
-// ===== Container =====
-export { SettingContainer } from './SettingContainer';
+// ===== Container (from infrastructure-server) =====
+export { SettingContainer } from '@dailyuse/infrastructure-server';
 
 // ===== Services =====
 export * from './services';

@@ -6,7 +6,7 @@
 
 import type { IReminderTemplateRepository } from '@dailyuse/domain-server/reminder';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderContainer } from '../ReminderContainer';
+import { ReminderContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input
@@ -36,7 +36,7 @@ export class DeleteReminderTemplate {
    */
   static createInstance(templateRepository?: IReminderTemplateRepository): DeleteReminderTemplate {
     const container = ReminderContainer.getInstance();
-    const repo = templateRepository || container.getReminderTemplateRepository();
+    const repo = templateRepository || container.getTemplateRepository();
     DeleteReminderTemplate.instance = new DeleteReminderTemplate(repo);
     return DeleteReminderTemplate.instance;
   }

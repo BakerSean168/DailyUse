@@ -4,8 +4,8 @@
  * AI 模块应用服务
  */
 
-// Container
-export { AIContainer } from './AIContainer';
+// Container (from infrastructure-server)
+export { AIContainer } from '@dailyuse/infrastructure-server';
 
 // Services
 export * from './services';

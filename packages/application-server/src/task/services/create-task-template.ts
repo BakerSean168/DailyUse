@@ -25,7 +25,7 @@ import type {
 import { TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

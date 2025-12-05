@@ -11,7 +11,7 @@ import type {
   RepositoryConfigServerDTO,
 } from '@dailyuse/contracts/repository';
 import { RepositoryType } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Create Repository Input

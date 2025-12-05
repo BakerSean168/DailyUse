@@ -14,7 +14,7 @@ import { TaskInstanceGenerationService } from '@dailyuse/domain-server/task';
 import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

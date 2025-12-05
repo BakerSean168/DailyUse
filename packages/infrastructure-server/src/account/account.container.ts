@@ -1,11 +1,10 @@
 /**
- * Account Container
+ * Account Container (Server)
  *
  * 依赖注入容器，管理 Account 模块的 repository 实例
  */
 
 import type { IAccountRepository } from '@dailyuse/domain-server/account';
-import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 
 /**
  * Account 模块依赖注入容器
@@ -13,7 +12,6 @@ import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authenti
 export class AccountContainer {
   private static instance: AccountContainer;
   private accountRepository: IAccountRepository | null = null;
-  private authCredentialRepository: IAuthCredentialRepository | null = null;
 
   private constructor() {}
 
@@ -37,15 +35,9 @@ export class AccountContainer {
   /**
    * 注册 AccountRepository
    */
-  registerAccountRepository(repository: IAccountRepository): void {
+  registerAccountRepository(repository: IAccountRepository): this {
     this.accountRepository = repository;
-  }
-
-  /**
-   * 注册 AuthCredentialRepository
-   */
-  registerAuthCredentialRepository(repository: IAuthCredentialRepository): void {
-    this.authCredentialRepository = repository;
+    return this;
   }
 
   /**
@@ -59,12 +51,16 @@ export class AccountContainer {
   }
 
   /**
-   * 获取 AuthCredentialRepository
+   * 检查是否已配置
    */
-  getAuthCredentialRepository(): IAuthCredentialRepository {
-    if (!this.authCredentialRepository) {
-      throw new Error('AuthCredentialRepository not registered. Call registerAuthCredentialRepository first.');
-    }
-    return this.authCredentialRepository;
+  isConfigured(): boolean {
+    return this.accountRepository !== null;
+  }
+
+  /**
+   * 清空所有注册的依赖
+   */
+  clear(): void {
+    this.accountRepository = null;
   }
 }

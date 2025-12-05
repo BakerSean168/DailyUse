@@ -1,10 +1,13 @@
 /**
- * Authentication Container
+ * Authentication Container (Server)
  *
  * 依赖注入容器，管理 Authentication 模块的 repository 实例
  */
 
-import type { IAuthCredentialRepository, IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
+import type { 
+  IAuthCredentialRepository, 
+  IAuthSessionRepository 
+} from '@dailyuse/domain-server/authentication';
 
 /**
  * Authentication 模块依赖注入容器

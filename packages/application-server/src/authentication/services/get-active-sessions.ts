@@ -6,7 +6,7 @@
 
 import type { IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
 import type { AuthSessionClientDTO } from '@dailyuse/contracts/authentication';
-import { AuthContainer } from '../AuthContainer';
+import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Get Active Sessions Input

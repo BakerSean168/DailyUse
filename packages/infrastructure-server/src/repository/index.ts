@@ -4,6 +4,9 @@
  * Ports and Adapters for Repository module persistence.
  */
 
+// Container
+export { RepositoryContainer } from './repository.container';
+
 // Ports (Interfaces)
 export { type IFolderRepository } from './ports/folder-repository.port';
 export { type IRepositoryRepository } from './ports/repository-repository.port';

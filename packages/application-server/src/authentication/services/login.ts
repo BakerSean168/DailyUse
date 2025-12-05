@@ -8,7 +8,7 @@ import type { IAuthCredentialRepository, IAuthSessionRepository } from '@dailyus
 import { AuthenticationDomainService, AuthSession, DeviceInfo } from '@dailyuse/domain-server/authentication';
 import type { LoginRequest, AuthTokens } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '../AuthContainer';
+import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Login Input

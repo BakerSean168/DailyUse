@@ -1,12 +1,7 @@
 /**
- * Repository Module DI Container
+ * Repository Container (Server)
  *
- * 依赖注入容器，管理 Repository 模块的所有仓储实例
- *
- * 职责：
- * - 管理仓储实例的生命周期（单例）
- * - 支持测试时注入 Mock 仓储
- * - 懒加载创建仓储实例
+ * 依赖注入容器，管理 Repository 模块的 repository 实例
  */
 
 import type {
@@ -16,13 +11,15 @@ import type {
   IRepositoryStatisticsRepository,
 } from '@dailyuse/domain-server/repository';
 
+/**
+ * Repository 模块依赖注入容器
+ */
 export class RepositoryContainer {
   private static instance: RepositoryContainer;
-
-  private repositoryRepository?: IRepositoryRepository;
-  private resourceRepository?: IResourceRepository;
-  private folderRepository?: IFolderRepository;
-  private repositoryStatisticsRepository?: IRepositoryStatisticsRepository;
+  private repositoryRepository: IRepositoryRepository | null = null;
+  private resourceRepository: IResourceRepository | null = null;
+  private folderRepository: IFolderRepository | null = null;
+  private repositoryStatisticsRepository: IRepositoryStatisticsRepository | null = null;
 
   private constructor() {}
 
@@ -40,65 +37,61 @@ export class RepositoryContainer {
    * 重置容器（用于测试）
    */
   static resetInstance(): void {
-    RepositoryContainer.instance = undefined as unknown as RepositoryContainer;
+    RepositoryContainer.instance = new RepositoryContainer();
   }
 
   // ===== Repository 仓储 =====
 
-  registerRepositoryRepository(repository: IRepositoryRepository): void {
+  registerRepositoryRepository(repository: IRepositoryRepository): this {
     this.repositoryRepository = repository;
+    return this;
   }
 
   getRepositoryRepository(): IRepositoryRepository {
     if (!this.repositoryRepository) {
-      throw new Error(
-        'RepositoryRepository not registered. Call registerRepositoryRepository() first.',
-      );
+      throw new Error('RepositoryRepository not registered.');
     }
     return this.repositoryRepository;
   }
 
   // ===== Resource 仓储 =====
 
-  registerResourceRepository(repository: IResourceRepository): void {
+  registerResourceRepository(repository: IResourceRepository): this {
     this.resourceRepository = repository;
+    return this;
   }
 
   getResourceRepository(): IResourceRepository {
     if (!this.resourceRepository) {
-      throw new Error(
-        'ResourceRepository not registered. Call registerResourceRepository() first.',
-      );
+      throw new Error('ResourceRepository not registered.');
     }
     return this.resourceRepository;
   }
 
   // ===== Folder 仓储 =====
 
-  registerFolderRepository(repository: IFolderRepository): void {
+  registerFolderRepository(repository: IFolderRepository): this {
     this.folderRepository = repository;
+    return this;
   }
 
   getFolderRepository(): IFolderRepository {
     if (!this.folderRepository) {
-      throw new Error(
-        'FolderRepository not registered. Call registerFolderRepository() first.',
-      );
+      throw new Error('FolderRepository not registered.');
     }
     return this.folderRepository;
   }
 
   // ===== Statistics 仓储 =====
 
-  registerRepositoryStatisticsRepository(repository: IRepositoryStatisticsRepository): void {
+  registerRepositoryStatisticsRepository(repository: IRepositoryStatisticsRepository): this {
     this.repositoryStatisticsRepository = repository;
+    return this;
   }
 
   getRepositoryStatisticsRepository(): IRepositoryStatisticsRepository {
     if (!this.repositoryStatisticsRepository) {
-      throw new Error(
-        'RepositoryStatisticsRepository not registered. Call registerRepositoryStatisticsRepository() first.',
-      );
+      throw new Error('RepositoryStatisticsRepository not registered.');
     }
     return this.repositoryStatisticsRepository;
   }
@@ -109,13 +102,20 @@ export class RepositoryContainer {
     return this.getRepositoryRepository();
   }
 
-  /**
-   * 重置所有仓储（用于测试）
-   */
-  reset(): void {
-    this.repositoryRepository = undefined;
-    this.resourceRepository = undefined;
-    this.folderRepository = undefined;
-    this.repositoryStatisticsRepository = undefined;
+  // ===== Utilities =====
+
+  isConfigured(): boolean {
+    return (
+      this.repositoryRepository !== null &&
+      this.resourceRepository !== null &&
+      this.folderRepository !== null
+    );
+  }
+
+  clear(): void {
+    this.repositoryRepository = null;
+    this.resourceRepository = null;
+    this.folderRepository = null;
+    this.repositoryStatisticsRepository = null;
   }
 }

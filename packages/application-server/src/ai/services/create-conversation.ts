@@ -8,7 +8,7 @@ import type { IAIConversationRepository } from '@dailyuse/domain-server/ai';
 import { AIConversation } from '@dailyuse/domain-server/ai';
 import type { CreateConversationRequest, ConversationResponse } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
-import { AIContainer } from '../AIContainer';
+import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Create Conversation Input

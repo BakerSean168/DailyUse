@@ -7,7 +7,7 @@
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { Goal } from '@dailyuse/domain-server/goal';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List Goals Input

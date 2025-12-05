@@ -10,7 +10,7 @@ import type {
 } from '@dailyuse/domain-server/schedule';
 import { ScheduleDomainService } from '@dailyuse/domain-server/schedule';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

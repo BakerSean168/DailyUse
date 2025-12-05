@@ -4,6 +4,9 @@
  * Ports and Adapters for Goal module persistence.
  */
 
+// Container
+export { GoalContainer } from './goal.container';
+
 // Ports (Interfaces)
 export { type IGoalRepository } from './ports/goal-repository.port';
 

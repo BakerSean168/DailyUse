@@ -4,8 +4,8 @@
  * 提供 Schedule 模块的所有 Services
  */
 
-// ===== Container =====
-export { ScheduleContainer } from './ScheduleContainer';
+// ===== Container (from infrastructure-server) =====
+export { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 // ===== Services =====
 export * from './services';

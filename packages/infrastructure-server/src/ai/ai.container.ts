@@ -1,5 +1,5 @@
 /**
- * AI Container
+ * AI Container (Server)
  *
  * 依赖注入容器，管理 AI 模块的 repository 实例
  */

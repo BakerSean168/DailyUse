@@ -6,7 +6,7 @@
 
 import type { IAccountRepository } from '@dailyuse/domain-server/account';
 import type { AccountClientDTO } from '@dailyuse/contracts/account';
-import { AccountContainer } from '../AccountContainer';
+import { AccountContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

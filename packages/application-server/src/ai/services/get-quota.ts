@@ -7,7 +7,7 @@
 import type { IAIUsageQuotaRepository } from '@dailyuse/domain-server/ai';
 import type { QuotaResponse } from '@dailyuse/contracts/ai';
 import { QuotaResetPeriod } from '@dailyuse/contracts/ai';
-import { AIContainer } from '../AIContainer';
+import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Get Quota Input

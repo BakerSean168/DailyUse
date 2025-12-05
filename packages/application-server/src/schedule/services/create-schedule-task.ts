@@ -15,7 +15,7 @@ import type {
   RetryPolicyServerDTO,
   SourceModule,
 } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

@@ -4,6 +4,9 @@
  * Ports and Adapters for Task module persistence.
  */
 
+// Container
+export { TaskContainer } from './task.container';
+
 // Ports (Interfaces)
 export { type ITaskRepository } from './ports/task-repository.port';
 

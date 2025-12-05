@@ -6,7 +6,7 @@
 
 import type { IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
 import type { RefreshTokenRequest, AuthTokens } from '@dailyuse/contracts/authentication';
-import { AuthContainer } from '../AuthContainer';
+import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Refresh Token Input

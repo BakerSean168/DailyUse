@@ -9,7 +9,7 @@ import { Resource } from '@dailyuse/domain-server/repository';
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 import { ResourceType } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Create Resource Input

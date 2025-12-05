@@ -4,8 +4,8 @@
  * 提供 Repository 模块的所有 Services
  */
 
-// ===== Container =====
-export { RepositoryContainer } from './RepositoryContainer';
+// ===== Container (from infrastructure-server) =====
+export { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 // ===== Services =====
 export * from './services';

@@ -7,7 +7,7 @@
 import type { IAuthSessionRepository } from '@dailyuse/domain-server/authentication';
 import type { RevokeAllSessionsRequest } from '@dailyuse/contracts/authentication';
 import { eventBus } from '@dailyuse/utils';
-import { AuthContainer } from '../AuthContainer';
+import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Revoke All Sessions Input

@@ -6,7 +6,7 @@
 
 import type { IAuthCredentialRepository } from '@dailyuse/domain-server/authentication';
 import type { ApiKeyCredentialClientDTO } from '@dailyuse/contracts/authentication';
-import { AuthContainer } from '../AuthContainer';
+import { AuthContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * List API Keys Input

@@ -9,7 +9,7 @@ import { Message } from '@dailyuse/domain-server/ai';
 import type { SendMessageRequest, MessageResponse } from '@dailyuse/contracts/ai';
 import { MessageRole } from '@dailyuse/contracts/ai';
 import { eventBus } from '@dailyuse/utils';
-import { AIContainer } from '../AIContainer';
+import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Send Message Input

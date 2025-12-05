@@ -4,6 +4,9 @@
  * Ports and Adapters for Dashboard module persistence.
  */
 
+// Container
+export { DashboardContainer, type IStatisticsCacheService } from './dashboard.container';
+
 // Ports (Interfaces)
 export { type IDashboardConfigRepository } from './ports/dashboard-config-repository.port';
 

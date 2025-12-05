@@ -4,8 +4,8 @@
  * 提供 Account 模块的所有 Services
  */
 
-// ===== Container =====
-export { AccountContainer } from './AccountContainer';
+// ===== Container (from infrastructure-server) =====
+export { AccountContainer } from '@dailyuse/infrastructure-server';
 
 // ===== Services =====
 export * from './services';

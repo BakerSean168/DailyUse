@@ -4,8 +4,8 @@
  * 提供 Reminder 模块的所有 Services
  */
 
-// ===== Container =====
-export { ReminderContainer } from './ReminderContainer';
+// ===== Container (from infrastructure-server) =====
+export { ReminderContainer } from '@dailyuse/infrastructure-server';
 
 // ===== Services =====
 export * from './services';

@@ -6,7 +6,7 @@
 
 import type { IAIConversationRepository } from '@dailyuse/domain-server/ai';
 import { eventBus } from '@dailyuse/utils';
-import { AIContainer } from '../AIContainer';
+import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Delete Conversation Input

@@ -9,7 +9,7 @@ import type {
   RepositoryClientDTO,
   RepositoryConfigServerDTO,
 } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Update Repository Config Input

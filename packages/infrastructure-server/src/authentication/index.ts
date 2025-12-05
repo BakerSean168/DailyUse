@@ -4,6 +4,9 @@
  * Ports and Adapters for Authentication module persistence.
  */
 
+// Container
+export { AuthContainer } from './auth.container';
+
 // Ports (Interfaces)
 export { type IAuthCredentialRepository, type PrismaTransactionClient } from './ports/auth-credential-repository.port';
 export { type IAuthSessionRepository } from './ports/auth-session-repository.port';

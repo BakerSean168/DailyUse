@@ -7,7 +7,7 @@
 import type { IAIGenerationTaskRepository, IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
 import type { GenerateGoalRequest, GenerateGoalResponse, GoalCategory } from '@dailyuse/contracts/ai';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { AIContainer } from '../AIContainer';
+import { AIContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Generate Goal Input

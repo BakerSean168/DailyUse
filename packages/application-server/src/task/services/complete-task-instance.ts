@@ -13,7 +13,7 @@ import type {
   TaskInstanceCompletedEvent,
 } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input

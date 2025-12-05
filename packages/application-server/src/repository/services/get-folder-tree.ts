@@ -7,7 +7,7 @@
 import type { IFolderRepository } from '@dailyuse/domain-server/repository';
 import { Folder, FolderHierarchyService } from '@dailyuse/domain-server/repository';
 import type { FolderClientDTO } from '@dailyuse/contracts/repository';
-import { RepositoryContainer } from '../RepositoryContainer';
+import { RepositoryContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Get Folder Tree Input

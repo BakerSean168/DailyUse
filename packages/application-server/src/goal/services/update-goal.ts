@@ -9,7 +9,7 @@ import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { eventBus } from '@dailyuse/utils';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Update Goal Input

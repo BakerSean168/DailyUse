@@ -6,7 +6,7 @@
 
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
 import type { TaskInstanceServerDTO } from '@dailyuse/contracts/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-server';
 
 /**
  * Service Input
