@@ -11,6 +11,12 @@
  * - Schedule: Schedule persistence
  * - Reminder: Reminder persistence
  * - Account: Account persistence
+ * - Authentication: Auth credential and session persistence
+ * - AI: AI conversation, generation task, provider config, usage quota persistence
+ * - Notification: Notification, preference, template persistence
+ * - Dashboard: Dashboard config persistence
+ * - Repository: Repository, folder, resource, statistics persistence
+ * - Setting: App config, setting, user setting persistence
  *
  * Each module provides:
  * - Ports: Repository interface definitions
@@ -23,6 +29,12 @@ export * from './task';
 export * from './schedule';
 export * from './reminder';
 export * from './account';
+export * from './authentication';
+export * from './ai';
+export * from './notification';
+export * from './dashboard';
+export * from './repository';
+export * from './setting';
 
 // Shared
 export * from './shared';

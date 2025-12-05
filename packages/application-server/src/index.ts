@@ -40,3 +40,9 @@ export * from './setting';
 
 // Notification module
 export * from './notification';
+
+// Authentication module
+export * from './authentication';
+
+// AI module
+export * from './ai';

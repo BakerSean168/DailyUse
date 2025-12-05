@@ -12,6 +12,8 @@ export default defineConfig({
     'src/dashboard/index.ts',
     'src/setting/index.ts',
     'src/notification/index.ts',
+    'src/authentication/index.ts',
+    'src/ai/index.ts',
   ],
   format: ['esm'],
   dts: true,
