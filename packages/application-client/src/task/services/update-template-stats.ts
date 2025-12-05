@@ -5,7 +5,7 @@
  */
 
 import type { ITaskStatisticsApiClient } from '@dailyuse/infrastructure-client';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Update Template Stats

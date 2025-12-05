@@ -5,4 +5,4 @@
  */
 
 export * from './services';
-export { TaskContainer } from './TaskContainer';
+export { TaskContainer } from '@dailyuse/infrastructure-client';

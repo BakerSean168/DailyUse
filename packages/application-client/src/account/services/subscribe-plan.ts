@@ -6,7 +6,7 @@
 
 import type { SubscriptionDTO, SubscribePlanRequestDTO } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
-import { AccountContainer } from '../AccountContainer';
+import { AccountContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Subscribe Plan Input

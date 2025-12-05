@@ -7,7 +7,7 @@
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
 import type { GoalClientDTO, GoalAggregateViewResponse } from '@dailyuse/contracts/goal';
 import { Goal } from '@dailyuse/domain-client/goal';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Goal Aggregate View Output

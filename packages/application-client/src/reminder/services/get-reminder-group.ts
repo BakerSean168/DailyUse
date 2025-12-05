@@ -6,7 +6,7 @@
 
 import type { IReminderApiClient } from '@dailyuse/infrastructure-client';
 import { ReminderGroup } from '@dailyuse/domain-client/reminder';
-import { ReminderContainer } from '../ReminderContainer';
+import { ReminderContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Reminder Group

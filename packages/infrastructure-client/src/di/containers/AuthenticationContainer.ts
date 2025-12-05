@@ -1,18 +1,18 @@
 /**
  * Authentication Container
  *
- * Authentication 模块的依赖注入容器
+ * Authentication 模块的依赖容器
  */
 
-import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
+import type { IAuthApiClient } from '../../authentication';
+import { DIContainer } from './DIContainer';
+import { DependencyKeys } from './dependency-keys';
 
 /**
- * Authentication Container
- * 管理 Authentication 模块的依赖注入
+ * Authentication 依赖容器
  */
 export class AuthenticationContainer {
   private static instance: AuthenticationContainer;
-  private authApiClient: IAuthApiClient | null = null;
 
   private constructor() {}
 
@@ -27,7 +27,7 @@ export class AuthenticationContainer {
   }
 
   /**
-   * 创建容器实例（用于依赖注入）
+   * 创建新实例（用于测试）
    */
   static createInstance(): AuthenticationContainer {
     AuthenticationContainer.instance = new AuthenticationContainer();
@@ -35,7 +35,7 @@ export class AuthenticationContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 重置容器
    */
   static resetInstance(): void {
     AuthenticationContainer.instance = undefined as unknown as AuthenticationContainer;
@@ -45,18 +45,13 @@ export class AuthenticationContainer {
    * 注册 Auth API Client
    */
   registerAuthApiClient(client: IAuthApiClient): void {
-    this.authApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.AUTH_API_CLIENT, client);
   }
 
   /**
    * 获取 Auth API Client
    */
   getAuthApiClient(): IAuthApiClient {
-    if (!this.authApiClient) {
-      throw new Error(
-        'AuthApiClient not registered. Call registerAuthApiClient() first.',
-      );
-    }
-    return this.authApiClient;
+    return DIContainer.getInstance().resolve<IAuthApiClient>(DependencyKeys.AUTH_API_CLIENT);
   }
 }

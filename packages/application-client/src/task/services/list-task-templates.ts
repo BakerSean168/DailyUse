@@ -7,7 +7,7 @@
 import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { TaskTemplate } from '@dailyuse/domain-client/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * List Task Templates Input

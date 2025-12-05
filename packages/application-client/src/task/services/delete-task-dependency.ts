@@ -6,7 +6,7 @@
 
 import type { ITaskDependencyApiClient } from '@dailyuse/infrastructure-client';
 import { eventBus } from '@dailyuse/utils';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskDependencyEvents } from './task-dependency-events';
 
 export interface DeleteTaskDependencyInput {

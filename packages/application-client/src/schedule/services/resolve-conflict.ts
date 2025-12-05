@@ -11,7 +11,7 @@ import type {
   ResolveConflictRequest,
 } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
 
 /**

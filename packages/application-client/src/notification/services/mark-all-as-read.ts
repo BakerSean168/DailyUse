@@ -5,7 +5,7 @@
  */
 
 import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
-import { NotificationContainer } from '../NotificationContainer';
+import { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Mark All As Read Output

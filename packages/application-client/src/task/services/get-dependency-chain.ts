@@ -6,7 +6,7 @@
 
 import type { ITaskDependencyApiClient } from '@dailyuse/infrastructure-client';
 import type { DependencyChainClientDTO } from '@dailyuse/contracts/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Dependency Chain

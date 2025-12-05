@@ -6,7 +6,7 @@
 
 import type { Enable2FARequest, Enable2FAResponseDTO } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '../AuthenticationContainer';
+import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
 
 export interface Enable2FAInput extends Enable2FARequest {}
 

@@ -5,4 +5,4 @@
  */
 
 export * from './services';
-export { ReminderContainer } from './ReminderContainer';
+export { ReminderContainer } from '@dailyuse/infrastructure-client';

@@ -5,7 +5,7 @@
  */
 
 import type { INotificationApiClient, UnreadCountResponse } from '@dailyuse/infrastructure-client';
-import { NotificationContainer } from '../NotificationContainer';
+import { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Unread Count Output

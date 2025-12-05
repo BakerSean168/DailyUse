@@ -6,7 +6,7 @@
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
 import type { KeyResultsResponse } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Key Results

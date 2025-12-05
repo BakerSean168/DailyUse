@@ -6,7 +6,7 @@
  */
 
 // Container
-export { GoalContainer } from './GoalContainer';
+export { GoalContainer } from '@dailyuse/infrastructure-client';
 
 // All Services
 export * from './services';

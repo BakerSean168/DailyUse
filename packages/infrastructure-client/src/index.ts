@@ -146,3 +146,24 @@ export {
   LocalStorageAdapter,
   MemoryCacheAdapter,
 } from './shared';
+
+// ============================================================
+// Dependency Injection (DI)
+// ============================================================
+export {
+  // Core Container
+  DIContainer,
+  DependencyKeys,
+  type DependencyKey,
+  // Module Containers
+  GoalContainer,
+  TaskContainer,
+  ScheduleContainer,
+  ReminderContainer,
+  AccountContainer,
+  AuthenticationContainer,
+  NotificationContainer,
+  // Composition Roots
+  configureWebDependencies,
+  configureDesktopDependencies,
+} from './di';

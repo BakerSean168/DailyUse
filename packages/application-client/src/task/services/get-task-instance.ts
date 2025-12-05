@@ -6,7 +6,7 @@
 
 import type { ITaskInstanceApiClient } from '@dailyuse/infrastructure-client';
 import { TaskInstance } from '@dailyuse/domain-client/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Task Instance

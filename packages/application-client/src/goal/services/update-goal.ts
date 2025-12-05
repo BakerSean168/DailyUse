@@ -7,7 +7,7 @@
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
 import type { UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import { Goal } from '@dailyuse/domain-client/goal';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Update Goal Input

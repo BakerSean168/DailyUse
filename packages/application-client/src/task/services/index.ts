@@ -5,7 +5,7 @@
  */
 
 // Container
-export { TaskContainer } from '../TaskContainer';
+export { TaskContainer } from '@dailyuse/infrastructure-client';
 
 // Events
 export { TaskEvents, TaskInstanceEvents } from './task-events';

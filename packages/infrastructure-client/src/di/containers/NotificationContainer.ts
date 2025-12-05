@@ -1,18 +1,18 @@
 /**
  * Notification Container
  *
- * 通知模块的依赖注入容器
+ * Notification 模块的依赖容器
  */
 
-import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
+import type { INotificationApiClient } from '../../notification';
+import { DIContainer } from './DIContainer';
+import { DependencyKeys } from './dependency-keys';
 
 /**
- * Notification Container
- * 管理通知模块的依赖注入
+ * Notification 依赖容器
  */
 export class NotificationContainer {
   private static instance: NotificationContainer;
-  private notificationApiClient: INotificationApiClient | null = null;
 
   private constructor() {}
 
@@ -27,7 +27,7 @@ export class NotificationContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 重置容器
    */
   static resetInstance(): void {
     NotificationContainer.instance = undefined as unknown as NotificationContainer;
@@ -37,18 +37,13 @@ export class NotificationContainer {
    * 注册 Notification API Client
    */
   registerNotificationApiClient(client: INotificationApiClient): void {
-    this.notificationApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.NOTIFICATION_API_CLIENT, client);
   }
 
   /**
    * 获取 Notification API Client
    */
   getNotificationApiClient(): INotificationApiClient {
-    if (!this.notificationApiClient) {
-      throw new Error(
-        'NotificationApiClient not registered. Call registerNotificationApiClient() first.',
-      );
-    }
-    return this.notificationApiClient;
+    return DIContainer.getInstance().resolve<INotificationApiClient>(DependencyKeys.NOTIFICATION_API_CLIENT);
   }
 }

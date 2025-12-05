@@ -9,7 +9,7 @@ import type {
   QueryNotificationsRequest,
   NotificationListResponse,
 } from '@dailyuse/infrastructure-client';
-import { NotificationContainer } from '../NotificationContainer';
+import { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Find Notifications Input

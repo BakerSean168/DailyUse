@@ -6,7 +6,7 @@
 
 import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client';
 import { TaskInstance } from '@dailyuse/domain-client/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 
 export interface GetInstancesByDateRangeInput {
   templateUuid: string;

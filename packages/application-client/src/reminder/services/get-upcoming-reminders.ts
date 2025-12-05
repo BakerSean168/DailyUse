@@ -6,7 +6,7 @@
 
 import type { IReminderApiClient } from '@dailyuse/infrastructure-client';
 import type { UpcomingRemindersResponseDTO } from '@dailyuse/contracts/reminder';
-import { ReminderContainer } from '../ReminderContainer';
+import { ReminderContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Upcoming Reminders Params

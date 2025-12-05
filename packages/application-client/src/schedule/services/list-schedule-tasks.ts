@@ -6,7 +6,7 @@
 
 import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * List Schedule Tasks

@@ -3,7 +3,7 @@
  */
 
 // Container
-export { ScheduleContainer } from '../ScheduleContainer';
+export { ScheduleContainer } from '@dailyuse/infrastructure-client';
 
 // Events
 export {

@@ -6,7 +6,7 @@
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
 import type { ConflictDetectionResult } from '@dailyuse/contracts/schedule';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Schedule Conflicts

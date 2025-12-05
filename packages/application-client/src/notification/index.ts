@@ -5,7 +5,7 @@
  */
 
 // Container
-export { NotificationContainer } from './NotificationContainer';
+export { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 // Services
 export * from './services';

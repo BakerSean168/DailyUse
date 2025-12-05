@@ -7,7 +7,7 @@
 import type { ITaskInstanceApiClient } from '@dailyuse/infrastructure-client';
 import { eventBus } from '@dailyuse/utils';
 import { TaskInstance } from '@dailyuse/domain-client/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskInstanceEvents } from './task-events';
 
 /**

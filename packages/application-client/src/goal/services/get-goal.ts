@@ -6,7 +6,7 @@
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
 import { Goal } from '@dailyuse/domain-client/goal';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Goal

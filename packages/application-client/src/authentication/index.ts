@@ -5,7 +5,7 @@
  */
 
 // Container
-export { AuthenticationContainer } from './AuthenticationContainer';
+export { AuthenticationContainer } from '@dailyuse/infrastructure-client';
 
 // All Services
 export * from './services';

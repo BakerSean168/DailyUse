@@ -8,7 +8,7 @@ import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client';
 import type { GenerateInstancesRequest } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import { TaskInstance } from '@dailyuse/domain-client/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskEvents } from './task-events';
 
 export interface GenerateTaskInstancesInput {

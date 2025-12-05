@@ -6,7 +6,7 @@
 
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 import type { INotificationApiClient } from '@dailyuse/infrastructure-client';
-import { NotificationContainer } from '../NotificationContainer';
+import { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Mark As Read

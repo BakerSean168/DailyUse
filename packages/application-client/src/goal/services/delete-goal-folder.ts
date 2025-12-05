@@ -5,7 +5,7 @@
  */
 
 import type { IGoalFolderApiClient } from '@dailyuse/infrastructure-client';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Delete Goal Folder

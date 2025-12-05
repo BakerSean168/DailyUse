@@ -6,7 +6,7 @@
 
 import type { ITaskTemplateApiClient } from '@dailyuse/infrastructure-client';
 import { eventBus } from '@dailyuse/utils';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { TaskEvents, type TaskTemplateRefreshEvent } from './task-events';
 
 /**

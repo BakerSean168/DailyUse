@@ -6,7 +6,7 @@
 
 import type { TrustedDevicesResponseDTO } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '../AuthenticationContainer';
+import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Trusted Devices Use Case

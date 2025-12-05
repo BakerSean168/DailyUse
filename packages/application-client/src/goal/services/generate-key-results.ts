@@ -5,7 +5,7 @@
  */
 
 import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Generate Key Results Input

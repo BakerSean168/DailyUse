@@ -9,7 +9,7 @@ import type {
   ValidateDependencyRequest,
   ValidateDependencyResponse,
 } from '@dailyuse/contracts/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Validate Task Dependency

@@ -6,7 +6,7 @@
 
 import type { IScheduleEventApiClient } from '@dailyuse/infrastructure-client';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleEventEvents, type ScheduleEventRefreshEvent } from './schedule-events';
 
 /**

@@ -7,7 +7,7 @@
 import type { IScheduleTaskApiClient } from '@dailyuse/infrastructure-client';
 import type { ScheduleStatisticsClientDTO } from '@dailyuse/contracts/schedule';
 import { eventBus } from '@dailyuse/utils';
-import { ScheduleContainer } from '../ScheduleContainer';
+import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import { ScheduleTaskEvents, type ScheduleTaskRefreshEvent } from './schedule-events';
 
 /**

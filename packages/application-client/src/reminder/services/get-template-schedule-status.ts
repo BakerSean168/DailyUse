@@ -6,7 +6,7 @@
 
 import type { IReminderApiClient } from '@dailyuse/infrastructure-client';
 import type { TemplateScheduleStatusDTO } from '@dailyuse/contracts/reminder';
-import { ReminderContainer } from '../ReminderContainer';
+import { ReminderContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Get Template Schedule Status

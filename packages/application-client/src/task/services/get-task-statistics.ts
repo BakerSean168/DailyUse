@@ -6,7 +6,7 @@
 
 import type { ITaskStatisticsApiClient } from '@dailyuse/infrastructure-client';
 import type { TaskStatisticsServerDTO } from '@dailyuse/contracts/task';
-import { TaskContainer } from '../TaskContainer';
+import { TaskContainer } from '@dailyuse/infrastructure-client';
 
 export interface GetTaskStatisticsInput {
   accountUuid: string;

@@ -6,7 +6,7 @@
 
 import type { AccountDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
-import { AccountContainer } from '../AccountContainer';
+import { AccountContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Update My Profile Input

@@ -8,7 +8,7 @@ import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
 import type { KeyResultsResponse } from '@dailyuse/contracts/goal';
 import { eventBus } from '@dailyuse/utils';
 import { GoalEvents, type GoalAggregateRefreshEvent, type GoalAggregateRefreshReason } from '@dailyuse/contracts/goal';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Batch Update Key Result Weights Input

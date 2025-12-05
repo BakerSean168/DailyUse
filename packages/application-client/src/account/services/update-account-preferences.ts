@@ -6,7 +6,7 @@
 
 import type { AccountDTO, UpdateAccountPreferencesRequestDTO } from '@dailyuse/contracts/account';
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
-import { AccountContainer } from '../AccountContainer';
+import { AccountContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Update Account Preferences Input

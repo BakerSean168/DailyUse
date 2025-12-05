@@ -6,7 +6,7 @@
 
 import type { IReminderApiClient } from '@dailyuse/infrastructure-client';
 import { eventBus } from '@dailyuse/utils';
-import { ReminderContainer } from '../ReminderContainer';
+import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import { ReminderGroupEvents, type ReminderGroupRefreshEvent } from './reminder-events';
 
 /**

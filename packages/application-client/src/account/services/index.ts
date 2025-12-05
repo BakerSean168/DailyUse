@@ -5,7 +5,7 @@
  */
 
 // Container
-export { AccountContainer } from '../AccountContainer';
+export { AccountContainer } from '@dailyuse/infrastructure-client';
 
 // Events
 export {

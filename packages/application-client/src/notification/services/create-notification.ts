@@ -9,7 +9,7 @@ import type {
   INotificationApiClient,
   CreateNotificationRequest,
 } from '@dailyuse/infrastructure-client';
-import { NotificationContainer } from '../NotificationContainer';
+import { NotificationContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Create Notification Input

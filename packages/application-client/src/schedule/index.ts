@@ -5,7 +5,7 @@
  */
 
 // Container
-export { ScheduleContainer } from './ScheduleContainer';
+export { ScheduleContainer } from '@dailyuse/infrastructure-client';
 
 // Services (all use cases and legacy services)
 export * from './services';

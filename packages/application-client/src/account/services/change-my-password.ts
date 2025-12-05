@@ -5,7 +5,7 @@
  */
 
 import type { IAccountApiClient } from '@dailyuse/infrastructure-client';
-import { AccountContainer } from '../AccountContainer';
+import { AccountContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Change My Password Input

@@ -1,0 +1,35 @@
+/**
+ * Dependency Keys
+ *
+ * 依赖注入键常量，用于类型安全的依赖注册和解析
+ */
+
+export const DependencyKeys = {
+  // Goal Module
+  GOAL_API_CLIENT: 'GOAL_API_CLIENT',
+  GOAL_FOLDER_API_CLIENT: 'GOAL_FOLDER_API_CLIENT',
+
+  // Task Module
+  TASK_TEMPLATE_API_CLIENT: 'TASK_TEMPLATE_API_CLIENT',
+  TASK_INSTANCE_API_CLIENT: 'TASK_INSTANCE_API_CLIENT',
+  TASK_DEPENDENCY_API_CLIENT: 'TASK_DEPENDENCY_API_CLIENT',
+  TASK_STATISTICS_API_CLIENT: 'TASK_STATISTICS_API_CLIENT',
+
+  // Schedule Module
+  SCHEDULE_TASK_API_CLIENT: 'SCHEDULE_TASK_API_CLIENT',
+  SCHEDULE_EVENT_API_CLIENT: 'SCHEDULE_EVENT_API_CLIENT',
+
+  // Reminder Module
+  REMINDER_API_CLIENT: 'REMINDER_API_CLIENT',
+
+  // Account Module
+  ACCOUNT_API_CLIENT: 'ACCOUNT_API_CLIENT',
+
+  // Authentication Module
+  AUTH_API_CLIENT: 'AUTH_API_CLIENT',
+
+  // Notification Module
+  NOTIFICATION_API_CLIENT: 'NOTIFICATION_API_CLIENT',
+} as const;
+
+export type DependencyKey = (typeof DependencyKeys)[keyof typeof DependencyKeys];

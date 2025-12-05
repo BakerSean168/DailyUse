@@ -1,19 +1,18 @@
 /**
  * Goal Container
  *
- * Goal 模块的依赖注入容器
+ * Goal 模块的依赖容器
  */
 
-import type { IGoalApiClient, IGoalFolderApiClient } from '@dailyuse/infrastructure-client';
+import type { IGoalApiClient, IGoalFolderApiClient } from '../../goal';
+import { DIContainer } from './DIContainer';
+import { DependencyKeys } from './dependency-keys';
 
 /**
- * Goal Container
- * 管理 Goal 模块的依赖注入
+ * Goal 依赖容器
  */
 export class GoalContainer {
   private static instance: GoalContainer;
-  private goalApiClient: IGoalApiClient | null = null;
-  private goalFolderApiClient: IGoalFolderApiClient | null = null;
 
   private constructor() {}
 
@@ -28,7 +27,7 @@ export class GoalContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 重置容器
    */
   static resetInstance(): void {
     GoalContainer.instance = undefined as unknown as GoalContainer;
@@ -38,33 +37,27 @@ export class GoalContainer {
    * 注册 Goal API Client
    */
   registerGoalApiClient(client: IGoalApiClient): void {
-    this.goalApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.GOAL_API_CLIENT, client);
   }
 
   /**
    * 获取 Goal API Client
    */
   getGoalApiClient(): IGoalApiClient {
-    if (!this.goalApiClient) {
-      throw new Error('GoalApiClient not registered. Call registerGoalApiClient() first.');
-    }
-    return this.goalApiClient;
+    return DIContainer.getInstance().resolve<IGoalApiClient>(DependencyKeys.GOAL_API_CLIENT);
   }
 
   /**
    * 注册 Goal Folder API Client
    */
   registerGoalFolderApiClient(client: IGoalFolderApiClient): void {
-    this.goalFolderApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.GOAL_FOLDER_API_CLIENT, client);
   }
 
   /**
    * 获取 Goal Folder API Client
    */
   getGoalFolderApiClient(): IGoalFolderApiClient {
-    if (!this.goalFolderApiClient) {
-      throw new Error('GoalFolderApiClient not registered. Call registerGoalFolderApiClient() first.');
-    }
-    return this.goalFolderApiClient;
+    return DIContainer.getInstance().resolve<IGoalFolderApiClient>(DependencyKeys.GOAL_FOLDER_API_CLIENT);
   }
 }

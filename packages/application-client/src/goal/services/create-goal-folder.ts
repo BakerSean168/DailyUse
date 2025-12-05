@@ -7,7 +7,7 @@
 import type { IGoalFolderApiClient } from '@dailyuse/infrastructure-client';
 import type { CreateGoalFolderRequest } from '@dailyuse/contracts/goal';
 import { GoalFolder } from '@dailyuse/domain-client/goal';
-import { GoalContainer } from '../GoalContainer';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
 
 /**
  * Create Goal Folder Input

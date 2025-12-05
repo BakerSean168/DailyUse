@@ -6,7 +6,7 @@
 
 import type { Disable2FARequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '../AuthenticationContainer';
+import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
 
 export interface Disable2FAInput extends Disable2FARequest {}
 

@@ -9,7 +9,7 @@
 
 import type { RegisterRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient, RegisterResponse } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '../AuthenticationContainer';
+import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
 
 export interface RegisterInput extends RegisterRequest {}
 

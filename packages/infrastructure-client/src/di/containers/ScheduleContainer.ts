@@ -1,22 +1,18 @@
 /**
  * Schedule Container
  *
- * Schedule 模块的依赖注入容器
+ * Schedule 模块的依赖容器
  */
 
-import type {
-  IScheduleTaskApiClient,
-  IScheduleEventApiClient,
-} from '@dailyuse/infrastructure-client';
+import type { IScheduleTaskApiClient, IScheduleEventApiClient } from '../../schedule';
+import { DIContainer } from './DIContainer';
+import { DependencyKeys } from './dependency-keys';
 
 /**
- * Schedule Container
- * 管理 Schedule 模块的依赖注入
+ * Schedule 依赖容器
  */
 export class ScheduleContainer {
   private static instance: ScheduleContainer;
-  private scheduleTaskApiClient: IScheduleTaskApiClient | null = null;
-  private scheduleEventApiClient: IScheduleEventApiClient | null = null;
 
   private constructor() {}
 
@@ -31,7 +27,7 @@ export class ScheduleContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 重置容器
    */
   static resetInstance(): void {
     ScheduleContainer.instance = undefined as unknown as ScheduleContainer;
@@ -41,37 +37,27 @@ export class ScheduleContainer {
    * 注册 Schedule Task API Client
    */
   registerScheduleTaskApiClient(client: IScheduleTaskApiClient): void {
-    this.scheduleTaskApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.SCHEDULE_TASK_API_CLIENT, client);
   }
 
   /**
    * 获取 Schedule Task API Client
    */
   getScheduleTaskApiClient(): IScheduleTaskApiClient {
-    if (!this.scheduleTaskApiClient) {
-      throw new Error(
-        'ScheduleTaskApiClient not registered. Call registerScheduleTaskApiClient() first.',
-      );
-    }
-    return this.scheduleTaskApiClient;
+    return DIContainer.getInstance().resolve<IScheduleTaskApiClient>(DependencyKeys.SCHEDULE_TASK_API_CLIENT);
   }
 
   /**
    * 注册 Schedule Event API Client
    */
   registerScheduleEventApiClient(client: IScheduleEventApiClient): void {
-    this.scheduleEventApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.SCHEDULE_EVENT_API_CLIENT, client);
   }
 
   /**
    * 获取 Schedule Event API Client
    */
   getScheduleEventApiClient(): IScheduleEventApiClient {
-    if (!this.scheduleEventApiClient) {
-      throw new Error(
-        'ScheduleEventApiClient not registered. Call registerScheduleEventApiClient() first.',
-      );
-    }
-    return this.scheduleEventApiClient;
+    return DIContainer.getInstance().resolve<IScheduleEventApiClient>(DependencyKeys.SCHEDULE_EVENT_API_CLIENT);
   }
 }

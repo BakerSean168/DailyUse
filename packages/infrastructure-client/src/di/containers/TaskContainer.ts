@@ -1,7 +1,7 @@
 /**
  * Task Container
  *
- * Task 模块的依赖注入容器
+ * Task 模块的依赖容器
  */
 
 import type {
@@ -9,18 +9,15 @@ import type {
   ITaskInstanceApiClient,
   ITaskDependencyApiClient,
   ITaskStatisticsApiClient,
-} from '@dailyuse/infrastructure-client';
+} from '../../task';
+import { DIContainer } from './DIContainer';
+import { DependencyKeys } from './dependency-keys';
 
 /**
- * Task Container
- * 管理 Task 模块的依赖注入
+ * Task 依赖容器
  */
 export class TaskContainer {
   private static instance: TaskContainer;
-  private taskTemplateApiClient: ITaskTemplateApiClient | null = null;
-  private taskInstanceApiClient: ITaskInstanceApiClient | null = null;
-  private taskDependencyApiClient: ITaskDependencyApiClient | null = null;
-  private taskStatisticsApiClient: ITaskStatisticsApiClient | null = null;
 
   private constructor() {}
 
@@ -35,7 +32,7 @@ export class TaskContainer {
   }
 
   /**
-   * 重置容器（用于测试）
+   * 重置容器
    */
   static resetInstance(): void {
     TaskContainer.instance = undefined as unknown as TaskContainer;
@@ -45,75 +42,55 @@ export class TaskContainer {
    * 注册 Task Template API Client
    */
   registerTaskTemplateApiClient(client: ITaskTemplateApiClient): void {
-    this.taskTemplateApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.TASK_TEMPLATE_API_CLIENT, client);
   }
 
   /**
    * 获取 Task Template API Client
    */
   getTaskTemplateApiClient(): ITaskTemplateApiClient {
-    if (!this.taskTemplateApiClient) {
-      throw new Error(
-        'TaskTemplateApiClient not registered. Call registerTaskTemplateApiClient() first.',
-      );
-    }
-    return this.taskTemplateApiClient;
+    return DIContainer.getInstance().resolve<ITaskTemplateApiClient>(DependencyKeys.TASK_TEMPLATE_API_CLIENT);
   }
 
   /**
    * 注册 Task Instance API Client
    */
   registerTaskInstanceApiClient(client: ITaskInstanceApiClient): void {
-    this.taskInstanceApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.TASK_INSTANCE_API_CLIENT, client);
   }
 
   /**
    * 获取 Task Instance API Client
    */
   getTaskInstanceApiClient(): ITaskInstanceApiClient {
-    if (!this.taskInstanceApiClient) {
-      throw new Error(
-        'TaskInstanceApiClient not registered. Call registerTaskInstanceApiClient() first.',
-      );
-    }
-    return this.taskInstanceApiClient;
+    return DIContainer.getInstance().resolve<ITaskInstanceApiClient>(DependencyKeys.TASK_INSTANCE_API_CLIENT);
   }
 
   /**
    * 注册 Task Dependency API Client
    */
   registerTaskDependencyApiClient(client: ITaskDependencyApiClient): void {
-    this.taskDependencyApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.TASK_DEPENDENCY_API_CLIENT, client);
   }
 
   /**
    * 获取 Task Dependency API Client
    */
   getTaskDependencyApiClient(): ITaskDependencyApiClient {
-    if (!this.taskDependencyApiClient) {
-      throw new Error(
-        'TaskDependencyApiClient not registered. Call registerTaskDependencyApiClient() first.',
-      );
-    }
-    return this.taskDependencyApiClient;
+    return DIContainer.getInstance().resolve<ITaskDependencyApiClient>(DependencyKeys.TASK_DEPENDENCY_API_CLIENT);
   }
 
   /**
    * 注册 Task Statistics API Client
    */
   registerTaskStatisticsApiClient(client: ITaskStatisticsApiClient): void {
-    this.taskStatisticsApiClient = client;
+    DIContainer.getInstance().register(DependencyKeys.TASK_STATISTICS_API_CLIENT, client);
   }
 
   /**
    * 获取 Task Statistics API Client
    */
   getTaskStatisticsApiClient(): ITaskStatisticsApiClient {
-    if (!this.taskStatisticsApiClient) {
-      throw new Error(
-        'TaskStatisticsApiClient not registered. Call registerTaskStatisticsApiClient() first.',
-      );
-    }
-    return this.taskStatisticsApiClient;
+    return DIContainer.getInstance().resolve<ITaskStatisticsApiClient>(DependencyKeys.TASK_STATISTICS_API_CLIENT);
   }
 }
