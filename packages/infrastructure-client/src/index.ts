@@ -184,6 +184,76 @@ export {
 } from './notification';
 
 // ============================================================
+// AI Module
+// ============================================================
+export {
+  // Container
+  AIContainer,
+  // Ports
+  type IAIConversationApiClient,
+  type IAIMessageApiClient,
+  type IAIGenerationTaskApiClient,
+  type IAIUsageQuotaApiClient,
+  type IAIProviderConfigApiClient,
+  // HTTP Adapters
+  AIConversationHttpAdapter,
+  AIMessageHttpAdapter,
+  AIGenerationTaskHttpAdapter,
+  AIUsageQuotaHttpAdapter,
+  AIProviderConfigHttpAdapter,
+  // IPC Adapters
+  AIConversationIpcAdapter,
+  AIMessageIpcAdapter,
+  AIGenerationTaskIpcAdapter,
+  AIUsageQuotaIpcAdapter,
+  AIProviderConfigIpcAdapter,
+} from './ai';
+
+// ============================================================
+// Dashboard Module
+// ============================================================
+export {
+  // Container
+  DashboardContainer,
+  // Ports
+  type IDashboardApiClient,
+  // HTTP Adapters
+  DashboardHttpAdapter,
+  // IPC Adapters
+  DashboardIpcAdapter,
+} from './dashboard';
+
+// ============================================================
+// Repository Module
+// ============================================================
+export {
+  // Container
+  RepositoryContainer,
+  // Ports
+  type IRepositoryApiClient,
+  type CreateRepositoryRequest,
+  type CreateFolderRequest,
+  // HTTP Adapters
+  RepositoryHttpAdapter,
+  // IPC Adapters
+  RepositoryIpcAdapter,
+} from './repository';
+
+// ============================================================
+// Setting Module
+// ============================================================
+export {
+  // Container
+  SettingContainer,
+  // Ports
+  type ISettingApiClient,
+  // HTTP Adapters
+  SettingHttpAdapter,
+  // IPC Adapters
+  SettingIpcAdapter,
+} from './setting';
+
+// ============================================================
 // Shared (Types and Utilities)
 // ============================================================
 export {

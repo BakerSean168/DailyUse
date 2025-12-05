@@ -34,3 +34,15 @@ export * from './authentication/services';
 
 // Notification module
 export * from './notification';
+
+// AI module
+export * from './ai';
+
+// Dashboard module
+export * from './dashboard';
+
+// Repository module
+export * from './repository';
+
+// Setting module
+export * from './setting';

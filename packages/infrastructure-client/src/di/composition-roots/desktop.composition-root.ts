@@ -27,6 +27,17 @@ import { ReminderContainer, ReminderIpcAdapter } from '../../reminder';
 import { AccountContainer, AccountIpcAdapter } from '../../account';
 import { AuthContainer, AuthIpcAdapter } from '../../authentication';
 import { NotificationContainer, NotificationIpcAdapter } from '../../notification';
+import {
+  AIContainer,
+  AIConversationIpcAdapter,
+  AIMessageIpcAdapter,
+  AIGenerationTaskIpcAdapter,
+  AIUsageQuotaIpcAdapter,
+  AIProviderConfigIpcAdapter,
+} from '../../ai';
+import { DashboardContainer, DashboardIpcAdapter } from '../../dashboard';
+import { RepositoryContainer, RepositoryIpcAdapter } from '../../repository';
+import { SettingContainer, SettingIpcAdapter } from '../../setting';
 
 /**
  * 配置 Desktop 环境的依赖
@@ -66,4 +77,24 @@ export function configureDesktopDependencies(electronApi: ElectronAPI): void {
   // Notification Module
   NotificationContainer.getInstance()
     .registerApiClient(new NotificationIpcAdapter(electronApi));
+
+  // AI Module
+  AIContainer.getInstance()
+    .registerConversationApiClient(new AIConversationIpcAdapter(electronApi))
+    .registerMessageApiClient(new AIMessageIpcAdapter(electronApi))
+    .registerGenerationTaskApiClient(new AIGenerationTaskIpcAdapter(electronApi))
+    .registerUsageQuotaApiClient(new AIUsageQuotaIpcAdapter(electronApi))
+    .registerProviderConfigApiClient(new AIProviderConfigIpcAdapter(electronApi));
+
+  // Dashboard Module
+  DashboardContainer.getInstance()
+    .registerApiClient(new DashboardIpcAdapter(electronApi));
+
+  // Repository Module
+  RepositoryContainer.getInstance()
+    .registerApiClient(new RepositoryIpcAdapter(electronApi));
+
+  // Setting Module
+  SettingContainer.getInstance()
+    .registerApiClient(new SettingIpcAdapter(electronApi));
 }

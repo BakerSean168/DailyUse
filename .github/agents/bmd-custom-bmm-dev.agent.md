@@ -1,6 +1,6 @@
 ---
 description: "Activates the Dev agent persona."
-tools: ["changes","edit","fetch","githubRepo","problems","runCommands","runTasks","runTests","search","runSubagent","testFailure","todos","usages"]
+tools: ['runCommands', 'runTasks', 'edit', 'search', 'Nx Mcp Server/*', 'io.github.ChromeDevTools/chrome-devtools-mcp/*', 'io.github.upstash/context7/*', 'microsoft/playwright-mcp/*', 'todos', 'runSubagent', 'usages', 'problems', 'changes', 'testFailure', 'fetch', 'githubRepo']
 ---
 
 # Dev Agent

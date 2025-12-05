@@ -27,6 +27,17 @@ import { ReminderContainer, ReminderHttpAdapter } from '../../reminder';
 import { AccountContainer, AccountHttpAdapter } from '../../account';
 import { AuthContainer, AuthHttpAdapter } from '../../authentication';
 import { NotificationContainer, NotificationHttpAdapter } from '../../notification';
+import {
+  AIContainer,
+  AIConversationHttpAdapter,
+  AIMessageHttpAdapter,
+  AIGenerationTaskHttpAdapter,
+  AIUsageQuotaHttpAdapter,
+  AIProviderConfigHttpAdapter,
+} from '../../ai';
+import { DashboardContainer, DashboardHttpAdapter } from '../../dashboard';
+import { RepositoryContainer, RepositoryHttpAdapter } from '../../repository';
+import { SettingContainer, SettingHttpAdapter } from '../../setting';
 
 /**
  * 配置 Web 环境的依赖
@@ -66,4 +77,24 @@ export function configureWebDependencies(httpClient: IHttpClient): void {
   // Notification Module
   NotificationContainer.getInstance()
     .registerApiClient(new NotificationHttpAdapter(httpClient));
+
+  // AI Module
+  AIContainer.getInstance()
+    .registerConversationApiClient(new AIConversationHttpAdapter(httpClient))
+    .registerMessageApiClient(new AIMessageHttpAdapter(httpClient))
+    .registerGenerationTaskApiClient(new AIGenerationTaskHttpAdapter(httpClient))
+    .registerUsageQuotaApiClient(new AIUsageQuotaHttpAdapter(httpClient))
+    .registerProviderConfigApiClient(new AIProviderConfigHttpAdapter(httpClient));
+
+  // Dashboard Module
+  DashboardContainer.getInstance()
+    .registerApiClient(new DashboardHttpAdapter(httpClient));
+
+  // Repository Module
+  RepositoryContainer.getInstance()
+    .registerApiClient(new RepositoryHttpAdapter(httpClient));
+
+  // Setting Module
+  SettingContainer.getInstance()
+    .registerApiClient(new SettingHttpAdapter(httpClient));
 }
