@@ -33,7 +33,7 @@ export class DetectConflicts {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): DetectConflicts {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     DetectConflicts.instance = new DetectConflicts(client);
     return DetectConflicts.instance;
   }

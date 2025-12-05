@@ -22,7 +22,7 @@ export class PauseScheduleTask {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): PauseScheduleTask {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     PauseScheduleTask.instance = new PauseScheduleTask(client);
     return PauseScheduleTask.instance;
   }

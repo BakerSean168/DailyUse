@@ -21,7 +21,7 @@ export class DeactivateAccount {
    */
   static createInstance(apiClient?: IAccountApiClient): DeactivateAccount {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     DeactivateAccount.instance = new DeactivateAccount(client);
     return DeactivateAccount.instance;
   }

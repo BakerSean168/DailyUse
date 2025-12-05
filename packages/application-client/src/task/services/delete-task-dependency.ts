@@ -27,7 +27,7 @@ export class DeleteTaskDependency {
    */
   static createInstance(apiClient?: ITaskDependencyApiClient): DeleteTaskDependency {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskDependencyApiClient();
+    const client = apiClient || container.getDependencyApiClient();
     DeleteTaskDependency.instance = new DeleteTaskDependency(client);
     return DeleteTaskDependency.instance;
   }

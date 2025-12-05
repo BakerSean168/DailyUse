@@ -4,6 +4,13 @@
  * Ports and Adapters for Authentication module communication.
  */
 
+// Container
+export {
+  AuthContainer,
+  AuthDependencyKeys,
+  type IAuthTokenStorage,
+} from './auth.container';
+
 // Ports (Interfaces)
 export { type IAuthApiClient, type RegisterResponse } from './ports/auth-api-client.port';
 

@@ -26,7 +26,7 @@ export class GetSchedulesByTimeRange {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): GetSchedulesByTimeRange {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     GetSchedulesByTimeRange.instance = new GetSchedulesByTimeRange(client);
     return GetSchedulesByTimeRange.instance;
   }

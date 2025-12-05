@@ -27,12 +27,19 @@
 // Goal Module
 // ============================================================
 export {
+  // Container
+  GoalContainer,
+  GoalDependencyKeys,
+  type IGoalRepository,
+  // Ports
   type IGoalApiClient,
   type IGoalFolderApiClient,
+  // HTTP Adapters
   GoalHttpAdapter,
   createGoalHttpAdapter,
   GoalFolderHttpAdapter,
   createGoalFolderHttpAdapter,
+  // IPC Adapters
   GoalIpcAdapter,
   createGoalIpcAdapter,
   GoalFolderIpcAdapter,
@@ -43,10 +50,17 @@ export {
 // Task Module
 // ============================================================
 export {
+  // Container
+  TaskContainer,
+  TaskDependencyKeys,
+  type ITaskTemplateRepository,
+  type ITaskInstanceRepository,
+  // Ports
   type ITaskTemplateApiClient,
   type ITaskInstanceApiClient,
   type ITaskDependencyApiClient,
   type ITaskStatisticsApiClient,
+  // HTTP Adapters
   TaskTemplateHttpAdapter,
   createTaskTemplateHttpAdapter,
   TaskInstanceHttpAdapter,
@@ -55,6 +69,7 @@ export {
   createTaskDependencyHttpAdapter,
   TaskStatisticsHttpAdapter,
   createTaskStatisticsHttpAdapter,
+  // IPC Adapters
   TaskTemplateIpcAdapter,
   createTaskTemplateIpcAdapter,
   TaskInstanceIpcAdapter,
@@ -69,12 +84,20 @@ export {
 // Schedule Module
 // ============================================================
 export {
+  // Container
+  ScheduleContainer,
+  ScheduleDependencyKeys,
+  type IScheduleTaskRepository,
+  type IScheduleEventRepository,
+  // Ports
   type IScheduleTaskApiClient,
   type IScheduleEventApiClient,
+  // HTTP Adapters
   ScheduleTaskHttpAdapter,
   createScheduleTaskHttpAdapter,
   ScheduleEventHttpAdapter,
   createScheduleEventHttpAdapter,
+  // IPC Adapters
   ScheduleTaskIpcAdapter,
   createScheduleTaskIpcAdapter,
   ScheduleEventIpcAdapter,
@@ -85,11 +108,18 @@ export {
 // Reminder Module
 // ============================================================
 export {
+  // Container
+  ReminderContainer,
+  ReminderDependencyKeys,
+  type IReminderRepository,
+  // Ports
   type IReminderApiClient,
   type ReminderTemplatesResponse,
   type ReminderGroupsResponse,
+  // HTTP Adapters
   ReminderHttpAdapter,
   createReminderHttpAdapter,
+  // IPC Adapters
   ReminderIpcAdapter,
   createReminderIpcAdapter,
 } from './reminder';
@@ -98,9 +128,16 @@ export {
 // Account Module
 // ============================================================
 export {
+  // Container
+  AccountContainer,
+  AccountDependencyKeys,
+  type IAccountRepository,
+  // Ports
   type IAccountApiClient,
+  // HTTP Adapters
   AccountHttpAdapter,
   createAccountHttpAdapter,
+  // IPC Adapters
   AccountIpcAdapter,
   createAccountIpcAdapter,
 } from './account';
@@ -109,10 +146,17 @@ export {
 // Authentication Module
 // ============================================================
 export {
+  // Container
+  AuthContainer,
+  AuthDependencyKeys,
+  type IAuthTokenStorage,
+  // Ports
   type IAuthApiClient,
   type RegisterResponse,
+  // HTTP Adapters
   AuthHttpAdapter,
   createAuthHttpAdapter,
+  // IPC Adapters
   AuthIpcAdapter,
   createAuthIpcAdapter,
 } from './authentication';
@@ -121,13 +165,20 @@ export {
 // Notification Module
 // ============================================================
 export {
+  // Container
+  NotificationContainer,
+  NotificationDependencyKeys,
+  type INotificationRepository,
+  // Ports
   type INotificationApiClient,
   type CreateNotificationRequest,
   type QueryNotificationsRequest,
   type NotificationListResponse,
   type UnreadCountResponse,
+  // HTTP Adapters
   NotificationHttpAdapter,
   createNotificationHttpAdapter,
+  // IPC Adapters
   NotificationIpcAdapter,
   createNotificationIpcAdapter,
 } from './notification';
@@ -151,18 +202,9 @@ export {
 // Dependency Injection (DI)
 // ============================================================
 export {
-  // Core Container
+  // Core DI utilities
   DIContainer,
-  DependencyKeys,
-  type DependencyKey,
-  // Module Containers
-  GoalContainer,
-  TaskContainer,
-  ScheduleContainer,
-  ReminderContainer,
-  AccountContainer,
-  AuthenticationContainer,
-  NotificationContainer,
+  ModuleContainerBase,
   // Composition Roots
   configureWebDependencies,
   configureDesktopDependencies,

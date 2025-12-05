@@ -27,7 +27,7 @@ export class GetInstancesByDateRange {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): GetInstancesByDateRange {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     GetInstancesByDateRange.instance = new GetInstancesByDateRange(client);
     return GetInstancesByDateRange.instance;
   }

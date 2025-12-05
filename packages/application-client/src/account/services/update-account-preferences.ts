@@ -29,7 +29,7 @@ export class UpdateAccountPreferences {
    */
   static createInstance(apiClient?: IAccountApiClient): UpdateAccountPreferences {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     UpdateAccountPreferences.instance = new UpdateAccountPreferences(client);
     return UpdateAccountPreferences.instance;
   }

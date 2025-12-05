@@ -32,7 +32,7 @@ export class CreateGoalRecord {
    */
   static createInstance(apiClient?: IGoalApiClient): CreateGoalRecord {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     CreateGoalRecord.instance = new CreateGoalRecord(client);
     return CreateGoalRecord.instance;
   }

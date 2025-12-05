@@ -31,7 +31,7 @@ export class DeleteGoalRecord {
    */
   static createInstance(apiClient?: IGoalApiClient): DeleteGoalRecord {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     DeleteGoalRecord.instance = new DeleteGoalRecord(client);
     return DeleteGoalRecord.instance;
   }

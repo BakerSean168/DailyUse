@@ -23,7 +23,7 @@ export class CompleteTaskInstance {
    */
   static createInstance(apiClient?: ITaskInstanceApiClient): CompleteTaskInstance {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskInstanceApiClient();
+    const client = apiClient || container.getInstanceApiClient();
     CompleteTaskInstance.instance = new CompleteTaskInstance(client);
     return CompleteTaskInstance.instance;
   }

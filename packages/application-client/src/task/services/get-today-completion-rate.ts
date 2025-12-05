@@ -20,7 +20,7 @@ export class GetTodayCompletionRate {
    */
   static createInstance(apiClient?: ITaskStatisticsApiClient): GetTodayCompletionRate {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskStatisticsApiClient();
+    const client = apiClient || container.getStatisticsApiClient();
     GetTodayCompletionRate.instance = new GetTodayCompletionRate(client);
     return GetTodayCompletionRate.instance;
   }

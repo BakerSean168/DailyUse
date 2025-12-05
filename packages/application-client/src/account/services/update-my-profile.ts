@@ -26,7 +26,7 @@ export class UpdateMyProfile {
    */
   static createInstance(apiClient?: IAccountApiClient): UpdateMyProfile {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     UpdateMyProfile.instance = new UpdateMyProfile(client);
     return UpdateMyProfile.instance;
   }

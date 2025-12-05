@@ -7,31 +7,26 @@
 
 import type { ElectronAPI } from '../../shared';
 import {
+  GoalContainer,
   GoalIpcAdapter,
   GoalFolderIpcAdapter,
 } from '../../goal';
 import {
+  TaskContainer,
   TaskTemplateIpcAdapter,
   TaskInstanceIpcAdapter,
   TaskDependencyIpcAdapter,
   TaskStatisticsIpcAdapter,
 } from '../../task';
 import {
+  ScheduleContainer,
   ScheduleTaskIpcAdapter,
   ScheduleEventIpcAdapter,
 } from '../../schedule';
-import { ReminderIpcAdapter } from '../../reminder';
-import { AccountIpcAdapter } from '../../account';
-import { AuthIpcAdapter } from '../../authentication';
-import { NotificationIpcAdapter } from '../../notification';
-
-import { GoalContainer } from '../containers/GoalContainer';
-import { TaskContainer } from '../containers/TaskContainer';
-import { ScheduleContainer } from '../containers/ScheduleContainer';
-import { ReminderContainer } from '../containers/ReminderContainer';
-import { AccountContainer } from '../containers/AccountContainer';
-import { AuthenticationContainer } from '../containers/AuthenticationContainer';
-import { NotificationContainer } from '../containers/NotificationContainer';
+import { ReminderContainer, ReminderIpcAdapter } from '../../reminder';
+import { AccountContainer, AccountIpcAdapter } from '../../account';
+import { AuthContainer, AuthIpcAdapter } from '../../authentication';
+import { NotificationContainer, NotificationIpcAdapter } from '../../notification';
 
 /**
  * 配置 Desktop 环境的依赖
@@ -40,35 +35,35 @@ import { NotificationContainer } from '../containers/NotificationContainer';
  */
 export function configureDesktopDependencies(electronApi: ElectronAPI): void {
   // Goal Module
-  const goalContainer = GoalContainer.getInstance();
-  goalContainer.registerGoalApiClient(new GoalIpcAdapter(electronApi));
-  goalContainer.registerGoalFolderApiClient(new GoalFolderIpcAdapter(electronApi));
+  GoalContainer.getInstance()
+    .registerApiClient(new GoalIpcAdapter(electronApi))
+    .registerFolderApiClient(new GoalFolderIpcAdapter(electronApi));
 
   // Task Module
-  const taskContainer = TaskContainer.getInstance();
-  taskContainer.registerTaskTemplateApiClient(new TaskTemplateIpcAdapter(electronApi));
-  taskContainer.registerTaskInstanceApiClient(new TaskInstanceIpcAdapter(electronApi));
-  taskContainer.registerTaskDependencyApiClient(new TaskDependencyIpcAdapter(electronApi));
-  taskContainer.registerTaskStatisticsApiClient(new TaskStatisticsIpcAdapter(electronApi));
+  TaskContainer.getInstance()
+    .registerTemplateApiClient(new TaskTemplateIpcAdapter(electronApi))
+    .registerInstanceApiClient(new TaskInstanceIpcAdapter(electronApi))
+    .registerDependencyApiClient(new TaskDependencyIpcAdapter(electronApi))
+    .registerStatisticsApiClient(new TaskStatisticsIpcAdapter(electronApi));
 
   // Schedule Module
-  const scheduleContainer = ScheduleContainer.getInstance();
-  scheduleContainer.registerScheduleTaskApiClient(new ScheduleTaskIpcAdapter(electronApi));
-  scheduleContainer.registerScheduleEventApiClient(new ScheduleEventIpcAdapter(electronApi));
+  ScheduleContainer.getInstance()
+    .registerTaskApiClient(new ScheduleTaskIpcAdapter(electronApi))
+    .registerEventApiClient(new ScheduleEventIpcAdapter(electronApi));
 
   // Reminder Module
-  const reminderContainer = ReminderContainer.getInstance();
-  reminderContainer.registerReminderApiClient(new ReminderIpcAdapter(electronApi));
+  ReminderContainer.getInstance()
+    .registerApiClient(new ReminderIpcAdapter(electronApi));
 
   // Account Module
-  const accountContainer = AccountContainer.getInstance();
-  accountContainer.registerAccountApiClient(new AccountIpcAdapter(electronApi));
+  AccountContainer.getInstance()
+    .registerApiClient(new AccountIpcAdapter(electronApi));
 
   // Authentication Module
-  const authContainer = AuthenticationContainer.getInstance();
-  authContainer.registerAuthApiClient(new AuthIpcAdapter(electronApi));
+  AuthContainer.getInstance()
+    .registerApiClient(new AuthIpcAdapter(electronApi));
 
   // Notification Module
-  const notificationContainer = NotificationContainer.getInstance();
-  notificationContainer.registerNotificationApiClient(new NotificationIpcAdapter(electronApi));
+  NotificationContainer.getInstance()
+    .registerApiClient(new NotificationIpcAdapter(electronApi));
 }

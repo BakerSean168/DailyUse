@@ -6,7 +6,7 @@
 
 import type { CreateApiKeyRequest, CreateApiKeyResponseDTO } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface CreateApiKeyInput extends CreateApiKeyRequest {}
 
@@ -22,8 +22,8 @@ export class CreateApiKey {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): CreateApiKey {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     CreateApiKey.instance = new CreateApiKey(client);
     return CreateApiKey.instance;
   }

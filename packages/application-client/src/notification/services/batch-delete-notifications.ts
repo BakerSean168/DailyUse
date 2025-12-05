@@ -28,7 +28,7 @@ export class BatchDeleteNotifications {
    */
   static createInstance(apiClient?: INotificationApiClient): BatchDeleteNotifications {
     const container = NotificationContainer.getInstance();
-    const client = apiClient || container.getNotificationApiClient();
+    const client = apiClient || container.getApiClient();
     BatchDeleteNotifications.instance = new BatchDeleteNotifications(client);
     return BatchDeleteNotifications.instance;
   }

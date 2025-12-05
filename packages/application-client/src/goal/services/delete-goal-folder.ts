@@ -20,7 +20,7 @@ export class DeleteGoalFolder {
    */
   static createInstance(apiClient?: IGoalFolderApiClient): DeleteGoalFolder {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalFolderApiClient();
+    const client = apiClient || container.getFolderApiClient();
     DeleteGoalFolder.instance = new DeleteGoalFolder(client);
     return DeleteGoalFolder.instance;
   }

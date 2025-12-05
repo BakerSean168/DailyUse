@@ -4,6 +4,13 @@
  * Ports and Adapters for Reminder module communication.
  */
 
+// Container
+export {
+  ReminderContainer,
+  ReminderDependencyKeys,
+  type IReminderRepository,
+} from './reminder.container';
+
 // Ports (Interfaces)
 export {
   type IReminderApiClient,

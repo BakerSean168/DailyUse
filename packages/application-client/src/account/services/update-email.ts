@@ -29,7 +29,7 @@ export class UpdateEmail {
    */
   static createInstance(apiClient?: IAccountApiClient): UpdateEmail {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     UpdateEmail.instance = new UpdateEmail(client);
     return UpdateEmail.instance;
   }

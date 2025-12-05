@@ -7,31 +7,26 @@
 
 import type { IHttpClient } from '../../shared';
 import {
+  GoalContainer,
   GoalHttpAdapter,
   GoalFolderHttpAdapter,
 } from '../../goal';
 import {
+  TaskContainer,
   TaskTemplateHttpAdapter,
   TaskInstanceHttpAdapter,
   TaskDependencyHttpAdapter,
   TaskStatisticsHttpAdapter,
 } from '../../task';
 import {
+  ScheduleContainer,
   ScheduleTaskHttpAdapter,
   ScheduleEventHttpAdapter,
 } from '../../schedule';
-import { ReminderHttpAdapter } from '../../reminder';
-import { AccountHttpAdapter } from '../../account';
-import { AuthHttpAdapter } from '../../authentication';
-import { NotificationHttpAdapter } from '../../notification';
-
-import { GoalContainer } from '../containers/GoalContainer';
-import { TaskContainer } from '../containers/TaskContainer';
-import { ScheduleContainer } from '../containers/ScheduleContainer';
-import { ReminderContainer } from '../containers/ReminderContainer';
-import { AccountContainer } from '../containers/AccountContainer';
-import { AuthenticationContainer } from '../containers/AuthenticationContainer';
-import { NotificationContainer } from '../containers/NotificationContainer';
+import { ReminderContainer, ReminderHttpAdapter } from '../../reminder';
+import { AccountContainer, AccountHttpAdapter } from '../../account';
+import { AuthContainer, AuthHttpAdapter } from '../../authentication';
+import { NotificationContainer, NotificationHttpAdapter } from '../../notification';
 
 /**
  * 配置 Web 环境的依赖
@@ -40,35 +35,35 @@ import { NotificationContainer } from '../containers/NotificationContainer';
  */
 export function configureWebDependencies(httpClient: IHttpClient): void {
   // Goal Module
-  const goalContainer = GoalContainer.getInstance();
-  goalContainer.registerGoalApiClient(new GoalHttpAdapter(httpClient));
-  goalContainer.registerGoalFolderApiClient(new GoalFolderHttpAdapter(httpClient));
+  GoalContainer.getInstance()
+    .registerApiClient(new GoalHttpAdapter(httpClient))
+    .registerFolderApiClient(new GoalFolderHttpAdapter(httpClient));
 
   // Task Module
-  const taskContainer = TaskContainer.getInstance();
-  taskContainer.registerTaskTemplateApiClient(new TaskTemplateHttpAdapter(httpClient));
-  taskContainer.registerTaskInstanceApiClient(new TaskInstanceHttpAdapter(httpClient));
-  taskContainer.registerTaskDependencyApiClient(new TaskDependencyHttpAdapter(httpClient));
-  taskContainer.registerTaskStatisticsApiClient(new TaskStatisticsHttpAdapter(httpClient));
+  TaskContainer.getInstance()
+    .registerTemplateApiClient(new TaskTemplateHttpAdapter(httpClient))
+    .registerInstanceApiClient(new TaskInstanceHttpAdapter(httpClient))
+    .registerDependencyApiClient(new TaskDependencyHttpAdapter(httpClient))
+    .registerStatisticsApiClient(new TaskStatisticsHttpAdapter(httpClient));
 
   // Schedule Module
-  const scheduleContainer = ScheduleContainer.getInstance();
-  scheduleContainer.registerScheduleTaskApiClient(new ScheduleTaskHttpAdapter(httpClient));
-  scheduleContainer.registerScheduleEventApiClient(new ScheduleEventHttpAdapter(httpClient));
+  ScheduleContainer.getInstance()
+    .registerTaskApiClient(new ScheduleTaskHttpAdapter(httpClient))
+    .registerEventApiClient(new ScheduleEventHttpAdapter(httpClient));
 
   // Reminder Module
-  const reminderContainer = ReminderContainer.getInstance();
-  reminderContainer.registerReminderApiClient(new ReminderHttpAdapter(httpClient));
+  ReminderContainer.getInstance()
+    .registerApiClient(new ReminderHttpAdapter(httpClient));
 
   // Account Module
-  const accountContainer = AccountContainer.getInstance();
-  accountContainer.registerAccountApiClient(new AccountHttpAdapter(httpClient));
+  AccountContainer.getInstance()
+    .registerApiClient(new AccountHttpAdapter(httpClient));
 
   // Authentication Module
-  const authContainer = AuthenticationContainer.getInstance();
-  authContainer.registerAuthApiClient(new AuthHttpAdapter(httpClient));
+  AuthContainer.getInstance()
+    .registerApiClient(new AuthHttpAdapter(httpClient));
 
   // Notification Module
-  const notificationContainer = NotificationContainer.getInstance();
-  notificationContainer.registerNotificationApiClient(new NotificationHttpAdapter(httpClient));
+  NotificationContainer.getInstance()
+    .registerApiClient(new NotificationHttpAdapter(httpClient));
 }

@@ -27,7 +27,7 @@ export class DeleteNotification {
    */
   static createInstance(apiClient?: INotificationApiClient): DeleteNotification {
     const container = NotificationContainer.getInstance();
-    const client = apiClient || container.getNotificationApiClient();
+    const client = apiClient || container.getApiClient();
     DeleteNotification.instance = new DeleteNotification(client);
     return DeleteNotification.instance;
   }

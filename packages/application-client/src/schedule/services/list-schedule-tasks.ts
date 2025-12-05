@@ -21,7 +21,7 @@ export class ListScheduleTasks {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): ListScheduleTasks {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     ListScheduleTasks.instance = new ListScheduleTasks(client);
     return ListScheduleTasks.instance;
   }

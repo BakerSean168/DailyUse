@@ -30,7 +30,7 @@ export class DeleteKeyResult {
    */
   static createInstance(apiClient?: IGoalApiClient): DeleteKeyResult {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     DeleteKeyResult.instance = new DeleteKeyResult(client);
     return DeleteKeyResult.instance;
   }

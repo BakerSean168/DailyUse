@@ -23,7 +23,7 @@ export class StartTaskInstance {
    */
   static createInstance(apiClient?: ITaskInstanceApiClient): StartTaskInstance {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskInstanceApiClient();
+    const client = apiClient || container.getInstanceApiClient();
     StartTaskInstance.instance = new StartTaskInstance(client);
     return StartTaskInstance.instance;
   }

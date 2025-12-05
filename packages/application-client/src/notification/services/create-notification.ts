@@ -29,7 +29,7 @@ export class CreateNotification {
    */
   static createInstance(apiClient?: INotificationApiClient): CreateNotification {
     const container = NotificationContainer.getInstance();
-    const client = apiClient || container.getNotificationApiClient();
+    const client = apiClient || container.getApiClient();
     CreateNotification.instance = new CreateNotification(client);
     return CreateNotification.instance;
   }

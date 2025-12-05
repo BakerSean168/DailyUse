@@ -23,7 +23,7 @@ export class ToggleTemplateEnabled {
    */
   static createInstance(apiClient?: IReminderApiClient): ToggleTemplateEnabled {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     ToggleTemplateEnabled.instance = new ToggleTemplateEnabled(client);
     return ToggleTemplateEnabled.instance;
   }

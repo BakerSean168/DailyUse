@@ -45,7 +45,7 @@ export class GenerateKeyResults {
    */
   static createInstance(apiClient?: IGoalApiClient): GenerateKeyResults {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     GenerateKeyResults.instance = new GenerateKeyResults(client);
     return GenerateKeyResults.instance;
   }

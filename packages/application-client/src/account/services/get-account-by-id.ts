@@ -21,7 +21,7 @@ export class GetAccountById {
    */
   static createInstance(apiClient?: IAccountApiClient): GetAccountById {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     GetAccountById.instance = new GetAccountById(client);
     return GetAccountById.instance;
   }

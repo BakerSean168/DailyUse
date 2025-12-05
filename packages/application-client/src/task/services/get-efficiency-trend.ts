@@ -22,7 +22,7 @@ export class GetEfficiencyTrend {
    */
   static createInstance(apiClient?: ITaskStatisticsApiClient): GetEfficiencyTrend {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskStatisticsApiClient();
+    const client = apiClient || container.getStatisticsApiClient();
     GetEfficiencyTrend.instance = new GetEfficiencyTrend(client);
     return GetEfficiencyTrend.instance;
   }

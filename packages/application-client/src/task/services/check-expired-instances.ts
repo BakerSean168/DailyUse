@@ -28,7 +28,7 @@ export class CheckExpiredInstances {
    */
   static createInstance(apiClient?: ITaskInstanceApiClient): CheckExpiredInstances {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskInstanceApiClient();
+    const client = apiClient || container.getInstanceApiClient();
     CheckExpiredInstances.instance = new CheckExpiredInstances(client);
     return CheckExpiredInstances.instance;
   }

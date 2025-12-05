@@ -21,7 +21,7 @@ export class GetAccountStats {
    */
   static createInstance(apiClient?: IAccountApiClient): GetAccountStats {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     GetAccountStats.instance = new GetAccountStats(client);
     return GetAccountStats.instance;
   }

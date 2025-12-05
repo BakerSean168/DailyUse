@@ -29,7 +29,7 @@ export class FindNotifications {
    */
   static createInstance(apiClient?: INotificationApiClient): FindNotifications {
     const container = NotificationContainer.getInstance();
-    const client = apiClient || container.getNotificationApiClient();
+    const client = apiClient || container.getApiClient();
     FindNotifications.instance = new FindNotifications(client);
     return FindNotifications.instance;
   }

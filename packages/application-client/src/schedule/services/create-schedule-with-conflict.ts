@@ -40,7 +40,7 @@ export class CreateScheduleWithConflict {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): CreateScheduleWithConflict {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     CreateScheduleWithConflict.instance = new CreateScheduleWithConflict(client);
     return CreateScheduleWithConflict.instance;
   }

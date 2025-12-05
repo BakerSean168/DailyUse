@@ -22,7 +22,7 @@ export class DeleteTaskInstance {
    */
   static createInstance(apiClient?: ITaskInstanceApiClient): DeleteTaskInstance {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskInstanceApiClient();
+    const client = apiClient || container.getInstanceApiClient();
     DeleteTaskInstance.instance = new DeleteTaskInstance(client);
     return DeleteTaskInstance.instance;
   }

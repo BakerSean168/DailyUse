@@ -30,7 +30,7 @@ export class UpdateGoalFolder {
    */
   static createInstance(apiClient?: IGoalFolderApiClient): UpdateGoalFolder {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalFolderApiClient();
+    const client = apiClient || container.getFolderApiClient();
     UpdateGoalFolder.instance = new UpdateGoalFolder(client);
     return UpdateGoalFolder.instance;
   }

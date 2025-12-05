@@ -21,7 +21,7 @@ export class GetReminderTemplate {
    */
   static createInstance(apiClient?: IReminderApiClient): GetReminderTemplate {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     GetReminderTemplate.instance = new GetReminderTemplate(client);
     return GetReminderTemplate.instance;
   }

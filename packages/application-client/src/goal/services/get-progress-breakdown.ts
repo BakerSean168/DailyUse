@@ -21,7 +21,7 @@ export class GetProgressBreakdown {
    */
   static createInstance(apiClient?: IGoalApiClient): GetProgressBreakdown {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     GetProgressBreakdown.instance = new GetProgressBreakdown(client);
     return GetProgressBreakdown.instance;
   }

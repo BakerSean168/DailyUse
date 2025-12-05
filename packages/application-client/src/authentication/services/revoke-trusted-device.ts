@@ -6,7 +6,7 @@
 
 import type { RevokeTrustedDeviceRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface RevokeTrustedDeviceInput extends RevokeTrustedDeviceRequest {}
 
@@ -22,8 +22,8 @@ export class RevokeTrustedDevice {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): RevokeTrustedDevice {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     RevokeTrustedDevice.instance = new RevokeTrustedDevice(client);
     return RevokeTrustedDevice.instance;
   }

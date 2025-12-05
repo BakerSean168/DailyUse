@@ -30,7 +30,7 @@ export class GetGoalAggregateView {
    */
   static createInstance(apiClient?: IGoalApiClient): GetGoalAggregateView {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     GetGoalAggregateView.instance = new GetGoalAggregateView(client);
     return GetGoalAggregateView.instance;
   }

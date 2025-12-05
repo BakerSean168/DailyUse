@@ -21,7 +21,7 @@ export class ArchiveTaskTemplate {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): ArchiveTaskTemplate {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     ArchiveTaskTemplate.instance = new ArchiveTaskTemplate(client);
     return ArchiveTaskTemplate.instance;
   }

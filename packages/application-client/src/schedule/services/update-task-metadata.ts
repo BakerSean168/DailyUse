@@ -34,7 +34,7 @@ export class UpdateTaskMetadata {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): UpdateTaskMetadata {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     UpdateTaskMetadata.instance = new UpdateTaskMetadata(client);
     return UpdateTaskMetadata.instance;
   }

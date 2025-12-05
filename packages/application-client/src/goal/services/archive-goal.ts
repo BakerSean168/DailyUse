@@ -21,7 +21,7 @@ export class ArchiveGoal {
    */
   static createInstance(apiClient?: IGoalApiClient): ArchiveGoal {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     ArchiveGoal.instance = new ArchiveGoal(client);
     return ArchiveGoal.instance;
   }

@@ -21,7 +21,7 @@ export class GetGoalFolder {
    */
   static createInstance(apiClient?: IGoalFolderApiClient): GetGoalFolder {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalFolderApiClient();
+    const client = apiClient || container.getFolderApiClient();
     GetGoalFolder.instance = new GetGoalFolder(client);
     return GetGoalFolder.instance;
   }

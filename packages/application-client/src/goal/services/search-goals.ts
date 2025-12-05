@@ -45,7 +45,7 @@ export class SearchGoals {
    */
   static createInstance(apiClient?: IGoalApiClient): SearchGoals {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     SearchGoals.instance = new SearchGoals(client);
     return SearchGoals.instance;
   }

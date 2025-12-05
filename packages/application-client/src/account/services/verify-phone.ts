@@ -29,7 +29,7 @@ export class VerifyPhone {
    */
   static createInstance(apiClient?: IAccountApiClient): VerifyPhone {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     VerifyPhone.instance = new VerifyPhone(client);
     return VerifyPhone.instance;
   }

@@ -6,7 +6,7 @@
 
 import type { LoginRequest, LoginResponseDTO } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface LoginInput extends LoginRequest {}
 
@@ -22,8 +22,8 @@ export class Login {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): Login {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     Login.instance = new Login(client);
     return Login.instance;
   }

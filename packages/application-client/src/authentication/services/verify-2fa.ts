@@ -6,7 +6,7 @@
 
 import type { Verify2FARequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface Verify2FAInput extends Verify2FARequest {}
 
@@ -22,8 +22,8 @@ export class Verify2FA {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): Verify2FA {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     Verify2FA.instance = new Verify2FA(client);
     return Verify2FA.instance;
   }

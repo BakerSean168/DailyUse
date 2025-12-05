@@ -29,7 +29,7 @@ export class SubscribePlan {
    */
   static createInstance(apiClient?: IAccountApiClient): SubscribePlan {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     SubscribePlan.instance = new SubscribePlan(client);
     return SubscribePlan.instance;
   }

@@ -20,7 +20,7 @@ export class GetWeekCompletionRate {
    */
   static createInstance(apiClient?: ITaskStatisticsApiClient): GetWeekCompletionRate {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskStatisticsApiClient();
+    const client = apiClient || container.getStatisticsApiClient();
     GetWeekCompletionRate.instance = new GetWeekCompletionRate(client);
     return GetWeekCompletionRate.instance;
   }

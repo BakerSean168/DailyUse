@@ -29,7 +29,7 @@ export class VerifyEmail {
    */
   static createInstance(apiClient?: IAccountApiClient): VerifyEmail {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     VerifyEmail.instance = new VerifyEmail(client);
     return VerifyEmail.instance;
   }

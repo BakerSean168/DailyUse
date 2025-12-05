@@ -22,7 +22,7 @@ export class DeleteReminderGroup {
    */
   static createInstance(apiClient?: IReminderApiClient): DeleteReminderGroup {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     DeleteReminderGroup.instance = new DeleteReminderGroup(client);
     return DeleteReminderGroup.instance;
   }

@@ -6,7 +6,7 @@
 
 import type { ForgotPasswordRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface ForgotPasswordInput extends ForgotPasswordRequest {}
 
@@ -22,8 +22,8 @@ export class ForgotPassword {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): ForgotPassword {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     ForgotPassword.instance = new ForgotPassword(client);
     return ForgotPassword.instance;
   }

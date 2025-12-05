@@ -4,6 +4,13 @@
  * Ports and Adapters for Goal module communication.
  */
 
+// Container
+export {
+  GoalContainer,
+  GoalDependencyKeys,
+  type IGoalRepository,
+} from './goal.container';
+
 // Ports (Interfaces)
 export { type IGoalApiClient } from './ports/goal-api-client.port';
 export { type IGoalFolderApiClient } from './ports/goal-folder-api-client.port';

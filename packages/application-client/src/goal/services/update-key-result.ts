@@ -32,7 +32,7 @@ export class UpdateKeyResult {
    */
   static createInstance(apiClient?: IGoalApiClient): UpdateKeyResult {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     UpdateKeyResult.instance = new UpdateKeyResult(client);
     return UpdateKeyResult.instance;
   }

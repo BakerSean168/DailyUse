@@ -21,7 +21,7 @@ export class GetScheduleStatistics {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): GetScheduleStatistics {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     GetScheduleStatistics.instance = new GetScheduleStatistics(client);
     return GetScheduleStatistics.instance;
   }

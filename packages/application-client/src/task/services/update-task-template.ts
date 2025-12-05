@@ -32,7 +32,7 @@ export class UpdateTaskTemplate {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): UpdateTaskTemplate {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     UpdateTaskTemplate.instance = new UpdateTaskTemplate(client);
     return UpdateTaskTemplate.instance;
   }

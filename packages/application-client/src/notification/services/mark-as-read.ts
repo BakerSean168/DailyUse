@@ -21,7 +21,7 @@ export class MarkAsRead {
    */
   static createInstance(apiClient?: INotificationApiClient): MarkAsRead {
     const container = NotificationContainer.getInstance();
-    const client = apiClient || container.getNotificationApiClient();
+    const client = apiClient || container.getApiClient();
     MarkAsRead.instance = new MarkAsRead(client);
     return MarkAsRead.instance;
   }

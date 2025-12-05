@@ -22,7 +22,7 @@ export class DeleteReminderTemplate {
    */
   static createInstance(apiClient?: IReminderApiClient): DeleteReminderTemplate {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     DeleteReminderTemplate.instance = new DeleteReminderTemplate(client);
     return DeleteReminderTemplate.instance;
   }

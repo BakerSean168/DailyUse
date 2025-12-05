@@ -21,7 +21,7 @@ export class GetMyProfile {
    */
   static createInstance(apiClient?: IAccountApiClient): GetMyProfile {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     GetMyProfile.instance = new GetMyProfile(client);
     return GetMyProfile.instance;
   }

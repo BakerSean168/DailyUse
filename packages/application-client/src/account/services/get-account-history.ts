@@ -32,7 +32,7 @@ export class GetAccountHistory {
    */
   static createInstance(apiClient?: IAccountApiClient): GetAccountHistory {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     GetAccountHistory.instance = new GetAccountHistory(client);
     return GetAccountHistory.instance;
   }

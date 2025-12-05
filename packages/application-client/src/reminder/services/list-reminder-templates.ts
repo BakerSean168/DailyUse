@@ -40,7 +40,7 @@ export class ListReminderTemplates {
    */
   static createInstance(apiClient?: IReminderApiClient): ListReminderTemplates {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     ListReminderTemplates.instance = new ListReminderTemplates(client);
     return ListReminderTemplates.instance;
   }

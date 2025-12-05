@@ -21,7 +21,7 @@ export class GetGoal {
    */
   static createInstance(apiClient?: IGoalApiClient): GetGoal {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     GetGoal.instance = new GetGoal(client);
     return GetGoal.instance;
   }

@@ -29,7 +29,7 @@ export class CreateReminderGroup {
    */
   static createInstance(apiClient?: IReminderApiClient): CreateReminderGroup {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     CreateReminderGroup.instance = new CreateReminderGroup(client);
     return CreateReminderGroup.instance;
   }

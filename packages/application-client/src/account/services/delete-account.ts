@@ -20,7 +20,7 @@ export class DeleteAccount {
    */
   static createInstance(apiClient?: IAccountApiClient): DeleteAccount {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     DeleteAccount.instance = new DeleteAccount(client);
     return DeleteAccount.instance;
   }

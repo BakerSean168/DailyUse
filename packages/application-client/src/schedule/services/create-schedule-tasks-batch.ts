@@ -31,7 +31,7 @@ export class CreateScheduleTasksBatch {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): CreateScheduleTasksBatch {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     CreateScheduleTasksBatch.instance = new CreateScheduleTasksBatch(client);
     return CreateScheduleTasksBatch.instance;
   }

@@ -23,7 +23,7 @@ export class PauseTaskTemplate {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): PauseTaskTemplate {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     PauseTaskTemplate.instance = new PauseTaskTemplate(client);
     return PauseTaskTemplate.instance;
   }

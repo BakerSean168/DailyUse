@@ -29,7 +29,7 @@ export class GenerateTaskInstances {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): GenerateTaskInstances {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     GenerateTaskInstances.instance = new GenerateTaskInstances(client);
     return GenerateTaskInstances.instance;
   }

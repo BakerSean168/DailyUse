@@ -21,7 +21,7 @@ export class ActivateAccount {
    */
   static createInstance(apiClient?: IAccountApiClient): ActivateAccount {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     ActivateAccount.instance = new ActivateAccount(client);
     return ActivateAccount.instance;
   }

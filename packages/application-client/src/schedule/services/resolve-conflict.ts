@@ -49,7 +49,7 @@ export class ResolveConflict {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): ResolveConflict {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     ResolveConflict.instance = new ResolveConflict(client);
     return ResolveConflict.instance;
   }

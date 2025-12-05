@@ -23,7 +23,7 @@ export class ToggleReminderGroupStatus {
    */
   static createInstance(apiClient?: IReminderApiClient): ToggleReminderGroupStatus {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     ToggleReminderGroupStatus.instance = new ToggleReminderGroupStatus(client);
     return ToggleReminderGroupStatus.instance;
   }

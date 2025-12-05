@@ -23,7 +23,7 @@ export class UnbindTaskFromGoal {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): UnbindTaskFromGoal {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     UnbindTaskFromGoal.instance = new UnbindTaskFromGoal(client);
     return UnbindTaskFromGoal.instance;
   }

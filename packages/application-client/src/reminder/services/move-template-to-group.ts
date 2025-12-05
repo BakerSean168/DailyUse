@@ -31,7 +31,7 @@ export class MoveTemplateToGroup {
    */
   static createInstance(apiClient?: IReminderApiClient): MoveTemplateToGroup {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     MoveTemplateToGroup.instance = new MoveTemplateToGroup(client);
     return MoveTemplateToGroup.instance;
   }

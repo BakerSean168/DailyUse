@@ -4,6 +4,13 @@
  * Ports and Adapters for Account module communication.
  */
 
+// Container
+export {
+  AccountContainer,
+  AccountDependencyKeys,
+  type IAccountRepository,
+} from './account.container';
+
 // Ports (Interfaces)
 export { type IAccountApiClient } from './ports/account-api-client.port';
 

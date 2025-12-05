@@ -29,7 +29,7 @@ export class CancelSubscription {
    */
   static createInstance(apiClient?: IAccountApiClient): CancelSubscription {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     CancelSubscription.instance = new CancelSubscription(client);
     return CancelSubscription.instance;
   }

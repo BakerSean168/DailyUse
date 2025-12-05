@@ -28,7 +28,7 @@ export class CreateScheduleEvent {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): CreateScheduleEvent {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     CreateScheduleEvent.instance = new CreateScheduleEvent(client);
     return CreateScheduleEvent.instance;
   }

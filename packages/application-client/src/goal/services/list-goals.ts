@@ -46,7 +46,7 @@ export class ListGoals {
    */
   static createInstance(apiClient?: IGoalApiClient): ListGoals {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     ListGoals.instance = new ListGoals(client);
     return ListGoals.instance;
   }

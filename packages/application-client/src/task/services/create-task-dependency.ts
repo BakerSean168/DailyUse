@@ -31,7 +31,7 @@ export class CreateTaskDependency {
    */
   static createInstance(apiClient?: ITaskDependencyApiClient): CreateTaskDependency {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskDependencyApiClient();
+    const client = apiClient || container.getDependencyApiClient();
     CreateTaskDependency.instance = new CreateTaskDependency(client);
     return CreateTaskDependency.instance;
   }

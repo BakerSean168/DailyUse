@@ -30,7 +30,7 @@ export class CompleteScheduleTask {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): CompleteScheduleTask {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     CompleteScheduleTask.instance = new CompleteScheduleTask(client);
     return CompleteScheduleTask.instance;
   }

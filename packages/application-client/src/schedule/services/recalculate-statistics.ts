@@ -23,7 +23,7 @@ export class RecalculateStatistics {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): RecalculateStatistics {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     RecalculateStatistics.instance = new RecalculateStatistics(client);
     return RecalculateStatistics.instance;
   }

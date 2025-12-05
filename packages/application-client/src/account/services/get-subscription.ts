@@ -21,7 +21,7 @@ export class GetSubscription {
    */
   static createInstance(apiClient?: IAccountApiClient): GetSubscription {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     GetSubscription.instance = new GetSubscription(client);
     return GetSubscription.instance;
   }

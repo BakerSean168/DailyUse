@@ -21,7 +21,7 @@ export class GetScheduleConflicts {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): GetScheduleConflicts {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     GetScheduleConflicts.instance = new GetScheduleConflicts(client);
     return GetScheduleConflicts.instance;
   }

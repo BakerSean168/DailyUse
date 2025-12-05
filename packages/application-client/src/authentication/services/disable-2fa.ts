@@ -6,7 +6,7 @@
 
 import type { Disable2FARequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface Disable2FAInput extends Disable2FARequest {}
 
@@ -22,8 +22,8 @@ export class Disable2FA {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): Disable2FA {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     Disable2FA.instance = new Disable2FA(client);
     return Disable2FA.instance;
   }

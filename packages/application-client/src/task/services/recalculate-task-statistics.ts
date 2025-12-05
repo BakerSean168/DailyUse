@@ -26,7 +26,7 @@ export class RecalculateTaskStatistics {
    */
   static createInstance(apiClient?: ITaskStatisticsApiClient): RecalculateTaskStatistics {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskStatisticsApiClient();
+    const client = apiClient || container.getStatisticsApiClient();
     RecalculateTaskStatistics.instance = new RecalculateTaskStatistics(client);
     return RecalculateTaskStatistics.instance;
   }

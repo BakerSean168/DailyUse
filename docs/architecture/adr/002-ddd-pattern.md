@@ -234,26 +234,338 @@ eventBus.publish<GoalCompletedEvent>({
 });
 ```
 
-### 包结构
+### 包结构（实际项目）
 
 ```
 packages/
-├── contracts/              # 类型契约（前后端共享）
-│   └── src/goal/
-│       ├── goal.types.ts
-│       ├── dto.types.ts
-│       └── events.types.ts
-├── domain-server/          # 服务端领域层
-│   └── src/goal/
+├── contracts/                    # 类型契约层（前后端共享）
+│   └── src/{module}/
+│       ├── entities/             # DTO 类型定义
+│       │   ├── {Entity}Server.ts # ServerDTO - 与数据库/API 对应
+│       │   └── {Entity}Client.ts # ClientDTO - 包含计算属性 + Interface
+│       ├── requests/             # API 请求类型
+│       └── responses/            # API 响应类型
+│
+├── domain-client/                # 客户端领域层
+│   └── src/{module}/
+│       ├── entities/             # 领域实体类
+│       ├── aggregates/           # 聚合根
+│       ├── value-objects/        # 值对象
+│       └── index.ts
+│
+├── domain-server/                # 服务端领域层
+│   └── src/{module}/
 │       ├── entities/
+│       ├── aggregates/
 │       ├── value-objects/
-│       ├── services/
-│       └── events/
-└── domain-client/          # 客户端领域层
-    └── src/goal/
-        ├── repositories/   # 仓储接口
-        ├── services/       # 领域服务
-        └── models/         # 领域模型
+│       └── services/             # 领域服务
+│
+├── application-client/           # 客户端应用层
+│   └── src/{module}/
+│       └── services/             # Use Cases (每个用例一个文件)
+│           ├── create-goal.ts
+│           ├── update-goal.ts
+│           ├── delete-goal.ts
+│           └── index.ts
+│
+├── application-server/           # 服务端应用层
+│   └── src/{module}/
+│       ├── services/             # Application Services
+│       └── {Module}Container.ts  # 依赖注入容器
+│
+├── infrastructure-client/        # 客户端基础设施层
+│   └── src/
+│       ├── {module}/
+│       │   ├── adapters/         # API 适配器实现
+│       │   │   ├── goal-http.adapter.ts
+│       │   │   └── goal-ipc.adapter.ts
+│       │   └── ports/            # 端口接口定义
+│       │       └── goal-api-client.port.ts
+│       ├── di/                   # 依赖注入
+│       │   ├── containers/       # DI 容器
+│       │   │   ├── DIContainer.ts
+│       │   │   └── {Module}Container.ts
+│       │   └── composition-roots/  # 组合根
+│       │       ├── web.composition-root.ts
+│       │       └── desktop.composition-root.ts
+│       └── shared/               # 共享基础设施
+│
+└── infrastructure-server/        # 服务端基础设施层
+    └── src/{module}/
+        ├── repositories/         # 仓储实现
+        └── adapters/             # 外部服务适配器
+```
+
+### 依赖方向（核心原则）
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        依赖规则                                  │
+│  外层可以依赖内层，内层不能依赖外层                                │
+│  Infrastructure → Application → Domain ← (依赖流向)              │
+└─────────────────────────────────────────────────────────────────┘
+
+┌──────────────────┐
+│   Presentation   │  apps/web, apps/api, apps/desktop
+│   (表示层)        │  ↓ 依赖
+├──────────────────┤
+│  Infrastructure  │  packages/infrastructure-*
+│   (基础设施层)    │  ↓ 依赖
+├──────────────────┤
+│   Application    │  packages/application-*
+│    (应用层)       │  ↓ 依赖
+├──────────────────┤
+│     Domain       │  packages/domain-*
+│    (领域层)       │  ↓ 依赖
+├──────────────────┤
+│    Contracts     │  packages/contracts
+│   (契约/类型)     │  (所有层都可依赖)
+└──────────────────┘
+```
+
+### 类型层次结构（三层 DTO 体系）
+
+```typescript
+// 1. ServerDTO - 与数据库/API 完全对应的纯数据
+// packages/contracts/src/goal/entities/GoalServer.ts
+export interface GoalServerDTO {
+  uuid: string;
+  title: string;
+  deadline: number;      // timestamp
+  status: GoalStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// 2. ClientDTO - 包含 UI 所需的计算属性
+// packages/contracts/src/goal/entities/GoalClient.ts
+export interface GoalClientDTO extends GoalServerDTO {
+  // 计算属性
+  isOverdue: boolean;
+  daysRemaining: number;
+  progressPercentage: number;
+}
+
+// 3. Interface - 实体的公共 API 契约（包含方法签名）
+export interface GoalClient extends GoalClientDTO {
+  // 业务方法
+  complete(): void;
+  pause(): void;
+  
+  // DTO 转换
+  toClientDTO(): GoalClientDTO;
+  toServerDTO(): GoalServerDTO;
+}
+
+// 4. Entity Class - 领域层实现
+// packages/domain-client/src/goal/entities/Goal.ts
+export class Goal implements GoalClient {
+  // 私有属性
+  private _uuid: string;
+  private _title: string;
+  // ...
+
+  // 静态工厂方法
+  static fromServerDTO(dto: GoalServerDTO): Goal { /* ... */ }
+  static fromClientDTO(dto: GoalClientDTO): Goal { /* ... */ }
+  
+  // 业务方法实现
+  complete(): void {
+    if (this._status === GoalStatus.COMPLETED) {
+      throw new DomainError('Goal is already completed');
+    }
+    this._status = GoalStatus.COMPLETED;
+  }
+}
+```
+
+### 依赖注入与 Container
+
+#### Container 属于 Infrastructure 层
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Infrastructure Layer                        │
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  DIContainer (核心容器)                               │    │
+│  │    ├─ register<T>(key, dependency)                   │    │
+│  │    ├─ resolve<T>(key): T                             │    │
+│  │    └─ has(key): boolean                              │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                           ↑                                  │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  ModuleContainer (模块级容器)                         │    │
+│  │    ├─ GoalContainer                                  │    │
+│  │    ├─ TaskContainer                                  │    │
+│  │    ├─ ScheduleContainer                              │    │
+│  │    └─ ...                                            │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                           ↑                                  │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  Composition Root (组合根)                            │    │
+│  │    ├─ web.composition-root.ts    → HTTP Adapters     │    │
+│  │    └─ desktop.composition-root.ts → IPC Adapters     │    │
+│  └─────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Container 管理内容
+
+| 类型 | 是否由 Container 管理 | 说明 |
+|------|----------------------|------|
+| **API Clients (Adapters)** | ✅ 是 | HTTP/IPC/WebSocket 适配器 |
+| **Repositories** | ✅ 是 | 数据持久化层实现 |
+| **Application Services** | ⚠️ 可选 | 大型项目推荐管理 |
+| **Domain Services** | ⚠️ 可选 | 跨聚合业务逻辑 |
+| **Entities/Value Objects** | ❌ 否 | 由工厂方法创建 |
+
+#### 实际代码示例
+
+```typescript
+// packages/infrastructure-client/src/di/containers/DIContainer.ts
+export class DIContainer {
+  private static instance: DIContainer;
+  private readonly dependencies = new Map<string, unknown>();
+
+  static getInstance(): DIContainer {
+    if (!DIContainer.instance) {
+      DIContainer.instance = new DIContainer();
+    }
+    return DIContainer.instance;
+  }
+
+  register<T>(key: string, dependency: T): void {
+    this.dependencies.set(key, dependency);
+  }
+
+  resolve<T>(key: string): T {
+    const dep = this.dependencies.get(key);
+    if (!dep) throw new Error(`Dependency not found: ${key}`);
+    return dep as T;
+  }
+}
+
+// packages/infrastructure-client/src/di/containers/GoalContainer.ts
+export class GoalContainer {
+  registerGoalApiClient(client: IGoalApiClient): void {
+    DIContainer.getInstance().register(DependencyKeys.GOAL_API_CLIENT, client);
+  }
+
+  getGoalApiClient(): IGoalApiClient {
+    return DIContainer.getInstance().resolve<IGoalApiClient>(
+      DependencyKeys.GOAL_API_CLIENT
+    );
+  }
+}
+
+// packages/infrastructure-client/src/di/composition-roots/web.composition-root.ts
+export function configureWebDependencies(httpClient: HttpClient): void {
+  const goalContainer = GoalContainer.getInstance();
+  goalContainer.registerGoalApiClient(new GoalHttpAdapter(httpClient));
+  
+  const taskContainer = TaskContainer.getInstance();
+  taskContainer.registerTaskApiClient(new TaskHttpAdapter(httpClient));
+  // ...
+}
+```
+
+### Application Service (Use Case) 写法
+
+#### 推荐模式：构造函数注入 + 静态工厂
+
+```typescript
+// packages/application-client/src/goal/services/create-goal.ts
+import type { IGoalApiClient } from '@dailyuse/infrastructure-client';
+import type { CreateGoalRequest } from '@dailyuse/contracts/goal';
+import { Goal } from '@dailyuse/domain-client/goal';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
+
+export class CreateGoal {
+  // 构造函数注入 - 便于测试
+  constructor(private readonly apiClient: IGoalApiClient) {}
+
+  // 静态工厂 - 从 Container 获取依赖
+  static fromContainer(container = GoalContainer.getInstance()): CreateGoal {
+    return new CreateGoal(container.getGoalApiClient());
+  }
+
+  // 执行用例
+  async execute(input: CreateGoalRequest): Promise<Goal> {
+    const goalData = await this.apiClient.createGoal(input);
+    return Goal.fromClientDTO(goalData);
+  }
+}
+
+// 便捷函数
+export const createGoal = (input: CreateGoalRequest): Promise<Goal> =>
+  CreateGoal.fromContainer().execute(input);
+```
+
+#### 为什么这样设计？
+
+| 特性 | 好处 |
+|------|------|
+| **构造函数注入** | 依赖显式声明，易于单元测试 |
+| **静态工厂方法** | 生产环境使用方便，自动获取依赖 |
+| **便捷函数导出** | 简化调用：`await createGoal({...})` |
+| **Use Case 分离** | 每个用例一个类，职责单一 |
+
+### Ports & Adapters (端口与适配器)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Application Core                        │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │                   Application Layer                    │  │
+│  │     CreateGoal ─────────────────────────────────────   │  │
+│  │         │                                          │   │  │
+│  │         ▼                                          │   │  │
+│  │   ┌──────────────┐                                 │   │  │
+│  │   │ Port (接口)   │  IGoalApiClient                │   │  │
+│  │   └──────────────┘                                 │   │  │
+│  └───────────────────────────────────────────────────────┘  │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ implements
+┌───────────────────────────▼─────────────────────────────────┐
+│                   Infrastructure Layer                       │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │                    Adapters (适配器)                     ││
+│  │  ┌──────────────────┐    ┌──────────────────┐          ││
+│  │  │ GoalHttpAdapter  │    │ GoalIpcAdapter   │          ││
+│  │  │  (Web 环境)       │    │  (Desktop 环境)  │          ││
+│  │  └──────────────────┘    └──────────────────┘          ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+```
+
+```typescript
+// Port 定义 (packages/infrastructure-client/src/goal/ports/)
+export interface IGoalApiClient {
+  createGoal(request: CreateGoalRequest): Promise<GoalClientDTO>;
+  getGoal(uuid: string): Promise<GoalClientDTO>;
+  updateGoal(uuid: string, request: UpdateGoalRequest): Promise<GoalClientDTO>;
+  deleteGoal(uuid: string): Promise<void>;
+}
+
+// HTTP Adapter 实现 (Web 环境)
+export class GoalHttpAdapter implements IGoalApiClient {
+  constructor(private readonly httpClient: HttpClient) {}
+
+  async createGoal(request: CreateGoalRequest): Promise<GoalClientDTO> {
+    const response = await this.httpClient.post('/api/goals', request);
+    return response.data;
+  }
+}
+
+// IPC Adapter 实现 (Desktop 环境)
+export class GoalIpcAdapter implements IGoalApiClient {
+  constructor(private readonly electronApi: ElectronApi) {}
+
+  async createGoal(request: CreateGoalRequest): Promise<GoalClientDTO> {
+    return this.electronApi.invoke('goal:create', request);
+  }
+}
 ```
 
 ## 影响
@@ -300,6 +612,8 @@ packages/
 3. **小聚合** - 聚合尽可能小，减少事务范围
 4. **领域事件通信** - 模块间通过事件解耦
 5. **富领域模型** - 业务逻辑放在实体中，避免贫血模型
+6. **构造函数注入** - Use Case 通过构造函数接收依赖，便于测试
+7. **静态工厂方法** - 提供 `fromContainer()` 简化生产环境使用
 
 ### DON'T ❌
 
@@ -308,19 +622,116 @@ packages/
 3. **不要在实体中依赖基础设施** - 保持领域层纯净
 4. **不要忽视边界上下文** - 不同模块的相同概念可以不同
 5. **不要过早抽象** - 根据需求演进，不要一开始就全部抽象
+6. **Domain 层不要引用 Container** - 依赖注入是技术细节
+7. **Application 层避免直接 new 依赖** - 使用注入或工厂方法
+
+## 与主流项目对比
+
+### 主流 DDD 项目参考
+
+| 项目 | Stars | 特点 |
+|------|-------|------|
+| [domain-driven-hexagon](https://github.com/Sairyss/domain-driven-hexagon) | 14k+ | NestJS + 六边形架构，完整 CQRS |
+| [ddd-forum](https://github.com/stemmlerjs/ddd-forum) | 2k+ | TypeScript + Clean Architecture |
+| [IDDD_Samples](https://github.com/VaughnVernon/IDDD_Samples) | 4k+ | Java 参考实现，Event Sourcing |
+
+### DailyUse 的架构选择
+
+| 方面 | 主流方案 | DailyUse 选择 | 理由 |
+|------|---------|---------------|------|
+| **DI 框架** | TSyringe/InversifyJS | 自定义 DIContainer | 轻量、无装饰器依赖 |
+| **CQRS** | 完全分离 Commands/Queries | 暂未分离 | 复杂度权衡，后续可演进 |
+| **Domain Events** | 完整实现 | 基础实现 | 按需引入 |
+| **Ports 位置** | Application 层 | Infrastructure 层 | 简化依赖关系 |
+| **Client/Server 分离** | 通常不分 | 分离 (domain-client/domain-server) | 支持多端共享 |
+
+### Vertical Slicing vs Horizontal Layering
+
+```
+# Horizontal Layering (传统分层 - 不推荐)
+src/
+├── controllers/     ← 所有 Controller
+├── services/        ← 所有 Service
+├── repositories/    ← 所有 Repository
+└── entities/        ← 所有 Entity
+
+# Vertical Slicing (垂直切片 - DailyUse 采用)
+packages/
+├── domain-client/src/
+│   ├── goal/        ← Goal 模块完整领域
+│   ├── task/        ← Task 模块完整领域
+│   └── schedule/    ← Schedule 模块完整领域
+├── application-client/src/
+│   ├── goal/        ← Goal 模块所有 Use Cases
+│   ├── task/
+│   └── schedule/
+└── infrastructure-client/src/
+    ├── goal/        ← Goal 模块 Adapters
+    ├── task/
+    └── schedule/
+```
+
+**优势**: 相关代码放在一起，修改某个功能时只需关注一个目录。
 
 ## 相关决策
 
 - [[001-use-nx-monorepo|ADR-001: 使用 Nx Monorepo]] - Monorepo 支持包的清晰分层
 - [[003-event-driven-architecture|ADR-003: 事件驱动架构]] - 领域事件是 DDD 的关键部分
 
+## 未来演进方向
+
+### 可考虑的改进
+
+1. **引入 CQRS** - 将读写操作分离，复杂查询直接访问数据库
+2. **完善 Domain Events** - 添加事件总线，实现跨模块解耦
+3. **Ports 移到 Application 层** - 更严格的依赖反转
+4. **引入成熟 DI 框架** - 如 TSyringe/Brandi，支持装饰器注入
+
+### 演进示例：CQRS 分离
+
+```typescript
+// 当前：Use Case 同时处理读写
+export class GetGoal {
+  async execute(uuid: string): Promise<Goal> { /* ... */ }
+}
+
+export class CreateGoal {
+  async execute(input: CreateGoalRequest): Promise<Goal> { /* ... */ }
+}
+
+// 未来：Commands 和 Queries 分离
+// commands/
+export class CreateGoalCommand {
+  constructor(public readonly input: CreateGoalRequest) {}
+}
+
+export class CreateGoalHandler implements ICommandHandler<CreateGoalCommand> {
+  async execute(command: CreateGoalCommand): Promise<Goal> {
+    // 走完整 Domain 逻辑
+  }
+}
+
+// queries/
+export class GetGoalQuery {
+  constructor(public readonly uuid: string) {}
+}
+
+export class GetGoalHandler implements IQueryHandler<GetGoalQuery> {
+  async execute(query: GetGoalQuery): Promise<GoalReadModel> {
+    // 可直接查数据库，不经过 Domain
+  }
+}
+```
+
 ## 参考资料
 
 - [Domain-Driven Design (Eric Evans)](https://www.domainlanguage.com/ddd/)
 - [Implementing Domain-Driven Design (Vaughn Vernon)](https://vaughnvernon.com/)
 - [DDD Reference](https://www.domainlanguage.com/ddd/reference/)
+- [domain-driven-hexagon](https://github.com/Sairyss/domain-driven-hexagon) - TypeScript DDD 参考实现
+- [ddd-forum](https://github.com/stemmlerjs/ddd-forum) - Clean Architecture + DDD
 - [[../../concepts/ddd-patterns|DDD 模式指南]] - 项目内 DDD 实践
 
 ---
 
-**教训**: DDD 不是银弹，但对于复杂业务系统是正确选择。关键是找到合适的应用边界，不要过度设计简单模块。
+**教训**: DDD 不是银弹，但对于复杂业务系统是正确选择。关键是找到合适的应用边界，不要过度设计简单模块。Container 属于 Infrastructure 层，Domain 和 Application 层应通过构造函数注入依赖，保持对 DI 实现的无知。

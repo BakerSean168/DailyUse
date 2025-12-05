@@ -30,7 +30,7 @@ export class UpdateGoal {
    */
   static createInstance(apiClient?: IGoalApiClient): UpdateGoal {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     UpdateGoal.instance = new UpdateGoal(client);
     return UpdateGoal.instance;
   }

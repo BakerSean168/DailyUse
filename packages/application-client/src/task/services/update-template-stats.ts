@@ -20,7 +20,7 @@ export class UpdateTemplateStats {
    */
   static createInstance(apiClient?: ITaskStatisticsApiClient): UpdateTemplateStats {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskStatisticsApiClient();
+    const client = apiClient || container.getStatisticsApiClient();
     UpdateTemplateStats.instance = new UpdateTemplateStats(client);
     return UpdateTemplateStats.instance;
   }

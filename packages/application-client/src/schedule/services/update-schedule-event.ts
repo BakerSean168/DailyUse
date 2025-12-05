@@ -31,7 +31,7 @@ export class UpdateScheduleEvent {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): UpdateScheduleEvent {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     UpdateScheduleEvent.instance = new UpdateScheduleEvent(client);
     return UpdateScheduleEvent.instance;
   }

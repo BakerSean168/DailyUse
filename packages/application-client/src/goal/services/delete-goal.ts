@@ -20,7 +20,7 @@ export class DeleteGoal {
    */
   static createInstance(apiClient?: IGoalApiClient): DeleteGoal {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     DeleteGoal.instance = new DeleteGoal(client);
     return DeleteGoal.instance;
   }

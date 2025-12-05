@@ -31,7 +31,7 @@ export class CreateGoalReview {
    */
   static createInstance(apiClient?: IGoalApiClient): CreateGoalReview {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     CreateGoalReview.instance = new CreateGoalReview(client);
     return CreateGoalReview.instance;
   }

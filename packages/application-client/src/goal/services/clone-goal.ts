@@ -32,7 +32,7 @@ export class CloneGoal {
    */
   static createInstance(apiClient?: IGoalApiClient): CloneGoal {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     CloneGoal.instance = new CloneGoal(client);
     return CloneGoal.instance;
   }

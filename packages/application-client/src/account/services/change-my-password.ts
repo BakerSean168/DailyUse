@@ -36,7 +36,7 @@ export class ChangeMyPassword {
    */
   static createInstance(apiClient?: IAccountApiClient): ChangeMyPassword {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     ChangeMyPassword.instance = new ChangeMyPassword(client);
     return ChangeMyPassword.instance;
   }

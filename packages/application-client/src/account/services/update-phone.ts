@@ -29,7 +29,7 @@ export class UpdatePhone {
    */
   static createInstance(apiClient?: IAccountApiClient): UpdatePhone {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     UpdatePhone.instance = new UpdatePhone(client);
     return UpdatePhone.instance;
   }

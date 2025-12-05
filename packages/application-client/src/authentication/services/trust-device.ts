@@ -6,7 +6,7 @@
 
 import type { TrustDeviceRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface TrustDeviceInput extends TrustDeviceRequest {}
 
@@ -22,8 +22,8 @@ export class TrustDevice {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): TrustDevice {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     TrustDevice.instance = new TrustDevice(client);
     return TrustDevice.instance;
   }

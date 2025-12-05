@@ -21,7 +21,7 @@ export class PauseGoal {
    */
   static createInstance(apiClient?: IGoalApiClient): PauseGoal {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     PauseGoal.instance = new PauseGoal(client);
     return PauseGoal.instance;
   }

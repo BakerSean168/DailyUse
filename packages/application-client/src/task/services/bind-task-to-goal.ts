@@ -31,7 +31,7 @@ export class BindTaskToGoal {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): BindTaskToGoal {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     BindTaskToGoal.instance = new BindTaskToGoal(client);
     return BindTaskToGoal.instance;
   }

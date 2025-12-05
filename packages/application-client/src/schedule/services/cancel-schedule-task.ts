@@ -30,7 +30,7 @@ export class CancelScheduleTask {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): CancelScheduleTask {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     CancelScheduleTask.instance = new CancelScheduleTask(client);
     return CancelScheduleTask.instance;
   }

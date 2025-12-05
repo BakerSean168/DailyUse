@@ -21,7 +21,7 @@ export class FindNotificationByUuid {
    */
   static createInstance(apiClient?: INotificationApiClient): FindNotificationByUuid {
     const container = NotificationContainer.getInstance();
-    const client = apiClient || container.getNotificationApiClient();
+    const client = apiClient || container.getApiClient();
     FindNotificationByUuid.instance = new FindNotificationByUuid(client);
     return FindNotificationByUuid.instance;
   }

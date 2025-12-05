@@ -30,7 +30,7 @@ export class ListTaskInstances {
    */
   static createInstance(apiClient?: ITaskInstanceApiClient): ListTaskInstances {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskInstanceApiClient();
+    const client = apiClient || container.getInstanceApiClient();
     ListTaskInstances.instance = new ListTaskInstances(client);
     return ListTaskInstances.instance;
   }

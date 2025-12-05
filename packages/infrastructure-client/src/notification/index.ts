@@ -4,6 +4,13 @@
  * Ports and Adapters for Notification module communication.
  */
 
+// Container
+export {
+  NotificationContainer,
+  NotificationDependencyKeys,
+  type INotificationRepository,
+} from './notification.container';
+
 // Ports (Interfaces)
 export {
   type INotificationApiClient,

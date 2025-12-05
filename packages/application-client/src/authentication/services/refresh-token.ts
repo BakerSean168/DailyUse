@@ -6,7 +6,7 @@
 
 import type { RefreshTokenRequest, RefreshTokenResponseDTO } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface RefreshTokenInput extends RefreshTokenRequest {}
 
@@ -22,8 +22,8 @@ export class RefreshToken {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): RefreshToken {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     RefreshToken.instance = new RefreshToken(client);
     return RefreshToken.instance;
   }

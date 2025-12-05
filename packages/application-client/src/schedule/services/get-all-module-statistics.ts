@@ -21,7 +21,7 @@ export class GetAllModuleStatistics {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): GetAllModuleStatistics {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     GetAllModuleStatistics.instance = new GetAllModuleStatistics(client);
     return GetAllModuleStatistics.instance;
   }

@@ -22,7 +22,7 @@ export class DeleteScheduleTask {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): DeleteScheduleTask {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     DeleteScheduleTask.instance = new DeleteScheduleTask(client);
     return DeleteScheduleTask.instance;
   }

@@ -32,7 +32,7 @@ export class UpdateGoalReview {
    */
   static createInstance(apiClient?: IGoalApiClient): UpdateGoalReview {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     UpdateGoalReview.instance = new UpdateGoalReview(client);
     return UpdateGoalReview.instance;
   }

@@ -21,7 +21,7 @@ export class GetDependencyChain {
    */
   static createInstance(apiClient?: ITaskDependencyApiClient): GetDependencyChain {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskDependencyApiClient();
+    const client = apiClient || container.getDependencyApiClient();
     GetDependencyChain.instance = new GetDependencyChain(client);
     return GetDependencyChain.instance;
   }

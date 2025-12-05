@@ -22,7 +22,7 @@ export class DeleteStatistics {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): DeleteStatistics {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     DeleteStatistics.instance = new DeleteStatistics(client);
     return DeleteStatistics.instance;
   }

@@ -20,7 +20,7 @@ export class DeleteTaskStatistics {
    */
   static createInstance(apiClient?: ITaskStatisticsApiClient): DeleteTaskStatistics {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskStatisticsApiClient();
+    const client = apiClient || container.getStatisticsApiClient();
     DeleteTaskStatistics.instance = new DeleteTaskStatistics(client);
     return DeleteTaskStatistics.instance;
   }

@@ -24,7 +24,7 @@ export class ValidateTaskDependency {
    */
   static createInstance(apiClient?: ITaskDependencyApiClient): ValidateTaskDependency {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskDependencyApiClient();
+    const client = apiClient || container.getDependencyApiClient();
     ValidateTaskDependency.instance = new ValidateTaskDependency(client);
     return ValidateTaskDependency.instance;
   }

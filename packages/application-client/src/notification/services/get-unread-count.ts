@@ -25,7 +25,7 @@ export class GetUnreadCount {
    */
   static createInstance(apiClient?: INotificationApiClient): GetUnreadCount {
     const container = NotificationContainer.getInstance();
-    const client = apiClient || container.getNotificationApiClient();
+    const client = apiClient || container.getApiClient();
     GetUnreadCount.instance = new GetUnreadCount(client);
     return GetUnreadCount.instance;
   }

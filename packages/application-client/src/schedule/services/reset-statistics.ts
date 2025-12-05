@@ -22,7 +22,7 @@ export class ResetStatistics {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): ResetStatistics {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     ResetStatistics.instance = new ResetStatistics(client);
     return ResetStatistics.instance;
   }

@@ -29,7 +29,7 @@ export class UpdateAccountProfile {
    */
   static createInstance(apiClient?: IAccountApiClient): UpdateAccountProfile {
     const container = AccountContainer.getInstance();
-    const client = apiClient || container.getAccountApiClient();
+    const client = apiClient || container.getApiClient();
     UpdateAccountProfile.instance = new UpdateAccountProfile(client);
     return UpdateAccountProfile.instance;
   }

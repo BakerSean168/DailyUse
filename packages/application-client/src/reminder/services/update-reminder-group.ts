@@ -32,7 +32,7 @@ export class UpdateReminderGroup {
    */
   static createInstance(apiClient?: IReminderApiClient): UpdateReminderGroup {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     UpdateReminderGroup.instance = new UpdateReminderGroup(client);
     return UpdateReminderGroup.instance;
   }

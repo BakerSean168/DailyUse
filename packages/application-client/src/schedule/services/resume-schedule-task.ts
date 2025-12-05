@@ -22,7 +22,7 @@ export class ResumeScheduleTask {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): ResumeScheduleTask {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     ResumeScheduleTask.instance = new ResumeScheduleTask(client);
     return ResumeScheduleTask.instance;
   }

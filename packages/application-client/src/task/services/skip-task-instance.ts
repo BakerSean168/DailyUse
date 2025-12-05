@@ -23,7 +23,7 @@ export class SkipTaskInstance {
    */
   static createInstance(apiClient?: ITaskInstanceApiClient): SkipTaskInstance {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskInstanceApiClient();
+    const client = apiClient || container.getInstanceApiClient();
     SkipTaskInstance.instance = new SkipTaskInstance(client);
     return SkipTaskInstance.instance;
   }

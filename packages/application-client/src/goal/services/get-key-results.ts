@@ -21,7 +21,7 @@ export class GetKeyResults {
    */
   static createInstance(apiClient?: IGoalApiClient): GetKeyResults {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     GetKeyResults.instance = new GetKeyResults(client);
     return GetKeyResults.instance;
   }

@@ -20,7 +20,7 @@ export class UpdateCompletionStats {
    */
   static createInstance(apiClient?: ITaskStatisticsApiClient): UpdateCompletionStats {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskStatisticsApiClient();
+    const client = apiClient || container.getStatisticsApiClient();
     UpdateCompletionStats.instance = new UpdateCompletionStats(client);
     return UpdateCompletionStats.instance;
   }

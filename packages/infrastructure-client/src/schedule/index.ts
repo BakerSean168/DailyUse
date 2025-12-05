@@ -4,6 +4,14 @@
  * Ports and Adapters for Schedule module communication.
  */
 
+// Container
+export {
+  ScheduleContainer,
+  ScheduleDependencyKeys,
+  type IScheduleTaskRepository,
+  type IScheduleEventRepository,
+} from './schedule.container';
+
 // Ports (Interfaces)
 export { type IScheduleTaskApiClient } from './ports/schedule-task-api-client.port';
 export { type IScheduleEventApiClient } from './ports/schedule-event-api-client.port';

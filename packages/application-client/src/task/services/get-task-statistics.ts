@@ -26,7 +26,7 @@ export class GetTaskStatistics {
    */
   static createInstance(apiClient?: ITaskStatisticsApiClient): GetTaskStatistics {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskStatisticsApiClient();
+    const client = apiClient || container.getStatisticsApiClient();
     GetTaskStatistics.instance = new GetTaskStatistics(client);
     return GetTaskStatistics.instance;
   }

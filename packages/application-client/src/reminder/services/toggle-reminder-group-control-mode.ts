@@ -23,7 +23,7 @@ export class ToggleReminderGroupControlMode {
    */
   static createInstance(apiClient?: IReminderApiClient): ToggleReminderGroupControlMode {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     ToggleReminderGroupControlMode.instance = new ToggleReminderGroupControlMode(client);
     return ToggleReminderGroupControlMode.instance;
   }

@@ -21,7 +21,7 @@ export class GetReminderStatistics {
    */
   static createInstance(apiClient?: IReminderApiClient): GetReminderStatistics {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     GetReminderStatistics.instance = new GetReminderStatistics(client);
     return GetReminderStatistics.instance;
   }

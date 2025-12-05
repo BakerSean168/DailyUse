@@ -32,7 +32,7 @@ export class UpdateTaskDependency {
    */
   static createInstance(apiClient?: ITaskDependencyApiClient): UpdateTaskDependency {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskDependencyApiClient();
+    const client = apiClient || container.getDependencyApiClient();
     UpdateTaskDependency.instance = new UpdateTaskDependency(client);
     return UpdateTaskDependency.instance;
   }

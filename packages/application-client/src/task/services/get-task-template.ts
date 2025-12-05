@@ -21,7 +21,7 @@ export class GetTaskTemplate {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): GetTaskTemplate {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     GetTaskTemplate.instance = new GetTaskTemplate(client);
     return GetTaskTemplate.instance;
   }

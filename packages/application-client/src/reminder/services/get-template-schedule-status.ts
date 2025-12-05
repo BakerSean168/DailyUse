@@ -21,7 +21,7 @@ export class GetTemplateScheduleStatus {
    */
   static createInstance(apiClient?: IReminderApiClient): GetTemplateScheduleStatus {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     GetTemplateScheduleStatus.instance = new GetTemplateScheduleStatus(client);
     return GetTemplateScheduleStatus.instance;
   }

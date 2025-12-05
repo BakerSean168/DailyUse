@@ -34,7 +34,7 @@ export class BatchUpdateKeyResultWeights {
    */
   static createInstance(apiClient?: IGoalApiClient): BatchUpdateKeyResultWeights {
     const container = GoalContainer.getInstance();
-    const client = apiClient || container.getGoalApiClient();
+    const client = apiClient || container.getApiClient();
     BatchUpdateKeyResultWeights.instance = new BatchUpdateKeyResultWeights(client);
     return BatchUpdateKeyResultWeights.instance;
   }

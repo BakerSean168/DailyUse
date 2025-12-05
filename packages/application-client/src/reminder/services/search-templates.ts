@@ -29,7 +29,7 @@ export class SearchTemplates {
    */
   static createInstance(apiClient?: IReminderApiClient): SearchTemplates {
     const container = ReminderContainer.getInstance();
-    const client = apiClient || container.getReminderApiClient();
+    const client = apiClient || container.getApiClient();
     SearchTemplates.instance = new SearchTemplates(client);
     return SearchTemplates.instance;
   }

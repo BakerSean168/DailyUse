@@ -4,6 +4,14 @@
  * Ports and Adapters for Task module communication.
  */
 
+// Container
+export {
+  TaskContainer,
+  TaskDependencyKeys,
+  type ITaskTemplateRepository,
+  type ITaskInstanceRepository,
+} from './task.container';
+
 // Ports (Interfaces)
 export { type ITaskTemplateApiClient } from './ports/task-template-api-client.port';
 export { type ITaskInstanceApiClient } from './ports/task-instance-api-client.port';

@@ -29,7 +29,7 @@ export class CreateTaskTemplate {
    */
   static createInstance(apiClient?: ITaskTemplateApiClient): CreateTaskTemplate {
     const container = TaskContainer.getInstance();
-    const client = apiClient || container.getTaskTemplateApiClient();
+    const client = apiClient || container.getTemplateApiClient();
     CreateTaskTemplate.instance = new CreateTaskTemplate(client);
     return CreateTaskTemplate.instance;
   }

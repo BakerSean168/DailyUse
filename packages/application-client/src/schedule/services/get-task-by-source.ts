@@ -29,7 +29,7 @@ export class GetTaskBySource {
    */
   static createInstance(apiClient?: IScheduleTaskApiClient): GetTaskBySource {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleTaskApiClient();
+    const client = apiClient || container.getTaskApiClient();
     GetTaskBySource.instance = new GetTaskBySource(client);
     return GetTaskBySource.instance;
   }

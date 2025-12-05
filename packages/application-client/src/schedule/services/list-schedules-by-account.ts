@@ -21,7 +21,7 @@ export class ListSchedulesByAccount {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): ListSchedulesByAccount {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     ListSchedulesByAccount.instance = new ListSchedulesByAccount(client);
     return ListSchedulesByAccount.instance;
   }

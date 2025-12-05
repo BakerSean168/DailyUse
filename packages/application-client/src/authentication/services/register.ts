@@ -9,7 +9,7 @@
 
 import type { RegisterRequest } from '@dailyuse/contracts/authentication';
 import type { IAuthApiClient, RegisterResponse } from '@dailyuse/infrastructure-client';
-import { AuthenticationContainer } from '@dailyuse/infrastructure-client';
+import { AuthContainer } from '@dailyuse/infrastructure-client';
 
 export interface RegisterInput extends RegisterRequest {}
 
@@ -25,8 +25,8 @@ export class Register {
    * 创建服务实例（支持依赖注入）
    */
   static createInstance(apiClient?: IAuthApiClient): Register {
-    const container = AuthenticationContainer.getInstance();
-    const client = apiClient || container.getAuthApiClient();
+    const container = AuthContainer.getInstance();
+    const client = apiClient || container.getApiClient();
     Register.instance = new Register(client);
     return Register.instance;
   }

@@ -22,7 +22,7 @@ export class DeleteScheduleEvent {
    */
   static createInstance(apiClient?: IScheduleEventApiClient): DeleteScheduleEvent {
     const container = ScheduleContainer.getInstance();
-    const client = apiClient || container.getScheduleEventApiClient();
+    const client = apiClient || container.getEventApiClient();
     DeleteScheduleEvent.instance = new DeleteScheduleEvent(client);
     return DeleteScheduleEvent.instance;
   }
