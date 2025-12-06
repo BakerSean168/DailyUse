@@ -394,6 +394,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@dailyuse/application-client':
+        specifier: workspace:*
+        version: link:../../packages/application-client
       '@dailyuse/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -403,6 +406,9 @@ importers:
       '@dailyuse/domain-server':
         specifier: workspace:*
         version: link:../../packages/domain-server
+      '@dailyuse/infrastructure-client':
+        specifier: workspace:*
+        version: link:../../packages/infrastructure-client
       '@dailyuse/infrastructure-server':
         specifier: workspace:*
         version: link:../../packages/infrastructure-server
