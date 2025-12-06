@@ -37,23 +37,24 @@ export function DashboardView() {
 
       // 获取目标统计
       const goalApiClient = GoalContainer.getInstance().getApiClient();
-      const goals = await goalApiClient.listAll();
+      const goalsResponse = await goalApiClient.getGoals();
+      const goals = goalsResponse.goals;
 
       const goalStats = {
         total: goals.length,
-        active: goals.filter((g) => g.status === 'ACTIVE').length,
-        completed: goals.filter((g) => g.status === 'COMPLETED').length,
+        active: goals.filter((g: { status: string }) => g.status === 'ACTIVE').length,
+        completed: goals.filter((g: { status: string }) => g.status === 'COMPLETED').length,
       };
 
       // 获取任务统计
       const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
-      const tasks = await taskApiClient.listAll();
+      const tasks = await taskApiClient.getTaskTemplates();
 
       const taskStats = {
         total: tasks.length,
-        pending: tasks.filter((t) => t.status === 'PENDING').length,
-        inProgress: tasks.filter((t) => t.status === 'IN_PROGRESS').length,
-        completed: tasks.filter((t) => t.status === 'COMPLETED').length,
+        pending: tasks.filter((t: { status: string }) => t.status === 'PENDING').length,
+        inProgress: tasks.filter((t: { status: string }) => t.status === 'IN_PROGRESS').length,
+        completed: tasks.filter((t: { status: string }) => t.status === 'COMPLETED').length,
       };
 
       setStats({ goals: goalStats, tasks: taskStats });

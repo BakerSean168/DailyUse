@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { TaskType, TimeType } from '@dailyuse/contracts/task';
 
 interface TaskCreateDialogProps {
   open: boolean;
@@ -19,11 +20,11 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
   const [description, setDescription] = useState('');
   const [importance, setImportance] = useState<ImportanceLevel>(ImportanceLevel.Moderate);
   const [urgency, setUrgency] = useState<UrgencyLevel>(UrgencyLevel.Medium);
-  const [estimatedMinutes, setEstimatedMinutes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createService = TaskContainer.getInstance().getCreateTemplateService();
+  // 获取 API Client
+  const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,14 +38,18 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
       setIsSubmitting(true);
       setError(null);
 
-      // 创建一次性任务
-      await createService.execute({
+      // 创建一次性全天任务
+      // 注意：Desktop 版使用固定的本地账户 UUID
+      await taskApiClient.createTaskTemplate({
+        accountUuid: 'local-user', // Desktop 本地用户
         title: title.trim(),
         description: description.trim() || undefined,
-        taskType: 'ONE_TIME',
+        taskType: TaskType.ONE_TIME,
+        timeConfig: {
+          timeType: TimeType.ALL_DAY,
+        },
         importance,
         urgency,
-        estimatedMinutes: estimatedMinutes ? parseInt(estimatedMinutes, 10) : undefined,
       });
 
       onCreated();
@@ -131,20 +136,6 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
                 <option value={UrgencyLevel.Critical}>非常紧急</option>
               </select>
             </div>
-          </div>
-
-          {/* Estimated Duration */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">预计时长（分钟）</label>
-            <input
-              type="number"
-              value={estimatedMinutes}
-              onChange={(e) => setEstimatedMinutes(e.target.value)}
-              placeholder="30"
-              min="1"
-              className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-              disabled={isSubmitting}
-            />
           </div>
 
           {/* Error */}

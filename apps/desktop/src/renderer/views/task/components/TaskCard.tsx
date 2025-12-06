@@ -16,15 +16,13 @@ interface TaskCardProps {
 export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // 获取服务
-  const activateService = TaskContainer.getInstance().getActivateTemplateService();
-  const pauseService = TaskContainer.getInstance().getPauseTemplateService();
-  const archiveService = TaskContainer.getInstance().getArchiveTemplateService();
+  // 获取 API Client
+  const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
 
   const handleActivate = async () => {
     try {
       setIsUpdating(true);
-      await activateService.execute({ templateUuid: template.uuid });
+      await taskApiClient.activateTaskTemplate(template.uuid);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to activate:', err);
@@ -36,7 +34,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const handlePause = async () => {
     try {
       setIsUpdating(true);
-      await pauseService.execute({ templateUuid: template.uuid });
+      await taskApiClient.pauseTaskTemplate(template.uuid);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to pause:', err);
@@ -48,7 +46,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const handleArchive = async () => {
     try {
       setIsUpdating(true);
-      await archiveService.execute({ templateUuid: template.uuid });
+      await taskApiClient.archiveTaskTemplate(template.uuid);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to archive:', err);

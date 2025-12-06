@@ -16,15 +16,13 @@ interface GoalCardProps {
 export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // 获取服务
-  const completeService = GoalContainer.getInstance().getCompleteGoalService();
-  const archiveService = GoalContainer.getInstance().getArchiveGoalService();
-  const activateService = GoalContainer.getInstance().getActivateGoalService();
+  // 获取 API Client
+  const goalApiClient = GoalContainer.getInstance().getApiClient();
 
   const handleComplete = async () => {
     try {
       setIsUpdating(true);
-      await completeService.execute({ goalUuid: goal.uuid });
+      await goalApiClient.completeGoal(goal.uuid);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to complete goal:', err);
@@ -36,7 +34,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const handleArchive = async () => {
     try {
       setIsUpdating(true);
-      await archiveService.execute({ goalUuid: goal.uuid });
+      await goalApiClient.archiveGoal(goal.uuid);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to archive goal:', err);
@@ -48,7 +46,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const handleActivate = async () => {
     try {
       setIsUpdating(true);
-      await activateService.execute({ goalUuid: goal.uuid });
+      await goalApiClient.activateGoal(goal.uuid);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to activate goal:', err);

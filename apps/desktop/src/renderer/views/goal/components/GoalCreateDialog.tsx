@@ -7,7 +7,6 @@
 import { useState } from 'react';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { GoalStatus } from '@dailyuse/contracts/goal';
 
 interface GoalCreateDialogProps {
   open: boolean;
@@ -24,7 +23,8 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createService = GoalContainer.getInstance().getCreateGoalService();
+  // 获取 API Client
+  const goalApiClient = GoalContainer.getInstance().getApiClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,13 +38,12 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
       setIsSubmitting(true);
       setError(null);
       
-      await createService.execute({
+      await goalApiClient.createGoal({
         title: title.trim(),
         description: description.trim() || undefined,
         importance,
         urgency,
         targetDate: targetDate ? new Date(targetDate).getTime() : undefined,
-        status: GoalStatus.ACTIVE,
       });
 
       onCreated();

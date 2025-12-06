@@ -16,26 +16,24 @@ export function GoalListView() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  // 获取目标列表服务
-  const listGoalsService = GoalContainer.getInstance().getListGoalsService();
+  // 获取 API Client
+  const goalApiClient = GoalContainer.getInstance().getApiClient();
 
   const loadGoals = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await listGoalsService.execute({
+      const result = await goalApiClient.getGoals({
         // 默认获取所有活跃目标
-        status: undefined,
-        includeArchived: false,
       });
-      setGoals(result);
+      setGoals(result.goals);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载目标失败');
       console.error('[GoalListView] Failed to load goals:', err);
     } finally {
       setLoading(false);
     }
-  }, [listGoalsService]);
+  }, [goalApiClient]);
 
   useEffect(() => {
     loadGoals();

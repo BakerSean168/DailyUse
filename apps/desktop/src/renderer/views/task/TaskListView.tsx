@@ -17,14 +17,14 @@ export function TaskListView() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<'templates' | 'today'>('templates');
 
-  // 获取任务模板列表服务
-  const listTemplatesService = TaskContainer.getInstance().getListTemplatesService();
+  // 获取任务 API Client
+  const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
 
   const loadTemplates = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await listTemplatesService.execute({});
+      const result = await taskApiClient.getTaskTemplates();
       setTemplates(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载任务失败');
@@ -32,7 +32,7 @@ export function TaskListView() {
     } finally {
       setLoading(false);
     }
-  }, [listTemplatesService]);
+  }, [taskApiClient]);
 
   useEffect(() => {
     loadTemplates();
