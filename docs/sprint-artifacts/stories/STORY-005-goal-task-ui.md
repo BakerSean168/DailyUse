@@ -343,6 +343,316 @@ onMounted(() => {
 
 ---
 
+## 🏗️ 技术实现方案 (架构师补充)
+
+### 1. IPC 通道与服务映射
+
+#### Goal 模块 (23 IPC 通道)
+
+| IPC 通道 | Application Service | 描述 |
+|----------|---------------------|------|
+| `goal:create` | CreateGoalService | 创建目标 |
+| `goal:list` | GetGoalsService | 获取目标列表 |
+| `goal:get` | GetGoalByIdService | 获取单个目标 |
+| `goal:update` | UpdateGoalService | 更新目标 |
+| `goal:delete` | DeleteGoalService | 删除目标 |
+| `goal:activate` | ActivateGoalService | 激活目标 |
+| `goal:pause` | PauseGoalService | 暂停目标 |
+| `goal:complete` | CompleteGoalService | 完成目标 |
+| `goal:archive` | ArchiveGoalService | 归档目标 |
+| `goal:search` | SearchGoalsService | 搜索目标 |
+| `goal:keyResult:add` | AddKeyResultService | 添加关键结果 |
+| `goal:keyResult:list` | GetKeyResultsService | 获取关键结果 |
+| `goal:keyResult:update` | UpdateKeyResultService | 更新关键结果 |
+| `goal:keyResult:delete` | DeleteKeyResultService | 删除关键结果 |
+| `goal:progressBreakdown` | GetProgressBreakdownService | 进度分解 |
+| `goalFolder:create` | CreateGoalFolderService | 创建文件夹 |
+| `goalFolder:list` | GetGoalFoldersService | 获取文件夹列表 |
+
+#### Task 模块 (35 IPC 通道)
+
+| IPC 通道 | Application Service | 描述 |
+|----------|---------------------|------|
+| `taskTemplate:create` | CreateTaskTemplateService | 创建任务模板 |
+| `taskTemplate:list` | GetTaskTemplatesService | 获取模板列表 |
+| `taskTemplate:get` | GetTaskTemplateByIdService | 获取单个模板 |
+| `taskTemplate:update` | UpdateTaskTemplateService | 更新模板 |
+| `taskTemplate:delete` | DeleteTaskTemplateService | 删除模板 |
+| `taskTemplate:activate` | ActivateTaskTemplateService | 激活模板 |
+| `taskTemplate:pause` | PauseTaskTemplateService | 暂停模板 |
+| `taskTemplate:generate` | GenerateInstancesService | 生成实例 |
+| `taskTemplate:bindGoal` | BindToGoalService | 绑定目标 |
+| `taskInstance:list` | GetTaskInstancesService | 获取实例列表 |
+| `taskInstance:start` | StartTaskInstanceService | 开始任务 |
+| `taskInstance:complete` | CompleteTaskInstanceService | 完成任务 |
+| `taskInstance:skip` | SkipTaskInstanceService | 跳过任务 |
+| `taskStatistics:get` | GetTaskStatisticsService | 获取统计 |
+| `taskDependency:create` | CreateDependencyService | 创建依赖 |
+| `taskDependency:chain` | GetDependencyChainService | 获取依赖链 |
+
+### 2. 完整 useGoal Composable
+
+```typescript
+// apps/desktop/src/renderer/shared/composables/useGoal.ts
+import { ref, computed, shallowRef } from 'vue';
+import { GoalContainer } from '@dailyuse/infrastructure-client';
+import {
+  CreateGoalService,
+  GetGoalsService,
+  GetGoalByIdService,
+  UpdateGoalService,
+  DeleteGoalService,
+  ActivateGoalService,
+  PauseGoalService,
+  CompleteGoalService,
+  ArchiveGoalService,
+  AddKeyResultService,
+  UpdateKeyResultService,
+  DeleteKeyResultService,
+  GetProgressBreakdownService,
+} from '@dailyuse/application-client';
+import type {
+  GoalClientDTO,
+  CreateGoalRequest,
+  UpdateGoalRequest,
+  KeyResultClientDTO,
+  AddKeyResultRequest,
+  ProgressBreakdown,
+} from '@dailyuse/contracts/goal';
+
+export function useGoal() {
+  const container = GoalContainer.getInstance();
+  
+  // 状态
+  const goals = shallowRef<GoalClientDTO[]>([]);
+  const currentGoal = ref<GoalClientDTO | null>(null);
+  const loading = ref(false);
+  const error = ref<Error | null>(null);
+  
+  // 服务实例缓存
+  const services = {
+    getAll: new GetGoalsService(container),
+    getById: new GetGoalByIdService(container),
+    create: new CreateGoalService(container),
+    update: new UpdateGoalService(container),
+    delete: new DeleteGoalService(container),
+    activate: new ActivateGoalService(container),
+    pause: new PauseGoalService(container),
+    complete: new CompleteGoalService(container),
+    archive: new ArchiveGoalService(container),
+    addKeyResult: new AddKeyResultService(container),
+    updateKeyResult: new UpdateKeyResultService(container),
+    deleteKeyResult: new DeleteKeyResultService(container),
+    progressBreakdown: new GetProgressBreakdownService(container),
+  };
+  
+  // 获取目标列表
+  async function fetchGoals(params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    dirUuid?: string;
+  }) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await services.getAll.execute(params);
+      goals.value = response.data;
+      return response;
+    } catch (e) {
+      error.value = e instanceof Error ? e : new Error('获取目标失败');
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  // 获取单个目标
+  async function fetchGoalById(uuid: string) {
+    loading.value = true;
+    try {
+      currentGoal.value = await services.getById.execute(uuid, true);
+      return currentGoal.value;
+    } catch (e) {
+      error.value = e instanceof Error ? e : new Error('获取目标失败');
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  // 创建目标
+  async function createGoal(request: CreateGoalRequest) {
+    const goal = await services.create.execute(request);
+    goals.value = [goal, ...goals.value];
+    return goal;
+  }
+  
+  // 更新目标
+  async function updateGoal(uuid: string, request: UpdateGoalRequest) {
+    const updated = await services.update.execute(uuid, request);
+    goals.value = goals.value.map(g => g.uuid === uuid ? updated : g);
+    if (currentGoal.value?.uuid === uuid) {
+      currentGoal.value = updated;
+    }
+    return updated;
+  }
+  
+  // 删除目标
+  async function deleteGoal(uuid: string) {
+    await services.delete.execute(uuid);
+    goals.value = goals.value.filter(g => g.uuid !== uuid);
+  }
+  
+  // 状态操作
+  const activateGoal = (uuid: string) => services.activate.execute(uuid);
+  const pauseGoal = (uuid: string) => services.pause.execute(uuid);
+  const completeGoal = (uuid: string) => services.complete.execute(uuid);
+  const archiveGoal = (uuid: string) => services.archive.execute(uuid);
+  
+  // KeyResult 操作
+  async function addKeyResult(goalUuid: string, request: AddKeyResultRequest) {
+    return services.addKeyResult.execute(goalUuid, request);
+  }
+  
+  async function getProgressBreakdown(goalUuid: string): Promise<ProgressBreakdown> {
+    return services.progressBreakdown.execute(goalUuid);
+  }
+  
+  return {
+    // 状态
+    goals: computed(() => goals.value),
+    currentGoal: computed(() => currentGoal.value),
+    loading: computed(() => loading.value),
+    error: computed(() => error.value),
+    
+    // 操作
+    fetchGoals,
+    fetchGoalById,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    activateGoal,
+    pauseGoal,
+    completeGoal,
+    archiveGoal,
+    addKeyResult,
+    getProgressBreakdown,
+  };
+}
+```
+
+### 3. 复用 Web 端组件策略
+
+```typescript
+// 直接复用 @dailyuse/ui-vuetify 组件
+import {
+  GoalCard,
+  GoalProgressBar,
+  TaskCard,
+  TaskStatusChip,
+  PriorityBadge,
+} from '@dailyuse/ui-vuetify';
+
+// Desktop 特定组件 (需新建)
+// - GoalTree.vue (桌面端可能需要更紧凑的布局)
+// - TaskDependencyGraph.vue (使用 ECharts/vis.js)
+```
+
+### 4. 路由设计
+
+```typescript
+// apps/desktop/src/renderer/shared/router/index.ts
+const routes = [
+  // Goal 路由
+  { path: '/goals', name: 'GoalList', component: () => import('@/views/goal/GoalListView.vue') },
+  { path: '/goals/:uuid', name: 'GoalDetail', component: () => import('@/views/goal/GoalDetailView.vue') },
+  
+  // Task 路由
+  { path: '/tasks', name: 'TaskList', component: () => import('@/views/task/TaskListView.vue') },
+  { path: '/tasks/:uuid', name: 'TaskDetail', component: () => import('@/views/task/TaskDetailView.vue') },
+  { path: '/tasks/today', name: 'TodayTasks', component: () => import('@/views/task/TodayTasksView.vue') },
+];
+```
+
+### 5. 数据流图
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Vue Component                            │
+│                   (GoalListView.vue)                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  const { goals, fetchGoals, createGoal } = useGoal();       │
+│                                                              │
+│  onMounted(() => fetchGoals());                             │
+│                                                              │
+└────────────────────────┬────────────────────────────────────┘
+                         │ 调用 composable
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     useGoal.ts                               │
+│                     (Composable)                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  const service = new GetGoalsService(container);            │
+│  return service.execute(params);                            │
+│                                                              │
+└────────────────────────┬────────────────────────────────────┘
+                         │ 调用 Application Service
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│              GetGoalsService                                 │
+│        (@dailyuse/application-client)                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  const client = container.getApiClient();                   │
+│  return client.getGoals(params);                            │
+│                                                              │
+└────────────────────────┬────────────────────────────────────┘
+                         │ 调用 IPC Adapter
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  GoalIpcAdapter                              │
+│        (@dailyuse/infrastructure-client)                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  return this.ipcClient.invoke('goal:list', params);         │
+│                                                              │
+└────────────────────────┬────────────────────────────────────┘
+                         │ IPC 调用
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│               window.electronAPI.invoke                      │
+│                    (Preload)                                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ipcRenderer.invoke('goal:list', params)                    │
+│                                                              │
+└────────────────────────┬────────────────────────────────────┘
+                         │ Electron IPC
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  IPC Handler                                 │
+│                 (Main Process)                               │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ipcMain.handle('goal:list', async (_, params) => {         │
+│    const repo = GoalContainer.getInstance().getRepository(); │
+│    return repo.findAll(params);                             │
+│  });                                                         │
+│                                                              │
+└────────────────────────┬────────────────────────────────────┘
+                         │ SQLite 查询
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│              SqliteGoalRepository                            │
+│                   (SQLite)                                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 📚 参考资料
 
 - Web 端实现: `apps/web/src/modules/goal/`, `apps/web/src/modules/task/`

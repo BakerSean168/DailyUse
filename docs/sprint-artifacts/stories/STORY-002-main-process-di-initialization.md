@@ -298,12 +298,252 @@ export class SqliteGoalRepository implements IGoalRepository {
 
 ---
 
+## 🏗️ 技术实现方案 (架构师补充)
+
+### 1. 接口设计 - IPC Handler 注册
+
+主进程需要注册 IPC handlers 来响应渲染进程的调用。以下是完整的 IPC 通道列表：
+
+```typescript
+// apps/desktop/src/main/ipc/ipc-handler-registry.ts
+
+import { ipcMain } from 'electron';
+import {
+  GoalContainer,
+  TaskContainer,
+  ScheduleContainer,
+  ReminderContainer,
+  AccountContainer,
+  AuthContainer,
+  NotificationContainer,
+  AIContainer,
+  DashboardContainer,
+  RepositoryContainer,
+  SettingContainer,
+} from '@dailyuse/infrastructure-server';
+import {
+  CreateGoalService,
+  GetGoalsService,
+  UpdateGoalService,
+  DeleteGoalService,
+  // ... 其他 application-server services
+} from '@dailyuse/application-server';
+
+/**
+ * 注册所有模块的 IPC Handlers
+ */
+export function registerAllIpcHandlers(): void {
+  registerGoalHandlers();
+  registerGoalFolderHandlers();
+  registerTaskHandlers();
+  registerScheduleHandlers();
+  registerReminderHandlers();
+  registerAccountHandlers();
+  registerAuthHandlers();
+  registerNotificationHandlers();
+  registerAIHandlers();
+  registerDashboardHandlers();
+  registerRepositoryHandlers();
+  registerSettingHandlers();
+}
+
+// ========== Goal Module (21 channels) ==========
+function registerGoalHandlers(): void {
+  const container = GoalContainer.getInstance();
+  
+  // CRUD
+  ipcMain.handle('goal:create', async (_, request) => {
+    const service = new CreateGoalService(container);
+    return service.execute(request);
+  });
+  
+  ipcMain.handle('goal:list', async (_, params) => {
+    const service = new GetGoalsService(container);
+    return service.execute(params);
+  });
+  
+  ipcMain.handle('goal:get', async (_, uuid, includeChildren) => {
+    const service = new GetGoalByIdService(container);
+    return service.execute(uuid, includeChildren);
+  });
+  
+  ipcMain.handle('goal:update', async (_, uuid, request) => {
+    const service = new UpdateGoalService(container);
+    return service.execute(uuid, request);
+  });
+  
+  ipcMain.handle('goal:delete', async (_, uuid) => {
+    const service = new DeleteGoalService(container);
+    return service.execute(uuid);
+  });
+  
+  // Status
+  ipcMain.handle('goal:activate', async (_, uuid) => {/*...*/});
+  ipcMain.handle('goal:pause', async (_, uuid) => {/*...*/});
+  ipcMain.handle('goal:complete', async (_, uuid) => {/*...*/});
+  ipcMain.handle('goal:archive', async (_, uuid) => {/*...*/});
+  ipcMain.handle('goal:search', async (_, params) => {/*...*/});
+  
+  // KeyResult
+  ipcMain.handle('goal:keyResult:add', async (_, goalUuid, request) => {/*...*/});
+  ipcMain.handle('goal:keyResult:list', async (_, goalUuid) => {/*...*/});
+  ipcMain.handle('goal:keyResult:update', async (_, goalUuid, krUuid, request) => {/*...*/});
+  ipcMain.handle('goal:keyResult:delete', async (_, goalUuid, krUuid) => {/*...*/});
+  ipcMain.handle('goal:keyResult:batchUpdateWeights', async (_, goalUuid, request) => {/*...*/});
+  ipcMain.handle('goal:progressBreakdown', async (_, goalUuid) => {/*...*/});
+  
+  // Review
+  ipcMain.handle('goal:review:create', async (_, goalUuid, request) => {/*...*/});
+  ipcMain.handle('goal:review:list', async (_, goalUuid) => {/*...*/});
+  ipcMain.handle('goal:review:update', async (_, goalUuid, reviewUuid, request) => {/*...*/});
+  ipcMain.handle('goal:review:delete', async (_, goalUuid, reviewUuid) => {/*...*/});
+  
+  // Record
+  ipcMain.handle('goal:record:create', async (_, goalUuid, krUuid, request) => {/*...*/});
+  ipcMain.handle('goal:record:list', async (_, goalUuid) => {/*...*/});
+  
+  // Aggregate
+  ipcMain.handle('goal:aggregate', async (_, goalUuid) => {/*...*/});
+}
+
+// ========== GoalFolder Module (5 channels) ==========
+function registerGoalFolderHandlers(): void {
+  ipcMain.handle('goalFolder:create', async (_, request) => {/*...*/});
+  ipcMain.handle('goalFolder:list', async (_, params) => {/*...*/});
+  ipcMain.handle('goalFolder:get', async (_, uuid) => {/*...*/});
+  ipcMain.handle('goalFolder:update', async (_, uuid, request) => {/*...*/});
+  ipcMain.handle('goalFolder:delete', async (_, uuid) => {/*...*/});
+}
+
+// ========== Task Module (28 channels) ==========
+// TaskTemplate (12), TaskInstance (7), TaskDependency (7), TaskStatistics (9)
+
+// ========== Schedule Module (18 channels) ==========
+// ScheduleEvent (10), ScheduleTask (18)
+
+// ========== 其他模块 (见完整实现) ==========
+```
+
+### 2. 完整 IPC 通道清单
+
+| 模块 | 通道前缀 | 数量 | 主要操作 |
+|------|---------|------|---------|
+| Goal | `goal:` | 21 | CRUD, KeyResult, Review, Record |
+| GoalFolder | `goalFolder:` | 5 | CRUD |
+| TaskTemplate | `taskTemplate:` | 12 | CRUD, Status, Generate |
+| TaskInstance | `taskInstance:` | 7 | CRUD, Status |
+| TaskDependency | `taskDependency:` | 7 | CRUD, Chain |
+| TaskStatistics | `taskStatistics:` | 9 | Get, Recalculate |
+| ScheduleEvent | `schedule:` | 10 | CRUD, Conflict |
+| ScheduleTask | `scheduleTask:` | 18 | CRUD, Status, Statistics |
+| Reminder | `reminder:` | 18 | Template, Group, Statistics |
+| Account | `account:` | 20 | CRUD, Profile, Subscription |
+| Auth | `auth:` | 16 | Login, Token, Session, Device |
+| Notification | `notification:` | 8 | CRUD, Read, Count |
+| AI:Conversation | `ai:conversation:` | 7 | CRUD, Close, Archive |
+| AI:Message | `ai:message:` | 3 | Send, Get, Delete |
+| AI:GenerationTask | `ai:generation-task:` | 8 | CRUD, Generate |
+| AI:Provider | `ai:provider:` | 8 | CRUD, Test, Refresh |
+| AI:Quota | `ai:quota:` | 3 | Get, Update, Check |
+| Dashboard | `dashboard:` | 5 | Get, Refresh, Config |
+| Repository | `repository:` | 15 | CRUD, Folder, Resource |
+| Setting | `setting:` | 10 | Get, Update, Sync |
+
+**总计: ~200 个 IPC 通道**
+
+### 3. SQLite Repository 接口契约
+
+```typescript
+// 从 @dailyuse/domain-server 导出的接口
+
+// Goal Repository
+interface IGoalRepository {
+  findAll(params?: GoalQueryParams): Promise<Goal[]>;
+  findById(id: string): Promise<Goal | null>;
+  findByAccountId(accountId: string): Promise<Goal[]>;
+  create(goal: Goal): Promise<Goal>;
+  update(goal: Goal): Promise<Goal>;
+  delete(id: string): Promise<void>;
+  // KeyResult 操作
+  addKeyResult(goalId: string, keyResult: KeyResult): Promise<KeyResult>;
+  getKeyResults(goalId: string): Promise<KeyResult[]>;
+  updateKeyResult(keyResult: KeyResult): Promise<KeyResult>;
+  deleteKeyResult(goalId: string, keyResultId: string): Promise<void>;
+  // Review 操作
+  addReview(goalId: string, review: GoalReview): Promise<GoalReview>;
+  getReviews(goalId: string): Promise<GoalReview[]>;
+  // Record 操作
+  addRecord(goalId: string, record: GoalRecord): Promise<GoalRecord>;
+  getRecords(goalId: string): Promise<GoalRecord[]>;
+}
+
+// 其他 Repository 接口类似...
+```
+
+### 4. 数据库 Schema 设计
+
+```sql
+-- SQLite Schema (部分)
+
+-- Goals
+CREATE TABLE goals (
+  id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
+  folder_id TEXT,
+  title TEXT NOT NULL,
+  description TEXT,
+  status TEXT DEFAULT 'active',
+  priority INTEGER DEFAULT 0,
+  start_date TEXT,
+  end_date TEXT,
+  progress REAL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (account_id) REFERENCES accounts(id),
+  FOREIGN KEY (folder_id) REFERENCES goal_folders(id)
+);
+
+-- Key Results
+CREATE TABLE key_results (
+  id TEXT PRIMARY KEY,
+  goal_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  target_value REAL NOT NULL,
+  current_value REAL DEFAULT 0,
+  unit TEXT,
+  weight REAL DEFAULT 1,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
+);
+
+-- 其他表...
+```
+
+### 5. 依赖注入顺序
+
+```
+1. 数据库初始化 (SQLite 连接)
+     ↓
+2. Repository 适配器创建
+     ↓
+3. Container 注册 (configureMainProcessDependencies)
+     ↓
+4. Application Service 可用
+     ↓
+5. IPC Handler 注册 (registerAllIpcHandlers)
+     ↓
+6. 渲染进程可调用
+```
+
+---
+
 ## 📚 参考资料
 
-- 现有文件: `apps/desktop/src/main/shared/services/repositoryFactory.ts`
-- 现有文件: `apps/desktop/src/main/shared/database/index.ts`
 - 包导出: `packages/infrastructure-server/src/index.ts`
 - 接口定义: `packages/domain-server/src/*/ports/*.ts`
+- Application Services: `packages/application-server/src/*/services/*.ts`
+- IPC Adapter 参考: `packages/infrastructure-client/src/*/adapters/ipc/*.ts`
 
 ---
 

@@ -297,11 +297,190 @@ export function useGoal() {
 
 ---
 
+## 🏗️ 技术实现方案 (架构师补充)
+
+### 1. ElectronAPI 接口设计
+
+```typescript
+// apps/desktop/src/renderer/types/electron.d.ts
+
+/**
+ * Electron IPC API - 由 Preload 脚本暴露
+ * 必须与 @dailyuse/infrastructure-client 的 ElectronAPI 接口完全匹配
+ */
+export interface ElectronAPI {
+  /**
+   * 调用主进程 IPC Handler
+   * @param channel IPC 通道名 (如 'goal:create')
+   * @param args 传递给 Handler 的参数
+   * @returns Handler 返回值
+   */
+  invoke<T = unknown>(channel: string, ...args: unknown[]): Promise<T>;
+  
+  /**
+   * 监听主进程事件
+   * @param channel 事件通道名
+   * @param callback 回调函数
+   */
+  on(channel: string, callback: (...args: unknown[]) => void): void;
+  
+  /**
+   * 移除事件监听
+   * @param channel 事件通道名
+   * @param callback 要移除的回调
+   */
+  off(channel: string, callback: (...args: unknown[]) => void): void;
+}
+
+declare global {
+  interface Window {
+    electronAPI: ElectronAPI;
+  }
+}
+
+export {};
+```
+
+### 2. 渲染进程初始化顺序
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 渲染进程启动顺序                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. Preload 脚本执行                                         │
+│     └─► window.electronAPI 可用                              │
+│                                                              │
+│  2. renderer/main.ts 加载                                    │
+│     └─► 检查 window.electronAPI                              │
+│                                                              │
+│  3. configureDesktopDependencies(electronAPI)               │
+│     └─► 11 个 Container 注册 IPC Adapter                    │
+│                                                              │
+│  4. Vue App 创建                                             │
+│     └─► createApp(App)                                      │
+│                                                              │
+│  5. 插件安装                                                 │
+│     └─► router, vuetify, pinia                              │
+│                                                              │
+│  6. App 挂载                                                 │
+│     └─► app.mount('#app')                                   │
+│                                                              │
+│  7. 组件可使用 Container 获取服务                            │
+│     └─► GoalContainer.getInstance().getApiClient()          │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 3. Application Client Services 调用模式
+
+```typescript
+// 方式 1: 直接使用 Service (推荐)
+import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { CreateGoalService } from '@dailyuse/application-client';
+
+async function createGoal(data: CreateGoalRequest) {
+  const container = GoalContainer.getInstance();
+  const service = new CreateGoalService(container);
+  return await service.execute(data);
+}
+
+// 方式 2: 通过 Composable 封装 (推荐用于 Vue 组件)
+export function useGoal() {
+  const container = GoalContainer.getInstance();
+  
+  // 缓存 Service 实例
+  const services = {
+    create: new CreateGoalService(container),
+    getAll: new GetAllGoalsService(container),
+    update: new UpdateGoalService(container),
+    delete: new DeleteGoalService(container),
+  };
+  
+  return {
+    createGoal: (data) => services.create.execute(data),
+    getGoals: (params) => services.getAll.execute(params),
+    updateGoal: (id, data) => services.update.execute(id, data),
+    deleteGoal: (id) => services.delete.execute(id),
+  };
+}
+```
+
+### 4. 完整 Composables 列表
+
+| Composable | Container | 主要功能 |
+|------------|-----------|---------|
+| `useGoal()` | GoalContainer | 目标 CRUD, KeyResult, Review |
+| `useGoalFolder()` | GoalContainer | 目标文件夹 CRUD |
+| `useTaskTemplate()` | TaskContainer | 任务模板 CRUD |
+| `useTaskInstance()` | TaskContainer | 任务实例状态管理 |
+| `useTaskStatistics()` | TaskContainer | 任务统计数据 |
+| `useSchedule()` | ScheduleContainer | 日程 CRUD, 冲突检测 |
+| `useScheduleTask()` | ScheduleContainer | 调度任务管理 |
+| `useReminder()` | ReminderContainer | 提醒模板/组 CRUD |
+| `useAccount()` | AccountContainer | 账户管理 |
+| `useAuth()` | AuthContainer | 登录/登出/Token |
+| `useNotification()` | NotificationContainer | 通知 CRUD |
+| `useAIConversation()` | AIContainer | AI 对话 |
+| `useAIMessage()` | AIContainer | AI 消息 |
+| `useAIGeneration()` | AIContainer | AI 生成任务 |
+| `useDashboard()` | DashboardContainer | 统计数据 |
+| `useRepository()` | RepositoryContainer | 仓库/资源管理 |
+| `useSetting()` | SettingContainer | 用户设置 |
+
+### 5. 错误处理策略
+
+```typescript
+// 统一错误处理
+export function useGoal() {
+  const error = ref<Error | null>(null);
+  const loading = ref(false);
+  
+  async function withErrorHandling<T>(
+    operation: () => Promise<T>,
+    errorMessage = '操作失败'
+  ): Promise<T | null> {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      return await operation();
+    } catch (e) {
+      error.value = e instanceof Error ? e : new Error(errorMessage);
+      console.error('[Goal Error]', e);
+      
+      // 特殊错误处理
+      if (e instanceof IpcError && e.code === 'UNAUTHORIZED') {
+        // 重定向到登录
+        router.push('/login');
+      }
+      
+      return null;
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  // 使用
+  async function createGoal(data: CreateGoalRequest) {
+    return withErrorHandling(
+      () => services.create.execute(data),
+      '创建目标失败'
+    );
+  }
+  
+  return { error, loading, createGoal };
+}
+```
+
+---
+
 ## 📚 参考资料
 
 - 现有文件: `apps/desktop/src/renderer/main.ts`
 - 包导出: `packages/infrastructure-client/src/index.ts`
 - Composition Root: `packages/infrastructure-client/src/di/composition-roots/desktop.composition-root.ts`
+- Application Services: `packages/application-client/src/*/services/*.ts`
 
 ---
 

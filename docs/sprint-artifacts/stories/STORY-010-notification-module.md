@@ -323,6 +323,311 @@ export function useNotifications() {
 
 ---
 
+## 🏗️ 技术实现方案 (架构师补充)
+
+> 本节由架构师 Agent 补充，提供详细技术实现指导
+
+### 1. IPC 通道与服务映射 (8 通道)
+
+| IPC Channel | Main Process Handler | 说明 |
+|-------------|---------------------|------|
+| `notification:create` | NotificationService.create() | 创建通知 (应用内) |
+| `notification:list` | NotificationService.list() | 列出通知 |
+| `notification:get` | NotificationService.get() | 获取通知详情 |
+| `notification:read` | NotificationService.markAsRead() | 标记已读 |
+| `notification:readAll` | NotificationService.markAllAsRead() | 全部已读 |
+| `notification:delete` | NotificationService.delete() | 删除通知 |
+| `notification:batchDelete` | NotificationService.batchDelete() | 批量删除 |
+| `notification:unreadCount` | NotificationService.getUnreadCount() | 未读数 |
+
+### 2. 主进程事件 (Push to Renderer)
+
+| 事件名 | 数据 | 触发场景 |
+|-------|------|---------|
+| `notification:new` | `NotificationPayload` | 新通知到达 |
+| `notification:clicked` | `{ id, action }` | 用户点击系统通知 |
+| `navigate` | `string` (route) | 通知点击后导航 |
+
+### 3. 通知类型与优先级
+
+```typescript
+// packages/contracts/src/notification/notification.types.ts
+export type NotificationType = 
+  | 'reminder'     // 提醒触发
+  | 'schedule'     // 日程通知
+  | 'goal'         // 目标相关
+  | 'task'         // 任务相关
+  | 'system'       // 系统消息
+  | 'ai';          // AI 建议
+
+export type NotificationPriority = 
+  | 'high'         // 紧急 (声音 + 震动模式)
+  | 'normal'       // 正常
+  | 'low';         // 静默
+
+export interface NotificationPayload {
+  id: string;
+  type: NotificationType;
+  priority: NotificationPriority;
+  title: string;
+  body: string;
+  icon?: string;
+  actions?: NotificationAction[];
+  data?: Record<string, unknown>;
+  targetRoute?: string;
+  createdAt: Date;
+  expiresAt?: Date;
+}
+
+export interface NotificationAction {
+  id: string;
+  label: string;
+  type: 'primary' | 'secondary' | 'destructive';
+}
+```
+
+### 4. 系统通知与应用内通知
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Main Process                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌─────────────────┐      ┌──────────────────────────────────┐  │
+│  │ ReminderService │      │       NotificationManager        │  │
+│  │  (触发提醒)      │ ──▶  │  ┌────────────────────────────┐ │  │
+│  └─────────────────┘      │  │  系统通知 (Electron API)   │ │  │
+│                            │  │  new Notification(...)     │ │  │
+│  ┌─────────────────┐      │  └────────────────────────────┘ │  │
+│  │ ScheduleService │ ──▶  │  ┌────────────────────────────┐ │  │
+│  │  (日程开始)      │      │  │  应用内通知                 │ │  │
+│  └─────────────────┘      │  │  webContents.send(...)     │ │  │
+│                            │  └────────────────────────────┘ │  │
+│  ┌─────────────────┐      │  ┌────────────────────────────┐ │  │
+│  │    AIService    │ ──▶  │  │  NotificationStore (持久化) │ │  │
+│  │   (AI 建议)      │      │  │  better-sqlite3           │ │  │
+│  └─────────────────┘      │  └────────────────────────────┘ │  │
+│                            └──────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 5. 免打扰模式实现
+
+```typescript
+// apps/desktop/src/main/services/do-not-disturb.service.ts
+import { nativeTheme, powerMonitor } from 'electron';
+
+interface DndSchedule {
+  enabled: boolean;
+  startHour: number;  // 0-23
+  startMinute: number;
+  endHour: number;
+  endMinute: number;
+  weekdays: number[]; // 0=Sunday, 1=Monday, ...
+}
+
+export class DoNotDisturbService {
+  private schedule: DndSchedule | null = null;
+  private manualDnd: boolean = false;
+
+  setSchedule(schedule: DndSchedule): void {
+    this.schedule = schedule;
+  }
+
+  toggleManual(enabled: boolean): void {
+    this.manualDnd = enabled;
+  }
+
+  isActive(): boolean {
+    if (this.manualDnd) return true;
+    if (!this.schedule?.enabled) return false;
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const startMinutes = this.schedule.startHour * 60 + this.schedule.startMinute;
+    const endMinutes = this.schedule.endHour * 60 + this.schedule.endMinute;
+    const dayOfWeek = now.getDay();
+
+    if (!this.schedule.weekdays.includes(dayOfWeek)) return false;
+
+    // 处理跨午夜的情况
+    if (startMinutes <= endMinutes) {
+      return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+    } else {
+      return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+    }
+  }
+
+  shouldShowNotification(priority: NotificationPriority): boolean {
+    if (!this.isActive()) return true;
+    // 只有高优先级通知在 DND 模式下仍显示
+    return priority === 'high';
+  }
+}
+```
+
+### 6. 通知权限检查
+
+```typescript
+// apps/desktop/src/main/services/notification-permission.ts
+import { Notification } from 'electron';
+
+export async function checkNotificationPermission(): Promise<{
+  supported: boolean;
+  granted: boolean;
+}> {
+  const supported = Notification.isSupported();
+  
+  if (!supported) {
+    return { supported: false, granted: false };
+  }
+
+  // macOS 需要检查权限
+  if (process.platform === 'darwin') {
+    // Electron 会在首次创建 Notification 时请求权限
+    // 目前无法预先检查，只能尝试创建
+    return { supported: true, granted: true };
+  }
+
+  // Windows/Linux 通常不需要显式授权
+  return { supported: true, granted: true };
+}
+
+export function requestNotificationPermission(): void {
+  // 通过创建一个静默通知来触发权限请求
+  if (process.platform === 'darwin') {
+    const notification = new Notification({
+      title: '',
+      body: '',
+      silent: true,
+    });
+    notification.close();
+  }
+}
+```
+
+### 7. 通知声音配置
+
+```typescript
+// apps/desktop/src/main/services/notification-sound.ts
+import { app, shell } from 'electron';
+import * as path from 'path';
+
+const BUILT_IN_SOUNDS = {
+  default: 'notification.wav',
+  gentle: 'gentle.wav',
+  urgent: 'urgent.wav',
+  chime: 'chime.wav',
+  none: null,
+} as const;
+
+export class NotificationSoundService {
+  private soundsDir: string;
+  private currentSound: keyof typeof BUILT_IN_SOUNDS = 'default';
+
+  constructor() {
+    this.soundsDir = path.join(app.getPath('userData'), 'sounds');
+  }
+
+  setSound(sound: keyof typeof BUILT_IN_SOUNDS): void {
+    this.currentSound = sound;
+  }
+
+  getSoundPath(): string | null {
+    const sound = BUILT_IN_SOUNDS[this.currentSound];
+    if (!sound) return null;
+    
+    return path.join(this.soundsDir, sound);
+  }
+
+  async playSound(): Promise<void> {
+    const soundPath = this.getSoundPath();
+    if (!soundPath) return;
+
+    // 使用 Electron 的 shell API 或 node 音频库播放
+    // 简单实现: 打开系统播放器
+    // await shell.openPath(soundPath);
+    
+    // 更好的实现: 使用 node-speaker 或类似库
+  }
+}
+```
+
+### 8. 设置持久化
+
+```typescript
+// 通知设置存储在 Settings 模块中
+interface NotificationSettings {
+  enabled: boolean;
+  
+  // 系统通知
+  systemNotifications: boolean;
+  showPreview: boolean;  // 显示通知内容预览
+  
+  // 声音
+  soundEnabled: boolean;
+  soundName: string;
+  
+  // 免打扰
+  dndEnabled: boolean;
+  dndSchedule: DndSchedule;
+  
+  // 按类型配置
+  typeSettings: Record<NotificationType, {
+    enabled: boolean;
+    sound: boolean;
+    priority: NotificationPriority;
+  }>;
+}
+
+// IPC 通道
+// setting:get - { key: 'notification' }
+// setting:update - { key: 'notification', value: NotificationSettings }
+```
+
+### 9. 与 STORY-006 (Schedule/Reminder) 集成
+
+```typescript
+// Reminder 触发时调用 NotificationManager
+// apps/desktop/src/main/handlers/reminder-ipc.handler.ts
+
+import { NotificationManager } from '../services/notification-manager';
+
+// 当 reminder 触发时
+async function onReminderTriggered(reminder: Reminder) {
+  const notificationManager = container.resolve<NotificationManager>('notificationManager');
+  
+  await notificationManager.show({
+    id: `reminder-${reminder.id}`,
+    type: 'reminder',
+    priority: reminder.priority === 'urgent' ? 'high' : 'normal',
+    title: reminder.title,
+    body: reminder.description || '',
+    targetRoute: `/schedule?reminder=${reminder.id}`,
+    actions: [
+      { id: 'snooze', label: '稍后提醒', type: 'secondary' },
+      { id: 'complete', label: '完成', type: 'primary' },
+    ],
+  });
+}
+
+// 处理通知操作
+notificationManager.on('action', async (notificationId, actionId) => {
+  if (notificationId.startsWith('reminder-')) {
+    const reminderId = notificationId.replace('reminder-', '');
+    
+    if (actionId === 'snooze') {
+      // 5分钟后再次提醒
+      await reminderService.snooze(reminderId, 5);
+    } else if (actionId === 'complete') {
+      await reminderService.complete(reminderId);
+    }
+  }
+});
+```
+
+---
+
 ## 📝 Task 分解
 
 ### Task 10.1: 通知管理器 (1 天)

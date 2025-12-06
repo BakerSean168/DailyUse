@@ -273,6 +273,192 @@ const chartOption = computed(() => ({
 
 ---
 
+## 🏗️ 技术实现方案 (架构师补充)
+
+### 1. IPC 通道与服务映射
+
+| IPC 通道 | Application Service | 描述 |
+|----------|---------------------|------|
+| `dashboard:statistics` | GetDashboardStatisticsService | 获取统计数据 |
+| `dashboard:refresh` | RefreshDashboardService | 强制刷新统计 |
+| `dashboard:config` | GetDashboardConfigService | 获取配置 |
+| `dashboard:updateConfig` | UpdateDashboardConfigService | 更新配置 |
+| `dashboard:resetConfig` | ResetDashboardConfigService | 重置配置 |
+
+### 2. Dashboard 数据结构
+
+```typescript
+// @dailyuse/contracts/dashboard
+interface DashboardStatisticsClientDTO {
+  // 任务统计
+  tasks: {
+    pending: number;
+    inProgress: number;
+    completed: number;
+    overdue: number;
+    completionRate: number;
+    trend: Array<{ date: string; completed: number; total: number }>;
+  };
+  
+  // 目标统计
+  goals: {
+    active: number;
+    completed: number;
+    paused: number;
+    averageProgress: number;
+    byStatus: Array<{ status: string; count: number }>;
+  };
+  
+  // 日程统计
+  schedules: {
+    today: number;
+    upcoming: number;
+    todayEvents: Array<{ uuid: string; title: string; startTime: string }>;
+  };
+  
+  // 提醒统计
+  reminders: {
+    upcoming: number;
+    todayReminders: Array<{ uuid: string; title: string; triggerTime: string }>;
+  };
+  
+  // 元数据
+  lastUpdated: string;
+}
+```
+
+### 3. useDashboard Composable
+
+```typescript
+// apps/desktop/src/renderer/shared/composables/useDashboard.ts
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { DashboardContainer } from '@dailyuse/infrastructure-client';
+import {
+  GetDashboardStatisticsService,
+  RefreshDashboardService,
+} from '@dailyuse/application-client';
+import type { DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
+
+export function useDashboard(autoRefreshInterval = 60000) { // 默认 1 分钟
+  const container = DashboardContainer.getInstance();
+  
+  const statistics = ref<DashboardStatisticsClientDTO | null>(null);
+  const loading = ref(false);
+  const lastUpdated = ref<Date | null>(null);
+  
+  let refreshTimer: NodeJS.Timeout | null = null;
+  
+  const services = {
+    getStatistics: new GetDashboardStatisticsService(container),
+    refresh: new RefreshDashboardService(container),
+  };
+  
+  async function fetchStatistics() {
+    loading.value = true;
+    try {
+      statistics.value = await services.getStatistics.execute();
+      lastUpdated.value = new Date();
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  async function forceRefresh() {
+    loading.value = true;
+    try {
+      statistics.value = await services.refresh.execute();
+      lastUpdated.value = new Date();
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  function startAutoRefresh() {
+    if (refreshTimer) return;
+    refreshTimer = setInterval(fetchStatistics, autoRefreshInterval);
+  }
+  
+  function stopAutoRefresh() {
+    if (refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+  }
+  
+  onMounted(() => {
+    fetchStatistics();
+    startAutoRefresh();
+  });
+  
+  onUnmounted(() => {
+    stopAutoRefresh();
+  });
+  
+  return {
+    statistics: computed(() => statistics.value),
+    loading: computed(() => loading.value),
+    lastUpdated: computed(() => lastUpdated.value),
+    fetchStatistics,
+    forceRefresh,
+  };
+}
+```
+
+### 4. ECharts 集成
+
+```typescript
+// 使用 vue-echarts
+// npm install echarts vue-echarts
+
+// TaskTrendChart.vue
+<script setup lang="ts">
+import { computed } from 'vue';
+import VChart from 'vue-echarts';
+import { use } from 'echarts/core';
+import { LineChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+
+use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
+
+interface Props {
+  data: Array<{ date: string; completed: number; total: number }>;
+}
+
+const props = defineProps<Props>();
+
+const option = computed(() => ({
+  tooltip: { trigger: 'axis' },
+  legend: { data: ['已完成', '总数'] },
+  xAxis: {
+    type: 'category',
+    data: props.data.map(d => d.date),
+  },
+  yAxis: { type: 'value' },
+  series: [
+    {
+      name: '已完成',
+      type: 'line',
+      data: props.data.map(d => d.completed),
+      smooth: true,
+    },
+    {
+      name: '总数',
+      type: 'line',
+      data: props.data.map(d => d.total),
+      smooth: true,
+    },
+  ],
+}));
+</script>
+
+<template>
+  <v-chart :option="option" autoresize style="height: 300px" />
+</template>
+```
+
+---
+
 ## ✅ 完成定义 (DoD)
 
 - [ ] 所有卡片组件实现

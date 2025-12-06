@@ -523,7 +523,7 @@ export class WindowStateManager {
     window.on('close', saveState);
   }
   
-  untrack(): void {
+    untrack(): void {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
     }
@@ -534,11 +534,415 @@ export class WindowStateManager {
 
 ---
 
+## 🏗️ 技术实现方案 (架构师补充)
+
+> 本节由架构师 Agent 补充，提供详细技术实现指导
+
+### 1. IPC 通道与服务映射 (12 通道)
+
+#### 托盘模块 (3 通道)
+
+| IPC Channel | Main Process Handler | 说明 |
+|-------------|---------------------|------|
+| `tray:getStatus` | TrayManager.getStatus() | 获取托盘状态 |
+| `tray:setBadge` | TrayManager.setBadge() | 设置角标数字 |
+| `tray:flash` | TrayManager.flash() | 闪烁提醒 |
+
+#### 快捷键模块 (4 通道)
+
+| IPC Channel | Main Process Handler | 说明 |
+|-------------|---------------------|------|
+| `shortcuts:get` | ShortcutManager.getShortcuts() | 获取配置 |
+| `shortcuts:update` | ShortcutManager.updateShortcut() | 更新单个 |
+| `shortcuts:reset` | ShortcutManager.reset() | 重置默认 |
+| `shortcuts:available` | ShortcutManager.isAvailable() | 检查占用 |
+
+#### 自启动模块 (2 通道)
+
+| IPC Channel | Main Process Handler | 说明 |
+|-------------|---------------------|------|
+| `autolaunch:get` | AutoLaunchManager.isEnabled() | 获取状态 |
+| `autolaunch:set` | AutoLaunchManager.setEnabled() | 设置启用 |
+
+#### 窗口控制 (3 通道)
+
+| IPC Channel | Main Process Handler | 说明 |
+|-------------|---------------------|------|
+| `window:minimize` | WindowController.minimize() | 最小化 |
+| `window:maximize` | WindowController.toggleMaximize() | 切换最大化 |
+| `window:close` | WindowController.close() | 关闭(->托盘) |
+
+### 2. 主进程事件 (Push to Renderer)
+
+| 事件名 | 数据 | 触发场景 |
+|-------|------|---------|
+| `action:quickNote` | void | 快捷键触发快速记录 |
+| `action:showWindow` | void | 托盘点击显示窗口 |
+| `deeplink:open` | `{ url: string }` | 深度链接触发 |
+| `tray:menu-click` | `{ action: string }` | 托盘菜单点击 |
+
+### 3. 跨平台差异处理
+
+```typescript
+// apps/desktop/src/main/shared/platform.ts
+
+export const platform = {
+  isMac: process.platform === 'darwin',
+  isWindows: process.platform === 'win32',
+  isLinux: process.platform === 'linux',
+};
+
+// 托盘图标路径
+export function getTrayIconPath(hasNotification = false): string {
+  const iconName = hasNotification ? 'tray-alert' : 'tray';
+  
+  if (platform.isWindows) {
+    return path.join(__dirname, `../resources/${iconName}.ico`);
+  } else if (platform.isMac) {
+    // macOS Template 图标自动适应暗色模式
+    return path.join(__dirname, `../resources/${iconName}Template.png`);
+  } else {
+    return path.join(__dirname, `../resources/${iconName}.png`);
+  }
+}
+
+// 自启动配置
+export function getLoginItemSettings(enabled: boolean) {
+  const settings: Electron.Settings = {
+    openAtLogin: enabled,
+    openAsHidden: true,
+  };
+
+  if (platform.isMac) {
+    // macOS 特有
+    settings.path = app.getPath('exe');
+  }
+
+  if (platform.isWindows) {
+    // Windows: 传递启动参数
+    settings.args = ['--minimized'];
+  }
+
+  return settings;
+}
+
+// 快捷键格式化
+export function formatAccelerator(accelerator: string): string {
+  if (platform.isMac) {
+    return accelerator
+      .replace('CommandOrControl', '⌘')
+      .replace('Shift', '⇧')
+      .replace('Alt', '⌥')
+      .replace('Ctrl', '⌃');
+  }
+  return accelerator.replace('CommandOrControl', 'Ctrl');
+}
+```
+
+### 4. 深度链接处理
+
+```typescript
+// apps/desktop/src/main/modules/deeplink/deeplinkHandler.ts
+import { app, BrowserWindow } from 'electron';
+
+const PROTOCOL = 'dailyuse';
+
+export class DeepLinkHandler {
+  private mainWindow: BrowserWindow | null = null;
+  private pendingUrl: string | null = null;
+
+  constructor(window: BrowserWindow) {
+    this.mainWindow = window;
+    this.register();
+  }
+
+  private register(): void {
+    // 注册协议 (开发模式需要)
+    if (process.defaultApp) {
+      if (process.argv.length >= 2) {
+        app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [
+          path.resolve(process.argv[1]),
+        ]);
+      }
+    } else {
+      app.setAsDefaultProtocolClient(PROTOCOL);
+    }
+
+    // macOS: 通过 open-url 事件
+    app.on('open-url', (event, url) => {
+      event.preventDefault();
+      this.handleUrl(url);
+    });
+
+    // Windows/Linux: 检查启动参数
+    const argv = process.argv;
+    const url = argv.find(arg => arg.startsWith(`${PROTOCOL}://`));
+    if (url) {
+      this.handleUrl(url);
+    }
+
+    // Windows: 单实例锁定时的第二实例
+    app.on('second-instance', (_, argv) => {
+      const url = argv.find(arg => arg.startsWith(`${PROTOCOL}://`));
+      if (url) {
+        this.handleUrl(url);
+      }
+    });
+  }
+
+  private handleUrl(url: string): void {
+    // 解析 URL: dailyuse://action/param
+    // 例如: dailyuse://goal/123
+    //       dailyuse://quick-note
+    //       dailyuse://schedule/today
+
+    const parsed = new URL(url);
+    const action = parsed.hostname;
+    const params = parsed.pathname.slice(1); // 移除前导 /
+
+    if (!this.mainWindow) {
+      this.pendingUrl = url;
+      return;
+    }
+
+    // 显示窗口
+    if (this.mainWindow.isMinimized()) {
+      this.mainWindow.restore();
+    }
+    this.mainWindow.show();
+    this.mainWindow.focus();
+
+    // 发送到 Renderer
+    this.mainWindow.webContents.send('deeplink:open', {
+      action,
+      params,
+      url,
+    });
+  }
+
+  processPending(): void {
+    if (this.pendingUrl) {
+      this.handleUrl(this.pendingUrl);
+      this.pendingUrl = null;
+    }
+  }
+}
+
+// Renderer 侧处理
+// apps/desktop/src/renderer/plugins/deeplink.ts
+export function setupDeepLinkHandler(router: Router) {
+  window.electronAPI.on('deeplink:open', (_, data) => {
+    const { action, params } = data;
+    
+    switch (action) {
+      case 'goal':
+        router.push(`/goals/${params}`);
+        break;
+      case 'task':
+        router.push(`/tasks/${params}`);
+        break;
+      case 'schedule':
+        if (params === 'today') {
+          router.push('/schedule?view=day');
+        } else {
+          router.push(`/schedule/${params}`);
+        }
+        break;
+      case 'quick-note':
+        // 打开快速记录弹窗
+        eventBus.emit('open:quick-note');
+        break;
+      default:
+        console.warn('Unknown deep link action:', action);
+    }
+  });
+}
+```
+
+### 5. 主进程初始化顺序
+
+```typescript
+// apps/desktop/src/main/main.ts
+import { app, BrowserWindow } from 'electron';
+import { TrayManager } from './modules/tray/trayManager';
+import { ShortcutManager } from './modules/shortcuts/shortcutManager';
+import { AutoLaunchManager } from './modules/autolaunch/autoLaunchManager';
+import { DeepLinkHandler } from './modules/deeplink/deeplinkHandler';
+import { WindowStateManager } from './shared/windowState';
+
+let mainWindow: BrowserWindow | null = null;
+let trayManager: TrayManager | null = null;
+let shortcutManager: ShortcutManager | null = null;
+let autoLaunchManager: AutoLaunchManager | null = null;
+let deepLinkHandler: DeepLinkHandler | null = null;
+let windowStateManager: WindowStateManager | null = null;
+
+// 单实例锁定
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}
+
+app.on('ready', async () => {
+  // 1. 恢复窗口状态
+  windowStateManager = new WindowStateManager();
+  const windowState = windowStateManager.getState();
+  
+  // 2. 创建主窗口
+  mainWindow = new BrowserWindow({
+    ...windowState,
+    show: false, // 等待 ready-to-show
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+  
+  // 3. 跟踪窗口状态
+  windowStateManager.track(mainWindow);
+  
+  // 4. 加载内容
+  if (isDev) {
+    await mainWindow.loadURL('http://localhost:5173');
+  } else {
+    await mainWindow.loadFile('dist/index.html');
+  }
+  
+  // 5. 初始化原生模块 (窗口创建后)
+  trayManager = new TrayManager(mainWindow);
+  trayManager.init();
+  
+  shortcutManager = new ShortcutManager(mainWindow);
+  shortcutManager.init();
+  
+  autoLaunchManager = new AutoLaunchManager();
+  autoLaunchManager.init();
+  
+  deepLinkHandler = new DeepLinkHandler(mainWindow);
+  
+  // 6. 显示窗口
+  mainWindow.once('ready-to-show', () => {
+    // 检查是否以最小化模式启动
+    const startMinimized = process.argv.includes('--minimized');
+    
+    if (!startMinimized) {
+      mainWindow!.show();
+      if (windowState.isMaximized) {
+        mainWindow!.maximize();
+      }
+    }
+    
+    // 处理启动时的深度链接
+    deepLinkHandler?.processPending();
+  });
+});
+
+// 优雅退出
+app.on('before-quit', () => {
+  shortcutManager?.destroy();
+  trayManager?.destroy();
+  windowStateManager?.untrack();
+});
+
+app.on('window-all-closed', () => {
+  // macOS 保持运行
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+```
+
+### 6. 托盘图标资源规范
+
+| 平台 | 文件名 | 尺寸 | 格式 |
+|------|-------|------|------|
+| Windows | tray.ico | 16x16, 32x32, 48x48 | ICO |
+| macOS | trayTemplate.png | 16x16, 32x32 (@2x) | PNG (黑色) |
+| macOS | trayTemplate@2x.png | 32x32 | PNG (黑色) |
+| Linux | tray.png | 22x22, 24x24 | PNG |
+
+> **macOS Template 图标**: 必须使用纯黑色 + 透明背景，系统自动根据暗色/亮色模式调整颜色
+
+### 7. Renderer 侧设置界面
+
+```typescript
+// apps/desktop/src/renderer/composables/useDesktopSettings.ts
+import { ref, onMounted } from 'vue';
+
+interface DesktopSettings {
+  autoLaunch: boolean;
+  minimizeToTray: boolean;
+  shortcuts: Record<string, string>;
+}
+
+export function useDesktopSettings() {
+  const autoLaunch = ref(false);
+  const minimizeToTray = ref(true);
+  const shortcuts = ref<Record<string, string>>({});
+  const isLoading = ref(false);
+  
+  async function loadSettings() {
+    isLoading.value = true;
+    try {
+      const [autoLaunchEnabled, shortcutConfig] = await Promise.all([
+        window.electronAPI.invoke<boolean>('autolaunch:get'),
+        window.electronAPI.invoke<Record<string, string>>('shortcuts:get'),
+      ]);
+      
+      autoLaunch.value = autoLaunchEnabled;
+      shortcuts.value = shortcutConfig;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  
+  async function setAutoLaunch(enabled: boolean) {
+    const result = await window.electronAPI.invoke<{ success: boolean }>('autolaunch:set', enabled);
+    if (result.success) {
+      autoLaunch.value = enabled;
+    }
+    return result;
+  }
+  
+  async function updateShortcut(key: string, accelerator: string) {
+    const result = await window.electronAPI.invoke<{ success: boolean; error?: string }>(
+      'shortcuts:update',
+      { key, accelerator }
+    );
+    if (result.success) {
+      shortcuts.value[key] = accelerator;
+    }
+    return result;
+  }
+  
+  async function resetShortcuts() {
+    const result = await window.electronAPI.invoke<{ success: boolean }>('shortcuts:reset');
+    if (result.success) {
+      await loadSettings();
+    }
+    return result;
+  }
+  
+  onMounted(loadSettings);
+  
+  return {
+    autoLaunch,
+    minimizeToTray,
+    shortcuts,
+    isLoading,
+    setAutoLaunch,
+    updateShortcut,
+    resetShortcuts,
+  };
+}
+```
+
+---
+
 ## 📝 Task 分解
 
-### Task 12.1: 系统托盘 (1 天)
-
-**子任务**:
+### Task 12.1: 系统托盘 (1 天)**子任务**:
 - [ ] 实现 TrayManager
 - [ ] 托盘菜单配置
 - [ ] 托盘图标资源

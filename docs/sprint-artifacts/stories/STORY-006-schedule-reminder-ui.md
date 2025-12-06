@@ -322,11 +322,269 @@ export class NotificationService {
 
 ---
 
+## 🏗️ 技术实现方案 (架构师补充)
+
+### 1. IPC 通道与服务映射
+
+#### Schedule 模块 (28 IPC 通道)
+
+| IPC 通道 | 描述 |
+|----------|------|
+| `schedule:create` | 创建日程事件 |
+| `schedule:get` | 获取单个日程 |
+| `schedule:list` | 获取日程列表 |
+| `schedule:timeRange` | 按时间范围获取 |
+| `schedule:update` | 更新日程 |
+| `schedule:delete` | 删除日程 |
+| `schedule:conflicts` | 获取冲突 |
+| `schedule:detectConflicts` | 检测冲突 |
+| `scheduleTask:create` | 创建调度任务 |
+| `scheduleTask:list` | 获取调度任务列表 |
+| `scheduleTask:pause` | 暂停调度任务 |
+| `scheduleTask:resume` | 恢复调度任务 |
+| `scheduleTask:complete` | 完成调度任务 |
+| `scheduleTask:statistics` | 获取调度统计 |
+
+#### Reminder 模块 (20 IPC 通道)
+
+| IPC 通道 | 描述 |
+|----------|------|
+| `reminder:template:create` | 创建提醒模板 |
+| `reminder:template:list` | 获取模板列表 |
+| `reminder:template:get` | 获取单个模板 |
+| `reminder:template:update` | 更新模板 |
+| `reminder:template:delete` | 删除模板 |
+| `reminder:template:toggle` | 开关模板 |
+| `reminder:upcoming` | 获取即将触发的提醒 |
+| `reminder:group:create` | 创建提醒组 |
+| `reminder:group:list` | 获取组列表 |
+| `reminder:statistics` | 获取提醒统计 |
+
+### 2. 日历组件技术选型
+
+```typescript
+// 推荐使用 FullCalendar
+// npm install @fullcalendar/core @fullcalendar/vue3 @fullcalendar/daygrid @fullcalendar/timegrid
+
+import FullCalendar from '@fullcalendar/vue3';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+
+const calendarOptions = {
+  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+  initialView: 'dayGridMonth',
+  editable: true,
+  selectable: true,
+  events: [], // 从 useSchedule 获取
+  eventDrop: handleEventDrop,
+  eventResize: handleEventResize,
+  select: handleDateSelect,
+};
+```
+
+### 3. 原生通知实现
+
+```typescript
+// apps/desktop/src/main/modules/notification/NotificationService.ts
+import { Notification, app, BrowserWindow } from 'electron';
+
+export class NotificationService {
+  private mainWindow: BrowserWindow;
+  
+  constructor(mainWindow: BrowserWindow) {
+    this.mainWindow = mainWindow;
+  }
+  
+  show(options: {
+    title: string;
+    body: string;
+    icon?: string;
+    silent?: boolean;
+    urgency?: 'normal' | 'critical' | 'low';
+    actions?: { type: string; text: string }[];
+    targetRoute?: string;
+  }): void {
+    const notification = new Notification({
+      title: options.title,
+      body: options.body,
+      icon: options.icon || this.getAppIcon(),
+      silent: options.silent ?? false,
+      urgency: options.urgency ?? 'normal',
+    });
+    
+    notification.on('click', () => {
+      // 聚焦窗口
+      if (this.mainWindow.isMinimized()) {
+        this.mainWindow.restore();
+      }
+      this.mainWindow.focus();
+      
+      // 导航到目标页面
+      if (options.targetRoute) {
+        this.mainWindow.webContents.send('navigate', options.targetRoute);
+      }
+    });
+    
+    notification.show();
+  }
+  
+  private getAppIcon(): string {
+    // 根据平台返回图标路径
+    return process.platform === 'win32'
+      ? 'resources/icon.ico'
+      : 'resources/icon.png';
+  }
+}
+```
+
+### 4. 提醒调度器
+
+```typescript
+// apps/desktop/src/main/modules/reminder/ReminderScheduler.ts
+import { schedule, Job } from 'node-schedule';
+import { ReminderContainer } from '@dailyuse/infrastructure-server';
+
+export class ReminderScheduler {
+  private jobs = new Map<string, Job>();
+  private notificationService: NotificationService;
+  
+  constructor(notificationService: NotificationService) {
+    this.notificationService = notificationService;
+  }
+  
+  async initialize(): Promise<void> {
+    const container = ReminderContainer.getInstance();
+    const repo = container.getReminderTemplateRepository();
+    
+    // 加载所有启用的提醒模板
+    const templates = await repo.findEnabled();
+    
+    for (const template of templates) {
+      this.scheduleReminder(template);
+    }
+  }
+  
+  scheduleReminder(template: ReminderTemplate): void {
+    // 取消已存在的任务
+    this.cancelReminder(template.uuid);
+    
+    // 根据 cron 表达式创建新任务
+    const job = schedule.scheduleJob(template.cronExpression, () => {
+      this.triggerReminder(template);
+    });
+    
+    if (job) {
+      this.jobs.set(template.uuid, job);
+    }
+  }
+  
+  private triggerReminder(template: ReminderTemplate): void {
+    this.notificationService.show({
+      title: template.title,
+      body: template.description || '',
+      targetRoute: `/reminders/${template.uuid}`,
+    });
+  }
+  
+  cancelReminder(uuid: string): void {
+    const job = this.jobs.get(uuid);
+    if (job) {
+      job.cancel();
+      this.jobs.delete(uuid);
+    }
+  }
+}
+```
+
+### 5. useSchedule Composable
+
+```typescript
+// apps/desktop/src/renderer/shared/composables/useSchedule.ts
+import { ref, computed } from 'vue';
+import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import {
+  CreateScheduleService,
+  GetSchedulesByTimeRangeService,
+  UpdateScheduleService,
+  DeleteScheduleService,
+  DetectConflictsService,
+} from '@dailyuse/application-client';
+import type { ScheduleClientDTO, CreateScheduleRequest } from '@dailyuse/contracts/schedule';
+
+export function useSchedule() {
+  const container = ScheduleContainer.getInstance();
+  
+  const schedules = ref<ScheduleClientDTO[]>([]);
+  const loading = ref(false);
+  
+  const services = {
+    create: new CreateScheduleService(container),
+    getByTimeRange: new GetSchedulesByTimeRangeService(container),
+    update: new UpdateScheduleService(container),
+    delete: new DeleteScheduleService(container),
+    detectConflicts: new DetectConflictsService(container),
+  };
+  
+  async function fetchSchedulesByTimeRange(start: Date, end: Date) {
+    loading.value = true;
+    try {
+      schedules.value = await services.getByTimeRange.execute({
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+      });
+    } finally {
+      loading.value = false;
+    }
+  }
+  
+  async function createSchedule(request: CreateScheduleRequest) {
+    // 先检测冲突
+    const conflicts = await services.detectConflicts.execute({
+      startTime: request.startTime,
+      endTime: request.endTime,
+    });
+    
+    if (conflicts.hasConflict) {
+      // 返回冲突信息让 UI 处理
+      return { success: false, conflicts };
+    }
+    
+    const schedule = await services.create.execute(request);
+    schedules.value.push(schedule);
+    return { success: true, schedule };
+  }
+  
+  // FullCalendar 格式化
+  const calendarEvents = computed(() => {
+    return schedules.value.map(s => ({
+      id: s.uuid,
+      title: s.title,
+      start: s.startTime,
+      end: s.endTime,
+      backgroundColor: getEventColor(s.type),
+      extendedProps: { schedule: s },
+    }));
+  });
+  
+  return {
+    schedules: computed(() => schedules.value),
+    calendarEvents,
+    loading: computed(() => loading.value),
+    fetchSchedulesByTimeRange,
+    createSchedule,
+  };
+}
+```
+
+---
+
 ## 📚 参考资料
 
 - Web 端实现: `apps/web/src/modules/schedule/`, `apps/web/src/modules/reminder/`
 - Electron Notification: https://www.electronjs.org/docs/latest/api/notification
 - node-schedule: https://github.com/node-schedule/node-schedule
+- FullCalendar Vue: https://fullcalendar.io/docs/vue
 
 ---
 

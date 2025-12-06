@@ -339,10 +339,263 @@ export function registerAllIpcHandlers(): void {
 
 ---
 
+## 🏗️ 技术实现方案 (架构师补充)
+
+### 1. 关键设计决策: 简化 Preload API
+
+**问题**: PM 创建的方案使用了模块化 API (如 `window.electronAPI.goal.create()`)，但 IPC 适配器期望的是统一的 invoke/on/off 接口。
+
+**决策**: 采用简单的 invoke/on/off 模式，与 `@dailyuse/infrastructure-client` 的 `ElectronAPI` 接口完全一致。
+
+```typescript
+// ✅ 正确方式: 简单的 invoke/on/off
+interface ElectronAPI {
+  invoke<T>(channel: string, ...args: unknown[]): Promise<T>;
+  on(channel: string, callback: (...args: unknown[]) => void): void;
+  off(channel: string, callback: (...args: unknown[]) => void): void;
+}
+
+// ❌ 错误方式: 模块化 API (IPC 适配器无法使用)
+interface ElectronAPI {
+  goal: { create: (data) => Promise<Goal>, ... };
+  task: { ... };
+}
+```
+
+### 2. 完整 Preload 脚本实现
+
+```typescript
+// apps/desktop/src/preload/main.ts
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+
+/**
+ * 允许的 IPC 通道白名单
+ * 防止渲染进程调用未授权的通道
+ */
+const ALLOWED_INVOKE_CHANNELS = [
+  // Goal (21)
+  'goal:create', 'goal:list', 'goal:get', 'goal:update', 'goal:delete',
+  'goal:activate', 'goal:pause', 'goal:complete', 'goal:archive', 'goal:search',
+  'goal:keyResult:add', 'goal:keyResult:list', 'goal:keyResult:update', 
+  'goal:keyResult:delete', 'goal:keyResult:batchUpdateWeights', 'goal:progressBreakdown',
+  'goal:review:create', 'goal:review:list', 'goal:review:update', 'goal:review:delete',
+  'goal:record:create', 'goal:record:list', 'goal:aggregate',
+  
+  // GoalFolder (5)
+  'goalFolder:create', 'goalFolder:list', 'goalFolder:get', 'goalFolder:update', 'goalFolder:delete',
+  
+  // Task Template (12)
+  'taskTemplate:create', 'taskTemplate:list', 'taskTemplate:get', 'taskTemplate:update', 
+  'taskTemplate:delete', 'taskTemplate:activate', 'taskTemplate:pause', 'taskTemplate:archive',
+  'taskTemplate:generate', 'taskTemplate:instances', 'taskTemplate:bindGoal', 'taskTemplate:unbindGoal',
+  
+  // Task Instance (7)
+  'taskInstance:list', 'taskInstance:get', 'taskInstance:delete',
+  'taskInstance:start', 'taskInstance:complete', 'taskInstance:skip', 'taskInstance:checkExpired',
+  
+  // Task Dependency (7)
+  'taskDependency:create', 'taskDependency:list', 'taskDependency:dependents',
+  'taskDependency:chain', 'taskDependency:validate', 'taskDependency:delete', 'taskDependency:update',
+  
+  // Task Statistics (9)
+  'taskStatistics:get', 'taskStatistics:recalculate', 'taskStatistics:delete',
+  'taskStatistics:updateTemplate', 'taskStatistics:updateInstance', 'taskStatistics:updateCompletion',
+  'taskStatistics:todayRate', 'taskStatistics:weekRate', 'taskStatistics:trend',
+  
+  // Schedule Event (10)
+  'schedule:create', 'schedule:get', 'schedule:list', 'schedule:timeRange',
+  'schedule:update', 'schedule:delete', 'schedule:conflicts', 'schedule:detectConflicts',
+  'schedule:createWithConflict', 'schedule:resolveConflict',
+  
+  // Schedule Task (18)
+  'scheduleTask:create', 'scheduleTask:createBatch', 'scheduleTask:list', 'scheduleTask:get',
+  'scheduleTask:due', 'scheduleTask:bySource', 'scheduleTask:pause', 'scheduleTask:resume',
+  'scheduleTask:complete', 'scheduleTask:cancel', 'scheduleTask:delete', 'scheduleTask:deleteBatch',
+  'scheduleTask:updateMetadata', 'scheduleTask:statistics', 'scheduleTask:moduleStats',
+  'scheduleTask:allModuleStats', 'scheduleTask:recalculate', 'scheduleTask:reset',
+  
+  // Reminder (18)
+  'reminder:template:create', 'reminder:template:get', 'reminder:template:list',
+  'reminder:template:user', 'reminder:template:update', 'reminder:template:delete',
+  'reminder:template:toggle', 'reminder:template:move', 'reminder:template:search',
+  'reminder:template:scheduleStatus', 'reminder:upcoming',
+  'reminder:group:create', 'reminder:group:get', 'reminder:group:list', 'reminder:group:user',
+  'reminder:group:update', 'reminder:group:delete', 'reminder:group:toggle', 'reminder:group:controlMode',
+  'reminder:statistics',
+  
+  // Account (20)
+  'account:create', 'account:get', 'account:list', 'account:delete',
+  'account:myProfile', 'account:updateMyProfile', 'account:changePassword',
+  'account:updateProfile', 'account:updatePreferences', 'account:updateEmail',
+  'account:verifyEmail', 'account:updatePhone', 'account:verifyPhone',
+  'account:deactivate', 'account:suspend', 'account:activate',
+  'account:subscription', 'account:subscribe', 'account:cancelSubscription', 'account:history',
+  
+  // Auth (16)
+  'auth:login', 'auth:register', 'auth:logout', 'auth:refresh',
+  'auth:forgotPassword', 'auth:resetPassword', 'auth:changePassword',
+  'auth:createApiKey', 'auth:getApiKeys', 'auth:revokeApiKey',
+  'auth:sessions', 'auth:revokeSession', 'auth:revokeAllSessions',
+  'auth:trustDevice', 'auth:revokeTrustedDevice', 'auth:trustedDevices',
+  
+  // Notification (8)
+  'notification:create', 'notification:list', 'notification:get',
+  'notification:markRead', 'notification:markAllRead', 'notification:delete',
+  'notification:batchDelete', 'notification:unreadCount',
+  
+  // AI Conversation (7)
+  'ai:conversation:create', 'ai:conversation:list', 'ai:conversation:get',
+  'ai:conversation:update', 'ai:conversation:delete', 'ai:conversation:close', 'ai:conversation:archive',
+  
+  // AI Message (3)
+  'ai:message:send', 'ai:message:list', 'ai:message:delete',
+  
+  // AI Generation Task (8)
+  'ai:generation-task:create', 'ai:generation-task:list', 'ai:generation-task:get',
+  'ai:generation-task:cancel', 'ai:generation-task:retry',
+  'ai:generation-task:goal', 'ai:generation-task:goalWithKR', 'ai:generation-task:keyResults',
+  
+  // AI Provider (8)
+  'ai:provider:create', 'ai:provider:list', 'ai:provider:get', 'ai:provider:update',
+  'ai:provider:delete', 'ai:provider:test', 'ai:provider:setDefault', 'ai:provider:refreshModels',
+  
+  // AI Quota (3)
+  'ai:quota:get', 'ai:quota:update', 'ai:quota:check',
+  
+  // Dashboard (5)
+  'dashboard:statistics', 'dashboard:refresh', 'dashboard:config', 
+  'dashboard:updateConfig', 'dashboard:resetConfig',
+  
+  // Repository (15)
+  'repository:create', 'repository:list', 'repository:get', 'repository:delete',
+  'repository:folder:create', 'repository:folder:contents', 'repository:folder:rename',
+  'repository:folder:move', 'repository:folder:delete', 'repository:fileTree',
+  'repository:search', 'repository:resource:get', 'repository:resource:rename',
+  'repository:resource:move', 'repository:resource:delete',
+  
+  // Setting (10)
+  'setting:user', 'setting:appearance', 'setting:locale', 'setting:workflow',
+  'setting:privacy', 'setting:reset', 'setting:appConfig', 'setting:sync',
+  'setting:export', 'setting:import',
+];
+
+const ALLOWED_LISTEN_CHANNELS = [
+  // 主进程 → 渲染进程 的事件
+  'ai:message:chunk',           // AI 流式响应
+  'notification:new',           // 新通知
+  'notification:closed',        // 通知已关闭
+  'navigate',                   // 导航请求
+  'action:quickNote',           // 快速记录
+  'sync:status',                // 同步状态
+  'app:focus',                  // 窗口聚焦
+];
+
+/**
+ * 暴露给渲染进程的 API
+ * 完全匹配 @dailyuse/infrastructure-client 的 ElectronAPI 接口
+ */
+contextBridge.exposeInMainWorld('electronAPI', {
+  /**
+   * 调用主进程 IPC Handler
+   */
+  invoke: <T = unknown>(channel: string, ...args: unknown[]): Promise<T> => {
+    if (!ALLOWED_INVOKE_CHANNELS.includes(channel)) {
+      return Promise.reject(new Error(`IPC channel not allowed: ${channel}`));
+    }
+    return ipcRenderer.invoke(channel, ...args);
+  },
+  
+  /**
+   * 监听主进程事件
+   */
+  on: (channel: string, callback: (...args: unknown[]) => void): void => {
+    if (!ALLOWED_LISTEN_CHANNELS.includes(channel)) {
+      console.warn(`IPC channel not allowed for listening: ${channel}`);
+      return;
+    }
+    
+    const subscription = (_event: IpcRendererEvent, ...args: unknown[]) => {
+      callback(...args);
+    };
+    
+    ipcRenderer.on(channel, subscription);
+  },
+  
+  /**
+   * 移除事件监听
+   */
+  off: (channel: string, callback: (...args: unknown[]) => void): void => {
+    ipcRenderer.removeListener(channel, callback as any);
+  },
+});
+
+// 类型声明
+export {};
+```
+
+### 3. IPC 通道统计
+
+| 模块 | 通道数量 | 备注 |
+|------|---------|------|
+| Goal | 23 | 含 KeyResult, Review, Record |
+| GoalFolder | 5 | - |
+| TaskTemplate | 12 | - |
+| TaskInstance | 7 | - |
+| TaskDependency | 7 | - |
+| TaskStatistics | 9 | - |
+| ScheduleEvent | 10 | - |
+| ScheduleTask | 18 | - |
+| Reminder | 20 | 含 Template, Group |
+| Account | 20 | - |
+| Auth | 16 | - |
+| Notification | 8 | - |
+| AI:Conversation | 7 | - |
+| AI:Message | 3 | - |
+| AI:GenerationTask | 8 | - |
+| AI:Provider | 8 | - |
+| AI:Quota | 3 | - |
+| Dashboard | 5 | - |
+| Repository | 15 | - |
+| Setting | 10 | - |
+| **总计** | **~204** | - |
+
+### 4. 安全最佳实践
+
+```typescript
+// ❌ 不安全: 暴露原始 ipcRenderer
+contextBridge.exposeInMainWorld('electron', {
+  ipcRenderer: ipcRenderer, // 危险！
+});
+
+// ✅ 安全: 白名单 + 包装
+contextBridge.exposeInMainWorld('electronAPI', {
+  invoke: (channel, ...args) => {
+    if (!ALLOWED_CHANNELS.includes(channel)) {
+      throw new Error('Channel not allowed');
+    }
+    return ipcRenderer.invoke(channel, ...args);
+  },
+});
+```
+
+### 5. 依赖顺序
+
+```
+STORY-002 (主进程 DI) 
+    ↓ 提供 Container
+STORY-004 (Preload + IPC Handlers) ← 当前 Story
+    ↓ 提供 window.electronAPI
+STORY-003 (渲染进程 DI)
+    ↓ 调用 configureDesktopDependencies
+所有 UI Stories
+```
+
+---
+
 ## 📚 参考资料
 
-- 现有文件: `apps/desktop/src/preload/main.ts`
-- IPC 适配器: `packages/infrastructure-client/src/*/adapters/*-ipc.adapter.ts`
+- IPC 适配器: `packages/infrastructure-client/src/*/adapters/ipc/*.ts`
+- ElectronAPI 接口: `packages/infrastructure-client/src/shared/ipc-client.types.ts`
 - Electron 文档: [contextBridge](https://www.electronjs.org/docs/latest/api/context-bridge)
 
 ---
