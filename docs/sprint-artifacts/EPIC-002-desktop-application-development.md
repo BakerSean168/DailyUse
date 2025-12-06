@@ -536,29 +536,29 @@ apps/desktop/src/
 
 ### P0 - 基础架构 Stories
 
-| Story ID | 文档 | 预估 | 状态 |
-|----------|------|------|------|
-| STORY-002 | [主进程 DI 初始化](./stories/STORY-002-main-process-di-initialization.md) | 3-5 天 | 🔵 Ready |
-| STORY-003 | [渲染进程 DI 集成](./stories/STORY-003-renderer-process-di-integration.md) | 2-3 天 | 🔵 Ready |
-| STORY-004 | [Preload API 暴露](./stories/STORY-004-preload-script-api-exposure.md) | 2 天 | 🔵 Ready |
+| Story ID | 文档 | 预估 | 状态 | 技术方案 |
+|----------|------|------|------|---------|
+| STORY-002 | [主进程 DI 初始化](./stories/STORY-002-main-process-di-initialization.md) | 3-5 天 | 🔵 Ready | ✅ 完成 |
+| STORY-003 | [渲染进程 DI 集成](./stories/STORY-003-renderer-process-di-integration.md) | 2-3 天 | 🔵 Ready | ✅ 完成 |
+| STORY-004 | [Preload API 暴露](./stories/STORY-004-preload-script-api-exposure.md) | 2 天 | 🔵 Ready | ✅ 完成 |
 
 ### P1 - 核心功能 Stories
 
-| Story ID | 文档 | 预估 | 状态 |
-|----------|------|------|------|
-| STORY-005 | [Goal & Task UI](./stories/STORY-005-goal-task-ui.md) | 4-5 天 | 🔵 Ready |
-| STORY-006 | [Schedule & Reminder UI](./stories/STORY-006-schedule-reminder-ui.md) | 4-5 天 | 🔵 Ready |
-| STORY-008 | [Auth & Account UI](./stories/STORY-008-auth-account-ui.md) | 3-4 天 | 🔵 Ready |
-| STORY-012 | [桌面原生功能](./stories/STORY-012-desktop-native-features.md) | 3-4 天 | 🔵 Ready |
+| Story ID | 文档 | 预估 | 状态 | 技术方案 |
+|----------|------|------|------|---------|
+| STORY-005 | [Goal & Task UI](./stories/STORY-005-goal-task-ui.md) | 4-5 天 | 🔵 Ready | ✅ 完成 |
+| STORY-006 | [Schedule & Reminder UI](./stories/STORY-006-schedule-reminder-ui.md) | 4-5 天 | 🔵 Ready | ✅ 完成 |
+| STORY-008 | [Auth & Account UI](./stories/STORY-008-auth-account-ui.md) | 3-4 天 | 🔵 Ready | ✅ 完成 |
+| STORY-012 | [桌面原生功能](./stories/STORY-012-desktop-native-features.md) | 3-4 天 | 🔵 Ready | ✅ 完成 |
 
 ### P2 - 增强体验 Stories
 
-| Story ID | 文档 | 预估 | 状态 |
-|----------|------|------|------|
-| STORY-007 | [Dashboard UI](./stories/STORY-007-dashboard-ui.md) | 2-3 天 | 🔵 Ready |
-| STORY-009 | [AI Module UI](./stories/STORY-009-ai-module-ui.md) | 4-5 天 | 🔵 Ready |
-| STORY-010 | [Notification Module](./stories/STORY-010-notification-module.md) | 2-3 天 | 🔵 Ready |
-| STORY-011 | [Repository Module UI](./stories/STORY-011-repository-module-ui.md) | 2-3 天 | 🔵 Ready |
+| Story ID | 文档 | 预估 | 状态 | 技术方案 |
+|----------|------|------|------|---------|
+| STORY-007 | [Dashboard UI](./stories/STORY-007-dashboard-ui.md) | 2-3 天 | 🔵 Ready | ✅ 完成 |
+| STORY-009 | [AI Module UI](./stories/STORY-009-ai-module-ui.md) | 4-5 天 | 🔵 Ready | ✅ 完成 |
+| STORY-010 | [Notification Module](./stories/STORY-010-notification-module.md) | 2-3 天 | 🔵 Ready | ✅ 完成 |
+| STORY-011 | [Repository Module UI](./stories/STORY-011-repository-module-ui.md) | 2-3 天 | 🔵 Ready | ✅ 完成 |
 
 ### 架构决策记录 (ADR)
 
@@ -606,6 +606,6 @@ apps/desktop/src/
 
 ---
 
-**文档版本**: v1.2  
+**文档版本**: v1.3  
 **最后更新**: 2025-12-06  
-**更新说明**: 添加 Story 文档索引 (STORY-002 至 STORY-012)，关联 ADR-006 和 ADR-007
+**更新说明**: 架构师完成所有 Story 技术实现方案 (11 Stories, 3,551 行技术文档)
