@@ -73,7 +73,12 @@ async function initializeApp(): Promise<void> {
   configureMainProcessDependencies();
   console.log('[App] DI configured');
 
-  // 3. 注册 IPC 处理器
+  // 3. 初始化事件监听器
+  const { initializeEventListeners } = await import('./events/initialize-event-listeners');
+  await initializeEventListeners();
+  console.log('[App] Event listeners initialized');
+
+  // 4. 注册 IPC 处理器
   registerIpcHandlers();
   console.log('[App] IPC handlers registered');
 

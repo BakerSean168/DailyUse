@@ -358,6 +358,73 @@ export class GoalEventPublisher {
       }
     });
 
+    // 监听 task.instance.completed 事件
+    eventBus.on('task.instance.completed', async (event: DomainEvent) => {
+      try {
+        if (!event.accountUuid) {
+          console.error(
+            '❌ [GoalEventPublisher] Missing accountUuid in task.instance.completed event',
+          );
+          return;
+        }
+
+        const { goalBinding, taskInstanceUuid, title } = event.payload as {
+          goalBinding?: {
+            goalUuid: string;
+            keyResultUuid?: string;
+            incrementValue: number;
+          };
+          taskInstanceUuid: string;
+          title: string;
+        };
+
+        // 如果任务没有关联目标，直接返回
+        if (!goalBinding) {
+          console.log(
+            `ℹ️ [GoalEventPublisher] Task ${taskInstanceUuid} completed without goal binding`,
+          );
+          return;
+        }
+
+        console.log(
+          `🎯 [GoalEventPublisher] Task "${title}" completed, updating goal progress`,
+          {
+            goalUuid: goalBinding.goalUuid,
+            keyResultUuid: goalBinding.keyResultUuid,
+            incrementValue: goalBinding.incrementValue,
+          },
+        );
+
+        // 如果有指定关键结果，通过添加记录来增加进度
+        if (goalBinding.keyResultUuid) {
+          // 导入必要的服务
+          const { GoalRecordApplicationService } = await import('./GoalRecordApplicationService');
+          const recordService = await GoalRecordApplicationService.getInstance();
+
+          // 创建进度记录（会根据聚合方式自动更新关键结果进度）
+          await recordService.createGoalRecord(
+            goalBinding.goalUuid,
+            goalBinding.keyResultUuid,
+            {
+              value: goalBinding.incrementValue,
+              note: `任务完成: ${title}`,
+            },
+          );
+
+          console.log(
+            `✅ [GoalEventPublisher] Added progress record for key result ${goalBinding.keyResultUuid} with value ${goalBinding.incrementValue}`,
+          );
+        } else {
+          // TODO: 如果没有指定关键结果，可以更新目标的整体进度或记录
+          console.log(
+            `ℹ️ [GoalEventPublisher] Task completed for goal ${goalBinding.goalUuid}, but no key result specified`,
+          );
+        }
+      } catch (error) {
+        console.error('❌ [GoalEventPublisher] Error handling task.instance.completed:', error);
+      }
+    });
+
     this.isInitialized = true;
     console.log('✅ [GoalEventPublisher] All event listeners registered successfully!');
   }
@@ -402,6 +469,7 @@ export class GoalEventPublisher {
       'review.created',
       'review.deleted',
       'focus_session.completed',
+      'task.instance.completed',
     ];
 
     for (const eventType of eventTypes) {

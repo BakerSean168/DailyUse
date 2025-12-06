@@ -44,7 +44,7 @@
 ### 功能验收 - Goal-Task 关联
 
 - [x] 在目标详情中显示关联任务
-- [ ] 任务完成自动更新目标进度
+- [x] 任务完成自动更新目标进度 ✅ **已完成！**
 - [x] 目标下快速创建任务 (UI已完成，等待Task服务层实现)
 
 ### 技术验收
@@ -761,13 +761,31 @@ const routes = [
    - GoalCard: 添加剩余天数/逾期提示
    - TaskCard: 添加紧急度标签、标签显示
 
+15. **任务完成自动更新目标进度** ✅ **已完成！**
+   - **API 端事件监听器** (`apps/api/src/modules/goal/application/services/GoalEventPublisher.ts`)
+     - 监听 `task.instance.completed` 事件
+     - 当任务有 `goalBinding` 时，自动创建目标进度记录
+     - 通过 `GoalRecordApplicationService` 添加记录
+     - 使用关键结果的聚合方法（SUM/AVERAGE/MAX/LAST）自动计算进度
+   
+   - **Desktop 端事件监听器** (`apps/desktop/src/main/events/initialize-event-listeners.ts`)
+     - 新建独立事件初始化模块
+     - 监听 `task.instance.completed` 事件
+     - 直接操作 SQLite Repository 更新目标进度
+     - 在应用启动时自动初始化事件监听器
+   
+   - **实现原理:**
+     - 任务完成时，`CompleteTaskInstance` 服务发布 `task.instance.completed` 事件
+     - 事件包含 `goalBinding` 信息（goalUuid, keyResultUuid, incrementValue）
+     - Goal 模块的事件监听器接收事件，创建 GoalRecord
+     - KeyResult 根据聚合方法自动重新计算 currentValue
+     - 支持 SUM（累加）、AVERAGE（平均）、MAX（最大）、LAST（最新值）
+
 **技术说明:**
 - 使用 React + TailwindCSS (非文档中描述的 Vue)
 - 通过 `@dailyuse/infrastructure-client` Container 获取 API Client
 - ImportanceLevel/UrgencyLevel 枚举值已对齐 contracts 定义
-
-**剩余待完成:**
-- [ ] 任务完成自动更新目标进度（需要Task服务层实现）
+- 跨模块事件通信使用 `@dailyuse/utils` 的 EventBus
 
 **备注:**
 - 目标下快速创建任务 UI 已完成，但 Task IPC handlers 目前返回 TODO 占位符
@@ -777,4 +795,4 @@ const routes = [
 
 **创建日期**: 2025-12-06  
 **负责人**: Dev Agent  
-**预计开始**: Phase 2 (Week 3)
+**最后更新**: 2025-12-06 (任务-目标进度自动更新完成)
