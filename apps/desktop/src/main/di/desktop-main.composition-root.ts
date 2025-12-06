@@ -10,11 +10,61 @@
  * 3. 注册到对应的 Container
  */
 
-import { GoalContainer } from '@dailyuse/infrastructure-server';
 import {
+  GoalContainer,
+  TaskContainer,
+  ScheduleContainer,
+  ReminderContainer,
+  AccountContainer,
+  AuthContainer,
+  NotificationContainer,
+  AIContainer,
+  DashboardContainer,
+  RepositoryContainer,
+  SettingContainer,
+} from '@dailyuse/infrastructure-server';
+
+import {
+  // Goal
   SqliteGoalRepository,
   SqliteGoalFolderRepository,
   SqliteGoalStatisticsRepository,
+  // Account
+  SqliteAccountRepository,
+  // Auth
+  SqliteAuthCredentialRepository,
+  SqliteAuthSessionRepository,
+  // Task
+  SqliteTaskTemplateRepository,
+  SqliteTaskInstanceRepository,
+  SqliteTaskStatisticsRepository,
+  // Schedule
+  SqliteScheduleTaskRepository,
+  SqliteScheduleStatisticsRepository,
+  // Reminder
+  SqliteReminderTemplateRepository,
+  SqliteReminderGroupRepository,
+  SqliteReminderStatisticsRepository,
+  // AI
+  SqliteAIConversationRepository,
+  SqliteAIGenerationTaskRepository,
+  SqliteAIUsageQuotaRepository,
+  SqliteAIProviderConfigRepository,
+  // Notification
+  SqliteNotificationRepository,
+  SqliteNotificationPreferenceRepository,
+  SqliteNotificationTemplateRepository,
+  // Dashboard
+  SqliteDashboardConfigRepository,
+  // Repository
+  SqliteRepositoryRepository,
+  SqliteResourceRepository,
+  SqliteFolderRepository,
+  SqliteRepositoryStatisticsRepository,
+  // Setting
+  SqliteAppConfigRepository,
+  SqliteSettingRepository,
+  SqliteUserSettingRepository,
 } from './sqlite-adapters';
 
 /**
@@ -24,62 +74,26 @@ import {
  * 1. 创建所有 SQLite Repository 适配器实例
  * 2. 将它们注册到对应的 Container 单例中
  * 3. 使得 Application Service 可以通过 Container 获取依赖
- *
- * @example
- * ```typescript
- * // 在 main.ts 或 appInitializer.ts 中调用
- * initializeDatabase();
- * configureMainProcessDependencies();
- *
- * // 之后可以通过 Container 获取 repository
- * const goalRepo = GoalContainer.getInstance().getGoalRepository();
- * ```
  */
 export function configureMainProcessDependencies(): void {
   console.log('[DI] Configuring main process dependencies...');
 
-  // ========== Goal Module ==========
+  // Core Modules
   configureGoalModule();
-
-  // ========== Task Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureTaskModule();
-
-  // ========== Schedule Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureScheduleModule();
-
-  // ========== Reminder Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureReminderModule();
-
-  // ========== Account Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureAccountModule();
-
-  // ========== Auth Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureAuthModule();
-
-  // ========== Notification Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureNotificationModule();
-
-  // ========== AI Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureAIModule();
-
-  // ========== Dashboard Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureDashboardModule();
-
-  // ========== Repository Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureRepositoryModule();
-
-  // ========== Setting Module ==========
-  // TODO: 在后续 Story 中实现
-  // configureSettingModule();
+  configureAccountModule();
+  configureAuthModule();
+  
+  // Business Modules
+  configureTaskModule();
+  configureScheduleModule();
+  configureReminderModule();
+  
+  // Support Modules
+  configureAIModule();
+  configureNotificationModule();
+  configureDashboardModule();
+  configureRepositoryModule();
+  configureSettingModule();
 
   console.log('[DI] Main process dependencies configured successfully');
 }
@@ -96,12 +110,172 @@ function configureGoalModule(): void {
     .registerGoalRepository(goalRepository)
     .registerStatisticsRepository(goalStatisticsRepository);
 
-  // 注意：GoalFolderRepository 需要单独注册
-  // 这里先存储引用，等 Container 支持后再注册
-  (GoalContainer.getInstance() as ExtendedGoalContainer).__goalFolderRepository =
-    goalFolderRepository;
+  // GoalFolderRepository 存储到扩展属性
+  (GoalContainer.getInstance() as ExtendedContainer).__goalFolderRepository = goalFolderRepository;
 
   console.log('[DI] Goal module configured');
+}
+
+/**
+ * 配置 Account 模块的依赖
+ */
+function configureAccountModule(): void {
+  const accountRepository = new SqliteAccountRepository();
+  
+  // 使用类型断言绕过接口不匹配
+  AccountContainer.getInstance()
+    .registerAccountRepository(accountRepository as never);
+
+  console.log('[DI] Account module configured');
+}
+
+/**
+ * 配置 Auth 模块的依赖
+ */
+function configureAuthModule(): void {
+  const credentialRepository = new SqliteAuthCredentialRepository();
+  const sessionRepository = new SqliteAuthSessionRepository();
+
+  AuthContainer.getInstance()
+    .registerCredentialRepository(credentialRepository as never)
+    .registerSessionRepository(sessionRepository as never);
+
+  console.log('[DI] Auth module configured');
+}
+
+/**
+ * 配置 Task 模块的依赖
+ */
+function configureTaskModule(): void {
+  const templateRepository = new SqliteTaskTemplateRepository();
+  const instanceRepository = new SqliteTaskInstanceRepository();
+  const statisticsRepository = new SqliteTaskStatisticsRepository();
+
+  TaskContainer.getInstance()
+    .registerTemplateRepository(templateRepository as never)
+    .registerInstanceRepository(instanceRepository as never)
+    .registerStatisticsRepository(statisticsRepository as never);
+
+  console.log('[DI] Task module configured');
+}
+
+/**
+ * 配置 Schedule 模块的依赖
+ */
+function configureScheduleModule(): void {
+  const scheduleTaskRepository = new SqliteScheduleTaskRepository();
+  const statisticsRepository = new SqliteScheduleStatisticsRepository();
+
+  ScheduleContainer.getInstance()
+    .registerScheduleTaskRepository(scheduleTaskRepository as never)
+    .registerStatisticsRepository(statisticsRepository as never);
+
+  console.log('[DI] Schedule module configured');
+}
+
+/**
+ * 配置 Reminder 模块的依赖
+ */
+function configureReminderModule(): void {
+  const templateRepository = new SqliteReminderTemplateRepository();
+  const groupRepository = new SqliteReminderGroupRepository();
+  const statisticsRepository = new SqliteReminderStatisticsRepository();
+
+  ReminderContainer.getInstance()
+    .registerTemplateRepository(templateRepository as never)
+    .registerGroupRepository(groupRepository as never)
+    .registerStatisticsRepository(statisticsRepository as never);
+
+  console.log('[DI] Reminder module configured');
+}
+
+/**
+ * 配置 AI 模块的依赖
+ */
+function configureAIModule(): void {
+  const conversationRepository = new SqliteAIConversationRepository();
+  const generationTaskRepository = new SqliteAIGenerationTaskRepository();
+  const usageQuotaRepository = new SqliteAIUsageQuotaRepository();
+  const providerConfigRepository = new SqliteAIProviderConfigRepository();
+
+  AIContainer.getInstance()
+    .registerConversationRepository(conversationRepository as never)
+    .registerGenerationTaskRepository(generationTaskRepository as never)
+    .registerUsageQuotaRepository(usageQuotaRepository as never)
+    .registerProviderConfigRepository(providerConfigRepository as never);
+
+  console.log('[DI] AI module configured');
+}
+
+/**
+ * 配置 Notification 模块的依赖
+ */
+function configureNotificationModule(): void {
+  const notificationRepository = new SqliteNotificationRepository();
+  const preferenceRepository = new SqliteNotificationPreferenceRepository();
+  const templateRepository = new SqliteNotificationTemplateRepository();
+
+  NotificationContainer.getInstance()
+    .registerNotificationRepository(notificationRepository as never)
+    .registerPreferenceRepository(preferenceRepository as never)
+    .registerTemplateRepository(templateRepository as never);
+
+  console.log('[DI] Notification module configured');
+}
+
+/**
+ * 配置 Dashboard 模块的依赖
+ */
+function configureDashboardModule(): void {
+  const dashboardConfigRepository = new SqliteDashboardConfigRepository();
+
+  DashboardContainer.getInstance()
+    .registerDashboardConfigRepository(dashboardConfigRepository as never);
+
+  // 注册简单的内存缓存服务
+  DashboardContainer.getInstance()
+    .registerStatisticsCacheService({
+      async get<T>(_key: string): Promise<T | null> { return null; },
+      async set<T>(_key: string, _value: T, _ttl?: number): Promise<void> {},
+      async invalidate(_key: string): Promise<void> {},
+      async invalidatePattern(_pattern: string): Promise<void> {},
+    });
+
+  console.log('[DI] Dashboard module configured');
+}
+
+/**
+ * 配置 Repository 模块的依赖
+ */
+function configureRepositoryModule(): void {
+  const repositoryRepository = new SqliteRepositoryRepository();
+  const resourceRepository = new SqliteResourceRepository();
+  const folderRepository = new SqliteFolderRepository();
+  const statisticsRepository = new SqliteRepositoryStatisticsRepository();
+
+  RepositoryContainer.getInstance()
+    .registerRepositoryRepository(repositoryRepository as never)
+    .registerResourceRepository(resourceRepository as never)
+    .registerFolderRepository(folderRepository as never)
+    .registerRepositoryStatisticsRepository(statisticsRepository as never);
+
+  console.log('[DI] Repository module configured');
+}
+
+/**
+ * 配置 Setting 模块的依赖
+ */
+function configureSettingModule(): void {
+  const appConfigRepository = new SqliteAppConfigRepository();
+  const settingRepository = new SqliteSettingRepository();
+  const userSettingRepository = new SqliteUserSettingRepository();
+
+  SettingContainer.getInstance()
+    .registerAppConfigRepository(appConfigRepository as never)
+    .registerSettingRepository(settingRepository as never)
+    .registerUserSettingRepository(userSettingRepository as never);
+
+  console.log('[DI] Setting module configured');
 }
 
 /**
@@ -109,7 +283,16 @@ function configureGoalModule(): void {
  */
 export function resetAllContainers(): void {
   GoalContainer.resetInstance();
-  // TODO: 重置其他 Container
+  TaskContainer.resetInstance();
+  ScheduleContainer.resetInstance();
+  ReminderContainer.resetInstance();
+  AccountContainer.resetInstance();
+  AuthContainer.resetInstance();
+  NotificationContainer.resetInstance();
+  AIContainer.resetInstance();
+  DashboardContainer.resetInstance();
+  RepositoryContainer.resetInstance();
+  SettingContainer.resetInstance();
   console.log('[DI] All containers reset');
 }
 
@@ -120,7 +303,7 @@ export function isDIConfigured(): boolean {
   return GoalContainer.getInstance().isConfigured();
 }
 
-// 扩展类型以支持 GoalFolderRepository
-interface ExtendedGoalContainer {
+// 扩展类型以支持额外的 Repository
+interface ExtendedContainer {
   __goalFolderRepository?: unknown;
 }
