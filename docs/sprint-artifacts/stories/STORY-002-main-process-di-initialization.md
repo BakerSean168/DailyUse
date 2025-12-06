@@ -6,7 +6,7 @@
 **Epic**: EPIC-002 (Desktop Application Development)  
 **优先级**: P0 (阻塞其他 Story)  
 **预估工时**: 3-5 天  
-**状态**: 🟡 In Progress (Task 2.1, 2.2 完成, Task 2.3 部分完成)  
+**状态**: ✅ Completed  
 
 ---
 
@@ -34,7 +34,7 @@
 - [x] `appInitializer.ts` 重构完成 (main.ts 已调用 configureMainProcessDependencies)
 - [x] 现有 SQLite Repository 迁移完成 (26 个 Repository 文件创建)
 - [x] TypeScript 编译无错误 (主进程 DI 目录)
-- [ ] 应用正常启动 (待验证)
+- [x] 应用正常启动 ✅
 
 ---
 

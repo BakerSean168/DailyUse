@@ -9,13 +9,19 @@ import { TaskContainer } from '@dailyuse/infrastructure-client';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { TaskCard } from './components/TaskCard';
 import { TaskCreateDialog } from './components/TaskCreateDialog';
+import { TaskStatistics } from './components/TaskStatistics';
+import { TaskDependencyGraph } from './components/TaskDependencyGraph';
 
 export function TaskListView() {
   const [templates, setTemplates] = useState<TaskTemplateClientDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<'templates' | 'today'>('templates');
+  const [activeTab, setActiveTab] = useState<'templates' | 'today' | 'stats' | 'dependencies'>('templates');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [typeFilter, setTypeFilter] = useState<string>('ALL');
 
   // 获取任务 API Client
   const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
@@ -42,6 +48,27 @@ export function TaskListView() {
     setShowCreateDialog(false);
     loadTemplates();
   };
+
+  // 过滤任务
+  const filteredTemplates = templates.filter((template) => {
+    // 搜索过滤
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = template.title.toLowerCase().includes(query);
+      const matchesDesc = template.description?.toLowerCase().includes(query);
+      const matchesTags = template.tags?.some(tag => tag.toLowerCase().includes(query));
+      if (!matchesTitle && !matchesDesc && !matchesTags) return false;
+    }
+    // 状态过滤
+    if (statusFilter !== 'ALL' && template.status !== statusFilter) {
+      return false;
+    }
+    // 类型过滤
+    if (typeFilter !== 'ALL' && template.taskType !== typeFilter) {
+      return false;
+    }
+    return true;
+  });
 
   if (loading) {
     return (
@@ -105,30 +132,144 @@ export function TaskListView() {
         >
           今日任务
         </button>
+        <button
+          onClick={() => setActiveTab('stats')}
+          className={`pb-2 px-1 border-b-2 transition-colors ${
+            activeTab === 'stats'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          📊 统计
+        </button>
+        <button
+          onClick={() => setActiveTab('dependencies')}
+          className={`pb-2 px-1 border-b-2 transition-colors ${
+            activeTab === 'dependencies'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          🔗 依赖图
+        </button>
       </div>
 
+      {/* Statistics Tab */}
+      {activeTab === 'stats' && (
+        <TaskStatistics templates={templates} />
+      )}
+
+      {/* Dependencies Tab */}
+      {activeTab === 'dependencies' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium">选择任务查看依赖关系:</label>
+            <select
+              value={selectedTemplateId || ''}
+              onChange={(e) => setSelectedTemplateId(e.target.value || null)}
+              className="px-3 py-2 border rounded-md bg-background"
+            >
+              <option value="">-- 选择任务 --</option>
+              {templates.map((t) => (
+                <option key={t.uuid} value={t.uuid}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          {selectedTemplateId ? (
+            <TaskDependencyGraph templateId={selectedTemplateId} />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-card">
+              <div className="text-4xl mb-2">🔗</div>
+              <div className="text-muted-foreground">请选择一个任务以查看其依赖关系</div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Task List */}
-      {templates.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 gap-4 border rounded-lg bg-card">
-          <div className="text-4xl">✅</div>
-          <div className="text-muted-foreground">还没有任务，创建第一个吧！</div>
-          <button
-            onClick={() => setShowCreateDialog(true)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            创建任务
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {templates.map((template) => (
-            <TaskCard
-              key={template.uuid}
-              template={template}
-              onUpdate={loadTemplates}
-            />
-          ))}
-        </div>
+      {(activeTab === 'templates' || activeTab === 'today') && (
+        <>
+          {/* Search and Filter Bar */}
+          <div className="flex gap-4 items-center">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder="🔍 搜索任务..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border rounded-md bg-background"
+            >
+              <option value="ALL">全部状态</option>
+              <option value="ACTIVE">🟢 活跃</option>
+              <option value="PAUSED">⏸️ 已暂停</option>
+              <option value="ARCHIVED">📦 已归档</option>
+            </select>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="px-3 py-2 border rounded-md bg-background"
+            >
+              <option value="ALL">全部类型</option>
+              <option value="ONE_TIME">📌 一次性</option>
+              <option value="RECURRING">🔄 重复</option>
+            </select>
+          </div>
+
+          {/* Task Cards */}
+          {filteredTemplates.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-4 border rounded-lg bg-card">
+              <div className="text-4xl">✅</div>
+              <div className="text-muted-foreground">
+                {searchQuery || statusFilter !== 'ALL' || typeFilter !== 'ALL'
+                  ? '没有找到匹配的任务'
+                  : '还没有任务，创建第一个吧！'}
+              </div>
+              {!searchQuery && statusFilter === 'ALL' && typeFilter === 'ALL' && (
+                <button
+                  onClick={() => setShowCreateDialog(true)}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                >
+                  创建任务
+                </button>
+              )}
+              {(searchQuery || statusFilter !== 'ALL' || typeFilter !== 'ALL') && (
+                <button
+                  onClick={() => { setSearchQuery(''); setStatusFilter('ALL'); setTypeFilter('ALL'); }}
+                  className="px-4 py-2 border rounded-md hover:bg-secondary"
+                >
+                  清除筛选
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredTemplates.map((template) => (
+                <TaskCard
+                  key={template.uuid}
+                  template={template}
+                  onUpdate={loadTemplates}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Create Dialog */}

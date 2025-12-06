@@ -20,7 +20,7 @@ export function registerNotificationIpcHandlers(): void {
   });
 
   ipcMain.handle('notification:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { notifications: [], total: 0 };
   });
 
   ipcMain.handle('notification:get', async (_, uuid) => {

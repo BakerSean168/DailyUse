@@ -38,7 +38,7 @@ export function registerDashboardIpcHandlers(): void {
   });
 
   ipcMain.handle('dashboard:get-recent-activity', async (_, limit) => {
-    return { data: [], total: 0 };
+    return { activities: [], total: 0 };
   });
 
   ipcMain.handle('dashboard:get-widgets', async () => {

@@ -19,7 +19,7 @@ export function registerReminderIpcHandlers(): void {
   });
 
   ipcMain.handle('reminder:template:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { templates: [], total: 0, page: 1, pageSize: 20, hasMore: false };
   });
 
   ipcMain.handle('reminder:template:get', async (_, uuid) => {
@@ -47,11 +47,11 @@ export function registerReminderIpcHandlers(): void {
   // ============================================
 
   ipcMain.handle('reminder:upcoming:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { reminders: [], total: 0, fromDate: Date.now(), toDate: Date.now() + 7 * 24 * 60 * 60 * 1000 };
   });
 
   ipcMain.handle('reminder:upcoming:get-next', async (_, count) => {
-    return { data: [] };
+    return { reminders: [] };
   });
 
   ipcMain.handle('reminder:upcoming:dismiss', async (_, uuid) => {
@@ -75,7 +75,7 @@ export function registerReminderIpcHandlers(): void {
   });
 
   ipcMain.handle('reminder:group:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { groups: [], total: 0, page: 1, pageSize: 20, hasMore: false };
   });
 
   ipcMain.handle('reminder:group:get', async (_, uuid) => {

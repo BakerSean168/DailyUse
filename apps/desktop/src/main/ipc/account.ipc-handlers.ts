@@ -105,7 +105,7 @@ export function registerAccountIpcHandlers(): void {
   });
 
   ipcMain.handle('account:subscription:get-invoices', async () => {
-    return { data: [], total: 0 };
+    return { invoices: [], total: 0 };
   });
 
   ipcMain.handle('account:subscription:get-usage', async () => {

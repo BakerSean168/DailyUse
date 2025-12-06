@@ -22,7 +22,7 @@ export function registerGoalFolderIpcHandlers(): void {
 
   ipcMain.handle('goalFolder:list', async (_, params) => {
     // TODO: 实现文件夹列表
-    return { data: [], total: 0 };
+    return { folders: [], total: 0 };
   });
 
   ipcMain.handle('goalFolder:get', async (_, uuid) => {

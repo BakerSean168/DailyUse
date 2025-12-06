@@ -20,7 +20,8 @@ export function registerTaskIpcHandlers(): void {
   });
 
   ipcMain.handle('task-template:list', async (_, params) => {
-    return { data: [], total: 0 };
+    // 返回空数组（与 ITaskTemplateApiClient 接口一致）
+    return [];
   });
 
   ipcMain.handle('task-template:get', async (_, uuid) => {
@@ -48,7 +49,7 @@ export function registerTaskIpcHandlers(): void {
   });
 
   ipcMain.handle('task-template:search', async (_, query, params) => {
-    return { data: [], total: 0 };
+    return { templates: [], total: 0 };
   });
 
   ipcMain.handle('task-template:batch-update', async (_, updates) => {
@@ -64,7 +65,7 @@ export function registerTaskIpcHandlers(): void {
   });
 
   ipcMain.handle('task-instance:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { instances: [], total: 0 };
   });
 
   ipcMain.handle('task-instance:get', async (_, uuid) => {
@@ -108,15 +109,15 @@ export function registerTaskIpcHandlers(): void {
   });
 
   ipcMain.handle('task-instance:list-by-date', async (_, date, params) => {
-    return { data: [], total: 0 };
+    return { instances: [], total: 0 };
   });
 
   ipcMain.handle('task-instance:list-by-range', async (_, startDate, endDate, params) => {
-    return { data: [], total: 0 };
+    return { instances: [], total: 0 };
   });
 
   ipcMain.handle('task-instance:list-by-template', async (_, templateUuid, params) => {
-    return { data: [], total: 0 };
+    return { instances: [], total: 0 };
   });
 
   ipcMain.handle('task-instance:batch-update', async (_, updates) => {
@@ -136,7 +137,7 @@ export function registerTaskIpcHandlers(): void {
   });
 
   ipcMain.handle('task-dependency:list', async (_, taskUuid) => {
-    return { data: [], total: 0 };
+    return { dependencies: [], total: 0 };
   });
 
   ipcMain.handle('task-dependency:delete', async (_, uuid) => {
@@ -144,11 +145,11 @@ export function registerTaskIpcHandlers(): void {
   });
 
   ipcMain.handle('task-dependency:get-blocked', async (_, taskUuid) => {
-    return { data: [] };
+    return { dependencies: [] };
   });
 
   ipcMain.handle('task-dependency:get-blocking', async (_, taskUuid) => {
-    return { data: [] };
+    return { dependencies: [] };
   });
 
   ipcMain.handle('task-dependency:check-circular', async (_, from, to) => {

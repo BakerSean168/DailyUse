@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { TaskDetailDialog } from './TaskDetailDialog';
 
 interface TaskCardProps {
   template: TaskTemplateClientDTO;
@@ -15,6 +16,7 @@ interface TaskCardProps {
 
 export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   // 获取 API Client
   const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
@@ -63,21 +65,49 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
     DELETED: 'bg-red-100 text-red-600',
   };
 
-  // 重要性颜色
+  // 重要性颜色 (ImportanceLevel: Vital, Important, Moderate, Minor, Trivial)
   const importanceColors: Record<string, string> = {
-    LOW: 'text-gray-500',
-    MEDIUM: 'text-blue-500',
-    HIGH: 'text-orange-500',
-    CRITICAL: 'text-red-500',
+    Vital: 'text-red-600',
+    Important: 'text-orange-500',
+    Moderate: 'text-blue-500',
+    Minor: 'text-gray-500',
+    Trivial: 'text-gray-400',
+  };
+
+  // 紧急度颜色 (UrgencyLevel: Critical, High, Medium, Low, None)
+  const urgencyColors: Record<string, string> = {
+    Critical: 'bg-red-500 text-white',
+    High: 'bg-orange-500 text-white',
+    Medium: 'bg-yellow-500 text-yellow-900',
+    Low: 'bg-blue-100 text-blue-700',
+    None: 'bg-gray-100 text-gray-600',
+  };
+
+  const handleDetailClose = () => {
+    setShowDetail(false);
+  };
+
+  const handleDetailUpdate = () => {
+    onUpdate();
+    setShowDetail(false);
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // 如果点击的是按钮，不打开详情
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    setShowDetail(true);
   };
 
   return (
     <div
       className={`
-        rounded-lg border bg-card p-4 space-y-3 transition-all
+        rounded-lg border bg-card p-4 space-y-3 transition-all cursor-pointer
         hover:shadow-md hover:border-primary/50
         ${isUpdating ? 'opacity-50 pointer-events-none' : ''}
       `}
+      onClick={handleCardClick}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
@@ -95,18 +125,42 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
       </div>
 
       {/* Meta Info */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
         {template.importance && (
-          <span className={importanceColors[template.importance] ?? 'text-gray-500'}>
-            重要性: {template.importanceText ?? template.importance}
+          <span className={`${importanceColors[template.importance] ?? 'text-gray-500'}`}>
+            ⚡ {template.importanceText ?? template.importance}
+          </span>
+        )}
+        {template.urgency && template.urgency !== 'None' && (
+          <span className={`px-1.5 py-0.5 text-xs rounded ${urgencyColors[template.urgency] ?? 'bg-gray-100'}`}>
+            🔥 {template.urgencyText ?? template.urgency}
           </span>
         )}
         {template.estimatedMinutes && (
-          <span>
-            预计: {template.estimatedMinutes}分钟
+          <span className="text-muted-foreground">
+            ⏱️ {template.estimatedMinutes}分钟
           </span>
         )}
       </div>
+
+      {/* Tags */}
+      {template.tags && template.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {template.tags.slice(0, 3).map((tag, index) => (
+            <span
+              key={index}
+              className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full"
+            >
+              #{tag}
+            </span>
+          ))}
+          {template.tags.length > 3 && (
+            <span className="px-2 py-0.5 text-xs text-muted-foreground">
+              +{template.tags.length - 3}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Recurrence Info */}
       {template.recurrenceRule && (
@@ -150,6 +204,14 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
           </button>
         )}
       </div>
+
+      {/* Detail Dialog */}
+      <TaskDetailDialog
+        templateUuid={template.uuid}
+        open={showDetail}
+        onClose={handleDetailClose}
+        onUpdated={handleDetailUpdate}
+      />
     </div>
   );
 }

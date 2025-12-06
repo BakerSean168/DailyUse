@@ -19,7 +19,7 @@ export function registerAiIpcHandlers(): void {
   });
 
   ipcMain.handle('ai:conversation:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { conversations: [], total: 0 };
   });
 
   ipcMain.handle('ai:conversation:get', async (_, uuid) => {
@@ -39,7 +39,7 @@ export function registerAiIpcHandlers(): void {
   });
 
   ipcMain.handle('ai:conversation:search', async (_, query, params) => {
-    return { data: [], total: 0 };
+    return { conversations: [], total: 0 };
   });
 
   // ============================================
@@ -51,7 +51,7 @@ export function registerAiIpcHandlers(): void {
   });
 
   ipcMain.handle('ai:message:list', async (_, conversationUuid, params) => {
-    return { data: [], total: 0 };
+    return { messages: [], total: 0 };
   });
 
   ipcMain.handle('ai:message:get', async (_, uuid) => {
@@ -83,7 +83,7 @@ export function registerAiIpcHandlers(): void {
   });
 
   ipcMain.handle('ai:generation-task:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { tasks: [], total: 0 };
   });
 
   ipcMain.handle('ai:generation-task:get', async (_, uuid) => {
@@ -116,7 +116,7 @@ export function registerAiIpcHandlers(): void {
   });
 
   ipcMain.handle('ai:quota:get-usage-history', async (_, params) => {
-    return { data: [], total: 0 };
+    return { usages: [], total: 0 };
   });
 
   ipcMain.handle('ai:quota:get-by-model', async (_, modelId) => {
@@ -128,7 +128,7 @@ export function registerAiIpcHandlers(): void {
   // ============================================
 
   ipcMain.handle('ai:provider:list', async () => {
-    return { data: [], total: 0 };
+    return { providers: [], total: 0 };
   });
 
   ipcMain.handle('ai:provider:get', async (_, providerId) => {
@@ -136,7 +136,7 @@ export function registerAiIpcHandlers(): void {
   });
 
   ipcMain.handle('ai:provider:get-models', async (_, providerId) => {
-    return { data: [] };
+    return { models: [] };
   });
 
   ipcMain.handle('ai:provider:set-default', async (_, providerId) => {

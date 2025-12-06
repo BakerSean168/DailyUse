@@ -8,9 +8,14 @@
 
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { initializeDatabase, closeDatabase } from './database';
 import { configureMainProcessDependencies, isDIConfigured } from './di';
 import { registerAllIpcHandlers } from './ipc';
+
+// ESM 兼容的 __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 保持对窗口的引用，避免被垃圾回收
 let mainWindow: BrowserWindow | null = null;

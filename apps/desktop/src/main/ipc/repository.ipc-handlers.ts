@@ -44,7 +44,7 @@ export function registerRepositoryIpcHandlers(): void {
   });
 
   ipcMain.handle('repository:backup:list', async () => {
-    return { data: [], total: 0 };
+    return { backups: [], total: 0 };
   });
 
   ipcMain.handle('repository:backup:delete', async (_, backupId) => {

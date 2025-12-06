@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { GoalDetailDialog } from './GoalDetailDialog';
 
 interface GoalCardProps {
   goal: GoalClientDTO;
@@ -15,6 +16,7 @@ interface GoalCardProps {
 
 export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   // 获取 API Client
   const goalApiClient = GoalContainer.getInstance().getApiClient();
@@ -63,25 +65,56 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
     ARCHIVED: 'bg-yellow-100 text-yellow-800',
   };
 
-  // 重要性颜色
+  // 重要性颜色 (ImportanceLevel: Vital, Important, Moderate, Minor, Trivial)
   const importanceColors: Record<string, string> = {
-    LOW: 'text-gray-500',
-    MEDIUM: 'text-blue-500',
-    HIGH: 'text-orange-500',
-    CRITICAL: 'text-red-500',
+    Vital: 'text-red-600',
+    Important: 'text-orange-500',
+    Moderate: 'text-blue-500',
+    Minor: 'text-gray-500',
+    Trivial: 'text-gray-400',
   };
+
+  // 计算剩余天数
+  const getDaysRemaining = () => {
+    if (!goal.targetDate) return null;
+    const now = new Date();
+    const target = new Date(goal.targetDate);
+    const diffTime = target.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysRemaining = getDaysRemaining();
 
   // 计算进度 (overallProgress 是 0-100 的百分比)
   const progress = goal.overallProgress ?? 0;
 
+  const handleDetailClose = () => {
+    setShowDetail(false);
+  };
+
+  const handleDetailUpdate = () => {
+    onUpdate();
+    setShowDetail(false);
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // 如果点击的是按钮，不打开详情
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    setShowDetail(true);
+  };
+
   return (
     <div
       className={`
-        rounded-lg border bg-card p-4 space-y-3 transition-all
+        rounded-lg border bg-card p-4 space-y-3 transition-all cursor-pointer
         hover:shadow-md hover:border-primary/50
         ${isUpdating ? 'opacity-50 pointer-events-none' : ''}
       `}
       style={{ borderLeftColor: goal.color ?? undefined, borderLeftWidth: goal.color ? '4px' : undefined }}
+      onClick={handleCardClick}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
@@ -113,15 +146,26 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
       </div>
 
       {/* Meta Info */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
         {goal.importance && (
-          <span className={importanceColors[goal.importance]}>
-            重要性: {goal.importanceText ?? goal.importance}
+          <span className={`${importanceColors[goal.importance] ?? 'text-gray-500'}`}>
+            ⚡ {goal.importanceText ?? goal.importance}
           </span>
         )}
         {goal.targetDate && (
-          <span>
-            截止: {new Date(goal.targetDate).toLocaleDateString()}
+          <span className={`${
+            daysRemaining !== null && daysRemaining < 0 ? 'text-red-600 font-medium' :
+            daysRemaining !== null && daysRemaining <= 7 ? 'text-orange-500' :
+            'text-muted-foreground'
+          }`}>
+            📅 {daysRemaining !== null && daysRemaining < 0 
+              ? `已逾期 ${Math.abs(daysRemaining)} 天`
+              : daysRemaining !== null && daysRemaining === 0
+              ? '今天到期'
+              : daysRemaining !== null && daysRemaining <= 7
+              ? `${daysRemaining} 天后到期`
+              : new Date(goal.targetDate).toLocaleDateString('zh-CN')
+            }
           </span>
         )}
       </div>
@@ -165,6 +209,14 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
           </div>
         )}
       </div>
+
+      {/* Detail Dialog */}
+      <GoalDetailDialog
+        goalUuid={goal.uuid}
+        open={showDetail}
+        onClose={handleDetailClose}
+        onUpdated={handleDetailUpdate}
+      />
     </div>
   );
 }

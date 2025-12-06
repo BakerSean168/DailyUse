@@ -214,7 +214,8 @@
       "vue-demi"
     ],
     "onlyBuiltDependencies": [
-      "core-js"
+      "electron",
+      "msw"
     ]
   }
 }

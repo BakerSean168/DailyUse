@@ -33,10 +33,10 @@ export function registerGoalIpcHandlers(): void {
       includeChildren: params?.includeChildren ?? true,
     });
     return {
-      data: goals.map((g: Goal) => g.toServerDTO(true)),
+      goals: goals.map((g: Goal) => g.toServerDTO(true)),
       total: goals.length,
       page: params?.page ?? 1,
-      limit: params?.limit ?? 100,
+      pageSize: params?.limit ?? 100,
     };
   });
 
@@ -125,8 +125,10 @@ export function registerGoalIpcHandlers(): void {
       g.title.toLowerCase().includes((params?.query ?? '').toLowerCase())
     );
     return {
-      data: filtered.map((g: Goal) => g.toServerDTO(true)),
+      goals: filtered.map((g: Goal) => g.toServerDTO(true)),
       total: filtered.length,
+      page: params?.page ?? 1,
+      pageSize: params?.limit ?? 100,
     };
   });
 
@@ -152,7 +154,7 @@ export function registerGoalIpcHandlers(): void {
     const goal = await repo.findById(goalUuid, { includeChildren: true });
     if (!goal) throw new Error(`Goal not found: ${goalUuid}`);
     return {
-      data: goal.keyResults.map((kr) => kr.toServerDTO()),
+      keyResults: goal.keyResults.map((kr) => kr.toServerDTO()),
       total: goal.keyResults.length,
     };
   });
@@ -188,7 +190,7 @@ export function registerGoalIpcHandlers(): void {
     // TODO: 实现批量更新权重
     await repo.save(goal);
     return {
-      data: goal.keyResults.map((kr) => kr.toServerDTO()),
+      keyResults: goal.keyResults.map((kr) => kr.toServerDTO()),
       total: goal.keyResults.length,
     };
   });
@@ -210,7 +212,7 @@ export function registerGoalIpcHandlers(): void {
 
   ipcMain.handle('goal:review:list', async (_, goalUuid) => {
     // TODO: 实现复盘列表
-    return { data: [], total: 0 };
+    return { reviews: [], total: 0 };
   });
 
   ipcMain.handle('goal:review:update', async (_, goalUuid, reviewUuid, request) => {
@@ -232,12 +234,12 @@ export function registerGoalIpcHandlers(): void {
 
   ipcMain.handle('goal:record:listByKeyResult', async (_, goalUuid, keyResultUuid, params) => {
     // TODO: 实现记录列表
-    return { data: [], total: 0 };
+    return { records: [], total: 0 };
   });
 
   ipcMain.handle('goal:record:listByGoal', async (_, goalUuid, params) => {
     // TODO: 实现记录列表
-    return { data: [], total: 0 };
+    return { records: [], total: 0 };
   });
 
   ipcMain.handle('goal:record:delete', async (_, goalUuid, keyResultUuid, recordUuid) => {

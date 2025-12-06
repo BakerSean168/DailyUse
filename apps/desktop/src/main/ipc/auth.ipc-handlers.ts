@@ -71,7 +71,7 @@ export function registerAuthIpcHandlers(): void {
   });
 
   ipcMain.handle('auth:api-key:list', async () => {
-    return { data: [], total: 0 };
+    return { apiKeys: [], total: 0 };
   });
 
   ipcMain.handle('auth:api-key:revoke', async (_, keyId) => {
@@ -87,7 +87,7 @@ export function registerAuthIpcHandlers(): void {
   // ============================================
 
   ipcMain.handle('auth:session:list', async () => {
-    return { data: [], total: 0 };
+    return { sessions: [], total: 0 };
   });
 
   ipcMain.handle('auth:session:get-current', async () => {
@@ -107,7 +107,7 @@ export function registerAuthIpcHandlers(): void {
   // ============================================
 
   ipcMain.handle('auth:device:list', async () => {
-    return { data: [], total: 0 };
+    return { devices: [], total: 0 };
   });
 
   ipcMain.handle('auth:device:get-current', async () => {

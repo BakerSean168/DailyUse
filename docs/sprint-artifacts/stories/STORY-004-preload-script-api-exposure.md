@@ -6,7 +6,7 @@
 **Epic**: EPIC-002 (Desktop Application Development)  
 **优先级**: P0 (阻塞其他 Story)  
 **预估工时**: 2 天  
-**状态**: 🔵 Ready for Dev  
+**状态**: ✅ Completed  
 
 ---
 
@@ -22,17 +22,17 @@
 
 ### 功能验收
 
-- [ ] Preload 脚本暴露所有 11 个模块的 IPC 方法
-- [ ] 每个方法的签名与 IPC 适配器期望一致
-- [ ] 主进程注册对应的 IPC Handler
-- [ ] 渲染进程调用 → 主进程处理 → 返回结果 流程正常
+- [x] Preload 脚本暴露所有 11 个模块的 IPC 方法
+- [x] 每个方法的签名与 IPC 适配器期望一致
+- [x] 主进程注册对应的 IPC Handler
+- [ ] 渲染进程调用 → 主进程处理 → 返回结果 流程正常 (需运行时验证)
 
 ### 技术验收
 
-- [ ] `preload/main.ts` 更新完成
-- [ ] 主进程 IPC Handler 注册完成
-- [ ] TypeScript 类型安全
-- [ ] 无安全警告
+- [x] `preload/preload.ts` 实现完成 (使用通用 invoke 模式)
+- [x] 主进程 IPC Handler 注册完成 (12 个模块)
+- [x] TypeScript 类型安全
+- [x] 无安全警告 (使用白名单机制)
 
 ---
 

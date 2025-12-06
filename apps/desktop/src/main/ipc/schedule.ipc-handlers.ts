@@ -19,7 +19,7 @@ export function registerScheduleIpcHandlers(): void {
   });
 
   ipcMain.handle('schedule:task:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { items: [], total: 0, page: 1, limit: 20 };
   });
 
   ipcMain.handle('schedule:task:get', async (_, uuid) => {
@@ -35,11 +35,11 @@ export function registerScheduleIpcHandlers(): void {
   });
 
   ipcMain.handle('schedule:task:list-by-date', async (_, date) => {
-    return { data: [], total: 0 };
+    return { items: [], total: 0, page: 1, limit: 20 };
   });
 
   ipcMain.handle('schedule:task:list-by-range', async (_, startDate, endDate) => {
-    return { data: [], total: 0 };
+    return { items: [], total: 0, page: 1, limit: 20 };
   });
 
   ipcMain.handle('schedule:task:reschedule', async (_, uuid, newDate, newTime) => {
@@ -59,7 +59,7 @@ export function registerScheduleIpcHandlers(): void {
   });
 
   ipcMain.handle('schedule:event:list', async (_, params) => {
-    return { data: [], total: 0 };
+    return { events: [], total: 0 };
   });
 
   ipcMain.handle('schedule:event:get', async (_, uuid) => {
@@ -75,15 +75,15 @@ export function registerScheduleIpcHandlers(): void {
   });
 
   ipcMain.handle('schedule:event:list-by-date', async (_, date) => {
-    return { data: [], total: 0 };
+    return { events: [], total: 0 };
   });
 
   ipcMain.handle('schedule:event:list-by-range', async (_, startDate, endDate) => {
-    return { data: [], total: 0 };
+    return { events: [], total: 0 };
   });
 
   ipcMain.handle('schedule:event:list-recurring', async (_, params) => {
-    return { data: [], total: 0 };
+    return { events: [], total: 0 };
   });
 
   ipcMain.handle('schedule:event:update-recurring', async (_, uuid, request, scope) => {
@@ -103,11 +103,11 @@ export function registerScheduleIpcHandlers(): void {
   });
 
   ipcMain.handle('schedule:statistics:get-weekly', async (_, weekStart) => {
-    return { data: [] };
+    return { days: [] };
   });
 
   ipcMain.handle('schedule:statistics:get-monthly', async (_, month, year) => {
-    return { data: [] };
+    return { days: [] };
   });
 
   ipcMain.handle('schedule:statistics:get-availability', async (_, date, duration) => {
