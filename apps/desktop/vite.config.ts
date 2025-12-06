@@ -2,11 +2,10 @@
 import { defineConfig } from 'vite';
 import path from 'node:path';
 import electron from 'vite-plugin-electron/simple';
-import vue from '@vitejs/plugin-vue';
-import monacoEditorPlugin from 'vite-plugin-monaco-editor';
+import react from '@vitejs/plugin-react';
 
 // 原生模块列表
-const nativeModules = ['better-sqlite3', 'bcrypt', 'electron'];
+const nativeModules = ['better-sqlite3', 'electron'];
 
 // 本地工作区包（避免被 optimizeDeps 处理）
 const workspacePkgs = [
@@ -14,7 +13,8 @@ const workspacePkgs = [
   '@dailyuse/domain-client',
   '@dailyuse/domain-server',
   '@dailyuse/contracts',
-  '@dailyuse/ui-vuetify',
+  '@dailyuse/infrastructure-server',
+  '@dailyuse/ui-shadcn',
 ];
 
 // https://vitejs.dev/config/
@@ -42,13 +42,10 @@ export default defineConfig({
     environment: 'jsdom',
   },
   plugins: [
-    (monacoEditorPlugin as any).default({
-      languageWorkers: ['editorWorkerService', 'json'],
-    }),
-    vue(),
+    react(),
     electron({
       main: {
-        entry: 'src/main/main-simple.ts',
+        entry: 'src/main/main.ts',
         vite: {
           resolve: {
             alias: {
@@ -73,7 +70,7 @@ export default defineConfig({
       },
       preload: {
         input: {
-          main_preload: path.resolve(__dirname, 'src/preload/main.ts'),
+          preload: path.resolve(__dirname, 'src/preload/preload.ts'),
         },
         vite: {
           build: {

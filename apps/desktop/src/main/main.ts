@@ -1,273 +1,138 @@
-import { app, ipcMain, clipboard, protocol, shell } from 'electron';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
-import { initializeApp, cleanupApp } from './shared/initialization/appInitializer';
-import { WindowManager } from './windows/windowManager';
-import { getInitializationStatus } from './shared/initialization/appInitializer';
-import { MainPluginManager } from '../plugins/core/main/PluginManager';
-import log from 'electron-log';
+/**
+ * Electron Main Process Entry Point
+ *
+ * 遵循 ADR-006: IPC invoke/handle 模式
+ * 遵循 STORY-002: 主进程 DI 初始化
+ * 遵循 STORY-003: Preload API 暴露
+ */
 
-// console.log = (...args) => { logToFile("info", ...args); };
-// console.error = (...args) => { logToFile("error", ...args); };
-// console.warn = (...args) => { logToFile("warn", ...args); };
+import { app, BrowserWindow, ipcMain } from 'electron';
+import path from 'path';
+import { initializeDatabase, closeDatabase } from './database';
+import { configureMainProcessDependencies, isDIConfigured } from './di';
+import { registerAllIpcHandlers } from './ipc';
 
-// 早期错误捕获
-process.on('uncaughtException', (error) => {
-  log.error('💥 [Main] 早期未捕获的异常:', error);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  log.error('💥 [Main] 早期未处理的Promise拒绝:', reason, promise);
-});
-
-// 设置应用名称
-app.setName('DailyUse');
-
-// 防止软件崩溃以及兼容性设置
-// 这些设置可以根据需要启用
-// app.commandLine.appendSwitch('disable-webgl');
-// app.commandLine.appendSwitch('disable-webgl2');
-// app.commandLine.appendSwitch('use-gl', 'swiftshader');
-// app.commandLine.appendSwitch('no-sandbox');
-// app.commandLine.appendSwitch('disable-gpu');
-// app.disableHardwareAcceleration();
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// 构建目录结构
-//
-// ├─┬─┬ dist
-// │ │ └── index.html
-// │ │
-// │ ├─┬ dist-electron
-// │ │ ├── main.js
-// │ │ └── preload.mjs
-// │
-process.env.APP_ROOT = path.join(__dirname, '..');
-
-// 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
-export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
-export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron');
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist');
-
-// 设置环境变量供插件和窗口管理器使用
-process.env.MAIN_DIST = MAIN_DIST;
-process.env.RENDERER_DIST = RENDERER_DIST;
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
-  ? path.join(process.env.APP_ROOT, 'public')
-  : RENDERER_DIST;
-
-// 全局实例
-let windowManager: WindowManager | null = null;
+// 保持对窗口的引用，避免被垃圾回收
+let mainWindow: BrowserWindow | null = null;
 
 /**
- * 初始化插件管理器
+ * 创建主窗口
  */
-function initializePlugins(): void {
-  log.info('🔌 [Main] 初始化插件管理器');
-
-  const pluginManager = MainPluginManager.getInstance();
-  // TODO: 注册插件
-  // pluginManager.register(new QuickLauncherMainPlugin());
-
-  // 初始化所有插件
-  pluginManager.initializeAll();
-
-  log.info('✅ [Main] 插件管理器初始化完成');
-}
-
-/**
- * 注册协议处理器
- */
-function registerProtocols(): void {
-  log.info('🔗 [Main] 注册协议处理器');
-
-  // 注册local协议用于本地文件访问
-  protocol.registerFileProtocol('local', (request, callback) => {
-    const url = request.url.replace('local://', '');
-    try {
-      return callback(decodeURIComponent(url));
-    } catch (error) {
-      log.error('Protocol error:', error);
-    }
-  });
-}
-
-/**
- * 注册IPC处理器
- */
-function registerIpcHandlers(): void {
-  log.info('📡 [Main] 注册IPC处理器');
-
-  // 剪贴板操作
-  ipcMain.handle('readClipboard', () => {
-    return clipboard.readText();
+function createWindow(): void {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    minWidth: 800,
+    minHeight: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.mjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
+    titleBarStyle: 'hiddenInset',
+    show: false,
   });
 
-  ipcMain.handle('writeClipboard', (_event, text: string) => {
-    clipboard.writeText(text);
+  // 窗口准备好后再显示，避免白屏
+  mainWindow.once('ready-to-show', () => {
+    mainWindow?.show();
   });
 
-  ipcMain.handle('readClipboardFiles', () => {
-    const formats = clipboard.availableFormats();
-    if (formats.includes('FileNameW')) {
-      return clipboard.read('FileNameW').split('\0').filter(Boolean);
-    }
-    return [];
-  });
+  // 加载应用
+  if (process.env.NODE_ENV === 'development') {
+    // 开发模式：加载 Vite dev server
+    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.webContents.openDevTools();
+  } else {
+    // 生产模式：加载打包后的 HTML
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+  }
 
-  // 外部链接处理
-  ipcMain.handle('open-external-url', async (_event, url: string) => {
-    try {
-      await shell.openExternal(url);
-    } catch (error) {
-      log.error('Failed to open URL:', error);
-    }
+  mainWindow.on('closed', () => {
+    mainWindow = null;
   });
-
-  // 自启动设置
-  ipcMain.handle('get-auto-launch', () => {
-    return app.getLoginItemSettings().openAtLogin;
-  });
-
-  ipcMain.handle('set-auto-launch', (_event, enable: boolean) => {
-    if (process.platform === 'win32') {
-      app.setLoginItemSettings({
-        openAtLogin: enable,
-        path: process.execPath,
-      });
-    }
-    return app.getLoginItemSettings().openAtLogin;
-  });
-
-  // 模块状态查询
-  ipcMain.handle('get-module-status', () => {
-    return getInitializationStatus();
-  });
-
-  // 窗口控制
-  ipcMain.on('window-control', (_event, command) => {
-    const currentWindow = windowManager?.getCurrentWindow();
-    if (currentWindow) {
-      switch (command) {
-        case 'minimize':
-          currentWindow.minimize();
-          break;
-        case 'maximize':
-          if (currentWindow.isMaximized()) {
-            currentWindow.unmaximize();
-          } else {
-            currentWindow.maximize();
-          }
-          break;
-        case 'close':
-          currentWindow.close();
-          break;
-      }
-    }
-  });
-
-  log.info('✅ [Main] IPC处理器注册完成');
 }
 
 /**
  * 应用初始化
  */
-async function initializeApplication(): Promise<void> {
-  log.info('🚀 [Main] 开始应用初始化');
+async function initializeApp(): Promise<void> {
+  console.log('[App] Initializing...');
 
-  try {
-    // 初始化窗口管理器
-    log.info('🪟 [Main] 正在创建 WindowManager 实例...');
-    try {
-      windowManager = new WindowManager();
-      log.info('🪟 [Main] WindowManager 实例创建完成，开始初始化...');
-    } catch (error) {
-      log.error('💥 [Main] WindowManager 实例创建失败:', error);
-      throw error;
-    }
+  // 1. 初始化数据库
+  initializeDatabase();
+  console.log('[App] Database initialized');
 
-    try {
-      await windowManager.initialize();
-      log.info('🪟 [Main] WindowManager 初始化完成');
-    } catch (error) {
-      log.error('💥 [Main] WindowManager 初始化失败:', error);
-      throw error;
-    }
+  // 2. 配置依赖注入
+  configureMainProcessDependencies();
+  console.log('[App] DI configured');
 
-    // 初始化插件
-    initializePlugins();
+  // 3. 注册 IPC 处理器
+  registerIpcHandlers();
+  console.log('[App] IPC handlers registered');
 
-    // 注册协议
-    registerProtocols();
-
-    // 注册IPC处理器
-    registerIpcHandlers();
-
-    // 初始化应用模块
-    await initializeApp();
-
-    log.info('✅ [Main] 应用初始化完成');
-  } catch (error) {
-    log.error('❌ [Main] 应用初始化失败:', error);
-    app.quit();
-  }
+  console.log('[App] Initialization complete');
 }
 
 /**
- * 应用清理
+ * 注册 IPC 处理器
+ * 遵循 ADR-006: 使用 invoke/handle 模式
  */
-async function cleanupApplication(): Promise<void> {
-  log.info('🧹 [Main] 开始应用清理');
+function registerIpcHandlers(): void {
+  // ========== System Channels ==========
+  ipcMain.handle('system:getDIStatus', async () => {
+    return isDIConfigured();
+  });
 
-  try {
-    // 清理应用模块
-    await cleanupApp();
+  ipcMain.handle('system:getAppVersion', async () => {
+    return app.getVersion();
+  });
 
-    // 清理窗口管理器
-    windowManager?.destroy();
-    windowManager = null;
+  // ========== App Info Channels ==========
+  ipcMain.handle('app:getInfo', async () => {
+    return {
+      platform: process.platform,
+      version: app.getVersion(),
+    };
+  });
 
-    // TODO: 清理插件管理器
+  ipcMain.handle('app:checkDIStatus', async () => {
+    return isDIConfigured();
+  });
 
-    log.info('✅ [Main] 应用清理完成');
-  } catch (error) {
-    log.error('❌ [Main] 应用清理失败:', error);
-  }
+  // ========== All Module IPC Handlers ==========
+  // 使用模块化的 IPC 处理器注册
+  registerAllIpcHandlers();
 }
 
-log.info('🎯 [Main] 准备设置应用事件监听器');
+// ========== App Lifecycle ==========
 
-// 应用事件处理
 app.whenReady().then(async () => {
-  log.info('🎯 [Main] 应用就绪，开始初始化');
-  try {
-    await initializeApplication();
-    log.info('🎯 [Main] 主进程初始化完成');
-  } catch (error) {
-    log.error('💥 [Main] 主进程初始化失败:', error);
+  await initializeApp();
+  createWindow();
+
+  app.on('activate', () => {
+    // macOS: 点击 dock 图标时重新创建窗口
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on('window-all-closed', () => {
+  // macOS: 保持应用活跃直到明确退出
+  if (process.platform !== 'darwin') {
+    app.quit();
   }
 });
 
-app.on('activate', () => {
-  log.info('🔄 [Main] 应用被激活');
-  if (!windowManager) {
-    initializeApplication();
-  }
+app.on('before-quit', () => {
+  // 关闭数据库连接
+  closeDatabase();
 });
 
-app.on('before-quit', async () => {
-  log.info('🛑 [Main] 应用即将退出');
-  await cleanupApplication();
+// 安全性：阻止创建新窗口
+app.on('web-contents-created', (_, contents) => {
+  contents.setWindowOpenHandler(() => ({ action: 'deny' }));
 });
-
-// 错误处理
-process.on('uncaughtException', (error) => {
-  log.error('💥 [Main] 未捕获的异常:', error);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  log.error('💥 [Main] 未处理的Promise拒绝:', reason, promise);
-});
-
-log.info('🎯 [Main] 主进程脚本执行完成，等待应用就绪事件');

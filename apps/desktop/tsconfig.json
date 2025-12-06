@@ -13,27 +13,11 @@
     // 输出目录：编译后的文件
     "outDir": "./dist",
 
-    // 生成输出文件
-    "noEmit": false,
+    // 不生成输出文件（由 Vite/tsup 处理）
+    "noEmit": true,
 
     // ============================================================
-    // Composite 项目配置（Monorepo 关键）
-    // ============================================================
-
-    // 启用项目引用模式（支持类型热更新）
-    "composite": true,
-
-    // 生成类型声明文件
-    "declaration": true,
-
-    // 生成声明文件的 source map
-    "declarationMap": true,
-
-    // 生成 JavaScript 的 source map
-    "sourceMap": true,
-
-    // ============================================================
-    // Electron + Vue 混合环境配置
+    // Electron + React 混合环境配置
     // ============================================================
 
     // 标准库：浏览器 API（渲染进程）
@@ -45,9 +29,8 @@
     // 模块解析：使用 Bundler 策略（Vite + Electron）
     "moduleResolution": "Bundler",
 
-    // JSX 支持：Vue 3 使用 preserve 模式
-    // Vite 会处理 JSX/TSX 文件的转换
-    "jsx": "preserve",
+    // JSX 支持：React JSX 转换
+    "jsx": "react-jsx",
 
     // ============================================================
     // 本地路径别名配置
@@ -55,7 +38,7 @@
 
     // 路径别名：仅用于项目内部导入
     "paths": {
-      // 渲染进程代码（Vue 组件等）
+      // 渲染进程代码（React 组件等）
       "@/*": ["./src/*"],
 
       // Electron 主进程代码
@@ -63,9 +46,6 @@
 
       // 共享代码（主进程和渲染进程共用）
       "@common/*": ["./common/*"]
-
-      // 跨包引用通过 references 实现
-      // 不要配置 @dailyuse/* 路径
     }
   },
 
@@ -75,26 +55,13 @@
 
   // 包含的文件：渲染进程、主进程、共享代码
   "include": [
-    "src/**/*.ts", // 渲染进程 TypeScript
-    "src/**/*.d.ts", // 类型定义文件
-    "src/**/*.tsx", // TSX 文件
-    "src/**/*.vue", // Vue 单文件组件
-    "electron/**/*", // Electron 主进程
-    "common/**/*" // 共享代码
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "electron/**/*",
+    "common/**/*"
   ],
 
   // 排除的文件
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-
-  // ============================================================
-  // 项目引用配置（依赖的包）
-  // ============================================================
-
-  // Desktop 应用依赖的包
-  // 注意：使用 tsup 构建的包不需要通过 references 引用
-  // 它们通过 package.json 的 exports 字段提供类型
-  "references": [
-    // Vite 配置文件的类型检查
-    { "path": "./tsconfig.node.json" }
-  ]
+  "exclude": ["node_modules", "dist", "dist-electron", "**/*.test.ts", "**/*.spec.ts"]
 }
