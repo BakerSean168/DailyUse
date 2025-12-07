@@ -15,12 +15,22 @@ import { registerAllIpcHandlers } from './ipc';
 import { initNotificationService } from './services';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers, getIpcCache } from './utils';
 
+// STORY-10: Desktop Native Features
+import { TrayManager } from './modules/tray';
+import { ShortcutManager } from './modules/shortcuts';
+import { AutoLaunchManager } from './modules/autolaunch';
+
 // ESM 兼容的 __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // 保持对窗口的引用，避免被垃圾回收
 let mainWindow: BrowserWindow | null = null;
+
+// STORY-10: Desktop Native Features managers
+let trayManager: TrayManager | null = null;
+let shortcutManager: ShortcutManager | null = null;
+let autoLaunchManager: AutoLaunchManager | null = null;
 
 /**
  * 创建主窗口
@@ -141,6 +151,49 @@ function registerIpcHandlers(): void {
     return getIpcCache().getStats();
   });
 
+  // ========== STORY-10: Desktop Features ==========
+  
+  // 开机自启
+  ipcMain.handle('desktop:autoLaunch:isEnabled', async () => {
+    return autoLaunchManager?.isEnabled() ?? false;
+  });
+
+  ipcMain.handle('desktop:autoLaunch:enable', async () => {
+    return autoLaunchManager?.enable() ?? false;
+  });
+
+  ipcMain.handle('desktop:autoLaunch:disable', async () => {
+    return autoLaunchManager?.disable() ?? false;
+  });
+
+  // 快捷键
+  ipcMain.handle('desktop:shortcuts:getAll', async () => {
+    return shortcutManager?.getShortcuts() ?? [];
+  });
+
+  ipcMain.handle('desktop:shortcuts:update', async (_, accelerator: string, newConfig: { enabled?: boolean }) => {
+    if (!shortcutManager) return false;
+    if (newConfig.enabled === false) {
+      shortcutManager.unregister(accelerator);
+    } else {
+      const shortcuts = shortcutManager.getShortcuts();
+      const existing = shortcuts.find(s => s.accelerator === accelerator);
+      if (existing) {
+        shortcutManager.register({ ...existing, enabled: true });
+      }
+    }
+    return true;
+  });
+
+  // 托盘
+  ipcMain.handle('desktop:tray:flash', async () => {
+    trayManager?.startFlashing();
+  });
+
+  ipcMain.handle('desktop:tray:stopFlash', async () => {
+    trayManager?.stopFlashing();
+  });
+
   // ========== App Info Channels ==========
   ipcMain.handle('app:getInfo', async () => {
     return {
@@ -168,6 +221,9 @@ app.whenReady().then(async () => {
   if (mainWindow) {
     initNotificationService(mainWindow);
     console.log('[App] Notification service initialized');
+
+    // STORY-10: 初始化桌面特性
+    initDesktopFeatures(mainWindow);
   }
 
   app.on('activate', () => {
@@ -177,6 +233,37 @@ app.whenReady().then(async () => {
     }
   });
 });
+
+/**
+ * STORY-10: 初始化桌面特有功能
+ * - 系统托盘
+ * - 全局快捷键
+ * - 开机自启
+ */
+function initDesktopFeatures(window: BrowserWindow): void {
+  console.log('[App] Initializing desktop features...');
+
+  // 1. 系统托盘
+  trayManager = new TrayManager(window, {
+    tooltip: 'DailyUse - 效率提升工具',
+    hideOnClose: true,
+  });
+  trayManager.init();
+  console.log('[App] Tray manager initialized');
+
+  // 2. 全局快捷键
+  shortcutManager = new ShortcutManager(window);
+  shortcutManager.init();
+  console.log('[App] Shortcut manager initialized');
+
+  // 3. 开机自启管理器
+  autoLaunchManager = new AutoLaunchManager({
+    name: 'DailyUse',
+    isHidden: true,
+  });
+  autoLaunchManager.init();
+  console.log('[App] Auto-launch manager initialized');
+}
 
 app.on('window-all-closed', () => {
   // macOS: 保持应用活跃直到明确退出
@@ -188,6 +275,11 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   // 停止定时任务
   stopMemoryCleanup();
+  
+  // STORY-10: 清理桌面特性资源
+  shortcutManager?.unregisterAll();
+  trayManager?.destroy();
+  
   // 关闭数据库连接
   closeDatabase();
 });

@@ -289,6 +289,26 @@ const ALLOWED_CHANNELS = [
   'ai:quota:get',
   'ai:quota:update-limit',
   'ai:quota:check',
+
+  // STORY-10: Desktop Features
+  'desktop:autoLaunch:isEnabled',
+  'desktop:autoLaunch:enable',
+  'desktop:autoLaunch:disable',
+  'desktop:shortcuts:getAll',
+  'desktop:shortcuts:update',
+  'desktop:tray:flash',
+  'desktop:tray:stopFlash',
+
+  // EPIC-003: Performance Monitoring
+  'system:getLazyModuleStats',
+  'system:getMemoryUsage',
+  'system:getIpcCacheStats',
+  'cache:stats',
+  'cache:clear',
+  'cache:invalidate',
+  'dev:memory:status',
+  'dev:memory:snapshots',
+  'dev:memory:force-gc',
 ] as const;
 
 type AllowedChannel = (typeof ALLOWED_CHANNELS)[number];
