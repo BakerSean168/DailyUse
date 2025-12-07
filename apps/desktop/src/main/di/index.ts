@@ -8,4 +8,12 @@ export {
   isDIConfigured,
 } from './desktop-main.composition-root';
 
+export {
+  ensureModuleLoaded,
+  isModuleLoaded,
+  getLoadedModules,
+  getLazyModuleStats,
+  getModuleLoadTimes,
+} from './lazy-module-loader';
+
 export * from './sqlite-adapters';

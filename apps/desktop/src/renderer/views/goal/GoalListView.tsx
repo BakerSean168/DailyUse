@@ -10,6 +10,8 @@ import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goa
 import { GoalCard } from './components/GoalCard';
 import { GoalCreateDialog } from './components/GoalCreateDialog';
 import { GoalFolderManager } from './components/GoalFolderManager';
+import { GoalListSkeleton } from '../../components/Skeleton';
+import { VirtualList } from '../../components/VirtualList';
 
 export function GoalListView() {
   const [goals, setGoals] = useState<GoalClientDTO[]>([]);
@@ -20,6 +22,8 @@ export function GoalListView() {
   const [selectedFolder, setSelectedFolder] = useState<GoalFolderClientDTO | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  // 视图模式: grid(网格) / list(列表，支持虚拟滚动)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // 获取 API Client
   const goalApiClient = GoalContainer.getInstance().getApiClient();
@@ -65,12 +69,9 @@ export function GoalListView() {
     return true;
   });
 
+  // 使用骨架屏替代简单的加载提示
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">加载中...</div>
-      </div>
-    );
+    return <GoalListSkeleton />;
   }
 
   if (error) {
@@ -152,6 +153,23 @@ export function GoalListView() {
           <option value="ARCHIVED">📦 已归档</option>
           <option value="DRAFT">📝 草稿</option>
         </select>
+        {/* 视图模式切换 */}
+        <div className="flex border rounded-md overflow-hidden">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`px-3 py-2 ${viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-secondary'}`}
+            title="网格视图"
+          >
+            ▦
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-3 py-2 ${viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-secondary'}`}
+            title="列表视图（大数据量时更流畅）"
+          >
+            ☰
+          </button>
+        </div>
       </div>
 
       {/* Goal List */}
@@ -180,7 +198,25 @@ export function GoalListView() {
             </button>
           )}
         </div>
+      ) : viewMode === 'list' ? (
+        /* 列表视图 - 使用虚拟滚动优化大数据量 */
+        <VirtualList
+          items={filteredGoals}
+          renderItem={(goal) => (
+            <GoalCard
+              goal={goal}
+              onUpdate={loadGoals}
+            />
+          )}
+          getItemKey={(goal) => goal.uuid}
+          estimateSize={140}
+          threshold={30}
+          height="calc(100vh - 280px)"
+          className="border rounded-lg"
+          renderEmpty={() => null}
+        />
       ) : (
+        /* 网格视图 */
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredGoals.map((goal) => (
             <GoalCard

@@ -208,6 +208,10 @@ const ALLOWED_CHANNELS = [
   'notification:unread-count',
 
   // Dashboard
+  'dashboard:get-all',
+  'dashboard:get-overview',
+  'dashboard:get-today',
+  'dashboard:get-stats',
   'dashboard:statistics:get',
   'dashboard:statistics:refresh',
   'dashboard:config:get',

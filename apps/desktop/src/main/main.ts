@@ -9,10 +9,11 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { initializeDatabase, closeDatabase } from './database';
-import { configureMainProcessDependencies, isDIConfigured } from './di';
+import { initializeDatabase, closeDatabase, startMemoryCleanup, stopMemoryCleanup } from './database';
+import { configureMainProcessDependencies, isDIConfigured, getLazyModuleStats } from './di';
 import { registerAllIpcHandlers } from './ipc';
 import { initNotificationService } from './services';
+import { initMemoryMonitorForDev, registerCacheIpcHandlers, getIpcCache } from './utils';
 
 // ESM 兼容的 __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -62,15 +63,21 @@ function createWindow(): void {
 
 /**
  * 应用初始化
+ * 
+ * EPIC-003: 性能优化
+ * - 添加启动时间测量
+ * - 核心模块优先加载
+ * - 非核心模块懒加载
  */
 async function initializeApp(): Promise<void> {
+  const startTime = performance.now();
   console.log('[App] Initializing...');
 
   // 1. 初始化数据库
   initializeDatabase();
   console.log('[App] Database initialized');
 
-  // 2. 配置依赖注入
+  // 2. 配置依赖注入（核心模块立即加载，非核心懒加载）
   configureMainProcessDependencies();
   console.log('[App] DI configured');
 
@@ -83,7 +90,21 @@ async function initializeApp(): Promise<void> {
   registerIpcHandlers();
   console.log('[App] IPC handlers registered');
 
-  console.log('[App] Initialization complete');
+  // 5. 启动数据库内存清理定时器
+  startMemoryCleanup();
+
+  // 6. EPIC-003: 初始化性能监控工具
+  initMemoryMonitorForDev();
+  registerCacheIpcHandlers();
+  console.log('[App] Performance monitoring initialized');
+
+  const initTime = performance.now() - startTime;
+  console.log(`[App] Initialization complete in ${initTime.toFixed(2)}ms`);
+  
+  // 发送启动完成信号（用于性能测试）
+  if (process.env.BENCHMARK_MODE === 'true') {
+    console.log('[BENCHMARK] READY');
+  }
 }
 
 /**
@@ -98,6 +119,26 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('system:getAppVersion', async () => {
     return app.getVersion();
+  });
+
+  // ========== EPIC-003: 性能监控 ==========
+  ipcMain.handle('system:getLazyModuleStats', async () => {
+    return getLazyModuleStats();
+  });
+
+  ipcMain.handle('system:getMemoryUsage', async () => {
+    const usage = process.memoryUsage();
+    return {
+      heapUsed: Math.round(usage.heapUsed / 1024 / 1024),
+      heapTotal: Math.round(usage.heapTotal / 1024 / 1024),
+      external: Math.round(usage.external / 1024 / 1024),
+      rss: Math.round(usage.rss / 1024 / 1024),
+    };
+  });
+
+  // EPIC-003: IPC Cache Stats
+  ipcMain.handle('system:getIpcCacheStats', async () => {
+    return getIpcCache().getStats();
   });
 
   // ========== App Info Channels ==========
@@ -145,6 +186,8 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  // 停止定时任务
+  stopMemoryCleanup();
   // 关闭数据库连接
   closeDatabase();
 });

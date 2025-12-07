@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { DashboardSkeleton } from '../../components/Skeleton';
 import {
   GoalContainer,
   TaskContainer,
@@ -345,12 +346,9 @@ export function DashboardView() {
 
   // ============ Render ============
 
+  // 使用骨架屏替代简单的加载提示
   if (loading && !stats) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">加载中...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (

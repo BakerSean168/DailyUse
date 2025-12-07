@@ -11,6 +11,8 @@ import { TaskCard } from './components/TaskCard';
 import { TaskCreateDialog } from './components/TaskCreateDialog';
 import { TaskStatistics } from './components/TaskStatistics';
 import { TaskDependencyGraph } from './components/TaskDependencyGraph';
+import { TaskListSkeleton } from '../../components/Skeleton';
+import { VirtualList } from '../../components/VirtualList';
 
 export function TaskListView() {
   const [templates, setTemplates] = useState<TaskTemplateClientDTO[]>([]);
@@ -22,6 +24,8 @@ export function TaskListView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
+  // 视图模式: grid(网格) / list(列表，支持虚拟滚动)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // 获取任务 API Client
   const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
@@ -70,12 +74,9 @@ export function TaskListView() {
     return true;
   });
 
+  // 使用骨架屏替代简单的加载提示
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">加载中...</div>
-      </div>
-    );
+    return <TaskListSkeleton />;
   }
 
   if (error) {
@@ -230,6 +231,23 @@ export function TaskListView() {
               <option value="ONE_TIME">📌 一次性</option>
               <option value="RECURRING">🔄 重复</option>
             </select>
+            {/* 视图模式切换 */}
+            <div className="flex border rounded-md overflow-hidden">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-2 ${viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-secondary'}`}
+                title="网格视图"
+              >
+                ▦
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-2 ${viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-secondary'}`}
+                title="列表视图（大数据量时更流畅）"
+              >
+                ☰
+              </button>
+            </div>
           </div>
 
           {/* Task Cards */}
@@ -258,7 +276,25 @@ export function TaskListView() {
                 </button>
               )}
             </div>
+          ) : viewMode === 'list' ? (
+            /* 列表视图 - 使用虚拟滚动优化大数据量 */
+            <VirtualList
+              items={filteredTemplates}
+              renderItem={(template) => (
+                <TaskCard
+                  template={template}
+                  onUpdate={loadTemplates}
+                />
+              )}
+              getItemKey={(template) => template.uuid}
+              estimateSize={120}
+              threshold={30}
+              height="calc(100vh - 320px)"
+              className="border rounded-lg"
+              renderEmpty={() => null}
+            />
           ) : (
+            /* 网格视图 */
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredTemplates.map((template) => (
                 <TaskCard
