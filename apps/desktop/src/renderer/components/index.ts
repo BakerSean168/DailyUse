@@ -16,3 +16,9 @@ export {
   TableSkeleton,
 } from './Skeleton';
 export { VirtualList, VirtualGroupedList, type VirtualListProps, type VirtualGroupedListProps } from './VirtualList';
+
+// EPIC-003: Performance Optimization Components
+export {
+  LazyImage,
+  type LazyImageProps,
+} from './LazyImage';
