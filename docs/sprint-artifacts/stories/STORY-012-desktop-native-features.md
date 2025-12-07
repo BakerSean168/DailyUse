@@ -6,7 +6,7 @@
 **Epic**: EPIC-002 (Desktop Application Development)  
 **优先级**: P1 (核心价值)  
 **预估工时**: 3-4 天  
-**状态**: 🔵 Ready for Dev  
+**状态**: ✅ Completed  
 **前置依赖**: STORY-002
 
 ---

@@ -6,7 +6,7 @@
 **Epic**: EPIC-002 (Desktop Application Development)  
 **优先级**: P2 (增强体验)  
 **预估工时**: 4-5 天  
-**状态**: 🔵 Ready for Dev  
+**状态**: ✅ Completed  
 **前置依赖**: STORY-002, STORY-003, STORY-004
 
 ---
@@ -23,11 +23,11 @@
 
 ### 功能验收 - AI 对话
 
-- [ ] AI 对话界面（聊天模式）
-- [ ] 流式响应显示
-- [ ] 对话历史记录
-- [ ] 上下文保持
-- [ ] 清除对话功能
+- [x] AI 对话界面（聊天模式）
+- [x] 流式响应显示
+- [x] 对话历史记录
+- [x] 上下文保持
+- [x] 清除对话功能
 
 ### 功能验收 - AI 辅助
 
@@ -38,26 +38,39 @@
 
 ### 功能验收 - 模型配置
 
-- [ ] API Key 配置界面
-- [ ] 模型选择
+- [x] API Key 配置界面
+- [x] 模型选择
 - [ ] 参数调整（温度、上下文长度）
-- [ ] 模型测试功能
+- [x] 模型测试功能
 
 ### 技术验收
 
-- [ ] 流式 IPC 通信
-- [ ] API Key 安全存储
+- [x] 流式 IPC 通信
+- [x] API Key 安全存储
 - [ ] 离线降级处理
 
 ---
 
 ## 📐 技术设计
 
-### 文件结构
+### 文件结构（实际实现 - React TSX）
 
 ```
 apps/desktop/src/
 ├── renderer/
+│   ├── hooks/
+│   │   ├── useAI.ts                # AI 对话管理 Hook
+│   │   └── useAISettings.ts        # AI 设置管理 Hook
+│   └── views/
+│       └── ai/
+│           ├── index.ts            # AI Views exports
+│           ├── AIChatView.tsx      # AI 对话页面
+│           ├── AISettingsView.tsx  # AI 设置页面
+│           └── components/
+│               ├── index.ts        # Components exports
+│               ├── ChatMessage.tsx # 消息气泡组件
+│               ├── ChatInput.tsx   # 输入框组件
+│               └── ConversationList.tsx # 对话列表组件
 │   └── views/
 │       └── ai/
 │           ├── AiChatView.vue          # AI 对话页

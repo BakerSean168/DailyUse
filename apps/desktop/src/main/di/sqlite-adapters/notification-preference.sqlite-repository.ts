@@ -1,14 +1,28 @@
-// @ts-nocheck
 /**
  * SQLite Notification Preference Repository
- * TODO: 修复类型定义后移除 @ts-nocheck
+ *
+ * 实现 INotificationPreferenceRepository 接口
  */
 
-import type { INotificationPreferenceRepository } from '@dailyuse/domain-server/notification';
-import type { NotificationPreference } from '@dailyuse/domain-server/notification';
+import type { INotificationPreferenceRepository, NotificationPreference } from '@dailyuse/domain-server/notification';
 import { getDatabase, transaction } from '../../database';
 
+interface NotificationPreferenceRow {
+  uuid: string;
+  account_uuid: string;
+  enabled: number;
+  channels: string;
+  categories: string;
+  do_not_disturb: string | null;
+  rate_limit: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
 export class SqliteNotificationPreferenceRepository implements INotificationPreferenceRepository {
+  /**
+   * 保存偏好设置（创建或更新）
+   */
   async save(preference: NotificationPreference): Promise<void> {
     const db = getDatabase();
     const dto = preference.toPersistenceDTO();
@@ -19,50 +33,99 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
       if (existing) {
         db.prepare(`
           UPDATE notification_preferences SET
-            account_uuid = ?, type = ?, enabled = ?, channels = ?, quiet_hours = ?, updated_at = ?
+            account_uuid = ?, enabled = ?, channels = ?, categories = ?,
+            do_not_disturb = ?, rate_limit = ?, updated_at = ?
           WHERE uuid = ?
         `).run(
-          dto.accountUuid, dto.type, dto.enabled ? 1 : 0, JSON.stringify(dto.channels),
-          JSON.stringify(dto.quietHours), dto.updatedAt, dto.uuid
+          dto.accountUuid, dto.enabled ? 1 : 0, dto.channels, dto.categories,
+          dto.doNotDisturb, dto.rateLimit, dto.updatedAt, dto.uuid
         );
       } else {
         db.prepare(`
           INSERT INTO notification_preferences (
-            uuid, account_uuid, type, enabled, channels, quiet_hours, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            uuid, account_uuid, enabled, channels, categories,
+            do_not_disturb, rate_limit, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
-          dto.uuid, dto.accountUuid, dto.type, dto.enabled ? 1 : 0,
-          JSON.stringify(dto.channels), JSON.stringify(dto.quietHours), dto.createdAt, dto.updatedAt
+          dto.uuid, dto.accountUuid, dto.enabled ? 1 : 0, dto.channels, dto.categories,
+          dto.doNotDisturb, dto.rateLimit, dto.createdAt, dto.updatedAt
         );
       }
     });
   }
 
-  async findByUuid(uuid: string): Promise<NotificationPreference | null> {
+  /**
+   * 通过 UUID 查找偏好设置
+   */
+  async findById(uuid: string): Promise<NotificationPreference | null> {
     const db = getDatabase();
-    const row = db.prepare('SELECT * FROM notification_preferences WHERE uuid = ?').get(uuid);
+    const row = db.prepare('SELECT * FROM notification_preferences WHERE uuid = ?').get(uuid) as NotificationPreferenceRow | undefined;
     return row ? this.mapToEntity(row) : null;
   }
 
-  async findByAccountUuid(accountUuid: string): Promise<NotificationPreference[]> {
+  /**
+   * 通过账户 UUID 查找偏好设置（返回单个）
+   */
+  async findByAccountUuid(accountUuid: string): Promise<NotificationPreference | null> {
     const db = getDatabase();
-    const rows = db.prepare('SELECT * FROM notification_preferences WHERE account_uuid = ?').all(accountUuid);
-    return rows.map((row) => this.mapToEntity(row));
-  }
-
-  async findByAccountAndType(accountUuid: string, type: string): Promise<NotificationPreference | null> {
-    const db = getDatabase();
-    const row = db.prepare('SELECT * FROM notification_preferences WHERE account_uuid = ? AND type = ?').get(accountUuid, type);
+    const row = db.prepare('SELECT * FROM notification_preferences WHERE account_uuid = ?').get(accountUuid) as NotificationPreferenceRow | undefined;
     return row ? this.mapToEntity(row) : null;
   }
 
+  /**
+   * 删除偏好设置
+   */
   async delete(uuid: string): Promise<void> {
     const db = getDatabase();
     db.prepare('DELETE FROM notification_preferences WHERE uuid = ?').run(uuid);
   }
 
-  private mapToEntity(row: unknown): NotificationPreference {
+  /**
+   * 检查偏好设置是否存在
+   */
+  async exists(uuid: string): Promise<boolean> {
+    const db = getDatabase();
+    const row = db.prepare('SELECT 1 FROM notification_preferences WHERE uuid = ?').get(uuid);
+    return !!row;
+  }
+
+  /**
+   * 检查账户是否已有偏好设置
+   */
+  async existsForAccount(accountUuid: string): Promise<boolean> {
+    const db = getDatabase();
+    const row = db.prepare('SELECT 1 FROM notification_preferences WHERE account_uuid = ?').get(accountUuid);
+    return !!row;
+  }
+
+  /**
+   * 获取或创建偏好设置
+   */
+  async getOrCreate(accountUuid: string): Promise<NotificationPreference> {
+    const existing = await this.findByAccountUuid(accountUuid);
+    if (existing) {
+      return existing;
+    }
+
+    // 创建默认偏好设置
     const { NotificationPreference } = require('@dailyuse/domain-server/notification');
-    return NotificationPreference.fromPersistenceDTO(row);
+    const defaultPreference = NotificationPreference.create({ accountUuid });
+    await this.save(defaultPreference);
+    return defaultPreference;
+  }
+
+  private mapToEntity(row: NotificationPreferenceRow): NotificationPreference {
+    const { NotificationPreference } = require('@dailyuse/domain-server/notification');
+    return NotificationPreference.fromPersistenceDTO({
+      uuid: row.uuid,
+      accountUuid: row.account_uuid,
+      enabled: row.enabled === 1,
+      channels: row.channels,
+      categories: row.categories,
+      doNotDisturb: row.do_not_disturb,
+      rateLimit: row.rate_limit,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    });
   }
 }

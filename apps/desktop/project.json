@@ -68,6 +68,14 @@
         "reportsDirectory": "../../coverage/apps/desktop"
       }
     },
+    "test:ipc": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/coverage/apps/desktop-ipc"],
+      "options": {
+        "command": "vitest run --config vitest.ipc.config.ts",
+        "cwd": "apps/desktop"
+      }
+    },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {

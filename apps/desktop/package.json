@@ -13,6 +13,8 @@
     "preview": "nx vite:preview",
     "lint": "nx lint",
     "test": "nx test",
+    "test:ipc": "vitest run --config vitest.ipc.config.ts",
+    "test:ipc:watch": "vitest --config vitest.ipc.config.ts",
     "test:ui": "nx test --ui",
     "package": "nx package",
     "dist": "nx dist",

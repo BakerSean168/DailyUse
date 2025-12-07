@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 import { initializeDatabase, closeDatabase } from './database';
 import { configureMainProcessDependencies, isDIConfigured } from './di';
 import { registerAllIpcHandlers } from './ipc';
+import { initNotificationService } from './services';
 
 // ESM 兼容的 __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -121,6 +122,12 @@ function registerIpcHandlers(): void {
 app.whenReady().then(async () => {
   await initializeApp();
   createWindow();
+
+  // 初始化通知服务（需要在窗口创建后）
+  if (mainWindow) {
+    initNotificationService(mainWindow);
+    console.log('[App] Notification service initialized');
+  }
 
   app.on('activate', () => {
     // macOS: 点击 dock 图标时重新创建窗口

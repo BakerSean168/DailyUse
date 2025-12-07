@@ -4,7 +4,7 @@
  * 依赖注入容器，管理 Goal 模块的 repository 实例
  */
 
-import type { IGoalRepository, IGoalStatisticsRepository } from '@dailyuse/domain-server/goal';
+import type { IGoalRepository, IGoalStatisticsRepository, IGoalFolderRepository } from '@dailyuse/domain-server/goal';
 
 /**
  * Goal 模块依赖注入容器
@@ -13,6 +13,7 @@ export class GoalContainer {
   private static instance: GoalContainer;
   private goalRepository: IGoalRepository | null = null;
   private statisticsRepository: IGoalStatisticsRepository | null = null;
+  private goalFolderRepository: IGoalFolderRepository | null = null;
 
   private constructor() {}
 
@@ -50,6 +51,14 @@ export class GoalContainer {
   }
 
   /**
+   * 注册 GoalFolderRepository
+   */
+  registerGoalFolderRepository(repository: IGoalFolderRepository): this {
+    this.goalFolderRepository = repository;
+    return this;
+  }
+
+  /**
    * 获取 GoalRepository
    */
   getGoalRepository(): IGoalRepository {
@@ -70,6 +79,16 @@ export class GoalContainer {
   }
 
   /**
+   * 获取 GoalFolderRepository
+   */
+  getGoalFolderRepository(): IGoalFolderRepository {
+    if (!this.goalFolderRepository) {
+      throw new Error('GoalFolderRepository not registered. Call registerGoalFolderRepository first.');
+    }
+    return this.goalFolderRepository;
+  }
+
+  /**
    * 检查是否已配置
    */
   isConfigured(): boolean {
@@ -82,5 +101,6 @@ export class GoalContainer {
   clear(): void {
     this.goalRepository = null;
     this.statisticsRepository = null;
+    this.goalFolderRepository = null;
   }
 }

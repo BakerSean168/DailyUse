@@ -108,10 +108,8 @@ function configureGoalModule(): void {
 
   GoalContainer.getInstance()
     .registerGoalRepository(goalRepository)
+    .registerGoalFolderRepository(goalFolderRepository)
     .registerStatisticsRepository(goalStatisticsRepository);
-
-  // GoalFolderRepository 存储到扩展属性
-  (GoalContainer.getInstance() as ExtendedContainer).__goalFolderRepository = goalFolderRepository;
 
   console.log('[DI] Goal module configured');
 }
@@ -124,7 +122,7 @@ function configureAccountModule(): void {
   
   // 使用类型断言绕过接口不匹配
   AccountContainer.getInstance()
-    .registerAccountRepository(accountRepository as never);
+    .registerAccountRepository(accountRepository);
 
   console.log('[DI] Account module configured');
 }
@@ -137,8 +135,8 @@ function configureAuthModule(): void {
   const sessionRepository = new SqliteAuthSessionRepository();
 
   AuthContainer.getInstance()
-    .registerCredentialRepository(credentialRepository as never)
-    .registerSessionRepository(sessionRepository as never);
+    .registerCredentialRepository(credentialRepository)
+    .registerSessionRepository(sessionRepository);
 
   console.log('[DI] Auth module configured');
 }
@@ -152,9 +150,9 @@ function configureTaskModule(): void {
   const statisticsRepository = new SqliteTaskStatisticsRepository();
 
   TaskContainer.getInstance()
-    .registerTemplateRepository(templateRepository as never)
-    .registerInstanceRepository(instanceRepository as never)
-    .registerStatisticsRepository(statisticsRepository as never);
+    .registerTemplateRepository(templateRepository)
+    .registerInstanceRepository(instanceRepository)
+    .registerStatisticsRepository(statisticsRepository);
 
   console.log('[DI] Task module configured');
 }
@@ -167,8 +165,8 @@ function configureScheduleModule(): void {
   const statisticsRepository = new SqliteScheduleStatisticsRepository();
 
   ScheduleContainer.getInstance()
-    .registerScheduleTaskRepository(scheduleTaskRepository as never)
-    .registerStatisticsRepository(statisticsRepository as never);
+    .registerScheduleTaskRepository(scheduleTaskRepository)
+    .registerStatisticsRepository(statisticsRepository);
 
   console.log('[DI] Schedule module configured');
 }
@@ -182,9 +180,9 @@ function configureReminderModule(): void {
   const statisticsRepository = new SqliteReminderStatisticsRepository();
 
   ReminderContainer.getInstance()
-    .registerTemplateRepository(templateRepository as never)
-    .registerGroupRepository(groupRepository as never)
-    .registerStatisticsRepository(statisticsRepository as never);
+    .registerTemplateRepository(templateRepository)
+    .registerGroupRepository(groupRepository)
+    .registerStatisticsRepository(statisticsRepository);
 
   console.log('[DI] Reminder module configured');
 }
@@ -199,10 +197,10 @@ function configureAIModule(): void {
   const providerConfigRepository = new SqliteAIProviderConfigRepository();
 
   AIContainer.getInstance()
-    .registerConversationRepository(conversationRepository as never)
-    .registerGenerationTaskRepository(generationTaskRepository as never)
-    .registerUsageQuotaRepository(usageQuotaRepository as never)
-    .registerProviderConfigRepository(providerConfigRepository as never);
+    .registerConversationRepository(conversationRepository)
+    .registerGenerationTaskRepository(generationTaskRepository)
+    .registerUsageQuotaRepository(usageQuotaRepository)
+    .registerProviderConfigRepository(providerConfigRepository);
 
   console.log('[DI] AI module configured');
 }
@@ -216,9 +214,9 @@ function configureNotificationModule(): void {
   const templateRepository = new SqliteNotificationTemplateRepository();
 
   NotificationContainer.getInstance()
-    .registerNotificationRepository(notificationRepository as never)
-    .registerPreferenceRepository(preferenceRepository as never)
-    .registerTemplateRepository(templateRepository as never);
+    .registerNotificationRepository(notificationRepository)
+    .registerPreferenceRepository(preferenceRepository)
+    .registerTemplateRepository(templateRepository);
 
   console.log('[DI] Notification module configured');
 }
@@ -230,7 +228,7 @@ function configureDashboardModule(): void {
   const dashboardConfigRepository = new SqliteDashboardConfigRepository();
 
   DashboardContainer.getInstance()
-    .registerDashboardConfigRepository(dashboardConfigRepository as never);
+    .registerDashboardConfigRepository(dashboardConfigRepository);
 
   // 注册简单的内存缓存服务
   DashboardContainer.getInstance()
@@ -254,10 +252,10 @@ function configureRepositoryModule(): void {
   const statisticsRepository = new SqliteRepositoryStatisticsRepository();
 
   RepositoryContainer.getInstance()
-    .registerRepositoryRepository(repositoryRepository as never)
-    .registerResourceRepository(resourceRepository as never)
-    .registerFolderRepository(folderRepository as never)
-    .registerRepositoryStatisticsRepository(statisticsRepository as never);
+    .registerRepositoryRepository(repositoryRepository)
+    .registerResourceRepository(resourceRepository)
+    .registerFolderRepository(folderRepository)
+    .registerRepositoryStatisticsRepository(statisticsRepository);
 
   console.log('[DI] Repository module configured');
 }
@@ -271,9 +269,9 @@ function configureSettingModule(): void {
   const userSettingRepository = new SqliteUserSettingRepository();
 
   SettingContainer.getInstance()
-    .registerAppConfigRepository(appConfigRepository as never)
-    .registerSettingRepository(settingRepository as never)
-    .registerUserSettingRepository(userSettingRepository as never);
+    .registerAppConfigRepository(appConfigRepository)
+    .registerSettingRepository(settingRepository)
+    .registerUserSettingRepository(userSettingRepository);
 
   console.log('[DI] Setting module configured');
 }
@@ -301,9 +299,4 @@ export function resetAllContainers(): void {
  */
 export function isDIConfigured(): boolean {
   return GoalContainer.getInstance().isConfigured();
-}
-
-// 扩展类型以支持额外的 Repository
-interface ExtendedContainer {
-  __goalFolderRepository?: unknown;
 }
