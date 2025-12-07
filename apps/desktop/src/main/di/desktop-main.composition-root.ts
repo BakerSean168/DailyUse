@@ -3,11 +3,17 @@
  *
  * 主进程依赖注入配置
  * 遵循 STORY-002 设计：使用 @dailyuse/infrastructure-server 的 Container 模式
+ * 遵循 EPIC-003: 性能优化 - 模块懒加载
  *
  * 职责：
  * 1. 初始化数据库连接
  * 2. 创建 SQLite Repository 适配器
  * 3. 注册到对应的 Container
+ * 4. 核心模块立即加载，非核心模块懒加载
+ *
+ * 模块分类：
+ * - 核心模块（立即加载）: Goal, Task, Dashboard, Account, Auth, Schedule
+ * - 非核心模块（懒加载）: AI, Notification, Repository, Setting, Reminder
  */
 
 import {
@@ -23,6 +29,8 @@ import {
   RepositoryContainer,
   SettingContainer,
 } from '@dailyuse/infrastructure-server';
+
+import { registerLazyModule, ensureModuleLoaded, preloadModules } from './lazy-module-loader';
 
 import {
   // Goal
@@ -70,30 +78,42 @@ import {
 /**
  * 配置主进程所有模块的依赖注入
  *
- * 调用此函数会：
- * 1. 创建所有 SQLite Repository 适配器实例
- * 2. 将它们注册到对应的 Container 单例中
- * 3. 使得 Application Service 可以通过 Container 获取依赖
+ * EPIC-003 优化：
+ * - 核心模块立即同步加载（启动时必需）
+ * - 非核心模块注册为懒加载（首次使用时加载）
+ * - 启动后空闲时预加载常用模块
  */
 export function configureMainProcessDependencies(): void {
+  const startTime = performance.now();
   console.log('[DI] Configuring main process dependencies...');
 
-  // Core Modules
+  // ========== 核心模块 - 立即加载 ==========
+  // 这些模块是启动后立即需要的
   configureGoalModule();
   configureAccountModule();
   configureAuthModule();
-  
-  // Business Modules
   configureTaskModule();
   configureScheduleModule();
-  configureReminderModule();
-  
-  // Support Modules
-  configureAIModule();
-  configureNotificationModule();
   configureDashboardModule();
-  configureRepositoryModule();
-  configureSettingModule();
+
+  const coreLoadTime = performance.now() - startTime;
+  console.log(`[DI] Core modules loaded in ${coreLoadTime.toFixed(2)}ms`);
+
+  // ========== 非核心模块 - 懒加载 ==========
+  // 这些模块延迟到首次使用时加载
+  registerLazyModule('ai', async () => configureAIModule());
+  registerLazyModule('notification', async () => configureNotificationModule());
+  registerLazyModule('repository', async () => configureRepositoryModule());
+  registerLazyModule('setting', async () => configureSettingModule());
+  registerLazyModule('reminder', async () => configureReminderModule());
+
+  console.log('[DI] Lazy modules registered (AI, Notification, Repository, Setting, Reminder)');
+
+  // 启动后 3 秒空闲时预加载常用模块
+  setTimeout(() => {
+    console.log('[DI] Preloading frequently used modules...');
+    preloadModules(['reminder', 'notification', 'setting']);
+  }, 3000);
 
   console.log('[DI] Main process dependencies configured successfully');
 }
