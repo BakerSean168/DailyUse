@@ -13,6 +13,7 @@ import { initializeDatabase, closeDatabase, startMemoryCleanup, stopMemoryCleanu
 import { configureMainProcessDependencies, isDIConfigured, getLazyModuleStats } from './di';
 import { registerAllIpcHandlers } from './ipc';
 import { initNotificationService } from './services';
+import { initMemoryMonitorForDev, registerCacheIpcHandlers, getIpcCache } from './utils';
 
 // ESM 兼容的 __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -92,6 +93,11 @@ async function initializeApp(): Promise<void> {
   // 5. 启动数据库内存清理定时器
   startMemoryCleanup();
 
+  // 6. EPIC-003: 初始化性能监控工具
+  initMemoryMonitorForDev();
+  registerCacheIpcHandlers();
+  console.log('[App] Performance monitoring initialized');
+
   const initTime = performance.now() - startTime;
   console.log(`[App] Initialization complete in ${initTime.toFixed(2)}ms`);
   
@@ -128,6 +134,11 @@ function registerIpcHandlers(): void {
       external: Math.round(usage.external / 1024 / 1024),
       rss: Math.round(usage.rss / 1024 / 1024),
     };
+  });
+
+  // EPIC-003: IPC Cache Stats
+  ipcMain.handle('system:getIpcCacheStats', async () => {
+    return getIpcCache().getStats();
   });
 
   // ========== App Info Channels ==========
