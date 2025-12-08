@@ -82,10 +82,11 @@ development_status:
   8-6-habit-challenges: done                   # STORY-042 (2天) - P3 ✅ COMPLETED (36 tests)
   epic-8-retrospective: optional
   
-  # EPIC-009补充: Cloud Sync 缺失功能
+  # EPIC-009補充: Cloud Sync 缺失功能
   # Priority: P2 | Sprint 4 | Duration: 2 weeks
-  # Note: Core stories (STORY-043~045, 048, 055) already done
-  # Missing stories: 046, 047, 049-054
+  # Status: Cleaned up incomplete code, ready for redesign
+  # Note: Previous implementation removed due to design issues
+  # Next: Architecture review and redesign before implementation
   9-2-nutstore-adapter: backlog                # STORY-046 (2天) - P2
   9-3-dropbox-adapter: backlog                 # STORY-047 (2天) - P2
   9-5-multi-provider-mgmt: backlog             # STORY-049 (3天) - P2
