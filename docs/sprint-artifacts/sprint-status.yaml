@@ -63,12 +63,12 @@ development_status:
   
   # EPIC-007: Pomodoro & Focus Mode (专注模式)
   # Priority: P1 | Sprint 2 | Duration: 1.5 weeks
-  epic-7: backlog
-  7-1-pomodoro-timer: backlog                  # STORY-032 (2天) - P1
-  7-2-focus-mode-ui: backlog                   # STORY-033 (2天) - P1
-  7-3-ambient-sounds: backlog                  # STORY-034 (1天) - P2
-  7-4-focus-statistics: backlog                # STORY-035 (2天) - P2
-  7-5-rest-reminders: backlog                  # STORY-036 (2天) - P2
+  epic-7: in-progress
+  7-1-pomodoro-timer: ready-for-dev             # STORY-032 (2天) - P1 ✅ IMPLEMENTED (41 tests)
+  7-2-focus-mode-ui: ready-for-dev             # STORY-033 (2天) - P1 ✅ IMPLEMENTED
+  7-3-ambient-sounds: ready-for-dev            # STORY-034 (1天) - P2 ✅ IMPLEMENTED
+  7-4-focus-statistics: ready-for-dev          # STORY-035 (2天) - P2 ✅ IMPLEMENTED
+  7-5-rest-reminders: ready-for-dev            # STORY-036 (2天) - P2 ✅ IMPLEMENTED
   epic-7-retrospective: optional
   
   # EPIC-008: Habits & Streaks (习惯追踪)
