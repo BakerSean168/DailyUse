@@ -9,7 +9,7 @@
  * - 管理同步生命周期
  */
 
-import Database from 'better-sqlite3';
+import type Database from 'better-sqlite3';
 import { DeviceService } from './device.service';
 import { SyncLogService } from './sync-log.service';
 import { SyncStateService } from './sync-state.service';
@@ -17,6 +17,7 @@ import { NetworkService } from './network.service';
 import { SyncClientService } from './sync-client.service';
 import { RetryQueueService } from './retry-queue.service';
 import { SyncEngine } from './sync-engine.service';
+import { ConflictManager } from './conflict-manager';
 
 export interface SyncManagerConfig {
   /** 同步服务器 URL */
@@ -36,6 +37,7 @@ export class SyncManager {
   private syncClient: SyncClientService | null = null;
   private retryQueue: RetryQueueService;
   private syncEngine: SyncEngine | null = null;
+  private conflictManager: ConflictManager;
   private initialized = false;
   private config: SyncManagerConfig;
 
@@ -48,6 +50,7 @@ export class SyncManager {
       syncServerUrl: config.syncServerUrl,
     });
     this.retryQueue = new RetryQueueService();
+    this.conflictManager = new ConflictManager(db);
   }
 
   /**
@@ -128,12 +131,14 @@ export class SyncManager {
     syncState: string;
     lastSyncAt: number | null;
     lastError: string | null;
+    unresolvedConflicts: number;
   } {
     this.ensureInitialized();
     
     const deviceInfo = this.deviceService.getDeviceInfo();
     const syncState = this.syncStateService.getState();
     const pendingCount = this.syncLogService.getPendingCount();
+    const unresolvedConflicts = this.conflictManager.getUnresolvedCount();
 
     return {
       deviceId: deviceInfo.id,
@@ -143,6 +148,7 @@ export class SyncManager {
       syncState: syncState.currentState,
       lastSyncAt: syncState.lastSyncAt,
       lastError: syncState.lastError,
+      unresolvedConflicts,
     };
   }
 
@@ -168,6 +174,14 @@ export class SyncManager {
   getSyncEngine(): SyncEngine | null {
     this.ensureInitialized();
     return this.syncEngine;
+  }
+
+  /**
+   * 获取冲突管理器
+   */
+  getConflictManager(): ConflictManager {
+    this.ensureInitialized();
+    return this.conflictManager;
   }
 
   /**

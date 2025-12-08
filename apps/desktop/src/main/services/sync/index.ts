@@ -16,3 +16,10 @@ export * from './network.service';
 export * from './retry-queue.service';
 export * from './sync-client.service';
 export * from './sync-engine.service';
+
+// STORY-021: Conflict Resolution
+export * from './conflict-detection.service';
+export * from './conflict-record.service';
+export * from './conflict-resolver.service';
+export * from './conflict-history.service';
+export * from './conflict-manager';
