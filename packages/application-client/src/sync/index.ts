@@ -40,3 +40,7 @@ export {
 
 // 基础适配器
 export { BaseAdapter } from './adapters/BaseAdapter';
+
+// 导出/导入服务
+export { DataExportService, type ExportOptions, type ExportProgress, type ExportResult } from './export/DataExportService';
+export { DataImportService, type ImportOptions, type ImportProgress, type ImportResult } from './import/DataImportService';
