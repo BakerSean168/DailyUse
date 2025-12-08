@@ -47,11 +47,11 @@ export * from './repository';
 // Setting module
 export * from './setting';
 
-// Sync module (Cloud Sync Adapters)
-export * from './sync';
-
 // Focus module (Pomodoro, Focus Mode, Audio, Rest Reminders)
 export * from './focus';
 
 // Habit module (Habit Management, Check-ins, Streaks, Analytics)
 export * from './habit';
+
+// Productivity module (Task decomposition, estimation, priority)
+export * from './productivity';
