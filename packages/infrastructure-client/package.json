@@ -19,7 +19,8 @@
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-client": "workspace:*",
-    "@dailyuse/utils": "workspace:*"
+    "@dailyuse/utils": "workspace:*",
+    "@octokit/rest": "22.0.1"
   },
   "devDependencies": {
     "typescript": "^5.8.0"

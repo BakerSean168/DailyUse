@@ -4,3 +4,4 @@
  */
 
 export { BaseAdapter } from './BaseAdapter';
+export { GitHubSyncAdapter } from './GitHubSyncAdapter';
