@@ -10,6 +10,7 @@ import type { GoalClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { TaskType } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { TaskDecompositionDialog } from './TaskDecompositionDialog';
 
 interface GoalDetailDialogProps {
   goalUuid: string;
@@ -39,6 +40,9 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
   const [showQuickTask, setShowQuickTask] = useState(false);
   const [quickTaskTitle, setQuickTaskTitle] = useState('');
   const [creatingTask, setCreatingTask] = useState(false);
+
+  // AI 任务分解
+  const [showAIDecomposition, setShowAIDecomposition] = useState(false);
 
   const goalApiClient = GoalContainer.getInstance().getApiClient();
   const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
@@ -308,12 +312,21 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium">关联任务 ({linkedTasks.length})</h3>
-                  <button
-                    onClick={() => setShowQuickTask(!showQuickTask)}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    + 快速创建
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowAIDecomposition(true)}
+                      className="text-sm text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+                      title="使用 AI 智能分解目标为多个任务"
+                    >
+                      🤖 AI 分解
+                    </button>
+                    <button
+                      onClick={() => setShowQuickTask(!showQuickTask)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      + 快速创建
+                    </button>
+                  </div>
                 </div>
 
                 {/* Quick Create Form */}
@@ -426,6 +439,22 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
           </>
         ) : null}
       </div>
+
+      {/* AI Task Decomposition Dialog */}
+      {goal && (
+        <TaskDecompositionDialog
+          goalId={goal.uuid}
+          goalTitle={goal.title}
+          goalDescription={goal.description || ''}
+          goalDeadline={goal.targetDate}
+          open={showAIDecomposition}
+          onClose={() => setShowAIDecomposition(false)}
+          onTasksCreated={(tasks) => {
+            // 刷新任务列表
+            loadLinkedTasks();
+          }}
+        />
+      )}
     </div>
   );
 }
