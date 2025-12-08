@@ -13,6 +13,17 @@ import Database from 'better-sqlite3';
 import { DeviceService } from './device.service';
 import { SyncLogService } from './sync-log.service';
 import { SyncStateService } from './sync-state.service';
+import { NetworkService } from './network.service';
+import { SyncClientService } from './sync-client.service';
+import { RetryQueueService } from './retry-queue.service';
+import { SyncEngine } from './sync-engine.service';
+
+export interface SyncManagerConfig {
+  /** 同步服务器 URL */
+  syncServerUrl?: string;
+  /** 是否自动同步 */
+  autoSync?: boolean;
+}
 
 /**
  * 同步管理器
@@ -21,12 +32,22 @@ export class SyncManager {
   private deviceService: DeviceService;
   private syncLogService: SyncLogService;
   private syncStateService: SyncStateService;
+  private networkService: NetworkService;
+  private syncClient: SyncClientService | null = null;
+  private retryQueue: RetryQueueService;
+  private syncEngine: SyncEngine | null = null;
   private initialized = false;
+  private config: SyncManagerConfig;
 
-  constructor(private db: Database.Database) {
+  constructor(private db: Database.Database, config: SyncManagerConfig = {}) {
+    this.config = config;
     this.deviceService = new DeviceService(db);
     this.syncLogService = new SyncLogService(db);
     this.syncStateService = new SyncStateService(db);
+    this.networkService = new NetworkService({
+      syncServerUrl: config.syncServerUrl,
+    });
+    this.retryQueue = new RetryQueueService();
   }
 
   /**
@@ -40,9 +61,31 @@ export class SyncManager {
 
     console.log('[SyncManager] Initializing...');
     
-    // 初始化各服务
+    // 初始化基础服务
     this.deviceService.initialize();
     this.syncStateService.initialize();
+    this.networkService.initialize();
+
+    // 如果配置了服务器 URL，初始化同步客户端和引擎
+    if (this.config.syncServerUrl) {
+      this.syncClient = new SyncClientService({
+        baseUrl: this.config.syncServerUrl,
+      });
+
+      this.syncEngine = new SyncEngine(
+        this.syncLogService,
+        this.syncStateService,
+        this.deviceService,
+        this.networkService,
+        this.syncClient,
+        this.retryQueue,
+        { autoSync: this.config.autoSync }
+      );
+
+      console.log(`[SyncManager] Sync engine initialized with server: ${this.config.syncServerUrl}`);
+    } else {
+      console.log('[SyncManager] No sync server configured, running in offline mode');
+    }
 
     this.initialized = true;
     console.log('[SyncManager] Initialized successfully');
@@ -112,6 +155,59 @@ export class SyncManager {
   }
 
   /**
+   * 获取网络服务
+   */
+  getNetworkService(): NetworkService {
+    this.ensureInitialized();
+    return this.networkService;
+  }
+
+  /**
+   * 获取同步引擎
+   */
+  getSyncEngine(): SyncEngine | null {
+    this.ensureInitialized();
+    return this.syncEngine;
+  }
+
+  /**
+   * 触发同步
+   */
+  triggerSync(): void {
+    if (this.syncEngine) {
+      this.syncEngine.triggerSync();
+    }
+  }
+
+  /**
+   * 强制同步
+   */
+  async forceSync() {
+    if (this.syncEngine) {
+      return this.syncEngine.forceSync();
+    }
+    return { status: 'offline' as const };
+  }
+
+  /**
+   * 检查是否在线
+   */
+  isOnline(): boolean {
+    return this.networkService.getStatus();
+  }
+
+  /**
+   * 销毁同步管理器
+   */
+  destroy(): void {
+    this.syncEngine?.destroy();
+    this.networkService.destroy();
+    this.retryQueue.clear();
+    this.initialized = false;
+    console.log('[SyncManager] Destroyed');
+  }
+
+  /**
    * 检查是否已初始化
    */
   private ensureInitialized(): void {
@@ -127,9 +223,9 @@ let syncManager: SyncManager | null = null;
 /**
  * 初始化同步管理器（单例）
  */
-export function initSyncManager(db: Database.Database): SyncManager {
+export function initSyncManager(db: Database.Database, config?: SyncManagerConfig): SyncManager {
   if (!syncManager) {
-    syncManager = new SyncManager(db);
+    syncManager = new SyncManager(db, config);
     syncManager.initialize();
   }
   return syncManager;
