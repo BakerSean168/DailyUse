@@ -9,10 +9,10 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { initializeDatabase, closeDatabase, startMemoryCleanup, stopMemoryCleanup } from './database';
+import { initializeDatabase, closeDatabase, startMemoryCleanup, stopMemoryCleanup, getDatabase } from './database';
 import { configureMainProcessDependencies, isDIConfigured, getLazyModuleStats } from './di';
 import { registerAllIpcHandlers } from './ipc';
-import { initNotificationService } from './services';
+import { initNotificationService, initSyncManager, getSyncManager } from './services';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers, getIpcCache } from './utils';
 
 // STORY-10: Desktop Native Features
@@ -84,26 +84,30 @@ async function initializeApp(): Promise<void> {
   console.log('[App] Initializing...');
 
   // 1. 初始化数据库
-  initializeDatabase();
+  const db = initializeDatabase();
   console.log('[App] Database initialized');
 
-  // 2. 配置依赖注入（核心模块立即加载，非核心懒加载）
+  // 2. EPIC-004: 初始化同步管理器
+  initSyncManager(db);
+  console.log('[App] Sync manager initialized');
+
+  // 3. 配置依赖注入（核心模块立即加载，非核心懒加载）
   configureMainProcessDependencies();
   console.log('[App] DI configured');
 
-  // 3. 初始化事件监听器
+  // 4. 初始化事件监听器
   const { initializeEventListeners } = await import('./events/initialize-event-listeners');
   await initializeEventListeners();
   console.log('[App] Event listeners initialized');
 
-  // 4. 注册 IPC 处理器
+  // 5. 注册 IPC 处理器
   registerIpcHandlers();
   console.log('[App] IPC handlers registered');
 
-  // 5. 启动数据库内存清理定时器
+  // 6. 启动数据库内存清理定时器
   startMemoryCleanup();
 
-  // 6. EPIC-003: 初始化性能监控工具
+  // 7. EPIC-003: 初始化性能监控工具
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
   console.log('[App] Performance monitoring initialized');
@@ -192,6 +196,39 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('desktop:tray:stopFlash', async () => {
     trayManager?.stopFlashing();
+  });
+
+  // ========== EPIC-004: Sync Channels ==========
+  ipcMain.handle('sync:getSummary', async () => {
+    try {
+      return getSyncManager().getSyncSummary();
+    } catch {
+      return null;
+    }
+  });
+
+  ipcMain.handle('sync:getStats', async () => {
+    try {
+      return getSyncManager().getStats();
+    } catch {
+      return null;
+    }
+  });
+
+  ipcMain.handle('sync:getPendingCount', async () => {
+    try {
+      return getSyncManager().getSyncLogService().getPendingCount();
+    } catch {
+      return 0;
+    }
+  });
+
+  ipcMain.handle('sync:getState', async () => {
+    try {
+      return getSyncManager().getSyncStateService().getState();
+    } catch {
+      return null;
+    }
   });
 
   // ========== App Info Channels ==========
