@@ -26,3 +26,4 @@ export {
 // EPIC-004: Sync UI Components
 export { SyncStatusIndicator } from './SyncStatusIndicator';
 export { ConflictResolverDialog } from './ConflictResolverDialog';
+export { SyncConfigWizard } from './SyncConfigWizard';
