@@ -61,6 +61,9 @@ model account {
   aiUsageQuota                   aiUsageQuota?
   aiProviderConfig               aiProviderConfig[]
   dashboardConfig                dashboardConfig?
+  // EPIC-005: Sync Relations
+  syncDevices                    syncDevice[]
+  syncConflicts                  syncConflict[]
 
   @@index([createdAt])
   @@index([email])
@@ -346,7 +349,7 @@ model goalFolder {
 model goalRecord {
   uuid          String    @id
   keyResultUuid String    @map("key_result_uuid")
-  value         Float     // 本次记录的独立值
+  value         Float // 本次记录的独立值
   note          String?
   recordedAt    DateTime  @map("recorded_at")
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -768,16 +771,16 @@ model repository {
 
 // Epic 10: Folder Tree Structure (Obsidian-style)
 model folder {
-  uuid           String    @id
-  repositoryUuid String    @map("repository_uuid")
-  parentUuid     String?   @map("parent_uuid")
+  uuid           String  @id
+  repositoryUuid String  @map("repository_uuid")
+  parentUuid     String? @map("parent_uuid")
   name           String
   path           String // Auto-generated: /parent/name
-  order          Int       @default(0)
-  isExpanded     Boolean   @default(true) @map("is_expanded")
-  metadata       Json      @default("{}") // FolderMetadata JSONB: {icon, color, ...}
-  createdAt      BigInt    @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
-  updatedAt      BigInt    @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
+  order          Int     @default(0)
+  isExpanded     Boolean @default(true) @map("is_expanded")
+  metadata       Json    @default("{}") // FolderMetadata JSONB: {icon, color, ...}
+  createdAt      BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
+  updatedAt      BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
 
   repository repository @relation(fields: [repositoryUuid], references: [uuid], onDelete: Cascade)
   parent     folder?    @relation("FolderHierarchy", fields: [parentUuid], references: [uuid], onDelete: Cascade)
@@ -799,25 +802,25 @@ model resource {
   type           String // markdown | image | video | audio | pdf | link | code | other
   path           String
   size           Int     @default(0)
-  
+
   // Epic 10 Story 10-2: Markdown 内容字段
-  content        String? @db.Text // Markdown 内容 (TEXT类型，支持大文本)
-  
+  content String? @db.Text // Markdown 内容 (TEXT类型，支持大文本)
+
   // Epic 10 Story 10-2: 元数据和统计 (JSONB)
-  metadata       Json    @default("{}") // ResourceMetadata: {wordCount, readingTime, thumbnail, ...}
-  stats          Json    @default("{}") // ResourceStats: {viewCount, editCount, linkCount, lastViewedAt, lastEditedAt}
-  
+  metadata Json @default("{}") // ResourceMetadata: {wordCount, readingTime, thumbnail, ...}
+  stats    Json @default("{}") // ResourceStats: {viewCount, editCount, linkCount, lastViewedAt, lastEditedAt}
+
   // 遗留字段（向后兼容 Epic 7）
-  description    String?
-  author         String?
-  version        String?
-  tags           String  @default("[]") // JSON array
-  category       String?
-  
-  status         String  @default("ACTIVE") // ACTIVE | ARCHIVED | DELETED | DRAFT
-  createdAt      BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
-  updatedAt      BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
-  modifiedAt     BigInt? @map("modified_at")
+  description String?
+  author      String?
+  version     String?
+  tags        String  @default("[]") // JSON array
+  category    String?
+
+  status     String  @default("ACTIVE") // ACTIVE | ARCHIVED | DELETED | DRAFT
+  createdAt  BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("created_at") // epoch ms
+  updatedAt  BigInt  @default(dbgenerated("extract(epoch from now())::bigint * 1000")) @map("updated_at") // epoch ms
+  modifiedAt BigInt? @map("modified_at")
 
   repository repository @relation(fields: [repositoryUuid], references: [uuid], onDelete: Cascade)
 
@@ -1430,7 +1433,7 @@ model aiUsageQuota {
 model aiProviderConfig {
   uuid            String   @id
   accountUuid     String   @map("account_uuid")
-  name            String   // 配置名称（如 "我的七牛云"）
+  name            String // 配置名称（如 "我的七牛云"）
   providerType    String   @map("provider_type") // OPENAI, QINIU, ANTHROPIC, CUSTOM_OPENAI_COMPATIBLE
   baseUrl         String   @map("base_url") // API 基础地址
   apiKeyEncrypted String   @map("api_key_encrypted") // AES-256-GCM 加密的 API Key
@@ -1490,4 +1493,127 @@ model dashboardConfig {
   // 索引
   @@index([accountUuid])
   @@map("dashboard_configs")
+}
+
+// ========== EPIC-005: Sync Service Models ==========
+
+/// 同步事件表 (Event Sourcing 核心表)
+/// 记录所有变更的完整历史记录（不可变）
+model syncEvent {
+  id              BigInt   @id @default(autoincrement())
+  eventId         String   @unique @map("event_id") @db.Uuid
+  accountUuid     String   @map("account_uuid")
+  deviceId        String   @map("device_id") @db.Uuid
+  entityType      String   @map("entity_type") @db.VarChar(50)
+  entityId        String   @map("entity_id") @db.Uuid
+  operation       String   @db.VarChar(20) // create/update/delete
+  payload         Json // 变更内容 (差异或全量)
+  baseVersion     BigInt   @map("base_version")
+  newVersion      BigInt   @map("new_version")
+  clientTimestamp BigInt   @map("client_timestamp")
+  serverTimestamp DateTime @default(now()) @map("server_timestamp")
+
+  // 索引优化
+  @@index([accountUuid, newVersion])
+  @@index([accountUuid, entityType, entityId])
+  @@index([deviceId])
+  @@index([serverTimestamp])
+  @@map("sync_events")
+}
+
+/// 实体版本表 (物化当前状态)
+/// 用于快速读取实体的最新状态，避免重放所有事件
+model entityVersion {
+  id             String   @id @default(uuid()) @db.Uuid
+  accountUuid    String   @map("account_uuid")
+  entityType     String   @map("entity_type") @db.VarChar(50)
+  entityId       String   @map("entity_id") @db.Uuid
+  currentVersion BigInt   @default(1) @map("current_version")
+  currentData    Json     @map("current_data")
+  isDeleted      Boolean  @default(false) @map("is_deleted")
+  lastModifiedBy String?  @map("last_modified_by") @db.Uuid
+  lastModifiedAt DateTime @default(now()) @map("last_modified_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // 唯一约束
+  @@unique([accountUuid, entityType, entityId])
+  // 索引优化
+  @@index([accountUuid, entityType])
+  @@index([accountUuid, currentVersion])
+  @@index([isDeleted])
+  @@map("entity_versions")
+}
+
+/// 设备注册表
+/// 记录用户的已登录设备信息
+model syncDevice {
+  id              String    @id @default(uuid()) @db.Uuid
+  accountUuid     String    @map("account_uuid")
+  deviceId        String    @unique @map("device_id") @db.Uuid
+  deviceName      String    @map("device_name") @db.VarChar(100)
+  platform        String    @db.VarChar(20) // windows/macos/linux/web/ios/android
+  appVersion      String?   @map("app_version") @db.VarChar(20)
+  lastSyncVersion BigInt    @default(0) @map("last_sync_version")
+  lastSyncAt      DateTime? @map("last_sync_at")
+  lastSeenAt      DateTime  @default(now()) @map("last_seen_at")
+  pushToken       String?   @map("push_token")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // 关系
+  account    account      @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+  syncCursor syncCursor[]
+
+  // 索引优化
+  @@index([accountUuid])
+  @@index([isActive])
+  @@index([lastSeenAt])
+  @@map("sync_devices")
+}
+
+/// 同步游标表
+/// 记录每个设备的同步进度
+model syncCursor {
+  id                String   @id @default(uuid()) @db.Uuid
+  accountUuid       String   @map("account_uuid")
+  deviceId          String   @map("device_id") @db.Uuid
+  lastSyncedEventId BigInt   @default(0) @map("last_synced_event_id")
+  lastSyncedAt      DateTime @default(now()) @map("last_synced_at")
+
+  // 关系
+  device syncDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  // 唯一约束
+  @@unique([accountUuid, deviceId])
+  // 索引
+  @@index([deviceId])
+  @@map("sync_cursors")
+}
+
+/// 同步冲突表
+/// 记录同步过程中检测到的冲突及其解决方案
+model syncConflict {
+  id                 String    @id @default(uuid()) @db.Uuid
+  accountUuid        String    @map("account_uuid")
+  entityType         String    @map("entity_type") @db.VarChar(50)
+  entityId           String    @map("entity_id") @db.Uuid
+  localEventId       String    @map("local_event_id") @db.Uuid
+  serverVersion      BigInt    @map("server_version")
+  localData          Json      @map("local_data")
+  serverData         Json      @map("server_data")
+  conflictingFields  String[]  @map("conflicting_fields")
+  resolutionStrategy String?   @map("resolution_strategy") @db.VarChar(20) // local/remote/merge/manual
+  resolvedData       Json?     @map("resolved_data")
+  resolvedAt         DateTime? @map("resolved_at")
+  resolvedByDevice   String?   @map("resolved_by_device") @db.Uuid
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  // 关系
+  account account @relation(fields: [accountUuid], references: [uuid], onDelete: Cascade)
+
+  // 索引优化
+  @@index([accountUuid])
+  @@index([accountUuid, entityType, entityId])
+  @@index([resolvedAt])
+  @@map("sync_conflicts")
 }

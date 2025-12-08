@@ -30,6 +30,7 @@ import aiRouter from './modules/ai/interface/http/aiRoutes';
 import dashboardRouter from './modules/dashboard/interface/routes';
 import crossModuleRouter from './shared/infrastructure/http/routes/crossModuleRoutes';
 import logsRouter from './modules/system/interface/http/logsRoutes';
+import syncRouter from './modules/sync/interface/http/syncRoutes';
 
 import { authMiddleware, optionalAuthMiddleware } from './shared/infrastructure/http/middlewares/index';
 import { setupSwagger } from './shared/infrastructure/config/swagger';
@@ -200,6 +201,13 @@ api.use('/sse', notificationSSERouter);
 
 // 挂载通知管理路由 - 需要认证
 api.use('/notifications', authMiddleware, notificationRouter);
+
+/**
+ * sync 同步模块
+ * EPIC-005: Backend Sync Service
+ */
+// 挂载同步路由 - 需要认证（authMiddleware 在路由文件内部应用）
+api.use('/sync', syncRouter);
 
 // 注意：所有模块的初始化都通过 shared/initialization/initializer.ts 统一管理
 // NotificationApplicationService, UserPreferencesApplicationService, ThemeApplicationService
