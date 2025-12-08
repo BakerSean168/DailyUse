@@ -20,8 +20,18 @@
  * - account/       - Account module ports & adapters
  * - authentication/ - Authentication module ports & adapters
  * - notification/  - Notification module ports & adapters
+ * - encryption/    - Encryption service for cloud sync
  * - shared/        - Shared types (HTTP/IPC clients, Storage)
  */
+
+// ============================================================
+// Encryption Module (STORY-044)
+// ============================================================
+export {
+  EncryptionService,
+  type EncryptedData,
+  type KeyDerivationParams,
+} from './encryption';
 
 // ============================================================
 // Goal Module

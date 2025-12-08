@@ -30,6 +30,10 @@
     "./account": {
       "types": "./dist/account/index.d.ts",
       "import": "./dist/account/index.js"
+    },
+    "./sync": {
+      "types": "./dist/sync/index.d.ts",
+      "import": "./dist/sync/index.js"
     }
   },
   "scripts": {

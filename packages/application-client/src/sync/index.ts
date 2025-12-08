@@ -37,3 +37,6 @@ export {
   SyncError,
   ValidationError,
 } from './errors';
+
+// 基础适配器
+export { BaseAdapter } from './adapters/BaseAdapter';

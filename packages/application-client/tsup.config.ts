@@ -8,6 +8,7 @@ export default defineConfig({
     'src/schedule/index.ts',
     'src/reminder/index.ts',
     'src/account/index.ts',
+    'src/sync/index.ts',
   ],
   format: ['esm'],
   dts: true,
