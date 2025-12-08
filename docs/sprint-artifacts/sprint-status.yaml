@@ -63,23 +63,23 @@ development_status:
   
   # EPIC-007: Pomodoro & Focus Mode (专注模式)
   # Priority: P1 | Sprint 2 | Duration: 1.5 weeks
-  epic-7: in-progress
-  7-1-pomodoro-timer: ready-for-dev             # STORY-032 (2天) - P1 ✅ IMPLEMENTED (41 tests)
-  7-2-focus-mode-ui: ready-for-dev             # STORY-033 (2天) - P1 ✅ IMPLEMENTED
-  7-3-ambient-sounds: ready-for-dev            # STORY-034 (1天) - P2 ✅ IMPLEMENTED
-  7-4-focus-statistics: ready-for-dev          # STORY-035 (2天) - P2 ✅ IMPLEMENTED
-  7-5-rest-reminders: ready-for-dev            # STORY-036 (2天) - P2 ✅ IMPLEMENTED
+  epic-7: done
+  7-1-pomodoro-timer: done                     # STORY-032 (2天) - P1 ✅ COMPLETED (41 tests)
+  7-2-focus-mode-ui: done                      # STORY-033 (2天) - P1 ✅ COMPLETED
+  7-3-ambient-sounds: done                     # STORY-034 (1天) - P2 ✅ COMPLETED
+  7-4-focus-statistics: done                   # STORY-035 (2天) - P2 ✅ COMPLETED
+  7-5-rest-reminders: done                     # STORY-036 (2天) - P2 ✅ COMPLETED
   epic-7-retrospective: optional
   
   # EPIC-008: Habits & Streaks (习惯追踪)
   # Priority: P1 | Sprint 3 | Duration: 2 weeks
-  epic-8: backlog
-  8-1-habit-management: backlog                # STORY-037 (3天) - P1
-  8-2-habit-checkin-streak: backlog            # STORY-038 (2天) - P1
-  8-3-habit-heatmap: backlog                   # STORY-039 (2天) - P2
-  8-4-habit-reminder: backlog                  # STORY-040 (2天) - P1
-  8-5-habit-statistics: backlog                # STORY-041 (2天) - P2
-  8-6-habit-challenges: backlog                # STORY-042 (2天) - P3
+  epic-8: done
+  8-1-habit-management: done                   # STORY-037 (3天) - P1 ✅ COMPLETED (28 tests)
+  8-2-habit-checkin-streak: done               # STORY-038 (2天) - P1 ✅ COMPLETED (40 tests)
+  8-3-habit-heatmap: done                      # STORY-039 (2天) - P2 ✅ COMPLETED (35 tests)
+  8-4-habit-statistics: done                   # STORY-040 (2天) - P1 ✅ COMPLETED (38 tests)
+  8-5-habit-reminder: done                     # STORY-041 (2天) - P2 ✅ COMPLETED (28 tests)
+  8-6-habit-challenges: done                   # STORY-042 (2天) - P3 ✅ COMPLETED (36 tests)
   epic-8-retrospective: optional
   
   # EPIC-009补充: Cloud Sync 缺失功能
