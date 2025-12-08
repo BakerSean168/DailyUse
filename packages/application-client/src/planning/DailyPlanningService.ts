@@ -1,6 +1,15 @@
 /**
  * Daily Planning Service
  * 每日智能规划服务 - AI 生成每日最优日程
+ * 
+ * EPIC-006: Smart Productivity - STORY-030
+ * 
+ * Features:
+ * - Intelligent task prioritization
+ * - Energy curve optimization
+ * - Time slot allocation
+ * - Workload balancing
+ * - Personalized insights generation
  */
 
 import { addMinutes, differenceInMinutes, format, getHours, setHours } from 'date-fns';
@@ -31,10 +40,11 @@ export interface DailyTaskRecommendation {
     end: string; // HH:mm
     duration: number; // minutes
   };
-  priority: number; // 1-5, 5 is highest
+  priority: number; // 1-10, 10 is highest
   reasoning: string;
   energyLevel: 'high' | 'medium' | 'low';
   focusLevel: 'deep' | 'moderate' | 'light';
+  isOptimalSlot: boolean; // Whether this is the best slot for this task
 }
 
 export interface DailyPlanSummary {
@@ -43,6 +53,7 @@ export interface DailyPlanSummary {
   availableHours: number;
   workload: 'light' | 'moderate' | 'heavy' | 'overload';
   completionConfidence: number; // 0-100
+  energyMatchScore: number; // 0-100, how well tasks match energy levels
 }
 
 export interface DailyPlan {
@@ -52,6 +63,7 @@ export interface DailyPlan {
   recommendations: DailyTaskRecommendation[];
   insights: string[];
   warnings?: string[];
+  unscheduledTasks?: string[]; // Task IDs that couldn't be scheduled
 }
 
 export interface UserEnergyProfile {
@@ -60,6 +72,7 @@ export interface UserEnergyProfile {
   workStartHour: number; // default 9
   workEndHour: number; // default 18
   lunchBreak: { start: number; end: number }; // { start: 12, end: 13 }
+  preferredBreakDuration: number; // minutes between tasks
 }
 
 /**
@@ -70,21 +83,40 @@ export class DailyPlanningService {
   private static instance: DailyPlanningService;
   private cache = new Map<string, { plan: DailyPlan; timestamp: Date }>();
   private cacheExpiry = 60 * 60 * 1000; // 1 hour
+  private userEnergyProfile: UserEnergyProfile;
   private defaultEnergyProfile: UserEnergyProfile = {
     peakHours: [8, 9, 10, 11],
     lowHours: [13, 14, 20, 21],
     workStartHour: 9,
     workEndHour: 18,
     lunchBreak: { start: 12, end: 13 },
+    preferredBreakDuration: 10,
   };
 
-  private constructor() {}
+  private constructor() {
+    this.userEnergyProfile = { ...this.defaultEnergyProfile };
+  }
 
   static getInstance(): DailyPlanningService {
     if (!this.instance) {
       this.instance = new DailyPlanningService();
     }
     return this.instance;
+  }
+
+  /**
+   * Set custom energy profile for user
+   */
+  setEnergyProfile(profile: Partial<UserEnergyProfile>): void {
+    this.userEnergyProfile = { ...this.userEnergyProfile, ...profile };
+    this.clearCache(); // Clear cache when profile changes
+  }
+
+  /**
+   * Get current energy profile
+   */
+  getEnergyProfile(): UserEnergyProfile {
+    return { ...this.userEnergyProfile };
   }
 
   /**
@@ -308,6 +340,9 @@ export class DailyPlanningService {
         const slot = remainingSlots[bestSlotIndex];
         const duration = Math.min(task.estimatedMinutes, slot.duration);
 
+        // Determine if this is an optimal slot match
+        const isOptimalSlot = this.isOptimalSlotMatch(task, slot);
+
         recommendations.push({
           taskId: task.id,
           taskTitle: task.title,
@@ -320,6 +355,7 @@ export class DailyPlanningService {
           reasoning: this.generateReasoning(task, slot),
           energyLevel: slot.energyLevel,
           focusLevel: (task.focusLevel as any) || 'moderate',
+          isOptimalSlot,
         });
 
         // Consume slot
@@ -333,6 +369,25 @@ export class DailyPlanningService {
     }
 
     return recommendations;
+  }
+
+  /**
+   * Check if task-slot pairing is optimal
+   */
+  private isOptimalSlotMatch(
+    task: { focusLevel: string },
+    slot: TimeSlot
+  ): boolean {
+    const focusLevel = task.focusLevel || 'moderate';
+    
+    // Deep focus tasks need high energy slots
+    if (focusLevel === 'deep' && slot.energyLevel === 'high') return true;
+    // Light tasks are fine in low energy slots
+    if (focusLevel === 'light' && slot.energyLevel === 'low') return true;
+    // Moderate tasks work well in medium slots
+    if (focusLevel === 'moderate' && slot.energyLevel === 'medium') return true;
+    
+    return false;
   }
 
   /**
@@ -505,12 +560,20 @@ export class DailyPlanningService {
       Math.max(20, 100 - Math.abs(30 - avgTaskDuration) / 2)
     );
 
+    // Calculate energy match score based on optimal slot assignments
+    const optimalMatches = recommendations.filter((r) => r.isOptimalSlot).length;
+    const energyMatchScore =
+      recommendations.length > 0
+        ? Math.round((optimalMatches / recommendations.length) * 100)
+        : 0;
+
     return {
       totalTasks: recommendations.length,
       estimatedWorkHours: Math.round((totalWorkMinutes / 60) * 10) / 10,
       availableHours: Math.round((availableMinutes / 60) * 10) / 10,
       workload,
       completionConfidence: Math.round(confidenceScore),
+      energyMatchScore,
     };
   }
 

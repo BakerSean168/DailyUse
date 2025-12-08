@@ -5,6 +5,13 @@
  * 
  * AI-powered task decomposition for breaking down complex tasks
  * into manageable subtasks with automatic estimation and ordering.
+ * 
+ * Features:
+ * - Intelligent complexity assessment
+ * - Domain-aware subtask generation
+ * - Critical path calculation
+ * - Risk identification
+ * - Confidence scoring
  */
 
 import { createLogger } from '@dailyuse/utils';
@@ -20,6 +27,7 @@ export interface DecomposedTask {
   dependencies: string[]; // IDs of tasks that must be completed first
   suggestedOrder: number;
   tags?: string[];
+  category?: 'planning' | 'development' | 'testing' | 'documentation' | 'review';
 }
 
 export interface DecompositionResult {
@@ -33,9 +41,19 @@ export interface DecompositionResult {
     totalEstimatedMinutes: number;
     estimatedDays: number;
     criticalPath: string[]; // Most important/longest dependency chain
+    parallelizableGroups: string[][]; // Tasks that can be done in parallel
   };
   risks: string[];
   confidence: number; // 0-100
+  decompositionType: 'generic' | 'development' | 'learning' | 'project';
+}
+
+/** Keywords indicating task domain for smarter decomposition */
+interface DomainKeywords {
+  development: string[];
+  learning: string[];
+  project: string[];
+  documentation: string[];
 }
 
 /**
@@ -73,8 +91,9 @@ export class TaskDecompositionService {
       return cached;
     }
 
+    const decompositionType = this.detectDecompositionType(task);
     const complexity = this.assessComplexity(task);
-    const subtasks = this.generateSubtasks(task, complexity);
+    const subtasks = this.generateSubtasks(task, complexity, decompositionType);
     const timeline = this.calculateTimeline(subtasks, task.estimatedMinutes);
     const risks = this.identifyRisks(task, subtasks);
     const confidence = this.calculateConfidence(task, subtasks);
@@ -85,14 +104,47 @@ export class TaskDecompositionService {
       timeline,
       risks,
       confidence,
+      decompositionType,
     };
 
     // Cache the result
     this.decompositionCache.set(cacheKey, result);
     setTimeout(() => this.decompositionCache.delete(cacheKey), this.CACHE_TTL);
 
-    logger.debug(`Decomposed task: ${task.title} into ${subtasks.length} subtasks`);
+    logger.debug(`Decomposed task: ${task.title} into ${subtasks.length} subtasks (type: ${decompositionType})`);
     return result;
+  }
+
+  /**
+   * Detect the type of decomposition needed based on task content
+   */
+  private detectDecompositionType(task: {
+    title: string;
+    description?: string;
+  }): 'generic' | 'development' | 'learning' | 'project' {
+    const content = `${task.title} ${task.description || ''}`.toLowerCase();
+
+    const domainKeywords: DomainKeywords = {
+      development: ['implement', 'develop', 'code', 'api', 'feature', 'bug', 'fix', 'refactor', 'test', 'deploy'],
+      learning: ['learn', 'study', 'course', 'tutorial', 'practice', 'read', 'understand', 'master'],
+      project: ['project', 'plan', 'milestone', 'phase', 'deliver', 'launch', 'release'],
+      documentation: ['document', 'write', 'spec', 'readme', 'guide', 'manual'],
+    };
+
+    const scores = {
+      development: domainKeywords.development.filter(k => content.includes(k)).length,
+      learning: domainKeywords.learning.filter(k => content.includes(k)).length,
+      project: domainKeywords.project.filter(k => content.includes(k)).length,
+    };
+
+    const maxScore = Math.max(scores.development, scores.learning, scores.project);
+    
+    if (maxScore === 0) return 'generic';
+    if (scores.development === maxScore) return 'development';
+    if (scores.learning === maxScore) return 'learning';
+    if (scores.project === maxScore) return 'project';
+    
+    return 'generic';
   }
 
   /**
@@ -122,48 +174,106 @@ export class TaskDecompositionService {
   }
 
   /**
-   * Generate subtasks based on task complexity
+   * Generate subtasks based on task complexity and decomposition type
    */
   private generateSubtasks(
     task: { title: string; description?: string },
-    complexity: 'simple' | 'moderate' | 'complex'
+    complexity: 'simple' | 'moderate' | 'complex',
+    decompositionType: 'generic' | 'development' | 'learning' | 'project' = 'generic'
   ): DecomposedTask[] {
     const subtasks: DecomposedTask[] = [];
-    const count = complexity === 'complex' ? 5 : complexity === 'moderate' ? 3 : 2;
 
-    // Generate default subtask structure
-    const baseSubtasks = {
-      simple: ['Complete main task'],
-      moderate: [
-        'Plan and design approach',
-        'Implement core functionality',
-        'Test and validate'
-      ],
-      complex: [
-        'Analyze requirements and design solution',
-        'Set up development environment',
-        'Implement core features',
-        'Integration and testing',
-        'Optimization and documentation'
-      ]
+    // Domain-specific subtask templates
+    const templatesByType = {
+      generic: {
+        simple: [
+          { title: 'Complete main task', category: 'development' as const }
+        ],
+        moderate: [
+          { title: 'Plan and design approach', category: 'planning' as const },
+          { title: 'Implement core functionality', category: 'development' as const },
+          { title: 'Test and validate', category: 'testing' as const }
+        ],
+        complex: [
+          { title: 'Analyze requirements and design solution', category: 'planning' as const },
+          { title: 'Set up development environment', category: 'development' as const },
+          { title: 'Implement core features', category: 'development' as const },
+          { title: 'Integration and testing', category: 'testing' as const },
+          { title: 'Optimization and documentation', category: 'documentation' as const }
+        ]
+      },
+      development: {
+        simple: [
+          { title: 'Implement and test', category: 'development' as const }
+        ],
+        moderate: [
+          { title: 'Review requirements and plan approach', category: 'planning' as const },
+          { title: 'Write implementation code', category: 'development' as const },
+          { title: 'Write unit tests', category: 'testing' as const },
+          { title: 'Code review and refinement', category: 'review' as const }
+        ],
+        complex: [
+          { title: 'Technical design and architecture', category: 'planning' as const },
+          { title: 'Set up project structure', category: 'development' as const },
+          { title: 'Implement core logic', category: 'development' as const },
+          { title: 'Implement edge cases and error handling', category: 'development' as const },
+          { title: 'Write comprehensive tests', category: 'testing' as const },
+          { title: 'Integration testing', category: 'testing' as const },
+          { title: 'Documentation and review', category: 'documentation' as const }
+        ]
+      },
+      learning: {
+        simple: [
+          { title: 'Read and practice', category: 'development' as const }
+        ],
+        moderate: [
+          { title: 'Study core concepts', category: 'planning' as const },
+          { title: 'Practice with examples', category: 'development' as const },
+          { title: 'Review and consolidate', category: 'review' as const }
+        ],
+        complex: [
+          { title: 'Gather learning resources', category: 'planning' as const },
+          { title: 'Study foundational concepts', category: 'development' as const },
+          { title: 'Work through tutorials', category: 'development' as const },
+          { title: 'Build practice project', category: 'development' as const },
+          { title: 'Review and create notes', category: 'documentation' as const }
+        ]
+      },
+      project: {
+        simple: [
+          { title: 'Execute project task', category: 'development' as const }
+        ],
+        moderate: [
+          { title: 'Define scope and requirements', category: 'planning' as const },
+          { title: 'Execute main deliverables', category: 'development' as const },
+          { title: 'Review and deliver', category: 'review' as const }
+        ],
+        complex: [
+          { title: 'Project planning and scoping', category: 'planning' as const },
+          { title: 'Resource allocation', category: 'planning' as const },
+          { title: 'Phase 1 execution', category: 'development' as const },
+          { title: 'Phase 2 execution', category: 'development' as const },
+          { title: 'Quality assurance', category: 'testing' as const },
+          { title: 'Delivery and handoff', category: 'review' as const }
+        ]
+      }
     };
 
-    const templates = baseSubtasks[complexity];
-    let cumulativeMinutes = 0;
+    const templates = templatesByType[decompositionType][complexity];
 
     templates.forEach((template, index) => {
       const baseMinutes = this.estimateSubtaskTime(complexity, index, templates.length);
       const subtask: DecomposedTask = {
         id: `subtask-${index}`,
-        title: template,
+        title: template.title,
         estimatedMinutes: baseMinutes,
         difficulty: complexity,
         dependencies: index > 0 ? [`subtask-${index - 1}`] : [],
         suggestedOrder: index + 1,
-        tags: this.generateTags(task.title, template),
+        tags: this.generateTags(task.title, template.title),
+        category: template.category,
       };
       subtasks.push(subtask);
-      cumulativeMinutes += baseMinutes;
     });
 
     return subtasks;
@@ -215,7 +325,52 @@ export class TaskDecompositionService {
       totalEstimatedMinutes: finalMinutes,
       estimatedDays: Math.ceil(finalMinutes / (8 * 60)), // 8-hour workday
       criticalPath: this.computeCriticalPath(subtasks),
+      parallelizableGroups: this.findParallelizableGroups(subtasks),
     };
+  }
+
+  /**
+   * Find groups of tasks that can be executed in parallel
+   * Tasks with no dependencies on each other can be parallelized
+   */
+  private findParallelizableGroups(subtasks: DecomposedTask[]): string[][] {
+    const groups: string[][] = [];
+    const processed = new Set<string>();
+
+    // Group tasks by their dependency depth
+    const depthMap = new Map<string, number>();
+    
+    const calculateDepth = (taskId: string): number => {
+      if (depthMap.has(taskId)) return depthMap.get(taskId)!;
+      
+      const task = subtasks.find(st => st.id === taskId);
+      if (!task || task.dependencies.length === 0) {
+        depthMap.set(taskId, 0);
+        return 0;
+      }
+
+      const maxDepth = Math.max(
+        ...task.dependencies.map(dep => calculateDepth(dep) + 1)
+      );
+      depthMap.set(taskId, maxDepth);
+      return maxDepth;
+    };
+
+    // Calculate depth for all tasks
+    subtasks.forEach(st => calculateDepth(st.id));
+
+    // Group by depth (tasks at same depth can be parallelized)
+    const maxDepth = Math.max(...Array.from(depthMap.values()));
+    for (let depth = 0; depth <= maxDepth; depth++) {
+      const group = subtasks
+        .filter(st => depthMap.get(st.id) === depth)
+        .map(st => st.id);
+      if (group.length > 0) {
+        groups.push(group);
+      }
+    }
+
+    return groups;
   }
 
   /**

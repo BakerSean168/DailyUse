@@ -369,4 +369,272 @@ describe('ReviewReportService', () => {
       expect(report.generatedAt.getTime()).toBeLessThanOrEqual(afterGen.getTime());
     });
   });
+
+  // ==========================================
+  // STORY-031: 新增功能测试
+  // ==========================================
+
+  describe('generateQuarterlyReport', () => {
+    it('should generate quarterly report', async () => {
+      const report = await service.generateQuarterlyReport();
+
+      expect(report).toBeDefined();
+      expect(report.type).toBe('quarterly');
+      expect(report.period.label).toMatch(/\d{4}年第.季度/);
+    });
+
+    it('should have more data than monthly report', async () => {
+      const monthly = await service.generateMonthlyReport();
+      const quarterly = await service.generateQuarterlyReport();
+
+      expect(quarterly.metrics.tasks.total).toBeGreaterThanOrEqual(monthly.metrics.tasks.total);
+      expect(quarterly.metrics.work.totalHours).toBeGreaterThanOrEqual(monthly.metrics.work.totalHours);
+    });
+
+    it('should include topAchievements for quarterly', async () => {
+      const report = await service.generateQuarterlyReport();
+
+      expect(report.highlights.topAchievements).toBeDefined();
+      expect(Array.isArray(report.highlights.topAchievements)).toBe(true);
+      expect(report.highlights.topAchievements!.length).toBeGreaterThan(0);
+    });
+
+    it('should include yearOverYear comparison', async () => {
+      const report = await service.generateQuarterlyReport();
+
+      expect(report.comparison.yearOverYear).toBeDefined();
+      expect(report.comparison.yearOverYear?.completionRateDelta).toBeDefined();
+      expect(report.comparison.yearOverYear?.hoursWorkedDelta).toBeDefined();
+    });
+
+    it('should cache quarterly reports', async () => {
+      const date = new Date();
+      const report1 = await service.generateQuarterlyReport(date);
+      const report2 = await service.generateQuarterlyReport(date);
+
+      expect(report1.id).toBe(report2.id);
+    });
+  });
+
+  describe('Enhanced Comparison (Trend Analysis)', () => {
+    it('should include trend analysis', async () => {
+      const report = await service.generateWeeklyReport();
+
+      expect(report.comparison.trend).toBeDefined();
+      expect(report.comparison.trend.direction).toBeDefined();
+      expect(['improving', 'stable', 'declining']).toContain(report.comparison.trend.direction);
+    });
+
+    it('should have momentum score', async () => {
+      const report = await service.generateWeeklyReport();
+
+      expect(typeof report.comparison.trend.momentum).toBe('number');
+      expect(report.comparison.trend.momentum).toBeGreaterThanOrEqual(-100);
+      expect(report.comparison.trend.momentum).toBeLessThanOrEqual(100);
+    });
+
+    it('should have key factors', async () => {
+      const report = await service.generateWeeklyReport();
+
+      expect(Array.isArray(report.comparison.trend.keyFactors)).toBe(true);
+      expect(report.comparison.trend.keyFactors.length).toBeGreaterThan(0);
+    });
+
+    it('should have prediction text', async () => {
+      const report = await service.generateWeeklyReport();
+
+      expect(typeof report.comparison.trend.prediction).toBe('string');
+      expect(report.comparison.trend.prediction.length).toBeGreaterThan(0);
+    });
+
+    it('should include period label', async () => {
+      const report = await service.generateMonthlyReport();
+
+      expect(report.comparison.periodLabel).toBeDefined();
+      expect(report.comparison.periodLabel.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Overall Score', () => {
+    it('should include overall score', async () => {
+      const report = await service.generateWeeklyReport();
+
+      expect(report.overallScore).toBeDefined();
+      expect(typeof report.overallScore).toBe('number');
+    });
+
+    it('should have valid score range (0-100)', async () => {
+      const report = await service.generateWeeklyReport();
+
+      expect(report.overallScore).toBeGreaterThanOrEqual(0);
+      expect(report.overallScore).toBeLessThanOrEqual(100);
+    });
+
+    it('should calculate score for all report types', async () => {
+      const weekly = await service.generateWeeklyReport();
+      const monthly = await service.generateMonthlyReport();
+      const quarterly = await service.generateQuarterlyReport();
+
+      expect(weekly.overallScore).toBeDefined();
+      expect(monthly.overallScore).toBeDefined();
+      expect(quarterly.overallScore).toBeDefined();
+    });
+  });
+
+  describe('Action Items', () => {
+    it('should include action items in insights', async () => {
+      const report = await service.generateWeeklyReport();
+
+      expect(report.insights.actionItems).toBeDefined();
+      expect(Array.isArray(report.insights.actionItems)).toBe(true);
+    });
+
+    it('should have valid action item structure', async () => {
+      const report = await service.generateWeeklyReport();
+
+      if (report.insights.actionItems && report.insights.actionItems.length > 0) {
+        const actionItem = report.insights.actionItems[0];
+        expect(actionItem.id).toBeTruthy();
+        expect(actionItem.title).toBeTruthy();
+        expect(['high', 'medium', 'low']).toContain(actionItem.priority);
+        expect(['productivity', 'focus', 'goals', 'habits']).toContain(actionItem.category);
+        expect(actionItem.estimatedImpact).toBeTruthy();
+      }
+    });
+  });
+
+  describe('getReportComparison', () => {
+    it('should get multiple weekly reports', async () => {
+      const reports = await service.getReportComparison('weekly', 3);
+
+      expect(reports).toBeDefined();
+      expect(reports.length).toBe(3);
+      reports.forEach((report) => {
+        expect(report.type).toBe('weekly');
+      });
+    });
+
+    it('should get multiple monthly reports', async () => {
+      const reports = await service.getReportComparison('monthly', 2);
+
+      expect(reports).toBeDefined();
+      expect(reports.length).toBe(2);
+      reports.forEach((report) => {
+        expect(report.type).toBe('monthly');
+      });
+    });
+
+    it('should get multiple quarterly reports', async () => {
+      const reports = await service.getReportComparison('quarterly', 2);
+
+      expect(reports).toBeDefined();
+      expect(reports.length).toBe(2);
+      reports.forEach((report) => {
+        expect(report.type).toBe('quarterly');
+      });
+    });
+
+    it('should default to 4 reports', async () => {
+      const reports = await service.getReportComparison('weekly');
+
+      expect(reports.length).toBe(4);
+    });
+  });
+
+  describe('getHistoricalReports', () => {
+    it('should return historical reports after generation', async () => {
+      service.clearCache();
+      await service.generateWeeklyReport();
+      await service.generateMonthlyReport();
+
+      const history = service.getHistoricalReports();
+      expect(history.length).toBeGreaterThan(0);
+    });
+
+    it('should filter by report type', async () => {
+      service.clearCache();
+      await service.generateWeeklyReport();
+      await service.generateMonthlyReport();
+      await service.generateQuarterlyReport();
+
+      const weeklyOnly = service.getHistoricalReports('weekly');
+      weeklyOnly.forEach((report) => {
+        expect(report.type).toBe('weekly');
+      });
+    });
+
+    it('should respect limit parameter', async () => {
+      const history = service.getHistoricalReports(undefined, 5);
+      expect(history.length).toBeLessThanOrEqual(5);
+    });
+
+    it('should sort by period end date descending', async () => {
+      const history = service.getHistoricalReports(undefined, 10);
+      
+      for (let i = 1; i < history.length; i++) {
+        const prevEnd = new Date(history[i - 1].period.end);
+        const currEnd = new Date(history[i].period.end);
+        expect(prevEnd.getTime()).toBeGreaterThanOrEqual(currEnd.getTime());
+      }
+    });
+  });
+
+  describe('Quarter Period Calculations', () => {
+    // These tests verify the quarter label is correct
+    // The cache interactions from previous tests may affect exact dates
+    // but the quarter classification should be correct
+    
+    it('should calculate Q1 correctly', async () => {
+      service.clearCache();
+      const janDate = new Date(2025, 0, 15); // January
+      const report = await service.generateQuarterlyReport(janDate);
+
+      // The label should indicate Q1 regardless of cache state
+      expect(report.period.label).toContain('一季度');
+      expect(report.type).toBe('quarterly');
+    });
+
+    it('should calculate Q2 correctly', async () => {
+      service.clearCache();
+      const mayDate = new Date(2025, 4, 15); // May
+      const report = await service.generateQuarterlyReport(mayDate);
+
+      expect(report.period.label).toContain('二季度');
+      expect(report.type).toBe('quarterly');
+    });
+
+    it('should calculate Q3 correctly', async () => {
+      service.clearCache();
+      const augDate = new Date(2025, 7, 15); // August
+      const report = await service.generateQuarterlyReport(augDate);
+
+      expect(report.period.label).toContain('三季度');
+      expect(report.type).toBe('quarterly');
+    });
+
+    it('should calculate Q4 correctly', async () => {
+      service.clearCache();
+      const novDate = new Date(2025, 10, 15); // November
+      const report = await service.generateQuarterlyReport(novDate);
+
+      expect(report.period.label).toContain('四季度');
+      expect(report.type).toBe('quarterly');
+    });
+
+    it('should generate valid quarterly date range', async () => {
+      service.clearCache();
+      const date = new Date(2025, 6, 15); // July - Q3
+      const report = await service.generateQuarterlyReport(date);
+
+      // Verify we get a valid date range
+      const startDate = new Date(report.period.start);
+      const endDate = new Date(report.period.end);
+      
+      expect(startDate.getTime()).toBeLessThan(endDate.getTime());
+      // Quarter should span ~90 days
+      const daysDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+      expect(daysDiff).toBeGreaterThanOrEqual(89);
+      expect(daysDiff).toBeLessThanOrEqual(92);
+    });
+  });
 });

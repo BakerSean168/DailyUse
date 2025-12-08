@@ -5,6 +5,12 @@
  * 
  * Multi-factor priority scoring for tasks based on
  * urgency, importance, impact, and strategic alignment.
+ * 
+ * Features:
+ * - Eisenhower Matrix classification
+ * - Context-aware scheduling suggestions
+ * - Energy level considerations
+ * - Focus requirement analysis
  */
 
 import { createLogger } from '@dailyuse/utils';
@@ -20,6 +26,19 @@ export interface PriorityFactors {
   strategicAlignment: number; // 0-10, alignment with goals
 }
 
+export interface ContextFit {
+  timeOfDay: boolean; // Current time is suitable for this task
+  energyLevel: 'high' | 'medium' | 'low'; // Required energy level
+  focusRequired: number; // 0-10, focus level needed
+  suggestedTimeSlot: 'morning' | 'afternoon' | 'evening' | 'anytime';
+}
+
+export type EisenhowerQuadrant = 
+  | 'urgent-important' 
+  | 'not-urgent-important' 
+  | 'urgent-not-important' 
+  | 'not-urgent-not-important';
+
 export interface PriorityScore {
   overallScore: number; // 0-100
   priority: 'critical' | 'high' | 'medium' | 'low';
@@ -29,6 +48,8 @@ export interface PriorityScore {
   effortScore: number;
   recommendation: string;
   rationale: string;
+  eisenhowerQuadrant: EisenhowerQuadrant;
+  contextFit: ContextFit;
 }
 
 /**
@@ -96,9 +117,11 @@ export class PriorityAnalysisService {
     // Clamp to 0-100
     const clampedScore = Math.max(0, Math.min(100, overallScore));
 
-    // Determine priority level
+    // Determine priority level and classifications
     const priority = this.determinePriority(clampedScore, factors);
-    const recommendation = this.generateRecommendation(priority, clampedScore, factors);
+    const eisenhowerQuadrant = this.classifyEisenhower(factors.urgency, factors.importance);
+    const contextFit = this.analyzeContextFit(factors);
+    const recommendation = this.generateRecommendation(priority, clampedScore, factors, eisenhowerQuadrant);
     const rationale = this.generateRationale(factors, priority);
 
     const score: PriorityScore = {
@@ -110,14 +133,81 @@ export class PriorityAnalysisService {
       effortScore,
       recommendation,
       rationale,
+      eisenhowerQuadrant,
+      contextFit,
     };
 
     // Cache result
     this.priorityCache.set(cacheKey, score);
     setTimeout(() => this.priorityCache.delete(cacheKey), this.CACHE_TTL);
 
-    logger.debug(`Analyzed priority for: ${taskTitle} - Score: ${clampedScore}`);
+    logger.debug(`Analyzed priority for: ${taskTitle} - Score: ${clampedScore} (${eisenhowerQuadrant})`);
     return score;
+  }
+
+  /**
+   * Classify task using Eisenhower Matrix
+   */
+  private classifyEisenhower(urgency: number, importance: number): EisenhowerQuadrant {
+    const isUrgent = urgency >= 6;
+    const isImportant = importance >= 6;
+
+    if (isUrgent && isImportant) return 'urgent-important';
+    if (!isUrgent && isImportant) return 'not-urgent-important';
+    if (isUrgent && !isImportant) return 'urgent-not-important';
+    return 'not-urgent-not-important';
+  }
+
+  /**
+   * Analyze context fit for task scheduling
+   */
+  private analyzeContextFit(factors: PriorityFactors): ContextFit {
+    // Determine energy level required based on effort and impact
+    let energyLevel: 'high' | 'medium' | 'low' = 'medium';
+    if (factors.effort >= 7 || factors.impact >= 8) {
+      energyLevel = 'high';
+    } else if (factors.effort <= 3) {
+      energyLevel = 'low';
+    }
+
+    // Calculate focus requirement
+    const focusRequired = Math.round((factors.effort + factors.impact) / 2);
+
+    // Suggest time slot based on energy needs
+    let suggestedTimeSlot: 'morning' | 'afternoon' | 'evening' | 'anytime' = 'anytime';
+    if (energyLevel === 'high') {
+      suggestedTimeSlot = 'morning';
+    } else if (energyLevel === 'low') {
+      suggestedTimeSlot = 'afternoon';
+    } else if (factors.effort >= 5 && factors.effort <= 6) {
+      suggestedTimeSlot = 'evening';
+    }
+
+    // Check if current time matches suggestion
+    const currentHour = new Date().getHours();
+    let timeOfDay = false;
+    
+    switch (suggestedTimeSlot) {
+      case 'morning':
+        timeOfDay = currentHour >= 8 && currentHour < 12;
+        break;
+      case 'afternoon':
+        timeOfDay = currentHour >= 12 && currentHour < 17;
+        break;
+      case 'evening':
+        timeOfDay = currentHour >= 17 && currentHour < 21;
+        break;
+      case 'anytime':
+        timeOfDay = currentHour >= 8 && currentHour < 21;
+        break;
+    }
+
+    return {
+      timeOfDay,
+      energyLevel,
+      focusRequired,
+      suggestedTimeSlot,
+    };
   }
 
   /**
@@ -190,8 +280,23 @@ export class PriorityAnalysisService {
   private generateRecommendation(
     priority: 'critical' | 'high' | 'medium' | 'low',
     score: number,
-    factors: PriorityFactors
+    factors: PriorityFactors,
+    quadrant?: EisenhowerQuadrant
   ): string {
+    // Quadrant-based recommendations
+    if (quadrant) {
+      switch (quadrant) {
+        case 'urgent-important':
+          return '🔴 Do First: Start immediately - critical deadline with high impact';
+        case 'not-urgent-important':
+          return '📅 Schedule: Important for long-term success - block dedicated time';
+        case 'urgent-not-important':
+          return '🔄 Delegate: Urgent but low impact - consider delegating or quick handling';
+        case 'not-urgent-not-important':
+          return '📋 Eliminate: Consider if this task is truly necessary';
+      }
+    }
+
     switch (priority) {
       case 'critical':
         return 'Start immediately - this is a critical task';

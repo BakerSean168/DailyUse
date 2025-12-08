@@ -5,6 +5,13 @@
  * 
  * AI-powered time estimation for tasks based on complexity,
  * team velocity, and historical data.
+ * 
+ * Features:
+ * - Three-point estimation (PERT)
+ * - Confidence interval calculation
+ * - Time-of-day efficiency factors
+ * - Historical data analysis hooks
+ * - Similar task matching preparation
  */
 
 import { createLogger } from '@dailyuse/utils';
@@ -16,6 +23,14 @@ export interface EstimationFactors {
   teamVelocity?: number; // Historical avg tasks per hour
   riskLevel?: 'low' | 'medium' | 'high';
   dependencies?: number; // Number of dependent tasks
+  tags?: string[]; // Task tags for similarity matching
+  timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'night';
+}
+
+export interface ConfidenceInterval {
+  min: number; // Optimistic - 2 std dev
+  max: number; // Pessimistic + 2 std dev
+  confidence: number; // 0-1, how confident we are
 }
 
 export interface TimeEstimate {
@@ -24,6 +39,12 @@ export interface TimeEstimate {
   pessimisticMinutes: number; // Worst case
   bufferPercentage: number; // Recommended buffer
   estimatedMinutes: number; // Final estimate with buffer
+  confidenceInterval: ConfidenceInterval; // Statistical confidence
+  timeOfDayFactor: number; // Efficiency factor based on time
+  basedOn: {
+    similarTasksCount: number;
+    userHistoryDays: number;
+  };
 }
 
 /**
@@ -80,23 +101,45 @@ export class TaskTimeEstimationService {
     // PERT formula: (optimistic + 4*likely + pessimistic) / 6
     const expectedValue = (optimistic + 4 * likely + pessimistic) / 6;
 
+    // Calculate standard deviation: (pessimistic - optimistic) / 6
+    const stdDev = (pessimistic - optimistic) / 6;
+
     // Determine buffer percentage
     const buffer = this.calculateBuffer(factors);
     const bufferedMinutes = Math.round(expectedValue * (1 + buffer / 100));
+
+    // Calculate time-of-day efficiency factor
+    const timeOfDayFactor = this.getTimeOfDayFactor(factors.timeOfDay);
+
+    // Apply time-of-day adjustment to final estimate
+    const adjustedMinutes = Math.round(bufferedMinutes / timeOfDayFactor);
+
+    // Calculate confidence interval (±2 std dev = 95% confidence)
+    const confidenceInterval = this.calculateConfidenceInterval(
+      expectedValue,
+      stdDev,
+      factors
+    );
+
+    // Get similar tasks info (stub for future implementation)
+    const similarTasksInfo = this.getSimilarTasksInfo(title, factors.tags);
 
     const estimate: TimeEstimate = {
       mostLikelyMinutes: likely,
       optimisticMinutes: optimistic,
       pessimisticMinutes: pessimistic,
       bufferPercentage: buffer,
-      estimatedMinutes: bufferedMinutes,
+      estimatedMinutes: adjustedMinutes,
+      confidenceInterval,
+      timeOfDayFactor,
+      basedOn: similarTasksInfo,
     };
 
     // Cache result
     this.estimationCache.set(cacheKey, estimate);
     setTimeout(() => this.estimationCache.delete(cacheKey), this.CACHE_TTL);
 
-    logger.debug(`Estimated task: ${title} - ${bufferedMinutes} minutes`);
+    logger.debug(`Estimated task: ${title} - ${adjustedMinutes} minutes (factor: ${timeOfDayFactor})`);
     return estimate;
   }
 
@@ -202,6 +245,130 @@ export class TaskTimeEstimationService {
     }
 
     return Math.min(buffer, 50); // Cap at 50%
+  }
+
+  /**
+   * Calculate time-of-day efficiency factor
+   * Morning hours are typically most productive
+   * 
+   * @param timeOfDay - Optional time of day override
+   * @returns Efficiency factor (1.0 = baseline, >1 = more efficient)
+   */
+  private getTimeOfDayFactor(timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'night'): number {
+    const tod = timeOfDay || this.getCurrentTimeOfDay();
+    
+    switch (tod) {
+      case 'morning':
+        return 1.0;   // Peak efficiency (baseline)
+      case 'afternoon':
+        return 0.85;  // Post-lunch dip
+      case 'evening':
+        return 0.75;  // Fatigue sets in
+      case 'night':
+        return 0.65;  // Low efficiency
+      default:
+        return 0.9;   // Default moderate efficiency
+    }
+  }
+
+  /**
+   * Get current time of day classification
+   */
+  private getCurrentTimeOfDay(): 'morning' | 'afternoon' | 'evening' | 'night' {
+    const hour = new Date().getHours();
+    
+    if (hour >= 6 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 17) return 'afternoon';
+    if (hour >= 17 && hour < 21) return 'evening';
+    return 'night';
+  }
+
+  /**
+   * Calculate confidence interval for the estimate
+   * Uses statistical approach based on three-point estimation variance
+   * 
+   * @param expectedValue - PERT expected value
+   * @param stdDev - Standard deviation from three-point estimation
+   * @param factors - Estimation factors affecting confidence
+   */
+  private calculateConfidenceInterval(
+    expectedValue: number,
+    stdDev: number,
+    factors: EstimationFactors
+  ): ConfidenceInterval {
+    // Base confidence interval: ±2 standard deviations (95% confidence)
+    const baseMin = Math.round(Math.max(0, expectedValue - 2 * stdDev));
+    const baseMax = Math.round(expectedValue + 2 * stdDev);
+
+    // Calculate confidence score based on factors
+    let confidence = 0.7; // Base 70% confidence
+
+    // Higher complexity = lower confidence
+    switch (factors.complexity) {
+      case 'trivial':
+        confidence += 0.15;
+        break;
+      case 'simple':
+        confidence += 0.10;
+        break;
+      case 'moderate':
+        confidence += 0.0;
+        break;
+      case 'complex':
+        confidence -= 0.10;
+        break;
+      case 'critical':
+        confidence -= 0.20;
+        break;
+    }
+
+    // Risk level affects confidence
+    switch (factors.riskLevel) {
+      case 'low':
+        confidence += 0.10;
+        break;
+      case 'medium':
+        confidence += 0.0;
+        break;
+      case 'high':
+        confidence -= 0.15;
+        break;
+    }
+
+    // Dependencies reduce confidence
+    if (factors.dependencies && factors.dependencies > 0) {
+      confidence -= Math.min(factors.dependencies * 0.03, 0.15);
+    }
+
+    // Clamp confidence between 0.3 and 0.95
+    confidence = Math.max(0.3, Math.min(0.95, confidence));
+
+    return {
+      min: baseMin,
+      max: baseMax,
+      confidence: Math.round(confidence * 100) / 100,
+    };
+  }
+
+  /**
+   * Get similar tasks information (stub for future implementation)
+   * Will be connected to historical data repository
+   * 
+   * @param title - Task title for similarity matching
+   * @param tags - Optional tags for better matching
+   */
+  private getSimilarTasksInfo(
+    title: string,
+    tags?: string[]
+  ): { similarTasksCount: number; userHistoryDays: number } {
+    // TODO: Connect to TaskRepository for historical analysis
+    // For now, return placeholder values indicating no historical data
+    logger.debug(`Similar tasks lookup for: ${title} with tags: ${tags?.join(', ') || 'none'}`);
+    
+    return {
+      similarTasksCount: 0, // Will be populated from historical data
+      userHistoryDays: 30,  // Default analysis window
+    };
   }
 
   /**

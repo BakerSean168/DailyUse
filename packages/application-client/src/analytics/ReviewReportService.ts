@@ -1,6 +1,12 @@
 /**
  * Review Report Service
- * 周期性复盘报告服务 - 生成周报、月报和分析
+ * 周期性复盘报告服务 - 生成周报、月报、季报和分析
+ *
+ * STORY-031: 周期性复盘与报告
+ * - 生成周报、月报和季报
+ * - 自动识别工作模式和趋势
+ * - 提供可操作的改进建议
+ * - 支持同比和环比分析
  */
 
 export interface TaskMetrics {
@@ -13,6 +19,7 @@ export interface WorkMetrics {
   totalHours: number;
   averageDailyHours: number;
   focusHours: number; // Deep focus session hours
+  peakProductivityHour?: number; // Most productive hour (0-23)
 }
 
 export interface GoalMetrics {
@@ -20,18 +27,21 @@ export interface GoalMetrics {
   behindSchedule: number;
   completed: number;
   totalGoals: number;
+  progressScore?: number; // 0-100 overall goal progress
 }
 
 export interface TimeBreakdown {
   byCategory: Record<string, number>;
   byPriority: Record<string, number>;
   byDay: Array<{ date: string; hours: number }>;
+  byHour?: Record<number, number>; // Productivity by hour of day
 }
 
 export interface Highlights {
   mostProductiveDay?: { date: string; hours: number };
   longestStreak?: { days: number; label: string };
   biggestWin?: { description: string; impact: string };
+  topAchievements?: string[]; // List of key accomplishments
 }
 
 export interface Comparison {
@@ -46,11 +56,45 @@ export interface Comparison {
   };
 }
 
+/**
+ * 趋势分析接口
+ */
+export interface TrendAnalysis {
+  direction: 'improving' | 'stable' | 'declining';
+  momentum: number; // -100 to 100, positive = improving
+  keyFactors: string[];
+  prediction: string;
+}
+
+/**
+ * 增强版比较分析
+ */
+export interface EnhancedComparison extends Comparison {
+  trend: TrendAnalysis;
+  yearOverYear?: {
+    completionRateDelta: number;
+    hoursWorkedDelta: number;
+  };
+  periodLabel: string;
+}
+
 export interface ReviewInsights {
   strengths: string[];
   improvements: string[];
   patterns: string[];
   recommendations: string[];
+  actionItems?: ActionItem[]; // Specific next steps
+}
+
+/**
+ * 可执行的行动项
+ */
+export interface ActionItem {
+  id: string;
+  title: string;
+  priority: 'high' | 'medium' | 'low';
+  category: 'productivity' | 'focus' | 'goals' | 'habits';
+  estimatedImpact: string;
 }
 
 export interface ReviewReport {
@@ -70,7 +114,8 @@ export interface ReviewReport {
   breakdown: TimeBreakdown;
   insights: ReviewInsights;
   highlights: Highlights;
-  comparison: Comparison;
+  comparison: EnhancedComparison;
+  overallScore?: number; // 0-100 综合评分
 }
 
 /**
@@ -81,6 +126,7 @@ export class ReviewReportService {
   private static instance: ReviewReportService;
   private cache = new Map<string, { report: ReviewReport; timestamp: Date }>();
   private cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
+  private historicalData: Map<string, ReviewReport> = new Map();
 
   private constructor() {}
 
@@ -108,6 +154,7 @@ export class ReviewReportService {
 
     // Cache result
     this.cache.set(cacheKey, { report, timestamp: new Date() });
+    this.historicalData.set(cacheKey, report);
 
     return report;
   }
@@ -129,8 +176,70 @@ export class ReviewReportService {
 
     // Cache result
     this.cache.set(cacheKey, { report, timestamp: new Date() });
+    this.historicalData.set(cacheKey, report);
 
     return report;
+  }
+
+  /**
+   * 生成季报
+   * STORY-031: 新增季度报告功能
+   */
+  async generateQuarterlyReport(date: Date = new Date()): Promise<ReviewReport> {
+    const cacheKey = this.generateCacheKey('quarterly', date);
+    const cached = this.cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp.getTime() < this.cacheExpiry) {
+      return cached.report;
+    }
+
+    const period = this.getQuarterPeriod(date);
+
+    // Mock data simulation
+    const report = this.createMockReport('quarterly', period);
+
+    // Cache result
+    this.cache.set(cacheKey, { report, timestamp: new Date() });
+    this.historicalData.set(cacheKey, report);
+
+    return report;
+  }
+
+  /**
+   * 获取多期报告比较
+   * @param type 报告类型
+   * @param count 获取的期数
+   * @param endDate 结束日期
+   */
+  async getReportComparison(
+    type: 'weekly' | 'monthly' | 'quarterly',
+    count: number = 4,
+    endDate: Date = new Date()
+  ): Promise<ReviewReport[]> {
+    const reports: ReviewReport[] = [];
+    const currentDate = new Date(endDate);
+
+    for (let i = 0; i < count; i++) {
+      let report: ReviewReport;
+      
+      switch (type) {
+        case 'weekly':
+          report = await this.generateWeeklyReport(currentDate);
+          currentDate.setDate(currentDate.getDate() - 7);
+          break;
+        case 'monthly':
+          report = await this.generateMonthlyReport(currentDate);
+          currentDate.setMonth(currentDate.getMonth() - 1);
+          break;
+        case 'quarterly':
+          report = await this.generateQuarterlyReport(currentDate);
+          currentDate.setMonth(currentDate.getMonth() - 3);
+          break;
+      }
+      
+      reports.push(report);
+    }
+
+    return reports;
   }
 
   /**
@@ -172,6 +281,28 @@ export class ReviewReportService {
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0],
       label: `${year}年${month + 1}月`,
+    };
+  }
+
+  /**
+   * 获取季度期
+   * STORY-031: 新增季度周期计算
+   */
+  private getQuarterPeriod(date: Date): { start: string; end: string; label: string } {
+    const year = date.getFullYear();
+    const quarter = Math.floor(date.getMonth() / 3) + 1;
+    const startMonth = (quarter - 1) * 3;
+    const endMonth = startMonth + 2;
+
+    const start = new Date(year, startMonth, 1);
+    const end = new Date(year, endMonth + 1, 0);
+
+    const quarterNames = ['一', '二', '三', '四'];
+
+    return {
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0],
+      label: `${year}年第${quarterNames[quarter - 1]}季度`,
     };
   }
 
@@ -271,27 +402,122 @@ export class ReviewReportService {
 
       highlights: {
         mostProductiveDay: { date: '2025-12-03', hours: 8.5 },
-        longestStreak: { days: isWeekly ? 5 : 21, label: isWeekly ? '连续工作日' : '连续完成日标' },
+        longestStreak: {
+          days: type === 'weekly' ? 5 : type === 'monthly' ? 21 : 65,
+          label: type === 'weekly' ? '连续工作日' : type === 'monthly' ? '连续完成日标' : '季度最长连续',
+        },
         biggestWin: {
-          description: isWeekly ? '完成项目架构设计' : '完成季度规划评审',
+          description:
+            type === 'weekly'
+              ? '完成项目架构设计'
+              : type === 'monthly'
+                ? '完成月度规划评审'
+                : '完成季度战略目标',
           impact: '推动核心项目前进',
         },
+        topAchievements:
+          type === 'quarterly'
+            ? ['完成 3 个关键里程碑', '团队生产力提升 15%', '建立新的工作流程']
+            : undefined,
       },
 
-      comparison: {
-        vsLastPeriod: {
-          completionRateDelta: 0.05,
-          hoursWorkedDelta: isWeekly ? -2 : 10,
-          focusHoursDelta: 2,
-        },
-        vsAverage: {
-          completionRateVsAvg: 0.08,
-          hoursWorkedVsAvg: isWeekly ? 3 : 12,
-        },
-      },
+      comparison: this.generateEnhancedComparison(type, period.label, completedTasks / totalTasks),
+
+      overallScore: this.calculateOverallScore(
+        completedTasks / totalTasks,
+        focusHours / totalHours,
+        (isWeekly ? 5 : 18) / (isWeekly ? 7 : 25)
+      ),
     };
 
     return report;
+  }
+
+  /**
+   * 生成增强版比较分析
+   */
+  private generateEnhancedComparison(
+    type: 'weekly' | 'monthly' | 'quarterly',
+    periodLabel: string,
+    completionRate: number
+  ): EnhancedComparison {
+    const isWeekly = type === 'weekly';
+    const isQuarterly = type === 'quarterly';
+
+    // Calculate trend based on completion rate
+    const trend = this.analyzeTrend(completionRate);
+
+    return {
+      vsLastPeriod: {
+        completionRateDelta: 0.05,
+        hoursWorkedDelta: isWeekly ? -2 : isQuarterly ? 30 : 10,
+        focusHoursDelta: isQuarterly ? 8 : 2,
+      },
+      vsAverage: {
+        completionRateVsAvg: 0.08,
+        hoursWorkedVsAvg: isWeekly ? 3 : isQuarterly ? 25 : 12,
+      },
+      trend,
+      yearOverYear: isQuarterly
+        ? {
+            completionRateDelta: 0.12,
+            hoursWorkedDelta: 45,
+          }
+        : undefined,
+      periodLabel,
+    };
+  }
+
+  /**
+   * 分析趋势
+   */
+  private analyzeTrend(completionRate: number): TrendAnalysis {
+    const momentum = (completionRate - 0.7) * 100; // baseline 70%
+
+    let direction: 'improving' | 'stable' | 'declining';
+    if (momentum > 10) {
+      direction = 'improving';
+    } else if (momentum < -10) {
+      direction = 'declining';
+    } else {
+      direction = 'stable';
+    }
+
+    const keyFactors: string[] = [];
+    if (completionRate > 0.8) {
+      keyFactors.push('高任务完成率');
+    }
+    if (completionRate < 0.6) {
+      keyFactors.push('任务积压需关注');
+    }
+    keyFactors.push('专注时间充足');
+
+    const predictions: Record<typeof direction, string> = {
+      improving: '保持当前势头，预计下期完成率将进一步提升',
+      stable: '工作节奏稳定，建议寻找突破点',
+      declining: '建议重新评估工作负载，避免疲劳累积',
+    };
+
+    return {
+      direction,
+      momentum: Math.round(momentum),
+      keyFactors,
+      prediction: predictions[direction],
+    };
+  }
+
+  /**
+   * 计算综合评分
+   */
+  private calculateOverallScore(
+    completionRate: number,
+    focusRatio: number,
+    goalProgressRate: number
+  ): number {
+    // 权重: 完成率 40%, 专注比例 30%, 目标进度 30%
+    const score =
+      completionRate * 40 + focusRatio * 30 + goalProgressRate * 30;
+    return Math.min(100, Math.max(0, Math.round(score)));
   }
 
   /**
@@ -344,7 +570,72 @@ export class ReviewReportService {
       patterns.push('工作节奏相对均匀，保持稳定');
     }
 
-    return { strengths, improvements, patterns, recommendations };
+    // 生成可操作的行动项
+    const actionItems = this.generateActionItems(metrics, improvements);
+
+    return { strengths, improvements, patterns, recommendations, actionItems };
+  }
+
+  /**
+   * 生成可操作的行动项
+   * STORY-031: 提供具体的下一步行动建议
+   */
+  private generateActionItems(
+    metrics: {
+      tasks: TaskMetrics;
+      work: WorkMetrics;
+      goals: GoalMetrics;
+    },
+    improvements: string[]
+  ): ActionItem[] {
+    const actionItems: ActionItem[] = [];
+    let idCounter = 1;
+
+    // 基于完成率的行动项
+    if (metrics.tasks.completionRate < 0.6) {
+      actionItems.push({
+        id: `action-${idCounter++}`,
+        title: '启用任务限制模式',
+        priority: 'high',
+        category: 'productivity',
+        estimatedImpact: '预计提升完成率 20%',
+      });
+    }
+
+    // 基于专注时长的行动项
+    if (metrics.work.focusHours < 10) {
+      actionItems.push({
+        id: `action-${idCounter++}`,
+        title: '设置每日专注时间块',
+        priority: 'high',
+        category: 'focus',
+        estimatedImpact: '每周增加 5+ 小时深度工作',
+      });
+    }
+
+    // 基于目标进度的行动项
+    if (metrics.goals.behindSchedule > 2) {
+      actionItems.push({
+        id: `action-${idCounter++}`,
+        title: '重新评估滞后目标优先级',
+        priority: 'medium',
+        category: 'goals',
+        estimatedImpact: '避免目标累积压力',
+      });
+    }
+
+    // 默认行动项
+    if (actionItems.length === 0) {
+      actionItems.push({
+        id: `action-${idCounter++}`,
+        title: '保持当前良好节奏',
+        priority: 'low',
+        category: 'habits',
+        estimatedImpact: '持续稳定的产出',
+      });
+    }
+
+    return actionItems;
   }
 
   /**
@@ -360,14 +651,34 @@ export class ReviewReportService {
   private generateCacheKey(type: string, date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
 
     if (type === 'weekly') {
       const week = Math.ceil((date.getDate() - date.getDay() + 1) / 7);
       return `report-weekly-${year}-w${week}`;
     }
 
+    if (type === 'quarterly') {
+      const quarter = Math.floor(date.getMonth() / 3) + 1;
+      return `report-quarterly-${year}-q${quarter}`;
+    }
+
     return `report-monthly-${year}-${month}`;
+  }
+
+  /**
+   * 获取历史报告
+   * @param type 报告类型
+   * @param limit 返回数量限制
+   */
+  getHistoricalReports(
+    type?: 'weekly' | 'monthly' | 'quarterly',
+    limit: number = 10
+  ): ReviewReport[] {
+    const reports = Array.from(this.historicalData.values());
+    const filtered = type ? reports.filter((r) => r.type === type) : reports;
+    return filtered
+      .sort((a, b) => new Date(b.period.end).getTime() - new Date(a.period.end).getTime())
+      .slice(0, limit);
   }
 
   /**
@@ -376,8 +687,10 @@ export class ReviewReportService {
   clearCache(cacheKey?: string): void {
     if (cacheKey) {
       this.cache.delete(cacheKey);
+      this.historicalData.delete(cacheKey);
     } else {
       this.cache.clear();
+      this.historicalData.clear();
     }
   }
 
