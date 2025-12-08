@@ -53,12 +53,12 @@ development_status:
   
   # EPIC-006: Smart Productivity (智能效率增强)
   # Priority: P1 | Sprint 1 | Duration: 2 weeks
-  epic-6: in-progress
+  epic-6: done
   6-1-ai-task-decomposition: done              # STORY-027 (3天) - P1 ✅ COMPLETED
   6-2-ai-time-estimation: done                # STORY-028 (2天) - P1 ✅ COMPLETED
   6-3-ai-priority-analysis: done              # STORY-029 (2天) - P2 ✅ COMPLETED
   6-4-daily-planning: done                    # STORY-030 (3天) - P1 ✅ COMPLETED
-  6-5-review-reports: drafted                  # STORY-031 (2天) - P2
+  6-5-review-reports: done                    # STORY-031 (2天) - P2 ✅ COMPLETED
   epic-6-retrospective: optional
   
   # EPIC-007: Pomodoro & Focus Mode (专注模式)
