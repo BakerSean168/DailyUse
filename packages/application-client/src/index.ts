@@ -46,3 +46,6 @@ export * from './repository';
 
 // Setting module
 export * from './setting';
+
+// Sync module (Cloud Sync Adapters)
+export * from './sync';
