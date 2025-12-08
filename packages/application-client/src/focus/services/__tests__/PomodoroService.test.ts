@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-  PomodoroService,
+import { PomodoroService } from '../PomodoroService';
+import type {
   PomodoroPhase,
   PomodoroSession,
   SessionStatus,
@@ -339,38 +339,41 @@ describe('PomodoroService', () => {
       setTimeout(() => {
         expect(mockTick).toHaveBeenCalled();
         service.reset();
-        done();
       }, 1500);
     });
 
-    it('should fire onPhaseComplete event', (done) => {
+    it('should fire onPhaseComplete event', () => {
       service.updateSettings({ workDuration: 2 }); // 2 seconds
       const mockComplete = vi.fn();
       service.onPhaseComplete = mockComplete;
 
-      service.start('work');
+      return new Promise((resolve) => {
+        service.start('work');
 
-      setTimeout(() => {
-        expect(mockComplete).toHaveBeenCalled();
-        service.reset();
-        done();
-      }, 2500);
+        setTimeout(() => {
+          expect(mockComplete).toHaveBeenCalled();
+          service.reset();
+          resolve(undefined);
+        }, 2500);
+      });
     });
 
-    it('should fire onSessionComplete event', (done) => {
+    it('should fire onSessionComplete event', () => {
       service.updateSettings({ workDuration: 2 });
       const mockSessionComplete = vi.fn();
       service.onSessionComplete = mockSessionComplete;
 
-      service.start('work');
+      return new Promise((resolve) => {
+        service.start('work');
 
-      setTimeout(() => {
-        // Note: onSessionComplete is fired on skip
-        service.skip();
-        // May or may not be called depending on implementation
-        service.reset();
-        done();
-      }, 2500);
+        setTimeout(() => {
+          // Note: onSessionComplete is fired on skip
+          service.skip();
+          // May or may not be called depending on implementation
+          service.reset();
+          resolve(undefined);
+        }, 2500);
+      });
     });
 
     it('should allow event subscribers', () => {

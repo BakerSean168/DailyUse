@@ -22,7 +22,7 @@ describe('HabitService', () => {
         color: '#FF5733',
         category: 'health',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       expect(habit).toBeDefined();
@@ -44,7 +44,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       expect(eventTriggered).toBe(true);
@@ -59,7 +59,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.createHabit('user1', {
@@ -68,7 +68,7 @@ describe('HabitService', () => {
         color: '#FF0000',
         category: 'health',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       const habits = habitService.getHabits('user1');
@@ -84,7 +84,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.archiveHabit(habit1.id);
@@ -102,7 +102,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       const updated = habitService.updateHabit(habit.id, {
@@ -126,7 +126,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.updateHabit(habit.id, { name: 'Updated' });
@@ -142,7 +142,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.archiveHabit(habit.id);
@@ -167,7 +167,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.archiveHabit(habit.id);
@@ -183,7 +183,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.archiveHabit(habit.id);
@@ -206,7 +206,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.archiveHabit(habit.id);
@@ -223,7 +223,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.deleteHabit(habit.id);
@@ -247,7 +247,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.deleteHabit(habit.id);
@@ -263,7 +263,7 @@ describe('HabitService', () => {
         color: '#FF0000',
         category: 'health',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.createHabit('user1', {
@@ -272,7 +272,7 @@ describe('HabitService', () => {
         color: '#0000FF',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       const health = habitService.getHabitsByCategory('user1', 'health');
@@ -289,7 +289,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       const h2 = habitService.createHabit('user1', {
@@ -298,7 +298,7 @@ describe('HabitService', () => {
         color: '#FF0000',
         category: 'health',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       habitService.reorderHabits('user1', [h2.id, h1.id]);
@@ -314,15 +314,15 @@ describe('HabitService', () => {
       const habit = habitService.createFromTemplate('user1', 'exercise');
 
       expect(habit).toBeDefined();
-      expect(habit.name).toBe('Exercise 30min');
-      expect(habit.icon).toBe('🏃');
+      expect(habit!.name).toBe('Exercise 30min');
+      expect(habit!.icon).toBe('🏃');
     });
 
     it('should create different habits from different templates', () => {
       const exercise = habitService.createFromTemplate('user1', 'exercise');
       const reading = habitService.createFromTemplate('user1', 'reading');
 
-      expect(exercise.name).not.toBe(reading.name);
+      expect(exercise!.name).not.toBe(reading!.name);
     });
   });
 
@@ -353,7 +353,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       const habits1 = habitService.getHabits('user1');
@@ -369,7 +369,7 @@ describe('HabitService', () => {
         color: '#000000',
         category: 'learning',
         frequency: 'daily',
-        targetDays: 7,
+        targetDays: [0, 1, 2, 3, 4, 5, 6],
       });
 
       const habits1 = habitService.getHabits('user1');

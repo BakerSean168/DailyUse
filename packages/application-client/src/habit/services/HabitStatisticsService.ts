@@ -129,7 +129,10 @@ export class HabitStatisticsService {
     // Find best time (from check-in times)
     const timeStats = new Map<string, number>();
     checkIns.forEach((checkIn) => {
-      const time = checkIn.checkedAt.substring(11, 13); // HH
+      const checkedDate = typeof checkIn.checkedAt === 'string' 
+        ? checkIn.checkedAt 
+        : checkIn.checkedAt.toISOString();
+      const time = checkedDate.substring(11, 13); // HH
       timeStats.set(time, (timeStats.get(time) || 0) + 1);
     });
 

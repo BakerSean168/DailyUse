@@ -8,7 +8,8 @@
  * - Auto-hide controls
  */
 
-import { pomodoroService, PomodoroSession } from './PomodoroService';
+import { pomodoroService } from './PomodoroService';
+import type { PomodoroSession } from './PomodoroService';
 
 export type NotificationType = 'system' | 'inApp' | 'both';
 

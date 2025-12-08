@@ -62,13 +62,13 @@ describe('HabitCheckInService', () => {
     it('should check specific date', () => {
       const today = new Date();
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-      const yesterdayStr = this.getDateString(yesterday);
+      const yesterdayStr = getDateString(yesterday);
 
       // Check in yesterday's date
       habitCheckInService.backfillCheckIn(habitId, userId, yesterdayStr);
 
       // Today should not be checked
-      const todayChecked = habitCheckInService.isCheckedIn(habitId, this.getDateString(today));
+      const todayChecked = habitCheckInService.isCheckedIn(habitId, getDateString(today));
       expect(todayChecked).toBe(false);
 
       // Yesterday should be checked
@@ -81,7 +81,7 @@ describe('HabitCheckInService', () => {
     it('should backfill check-in for past date', () => {
       const today = new Date();
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-      const yesterdayStr = this.getDateString(yesterday);
+      const yesterdayStr = getDateString(yesterday);
 
       const checkIn = habitCheckInService.backfillCheckIn(habitId, userId, yesterdayStr);
 
@@ -98,7 +98,7 @@ describe('HabitCheckInService', () => {
 
       const today = new Date();
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-      const yesterdayStr = this.getDateString(yesterday);
+      const yesterdayStr = getDateString(yesterday);
 
       habitCheckInService.backfillCheckIn(habitId, userId, yesterdayStr);
       expect(eventTriggered).toBe(true);
@@ -110,13 +110,13 @@ describe('HabitCheckInService', () => {
       // Backfill 3 times
       for (let i = 1; i <= 3; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        const dateStr = this.getDateString(date);
+        const dateStr = getDateString(date);
         habitCheckInService.backfillCheckIn(habitId, userId, dateStr);
       }
 
       // 4th backfill should fail
       const date = new Date(today.getTime() - 4 * 24 * 60 * 60 * 1000);
-      const dateStr = this.getDateString(date);
+      const dateStr = getDateString(date);
       const canBackfill = habitCheckInService.canBackfill(habitId, dateStr);
       expect(canBackfill).toBe(false);
     });
@@ -124,7 +124,7 @@ describe('HabitCheckInService', () => {
     it('should only allow backfill for past 1 day (yesterday)', () => {
       const today = new Date();
       const twoDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
-      const twoDaysAgoStr = this.getDateString(twoDaysAgo);
+      const twoDaysAgoStr = getDateString(twoDaysAgo);
 
       const canBackfill = habitCheckInService.canBackfill(habitId, twoDaysAgoStr);
       expect(canBackfill).toBe(false);
@@ -133,7 +133,7 @@ describe('HabitCheckInService', () => {
     it('should not backfill already checked-in date', () => {
       const today = new Date();
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-      const yesterdayStr = this.getDateString(yesterday);
+      const yesterdayStr = getDateString(yesterday);
 
       habitCheckInService.backfillCheckIn(habitId, userId, yesterdayStr);
 
@@ -155,7 +155,7 @@ describe('HabitCheckInService', () => {
     it('should undo specific date check-in', () => {
       const today = new Date();
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-      const yesterdayStr = this.getDateString(yesterday);
+      const yesterdayStr = getDateString(yesterday);
 
       habitCheckInService.backfillCheckIn(habitId, userId, yesterdayStr);
       habitCheckInService.undoCheckIn(habitId, yesterdayStr);
@@ -179,7 +179,7 @@ describe('HabitCheckInService', () => {
   describe('getCheckIn', () => {
     it('should retrieve specific check-in', () => {
       const today = new Date();
-      const todayStr = this.getDateString(today);
+      const todayStr = getDateString(today);
 
       habitCheckInService.checkIn(habitId, userId, 'Test note');
       const checkIn = habitCheckInService.getCheckIn(habitId, todayStr);
@@ -200,7 +200,7 @@ describe('HabitCheckInService', () => {
       habitCheckInService.checkIn(habitId, userId);
 
       const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-      habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(yesterday));
+      habitCheckInService.backfillCheckIn(habitId, userId, getDateString(yesterday));
 
       const startDate = new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000);
       const history = habitCheckInService.getCheckInHistory(habitId, startDate, today);
@@ -246,7 +246,7 @@ describe('HabitCheckInService', () => {
       // Use all 3 backfills
       for (let i = 1; i <= 3; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const remaining = habitCheckInService.getRemainingBackfills(habitId);
@@ -259,12 +259,12 @@ describe('HabitCheckInService', () => {
       // Backfill 3 times
       for (let i = 1; i <= 3; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       // In production, this would be month-specific
       // For now, we verify the limit is enforced
-      const canBackfill = habitCheckInService.canBackfill(habitId, this.getDateString(new Date(today.getTime() - 4 * 24 * 60 * 60 * 1000)));
+      const canBackfill = habitCheckInService.canBackfill(habitId, getDateString(new Date(today.getTime() - 4 * 24 * 60 * 60 * 1000)));
       expect(canBackfill).toBe(false);
     });
   });
@@ -280,13 +280,11 @@ describe('HabitCheckInService', () => {
       expect(history1).toBe(history2); // Same reference (cached)
     });
   });
-
-  // ==================== Helper Methods ====================
-
-  private getDateString(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
 });
+
+function getDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}

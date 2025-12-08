@@ -36,7 +36,7 @@ describe('HabitStreakService', () => {
       // Create 3-day streak
       for (let i = 0; i < 3; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const streak = habitStreakService.getStreak(habitId, userId);
@@ -47,13 +47,13 @@ describe('HabitStreakService', () => {
       const today = new Date();
 
       // Day 1: check in
-      habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(today));
+      habitCheckInService.backfillCheckIn(habitId, userId, getDateString(today));
 
       // Day 2: don't check in (skip)
 
       // Day 3: check in again
       const threeDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
-      habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(threeDaysAgo));
+      habitCheckInService.backfillCheckIn(habitId, userId, getDateString(threeDaysAgo));
 
       const streak = habitStreakService.getStreak(habitId, userId);
       expect(streak.currentStreak).toBeLessThan(3);
@@ -67,7 +67,7 @@ describe('HabitStreakService', () => {
       // First streak: 5 days
       for (let i = 0; i < 5; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const streak = habitStreakService.calculateStreak(habitId, userId);
@@ -80,7 +80,7 @@ describe('HabitStreakService', () => {
       // Create multiple check-ins
       for (let i = 0; i < 5; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const streak = habitStreakService.calculateStreak(habitId, userId);
@@ -107,7 +107,7 @@ describe('HabitStreakService', () => {
 
       // Add check-ins to first habit
       const today = new Date();
-      habitCheckInService.backfillCheckIn(habits[0].id, userId, this.getDateString(today));
+      habitCheckInService.backfillCheckIn(habits[0].id, userId, getDateString(today));
 
       const streaks = habitStreakService.getUserStreaks(userId, habits);
       expect(streaks[0].totalCheckIns).toBeGreaterThan(0);
@@ -126,13 +126,13 @@ describe('HabitStreakService', () => {
       // Create 5-day streak for habit 1
       for (let i = 0; i < 5; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habits[0].id, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habits[0].id, userId, getDateString(date));
       }
 
       // Create 2-day streak for habit 2
       for (let i = 0; i < 2; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habits[1].id, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habits[1].id, userId, getDateString(date));
       }
 
       const best = habitStreakService.getBestStreak(userId, habits);
@@ -152,7 +152,7 @@ describe('HabitStreakService', () => {
       // Create 10-day streak for habit 1 (then break it)
       for (let i = 0; i < 10; i++) {
         const date = new Date(today.getTime() - (i + 20) * 24 * 60 * 60 * 1000); // 20+ days ago
-        habitCheckInService.backfillCheckIn(habits[0].id, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habits[0].id, userId, getDateString(date));
       }
 
       const longest = habitStreakService.getLongestStreak(userId, habits);
@@ -172,13 +172,13 @@ describe('HabitStreakService', () => {
       // Add 3 check-ins to habit 1
       for (let i = 0; i < 3; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habits[0].id, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habits[0].id, userId, getDateString(date));
       }
 
       // Add 2 check-ins to habit 2
       for (let i = 0; i < 2; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habits[1].id, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habits[1].id, userId, getDateString(date));
       }
 
       const total = habitStreakService.getTotalCheckIns(userId, habits);
@@ -193,7 +193,7 @@ describe('HabitStreakService', () => {
       // Create 7-day streak
       for (let i = 0; i < 7; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const streak = habitStreakService.getStreak(habitId, userId);
@@ -212,7 +212,7 @@ describe('HabitStreakService', () => {
       // Create 7-day streak
       for (let i = 0; i < 7; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       habitStreakService.calculateStreak(habitId, userId);
@@ -240,13 +240,11 @@ describe('HabitStreakService', () => {
       expect(streak1).toBe(streak2); // New reference after clear
     });
   });
-
-  // ==================== Helper Methods ====================
-
-  private getDateString(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
 });
+
+function getDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}

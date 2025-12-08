@@ -7,7 +7,8 @@
  * - Milestone detection (7, 30, 100 days, etc.)
  */
 
-import { habitCheckInService, HabitCheckIn } from './HabitCheckInService';
+import { habitCheckInService } from './HabitCheckInService';
+import type { HabitCheckIn } from './HabitCheckInService';
 
 export interface HabitStreak {
   habitId: string;

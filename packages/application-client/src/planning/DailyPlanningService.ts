@@ -4,7 +4,16 @@
  */
 
 import { addMinutes, differenceInMinutes, format, getHours, setHours } from 'date-fns';
-import type { Task } from '@dailyuse/contracts';
+
+// 本地定义的 Task 类型
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  estimatedMinutes: number;
+  priority: 'high' | 'medium' | 'low';
+  tags?: string[];
+}
 
 export interface TimeSlot {
   start: Date;
