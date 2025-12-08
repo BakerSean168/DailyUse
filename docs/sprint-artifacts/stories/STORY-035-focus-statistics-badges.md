@@ -65,8 +65,10 @@
 
 ### 数据模型
 
+> **架构决策**: 专注统计作为 Goal 模块的扩展，复用 GoalStatistics 聚合根
+
 ```typescript
-// packages/domain-client/src/focus/
+// packages/domain-client/src/goal/aggregates/
 interface FocusStatistics {
   userId: string;
   date: Date;                    // 统计日期

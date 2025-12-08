@@ -208,12 +208,19 @@ PUT    /api/habits/reorder      # 重新排序
 
 ### 新增文件
 
+> **模块职责**: Habit 模块仅负责习惯的 CRUD 和 Streak 管理，提醒功能委托给 Reminder 模块
+
 ```
 packages/domain-client/src/habit/
-  ├── aggregates/Habit.ts
+  ├── aggregates/Habit.ts (CRUD + Streak)
   ├── value-objects/HabitFrequency.ts
+  ├── value-objects/HabitCategory.ts
   ├── constants/habitTemplates.ts
   └── index.ts
+
+// 提醒功能在 reminder 模块中实现
+packages/domain-client/src/reminder/
+  └── entities/HabitReminder.ts (继承 ReminderTemplate)
 
 packages/contracts/src/modules/habit/
   ├── habit.types.ts

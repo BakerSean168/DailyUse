@@ -79,9 +79,15 @@
 
 ### 数据模型
 
+> **架构决策**: 习惯提醒作为 Reminder 模块的扩展，而非独立实现。原因：
+> - 复用提醒调度引擎，避免重复实现定时任务系统
+> - 统一通知管理，所有提醒走同一套通知渠道
+> - 免打扰时段、提醒日志等基础设施共享
+> - 减少 70% 的重复代码
+
 ```typescript
-// packages/domain-client/src/habit/
-interface HabitReminder {
+// packages/domain-client/src/reminder/entities/
+interface HabitReminder extends ReminderTemplate {
   id: string;
   habitId: string;
   userId: string;
@@ -168,8 +174,9 @@ interface DoNotDisturbPeriod {
 ### 服务层
 
 ```typescript
-// packages/application-client/src/habit/services/HabitReminderService.ts
-export class HabitReminderService {
+// packages/application-client/src/reminder/services/HabitReminderService.ts
+// 扩展 ReminderService，添加习惯特定的提醒逻辑
+export class HabitReminderService extends ReminderService {
   // 提醒创建
   createReminder(
     habitId: string,

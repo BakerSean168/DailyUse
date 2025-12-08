@@ -64,8 +64,13 @@
 
 ### 数据模型
 
+> **架构决策**: 专注功能作为 Goal 模块的扩展，而非独立模块。原因：
+> - 专注是为了完成目标/任务，自然属于 Goal 领域
+> - 避免数据孤岛，专注时长直接计入 Goal 进度
+> - 复用 Goal 的统计和追踪基础设施
+
 ```typescript
-// packages/domain-client/src/focus/
+// packages/domain-client/src/goal/entities/
 interface PomodoroSession {
   id: string;
   taskId?: string;          // 关联的任务
@@ -92,7 +97,7 @@ interface PomodoroSettings {
 ### 服务层
 
 ```typescript
-// packages/application-client/src/focus/services/PomodoroService.ts
+// packages/application-client/src/goal/services/PomodoroService.ts
 export class PomodoroService {
   // 计时器控制
   start(taskId?: string): void;
@@ -175,14 +180,16 @@ export class PomodoroTray {
 ### 新增文件
 
 ```
-packages/domain-client/src/focus/
-  ├── aggregates/PomodoroSession.ts
+packages/domain-client/src/goal/
+  ├── entities/PomodoroSession.ts (专注会话实体)
+  ├── entities/FocusSession.ts (通用专注会话)
   ├── value-objects/PomodoroSettings.ts
-  └── index.ts
+  └── value-objects/FocusStatistics.ts
 
-packages/application-client/src/focus/
+packages/application-client/src/goal/
   ├── services/PomodoroService.ts
-  └── index.ts
+  ├── services/FocusTrackingService.ts
+  └── utils/PomodoroTimer.ts
 
 apps/desktop/src/main/services/
   └── PomodoroMainService.ts
@@ -214,6 +221,12 @@ apps/desktop/src/main/main.ts
 
 apps/desktop/src/renderer/components/Layout.tsx
   └── 在侧边栏添加番茄钟入口
+
+packages/domain-client/src/goal/aggregates/Goal.ts
+  └── 扩展方法: recordPomodoroSession(), getPomodoroStats(), totalFocusMinutes 字段
+
+packages/contracts/src/modules/goal/aggregates/GoalClient.ts
+  └── 添加专注相关字段和方法签名
 ```
 
 ---
