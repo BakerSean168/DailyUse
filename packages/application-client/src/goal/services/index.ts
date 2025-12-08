@@ -100,3 +100,11 @@ export { DeleteGoalFolder, deleteGoalFolder } from './delete-goal-folder';
 // ===== AI Services =====
 export { TaskDecompositionService } from './task-decomposition';
 export { TaskTimeEstimationService } from './task-time-estimation';
+export { PriorityAnalysisService } from './priority-analysis';
+export type {
+  PriorityScore,
+  PriorityFactor,
+  PriorityBatchResult,
+  PriorityLevel,
+  EisenhowerQuadrant,
+} from './priority-analysis';
