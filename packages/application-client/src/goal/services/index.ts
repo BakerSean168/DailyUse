@@ -96,3 +96,7 @@ export { UpdateGoalFolder, updateGoalFolder } from './update-goal-folder';
 export type { UpdateGoalFolderInput } from './update-goal-folder';
 
 export { DeleteGoalFolder, deleteGoalFolder } from './delete-goal-folder';
+
+// ===== AI Services =====
+export { TaskDecompositionService } from './task-decomposition';
+export { TaskTimeEstimationService } from './task-time-estimation';

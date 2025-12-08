@@ -72,7 +72,6 @@ export class OpenAIProvider implements IAIService {
       throw new Error('OpenAI API key is required');
     }
     this.config = {
-      provider: 'openai',
       model: 'gpt-4-turbo',
       maxTokens: 2048,
       temperature: 0.7,
@@ -102,7 +101,7 @@ export class OpenAIProvider implements IAIService {
         temperature: this.config.temperature || 0.7,
       } as any);
 
-      return result.object as DecompositionResult;
+      return result.object as unknown as DecompositionResult;
     } catch (error) {
       throw new Error(
         `Failed to decompose goal: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -115,7 +114,7 @@ export class OpenAIProvider implements IAIService {
    */
   async estimateTaskTime(
     taskDescription: string
-  ): Promise<{ estimatedMinutes: number; confidence: number }> {
+  ): Promise<{ estimatedMinutes: number; confidence: number; reasoning?: string }> {
     try {
       const result = await generateObject({
         model: openai(this.config.model || 'gpt-4-turbo'),
@@ -127,6 +126,7 @@ export class OpenAIProvider implements IAIService {
       return {
         estimatedMinutes: (result.object as any).estimatedMinutes,
         confidence: (result.object as any).confidence,
+        reasoning: (result.object as any).reasoning,
       };
     } catch (error) {
       throw new Error(

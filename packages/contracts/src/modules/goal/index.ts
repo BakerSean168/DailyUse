@@ -289,3 +289,13 @@ export type {
   DecompositionRequest,
   DecompositionOptions,
 } from './task-decomposition.types';
+
+// ============ Time Estimation ============
+export type {
+  TimeEstimationRequest,
+  TimeEstimate,
+  BatchTimeEstimationResult,
+  TimeEstimationHistory,
+  UserEstimationPattern,
+  EstimationAccuracyAnalysis,
+} from './time-estimation.types';

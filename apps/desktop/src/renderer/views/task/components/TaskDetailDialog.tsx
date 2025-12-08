@@ -8,6 +8,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { TimeEstimationCard } from '../../../components/task/TimeEstimationCard';
+import type { TimeEstimate } from '@dailyuse/contracts/goal';
 
 interface TaskDetailDialogProps {
   templateUuid: string;
@@ -22,6 +24,10 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 时间预估状态
+  const [timeEstimate, setTimeEstimate] = useState<TimeEstimate | null>(null);
+  const [estimatingTime, setEstimatingTime] = useState(false);
 
   // 编辑表单状态
   const [editTitle, setEditTitle] = useState('');
@@ -109,6 +115,59 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
       setEditUrgency(template.urgency);
     }
     setIsEditing(false);
+  };
+
+  // 时间预估处理
+  const handleEstimateTimeClick = async () => {
+    if (!template) return;
+
+    setEstimatingTime(true);
+    try {
+      // 模拟AI调用 - 在实际应用中，这里会调用TaskTimeEstimationService
+      // const estimate = await TimeEstimationService.estimateTaskTime({
+      //   taskId: template.uuid,
+      //   taskTitle: template.title,
+      //   taskDescription: template.description || '',
+      //   complexity: 'medium'
+      // });
+      
+      // 临时模拟数据 - 演示用
+      const mockEstimate: TimeEstimate = {
+        taskId: template.uuid,
+        taskTitle: template.title,
+        estimatedMinutes: Math.round(template.estimatedMinutes || 60),
+        confidenceScore: 0.75,
+        reasoning: '基于任务描述复杂度和历史数据估算',
+        adjustedMinutes: Math.round((template.estimatedMinutes || 60) * 1.1),
+        adjustmentReason: '基于用户历史数据调整 +10%',
+      };
+      
+      setTimeEstimate(mockEstimate);
+    } catch (err) {
+      console.error('[TaskDetailDialog] Failed to estimate time:', err);
+      setError('时间预估失败');
+    } finally {
+      setEstimatingTime(false);
+    }
+  };
+
+  const handleEstimateChange = async (minutes: number) => {
+    if (!template) return;
+
+    try {
+      setIsSaving(true);
+      await taskApiClient.updateTaskTemplate(template.uuid, {
+        title: template.title,
+      });
+      // 更新本地预估
+      setTimeEstimate(prev => prev ? { ...prev, estimatedMinutes: minutes } : null);
+      onUpdated();
+    } catch (err) {
+      console.error('[TaskDetailDialog] Failed to update estimate:', err);
+      setError('保存预估失败');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!open) return null;
@@ -220,12 +279,31 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
                 </div>
               </div>
 
-              {/* Estimated Time */}
+              {/* Estimated Time with AI Card */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">预计用时</label>
-                <div className="text-muted-foreground">
-                  {template.estimatedMinutes ? `${template.estimatedMinutes} 分钟` : '未设置'}
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">预计用时</label>
+                  <button
+                    onClick={handleEstimateTimeClick}
+                    disabled={estimatingTime}
+                    className="text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {estimatingTime ? '预估中...' : '🤖 AI预估'}
+                  </button>
                 </div>
+                {timeEstimate ? (
+                  <TimeEstimationCard
+                    estimate={timeEstimate}
+                    loading={estimatingTime}
+                    showDetails={true}
+                    onReEstimate={handleEstimateTimeClick}
+                    onEstimateChange={handleEstimateChange}
+                  />
+                ) : (
+                  <div className="text-muted-foreground">
+                    {template.estimatedMinutes ? `${template.estimatedMinutes} 分钟` : '未设置'}
+                  </div>
+                )}
               </div>
 
               {/* Task Type & Status */}
