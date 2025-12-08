@@ -279,3 +279,13 @@ export type {
   ImportGoalsRequest,
   ImportGoalsResponse,
 } from './api-requests';
+
+// ============ Task Decomposition ============
+export type {
+  DecomposedTask,
+  DecompositionTimeline,
+  RiskItem,
+  DecompositionResult,
+  DecompositionRequest,
+  DecompositionOptions,
+} from './task-decomposition.types';

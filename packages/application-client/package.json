@@ -11,6 +11,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./ai": {
+      "types": "./dist/ai/index.d.ts",
+      "import": "./dist/ai/index.js"
+    },
     "./goal": {
       "types": "./dist/goal/index.d.ts",
       "import": "./dist/goal/index.js"

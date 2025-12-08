@@ -3,6 +3,9 @@
  * AI模块 - 显式导出
  */
 
+// ============ Service Interfaces ============
+export type { IAIService, AIServiceConfig } from './services';
+
 // ============ Enums ============
 export {
   ConversationStatus,

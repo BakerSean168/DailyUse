@@ -5,6 +5,8 @@
  * - Container: AIContainer
  * - Ports: IAIConversationApiClient, IAIMessageApiClient, IAIGenerationTaskApiClient, etc.
  * - Adapters: HTTP and IPC implementations
+ * - Providers: OpenAI and other LLM providers
+ * - Prompts: AI prompt templates
  */
 
 // Container
@@ -34,3 +36,9 @@ export {
   AIUsageQuotaIpcAdapter,
   AIProviderConfigIpcAdapter,
 } from './adapters';
+
+// Providers
+export * from './providers';
+
+// Prompts
+export * from './prompts';

@@ -55,6 +55,9 @@ export { GetProgressBreakdown, getProgressBreakdown } from './get-progress-break
 export { GenerateKeyResults, generateKeyResults } from './generate-key-results';
 export type { GenerateKeyResultsInput, GenerateKeyResultsOutput } from './generate-key-results';
 
+// ===== Task Decomposition (AI) 用例 =====
+export { TaskDecompositionService, decomposeGoal } from './task-decomposition';
+
 // ===== Goal Record 用例 =====
 export { CreateGoalRecord, createGoalRecord } from './create-goal-record';
 export type { CreateGoalRecordInput } from './create-goal-record';
