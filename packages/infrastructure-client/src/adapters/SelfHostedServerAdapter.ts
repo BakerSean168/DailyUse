@@ -9,7 +9,7 @@
  */
 
 import { BaseAdapter } from './BaseAdapter';
-import {
+import type {
   ISyncAdapter,
   AdapterConfig,
   AdapterCredentials,
@@ -21,13 +21,10 @@ import {
   ConflictResolution,
   BatchPushResult,
   SyncCursor,
-} from '../interfaces/ISyncAdapter';
-import {
-  SyncError,
-  AuthenticationError,
-  NetworkError,
-  ValidationError,
-} from '../errors';
+  EncryptedSyncData,
+  ExportData,
+  ImportOptions,
+} from '@dailyuse/application-client/sync';
 import axios, { AxiosInstance } from 'axios';
 
 /**
