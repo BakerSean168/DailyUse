@@ -5,6 +5,7 @@
  */
 
 import { NavLink, Outlet } from 'react-router-dom';
+import { SyncStatusIndicator } from './SyncStatusIndicator';
 
 const navItems = [
   { path: '/', label: '仪表盘', icon: '📊' },
@@ -20,9 +21,13 @@ export function Layout() {
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-card">
-        <div className="p-4 border-b">
-          <h1 className="text-xl font-bold">DailyUse</h1>
-          <p className="text-xs text-muted-foreground">Desktop App</p>
+        <div className="p-4 border-b flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">DailyUse</h1>
+            <p className="text-xs text-muted-foreground">Desktop App</p>
+          </div>
+          {/* EPIC-004: Sync Status Indicator */}
+          <SyncStatusIndicator />
         </div>
         <nav className="p-2">
           {navItems.map((item) => (

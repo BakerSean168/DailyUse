@@ -30,3 +30,20 @@ export {
   type AutoCleanupOptions,
   type MemoryManager,
 } from './useAutoCleanup';
+
+// EPIC-004: Sync Hooks
+export {
+  useSyncStatus,
+  type SyncState,
+  type SyncSummary,
+  type SyncStats,
+  type UseSyncStatusResult,
+} from './useSyncStatus';
+export {
+  useConflicts,
+  type ConflictRecord,
+  type FieldDiff,
+  type ConflictStats,
+  type MergeResult,
+  type UseConflictsResult,
+} from './useConflicts';

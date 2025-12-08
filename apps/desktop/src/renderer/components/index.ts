@@ -22,3 +22,7 @@ export {
   LazyImage,
   type LazyImageProps,
 } from './LazyImage';
+
+// EPIC-004: Sync UI Components
+export { SyncStatusIndicator } from './SyncStatusIndicator';
+export { ConflictResolverDialog } from './ConflictResolverDialog';

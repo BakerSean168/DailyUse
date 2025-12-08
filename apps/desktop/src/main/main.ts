@@ -231,6 +231,108 @@ function registerIpcHandlers(): void {
     }
   });
 
+  ipcMain.handle('sync:triggerSync', async () => {
+    try {
+      getSyncManager().triggerSync();
+      return { success: true };
+    } catch (e) {
+      return { success: false, error: String(e) };
+    }
+  });
+
+  ipcMain.handle('sync:forceSync', async () => {
+    try {
+      return getSyncManager().forceSync();
+    } catch (e) {
+      return { status: 'error', error: String(e) };
+    }
+  });
+
+  ipcMain.handle('sync:isOnline', async () => {
+    try {
+      return getSyncManager().isOnline();
+    } catch {
+      return false;
+    }
+  });
+
+  // Conflict handlers
+  ipcMain.handle('sync:conflict:getUnresolved', async (_, entityType?: string) => {
+    try {
+      return getSyncManager().getConflictManager().getUnresolvedConflicts(entityType);
+    } catch {
+      return [];
+    }
+  });
+
+  ipcMain.handle('sync:conflict:getCount', async (_, entityType?: string) => {
+    try {
+      return getSyncManager().getConflictManager().getUnresolvedCount(entityType);
+    } catch {
+      return 0;
+    }
+  });
+
+  ipcMain.handle('sync:conflict:resolve', async (_, conflictId: string, fieldSelections: Record<string, 'local' | 'server'>) => {
+    try {
+      return getSyncManager().getConflictManager().resolveManually(conflictId, fieldSelections);
+    } catch (e) {
+      return { success: false, error: String(e) };
+    }
+  });
+
+  ipcMain.handle('sync:conflict:resolveWithLocal', async (_, conflictId: string) => {
+    try {
+      return getSyncManager().getConflictManager().resolveWithLocal(conflictId);
+    } catch (e) {
+      return { success: false, error: String(e) };
+    }
+  });
+
+  ipcMain.handle('sync:conflict:resolveWithServer', async (_, conflictId: string) => {
+    try {
+      return getSyncManager().getConflictManager().resolveWithServer(conflictId);
+    } catch (e) {
+      return { success: false, error: String(e) };
+    }
+  });
+
+  ipcMain.handle('sync:conflict:getHistory', async (_, filter?: unknown, pagination?: unknown) => {
+    try {
+      return getSyncManager().getConflictManager().queryHistory(filter as never, pagination as never);
+    } catch {
+      return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
+    }
+  });
+
+  ipcMain.handle('sync:conflict:getStats', async () => {
+    try {
+      return getSyncManager().getConflictManager().getStats();
+    } catch {
+      return null;
+    }
+  });
+
+  // Device handlers
+  ipcMain.handle('sync:device:getInfo', async () => {
+    try {
+      return getSyncManager().getDeviceService().getDeviceInfo();
+    } catch {
+      return null;
+    }
+  });
+
+  ipcMain.handle('sync:device:rename', async (_, newName: string) => {
+    try {
+      getSyncManager().getDeviceService().updateDeviceName(newName);
+      return { success: true };
+    } catch (e) {
+      return { success: false, error: String(e) };
+    }
+  });
+
+  // TODO: sync:device:list requires backend API
+
   // ========== App Info Channels ==========
   ipcMain.handle('app:getInfo', async () => {
     return {

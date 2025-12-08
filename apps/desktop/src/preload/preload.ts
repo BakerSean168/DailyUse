@@ -309,6 +309,26 @@ const ALLOWED_CHANNELS = [
   'dev:memory:status',
   'dev:memory:snapshots',
   'dev:memory:force-gc',
+
+  // EPIC-004: Sync (STORY-019-022)
+  'sync:getSummary',
+  'sync:getStats',
+  'sync:getState',
+  'sync:triggerSync',
+  'sync:forceSync',
+  'sync:isOnline',
+  'sync:getSettings',
+  'sync:updateSettings',
+  'sync:conflict:getUnresolved',
+  'sync:conflict:getCount',
+  'sync:conflict:resolve',
+  'sync:conflict:resolveWithLocal',
+  'sync:conflict:resolveWithServer',
+  'sync:conflict:getHistory',
+  'sync:conflict:getStats',
+  'sync:device:getInfo',
+  'sync:device:rename',
+  'sync:device:list',
 ] as const;
 
 type AllowedChannel = (typeof ALLOWED_CHANNELS)[number];
