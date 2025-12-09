@@ -54,3 +54,15 @@ export {
   type CompressedPayload,
   type CompressionOptions,
 } from './ipc-compression';
+
+// IPC Handler Utilities
+export {
+  createIpcHandler,
+  registerIpcHandler,
+  registerIpcHandlers,
+  createModuleIpcHandlers,
+  removeIpcHandlers,
+  type IpcHandlerFn,
+  type IpcHandlerOptions,
+  type IpcHandlerDefinition,
+} from './ipc-handler';

@@ -1,20 +1,24 @@
 /**
  * Account Module - Desktop Main Process
  *
- * 账户与认证模块 - 注册 IPC handlers 和生命周期管理
+ * 账户模块 - 注册 IPC handlers 和生命周期管理
  *
  * @module account
+ *
+ * 职责：
+ * - 用户账户管理（资料、偏好）
+ * - 订阅管理
+ * - 本地用户（离线模式）
+ *
+ * 注意：认证相关功能已移至 authentication 模块
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
 import {
   registerAccountIpcHandlers,
   unregisterAccountIpcHandlers,
+  getAccountIpcChannels,
 } from './ipc/account.ipc-handlers';
-import {
-  registerAuthIpcHandlers,
-  unregisterAuthIpcHandlers,
-} from './ipc/auth.ipc-handlers';
 
 const logger = createLogger('AccountModule');
 
@@ -22,7 +26,6 @@ const logger = createLogger('AccountModule');
  * 注册 Account 模块到初始化管理器
  *
  * Priority: 130 (after AI module)
- * Dependencies: infrastructure (10), database (20)
  */
 export function registerAccountModule(): void {
   logger.info('Registering Account module...');
@@ -36,11 +39,10 @@ export function registerAccountModule(): void {
       logger.info('Initializing Account module...');
 
       try {
-        // Register IPC handlers
         registerAccountIpcHandlers();
-        registerAuthIpcHandlers();
 
-        logger.info('Account module initialized successfully');
+        const channels = getAccountIpcChannels();
+        logger.info(`Account module initialized successfully (${channels.length} IPC channels)`);
       } catch (error) {
         logger.error('Failed to initialize Account module', error);
         throw error;
@@ -51,10 +53,7 @@ export function registerAccountModule(): void {
       logger.info('Cleaning up Account module...');
 
       try {
-        // Unregister IPC handlers
         unregisterAccountIpcHandlers();
-        unregisterAuthIpcHandlers();
-
         logger.info('Account module cleaned up successfully');
       } catch (error) {
         logger.error('Failed to cleanup Account module', error);
@@ -65,16 +64,21 @@ export function registerAccountModule(): void {
   logger.info('Account module registered');
 }
 
-// Re-export application services
-export { AccountDesktopApplicationService } from './application/AccountDesktopApplicationService';
-export { AuthDesktopApplicationService } from './application/AuthDesktopApplicationService';
+// ===== Re-export Application Services =====
+export {
+  AccountDesktopApplicationService,
+  createAccountDesktopApplicationService,
+  type LocalDesktopUser,
+  type CreateAccountInput,
+  type CreateAccountResult,
+  type OperationResult,
+  type SubscriptionInfo,
+  type UsageInfo,
+} from './application/AccountDesktopApplicationService';
 
-// Re-export IPC handlers for direct use if needed
+// ===== Re-export IPC Handlers =====
 export {
   registerAccountIpcHandlers,
   unregisterAccountIpcHandlers,
+  getAccountIpcChannels,
 } from './ipc/account.ipc-handlers';
-export {
-  registerAuthIpcHandlers,
-  unregisterAuthIpcHandlers,
-} from './ipc/auth.ipc-handlers';

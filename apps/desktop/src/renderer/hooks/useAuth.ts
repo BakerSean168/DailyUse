@@ -3,12 +3,23 @@
  *
  * 认证逻辑钩子 - 管理登录状态、Token 和用户信息
  * Story-008: Auth & Account UI
+ * 
+ * 使用 @dailyuse/application-client 的 Use Case 实现 DDD 架构
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContainer } from '@dailyuse/infrastructure-client';
-import type { LoginRequest, LoginResponseDTO } from '@dailyuse/contracts/authentication';
+import {
+  login as loginUseCase,
+  register as registerUseCase,
+  logout as logoutUseCase,
+  forgotPassword as forgotPasswordUseCase,
+  resetPassword as resetPasswordUseCase,
+  changePassword as changePasswordUseCase,
+  type LoginInput,
+  type RegisterInput,
+} from '@dailyuse/application-client';
+import type { LoginResponseDTO } from '@dailyuse/contracts/authentication';
 
 // ============ Types ============
 
@@ -105,12 +116,12 @@ export function useAuth() {
 
   // Login
   const login = useCallback(
-    async (credentials: LoginRequest) => {
+    async (credentials: LoginInput) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const authApiClient = AuthContainer.getInstance().getApiClient();
-        const response = await authApiClient.login(credentials);
+        // 使用 application-client Use Case
+        const response = await loginUseCase(credentials);
 
         // Save tokens
         saveTokens(response);
@@ -163,8 +174,8 @@ export function useAuth() {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const authApiClient = AuthContainer.getInstance().getApiClient();
-        const response = await authApiClient.register({
+        // 使用 application-client Use Case
+        const response = await registerUseCase({
           email: request.email,
           password: request.password,
           username: request.username || request.email.split('@')[0],
@@ -195,8 +206,8 @@ export function useAuth() {
     setState((prev) => ({ ...prev, loading: true }));
 
     try {
-      const authApiClient = AuthContainer.getInstance().getApiClient();
-      await authApiClient.logout();
+      // 使用 application-client Use Case
+      await logoutUseCase({});
     } catch (e) {
       console.warn('[useAuth] Logout API call failed:', e);
     } finally {
@@ -217,8 +228,8 @@ export function useAuth() {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const authApiClient = AuthContainer.getInstance().getApiClient();
-      await authApiClient.forgotPassword({ email });
+      // 使用 application-client Use Case
+      await forgotPasswordUseCase({ email });
       setState((prev) => ({ ...prev, loading: false }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '发送重置邮件失败';
@@ -237,8 +248,8 @@ export function useAuth() {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const authApiClient = AuthContainer.getInstance().getApiClient();
-        await authApiClient.resetPassword({ token, newPassword, confirmPassword: newPassword });
+        // 使用 application-client Use Case
+        await resetPasswordUseCase({ token, newPassword, confirmPassword: newPassword });
         setState((prev) => ({ ...prev, loading: false }));
         navigate('/login');
       } catch (e) {
@@ -260,8 +271,8 @@ export function useAuth() {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const authApiClient = AuthContainer.getInstance().getApiClient();
-        await authApiClient.changePassword({ oldPassword: currentPassword, newPassword, confirmPassword: newPassword });
+        // 使用 application-client Use Case
+        await changePasswordUseCase({ oldPassword: currentPassword, newPassword, confirmPassword: newPassword });
         setState((prev) => ({ ...prev, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '修改密码失败';

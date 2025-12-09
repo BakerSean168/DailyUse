@@ -3,11 +3,19 @@
  *
  * 账户管理 Hook
  * Story-008: Auth & Account UI
+ * 
+ * 使用 @dailyuse/application-client 的 Use Case 实现 DDD 架构
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { AccountContainer } from '@dailyuse/infrastructure-client';
-import type { AccountDTO, UpdateAccountProfileRequestDTO, UpdateAccountPreferencesRequestDTO } from '@dailyuse/contracts/account';
+import {
+  getMyProfile,
+  updateMyProfile,
+  updateAccountPreferences,
+  changeMyPassword,
+  type UpdateMyProfileInput,
+} from '@dailyuse/application-client';
+import type { AccountDTO, UpdateAccountPreferencesRequestDTO } from '@dailyuse/contracts/account';
 
 interface AccountState {
   account: AccountDTO | null;
@@ -18,7 +26,7 @@ interface AccountState {
 interface UseAccountReturn extends AccountState {
   // Profile
   loadProfile: () => Promise<void>;
-  updateProfile: (request: UpdateAccountProfileRequestDTO) => Promise<void>;
+  updateProfile: (request: UpdateMyProfileInput) => Promise<void>;
   
   // Preferences
   updatePreferences: (request: UpdateAccountPreferencesRequestDTO) => Promise<void>;
@@ -43,8 +51,8 @@ export function useAccount(): UseAccountReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const accountApiClient = AccountContainer.getInstance().getApiClient();
-      const account = await accountApiClient.getMyProfile();
+      // 使用 application-client Use Case
+      const account = await getMyProfile();
       setState((prev) => ({ ...prev, account, loading: false }));
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '加载账户失败';
@@ -57,13 +65,13 @@ export function useAccount(): UseAccountReturn {
   }, []);
 
   // Update profile
-  const updateProfile = useCallback(
-    async (request: UpdateAccountProfileRequestDTO) => {
+  const updateProfileFn = useCallback(
+    async (request: UpdateMyProfileInput) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const accountApiClient = AccountContainer.getInstance().getApiClient();
-        const account = await accountApiClient.updateMyProfile(request);
+        // 使用 application-client Use Case
+        const account = await updateMyProfile(request);
         setState((prev) => ({ ...prev, account, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '更新资料失败';
@@ -79,7 +87,7 @@ export function useAccount(): UseAccountReturn {
   );
 
   // Update preferences
-  const updatePreferences = useCallback(
+  const updatePreferencesFn = useCallback(
     async (request: UpdateAccountPreferencesRequestDTO) => {
       if (!state.account?.uuid) {
         setState((prev) => ({
@@ -92,8 +100,11 @@ export function useAccount(): UseAccountReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const accountApiClient = AccountContainer.getInstance().getApiClient();
-        const account = await accountApiClient.updatePreferences(state.account.uuid, request);
+        // 使用 application-client Use Case
+        const account = await updateAccountPreferences({
+          accountId: state.account.uuid,
+          request,
+        });
         setState((prev) => ({ ...prev, account, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '更新偏好设置失败';
@@ -109,13 +120,13 @@ export function useAccount(): UseAccountReturn {
   );
 
   // Change password
-  const changePassword = useCallback(
+  const changePasswordFn = useCallback(
     async (currentPassword: string, newPassword: string) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const accountApiClient = AccountContainer.getInstance().getApiClient();
-        await accountApiClient.changeMyPassword({ currentPassword, newPassword });
+        // 使用 application-client Use Case
+        await changeMyPassword({ currentPassword, newPassword });
         setState((prev) => ({ ...prev, loading: false }));
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : '修改密码失败';
@@ -150,9 +161,9 @@ export function useAccount(): UseAccountReturn {
     loading: state.loading,
     error: state.error,
     loadProfile,
-    updateProfile,
-    updatePreferences,
-    changePassword,
+    updateProfile: updateProfileFn,
+    updatePreferences: updatePreferencesFn,
+    changePassword: changePasswordFn,
     clearError,
     refresh,
   };

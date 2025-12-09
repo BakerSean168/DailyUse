@@ -1,262 +1,176 @@
 /**
- * Account Module IPC Handlers
+ * Account Module IPC Handlers (Refactored)
  *
- * Account 模块 IPC 处理器
- * 复用 AccountDesktopApplicationService 中的逻辑
+ * 使用 createModuleIpcHandlers 简化的 Account IPC 处理器
+ * 每个 handler 都是对 AccountDesktopApplicationService 的一行委托
+ *
+ * 架构优势：
+ * - 统一的错误处理和日志记录
+ * - 极简的 handler 定义
+ * - 清晰的 channel 列表
  */
 
-import { ipcMain } from 'electron';
 import { createLogger } from '@dailyuse/utils';
-
-import { AccountDesktopApplicationService } from '../application/AccountDesktopApplicationService';
+import { createModuleIpcHandlers } from '../../../utils';
+import {
+  AccountDesktopApplicationService,
+  createAccountDesktopApplicationService,
+  type CreateAccountInput,
+} from '../application/AccountDesktopApplicationService';
 
 const logger = createLogger('AccountIpcHandlers');
 
 // 惰性初始化的服务实例
-let appService: AccountDesktopApplicationService | null = null;
+let service: AccountDesktopApplicationService | null = null;
 
-function getAppService(): AccountDesktopApplicationService {
-  if (!appService) {
-    appService = new AccountDesktopApplicationService();
+function getService(): AccountDesktopApplicationService {
+  if (!service) {
+    service = createAccountDesktopApplicationService(logger);
   }
-  return appService;
+  return service;
 }
 
-// 所有 IPC channel 名称
-const IPC_CHANNELS = [
-  // Core Account
+// 创建模块 IPC handler 注册器
+const { handle, register, getChannels } = createModuleIpcHandlers('Account', logger);
+
+// ============================================
+// Core Account Handlers
+// ============================================
+
+handle<CreateAccountInput, { success: boolean; uuid?: string; error?: string }>(
   'account:create',
+  (input) => getService().createAccount(input),
+);
+
+handle<string, unknown>(
   'account:get',
+  (uuid) => getService().getAccount(uuid),
+  { errorResult: null },
+);
+
+handle<{ uuid: string; data: { nickname?: string; avatarUrl?: string; bio?: string } }, unknown>(
   'account:update',
+  ({ uuid, data }) => getService().updateAccount(uuid, data),
+);
+
+handle<string, { success: boolean; error?: string }>(
   'account:delete',
-  // Me (Current User)
+  (uuid) => getService().deleteAccount(uuid),
+);
+
+// ============================================
+// Me (Current User) Handlers
+// ============================================
+
+handle<void, unknown>(
   'account:me:get',
+  () => getService().getCurrentUser(),
+);
+
+handle<{ name?: string; email?: string }, { success: boolean }>(
   'account:me:update',
+  (request) => getService().updateCurrentUser(request),
+);
+
+handle<{ oldPassword: string; newPassword: string }, { success: boolean; error?: string }>(
   'account:me:change-password',
+  ({ oldPassword, newPassword }) => getService().changePassword(oldPassword, newPassword),
+);
+
+handle<string, { success: boolean; error?: string }>(
   'account:me:change-email',
+  (newEmail) => getService().changeEmail(newEmail),
+);
+
+handle<string, { success: boolean; error?: string }>(
   'account:me:verify-email',
+  (token) => getService().verifyEmail(token),
+);
+
+handle<void, { success: boolean; error?: string }>(
   'account:me:delete',
-  // Profile
+  () => getService().deleteCurrentUser(),
+);
+
+// ============================================
+// Profile Handlers
+// ============================================
+
+handle<string, unknown>(
   'account:profile:get',
+  (uuid) => getService().getProfile(uuid),
+  { errorResult: null },
+);
+
+handle<{ uuid: string; data: Record<string, unknown> }, unknown>(
   'account:profile:update',
+  ({ uuid, data }) => getService().updateProfile(uuid, data),
+);
+
+handle<{ uuid: string; imageData: string }, { success: boolean; avatarUrl: string | null }>(
   'account:profile:upload-avatar',
+  ({ uuid, imageData }) => getService().uploadAvatar(uuid, imageData),
+);
+
+handle<string, { success: boolean }>(
   'account:profile:remove-avatar',
-  // Subscription
+  (uuid) => getService().removeAvatar(uuid),
+);
+
+// ============================================
+// Subscription Handlers
+// ============================================
+
+handle<void, { plan: string; status: string; features: string[] }>(
   'account:subscription:get',
+  () => getService().getSubscription(),
+);
+
+handle<string, { success: boolean; error?: string }>(
   'account:subscription:upgrade',
+  (planId) => getService().upgradeSubscription(planId),
+);
+
+handle<void, { success: boolean; error?: string }>(
   'account:subscription:cancel',
+  () => getService().cancelSubscription(),
+);
+
+handle<void, { invoices: unknown[]; total: number }>(
   'account:subscription:get-invoices',
+  () => getService().getInvoices(),
+);
+
+handle<void, { storage: { used: number; limit: number }; api: { used: number; limit: number } }>(
   'account:subscription:get-usage',
-] as const;
+  () => getService().getUsage(),
+);
+
+// ============================================
+// Export Functions
+// ============================================
 
 /**
  * 注册 Account 模块的 IPC 处理器
  */
 export function registerAccountIpcHandlers(): void {
-  logger.info('Registering Account IPC handlers...');
-
-  // ============================================
-  // Core Account Handlers
-  // ============================================
-
-  ipcMain.handle('account:create', async (_, request: { email: string; password: string; username?: string }) => {
-    try {
-      return await getAppService().createAccount(request);
-    } catch (error) {
-      logger.error('Failed to create account', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:get', async (_, uuid: string) => {
-    try {
-      return await getAppService().getAccount(uuid);
-    } catch (error) {
-      logger.error('Failed to get account', error);
-      return null;
-    }
-  });
-
-  ipcMain.handle('account:update', async (_, uuid: string, request: { name?: string; email?: string }) => {
-    try {
-      return await getAppService().updateAccount(uuid, request);
-    } catch (error) {
-      logger.error('Failed to update account', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:delete', async (_, uuid: string) => {
-    try {
-      return await getAppService().deleteAccount(uuid);
-    } catch (error) {
-      logger.error('Failed to delete account', error);
-      throw error;
-    }
-  });
-
-  // ============================================
-  // Me (Current User) Handlers
-  // ============================================
-
-  ipcMain.handle('account:me:get', async () => {
-    try {
-      return await getAppService().getCurrentUser();
-    } catch (error) {
-      logger.error('Failed to get current user', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:me:update', async (_, request: { name?: string; email?: string }) => {
-    try {
-      return await getAppService().updateCurrentUser(request);
-    } catch (error) {
-      logger.error('Failed to update current user', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:me:change-password', async (_, oldPassword: string, newPassword: string) => {
-    try {
-      return await getAppService().changePassword(oldPassword, newPassword);
-    } catch (error) {
-      logger.error('Failed to change password', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:me:change-email', async (_, newEmail: string) => {
-    try {
-      return await getAppService().changeEmail(newEmail);
-    } catch (error) {
-      logger.error('Failed to change email', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:me:verify-email', async (_, token: string) => {
-    try {
-      return await getAppService().verifyEmail(token);
-    } catch (error) {
-      logger.error('Failed to verify email', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:me:delete', async () => {
-    try {
-      return await getAppService().deleteCurrentUser();
-    } catch (error) {
-      logger.error('Failed to delete current user', error);
-      throw error;
-    }
-  });
-
-  // ============================================
-  // Profile Handlers
-  // ============================================
-
-  ipcMain.handle('account:profile:get', async (_, uuid: string) => {
-    try {
-      return await getAppService().getProfile(uuid);
-    } catch (error) {
-      logger.error('Failed to get profile', error);
-      return null;
-    }
-  });
-
-  ipcMain.handle('account:profile:update', async (_, uuid: string, request: any) => {
-    try {
-      return await getAppService().updateProfile(uuid, request);
-    } catch (error) {
-      logger.error('Failed to update profile', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:profile:upload-avatar', async (_, uuid: string, imageData: string) => {
-    try {
-      return await getAppService().uploadAvatar(uuid, imageData);
-    } catch (error) {
-      logger.error('Failed to upload avatar', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:profile:remove-avatar', async (_, uuid: string) => {
-    try {
-      return await getAppService().removeAvatar(uuid);
-    } catch (error) {
-      logger.error('Failed to remove avatar', error);
-      throw error;
-    }
-  });
-
-  // ============================================
-  // Subscription Handlers
-  // ============================================
-
-  ipcMain.handle('account:subscription:get', async () => {
-    try {
-      return await getAppService().getSubscription();
-    } catch (error) {
-      logger.error('Failed to get subscription', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:subscription:upgrade', async (_, planId: string) => {
-    try {
-      return await getAppService().upgradeSubscription(planId);
-    } catch (error) {
-      logger.error('Failed to upgrade subscription', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:subscription:cancel', async () => {
-    try {
-      return await getAppService().cancelSubscription();
-    } catch (error) {
-      logger.error('Failed to cancel subscription', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:subscription:get-invoices', async () => {
-    try {
-      return await getAppService().getInvoices();
-    } catch (error) {
-      logger.error('Failed to get invoices', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('account:subscription:get-usage', async () => {
-    try {
-      return await getAppService().getUsage();
-    } catch (error) {
-      logger.error('Failed to get usage', error);
-      throw error;
-    }
-  });
-
-  logger.info(`Account IPC handlers registered (${IPC_CHANNELS.length} channels)`);
+  register();
 }
 
 /**
  * 注销 Account 模块的 IPC 处理器
  */
 export function unregisterAccountIpcHandlers(): void {
+  const { removeIpcHandlers } = require('../../../utils');
   logger.info('Unregistering Account IPC handlers...');
-
-  for (const channel of IPC_CHANNELS) {
-    ipcMain.removeHandler(channel);
-  }
-
-  // Reset service instance
-  appService = null;
-
+  removeIpcHandlers(getChannels());
+  service = null;
   logger.info('Account IPC handlers unregistered');
+}
+
+/**
+ * 获取所有 Account IPC channels
+ */
+export function getAccountIpcChannels(): string[] {
+  return getChannels();
 }

@@ -19,11 +19,12 @@
  *   - dashboard-module: 110
  *   - ai-module: 120
  *   - account-module: 130
+ *   - authentication-module: 135 (auth separated from account)
  *   - repository-module: 140
  *   - setting-module: 150
  *   - editor-module: 160
  *
- * Total: 12 modules with 200+ IPC channels
+ * Total: 13 modules with 200+ IPC channels
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
@@ -33,6 +34,7 @@ import { initializeContainers, closeContainers } from './infrastructure';
 
 // Core Services
 import { registerAccountModule } from './account';
+import { registerAuthenticationModule } from './authentication';
 import { registerSettingModule } from './setting';
 import { registerNotificationModule } from './notification';
 
@@ -78,6 +80,7 @@ export function registerAllModules(): void {
 
   // ===== Phase 2: CORE_SERVICES =====
   registerAccountModule();
+  registerAuthenticationModule();
   registerSettingModule();
   registerNotificationModule();
 
