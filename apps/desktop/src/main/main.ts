@@ -11,7 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { initializeDatabase, closeDatabase, startMemoryCleanup, stopMemoryCleanup, getDatabase } from './database';
 import { configureMainProcessDependencies, isDIConfigured, getLazyModuleStats } from './di';
-import { registerAllIpcHandlers } from './ipc';
+import { registerAllModules, initializeAllModules, shutdownAllModules } from './modules';
 import { initNotificationService, initSyncManager, getSyncManager } from './services';
 import { initMemoryMonitorForDev, registerCacheIpcHandlers, getIpcCache } from './utils';
 
@@ -97,19 +97,30 @@ async function initializeApp(): Promise<void> {
   configureMainProcessDependencies();
   console.log('[App] DI configured');
 
-  // 4. 初始化事件监听器
+  // 4. EPIC-010: 注册所有模块
+  registerAllModules();
+  console.log('[App] All modules registered');
+
+  // 5. EPIC-010: 初始化所有模块（按 priority 顺序）
+  const moduleResult = await initializeAllModules();
+  console.log(`[App] All modules initialized: ${moduleResult.success ? 'SUCCESS' : 'FAILED'} (${moduleResult.duration}ms)`);
+  if (!moduleResult.success) {
+    console.error('[App] Failed modules:', moduleResult.failedModules);
+  }
+
+  // 6. 初始化事件监听器
   const { initializeEventListeners } = await import('./events/initialize-event-listeners');
   await initializeEventListeners();
   console.log('[App] Event listeners initialized');
 
-  // 5. 注册 IPC 处理器
+  // 7. 注册系统级 IPC 处理器 (desktop, sync 等)
   registerIpcHandlers();
-  console.log('[App] IPC handlers registered');
+  console.log('[App] System IPC handlers registered');
 
-  // 6. 启动数据库内存清理定时器
+  // 8. 启动数据库内存清理定时器
   startMemoryCleanup();
 
-  // 7. EPIC-003: 初始化性能监控工具
+  // 9. EPIC-003: 初始化性能监控工具
   initMemoryMonitorForDev();
   registerCacheIpcHandlers();
   console.log('[App] Performance monitoring initialized');
@@ -348,8 +359,10 @@ function registerIpcHandlers(): void {
   });
 
   // ========== All Module IPC Handlers ==========
-  // 使用模块化的 IPC 处理器注册
-  registerAllIpcHandlers();
+  // 模块化 IPC 处理器注册和初始化
+  // 所有领域模块的 IPC handlers 已迁移到 modules/ 目录
+  // 由 registerAllModules() + initializeAllModules() 管理
+  // See: EPIC-010 Desktop Full DDD Modular Refactor
 }
 
 // ========== App Lifecycle ==========
@@ -413,13 +426,16 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('before-quit', () => {
+app.on('before-quit', async () => {
   // 停止定时任务
   stopMemoryCleanup();
   
   // STORY-10: 清理桌面特性资源
   shortcutManager?.unregisterAll();
   trayManager?.destroy();
+  
+  // EPIC-010: 关闭所有模块（优雅关闭）
+  await shutdownAllModules();
   
   // 关闭数据库连接
   closeDatabase();
