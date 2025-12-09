@@ -53,5 +53,6 @@ export * from './focus';
 // Habit module (Habit Management, Check-ins, Streaks, Analytics)
 export * from './habit';
 
-// Productivity module (Task decomposition, estimation, priority)
-export * from './productivity';
+// Productivity module - services are also exported from ./goal
+// Omit re-exports to avoid duplicates with goal module
+// export * from './productivity';

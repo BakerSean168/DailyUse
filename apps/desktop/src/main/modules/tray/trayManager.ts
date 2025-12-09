@@ -7,6 +7,11 @@
 
 import { app, Tray, Menu, nativeImage, BrowserWindow } from 'electron';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// ESM 兼容的 __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export interface TrayConfig {
   iconPath?: string;

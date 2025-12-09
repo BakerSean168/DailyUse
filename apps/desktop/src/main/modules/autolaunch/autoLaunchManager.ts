@@ -7,15 +7,9 @@
 
 import { app } from 'electron';
 
-// auto-launch 是可选依赖，动态加载
+// auto-launch 是可选依赖，将在 init 中动态加载
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let AutoLaunch: any = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  AutoLaunch = require('auto-launch');
-} catch {
-  console.warn('[AutoLaunchManager] auto-launch module not available');
-}
+let AutoLaunchClass: any = null;
 
 export interface AutoLaunchConfig {
   name: string;
@@ -26,6 +20,7 @@ export class AutoLaunchManager {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private autoLauncher: any = null;
   private config: AutoLaunchConfig;
+  private initialized = false;
 
   constructor(config?: Partial<AutoLaunchConfig>) {
     this.config = {
@@ -37,19 +32,36 @@ export class AutoLaunchManager {
   /**
    * 初始化
    */
-  init(): void {
+  async init(): Promise<void> {
     // macOS 使用内置 API
     if (process.platform === 'darwin') {
-      // macOS 使用 app.setLoginItemSettings
+      this.initialized = true;
       return;
     }
 
-    // Windows/Linux 使用 auto-launch
-    this.autoLauncher = new AutoLaunch({
-      name: this.config.name,
-      path: app.getPath('exe'),
-      isHidden: this.config.isHidden,
-    });
+    // Windows/Linux 使用 auto-launch - 动态导入
+    if (!AutoLaunchClass) {
+      try {
+        const autoLaunchModule = await import('auto-launch');
+        AutoLaunchClass = autoLaunchModule.default || autoLaunchModule;
+      } catch (error) {
+        console.warn('[AutoLaunchManager] auto-launch module not available:', error);
+        this.initialized = true;
+        return;
+      }
+    }
+
+    try {
+      this.autoLauncher = new AutoLaunchClass({
+        name: this.config.name,
+        path: app.getPath('exe'),
+        isHidden: this.config.isHidden,
+      });
+      this.initialized = true;
+    } catch (error) {
+      console.warn('[AutoLaunchManager] Failed to create AutoLaunch instance:', error);
+      this.initialized = true;
+    }
   }
 
   /**

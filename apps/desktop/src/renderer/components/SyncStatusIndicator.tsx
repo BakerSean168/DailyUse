@@ -35,7 +35,7 @@ export function SyncStatusIndicator({ showLabel = false, className = '' }: SyncS
 
   // 确定显示状态
   const displayStatus: SyncState = !isOnline ? 'offline' : status;
-  const statusInfo = STATUS_ICONS[displayStatus];
+  const statusInfo = STATUS_ICONS[displayStatus] || STATUS_ICONS.idle;
 
   // 格式化上次同步时间
   const formatLastSync = (timestamp: number | null): string => {

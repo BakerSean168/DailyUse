@@ -24,10 +24,10 @@ export interface HabitStatistics {
   averageCheckInsPerWeek: number;
   bestDay: string; // Day of week
   bestTime: string; // HH:MM
-  trends: TrendData[];
+  trends: HabitTrendData[];
 }
 
-export interface TrendData {
+export interface HabitTrendData {
   date: string;
   value: number;
   trend: 'up' | 'down' | 'stable';
@@ -319,8 +319,8 @@ export class HabitStatisticsService {
 
   // ==================== Private Methods ====================
 
-  private calculateTrends(checkIns: any[], period: string): TrendData[] {
-    const trends: TrendData[] = [];
+  private calculateTrends(checkIns: any[], period: string): HabitTrendData[] {
+    const trends: HabitTrendData[] = [];
     const dailyCounts = new Map<string, number>();
 
     checkIns.forEach((checkIn) => {

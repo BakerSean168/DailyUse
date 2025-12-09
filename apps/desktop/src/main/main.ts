@@ -42,7 +42,7 @@ function createWindow(): void {
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.mjs'),
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
@@ -59,7 +59,9 @@ function createWindow(): void {
   // 加载应用
   if (process.env.NODE_ENV === 'development') {
     // 开发模式：加载 Vite dev server
-    mainWindow.loadURL('http://localhost:5173');
+    // VITE_DEV_SERVER_URL 由 vite-plugin-electron 设置
+    const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
+    mainWindow.loadURL(devServerUrl);
     mainWindow.webContents.openDevTools();
   } else {
     // 生产模式：加载打包后的 HTML
@@ -362,7 +364,7 @@ app.whenReady().then(async () => {
     console.log('[App] Notification service initialized');
 
     // STORY-10: 初始化桌面特性
-    initDesktopFeatures(mainWindow);
+    await initDesktopFeatures(mainWindow);
   }
 
   app.on('activate', () => {
@@ -379,7 +381,7 @@ app.whenReady().then(async () => {
  * - 全局快捷键
  * - 开机自启
  */
-function initDesktopFeatures(window: BrowserWindow): void {
+async function initDesktopFeatures(window: BrowserWindow): Promise<void> {
   console.log('[App] Initializing desktop features...');
 
   // 1. 系统托盘
@@ -400,7 +402,7 @@ function initDesktopFeatures(window: BrowserWindow): void {
     name: 'DailyUse',
     isHidden: true,
   });
-  autoLaunchManager.init();
+  await autoLaunchManager.init();
   console.log('[App] Auto-launch manager initialized');
 }
 

@@ -24,7 +24,15 @@ export default defineConfig({
       '@main': path.resolve(__dirname, './src/main'),
       '@preload': path.resolve(__dirname, './src/preload'),
       '@renderer': path.resolve(__dirname, './src/renderer'),
+      // 浏览器环境 Node.js polyfills
+      'crypto': 'crypto-browserify',
+      'stream': 'stream-browserify',
+      'buffer': 'buffer',
     },
+  },
+  define: {
+    // 为 crypto-browserify 提供全局 Buffer
+    'global': 'globalThis',
   },
   base: './',
   build: {
@@ -100,9 +108,10 @@ export default defineConfig({
             rollupOptions: {
               external: nativeModules,
               output: {
+                format: 'cjs',
                 inlineDynamicImports: false,
                 manualChunks: undefined,
-                entryFileNames: '[name].mjs',
+                entryFileNames: '[name].cjs',
               },
             },
           },

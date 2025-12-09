@@ -5,7 +5,12 @@
  */
 
 import { ipcMain } from 'electron';
-import { getMainContainer } from '../di';
+import {
+  GoalContainer,
+  TaskContainer,
+  ScheduleContainer,
+  ReminderContainer,
+} from '@dailyuse/infrastructure-server';
 
 // ============ Types ============
 
@@ -52,21 +57,20 @@ async function loadGoalStats(): Promise<{
   activeGoals: unknown[];
 }> {
   try {
-    const container = getMainContainer();
-    const goalService = container.resolve('goalService');
-    const goals = await goalService.getGoals({});
+    const repo = GoalContainer.getInstance().getGoalRepository();
+    const goals = await repo.findByAccountUuid('default', {});
 
     const stats = {
-      total: goals.goals.length,
-      active: goals.goals.filter((g: any) => g.status === 'ACTIVE').length,
-      completed: goals.goals.filter((g: any) => g.status === 'COMPLETED').length,
-      paused: goals.goals.filter((g: any) => g.status === 'PAUSED').length,
-      overdue: goals.goals.filter(
+      total: goals.length,
+      active: goals.filter((g: any) => g.status === 'ACTIVE').length,
+      completed: goals.filter((g: any) => g.status === 'COMPLETED').length,
+      paused: goals.filter((g: any) => g.status === 'PAUSED').length,
+      overdue: goals.filter(
         (g: any) => g.deadline && new Date(g.deadline) < new Date() && g.status === 'ACTIVE'
       ).length,
     };
 
-    const activeGoals = goals.goals
+    const activeGoals = goals
       .filter((g: any) => g.status === 'ACTIVE')
       .slice(0, 5);
 
@@ -85,9 +89,8 @@ async function loadTaskStats(): Promise<{
   todayTasks: unknown[];
 }> {
   try {
-    const container = getMainContainer();
-    const taskTemplateService = container.resolve('taskTemplateService');
-    const templates = await taskTemplateService.getTaskTemplates();
+    const repo = TaskContainer.getInstance().getTaskTemplateRepository();
+    const templates = await repo.findByAccountUuid('default', {});
 
     const stats = {
       total: templates.length,
@@ -113,9 +116,8 @@ async function loadScheduleStats(): Promise<{
   todaySchedules: unknown[];
 }> {
   try {
-    const container = getMainContainer();
-    const scheduleService = container.resolve('scheduleTaskService');
-    const schedules = await scheduleService.getScheduleTasks({});
+    const repo = ScheduleContainer.getInstance().getScheduleTaskRepository();
+    const schedules = await repo.findByAccountUuid('default', {});
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -157,10 +159,8 @@ async function loadReminderStats(): Promise<{
   upcomingReminders: unknown[];
 }> {
   try {
-    const container = getMainContainer();
-    const reminderService = container.resolve('reminderTemplateService');
-    const response = await reminderService.getReminderTemplates({});
-    const reminders = response.templates;
+    const repo = ReminderContainer.getInstance().getReminderTemplateRepository();
+    const reminders = await repo.findByAccountUuid('default', {});
 
     const stats = {
       total: reminders.length,

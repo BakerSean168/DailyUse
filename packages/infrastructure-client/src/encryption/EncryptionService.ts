@@ -3,8 +3,36 @@
  * @module @dailyuse/infrastructure-client/encryption
  */
 
-import crypto from 'crypto';
 import type { EncryptedData, KeyDerivationParams } from './types';
+
+// 条件导入：浏览器环境使用 Web Crypto API，Node.js 环境使用 crypto 模块
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let nodeCrypto: any = null;
+
+// 检测是否在 Node.js 环境
+const isNode = typeof process !== 'undefined' && 
+               process.versions != null && 
+               process.versions.node != null;
+
+if (isNode) {
+  try {
+    // 动态导入 crypto 模块（仅在 Node.js 环境）
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    nodeCrypto = require('crypto');
+  } catch {
+    console.warn('[EncryptionService] Node.js crypto module not available');
+  }
+}
+
+/**
+ * 获取 crypto 模块引用（用于内部调用）
+ */
+function getCrypto(): typeof import('crypto') {
+  if (!nodeCrypto) {
+    throw new Error('EncryptionService is only available in Node.js environment. Use Web Crypto API for browser.');
+  }
+  return nodeCrypto;
+}
 
 /**
  * 加密服务 - 处理所有端到端加密操作
@@ -124,7 +152,7 @@ export class EncryptionService {
    * @private
    */
   private deriveKey(password: string): Buffer {
-    return crypto.pbkdf2Sync(
+    return getCrypto().pbkdf2Sync(
       password,
       this.keyDerivationParams.salt,
       this.keyDerivationParams.iterations,
@@ -143,7 +171,7 @@ export class EncryptionService {
    * @private
    */
   private generateSalt(): string {
-    return crypto.randomBytes(EncryptionService.SALT_SIZE).toString('base64');
+    return getCrypto().randomBytes(EncryptionService.SALT_SIZE).toString('base64');
   }
   
   /**
@@ -254,10 +282,10 @@ export class EncryptionService {
       : plaintext;
     
     // 生成随机 IV (每次加密都不同)
-    const iv = crypto.randomBytes(EncryptionService.IV_SIZE);
+    const iv = getCrypto().randomBytes(EncryptionService.IV_SIZE);
     
     // 创建加密器
-    const cipher = crypto.createCipheriv(
+    const cipher = getCrypto().createCipheriv(
       EncryptionService.ALGORITHM,
       this.currentKey,
       iv
@@ -336,7 +364,7 @@ export class EncryptionService {
     const authTag = Buffer.from(encrypted.authTag, 'base64');
     
     // 创建解密器
-    const decipher = crypto.createDecipheriv(
+    const decipher = getCrypto().createDecipheriv(
       EncryptionService.ALGORITHM,
       key,
       iv
