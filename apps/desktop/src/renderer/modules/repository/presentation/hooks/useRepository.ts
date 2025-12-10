@@ -408,7 +408,7 @@ export function useRepository(): UseRepositoryReturn {
           mode: 'all',
         });
         // Convert SearchResultItems to ResourceClientDTOs
-        return result.results.map((item) => ({
+        return result.results.map((item: { resourceUuid: string; resourceName: string; resourcePath: string; resourceType: string }) => ({
           uuid: item.resourceUuid,
           name: item.resourceName,
           path: item.resourcePath,

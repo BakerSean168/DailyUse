@@ -61,7 +61,10 @@ export class AuthHttpAdapter implements IAuthApiClient {
       `${this.baseUrl}/register`,
       request,
     );
-    return response;
+    return {
+      success: true,
+      ...response,
+    };
   }
 
   async logout(request?: LogoutRequest): Promise<void> {

@@ -128,6 +128,13 @@ export class ShortcutManager {
   }
 
   /**
+   * 获取所有快捷键（别名方法）
+   */
+  getShortcuts(): ShortcutConfig[] {
+    return this.getRegisteredShortcuts();
+  }
+
+  /**
    * 获取默认快捷键
    */
   getDefaultShortcuts(): ShortcutConfig[] {

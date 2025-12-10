@@ -1,9 +1,8 @@
 /**
- * Notification Presentation Hooks - Renderer
+ * Notification Presentation Hooks - Index
  */
 
 export {
   useNotification,
-  type NotificationState,
   type UseNotificationReturn,
 } from './useNotification';

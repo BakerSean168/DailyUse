@@ -31,7 +31,7 @@ interface NotificationState {
   page: number;
 }
 
-interface UseNotificationReturn extends NotificationState {
+export interface UseNotificationReturn extends NotificationState {
   // List operations
   loadNotifications: (reset?: boolean) => Promise<void>;
   loadMore: () => Promise<void>;

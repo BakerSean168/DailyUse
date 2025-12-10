@@ -41,21 +41,15 @@ import {
 } from './services';
 
 import type {
-  CreateConversationInput,
-  CreateConversationOutput,
-  ListConversationsInput,
-  ListConversationsOutput,
-  GetConversationInput,
-  GetConversationOutput,
-  DeleteConversationInput,
-  SendMessageInput,
-  SendMessageOutput,
-  GetQuotaInput,
-  GetQuotaOutput,
-  GenerateGoalInput,
-  GenerateGoalOutput,
-  ListProvidersInput,
-  ListProvidersOutput,
+  CreateConversationRequest,
+  ConversationResponse,
+  ConversationListResponse,
+  SendMessageRequest,
+  MessageResponse,
+  QuotaResponse,
+  GenerateGoalRequest,
+  GenerateGoalResponse,
+  ListRequest,
   AIConversationClientDTO,
   MessageClientDTO,
   AIUsageQuotaClientDTO,
@@ -75,14 +69,14 @@ export class AIDesktopApplicationService {
   async createConversation(
     accountUuid: string,
     title?: string,
-  ): Promise<CreateConversationOutput> {
+  ): Promise<ConversationResponse> {
     return createConversationService(accountUuid, title);
   }
 
   async listConversations(
     accountUuid: string,
     options?: { limit?: number; offset?: number; archived?: boolean },
-  ): Promise<ListConversationsOutput> {
+  ): Promise<ConversationListResponse> {
     return listConversationsService(accountUuid, options);
   }
 
@@ -90,7 +84,7 @@ export class AIDesktopApplicationService {
     accountUuid: string,
     conversationUuid: string,
     includeMessages = false,
-  ): Promise<GetConversationOutput> {
+  ): Promise<ConversationResponse> {
     return getConversationService(accountUuid, conversationUuid, includeMessages);
   }
 
@@ -130,7 +124,7 @@ export class AIDesktopApplicationService {
     accountUuid: string,
     conversationUuid: string,
     content: string,
-  ): Promise<SendMessageOutput> {
+  ): Promise<MessageResponse> {
     return sendMessageService(accountUuid, conversationUuid, content);
   }
 
@@ -227,14 +221,14 @@ export class AIDesktopApplicationService {
 
   async generateGoal(
     accountUuid: string,
-    input: Omit<GenerateGoalInput, 'accountUuid'>,
-  ): Promise<GenerateGoalOutput> {
+    input: Omit<GenerateGoalRequest, 'accountUuid'>,
+  ): Promise<GenerateGoalResponse> {
     return generateGoalService(accountUuid, input);
   }
 
   // ===== Quota =====
 
-  async getQuota(accountUuid: string): Promise<GetQuotaOutput> {
+  async getQuota(accountUuid: string): Promise<QuotaResponse> {
     return getQuotaService(accountUuid);
   }
 
@@ -254,7 +248,7 @@ export class AIDesktopApplicationService {
 
   // ===== Provider =====
 
-  async listProviders(accountUuid: string): Promise<ListProvidersOutput> {
+  async listProviders(accountUuid: string): Promise<{ providers: AIProviderConfigClientDTO[] }> {
     return listProvidersService(accountUuid);
   }
 

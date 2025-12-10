@@ -14,8 +14,8 @@ import {
   type InitializationTask,
   createLogger,
 } from '@dailyuse/utils';
-import { initializeDatabase, closeDatabase } from '../infrastructure/database';
-import { initializeContainers, closeContainers } from '../infrastructure/containers';
+import { initializeDatabase, closeDatabase } from '../../database';
+import { configureMainProcessDependencies, isDIConfigured } from '../../di';
 
 const logger = createLogger('InfrastructureInit:Desktop');
 
@@ -58,7 +58,7 @@ const diContainerInitTask: InitializationTask = {
   initialize: async () => {
     logger.info('Initializing DI containers...');
     try {
-      await initializeContainers();
+      configureMainProcessDependencies();
       logger.info('✅ DI containers initialized successfully');
     } catch (error) {
       logger.error('❌ DI container initialization failed', error);
@@ -68,7 +68,7 @@ const diContainerInitTask: InitializationTask = {
   cleanup: async () => {
     logger.info('Cleaning up DI containers...');
     try {
-      await closeContainers();
+      // DI cleanup is handled by module shutdown
       logger.info('✅ DI containers cleanup complete');
     } catch (error) {
       logger.error('❌ DI containers cleanup failed', error);

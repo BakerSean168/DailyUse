@@ -430,6 +430,7 @@ export class EncryptionService {
    * @private
    */
   private calculateChecksum(data: Buffer): string {
+    const crypto = getCrypto();
     return crypto
       .createHash('sha256')
       .update(data)
