@@ -9,7 +9,7 @@ import type {
   ITaskTemplateRepository,
 } from '@dailyuse/domain-server/task';
 import type {
-  TaskInstanceServerDTO,
+  TaskInstanceClientDTO,
   TaskInstanceCompletedEvent,
 } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
@@ -29,7 +29,7 @@ export interface CompleteTaskInstanceInput {
  * Service Output
  */
 export interface CompleteTaskInstanceOutput {
-  instance: TaskInstanceServerDTO;
+  instance: TaskInstanceClientDTO;
 }
 
 /**

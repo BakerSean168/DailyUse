@@ -1,26 +1,40 @@
 /**
- * Reminder Desktop Application Service
+ * Reminder Desktop Application Service - Facade Pattern
  *
  * 包装 @dailyuse/application-server/reminder 的所有 Use Cases
  * 为 Desktop IPC handlers 提供统一的应用服务入口
+ * 
+ * 所有具体的业务逻辑都委托给 services 文件夹中的专门服务
  */
 
 import {
-  createReminderTemplate,
-  getReminderTemplate,
-  listReminderTemplates,
-  deleteReminderTemplate,
-  type CreateReminderTemplateInput,
-  type ListReminderTemplatesInput,
-} from '@dailyuse/application-server';
+  createTemplateService,
+  getTemplateService,
+  listTemplatesService,
+  updateTemplateService,
+  deleteTemplateService,
+  enableTemplateService,
+  pauseTemplateService,
+  listTemplatesByGroupService,
+  listActiveTemplatesService,
+  createGroupService,
+  getGroupService,
+  listGroupsService,
+  updateGroupService,
+  deleteGroupService,
+  getStatisticsSummaryService,
+  getUpcomingService,
+} from './services';
 
-import { ReminderContainer } from '@dailyuse/infrastructure-server';
+import type {
+  CreateReminderTemplateInput,
+  ListReminderTemplatesInput,
+} from '@dailyuse/application-server';
 import type {
   ReminderTemplateClientDTO,
   ReminderGroupClientDTO,
   ReminderStatisticsClientDTO,
 } from '@dailyuse/contracts/reminder';
-import type { ReminderGroup } from '@dailyuse/domain-server/reminder';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('ReminderDesktopAppService');
@@ -33,25 +47,18 @@ export class ReminderDesktopApplicationService {
   // ===== Reminder Template =====
 
   async createTemplate(input: CreateReminderTemplateInput): Promise<ReminderTemplateClientDTO> {
-    logger.debug('Creating reminder template', { title: input.title });
-    const result = await createReminderTemplate(input);
-    return result.template;
+    return createTemplateService(input);
   }
 
   async getTemplate(uuid: string): Promise<ReminderTemplateClientDTO | null> {
-    const result = await getReminderTemplate({ uuid });
-    return result.template;
+    return getTemplateService(uuid);
   }
 
-  async listTemplates(params: ListReminderTemplatesInput): Promise<{
+  async listTemplates(params?: ListReminderTemplatesInput): Promise<{
     templates: ReminderTemplateClientDTO[];
     total: number;
   }> {
-    const result = await listReminderTemplates(params);
-    return {
-      templates: result.templates,
-      total: result.total,
-    };
+    return listTemplatesService(params);
   }
 
   async updateTemplate(
@@ -59,72 +66,33 @@ export class ReminderDesktopApplicationService {
     _accountUuid: string,
     updates: { title?: string; description?: string },
   ): Promise<ReminderTemplateClientDTO> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getTemplateRepository();
-    const template = await repo.findById(uuid);
-    if (!template) {
-      throw new Error(`Reminder template not found: ${uuid}`);
-    }
-
-    // Update using the template's update method
-    template.update({
-      title: updates.title,
-      description: updates.description,
-    });
-
-    await repo.save(template);
-    return template.toClientDTO();
+    return updateTemplateService(uuid, _accountUuid, updates);
   }
 
   async deleteTemplate(uuid: string, accountUuid: string): Promise<void> {
-    await deleteReminderTemplate({ uuid, accountUuid });
+    return deleteTemplateService(uuid, accountUuid);
   }
 
   async enableTemplate(uuid: string): Promise<ReminderTemplateClientDTO> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getTemplateRepository();
-    const template = await repo.findById(uuid);
-    if (!template) {
-      throw new Error(`Reminder template not found: ${uuid}`);
-    }
-    template.enable();
-    await repo.save(template);
-    return template.toClientDTO();
+    return enableTemplateService(uuid);
   }
 
   async disableTemplate(uuid: string): Promise<ReminderTemplateClientDTO> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getTemplateRepository();
-    const template = await repo.findById(uuid);
-    if (!template) {
-      throw new Error(`Reminder template not found: ${uuid}`);
-    }
-    // Use pause() instead of disable() based on domain API
-    template.pause();
-    await repo.save(template);
-    return template.toClientDTO();
+    return pauseTemplateService(uuid);
   }
 
   async listTemplatesByGroup(groupUuid: string, accountUuid: string): Promise<{
     templates: ReminderTemplateClientDTO[];
     total: number;
   }> {
-    const result = await listReminderTemplates({ accountUuid, groupUuid });
-    return {
-      templates: result.templates,
-      total: result.total,
-    };
+    return listTemplatesByGroupService(groupUuid, accountUuid);
   }
 
   async listActiveTemplates(accountUuid: string): Promise<{
     templates: ReminderTemplateClientDTO[];
     total: number;
   }> {
-    const result = await listReminderTemplates({ accountUuid, activeOnly: true });
-    return {
-      templates: result.templates,
-      total: result.total,
-    };
+    return listActiveTemplatesService(accountUuid);
   }
 
   // ===== Reminder Groups =====
@@ -136,102 +104,41 @@ export class ReminderDesktopApplicationService {
     color?: string;
     icon?: string;
   }): Promise<ReminderGroupClientDTO> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getGroupRepository();
-
-    // Create group using ReminderGroup.create (static factory method)
-    const { ReminderGroup } = await import('@dailyuse/domain-server/reminder');
-    const group = ReminderGroup.create({
-      accountUuid: params.accountUuid,
-      name: params.name,
-      description: params.description || '',
-      color: params.color,
-      icon: params.icon,
-    });
-
-    await repo.save(group);
-    return group.toClientDTO();
+    return createGroupService(params);
   }
 
   async getGroup(uuid: string): Promise<ReminderGroupClientDTO | null> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getGroupRepository();
-    const group = await repo.findById(uuid);
-    return group?.toClientDTO() || null;
+    return getGroupService(uuid);
   }
 
   async listGroups(accountUuid: string): Promise<{
     groups: ReminderGroupClientDTO[];
     total: number;
   }> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getGroupRepository();
-    const groups = await repo.findByAccountUuid(accountUuid);
-    return {
-      groups: groups.map((g: ReminderGroup) => g.toClientDTO()),
-      total: groups.length,
-    };
+    return listGroupsService(accountUuid);
   }
 
   async updateGroup(
     uuid: string,
     _updates: { name?: string; description?: string; color?: string; icon?: string },
   ): Promise<ReminderGroupClientDTO> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getGroupRepository();
-    const group = await repo.findById(uuid);
-    if (!group) {
-      throw new Error(`Reminder group not found: ${uuid}`);
-    }
-
-    // Note: ReminderGroup doesn't have update methods for name/description/color/icon
-    // Would need to create a new group with updated values or add update methods to domain
-    // For now, just return the current group
-    // TODO: Implement proper update logic when domain methods are available
-
-    return group.toClientDTO();
+    return updateGroupService(uuid, _updates);
   }
 
   async deleteGroup(uuid: string): Promise<void> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getGroupRepository();
-    await repo.delete(uuid);
+    return deleteGroupService(uuid);
   }
 
   // ===== Reminder Statistics =====
 
   async getStatisticsSummary(accountUuid: string): Promise<ReminderStatisticsClientDTO | null> {
-    const container = ReminderContainer.getInstance();
-    const repo = container.getStatisticsRepository();
-    const statistics = await repo.findByAccountUuid(accountUuid);
-    return statistics?.toClientDTO() || null;
+    return getStatisticsSummaryService(accountUuid);
   }
 
   async getUpcoming(days: number = 7, accountUuid: string): Promise<{
     templates: ReminderTemplateClientDTO[];
     total: number;
   }> {
-    // List active templates
-    const result = await listReminderTemplates({
-      accountUuid,
-      activeOnly: true,
-    });
-
-    // Filter by upcoming (using nextTriggerAt from the template)
-    const now = Date.now();
-    const endDate = now + days * 24 * 60 * 60 * 1000;
-
-    const upcomingTemplates = result.templates.filter((t) => {
-      // Check nextTriggerAt from execution info if available
-      const nextTriggerAt = t.nextTriggerAt;
-      if (!nextTriggerAt) return false;
-      const nextTime = typeof nextTriggerAt === 'number' ? nextTriggerAt : new Date(nextTriggerAt).getTime();
-      return nextTime >= now && nextTime <= endDate;
-    });
-
-    return {
-      templates: upcomingTemplates,
-      total: upcomingTemplates.length,
-    };
+    return getUpcomingService(days, accountUuid);
   }
 }

@@ -11,7 +11,7 @@ import type {
   TaskTemplate,
 } from '@dailyuse/domain-server/task';
 import { TaskInstanceGenerationService } from '@dailyuse/domain-server/task';
-import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
@@ -32,7 +32,7 @@ export interface ListTaskTemplatesInput {
  * Service Output
  */
 export interface ListTaskTemplatesOutput {
-  templates: TaskTemplateServerDTO[];
+  templates: TaskTemplateClientDTO[];
   total: number;
 }
 

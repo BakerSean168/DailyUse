@@ -5,7 +5,7 @@
  */
 
 import type { ITaskInstanceRepository } from '@dailyuse/domain-server/task';
-import type { TaskInstanceServerDTO } from '@dailyuse/contracts/task';
+import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
 
 /**
@@ -21,7 +21,7 @@ export interface GetTaskInstancesByDateRangeInput {
  * Service Output
  */
 export interface GetTaskInstancesByDateRangeOutput {
-  instances: TaskInstanceServerDTO[];
+  instances: TaskInstanceClientDTO[];
   total: number;
 }
 

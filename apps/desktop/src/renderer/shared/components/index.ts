@@ -1,11 +1,7 @@
 /**
- * Shared Components - 统一导出
- *
- * 从原 components/ 目录迁移的共享组件
+ * Components Module Exports
  */
-
-// 重新导出原有组件
-export { Layout } from '../../components/Layout';
+export { Layout } from './Layout';
 export {
   Skeleton,
   DashboardSkeleton,
@@ -18,18 +14,16 @@ export {
   ReminderItemSkeleton,
   ListItemSkeleton,
   TableSkeleton,
-} from '../../components/Skeleton';
-export {
-  VirtualList,
-  VirtualGroupedList,
-  type VirtualListProps,
-  type VirtualGroupedListProps,
-} from '../../components/VirtualList';
+} from './Skeleton';
+export { VirtualList, VirtualGroupedList, type VirtualListProps, type VirtualGroupedListProps } from './VirtualList';
 
 // EPIC-003: Performance Optimization Components
-export { LazyImage, type LazyImageProps } from '../../components/LazyImage';
+export {
+  LazyImage,
+  type LazyImageProps,
+} from './LazyImage';
 
 // EPIC-004: Sync UI Components
-export { SyncStatusIndicator } from '../../components/SyncStatusIndicator';
-export { ConflictResolverDialog } from '../../components/ConflictResolverDialog';
-export { SyncConfigWizard } from '../../components/SyncConfigWizard';
+export { SyncStatusIndicator } from './SyncStatusIndicator';
+export { ConflictResolverDialog } from './ConflictResolverDialog';
+export { SyncConfigWizard } from './SyncConfigWizard';

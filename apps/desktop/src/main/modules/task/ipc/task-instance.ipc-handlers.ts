@@ -111,18 +111,18 @@ export function registerTaskInstanceIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('task-instance:list-by-date', async (_, date) => {
+  ipcMain.handle('task-instance:list-by-date', async (_, date, accountUuid) => {
     try {
-      return await getAppService().listInstancesByDate(date);
+      return await getAppService().listInstancesByDate(date, accountUuid);
     } catch (error) {
       logger.error('Failed to list instances by date', error);
       throw error;
     }
   });
 
-  ipcMain.handle('task-instance:list-by-range', async (_, startDate, endDate) => {
+  ipcMain.handle('task-instance:list-by-range', async (_, startDate, endDate, accountUuid) => {
     try {
-      return await getAppService().listInstancesByDateRange(startDate, endDate);
+      return await getAppService().listInstancesByDateRange(startDate, endDate, accountUuid);
     } catch (error) {
       logger.error('Failed to list instances by range', error);
       throw error;

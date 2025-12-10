@@ -20,7 +20,7 @@ import type {
   TaskTimeConfigServerDTO,
   RecurrenceRuleServerDTO,
   TaskReminderConfigServerDTO,
-  TaskTemplateServerDTO,
+  TaskTemplateClientDTO,
 } from '@dailyuse/contracts/task';
 import { TaskType, TaskTemplateStatus } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
@@ -49,7 +49,7 @@ export interface CreateTaskTemplateInput {
  * Service Output
  */
 export interface CreateTaskTemplateOutput {
-  template: TaskTemplateServerDTO;
+  template: TaskTemplateClientDTO;
   instanceCount: number;
 }
 

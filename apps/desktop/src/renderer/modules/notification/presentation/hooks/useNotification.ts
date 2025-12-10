@@ -2,185 +2,259 @@
  * useNotification Hook
  *
  * 通知管理 Hook
+ * Story-010: Notification Module
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { notificationApplicationService } from '../../application/services';
+import { useState, useEffect, useCallback } from 'react';
+import { NotificationContainer } from '@dailyuse/infrastructure-client';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
-import type { FindNotificationsInput } from '@dailyuse/application-client';
-
-export interface NotificationState {
-  notifications: NotificationClientDTO[];
-  unreadCount: number;
-  loading: boolean;
-  error: string | null;
-}
-
-export interface UseNotificationReturn extends NotificationState {
-  loadNotifications: (input?: FindNotificationsInput) => Promise<void>;
-  loadUnreadCount: () => Promise<void>;
-  markAsRead: (uuid: string) => Promise<void>;
-  markAllAsRead: () => Promise<void>;
-  deleteNotification: (uuid: string) => Promise<void>;
-  batchDeleteNotifications: (uuids: string[]) => Promise<void>;
-  refreshAll: () => Promise<void>;
-}
 
 /**
- * 通知管理 Hook
+ * Query notifications request
  */
+interface QueryNotificationsRequest {
+  page?: number;
+  limit?: number;
+  type?: string;
+  isRead?: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+interface NotificationState {
+  notifications: NotificationClientDTO[];
+  unreadCount: number;
+  total: number;
+  loading: boolean;
+  error: string | null;
+  hasMore: boolean;
+  page: number;
+}
+
+interface UseNotificationReturn extends NotificationState {
+  // List operations
+  loadNotifications: (reset?: boolean) => Promise<void>;
+  loadMore: () => Promise<void>;
+  refresh: () => Promise<void>;
+
+  // Read operations
+  markAsRead: (uuid: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+
+  // Delete operations
+  deleteNotification: (uuid: string) => Promise<void>;
+  batchDelete: (uuids: string[]) => Promise<void>;
+
+  // Filter
+  setFilter: (filter: Partial<QueryNotificationsRequest>) => void;
+  filter: QueryNotificationsRequest;
+
+  // Utilities
+  clearError: () => void;
+}
+
+const PAGE_SIZE = 20;
+
 export function useNotification(): UseNotificationReturn {
   const [state, setState] = useState<NotificationState>({
     notifications: [],
     unreadCount: 0,
+    total: 0,
     loading: false,
     error: null,
+    hasMore: true,
+    page: 1,
   });
 
-  /**
-   * 加载通知列表
-   */
-  const loadNotifications = useCallback(async (input?: FindNotificationsInput) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    try {
-      const notifications = await notificationApplicationService.findNotifications(input);
-      setState(prev => ({
-        ...prev,
-        notifications,
-        loading: false,
-      }));
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : '加载通知失败',
-      }));
-    }
-  }, []);
+  const [filter, setFilterState] = useState<QueryNotificationsRequest>({
+    page: 1,
+    limit: PAGE_SIZE,
+  });
 
-  /**
-   * 加载未读数量
-   */
-  const loadUnreadCount = useCallback(async () => {
-    try {
-      const result = await notificationApplicationService.getUnreadCount();
-      setState(prev => ({
-        ...prev,
-        unreadCount: result.count,
-      }));
-    } catch (error) {
-      console.error('加载未读数量失败:', error);
-    }
-  }, []);
+  // Load notifications
+  const loadNotifications = useCallback(
+    async (reset = false) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
 
-  /**
-   * 标记为已读
-   */
+      try {
+        const notificationApi = NotificationContainer.getInstance().getApiClient();
+        const currentPage = reset ? 1 : state.page;
+
+        const response = await notificationApi.findNotifications({
+          ...filter,
+          page: currentPage,
+          limit: PAGE_SIZE,
+        });
+
+        const unreadResponse = await notificationApi.getUnreadCount();
+
+        setState((prev) => ({
+          ...prev,
+          notifications: reset
+            ? response.notifications
+            : [...prev.notifications, ...response.notifications],
+          total: response.total,
+          hasMore: response.hasMore,
+          page: currentPage,
+          unreadCount: unreadResponse.count,
+          loading: false,
+        }));
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : '加载通知失败';
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: errorMessage,
+        }));
+      }
+    },
+    [filter, state.page],
+  );
+
+  // Load more (pagination)
+  const loadMore = useCallback(async () => {
+    if (state.loading || !state.hasMore) return;
+
+    setState((prev) => ({ ...prev, page: prev.page + 1 }));
+    await loadNotifications(false);
+  }, [state.loading, state.hasMore, loadNotifications]);
+
+  // Refresh
+  const refresh = useCallback(async () => {
+    await loadNotifications(true);
+  }, [loadNotifications]);
+
+  // Mark as read
   const markAsRead = useCallback(async (uuid: string) => {
     try {
-      const updated = await notificationApplicationService.markAsRead(uuid);
-      setState(prev => ({
+      const notificationApi = NotificationContainer.getInstance().getApiClient();
+      const updated = await notificationApi.markAsRead(uuid);
+
+      setState((prev) => ({
         ...prev,
-        notifications: prev.notifications.map(n =>
-          n.uuid === uuid ? updated : n
+        notifications: prev.notifications.map((n) =>
+          n.uuid === uuid ? updated : n,
         ),
         unreadCount: Math.max(0, prev.unreadCount - 1),
       }));
-    } catch (error) {
-      setState(prev => ({
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '标记已读失败';
+      setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : '标记已读失败',
+        error: errorMessage,
       }));
     }
   }, []);
 
-  /**
-   * 标记全部为已读
-   */
+  // Mark all as read
   const markAllAsRead = useCallback(async () => {
     try {
-      await notificationApplicationService.markAllAsRead();
-      setState(prev => ({
+      const notificationApi = NotificationContainer.getInstance().getApiClient();
+      await notificationApi.markAllAsRead();
+
+      setState((prev) => ({
         ...prev,
-        notifications: prev.notifications.map(n => ({
+        notifications: prev.notifications.map((n) => ({
           ...n,
           isRead: true,
           readAt: Date.now(),
         })),
         unreadCount: 0,
       }));
-    } catch (error) {
-      setState(prev => ({
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '全部标记已读失败';
+      setState((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : '标记全部已读失败',
+        error: errorMessage,
       }));
     }
   }, []);
 
-  /**
-   * 删除通知
-   */
+  // Delete notification
   const deleteNotification = useCallback(async (uuid: string) => {
     try {
-      await notificationApplicationService.deleteNotification(uuid);
-      const notification = state.notifications.find(n => n.uuid === uuid);
-      setState(prev => ({
+      const notificationApi = NotificationContainer.getInstance().getApiClient();
+      await notificationApi.deleteNotification(uuid);
+
+      setState((prev) => {
+        const deleted = prev.notifications.find((n) => n.uuid === uuid);
+        return {
+          ...prev,
+          notifications: prev.notifications.filter((n) => n.uuid !== uuid),
+          total: prev.total - 1,
+          unreadCount: deleted && !deleted.isRead ? prev.unreadCount - 1 : prev.unreadCount,
+        };
+      });
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '删除通知失败';
+      setState((prev) => ({
         ...prev,
-        notifications: prev.notifications.filter(n => n.uuid !== uuid),
-        unreadCount: notification && !notification.isRead
-          ? Math.max(0, prev.unreadCount - 1)
-          : prev.unreadCount,
-      }));
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error instanceof Error ? error.message : '删除通知失败',
+        error: errorMessage,
       }));
     }
-  }, [state.notifications]);
+  }, []);
 
-  /**
-   * 批量删除通知
-   */
-  const batchDeleteNotifications = useCallback(async (uuids: string[]) => {
+  // Batch delete
+  const batchDelete = useCallback(async (uuids: string[]) => {
     try {
-      await notificationApplicationService.batchDeleteNotifications(uuids);
-      const unreadDeleted = state.notifications.filter(
-        n => uuids.includes(n.uuid) && !n.isRead
-      ).length;
-      setState(prev => ({
+      const notificationApi = NotificationContainer.getInstance().getApiClient();
+      await notificationApi.batchDeleteNotifications(uuids);
+
+      setState((prev) => {
+        const unreadDeleted = prev.notifications.filter(
+          (n) => uuids.includes(n.uuid) && !n.isRead,
+        ).length;
+        return {
+          ...prev,
+          notifications: prev.notifications.filter((n) => !uuids.includes(n.uuid)),
+          total: prev.total - uuids.length,
+          unreadCount: prev.unreadCount - unreadDeleted,
+        };
+      });
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : '批量删除失败';
+      setState((prev) => ({
         ...prev,
-        notifications: prev.notifications.filter(n => !uuids.includes(n.uuid)),
-        unreadCount: Math.max(0, prev.unreadCount - unreadDeleted),
-      }));
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        error: error instanceof Error ? error.message : '批量删除通知失败',
+        error: errorMessage,
       }));
     }
-  }, [state.notifications]);
+  }, []);
 
-  /**
-   * 刷新全部
-   */
-  const refreshAll = useCallback(async () => {
-    await Promise.all([loadNotifications(), loadUnreadCount()]);
-  }, [loadNotifications, loadUnreadCount]);
+  // Set filter
+  const setFilter = useCallback((newFilter: Partial<QueryNotificationsRequest>) => {
+    setFilterState((prev: QueryNotificationsRequest) => ({ ...prev, ...newFilter, page: 1 }));
+    setState((prev) => ({ ...prev, page: 1, notifications: [], hasMore: true }));
+  }, []);
 
-  // 初始加载未读数量
+  // Clear error
+  const clearError = useCallback(() => {
+    setState((prev) => ({ ...prev, error: null }));
+  }, []);
+
+  // Load on mount and filter change
   useEffect(() => {
-    loadUnreadCount();
-  }, [loadUnreadCount]);
+    loadNotifications(true);
+  }, [filter]);
 
   return {
-    ...state,
+    notifications: state.notifications,
+    unreadCount: state.unreadCount,
+    total: state.total,
+    loading: state.loading,
+    error: state.error,
+    hasMore: state.hasMore,
+    page: state.page,
     loadNotifications,
-    loadUnreadCount,
+    loadMore,
+    refresh,
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    batchDeleteNotifications,
-    refreshAll,
+    batchDelete,
+    setFilter,
+    filter,
+    clearError,
   };
 }
+
+export default useNotification;

@@ -1,26 +1,31 @@
 /**
- * Notification Desktop Application Service
+ * Notification Desktop Application Service - Facade Pattern
  *
  * 包装 @dailyuse/application-server/notification 的所有 Use Cases
  * 为 Desktop IPC handlers 提供统一的应用服务入口
+ * 
+ * 所有具体的业务逻辑都委托给 services 文件夹中的专门服务
  */
 
 import {
-  createNotification,
-  getNotification,
-  getUserNotifications,
-  getUnreadNotifications,
-  getUnreadCount,
-  markAsRead,
-  markAllAsRead,
-  deleteNotification,
-  getPreference,
-  getOrCreatePreference,
-  type CreateNotificationInput,
-  type ChannelPreferences,
-  NotificationService,
-} from '@dailyuse/application-server';
+  createNotificationService,
+  getNotificationService,
+  listNotificationsService,
+  listUnreadNotificationsService,
+  getUnreadCountService,
+  markAsReadService,
+  markAllAsReadService,
+  deleteNotificationService,
+  getPreferenceService,
+  getOrCreatePreferenceService,
+  updatePreferenceService,
+  getStatisticsSummaryService,
+} from './services';
 
+import type {
+  CreateNotificationInput,
+  ChannelPreferences,
+} from '@dailyuse/application-server';
 import type {
   NotificationClientDTO,
   NotificationPreferenceClientDTO,
@@ -37,55 +42,52 @@ export class NotificationDesktopApplicationService {
     // Container should be initialized by infrastructure module
   }
 
-  // ===== Notification CRUD =====
-
   async create(input: CreateNotificationInput): Promise<NotificationClientDTO> {
-    logger.debug('Creating notification', { title: input.title });
-    return createNotification(input);
+    return createNotificationService(input);
   }
 
   async get(uuid: string, includeChildren = false): Promise<NotificationClientDTO | null> {
-    return getNotification(uuid, { includeChildren });
+    return getNotificationService(uuid, includeChildren);
   }
 
   async list(
     accountUuid: string,
     options?: { includeRead?: boolean; limit?: number; offset?: number },
   ): Promise<NotificationClientDTO[]> {
-    return getUserNotifications(accountUuid, options);
+    return listNotificationsService(accountUuid, options);
   }
 
   async listUnread(
     accountUuid: string,
     limit?: number,
   ): Promise<NotificationClientDTO[]> {
-    return getUnreadNotifications(accountUuid, { limit });
+    return listUnreadNotificationsService(accountUuid, limit);
   }
 
   async getUnreadCount(accountUuid: string): Promise<number> {
-    return getUnreadCount(accountUuid);
+    return getUnreadCountService(accountUuid);
   }
 
   async markAsRead(uuid: string): Promise<void> {
-    await markAsRead(uuid);
+    await markAsReadService(uuid);
   }
 
   async markAllAsRead(accountUuid: string): Promise<void> {
-    await markAllAsRead(accountUuid);
+    await markAllAsReadService(accountUuid);
   }
 
   async delete(uuid: string, soft = true): Promise<void> {
-    await deleteNotification(uuid, soft);
+    await deleteNotificationService(uuid, soft);
   }
 
   // ===== Notification Preferences =====
 
   async getPreference(accountUuid: string): Promise<NotificationPreferenceClientDTO | null> {
-    return getPreference(accountUuid);
+    return getPreferenceService(accountUuid);
   }
 
   async getOrCreatePreference(accountUuid: string): Promise<NotificationPreferenceClientDTO> {
-    return getOrCreatePreference(accountUuid);
+    return getOrCreatePreferenceService(accountUuid);
   }
 
   async updatePreference(
@@ -96,8 +98,7 @@ export class NotificationDesktopApplicationService {
       doNotDisturbConfig: Partial<DoNotDisturbConfigServerDTO>;
     }>,
   ): Promise<NotificationPreferenceClientDTO> {
-    const service = NotificationService.getInstance();
-    return service.updatePreference(accountUuid, updates);
+    return updatePreferenceService(accountUuid, updates);
   }
 
   // ===== Statistics =====
@@ -107,14 +108,6 @@ export class NotificationDesktopApplicationService {
     unread: number;
     read: number;
   }> {
-    const unreadCount = await getUnreadCount(accountUuid);
-    const notifications = await getUserNotifications(accountUuid, { includeRead: true });
-    const readCount = notifications.filter((n) => n.readAt).length;
-
-    return {
-      total: notifications.length,
-      unread: unreadCount,
-      read: readCount,
-    };
+    return getStatisticsSummaryService(accountUuid);
   }
 }

@@ -5,7 +5,7 @@
  */
 
 import type { ITaskTemplateRepository } from '@dailyuse/domain-server/task';
-import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
 
 /**
@@ -20,7 +20,7 @@ export interface GetTaskTemplateInput {
  * Service Output
  */
 export interface GetTaskTemplateOutput {
-  template: TaskTemplateServerDTO | null;
+  template: TaskTemplateClientDTO | null;
 }
 
 /**

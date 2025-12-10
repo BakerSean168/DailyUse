@@ -13,7 +13,7 @@ import type {
   ITaskTemplateRepository,
   ITaskInstanceRepository,
 } from '@dailyuse/domain-server/task';
-import type { TaskTemplateServerDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { eventBus } from '@dailyuse/utils';
 import { TaskContainer } from '@dailyuse/infrastructure-server';
 
@@ -29,7 +29,7 @@ export interface PauseTaskTemplateInput {
  * Service Output
  */
 export interface PauseTaskTemplateOutput {
-  template: TaskTemplateServerDTO;
+  template: TaskTemplateClientDTO;
   instancesSkipped: number;
 }
 

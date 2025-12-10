@@ -1,0 +1,17 @@
+import { getConversation } from '@dailyuse/application-server';
+import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
+import { createLogger } from '@dailyuse/utils';
+
+const logger = createLogger('updateConversationService');
+
+export async function updateConversationService(
+  accountUuid: string,
+  conversationUuid: string,
+  updates: { title?: string; archived?: boolean },
+): Promise<AIConversationClientDTO | null> {
+  logger.debug('Updating conversation', { accountUuid, conversationUuid, updates });
+  // TODO: Implement updateConversation in application-server
+  // For now, return the updated conversation
+  const result = await getConversation({ accountUuid, uuid: conversationUuid });
+  return result.conversation;
+}

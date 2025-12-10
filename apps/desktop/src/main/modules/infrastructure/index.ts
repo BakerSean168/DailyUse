@@ -20,6 +20,9 @@ const logger = createLogger('Infrastructure');
 
 /**
  * 初始化所有 Container
+ * 
+ * TODO: 完整实现需要配置 Prisma client 并注册所有 repository
+ * 目前是 placeholder，等待数据库层完善
  */
 export async function initializeContainers(): Promise<void> {
   const userDataPath = app.getPath('userData');
@@ -28,25 +31,21 @@ export async function initializeContainers(): Promise<void> {
   logger.info('Initializing containers', { dbPath });
 
   try {
-    // 初始化各模块的 Container
-    // Container 内部会设置 SQLite adapter
+    // TODO: 初始化 Prisma client
+    // const prisma = new PrismaClient({ datasources: { db: { url: `file:${dbPath}` } } });
     
-    GoalContainer.initialize?.({ dbPath });
-    logger.debug('GoalContainer initialized');
+    // TODO: 创建并注册所有 repository
+    // GoalContainer.getInstance()
+    //   .registerGoalRepository(new GoalPrismaRepository(prisma))
+    //   .registerKeyResultRepository(new KeyResultPrismaRepository(prisma));
+    
+    // TaskContainer.getInstance()
+    //   .registerTemplateRepository(new TaskTemplatePrismaRepository(prisma))
+    //   .registerInstanceRepository(new TaskInstancePrismaRepository(prisma));
+    
+    // 等等...
 
-    TaskContainer.initialize?.({ dbPath });
-    logger.debug('TaskContainer initialized');
-
-    ScheduleContainer.initialize?.({ dbPath });
-    logger.debug('ScheduleContainer initialized');
-
-    ReminderContainer.initialize?.({ dbPath });
-    logger.debug('ReminderContainer initialized');
-
-    AIContainer.initialize?.({ dbPath });
-    logger.debug('AIContainer initialized');
-
-    logger.info('All containers initialized');
+    logger.info('Container initialization placeholder - TODO: implement with Prisma');
   } catch (error) {
     logger.error('Failed to initialize containers', error);
     throw error;
