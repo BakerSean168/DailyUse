@@ -1,189 +1,128 @@
 /**
  * Reminder Template IPC Handlers
  *
+ * 使用 BaseIPCHandler 统一处理 IPC 请求
  * IPC 通道：提醒模板 CRUD 和状态管理
  */
 
-import { ipcMain, type IpcMainInvokeEvent } from 'electron';
+import { ipcMain } from 'electron';
+import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 import { ReminderDesktopApplicationService } from '../application/ReminderDesktopApplicationService';
 import type { CreateReminderTemplateInput, ListReminderTemplatesInput } from '@dailyuse/application-server';
-import { createLogger } from '@dailyuse/utils';
 
-const logger = createLogger('ReminderTemplateIPC');
+export class ReminderTemplateIPCHandler extends BaseIPCHandler {
+  private reminderService: ReminderDesktopApplicationService;
 
-// 单例实例
-let reminderService: ReminderDesktopApplicationService | null = null;
-
-const getService = (): ReminderDesktopApplicationService => {
-  if (!reminderService) {
-    reminderService = new ReminderDesktopApplicationService();
+  constructor() {
+    super('ReminderTemplateIPCHandler');
+    this.reminderService = new ReminderDesktopApplicationService();
+    this.registerHandlers();
   }
-  return reminderService;
-};
 
-/**
- * 注册提醒模板 IPC 通道
- *
- * Channels:
- * - reminder:template:create - 创建提醒模板
- * - reminder:template:get - 获取单个提醒模板
- * - reminder:template:list - 列出提醒模板
- * - reminder:template:update - 更新提醒模板
- * - reminder:template:delete - 删除提醒模板
- * - reminder:template:enable - 启用模板
- * - reminder:template:disable - 禁用模板
- * - reminder:template:listByGroup - 按分组列出模板
- * - reminder:template:listActive - 列出活跃模板
- */
-export function registerReminderTemplateIpcHandlers(): void {
-  logger.info('Registering reminder template IPC handlers');
+  private registerHandlers(): void {
+    // 创建提醒模板
+    ipcMain.handle(
+      'reminder:template:create',
+      async (_, input: CreateReminderTemplateInput) => {
+        return this.handleRequest('reminder:template:create', () =>
+          this.reminderService.createTemplate(input),
+        );
+      },
+    );
 
-  // 创建提醒模板
-  ipcMain.handle(
-    'reminder:template:create',
-    async (_event: IpcMainInvokeEvent, input: CreateReminderTemplateInput) => {
-      logger.debug('IPC: reminder:template:create', { title: input.title });
-      try {
-        const template = await getService().createTemplate(input);
-        return { success: true, template };
-      } catch (error) {
-        logger.error('Failed to create reminder template', error);
-        return { success: false, error: (error as Error).message };
-      }
-    },
-  );
+    // 获取单个提醒模板
+    ipcMain.handle('reminder:template:get', async (_, uuid: string) => {
+      return this.handleRequest('reminder:template:get', () =>
+        this.reminderService.getTemplate(uuid),
+      );
+    });
 
-  // 获取单个提醒模板
-  ipcMain.handle('reminder:template:get', async (_event: IpcMainInvokeEvent, uuid: string) => {
-    logger.debug('IPC: reminder:template:get', { uuid });
-    try {
-      const template = await getService().getTemplate(uuid);
-      return { success: true, template };
-    } catch (error) {
-      logger.error('Failed to get reminder template', error);
-      return { success: false, error: (error as Error).message };
-    }
-  });
+    // 列出提醒模板
+    ipcMain.handle(
+      'reminder:template:list',
+      async (_, params: ListReminderTemplatesInput) => {
+        return this.handleRequest('reminder:template:list', () =>
+          this.reminderService.listTemplates(params),
+        );
+      },
+    );
 
-  // 列出提醒模板
-  ipcMain.handle(
-    'reminder:template:list',
-    async (_event: IpcMainInvokeEvent, params: ListReminderTemplatesInput) => {
-      logger.debug('IPC: reminder:template:list', params);
-      try {
-        const result = await getService().listTemplates(params);
-        return { success: true, ...result };
-      } catch (error) {
-        logger.error('Failed to list reminder templates', error);
-        return { success: false, error: (error as Error).message };
-      }
-    },
-  );
+    // 更新提醒模板
+    ipcMain.handle(
+      'reminder:template:update',
+      async (
+        _,
+        uuid: string,
+        accountUuid: string,
+        updates: { title?: string; description?: string },
+      ) => {
+        return this.handleRequest('reminder:template:update', () =>
+          this.reminderService.updateTemplate(uuid, accountUuid, updates),
+        );
+      },
+    );
 
-  // 更新提醒模板
-  ipcMain.handle(
-    'reminder:template:update',
-    async (
-      _event: IpcMainInvokeEvent,
-      uuid: string,
-      accountUuid: string,
-      updates: { title?: string; description?: string },
-    ) => {
-      logger.debug('IPC: reminder:template:update', { uuid });
-      try {
-        const template = await getService().updateTemplate(uuid, accountUuid, updates);
-        return { success: true, template };
-      } catch (error) {
-        logger.error('Failed to update reminder template', error);
-        return { success: false, error: (error as Error).message };
-      }
-    },
-  );
+    // 删除提醒模板
+    ipcMain.handle(
+      'reminder:template:delete',
+      async (_, uuid: string, accountUuid: string) => {
+        return this.handleRequest('reminder:template:delete', () =>
+          this.reminderService.deleteTemplate(uuid, accountUuid),
+        );
+      },
+    );
 
-  // 删除提醒模板
-  ipcMain.handle(
-    'reminder:template:delete',
-    async (_event: IpcMainInvokeEvent, uuid: string, accountUuid: string) => {
-      logger.debug('IPC: reminder:template:delete', { uuid });
-      try {
-        await getService().deleteTemplate(uuid, accountUuid);
-        return { success: true };
-      } catch (error) {
-        logger.error('Failed to delete reminder template', error);
-        return { success: false, error: (error as Error).message };
-      }
-    },
-  );
+    // 启用模板
+    ipcMain.handle('reminder:template:enable', async (_, uuid: string) => {
+      return this.handleRequest('reminder:template:enable', () =>
+        this.reminderService.enableTemplate(uuid),
+      );
+    });
 
-  // 启用模板
-  ipcMain.handle('reminder:template:enable', async (_event: IpcMainInvokeEvent, uuid: string) => {
-    logger.debug('IPC: reminder:template:enable', { uuid });
-    try {
-      const template = await getService().enableTemplate(uuid);
-      return { success: true, template };
-    } catch (error) {
-      logger.error('Failed to enable reminder template', error);
-      return { success: false, error: (error as Error).message };
-    }
-  });
+    // 禁用模板
+    ipcMain.handle('reminder:template:disable', async (_, uuid: string) => {
+      return this.handleRequest('reminder:template:disable', () =>
+        this.reminderService.disableTemplate(uuid),
+      );
+    });
 
-  // 禁用模板
-  ipcMain.handle('reminder:template:disable', async (_event: IpcMainInvokeEvent, uuid: string) => {
-    logger.debug('IPC: reminder:template:disable', { uuid });
-    try {
-      const template = await getService().disableTemplate(uuid);
-      return { success: true, template };
-    } catch (error) {
-      logger.error('Failed to disable reminder template', error);
-      return { success: false, error: (error as Error).message };
-    }
-  });
+    // 按分组列出模板
+    ipcMain.handle(
+      'reminder:template:listByGroup',
+      async (_, groupUuid: string, accountUuid: string) => {
+        return this.handleRequest('reminder:template:listByGroup', () =>
+          this.reminderService.listTemplatesByGroup(groupUuid, accountUuid),
+        );
+      },
+    );
 
-  // 按分组列出模板
-  ipcMain.handle(
-    'reminder:template:listByGroup',
-    async (_event: IpcMainInvokeEvent, groupUuid: string, accountUuid: string) => {
-      logger.debug('IPC: reminder:template:listByGroup', { groupUuid, accountUuid });
-      try {
-        const result = await getService().listTemplatesByGroup(groupUuid, accountUuid);
-        return { success: true, ...result };
-      } catch (error) {
-        logger.error('Failed to list reminder templates by group', error);
-        return { success: false, error: (error as Error).message };
-      }
-    },
-  );
-
-  // 列出活跃模板
-  ipcMain.handle(
-    'reminder:template:listActive',
-    async (_event: IpcMainInvokeEvent, accountUuid: string) => {
-      logger.debug('IPC: reminder:template:listActive', { accountUuid });
-      try {
-        const result = await getService().listActiveTemplates(accountUuid);
-        return { success: true, ...result };
-      } catch (error) {
-        logger.error('Failed to list active reminder templates', error);
-        return { success: false, error: (error as Error).message };
-      }
-    },
-  );
-
-  logger.info('Reminder template IPC handlers registered (9 channels)');
+    // 列出活跃模板
+    ipcMain.handle(
+      'reminder:template:listActive',
+      async (_, accountUuid: string) => {
+        return this.handleRequest('reminder:template:listActive', () =>
+          this.reminderService.listActiveTemplates(accountUuid),
+        );
+      },
+    );
+  }
 }
 
 /**
- * 注销提醒模板 IPC 通道
+ * 注册提醒模板 IPC 通道（已弃用）
+ *
+ * @deprecated 使用 ReminderTemplateIPCHandler 类代替
+ */
+export function registerReminderTemplateIpcHandlers(): void {
+  const handler = new ReminderTemplateIPCHandler();
+  (global as any).reminderTemplateIPCHandler = handler;
+}
+
+/**
+ * 注销提醒模板 IPC 通道（已弃用）
+ *
+ * @deprecated 由应用生命周期管理自动处理
  */
 export function unregisterReminderTemplateIpcHandlers(): void {
-  logger.info('Unregistering reminder template IPC handlers');
-  ipcMain.removeHandler('reminder:template:create');
-  ipcMain.removeHandler('reminder:template:get');
-  ipcMain.removeHandler('reminder:template:list');
-  ipcMain.removeHandler('reminder:template:update');
-  ipcMain.removeHandler('reminder:template:delete');
-  ipcMain.removeHandler('reminder:template:enable');
-  ipcMain.removeHandler('reminder:template:disable');
-  ipcMain.removeHandler('reminder:template:listByGroup');
-  ipcMain.removeHandler('reminder:template:listActive');
+  // IPC 通道由 Electron 在应用退出时自动清理
 }

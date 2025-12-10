@@ -1,31 +1,17 @@
 /**
- * Goal Statistics IPC Handlers
+ * Goal Statistics IPC Handlers (Legacy)
+ *
+ * @deprecated 使用 GoalIPCHandler 类代替
+ * 此文件保留用于向后兼容，所有功能已迁移到 goal-ipc-handler.ts
  */
 
-import { ipcMain } from 'electron';
-import { GoalDesktopApplicationService } from '../application/GoalDesktopApplicationService';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('GoalStatisticsIPC');
 
-let appService: GoalDesktopApplicationService | null = null;
-
-function getAppService(): GoalDesktopApplicationService {
-  if (!appService) {
-    appService = new GoalDesktopApplicationService();
-  }
-  return appService;
-}
-
+/**
+ * @deprecated 不再使用，所有处理器已在 GoalIPCHandler 中注册
+ */
 export function registerGoalStatisticsIpcHandlers(): void {
-  ipcMain.handle('goal-statistics:get', async (_, accountUuid) => {
-    try {
-      return await getAppService().getStatistics(accountUuid || 'default');
-    } catch (error) {
-      logger.error('Failed to get goal statistics', error);
-      throw error;
-    }
-  });
-
-  logger.info('Goal Statistics IPC handlers registered');
+  logger.warn('registerGoalStatisticsIpcHandlers() is deprecated. Handlers are now managed by GoalIPCHandler class.');
 }

@@ -1,6 +1,7 @@
 /**
  * Repository Module IPC Handlers
  *
+ * 使用 BaseIPCHandler 统一处理 IPC 请求
  * Repository 模块 IPC 处理器
  * 复用 RepositoryDesktopApplicationService 中的逻辑
  *
@@ -11,7 +12,7 @@
  */
 
 import { ipcMain } from 'electron';
-import { createLogger } from '@dailyuse/utils';
+import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 
 import {
   RepositoryDesktopApplicationService,
@@ -20,223 +21,145 @@ import {
   type ImportOptions,
 } from '../application/RepositoryDesktopApplicationService';
 
-const logger = createLogger('RepositoryIpcHandlers');
+export class RepositoryIPCHandler extends BaseIPCHandler {
+  private appService: RepositoryDesktopApplicationService;
 
-// 惰性初始化的服务实例
-let appService: RepositoryDesktopApplicationService | null = null;
-
-function getAppService(): RepositoryDesktopApplicationService {
-  if (!appService) {
-    appService = new RepositoryDesktopApplicationService();
+  constructor() {
+    super('RepositoryIPCHandler');
+    this.appService = new RepositoryDesktopApplicationService();
+    this.registerHandlers();
   }
-  return appService;
+
+  private registerHandlers(): void {
+    // ============================================
+    // Sync Handlers
+    // ============================================
+
+    ipcMain.handle('repository:sync:start', async () => {
+      return this.handleRequest('repository:sync:start', () => this.appService.startSync());
+    });
+
+    ipcMain.handle('repository:sync:stop', async () => {
+      return this.handleRequest('repository:sync:stop', () => this.appService.stopSync());
+    });
+
+    ipcMain.handle('repository:sync:get-status', async () => {
+      return this.handleRequest('repository:sync:get-status', () =>
+        this.appService.getSyncStatus(),
+      );
+    });
+
+    ipcMain.handle('repository:sync:force', async () => {
+      return this.handleRequest('repository:sync:force', () => this.appService.forceSync());
+    });
+
+    ipcMain.handle('repository:sync:get-conflicts', async () => {
+      return this.handleRequest('repository:sync:get-conflicts', () =>
+        this.appService.getSyncConflicts(),
+      );
+    });
+
+    ipcMain.handle(
+      'repository:sync:resolve-conflict',
+      async (_, conflictId: string, resolution: 'local' | 'remote' | 'merge') => {
+        return this.handleRequest('repository:sync:resolve-conflict', () =>
+          this.appService.resolveSyncConflict(conflictId, resolution),
+        );
+      },
+    );
+
+    // ============================================
+    // Backup Handlers
+    // ============================================
+
+    ipcMain.handle('repository:backup:create', async (_, options?: BackupOptions) => {
+      return this.handleRequest('repository:backup:create', () =>
+        this.appService.createBackup(options || {}),
+      );
+    });
+
+    ipcMain.handle('repository:backup:restore', async (_, backupId: string) => {
+      return this.handleRequest('repository:backup:restore', () =>
+        this.appService.restoreBackup(backupId),
+      );
+    });
+
+    ipcMain.handle('repository:backup:list', async () => {
+      return this.handleRequest('repository:backup:list', () =>
+        this.appService.listBackups(),
+      );
+    });
+
+    ipcMain.handle('repository:backup:delete', async (_, backupId: string) => {
+      return this.handleRequest('repository:backup:delete', () =>
+        this.appService.deleteBackup(backupId),
+      );
+    });
+
+    ipcMain.handle('repository:backup:get', async (_, backupId: string) => {
+      return this.handleRequest('repository:backup:get', () =>
+        this.appService.getBackup(backupId),
+      );
+    });
+
+    // ============================================
+    // Import/Export Handlers
+    // ============================================
+
+    ipcMain.handle('repository:export', async (_, options: ExportOptions) => {
+      return this.handleRequest('repository:export', () =>
+        this.appService.exportData(options),
+      );
+    });
+
+    ipcMain.handle('repository:import', async (_, data: string, options: ImportOptions) => {
+      return this.handleRequest('repository:import', () =>
+        this.appService.importData(data, options),
+      );
+    });
+
+    ipcMain.handle('repository:get-export-formats', async () => {
+      return this.handleRequest('repository:get-export-formats', () =>
+        this.appService.getExportFormats(),
+      );
+    });
+
+    ipcMain.handle(
+      'repository:validate-import',
+      async (_, data: string, format: 'json' | 'csv') => {
+        return this.handleRequest('repository:validate-import', () =>
+          this.appService.validateImportData(data, format),
+        );
+      },
+    );
+
+    // ============================================
+    // Storage Handlers
+    // ============================================
+
+    ipcMain.handle('repository:get-storage-info', async () => {
+      return this.handleRequest('repository:get-storage-info', () =>
+        this.appService.getStorageInfo(),
+      );
+    });
+  }
 }
 
-// 所有 IPC channel 名称
-const IPC_CHANNELS = [
-  // Sync
-  'repository:sync:start',
-  'repository:sync:stop',
-  'repository:sync:get-status',
-  'repository:sync:force',
-  'repository:sync:get-conflicts',
-  'repository:sync:resolve-conflict',
-  // Backup
-  'repository:backup:create',
-  'repository:backup:restore',
-  'repository:backup:list',
-  'repository:backup:delete',
-  'repository:backup:get',
-  // Import/Export
-  'repository:export',
-  'repository:import',
-  'repository:get-export-formats',
-  'repository:validate-import',
-  // Storage
-  'repository:get-storage-info',
-] as const;
-
 /**
- * 注册 Repository 模块的 IPC 处理器
+ * 注册 Repository 模块的 IPC 处理器（已弃用）
+ *
+ * @deprecated 使用 RepositoryIPCHandler 类代替
  */
 export function registerRepositoryIpcHandlers(): void {
-  logger.info('Registering Repository IPC handlers...');
-
-  // ============================================
-  // Sync Handlers
-  // ============================================
-
-  ipcMain.handle('repository:sync:start', async () => {
-    try {
-      return await getAppService().startSync();
-    } catch (error) {
-      logger.error('Failed to start sync', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:sync:stop', async () => {
-    try {
-      return await getAppService().stopSync();
-    } catch (error) {
-      logger.error('Failed to stop sync', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:sync:get-status', async () => {
-    try {
-      return await getAppService().getSyncStatus();
-    } catch (error) {
-      logger.error('Failed to get sync status', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:sync:force', async () => {
-    try {
-      return await getAppService().forceSync();
-    } catch (error) {
-      logger.error('Failed to force sync', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:sync:get-conflicts', async () => {
-    try {
-      return await getAppService().getSyncConflicts();
-    } catch (error) {
-      logger.error('Failed to get sync conflicts', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:sync:resolve-conflict', async (_, conflictId: string, resolution: 'local' | 'remote' | 'merge') => {
-    try {
-      return await getAppService().resolveSyncConflict(conflictId, resolution);
-    } catch (error) {
-      logger.error('Failed to resolve sync conflict', error);
-      throw error;
-    }
-  });
-
-  // ============================================
-  // Backup Handlers
-  // ============================================
-
-  ipcMain.handle('repository:backup:create', async (_, options?: BackupOptions) => {
-    try {
-      return await getAppService().createBackup(options || {});
-    } catch (error) {
-      logger.error('Failed to create backup', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:backup:restore', async (_, backupId: string) => {
-    try {
-      return await getAppService().restoreBackup(backupId);
-    } catch (error) {
-      logger.error('Failed to restore backup', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:backup:list', async () => {
-    try {
-      return await getAppService().listBackups();
-    } catch (error) {
-      logger.error('Failed to list backups', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:backup:delete', async (_, backupId: string) => {
-    try {
-      return await getAppService().deleteBackup(backupId);
-    } catch (error) {
-      logger.error('Failed to delete backup', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:backup:get', async (_, backupId: string) => {
-    try {
-      return await getAppService().getBackup(backupId);
-    } catch (error) {
-      logger.error('Failed to get backup', error);
-      return null;
-    }
-  });
-
-  // ============================================
-  // Import/Export Handlers
-  // ============================================
-
-  ipcMain.handle('repository:export', async (_, options: ExportOptions) => {
-    try {
-      return await getAppService().exportData(options);
-    } catch (error) {
-      logger.error('Failed to export data', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:import', async (_, data: string, options: ImportOptions) => {
-    try {
-      return await getAppService().importData(data, options);
-    } catch (error) {
-      logger.error('Failed to import data', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:get-export-formats', async () => {
-    try {
-      return await getAppService().getExportFormats();
-    } catch (error) {
-      logger.error('Failed to get export formats', error);
-      throw error;
-    }
-  });
-
-  ipcMain.handle('repository:validate-import', async (_, data: string, format: 'json' | 'csv') => {
-    try {
-      return await getAppService().validateImportData(data, format);
-    } catch (error) {
-      logger.error('Failed to validate import', error);
-      throw error;
-    }
-  });
-
-  // ============================================
-  // Storage Handlers
-  // ============================================
-
-  ipcMain.handle('repository:get-storage-info', async () => {
-    try {
-      return await getAppService().getStorageInfo();
-    } catch (error) {
-      logger.error('Failed to get storage info', error);
-      throw error;
-    }
-  });
-
-  logger.info(`Repository IPC handlers registered (${IPC_CHANNELS.length} channels)`);
+  const handler = new RepositoryIPCHandler();
+  (global as any).repositoryIPCHandler = handler;
 }
 
 /**
- * 注销 Repository 模块的 IPC 处理器
+ * 注销 Repository 模块的 IPC 处理器（已弃用）
+ *
+ * @deprecated 由应用生命周期管理自动处理
  */
 export function unregisterRepositoryIpcHandlers(): void {
-  logger.info('Unregistering Repository IPC handlers...');
-
-  for (const channel of IPC_CHANNELS) {
-    ipcMain.removeHandler(channel);
-  }
-
-  // Reset service instance
-  appService = null;
-
-  logger.info('Repository IPC handlers unregistered');
+  // IPC 通道由 Electron 在应用退出时自动清理
 }

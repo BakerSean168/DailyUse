@@ -1,73 +1,61 @@
 /**
  * Reminder Statistics IPC Handlers
  *
+ * 使用 BaseIPCHandler 统一处理 IPC 请求
  * IPC 通道：提醒统计信息
  */
 
-import { ipcMain, type IpcMainInvokeEvent } from 'electron';
+import { ipcMain } from 'electron';
+import { BaseIPCHandler } from '../../shared/application/base-ipc-handler';
 import { ReminderDesktopApplicationService } from '../application/ReminderDesktopApplicationService';
-import { createLogger } from '@dailyuse/utils';
 
-const logger = createLogger('ReminderStatisticsIPC');
+export class ReminderStatisticsIPCHandler extends BaseIPCHandler {
+  private reminderService: ReminderDesktopApplicationService;
 
-// 单例实例
-let reminderService: ReminderDesktopApplicationService | null = null;
-
-const getService = (): ReminderDesktopApplicationService => {
-  if (!reminderService) {
-    reminderService = new ReminderDesktopApplicationService();
+  constructor() {
+    super('ReminderStatisticsIPCHandler');
+    this.reminderService = new ReminderDesktopApplicationService();
+    this.registerHandlers();
   }
-  return reminderService;
-};
 
-/**
- * 注册提醒统计 IPC 通道
- *
- * Channels:
- * - reminder:statistics:summary - 获取统计摘要
- * - reminder:statistics:upcoming - 获取即将触发的提醒
- */
-export function registerReminderStatisticsIpcHandlers(): void {
-  logger.info('Registering reminder statistics IPC handlers');
+  private registerHandlers(): void {
+    // 获取统计摘要
+    ipcMain.handle(
+      'reminder:statistics:summary',
+      async (_, accountUuid: string) => {
+        return this.handleRequest('reminder:statistics:summary', () =>
+          this.reminderService.getStatisticsSummary(accountUuid),
+        );
+      },
+    );
 
-  // 获取统计摘要
-  ipcMain.handle(
-    'reminder:statistics:summary',
-    async (_event: IpcMainInvokeEvent, accountUuid: string) => {
-      logger.debug('IPC: reminder:statistics:summary', { accountUuid });
-      try {
-        const statistics = await getService().getStatisticsSummary(accountUuid);
-        return { success: true, statistics };
-      } catch (error) {
-        logger.error('Failed to get reminder statistics summary', error);
-        return { success: false, error: (error as Error).message };
-      }
-    },
-  );
-
-  // 获取即将触发的提醒
-  ipcMain.handle(
-    'reminder:statistics:upcoming',
-    async (_event: IpcMainInvokeEvent, days: number, accountUuid: string) => {
-      logger.debug('IPC: reminder:statistics:upcoming', { days, accountUuid });
-      try {
-        const result = await getService().getUpcoming(days || 7, accountUuid);
-        return { success: true, ...result };
-      } catch (error) {
-        logger.error('Failed to get upcoming reminders', error);
-        return { success: false, error: (error as Error).message };
-      }
-    },
-  );
-
-  logger.info('Reminder statistics IPC handlers registered (2 channels)');
+    // 获取即将触发的提醒
+    ipcMain.handle(
+      'reminder:statistics:upcoming',
+      async (_, days: number, accountUuid: string) => {
+        return this.handleRequest('reminder:statistics:upcoming', () =>
+          this.reminderService.getUpcoming(days || 7, accountUuid),
+        );
+      },
+    );
+  }
 }
 
 /**
- * 注销提醒统计 IPC 通道
+ * 注册提醒统计 IPC 通道（已弃用）
+ *
+ * @deprecated 使用 ReminderStatisticsIPCHandler 类代替
+ */
+export function registerReminderStatisticsIpcHandlers(): void {
+  const handler = new ReminderStatisticsIPCHandler();
+  (global as any).reminderStatisticsIPCHandler = handler;
+}
+
+/**
+ * 注销提醒统计 IPC 通道（已弃用）
+ *
+ * @deprecated 由应用生命周期管理自动处理
  */
 export function unregisterReminderStatisticsIpcHandlers(): void {
-  logger.info('Unregistering reminder statistics IPC handlers');
-  ipcMain.removeHandler('reminder:statistics:summary');
-  ipcMain.removeHandler('reminder:statistics:upcoming');
+  // IPC 通道由 Electron 在应用退出时自动清理
 }
