@@ -1,27 +1,42 @@
 /**
  * AutoLaunchManager
  *
- * 开机自启动管理器
- * Story-012: Desktop Native Features
+ * Manages the application's auto-launch behavior on system startup.
+ * Uses Electron's native APIs for macOS and the `auto-launch` library for Windows/Linux.
+ *
+ * @module modules/autolaunch
  */
 
 import { app } from 'electron';
 
-// auto-launch 是可选依赖，将在 init 中动态加载
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Dynamic import for auto-launch as it's an optional dependency and platform specific
+
 let AutoLaunchClass: any = null;
 
+/**
+ * Configuration for AutoLaunchManager.
+ */
 export interface AutoLaunchConfig {
+  /** The application name used for the registry entry (Windows/Linux). */
   name: string;
+  /** Whether to launch the application in hidden mode. */
   isHidden?: boolean;
 }
 
+/**
+ * Class to manage auto-launch settings.
+ */
 export class AutoLaunchManager {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   private autoLauncher: any = null;
   private config: AutoLaunchConfig;
   private initialized = false;
 
+  /**
+   * Creates an instance of AutoLaunchManager.
+   *
+   * @param {Partial<AutoLaunchConfig>} [config] - Optional configuration overrides.
+   */
   constructor(config?: Partial<AutoLaunchConfig>) {
     this.config = {
       name: config?.name || 'DailyUse',
@@ -30,16 +45,19 @@ export class AutoLaunchManager {
   }
 
   /**
-   * 初始化
+   * Initializes the manager.
+   * Dynamically loads the `auto-launch` module for non-macOS platforms.
+   *
+   * @returns {Promise<void>}
    */
   async init(): Promise<void> {
-    // macOS 使用内置 API
+    // macOS uses native API
     if (process.platform === 'darwin') {
       this.initialized = true;
       return;
     }
 
-    // Windows/Linux 使用 auto-launch - 动态导入
+    // Windows/Linux use auto-launch - dynamic import
     if (!AutoLaunchClass) {
       try {
         const autoLaunchModule = await import('auto-launch');
@@ -65,7 +83,9 @@ export class AutoLaunchManager {
   }
 
   /**
-   * 检查是否启用自启动
+   * Checks if auto-launch is currently enabled.
+   *
+   * @returns {Promise<boolean>} True if enabled, false otherwise.
    */
   async isEnabled(): Promise<boolean> {
     if (process.platform === 'darwin') {
@@ -86,7 +106,9 @@ export class AutoLaunchManager {
   }
 
   /**
-   * 启用自启动
+   * Enables auto-launch.
+   *
+   * @returns {Promise<boolean>} True if successfully enabled, false otherwise.
    */
   async enable(): Promise<boolean> {
     if (process.platform === 'darwin') {
@@ -112,7 +134,9 @@ export class AutoLaunchManager {
   }
 
   /**
-   * 禁用自启动
+   * Disables auto-launch.
+   *
+   * @returns {Promise<boolean>} True if successfully disabled, false otherwise.
    */
   async disable(): Promise<boolean> {
     if (process.platform === 'darwin') {
@@ -137,7 +161,9 @@ export class AutoLaunchManager {
   }
 
   /**
-   * 切换自启动状态
+   * Toggles the auto-launch state.
+   *
+   * @returns {Promise<boolean>} True if enabled after toggle, false if disabled (approximated, returns operation result).
    */
   async toggle(): Promise<boolean> {
     const isEnabled = await this.isEnabled();
@@ -149,7 +175,9 @@ export class AutoLaunchManager {
   }
 
   /**
-   * 设置是否隐藏启动
+   * Updates the "start hidden" configuration.
+   *
+   * @param {boolean} isHidden - Whether to start the application hidden.
    */
   setHidden(isHidden: boolean): void {
     this.config.isHidden = isHidden;

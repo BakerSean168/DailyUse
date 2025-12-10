@@ -1,35 +1,61 @@
 /**
  * WindowStateManager
  *
- * 窗口状态管理器 - 记忆窗口位置和大小
- * Story-012: Desktop Native Features
+ * Manages the persistence of the application window's state (size, position, maximized, fullscreen).
+ * Ensures the window restores to its previous location and stays within visible screen bounds.
+ *
+ * @module modules/window
  */
 
 import { app, BrowserWindow, screen } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+/**
+ * Represents the saved state of a window.
+ */
 export interface WindowState {
+  /** X coordinate of the window. */
   x?: number;
+  /** Y coordinate of the window. */
   y?: number;
+  /** Window width in pixels. */
   width: number;
+  /** Window height in pixels. */
   height: number;
+  /** Whether the window is maximized. */
   isMaximized: boolean;
+  /** Whether the window is in full-screen mode. */
   isFullScreen: boolean;
 }
 
+/**
+ * Configuration options for the WindowStateManager.
+ */
 export interface WindowStateConfig {
+  /** Default window width if no state is saved. */
   defaultWidth?: number;
+  /** Default window height if no state is saved. */
   defaultHeight?: number;
+  /** Filename for storing the state JSON. Defaults to 'window-state.json'. */
   file?: string;
 }
 
+/**
+ * Class for managing window state persistence.
+ */
 export class WindowStateManager {
   private state: WindowState;
   private stateFilePath: string;
   private window: BrowserWindow | null = null;
   private saveTimeout: NodeJS.Timeout | null = null;
 
+  /**
+   * Creates an instance of WindowStateManager.
+   * Loads existing state from disk if available, otherwise initializes defaults.
+   *
+   * @param {WindowStateConfig} [config={}] - Configuration options.
+   */
   constructor(config: WindowStateConfig = {}) {
     const defaultWidth = config.defaultWidth || 1200;
     const defaultHeight = config.defaultHeight || 800;
@@ -43,12 +69,14 @@ export class WindowStateManager {
       isFullScreen: false,
     };
 
-    // 确保窗口在可见屏幕范围内
+    // Ensure the window is within the visible area of any screen
     this.ensureVisibleOnScreen();
   }
 
   /**
-   * 加载保存的状态
+   * Loads the saved window state from the JSON file.
+   *
+   * @returns {WindowState | null} The loaded state or null if not found/invalid.
    */
   private loadState(): WindowState | null {
     try {
@@ -63,7 +91,7 @@ export class WindowStateManager {
   }
 
   /**
-   * 保存状态
+   * Saves the current window state to the JSON file.
    */
   private saveState(): void {
     try {
@@ -74,7 +102,8 @@ export class WindowStateManager {
   }
 
   /**
-   * 确保窗口在可见屏幕范围内
+   * Checks if the saved window coordinates are visible on any currently connected display.
+   * If not (e.g., monitor disconnected), resets coordinates to center.
    */
   private ensureVisibleOnScreen(): void {
     if (this.state.x === undefined || this.state.y === undefined) {
@@ -98,26 +127,31 @@ export class WindowStateManager {
     }
 
     if (!isVisible) {
-      // 重置位置到主屏幕中心
+      // Reset to default positioning (usually center)
       delete this.state.x;
       delete this.state.y;
     }
   }
 
   /**
-   * 获取窗口状态
+   * Retrieves the current window state configuration.
+   *
+   * @returns {WindowState} The current state.
    */
   getState(): WindowState {
     return { ...this.state };
   }
 
   /**
-   * 绑定窗口
+   * Attaches the manager to a BrowserWindow instance.
+   * Restores the window's state and sets up listeners for state changes.
+   *
+   * @param {BrowserWindow} window - The window to manage.
    */
   manage(window: BrowserWindow): void {
     this.window = window;
 
-    // 恢复最大化/全屏状态
+    // Restore maximized/fullscreen state
     if (this.state.isMaximized) {
       window.maximize();
     }
@@ -125,7 +159,7 @@ export class WindowStateManager {
       window.setFullScreen(true);
     }
 
-    // 监听窗口事件
+    // Listen for window events to update state
     window.on('resize', () => this.scheduleUpdate());
     window.on('move', () => this.scheduleUpdate());
     window.on('maximize', () => this.scheduleUpdate());
@@ -136,7 +170,7 @@ export class WindowStateManager {
   }
 
   /**
-   * 延迟更新状态（避免频繁写入）
+   * Schedules a state update with a debounce to avoid frequent writes during resizing/moving.
    */
   private scheduleUpdate(): void {
     if (this.saveTimeout) {
@@ -146,7 +180,7 @@ export class WindowStateManager {
   }
 
   /**
-   * 更新状态
+   * Updates the internal state object based on the current window properties.
    */
   private updateState(): void {
     if (!this.window) return;
@@ -154,7 +188,7 @@ export class WindowStateManager {
     const isMaximized = this.window.isMaximized();
     const isFullScreen = this.window.isFullScreen();
 
-    // 只在非最大化/非全屏时记录尺寸和位置
+    // Only update position/size if not maximized or fullscreen
     if (!isMaximized && !isFullScreen) {
       const bounds = this.window.getBounds();
       this.state.x = bounds.x;
@@ -168,7 +202,7 @@ export class WindowStateManager {
   }
 
   /**
-   * 重置状态
+   * Deletes the saved state file, effectively resetting the window state to defaults on next launch.
    */
   reset(): void {
     try {

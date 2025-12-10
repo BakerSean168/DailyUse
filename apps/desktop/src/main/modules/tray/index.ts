@@ -1,7 +1,10 @@
 /**
- * Tray Module Index
+ * Tray Module
  *
- * Story-012: Desktop Native Features
+ * Exports the TrayManager class and its configuration type.
+ * This module handles the system tray integration, including the icon, context menu, and interactions.
+ *
+ * @module modules/tray
  */
 
 export { TrayManager, type TrayConfig } from './trayManager';

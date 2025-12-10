@@ -1,5 +1,14 @@
 /**
- * Main Process Utilities
+ * Main Process Utilities Module
+ *
+ * Exports utility functions and classes used throughout the main process, including:
+ * - Pagination helpers
+ * - Memory monitoring
+ * - IPC caching
+ * - IPC data compression
+ * - IPC handler creation and registration
+ *
+ * @module utils
  */
 
 // Pagination

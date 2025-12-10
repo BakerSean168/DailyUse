@@ -1,11 +1,13 @@
 /**
  * Application Lifecycle Management
  * 
- * 管理 Electron 应用的完整生命周期：
- * - app.whenReady() - 应用就绪，创建窗口
- * - app.on('activate') - macOS 重新激活
- * - app.on('window-all-closed') - 所有窗口关闭
- * - app.on('before-quit') - 应用退出前清理
+ * Manages the complete lifecycle of the Electron application:
+ * - app.whenReady() - Application ready, create window
+ * - app.on('activate') - macOS reactivate
+ * - app.on('window-all-closed') - All windows closed
+ * - app.on('before-quit') - Cleanup before exit
+ *
+ * @module lifecycle/app-lifecycle
  */
 
 import { app, BrowserWindow } from 'electron';
@@ -19,14 +21,20 @@ import { stopMemoryCleanup, closeDatabase } from '../database';
 import { shutdownAllModules } from '../modules';
 import { initializeEventListeners } from '../events/initialize-event-listeners';
 
-// ESM 兼容的 __dirname
+// ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
 
 /**
- * 创建主窗口
+ * Creates the main application window.
+ *
+ * Configures window dimensions, web preferences, preload script, and title bar style.
+ * In development, loads the Vite dev server URL.
+ * In production, loads the bundled index.html.
+ *
+ * @returns {BrowserWindow} The created BrowserWindow instance.
  */
 export function createMainWindow(): BrowserWindow {
   mainWindow = new BrowserWindow({
@@ -44,19 +52,19 @@ export function createMainWindow(): BrowserWindow {
     show: false,
   });
 
-  // 窗口准备好后再显示，避免白屏
+  // Show window only when ready to avoid white screen
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
   });
 
-  // 加载应用
+  // Load application
   if (process.env.NODE_ENV === 'development') {
-    // 开发模式：加载 Vite dev server
+    // Development mode: Load Vite dev server
     const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
     mainWindow.loadURL(devServerUrl);
     mainWindow.webContents.openDevTools();
   } else {
-    // 生产模式：加载打包后的 HTML
+    // Production mode: Load bundled HTML
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 
@@ -68,35 +76,43 @@ export function createMainWindow(): BrowserWindow {
 }
 
 /**
- * 获取主窗口
+ * Retrieves the main application window instance.
+ *
+ * @returns {BrowserWindow | null} The main BrowserWindow instance, or null if it's not created or closed.
  */
 export function getMainWindow(): BrowserWindow | null {
   return mainWindow;
 }
 
 /**
- * 处理应用 ready 事件
+ * Handles the application 'ready' event.
+ *
+ * Initializes the application core, event listeners, main window,
+ * notification service, desktop features, and system IPC handlers.
+ *
+ * @param {() => Promise<void>} initializeApp - The application initialization function to be called.
+ * @returns {Promise<void>} A promise that resolves when initialization is complete.
  */
 async function handleAppReady(initializeApp: () => Promise<void>): Promise<void> {
-  // 应用核心初始化
+  // Application core initialization
   await initializeApp();
 
-  // 初始化事件监听器
+  // Initialize event listeners
   await initializeEventListeners();
   console.log('[Lifecycle] Event listeners initialized');
 
-  // 创建主窗口
+  // Create main window
   const win = createMainWindow();
 
-  // 初始化通知服务（需要在窗口创建后）
+  // Initialize notification service (requires window to be created)
   if (win) {
     initNotificationService(win);
     console.log('[Lifecycle] Notification service initialized');
 
-    // 初始化桌面特性
+    // Initialize desktop features
     await initializeDesktopFeatures(win);
 
-    // 注册系统 IPC 处理器（需要 managers）
+    // Register system IPC handlers (requires managers)
     registerSystemIpcHandlers(
       getTrayManager(),
       getShortcutManager(),
@@ -105,7 +121,7 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
     console.log('[Lifecycle] System IPC handlers registered');
   }
 
-  // macOS: 点击 dock 图标时重新创建窗口
+  // macOS: Re-create window when dock icon is clicked
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createMainWindow();
@@ -114,38 +130,48 @@ async function handleAppReady(initializeApp: () => Promise<void>): Promise<void>
 }
 
 /**
- * 处理所有窗口关闭事件
+ * Handles the 'window-all-closed' event.
+ *
+ * On macOS, the application stays active until explicitly quit.
+ * On other platforms, the application quits.
  */
 function handleWindowAllClosed(): void {
-  // macOS: 保持应用活跃直到明确退出
+  // macOS: Keep application active until explicitly quit
   if (process.platform !== 'darwin') {
     app.quit();
   }
 }
 
 /**
- * 处理应用退出前的清理工作
+ * Handles the 'before-quit' event.
+ *
+ * Performs cleanup tasks such as stopping timers, cleaning up desktop features,
+ * shutting down modules, and closing the database connection.
+ *
+ * @returns {Promise<void>} A promise that resolves when cleanup is complete.
  */
 async function handleBeforeQuit(): Promise<void> {
   console.log('[Lifecycle] Cleaning up before quit...');
 
-  // 停止定时任务
+  // Stop scheduled tasks
   stopMemoryCleanup();
 
-  // 清理桌面特性资源
+  // Cleanup desktop feature resources
   await cleanupDesktopFeatures();
 
-  // 关闭所有模块（优雅关闭）
+  // Shutdown all modules (graceful shutdown)
   await shutdownAllModules();
 
-  // 关闭数据库连接
+  // Close database connection
   closeDatabase();
 
   console.log('[Lifecycle] Cleanup complete');
 }
 
 /**
- * 阻止创建新窗口（安全性）
+ * Sets up security handlers to prevent unwanted window creation.
+ *
+ * Denies all new window requests from web contents.
  */
 function setupSecurityHandlers(): void {
   app.on('web-contents-created', (_, contents) => {
@@ -154,20 +180,23 @@ function setupSecurityHandlers(): void {
 }
 
 /**
- * 注册所有应用生命周期事件
+ * Registers all application lifecycle event handlers.
+ *
+ * Sets up handlers for 'ready', 'window-all-closed', 'before-quit' events,
+ * and configures security policies.
  * 
- * @param initializeApp 应用初始化函数
+ * @param {() => Promise<void>} initializeApp - The function to initialize the application logic.
  */
 export function registerAppLifecycleHandlers(initializeApp: () => Promise<void>): void {
-  // 应用就绪时创建窗口
+  // Create window when application is ready
   app.whenReady().then(() => handleAppReady(initializeApp));
 
-  // 所有窗口关闭时处理
+  // Handle all windows closed
   app.on('window-all-closed', handleWindowAllClosed);
 
-  // 应用退出前清理
+  // Cleanup before quit
   app.on('before-quit', () => handleBeforeQuit());
 
-  // 设置安全处理器
+  // Set security handlers
   setupSecurityHandlers();
 }

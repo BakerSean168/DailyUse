@@ -1,78 +1,87 @@
 /**
  * IPC Data Compression Utility
  *
- * EPIC-003 STORY-018: IPC 通信优化
- * Task 18.2: 数据压缩
+ * Provides support for compressing large IPC payloads to reduce transmission overhead.
+ * Uses Node.js native zlib for compression.
  *
- * 为大型 IPC 响应提供压缩支持，减少 IPC 通道传输开销
- * 使用 Node.js 原生 zlib，无需额外依赖
+ * @module utils/ipc-compression
  */
 
 import { gzipSync, gunzipSync, constants } from 'zlib';
 
-// ========== 配置常量 ==========
+// ========== Configuration Constants ==========
 
 /**
- * 压缩阈值（字节）
- * 只有超过此大小的数据才会被压缩
- * 默认 1KB - 小数据压缩开销可能大于收益
+ * Compression Threshold (Bytes)
+ * Data smaller than this will not be compressed.
+ * Default: 1024 (1KB). Small data compression might add overhead without benefit.
  */
 export const COMPRESSION_THRESHOLD = 1024;
 
 /**
- * 压缩级别（1-9）
- * 1 = 最快，9 = 最高压缩率
- * 推荐 6 作为平衡选择
+ * Compression Level (1-9)
+ * 1 = Fastest, 9 = Best compression.
+ * Default: 6 (Balanced).
  */
 export const DEFAULT_COMPRESSION_LEVEL = 6;
 
 /**
- * 压缩数据的标记前缀
- * 用于识别响应是否已压缩
+ * Prefix to identify compressed data strings if not using the object payload wrapper.
+ * (Currently using object wrapper `CompressedPayload` for safer typing).
  */
 export const COMPRESSED_PREFIX = '__GZIP__';
 
-// ========== 类型定义 ==========
+// ========== Types ==========
 
+/**
+ * Statistics about a compression operation.
+ */
 export interface CompressionStats {
-  /** 原始大小（字节） */
+  /** Original size in bytes. */
   originalSize: number;
-  /** 压缩后大小（字节） */
+  /** Compressed size in bytes. */
   compressedSize: number;
-  /** 压缩率 (0-1) */
+  /** Compression ratio (0-1), where higher means better compression (e.g., 0.8 means 80% size reduction). */
   ratio: number;
-  /** 压缩耗时（毫秒） */
+  /** Time taken to compress in milliseconds. */
   compressionTime: number;
-  /** 是否实际压缩 */
+  /** Whether the data was actually compressed. */
   wasCompressed: boolean;
 }
 
+/**
+ * Structure of a compressed payload sent over IPC.
+ */
 export interface CompressedPayload {
-  /** 压缩标记 */
+  /** Marker to identify payload as compressed. */
   __compressed: true;
-  /** Base64 编码的压缩数据 */
+  /** Base64 encoded compressed data string. */
   data: string;
-  /** 原始大小 */
+  /** Original size of the data before compression. */
   originalSize: number;
 }
 
+/**
+ * Options for compression.
+ */
 export interface CompressionOptions {
-  /** 压缩阈值（字节） */
+  /** Threshold in bytes to trigger compression. */
   threshold?: number;
-  /** 压缩级别 (1-9) */
+  /** Zlib compression level (1-9). */
   level?: number;
-  /** 是否强制压缩（忽略阈值） */
+  /** Whether to force compression even if below threshold. */
   force?: boolean;
 }
 
-// ========== 核心函数 ==========
+// ========== Core Functions ==========
 
 /**
- * 压缩数据
+ * Compresses data if it meets the criteria.
  *
- * @param data - 要压缩的数据（任意可 JSON 序列化的对象）
- * @param options - 压缩选项
- * @returns 压缩后的数据或原始数据（如果太小不值得压缩）
+ * @template T The type of the data to compress.
+ * @param {T} data - The data to compress (must be JSON serializable).
+ * @param {CompressionOptions} [options={}] - Compression options.
+ * @returns {T | CompressedPayload} The compressed payload or the original data if not compressed.
  */
 export function compressForIpc<T>(
   data: T,
@@ -84,17 +93,17 @@ export function compressForIpc<T>(
     force = false,
   } = options;
 
-  // 序列化为 JSON
+  // Serialize to JSON
   const jsonString = JSON.stringify(data);
   const originalSize = Buffer.byteLength(jsonString, 'utf8');
 
-  // 检查是否需要压缩
+  // Check if compression is needed
   if (!force && originalSize < threshold) {
     return data;
   }
 
   try {
-    // 使用 gzip 压缩
+    // Compress using gzip
     const compressed = gzipSync(jsonString, {
       level: Math.min(Math.max(level, 1), 9) as
         | 1
@@ -110,12 +119,12 @@ export function compressForIpc<T>(
 
     const compressedSize = compressed.length;
 
-    // 如果压缩后更大，返回原始数据
+    // If compressed size is larger (or not significantly smaller), return original
     if (!force && compressedSize >= originalSize * 0.9) {
       return data;
     }
 
-    // 返回压缩载荷
+    // Return compressed payload
     return {
       __compressed: true,
       data: compressed.toString('base64'),
@@ -128,13 +137,14 @@ export function compressForIpc<T>(
 }
 
 /**
- * 解压数据
+ * Decompresses data if it is a compressed payload.
  *
- * @param payload - 可能被压缩的载荷
- * @returns 解压后的数据
+ * @template T The expected type of the decompressed data.
+ * @param {T | CompressedPayload} payload - The payload to check and decompress.
+ * @returns {T} The decompressed data or the original data if it wasn't compressed.
  */
 export function decompressFromIpc<T>(payload: T | CompressedPayload): T {
-  // 检查是否是压缩载荷
+  // Check if payload is compressed
   if (!isCompressedPayload(payload)) {
     return payload as T;
   }
@@ -150,7 +160,10 @@ export function decompressFromIpc<T>(payload: T | CompressedPayload): T {
 }
 
 /**
- * 检查载荷是否是压缩格式
+ * Type guard to check if a payload is compressed.
+ *
+ * @param {unknown} payload - The payload to check.
+ * @returns {payload is CompressedPayload} True if it is a compressed payload.
  */
 export function isCompressedPayload(
   payload: unknown
@@ -166,11 +179,13 @@ export function isCompressedPayload(
 }
 
 /**
- * 获取压缩统计信息
+ * Analyzes compression statistics for a given data set without returning the compressed data.
+ * Useful for performance tuning.
  *
- * @param data - 要分析的数据
- * @param options - 压缩选项
- * @returns 压缩统计
+ * @template T The type of data to analyze.
+ * @param {T} data - The data to analyze.
+ * @param {CompressionOptions} [options={}] - Options to simulate.
+ * @returns {CompressionStats} The compression statistics.
  */
 export function getCompressionStats<T>(
   data: T,
@@ -218,12 +233,11 @@ export function getCompressionStats<T>(
   }
 }
 
-// ========== 高阶函数装饰器 ==========
+// ========== Decorators/Wrappers ==========
 
 /**
- * IPC 处理器压缩装饰器
- *
- * 自动压缩返回值超过阈值的 IPC 响应
+ * Higher-order function to wrap an async handler with compression.
+ * Automatically compresses the return value if it exceeds the threshold.
  *
  * @example
  * ```typescript
@@ -231,6 +245,12 @@ export function getCompressionStats<T>(
  *   return await fetchLargeData(args);
  * });
  * ```
+ *
+ * @template TArgs The arguments type.
+ * @template TResult The result type.
+ * @param {(...args: TArgs) => Promise<TResult>} handler - The handler to wrap.
+ * @param {CompressionOptions} [options={}] - Compression options.
+ * @returns {(...args: TArgs) => Promise<TResult | CompressedPayload>} The wrapped handler.
  */
 export function withCompression<TArgs extends unknown[], TResult>(
   handler: (...args: TArgs) => Promise<TResult>,
@@ -243,22 +263,31 @@ export function withCompression<TArgs extends unknown[], TResult>(
 }
 
 /**
- * IPC 响应自动解压中间件（渲染进程使用）
+ * Automatically decompresses a response if needed.
+ * Useful as a utility in the renderer process.
  *
  * @example
  * ```typescript
  * const data = autoDecompress(await ipcRenderer.invoke('get-data'));
  * ```
+ *
+ * @template T The expected type.
+ * @param {T | CompressedPayload} response - The response to process.
+ * @returns {T} The decompressed data.
  */
 export function autoDecompress<T>(response: T | CompressedPayload): T {
   return decompressFromIpc(response);
 }
 
-// ========== 批量压缩支持 ==========
+// ========== Batch Operations ==========
 
 /**
- * 批量压缩多个数据项
- * 适用于需要同时传输多个大型对象的场景
+ * Compresses multiple items in a batch.
+ *
+ * @template T The type of items.
+ * @param {T[]} items - The list of items to compress.
+ * @param {CompressionOptions} [options={}] - Compression options.
+ * @returns {(T | CompressedPayload)[]} The list of (potentially) compressed items.
  */
 export function compressBatch<T>(
   items: T[],
@@ -268,7 +297,11 @@ export function compressBatch<T>(
 }
 
 /**
- * 批量解压
+ * Decompresses multiple items in a batch.
+ *
+ * @template T The type of items.
+ * @param {(T | CompressedPayload)[]} items - The list of items to decompress.
+ * @returns {T[]} The list of decompressed items.
  */
 export function decompressBatch<T>(
   items: (T | CompressedPayload)[]
@@ -276,25 +309,29 @@ export function decompressBatch<T>(
   return items.map((item) => decompressFromIpc(item));
 }
 
-// ========== 渲染进程辅助类 ==========
+// ========== Client Helper ==========
 
 /**
- * 渲染进程 IPC 压缩客户端
- *
- * 提供自动解压的 IPC 调用封装
+ * Client-side helper for handling IPC compression.
  */
 export class IpcCompressionClient {
   private compressionEnabled: boolean = true;
 
   /**
-   * 启用/禁用自动解压
+   * Enables or disables automatic compression/decompression.
+   *
+   * @param {boolean} enabled - Whether compression handling is enabled.
    */
   setEnabled(enabled: boolean): void {
     this.compressionEnabled = enabled;
   }
 
   /**
-   * 处理可能压缩的 IPC 响应
+   * Processes an IPC response, decompressing it if necessary.
+   *
+   * @template T The expected response type.
+   * @param {T | CompressedPayload} response - The response from IPC.
+   * @returns {T} The processed response.
    */
   processResponse<T>(response: T | CompressedPayload): T {
     if (!this.compressionEnabled) {
@@ -304,7 +341,12 @@ export class IpcCompressionClient {
   }
 
   /**
-   * 在发送前压缩大型请求数据
+   * Prepares a request payload by compressing it if beneficial.
+   *
+   * @template T The request data type.
+   * @param {T} data - The data to send.
+   * @param {CompressionOptions} [options] - Compression options.
+   * @returns {T | CompressedPayload} The prepared payload.
    */
   prepareRequest<T>(data: T, options?: CompressionOptions): T | CompressedPayload {
     if (!this.compressionEnabled) {
@@ -314,12 +356,14 @@ export class IpcCompressionClient {
   }
 }
 
-// ========== 单例实例 ==========
+// ========== Singleton Instance ==========
 
 let clientInstance: IpcCompressionClient | null = null;
 
 /**
- * 获取压缩客户端单例
+ * Retrieves the singleton instance of IpcCompressionClient.
+ *
+ * @returns {IpcCompressionClient} The client instance.
  */
 export function getCompressionClient(): IpcCompressionClient {
   if (!clientInstance) {
@@ -328,12 +372,14 @@ export function getCompressionClient(): IpcCompressionClient {
   return clientInstance;
 }
 
-// ========== 性能分析工具 ==========
+// ========== Analysis Tools ==========
 
 /**
- * 分析数据是否值得压缩
+ * Analyzes whether a dataset would benefit from compression.
  *
- * @returns 建议是否压缩以及预期收益
+ * @template T The data type.
+ * @param {T} data - The data to analyze.
+ * @returns {Object} An analysis report with recommendation.
  */
 export function analyzeCompressionBenefit<T>(data: T): {
   shouldCompress: boolean;
@@ -351,13 +397,13 @@ export function analyzeCompressionBenefit<T>(data: T): {
 
   let recommendation: string;
   if (stats.originalSize < COMPRESSION_THRESHOLD) {
-    recommendation = '数据太小，压缩开销可能大于收益';
+    recommendation = 'Data too small, overhead might exceed benefit';
   } else if (stats.ratio < 0.1) {
-    recommendation = '压缩率低于 10%，不建议压缩';
+    recommendation = 'Compression ratio < 10%, not recommended';
   } else if (stats.ratio < 0.3) {
-    recommendation = '中等压缩收益，可选择性压缩';
+    recommendation = 'Moderate benefit, optional';
   } else {
-    recommendation = `高压缩收益（${estimatedSavings}%），强烈建议压缩`;
+    recommendation = `High benefit (${estimatedSavings}%), strongly recommended`;
   }
 
   return {

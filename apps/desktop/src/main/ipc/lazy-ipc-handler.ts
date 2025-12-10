@@ -1,22 +1,34 @@
 /**
- * EPIC-003: Lazy IPC Handler Wrapper
+ * Lazy IPC Handler Wrapper
  * 
- * 为懒加载模块创建 IPC handler 包装器
- * 在首次调用时自动加载模块
+ * Provides utilities to create IPC handlers that trigger module loading on demand.
+ * This supports the application's lazy loading strategy by ensuring modules are only
+ * initialized when their IPC channels are accessed.
+ *
+ * @module ipc/lazy-ipc-handler
  */
 
 import { ipcMain } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron';
 import { ensureModuleLoaded, isModuleLoaded } from '../di/lazy-module-loader';
 
+/**
+ * Type definition for a standard Electron IPC handler function.
+ *
+ * @template T The return type of the handler.
+ */
 type IpcHandler<T = unknown> = (
   event: IpcMainInvokeEvent,
   ...args: unknown[]
 ) => Promise<T>;
 
 /**
- * 创建懒加载 IPC handler
- * 在首次调用时自动加载对应模块
+ * Registers an IPC handler that lazily loads its associated module upon the first invocation.
+ *
+ * @template T The expected return type.
+ * @param {string} channel - The IPC channel name.
+ * @param {string} moduleName - The name of the module that owns this handler (must match a registered lazy module).
+ * @param {IpcHandler<T>} handler - The actual handler function to execute.
  */
 export function lazyHandle<T>(
   channel: string,
@@ -24,7 +36,7 @@ export function lazyHandle<T>(
   handler: IpcHandler<T>
 ): void {
   ipcMain.handle(channel, async (event, ...args) => {
-    // 确保模块已加载
+    // Ensure module is loaded
     if (!isModuleLoaded(moduleName)) {
       const startTime = performance.now();
       await ensureModuleLoaded(moduleName);
@@ -33,13 +45,16 @@ export function lazyHandle<T>(
       );
     }
     
-    // 执行实际 handler
+    // Execute actual handler
     return handler(event, ...args);
   });
 }
 
 /**
- * 批量注册懒加载 IPC handlers
+ * Registers multiple lazy IPC handlers for a single module at once.
+ *
+ * @param {string} moduleName - The name of the module.
+ * @param {Record<string, IpcHandler>} handlers - A map of channel names to handler functions.
  */
 export function registerLazyHandlers(
   moduleName: string,
@@ -51,19 +66,27 @@ export function registerLazyHandlers(
 }
 
 /**
- * 创建模块感知的 IPC handler 注册器
+ * Creates a registry object scoped to a specific module for defining lazy handlers.
+ *
+ * @param {string} moduleName - The name of the module.
+ * @returns {Object} An object with methods to register single or multiple handlers for the module.
  */
 export function createLazyModule(moduleName: string) {
   return {
     /**
-     * 注册单个懒加载 handler
+     * Registers a single lazy handler.
+     *
+     * @param {string} channel - IPC channel.
+     * @param {IpcHandler<T>} handler - Handler function.
      */
     handle<T>(channel: string, handler: IpcHandler<T>): void {
       lazyHandle(channel, moduleName, handler);
     },
     
     /**
-     * 批量注册 handlers
+     * Registers multiple handlers in batch.
+     *
+     * @param {Record<string, IpcHandler>} handlers - Map of handlers.
      */
     registerAll(handlers: Record<string, IpcHandler>): void {
       registerLazyHandlers(moduleName, handlers);

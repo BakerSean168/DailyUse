@@ -1,28 +1,45 @@
 /**
- * EPIC-003: Lazy Module Loading
+ * Lazy Module Loading Utility
  * 
- * 模块懒加载机制，优化启动时间
- * 核心模块立即加载，非核心模块按需加载
+ * Provides a mechanism for lazy loading modules to optimize application startup time.
+ * Core modules can be loaded immediately, while non-core modules are loaded on demand
+ * or preloaded during idle time.
+ *
+ * @module di/lazy-module-loader
  */
 
+/**
+ * Type definition for a module initialization function.
+ */
 type ModuleInitializer = () => Promise<void>;
 
+/**
+ * Configuration and state for a lazy-loaded module.
+ */
 interface LazyModuleConfig {
+  /** The unique name of the module. */
   name: string;
+  /** The function to initialize the module. */
   initializer: ModuleInitializer;
+  /** Whether the module has been successfully loaded. */
   loaded: boolean;
+  /** Whether the module is currently being loaded. */
   loading: boolean;
+  /** The promise representing the active loading process. */
   loadPromise: Promise<void> | null;
 }
 
-// 懒加载模块注册表
+// Registry for lazy modules
 const lazyModules = new Map<string, LazyModuleConfig>();
 
-// 模块加载时间记录（用于性能监控）
+// Records of module loading times (ms) for performance monitoring
 const moduleLoadTimes = new Map<string, number>();
 
 /**
- * 注册懒加载模块
+ * Registers a module for lazy loading.
+ *
+ * @param {string} name - The unique name of the module.
+ * @param {ModuleInitializer} initializer - The async function to initialize the module.
  */
 export function registerLazyModule(name: string, initializer: ModuleInitializer): void {
   lazyModules.set(name, {
@@ -36,9 +53,14 @@ export function registerLazyModule(name: string, initializer: ModuleInitializer)
 }
 
 /**
- * 确保模块已加载
- * 如果模块正在加载，等待加载完成
- * 如果模块已加载，立即返回
+ * Ensures that a specific module is loaded.
+ *
+ * If the module is already loaded, returns immediately.
+ * If the module is currently loading, waits for the existing promise.
+ * If the module is not loaded, triggers the initialization.
+ *
+ * @param {string} name - The name of the module to load.
+ * @returns {Promise<void>} A promise that resolves when the module is fully loaded.
  */
 export async function ensureModuleLoaded(name: string): Promise<void> {
   const module = lazyModules.get(name);
@@ -48,17 +70,17 @@ export async function ensureModuleLoaded(name: string): Promise<void> {
     return;
   }
   
-  // 已加载
+  // Already loaded
   if (module.loaded) {
     return;
   }
   
-  // 正在加载，等待完成
+  // Already loading, wait for it
   if (module.loading && module.loadPromise) {
     return module.loadPromise;
   }
   
-  // 开始加载
+  // Start loading
   module.loading = true;
   const startTime = performance.now();
   
@@ -83,7 +105,11 @@ export async function ensureModuleLoaded(name: string): Promise<void> {
 }
 
 /**
- * 预加载模块（在空闲时加载，不阻塞）
+ * Preloads a module during idle time.
+ * Uses `requestIdleCallback` if available (browser/electron renderer),
+ * otherwise falls back to `setImmediate` (Node.js/electron main).
+ *
+ * @param {string} name - The name of the module to preload.
  */
 export function preloadModule(name: string): void {
   if (typeof requestIdleCallback !== 'undefined') {
@@ -91,7 +117,7 @@ export function preloadModule(name: string): void {
       ensureModuleLoaded(name).catch(console.error);
     });
   } else {
-    // Node.js 环境使用 setImmediate
+    // Node.js environment fallback
     setImmediate(() => {
       ensureModuleLoaded(name).catch(console.error);
     });
@@ -99,21 +125,28 @@ export function preloadModule(name: string): void {
 }
 
 /**
- * 批量预加载模块
+ * Batch preloads multiple modules.
+ *
+ * @param {string[]} names - Array of module names to preload.
  */
 export function preloadModules(names: string[]): void {
   names.forEach(preloadModule);
 }
 
 /**
- * 检查模块是否已加载
+ * Checks if a specific module has been loaded.
+ *
+ * @param {string} name - The name of the module.
+ * @returns {boolean} True if the module is loaded, false otherwise.
  */
 export function isModuleLoaded(name: string): boolean {
   return lazyModules.get(name)?.loaded ?? false;
 }
 
 /**
- * 获取所有已加载的模块
+ * Retrieves a list of all names of currently loaded modules.
+ *
+ * @returns {string[]} Array of loaded module names.
  */
 export function getLoadedModules(): string[] {
   return Array.from(lazyModules.entries())
@@ -122,14 +155,18 @@ export function getLoadedModules(): string[] {
 }
 
 /**
- * 获取模块加载时间
+ * Retrieves the loading times for all loaded modules.
+ *
+ * @returns {Record<string, number>} A map of module names to their load times in milliseconds.
  */
 export function getModuleLoadTimes(): Record<string, number> {
   return Object.fromEntries(moduleLoadTimes);
 }
 
 /**
- * 获取懒加载模块统计
+ * Retrieves statistics about the lazy module system.
+ *
+ * @returns {Object} Statistics object containing total registered, loaded count, pending count, and load times.
  */
 export function getLazyModuleStats(): {
   total: number;
@@ -147,7 +184,8 @@ export function getLazyModuleStats(): {
 }
 
 /**
- * 重置所有懒加载模块（用于测试）
+ * Resets the lazy module registry and stats.
+ * Primarily used for testing purposes.
  */
 export function resetLazyModules(): void {
   lazyModules.clear();

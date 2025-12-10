@@ -1,12 +1,15 @@
 /**
  * Dashboard View
  *
- * 首页仪表盘 - 显示概览信息
- * Story-007: Dashboard UI Enhancement
+ * The main dashboard screen displaying a high-level overview of the user's data.
+ * Aggregates statistics, upcoming tasks, schedules, and active goals.
+ * Supports auto-refresh and quick navigation.
+ *
+ * @module renderer/views/dashboard/DashboardView
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { DashboardSkeleton } from '../../components/Skeleton';
+import { DashboardSkeleton } from '../../shared/components/Skeleton';
 import {
   GoalContainer,
   TaskContainer,
@@ -36,6 +39,9 @@ import {
 
 // ============ Types ============
 
+/**
+ * Aggregated statistics for dashboard display.
+ */
 interface DashboardStats {
   goals: {
     total: number;
@@ -87,7 +93,9 @@ export function DashboardView() {
 
   // ============ Data Loading ============
 
-  // Get empty stats
+  /**
+   * Generates an empty statistics object structure.
+   */
   const getEmptyStats = useCallback((): DashboardStats => {
     return {
       goals: { total: 0, active: 0, completed: 0, paused: 0, overdue: 0 },
@@ -97,7 +105,9 @@ export function DashboardView() {
     };
   }, []);
 
-  // Load goal stats
+  /**
+   * Fetches goal statistics and active goals list.
+   */
   const loadGoalStats = useCallback(async () => {
     const goalApiClient = GoalContainer.getInstance().getApiClient();
     const goalsResponse = await goalApiClient.getGoals();
@@ -108,7 +118,7 @@ export function DashboardView() {
       active: goals.filter((g: GoalClientDTO) => g.status === GoalStatus.ACTIVE).length,
       completed: goals.filter((g: GoalClientDTO) => g.status === GoalStatus.COMPLETED)
         .length,
-      paused: 0, // Goal 没有 PAUSED 状态，使用 DRAFT 代替
+      paused: 0, // Goal does not have PAUSED, using DRAFT is not equivalent but placeholder
       overdue: goals.filter((g: GoalClientDTO) => g.isOverdue).length,
     };
 
@@ -119,14 +129,16 @@ export function DashboardView() {
     return { stats: goalStats, activeGoals: activeGoalsList };
   }, []);
 
-  // Load task stats
+  /**
+   * Fetches task statistics and task list.
+   */
   const loadTaskStats = useCallback(async () => {
     const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
     const tasks = await taskApiClient.getTaskTemplates();
 
     const taskStats = {
       total: tasks.length,
-      pending: 0, // TaskTemplate 没有 PENDING，使用 PAUSED 替代
+      pending: 0, // Placeholder
       inProgress: tasks.filter(
         (t: TaskTemplateClientDTO) => t.status === TaskTemplateStatus.ACTIVE,
       ).length,
@@ -142,7 +154,9 @@ export function DashboardView() {
     return { stats: taskStats, todayTasks: todayTasksList };
   }, []);
 
-  // Load schedule stats
+  /**
+   * Fetches schedule statistics and today's schedule.
+   */
   const loadScheduleStats = useCallback(async () => {
     try {
       const scheduleApiClient =
@@ -159,7 +173,7 @@ export function DashboardView() {
         ).length,
         todayCount: schedules.filter(
           (s: ScheduleTaskClientDTO) => s.status === ScheduleTaskStatus.ACTIVE,
-        ).length, // 简化：活跃任务作为今日任务
+        ).length, // Simplified: Active tasks counted as today's tasks for now
       };
 
       const todaySchedulesList = schedules
@@ -176,7 +190,9 @@ export function DashboardView() {
     }
   }, []);
 
-  // Load reminder stats
+  /**
+   * Fetches reminder statistics and upcoming reminders.
+   */
   const loadReminderStats = useCallback(async () => {
     try {
       const reminderApiClient = ReminderContainer.getInstance().getApiClient();
@@ -193,7 +209,7 @@ export function DashboardView() {
         ).length,
       };
 
-      // 获取即将触发的提醒
+      // Sort by next trigger time
       const upcomingRemindersList = reminders
         .filter(
           (r: ReminderTemplateClientDTO) =>
@@ -215,11 +231,14 @@ export function DashboardView() {
     }
   }, []);
 
+  /**
+   * Orchestrates the loading of all dashboard data in parallel.
+   */
   const loadStats = useCallback(async () => {
     try {
       setLoading(true);
 
-      // 并行加载所有数据
+      // Load data in parallel
       const [goalsData, tasksData, schedulesData, remindersData] =
         await Promise.allSettled([
           loadGoalStats(),
@@ -228,21 +247,21 @@ export function DashboardView() {
           loadReminderStats(),
         ]);
 
-      // 处理目标数据
+      // Process Goal Data
       if (goalsData.status === 'fulfilled') {
         const { stats: goalStats, activeGoals: goals } = goalsData.value;
         setStats((prev) => ({ ...(prev || getEmptyStats()), goals: goalStats }));
         setActiveGoals(goals);
       }
 
-      // 处理任务数据
+      // Process Task Data
       if (tasksData.status === 'fulfilled') {
         const { stats: taskStats, todayTasks: tasks } = tasksData.value;
         setStats((prev) => ({ ...(prev || getEmptyStats()), tasks: taskStats }));
         setTodayTasks(tasks);
       }
 
-      // 处理日程数据
+      // Process Schedule Data
       if (schedulesData.status === 'fulfilled') {
         const { stats: scheduleStats, todaySchedules: schedules } =
           schedulesData.value;
@@ -253,7 +272,7 @@ export function DashboardView() {
         setTodaySchedules(schedules);
       }
 
-      // 处理提醒数据
+      // Process Reminder Data
       if (remindersData.status === 'fulfilled') {
         const { stats: reminderStats, upcomingReminders: reminders } =
           remindersData.value;
@@ -298,28 +317,28 @@ export function DashboardView() {
   const quickActions: QuickAction[] = [
     {
       id: 'new-goal',
-      label: '新建目标',
+      label: 'New Goal',
       icon: '🎯',
       variant: 'primary',
       onClick: () => navigate('/goals'),
     },
     {
       id: 'new-task',
-      label: '新建任务',
+      label: 'New Task',
       icon: '✅',
       variant: 'secondary',
       onClick: () => navigate('/tasks'),
     },
     {
       id: 'new-schedule',
-      label: '新建日程',
+      label: 'New Schedule',
       icon: '📅',
       variant: 'outline',
       onClick: () => navigate('/schedules'),
     },
     {
       id: 'new-reminder',
-      label: '新建提醒',
+      label: 'New Reminder',
       icon: '⏰',
       variant: 'outline',
       onClick: () => navigate('/reminders'),
@@ -330,23 +349,23 @@ export function DashboardView() {
 
   const goalStatusData: PieDataItem[] = stats
     ? [
-        { label: '进行中', value: stats.goals.active, color: '#22c55e' },
-        { label: '已完成', value: stats.goals.completed, color: '#3b82f6' },
-        { label: '已暂停', value: stats.goals.paused, color: '#eab308' },
+        { label: 'Active', value: stats.goals.active, color: '#22c55e' },
+        { label: 'Completed', value: stats.goals.completed, color: '#3b82f6' },
+        { label: 'Paused', value: stats.goals.paused, color: '#eab308' },
       ].filter((d) => d.value > 0)
     : [];
 
   const taskStatusData: PieDataItem[] = stats
     ? [
-        { label: '待处理', value: stats.tasks.pending, color: '#f59e0b' },
-        { label: '进行中', value: stats.tasks.inProgress, color: '#3b82f6' },
-        { label: '已完成', value: stats.tasks.completed, color: '#22c55e' },
+        { label: 'Pending', value: stats.tasks.pending, color: '#f59e0b' },
+        { label: 'In Progress', value: stats.tasks.inProgress, color: '#3b82f6' },
+        { label: 'Completed', value: stats.tasks.completed, color: '#22c55e' },
       ].filter((d) => d.value > 0)
     : [];
 
   // ============ Render ============
 
-  // 使用骨架屏替代简单的加载提示
+  // Show skeleton loader if initial load
   if (loading && !stats) {
     return <DashboardSkeleton />;
   }
@@ -356,9 +375,9 @@ export function DashboardView() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold">仪表盘</h1>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">
-            {new Date().toLocaleDateString('zh-CN', {
+            {new Date().toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -367,7 +386,7 @@ export function DashboardView() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* 自动刷新开关 */}
+          {/* Auto Refresh Toggle */}
           <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
             <input
               type="checkbox"
@@ -375,61 +394,61 @@ export function DashboardView() {
               onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
               className="rounded"
             />
-            自动刷新
+            Auto Refresh
           </label>
-          {/* 刷新按钮 */}
+          {/* Manual Refresh Button */}
           <button
             onClick={loadStats}
             disabled={loading}
             className="px-3 py-1.5 text-sm border rounded-md hover:bg-muted transition-colors disabled:opacity-50"
-            title="刷新数据"
+            title="Refresh Data"
           >
-            {loading ? '⏳' : '🔄'} 刷新
+            {loading ? '⏳' : '🔄'} Refresh
           </button>
         </div>
       </div>
 
-      {/* Last Updated */}
+      {/* Last Updated Timestamp */}
       {lastUpdated && (
         <div className="text-xs text-muted-foreground">
-          最后更新: {lastUpdated.toLocaleTimeString('zh-CN')}
+          Last updated: {lastUpdated.toLocaleTimeString('en-US')}
         </div>
       )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="目标"
+          title="Goals"
           value={stats?.goals.active || 0}
-          suffix="个进行中"
+          suffix="Active"
           icon="🎯"
           trend={stats?.goals.overdue ? 'down' : 'stable'}
           trendValue={
-            stats?.goals.overdue ? `${stats.goals.overdue} 逾期` : undefined
+            stats?.goals.overdue ? `${stats.goals.overdue} Overdue` : undefined
           }
           onClick={() => navigate('/goals')}
           loading={loading}
         />
         <StatCard
-          title="任务"
+          title="Tasks"
           value={stats?.tasks.pending || 0}
-          suffix="待处理"
+          suffix="Pending"
           icon="✅"
           onClick={() => navigate('/tasks')}
           loading={loading}
         />
         <StatCard
-          title="日程"
+          title="Schedule"
           value={stats?.schedules.todayCount || 0}
-          suffix="今日"
+          suffix="Today"
           icon="📅"
           onClick={() => navigate('/schedules')}
           loading={loading}
         />
         <StatCard
-          title="提醒"
+          title="Reminders"
           value={stats?.reminders.enabled || 0}
-          suffix="已启用"
+          suffix="Enabled"
           icon="⏰"
           onClick={() => navigate('/reminders')}
           loading={loading}
@@ -457,7 +476,7 @@ export function DashboardView() {
             <div className="rounded-lg border bg-card p-4">
               <h3 className="font-semibold flex items-center gap-2 mb-4">
                 <span>📊</span>
-                <span>目标状态分布</span>
+                <span>Goal Status Distribution</span>
               </h3>
               <MiniPieChart
                 data={goalStatusData}
@@ -474,13 +493,13 @@ export function DashboardView() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold flex items-center gap-2">
                 <span>✅</span>
-                <span>今日任务</span>
+                <span>Today's Tasks</span>
               </h3>
               <button
                 onClick={() => navigate('/tasks')}
                 className="text-sm text-primary hover:underline"
               >
-                查看全部 →
+                View All →
               </button>
             </div>
             {todayTasks.length > 0 ? (
@@ -513,7 +532,7 @@ export function DashboardView() {
             ) : (
               <div className="text-center py-6 text-muted-foreground">
                 <div className="text-2xl mb-2">✅</div>
-                <p className="text-sm">暂无活跃任务</p>
+                <p className="text-sm">No active tasks today</p>
               </div>
             )}
           </div>
@@ -544,7 +563,7 @@ export function DashboardView() {
             <div className="rounded-lg border bg-card p-4">
               <h3 className="font-semibold flex items-center gap-2 mb-4">
                 <span>📈</span>
-                <span>任务状态分布</span>
+                <span>Task Status Distribution</span>
               </h3>
               <MiniPieChart
                 data={taskStatusData}
@@ -560,7 +579,7 @@ export function DashboardView() {
 
       {/* Footer */}
       <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
-        <p>DailyUse Desktop - 基于 Electron + React + shadcn/ui</p>
+        <p>DailyUse Desktop - Built with Electron + React + shadcn/ui</p>
       </div>
     </div>
   );

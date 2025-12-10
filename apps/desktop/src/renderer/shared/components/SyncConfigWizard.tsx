@@ -7,7 +7,7 @@
  * 3. Encryption password setup
  * 4. Data sync options and direction
  *
- * @module components/sync/SyncConfigWizard
+ * @module renderer/shared/components/SyncConfigWizard
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
@@ -38,31 +38,57 @@ import {
 } from 'lucide-react';
 import { cn } from '@dailyuse/ui-shadcn';
 
-// Types
+/**
+ * Definition of a synchronization provider.
+ */
 interface SyncProvider {
+  /** Unique identifier for the provider. */
   id: 'github' | 'nutstore' | 'dropbox' | 'self-hosted';
+  /** Display name of the provider. */
   name: string;
+  /** Short description. */
   description: string;
+  /** Provider icon component. */
   icon: React.ReactNode;
+  /** List of key features. */
   features: string[];
+  /** Description of free tier capacity. */
   freeCapacity: string;
+  /** Whether the provider requires a paid subscription for full features. */
   isPaid: boolean;
+  /** Geographical region of the provider servers. */
   region: string;
 }
 
+/**
+ * Configuration state collected by the wizard.
+ */
 interface SyncConfig {
+  /** Selected provider ID. */
   provider: SyncProvider['id'] | undefined;
+  /** Provider-specific credentials (tokens, usernames, etc.). */
   credentials: Record<string, string>;
+  /** User-defined password for client-side encryption. */
   encryptionPassword: string;
+  /** Initial synchronization direction. */
   syncDirection: 'upload' | 'download' | 'manual';
+  /** List of entity types enabled for sync. */
   selectedEntityTypes: string[];
 }
 
+/**
+ * Props passed to each step component.
+ */
 interface StepProps {
+  /** Current configuration state. */
   config: SyncConfig;
+  /** Callback to update configuration. */
   onConfigChange: (config: Partial<SyncConfig>) => void;
+  /** Callback to proceed to next step (optional for some steps). */
   onNext: () => Promise<void>;
+  /** Loading state flag. */
   isLoading: boolean;
+  /** Error message to display. */
   error?: string;
 }
 
@@ -121,6 +147,7 @@ const ENTITY_TYPES = [
 
 /**
  * Step 1: Select Cloud Provider
+ * Allows user to choose a backend for synchronization.
  */
 const Step1SelectProvider: React.FC<StepProps> = ({
   config,
@@ -214,6 +241,7 @@ const Step1SelectProvider: React.FC<StepProps> = ({
 
 /**
  * Step 2: Authentication
+ * Collects provider-specific credentials.
  */
 const Step2Authentication: React.FC<StepProps> = ({
   config,
@@ -431,6 +459,7 @@ const Step2Authentication: React.FC<StepProps> = ({
 
 /**
  * Step 3: Encryption Password Setup
+ * Sets up a password for end-to-end encryption.
  */
 const Step3EncryptionPassword: React.FC<StepProps> = ({
   config,
@@ -603,6 +632,7 @@ const Step3EncryptionPassword: React.FC<StepProps> = ({
 
 /**
  * Step 4: Sync Options
+ * Configures sync direction and entity filters.
  */
 const Step4SyncOptions: React.FC<StepProps> = ({
   config,
@@ -721,7 +751,11 @@ const Step4SyncOptions: React.FC<StepProps> = ({
 };
 
 /**
- * Main Wizard Component
+ * Main Sync Configuration Wizard Component.
+ * Orchestrates the multi-step configuration process.
+ *
+ * @param {Object} props - Component props.
+ * @param {() => void} [props.onComplete] - Callback executed when wizard finishes successfully.
  */
 export const SyncConfigWizard: React.FC<{ onComplete?: () => void }> = ({
   onComplete,

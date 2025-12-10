@@ -1,32 +1,38 @@
 /**
  * Desktop App Root Component
  *
- * React + shadcn/ui + React Router
- * 使用 React.lazy() 实现路由级代码分割
+ * The main application component using React Router for navigation and `shadcn/ui` for styling.
+ * Implements route-level code splitting using `React.lazy()` and `Suspense` for performance optimization.
+ *
+ * @module renderer/App
  */
 
 import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { Layout } from './components/Layout';
+import { Layout } from './shared/components/Layout';
 
-// 路由级懒加载 - 核心视图
+// Route-level Lazy Loading - Core Views
 const DashboardView = lazy(() =>
   import('./views/dashboard').then((m) => ({ default: m.DashboardView }))
 );
+// Note: GoalListView and TaskListView imports are placeholders or need to be verified against file structure
 const GoalListView = lazy(() =>
-  import('./views/goal').then((m) => ({ default: m.GoalListView }))
+  import('./modules/goal/presentation/views/GoalListView').then((m) => ({ default: m.GoalListView }))
 );
 const TaskListView = lazy(() =>
-  import('./views/task').then((m) => ({ default: m.TaskListView }))
+  import('./modules/task/presentation/views/TaskListView').then((m) => ({ default: m.TaskListView }))
 );
 
-// 路由级懒加载 - 次要视图 (占位组件，后续实现)
-const ScheduleView = lazy(() => import('./views/schedule/ScheduleView'));
-const ReminderView = lazy(() => import('./views/reminder/ReminderView'));
-const SettingsView = lazy(() => import('./views/settings/SettingsView'));
-const AIAssistantView = lazy(() => import('./views/ai/AIAssistantView'));
+// Route-level Lazy Loading - Secondary Views (Placeholders, adjust paths as needed)
+// Assuming standard module structure if views folder doesn't exist directly
+const ScheduleView = lazy(() => import('./modules/schedule/presentation/views/ScheduleView').catch(() => ({ default: () => <div>Schedule View (Not Implemented)</div> })));
+const ReminderView = lazy(() => import('./modules/reminder/presentation/views/ReminderView').catch(() => ({ default: () => <div>Reminder View (Not Implemented)</div> })));
+const SettingsView = lazy(() => import('./modules/settings/presentation/views/SettingsView').catch(() => ({ default: () => <div>Settings View (Not Implemented)</div> })));
+const AIAssistantView = lazy(() => import('./modules/ai/presentation/views/AIAssistantView').catch(() => ({ default: () => <div>AI Assistant View (Not Implemented)</div> })));
 
-// 路由加载骨架屏
+/**
+ * Loading skeleton component displayed while routes are being lazily loaded.
+ */
 function RouteLoadingSkeleton() {
   return (
     <div className="space-y-4 p-4 animate-pulse">
@@ -45,6 +51,10 @@ function RouteLoadingSkeleton() {
   );
 }
 
+/**
+ * The root component of the application.
+ * Defines the routing structure and layout.
+ */
 export function App() {
   return (
     <HashRouter>

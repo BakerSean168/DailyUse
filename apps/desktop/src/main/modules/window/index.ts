@@ -1,7 +1,10 @@
 /**
- * Window Module Index
+ * Window Module
  *
- * Story-012: Desktop Native Features
+ * Exports the WindowStateManager class and related types.
+ * This module is responsible for managing the state (position, size, etc.) of the application window.
+ *
+ * @module modules/window
  */
 
 export { WindowStateManager, type WindowState, type WindowStateConfig } from './windowStateManager';

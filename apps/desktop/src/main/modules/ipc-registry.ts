@@ -1,12 +1,15 @@
 /**
- * IPC 处理器统一注册中心
+ * IPC Registry
  * 
- * 集中管理所有模块的 IPC 处理器注册
+ * Centralized registry for all module-specific IPC handlers.
+ * Ensures that all handlers are instantiated and registered when the application starts.
  * 
- * 功能：
- * - 统一初始化所有 IPC 处理器
- * - 提供模块化的处理器管理
- * - 日志记录处理器注册状态
+ * Functions:
+ * - Initializes all IPC handlers in a unified way.
+ * - Provides centralized access to handler instances.
+ * - Logs the registration status of handlers.
+ *
+ * @module modules/ipc-registry
  */
 
 import { createLogger } from '@dailyuse/utils';
@@ -36,7 +39,8 @@ import { SettingIPCHandler } from './setting/ipc/setting.ipc-handlers';
 const logger = createLogger('IPCRegistry');
 
 /**
- * 所有 IPC 处理器实例
+ * Collection of all initialized IPC handler instances.
+ * Keyed by module/feature name.
  */
 export const ipcHandlers = {
   ai: aiIPCHandler,
@@ -62,17 +66,18 @@ export const ipcHandlers = {
 };
 
 /**
- * 初始化所有 IPC 处理器
+ * Initializes all IPC handlers.
  * 
- * 在 Electron main 进程启动时调用
+ * This function should be called early in the Electron main process startup sequence.
+ * It ensures that all handler classes are instantiated (and thus their IPC listeners registered).
  */
 export function initializeIPCHandlers(): void {
   const startTime = performance.now();
   
   logger.info('Initializing IPC handlers...');
   
-  // 所有处理器在构造时自动注册
-  // 这里只是确保它们被实例化
+  // Handlers are typically registered in their constructors or via singleton initialization.
+  // Accessing ipcHandlers ensures all imports are resolved and instances created.
   const handlerCount = Object.keys(ipcHandlers).length;
   
   const duration = performance.now() - startTime;
@@ -84,7 +89,9 @@ export function initializeIPCHandlers(): void {
 }
 
 /**
- * 获取 IPC 处理器统计信息
+ * Retrieves statistics about registered IPC handlers.
+ *
+ * @returns {Object} Stats containing total handler count and list of modules.
  */
 export function getIPCHandlerStats(): {
   totalHandlers: number;

@@ -1,8 +1,10 @@
 /**
  * IPC Cache
  *
- * IPC 响应缓存 - 使用 LRU 策略缓存高频查询
- * 减少重复查询的开销
+ * Provides caching mechanism for IPC responses using an LRU (Least Recently Used) strategy.
+ * This helps in reducing redundant computations and database queries for frequently accessed data.
+ *
+ * @module utils/ipc-cache
  */
 
 import { ipcMain } from 'electron';
@@ -10,54 +12,97 @@ import type { IpcMainInvokeEvent } from 'electron';
 
 // ============ Types ============
 
+/**
+ * Represents a single entry in the cache.
+ *
+ * @template T The type of the cached data.
+ */
 interface CacheEntry<T> {
+  /** The cached data. */
   data: T;
+  /** The timestamp when the entry was created. */
   timestamp: number;
+  /** Number of times this entry has been accessed. */
   accessCount: number;
 }
 
+/**
+ * Configuration options for the IPC Cache.
+ */
 interface CacheOptions {
-  /** 最大缓存条目数 */
+  /** Maximum number of entries to hold in the cache. */
   maxSize?: number;
-  /** 默认 TTL (ms) */
+  /** Default Time-To-Live (TTL) for cache entries in milliseconds. */
   defaultTTL?: number;
-  /** 是否在开发模式输出日志 */
+  /** Whether to enable debug logging. Defaults to true in development. */
   debug?: boolean;
 }
 
+/**
+ * Statistics about the cache usage.
+ */
 interface CacheStats {
+  /** Current number of entries in the cache. */
   size: number;
+  /** Total number of cache hits. */
   hits: number;
+  /** Total number of cache misses. */
   misses: number;
+  /** Cache hit rate (0.0 to 1.0). */
   hitRate: number;
 }
 
 // ============ LRU Cache Implementation ============
 
+/**
+ * A generic Least Recently Used (LRU) Cache implementation.
+ *
+ * @template K The type of the cache key.
+ * @template V The type of the cache value.
+ */
 class LRUCache<K, V> {
   private cache = new Map<K, V>();
   private readonly maxSize: number;
 
+  /**
+   * Creates an instance of LRUCache.
+   *
+   * @param {number} maxSize - The maximum number of entries allowed in the cache.
+   */
   constructor(maxSize: number) {
     this.maxSize = maxSize;
   }
 
+  /**
+   * Retrieves a value from the cache.
+   * Marks the retrieved item as the most recently used.
+   *
+   * @param {K} key - The key to retrieve.
+   * @returns {V | undefined} The value if found, otherwise undefined.
+   */
   get(key: K): V | undefined {
     const value = this.cache.get(key);
     if (value !== undefined) {
-      // 移到末尾 (最近使用)
+      // Move to end (most recently used)
       this.cache.delete(key);
       this.cache.set(key, value);
     }
     return value;
   }
 
+  /**
+   * Adds or updates a value in the cache.
+   * If the cache is full, the least recently used item is removed.
+   *
+   * @param {K} key - The key to set.
+   * @param {V} value - The value to store.
+   */
   set(key: K, value: V): void {
-    // 如果 key 已存在，删除旧条目
+    // If key exists, delete old entry to update position
     if (this.cache.has(key)) {
       this.cache.delete(key);
     }
-    // 如果达到最大容量，删除最旧的条目
+    // If capacity reached, remove the oldest entry
     else if (this.cache.size >= this.maxSize) {
       const oldestKey = this.cache.keys().next().value;
       if (oldestKey !== undefined) {
@@ -67,22 +112,43 @@ class LRUCache<K, V> {
     this.cache.set(key, value);
   }
 
+  /**
+   * Checks if a key exists in the cache.
+   *
+   * @param {K} key - The key to check.
+   * @returns {boolean} True if the key exists, false otherwise.
+   */
   has(key: K): boolean {
     return this.cache.has(key);
   }
 
+  /**
+   * Removes a specific key from the cache.
+   *
+   * @param {K} key - The key to remove.
+   * @returns {boolean} True if an element existed and has been removed, false otherwise.
+   */
   delete(key: K): boolean {
     return this.cache.delete(key);
   }
 
+  /**
+   * Clears all entries from the cache.
+   */
   clear(): void {
     this.cache.clear();
   }
 
+  /**
+   * Gets the current number of entries in the cache.
+   */
   get size(): number {
     return this.cache.size;
   }
 
+  /**
+   * Returns an iterator over the keys in the cache.
+   */
   keys(): IterableIterator<K> {
     return this.cache.keys();
   }
@@ -90,6 +156,10 @@ class LRUCache<K, V> {
 
 // ============ IPC Cache Class ============
 
+/**
+ * Manages caching for IPC requests using an LRU cache.
+ * Supports Time-To-Live (TTL) expiration per channel.
+ */
 export class IpcCache {
   private cache: LRUCache<string, CacheEntry<unknown>>;
   private channelTTL: Map<string, number> = new Map();
@@ -97,6 +167,11 @@ export class IpcCache {
   private readonly defaultTTL: number;
   private readonly debug: boolean;
 
+  /**
+   * Creates an instance of IpcCache.
+   *
+   * @param {CacheOptions} [options={}] - Configuration options.
+   */
   constructor(options: CacheOptions = {}) {
     const {
       maxSize = 100,
@@ -110,14 +185,21 @@ export class IpcCache {
   }
 
   /**
-   * 设置特定通道的 TTL
+   * Sets a specific TTL for a given IPC channel.
+   *
+   * @param {string} channel - The IPC channel name.
+   * @param {number} ttl - The Time-To-Live in milliseconds.
    */
   setChannelTTL(channel: string, ttl: number): void {
     this.channelTTL.set(channel, ttl);
   }
 
   /**
-   * 生成缓存 key
+   * Generates a unique cache key based on the channel and arguments.
+   *
+   * @param {string} channel - The IPC channel name.
+   * @param {unknown[]} args - The arguments passed to the IPC handler.
+   * @returns {string} The generated cache key.
    */
   private generateKey(channel: string, args: unknown[]): string {
     const argsHash = JSON.stringify(args);
@@ -125,7 +207,13 @@ export class IpcCache {
   }
 
   /**
-   * 获取缓存
+   * Retrieves a cached value for a specific channel and arguments.
+   * Checks for expiration based on TTL.
+   *
+   * @template T The expected return type.
+   * @param {string} channel - The IPC channel name.
+   * @param {unknown[]} args - The arguments passed to the IPC handler.
+   * @returns {T | undefined} The cached value if found and valid, otherwise undefined.
    */
   get<T>(channel: string, args: unknown[]): T | undefined {
     const key = this.generateKey(channel, args);
@@ -156,7 +244,12 @@ export class IpcCache {
   }
 
   /**
-   * 设置缓存
+   * Stores a value in the cache.
+   *
+   * @template T The type of the value.
+   * @param {string} channel - The IPC channel name.
+   * @param {unknown[]} args - The arguments passed to the IPC handler.
+   * @param {T} data - The data to cache.
    */
   set<T>(channel: string, args: unknown[], data: T): void {
     const key = this.generateKey(channel, args);
@@ -172,7 +265,10 @@ export class IpcCache {
   }
 
   /**
-   * 使某个通道的所有缓存失效
+   * Invalidates all cache entries for a specific channel.
+   *
+   * @param {string} channel - The IPC channel name to invalidate.
+   * @returns {number} The number of invalidated entries.
    */
   invalidateChannel(channel: string): number {
     let count = 0;
@@ -197,7 +293,10 @@ export class IpcCache {
   }
 
   /**
-   * 使匹配模式的缓存失效
+   * Invalidates cache entries matching a specific regex pattern.
+   *
+   * @param {RegExp} pattern - The regex pattern to match keys against.
+   * @returns {number} The number of invalidated entries.
    */
   invalidatePattern(pattern: RegExp): number {
     let count = 0;
@@ -218,7 +317,7 @@ export class IpcCache {
   }
 
   /**
-   * 清空所有缓存
+   * Clears the entire cache and resets statistics.
    */
   clear(): void {
     this.cache.clear();
@@ -230,7 +329,9 @@ export class IpcCache {
   }
 
   /**
-   * 获取缓存统计
+   * Retrieves current cache statistics.
+   *
+   * @returns {CacheStats} The statistics object.
    */
   getStats(): CacheStats {
     const total = this.stats.hits + this.stats.misses;
@@ -247,18 +348,23 @@ export class IpcCache {
 
 let ipcCacheInstance: IpcCache | null = null;
 
+/**
+ * Retrieves the singleton instance of IpcCache.
+ *
+ * @returns {IpcCache} The IPC cache instance.
+ */
 export function getIpcCache(): IpcCache {
   if (!ipcCacheInstance) {
     ipcCacheInstance = new IpcCache({
       maxSize: 100,
-      defaultTTL: 5000, // 5 秒默认 TTL
+      defaultTTL: 5000, // 5 seconds default TTL
     });
 
-    // 配置特定通道的 TTL
-    ipcCacheInstance.setChannelTTL('goal:list', 10000);     // 10 秒
+    // Configure specific channel TTLs
+    ipcCacheInstance.setChannelTTL('goal:list', 10000);     // 10 seconds
     ipcCacheInstance.setChannelTTL('task-template:list', 10000);
-    ipcCacheInstance.setChannelTTL('dashboard:get-all', 30000); // 30 秒
-    ipcCacheInstance.setChannelTTL('reminder:list', 5000);   // 5 秒
+    ipcCacheInstance.setChannelTTL('dashboard:get-all', 30000); // 30 seconds
+    ipcCacheInstance.setChannelTTL('reminder:list', 5000);   // 5 seconds
   }
   return ipcCacheInstance;
 }
@@ -266,7 +372,7 @@ export function getIpcCache(): IpcCache {
 // ============ Cache Wrapper for IPC Handlers ============
 
 /**
- * 包装 IPC handler，添加缓存支持
+ * Higher-order function to wrap an IPC handler with caching logic.
  *
  * @example
  * ```typescript
@@ -277,6 +383,13 @@ export function getIpcCache(): IpcCache {
  *   { ttl: 10000 }
  * ));
  * ```
+ *
+ * @template T The return type of the handler.
+ * @param {(event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T>} handler - The original IPC handler.
+ * @param {Object} [options] - Caching options.
+ * @param {number} [options.ttl] - Custom TTL for this specific handler.
+ * @param {string} [options.channel] - Channel name for logging and key generation (defaults to 'unknown').
+ * @returns {(event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T>} The wrapped handler.
  */
 export function withCache<T>(
   handler: (event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T>,
@@ -286,16 +399,16 @@ export function withCache<T>(
     const cache = getIpcCache();
     const channel = options?.channel ?? 'unknown';
 
-    // 尝试从缓存获取
+    // Try to get from cache
     const cached = cache.get<T>(channel, args);
     if (cached !== undefined) {
       return cached;
     }
 
-    // 执行实际 handler
+    // Execute actual handler
     const result = await handler(event, ...args);
 
-    // 存入缓存
+    // Store in cache
     cache.set(channel, args, result);
 
     return result;
@@ -303,7 +416,8 @@ export function withCache<T>(
 }
 
 /**
- * 写操作后使相关缓存失效的装饰器
+ * Higher-order function to wrap an IPC handler such that it invalidates cache entries upon success.
+ * Useful for mutation operations (create, update, delete).
  *
  * @example
  * ```typescript
@@ -314,6 +428,11 @@ export function withCache<T>(
  *   ['goal:list', 'dashboard:get-all']
  * ));
  * ```
+ *
+ * @template T The return type of the handler.
+ * @param {(event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T>} handler - The original IPC handler.
+ * @param {string[]} channelsToInvalidate - List of channel names to invalidate.
+ * @returns {(event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T>} The wrapped handler.
  */
 export function invalidatesCache<T>(
   handler: (event: IpcMainInvokeEvent, ...args: unknown[]) => Promise<T>,
@@ -322,7 +441,7 @@ export function invalidatesCache<T>(
   return async (event: IpcMainInvokeEvent, ...args: unknown[]) => {
     const result = await handler(event, ...args);
 
-    // 写操作成功后，使相关缓存失效
+    // After successful write operation, invalidate related caches
     const cache = getIpcCache();
     for (const channel of channelsToInvalidate) {
       cache.invalidateChannel(channel);
@@ -335,7 +454,7 @@ export function invalidatesCache<T>(
 // ============ IPC Handlers for Cache Management ============
 
 /**
- * 注册缓存管理 IPC handlers
+ * Registers IPC handlers for managing the cache (stats, clear, invalidate).
  */
 export function registerCacheIpcHandlers(): void {
   ipcMain.handle('cache:stats', async () => {

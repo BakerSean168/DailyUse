@@ -4,14 +4,14 @@ import { initializeDatabase, getDatabase } from '../infrastructure';
 import { configureMainProcessDependencies } from '../infrastructure';
 
 /**
- * Register infrastructure initialization tasks
+ * Registers infrastructure initialization tasks with the InitializationManager.
  *
- * These tasks initialize the core infrastructure layer:
- * 1. Database - SQLite connection and schema setup
- * 2. DI Container - Service/repository dependency injection
- * 3. IPC System - Electron IPC handlers registration
+ * This function orchestrates the startup sequence for the core infrastructure layer:
+ * 1. **Database**: Establishes the SQLite connection and schema.
+ * 2. **DI Container**: Configures dependency injection for services and repositories.
+ * 3. **IPC System**: Registers all Electron IPC handlers.
  *
- * Each task has defined dependencies to ensure proper initialization order
+ * Each task declares its priority and dependencies to ensure a deterministic and safe startup order.
  */
 export function registerInfrastructureInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
@@ -25,8 +25,8 @@ export function registerInfrastructureInitializationTasks(): void {
    * - Memory-mapped I/O for faster reads
    * - Proper journal mode
    *
-   * Priority: 5 (very high, no dependencies)
-   * Phase: APP_STARTUP (critical path)
+   * Priority: 5 (Very high, no dependencies)
+   * Phase: APP_STARTUP (Critical path)
    */
   manager.registerTask({
     name: 'database-initialization',
@@ -52,8 +52,8 @@ export function registerInfrastructureInitializationTasks(): void {
     cleanup: async () => {
       console.log('[Infrastructure] Cleaning up database connection...');
       try {
-        // Note: closeDatabase is called elsewhere in app lifecycle
-        // This is just a placeholder for any cleanup if needed
+        // Note: closeDatabase is typically handled by the app lifecycle manager
+        // This acts as a hook if specific module-level cleanup is needed
       } catch (error) {
         console.error('[Infrastructure] Database cleanup failed:', error);
       }
@@ -64,12 +64,12 @@ export function registerInfrastructureInitializationTasks(): void {
    * Task 2: DI Container Configuration
    *
    * Sets up the dependency injection container with:
-   * - Repository instances
+   * - Repository instances (linked to the DB)
    * - Service instances
    * - Factory functions
    *
-   * Depends on: database-initialization (needs DB connection for repositories)
-   * Priority: 10 (high, after database)
+   * Dependencies: 'database-initialization' (Repositories require a DB connection)
+   * Priority: 10 (High, runs after database)
    * Phase: APP_STARTUP
    */
   manager.registerTask({
@@ -95,20 +95,17 @@ export function registerInfrastructureInitializationTasks(): void {
     },
     cleanup: async () => {
       console.log('[Infrastructure] Cleaning up DI container...');
-      // DI cleanup can be handled by container itself if needed
+      // DI containers usually manage their own cleanup via singletons
     },
   });
 
   /**
    * Task 3: IPC System Initialization
    *
-   * Registers all IPC handlers for:
-   * - AI, Task, Goal, Schedule modules
-   * - Notification, Repository, Dashboard modules
-   * - Account, Authentication, Settings modules
+   * Registers all IPC handlers for various modules (AI, Task, Goal, Schedule, etc.).
    *
-   * Depends on: di-container-configuration (needs services available)
-   * Priority: 15 (medium-high, after DI)
+   * Dependencies: 'di-container-configuration' (Handlers depend on injected services)
+   * Priority: 15 (Medium-high, runs after DI)
    * Phase: APP_STARTUP
    */
   manager.registerTask({
@@ -121,7 +118,7 @@ export function registerInfrastructureInitializationTasks(): void {
       const startTime = performance.now();
 
       try {
-        // Import and initialize all module IPC handlers
+        // Dynamically import and initialize all module IPC handlers
         const { initializeIPCHandlers } = await import('../../main/modules/ipc-registry');
         initializeIPCHandlers();
 
@@ -137,7 +134,7 @@ export function registerInfrastructureInitializationTasks(): void {
     },
     cleanup: async () => {
       console.log('[Infrastructure] Cleaning up IPC system...');
-      // IPC handlers cleanup (close channels, remove listeners)
+      // IPC handlers are typically persistent until app exit
     },
   });
 }

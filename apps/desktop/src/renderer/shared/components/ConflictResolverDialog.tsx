@@ -1,26 +1,44 @@
 /**
  * Conflict Resolver Dialog Component
  * 
- * EPIC-004: Offline Sync - STORY-022 UI 集成
+ * Provides a UI for resolving data conflicts during synchronization.
+ * Users can choose to keep the local version, the server version, or manually select
+ * values for individual conflicting fields.
  * 
- * 显示冲突详情并允许用户选择解决方案
+ * Part of EPIC-004: Offline Sync - STORY-022 UI Integration.
+ *
+ * @module renderer/shared/components/ConflictResolverDialog
  */
 
 import { useState, useCallback } from 'react';
 import type { ConflictRecord, FieldDiff, MergeResult } from '../hooks/useConflicts';
 
+/**
+ * Props for the ConflictResolverDialog.
+ */
 interface ConflictResolverDialogProps {
+  /** The conflict record to display and resolve. */
   conflict: ConflictRecord;
+  /** Whether the dialog is visible. */
   isOpen: boolean;
+  /** Callback to close the dialog without resolving (postpone). */
   onClose: () => void;
+  /** Callback invoked when a resolution is successfully applied locally (client-side update). */
   onResolve: (result: MergeResult) => void;
+  /** Async callback to resolve using the local version entirely. */
   onResolveWithLocal: (conflictId: string) => Promise<MergeResult | null>;
+  /** Async callback to resolve using the server version entirely. */
   onResolveWithServer: (conflictId: string) => Promise<MergeResult | null>;
+  /** Async callback to resolve using a manual field-by-field selection. */
   onResolveManually: (conflictId: string, selections: Record<string, 'local' | 'server'>) => Promise<MergeResult | null>;
 }
 
+/** Strategy for resolution. */
 type ResolutionMode = 'local' | 'server' | 'manual';
 
+/**
+ * Component for conflict resolution dialog.
+ */
 export function ConflictResolverDialog({
   conflict,
   isOpen,
@@ -34,7 +52,9 @@ export function ConflictResolverDialog({
   const [fieldSelections, setFieldSelections] = useState<Record<string, 'local' | 'server'>>({});
   const [isResolving, setIsResolving] = useState(false);
 
-  // 初始化字段选择
+  /**
+   * Initializes the field selection state for manual mode (defaulting to server).
+   */
   const initFieldSelections = useCallback(() => {
     const selections: Record<string, 'local' | 'server'> = {};
     for (const diff of conflict.conflictingFields) {
@@ -43,7 +63,9 @@ export function ConflictResolverDialog({
     setFieldSelections(selections);
   }, [conflict.conflictingFields]);
 
-  // 处理解决
+  /**
+   * Handles the resolution action based on the selected mode.
+   */
   const handleResolve = async () => {
     setIsResolving(true);
     try {
@@ -70,25 +92,31 @@ export function ConflictResolverDialog({
     }
   };
 
-  // 更新字段选择
+  /**
+   * Updates the selection for a specific field in manual mode.
+   */
   const updateFieldSelection = (field: string, value: 'local' | 'server') => {
     setFieldSelections(prev => ({ ...prev, [field]: value }));
   };
 
-  // 格式化值显示
+  /**
+   * Formats a value for display. Handles null/undefined and objects.
+   */
   const formatValue = (value: unknown): string => {
-    if (value === null || value === undefined) return '(空)';
+    if (value === null || value === undefined) return '(Empty)';
     if (typeof value === 'object') return JSON.stringify(value, null, 2);
     return String(value);
   };
 
-  // 获取实体类型显示名称
+  /**
+   * Gets a user-friendly name for entity types.
+   */
   const getEntityTypeName = (type: string): string => {
     const names: Record<string, string> = {
-      goal: '目标',
-      task: '任务',
-      keyResult: '关键结果',
-      setting: '设置',
+      goal: 'Goal',
+      task: 'Task',
+      keyResult: 'Key Result',
+      setting: 'Setting',
     };
     return names[type.toLowerCase()] ?? type;
   };
@@ -102,7 +130,7 @@ export function ConflictResolverDialog({
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <span className="text-xl">⚡</span>
-            <h2 className="text-lg font-semibold">检测到数据冲突</h2>
+            <h2 className="text-lg font-semibold">Conflict Detected</h2>
           </div>
           <button
             onClick={onClose}
@@ -114,18 +142,18 @@ export function ConflictResolverDialog({
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-4 space-y-4">
-          {/* 冲突说明 */}
+          {/* Conflict Description */}
           <p className="text-muted-foreground">
-            「{getEntityTypeName(conflict.entityType)}」在多个设备上被修改，请选择保留哪个版本。
+            The "{getEntityTypeName(conflict.entityType)}" has been modified on multiple devices. Please choose which version to keep.
           </p>
 
-          {/* 版本对比 */}
+          {/* Version Comparison */}
           <div className="grid grid-cols-2 gap-4">
-            {/* 本地版本 */}
+            {/* Local Version */}
             <div className="border rounded-lg p-3">
               <div className="flex items-center gap-2 mb-3">
                 <span>💻</span>
-                <span className="font-medium">本地版本</span>
+                <span className="font-medium">Local Version</span>
               </div>
               <div className="space-y-2 text-sm">
                 {conflict.conflictingFields.map((diff) => (
@@ -137,11 +165,11 @@ export function ConflictResolverDialog({
               </div>
             </div>
 
-            {/* 服务器版本 */}
+            {/* Server Version */}
             <div className="border rounded-lg p-3">
               <div className="flex items-center gap-2 mb-3">
                 <span>☁️</span>
-                <span className="font-medium">云端版本</span>
+                <span className="font-medium">Cloud Version</span>
               </div>
               <div className="space-y-2 text-sm">
                 {conflict.conflictingFields.map((diff) => (
@@ -154,7 +182,7 @@ export function ConflictResolverDialog({
             </div>
           </div>
 
-          {/* 解决方式选择 */}
+          {/* Resolution Mode Selection */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -164,7 +192,7 @@ export function ConflictResolverDialog({
                 onChange={() => setMode('server')}
                 className="w-4 h-4"
               />
-              <span>使用云端版本</span>
+              <span>Use Cloud Version</span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer">
@@ -175,7 +203,7 @@ export function ConflictResolverDialog({
                 onChange={() => setMode('local')}
                 className="w-4 h-4"
               />
-              <span>使用本地版本</span>
+              <span>Use Local Version</span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer">
@@ -189,14 +217,14 @@ export function ConflictResolverDialog({
                 }}
                 className="w-4 h-4"
               />
-              <span>手动合并</span>
+              <span>Manual Merge</span>
             </label>
           </div>
 
-          {/* 手动合并选项 */}
+          {/* Manual Merge Options */}
           {mode === 'manual' && (
             <div className="border rounded-lg p-3 space-y-3">
-              <p className="text-sm text-muted-foreground">为每个冲突字段选择要保留的版本：</p>
+              <p className="text-sm text-muted-foreground">Select which version to keep for each field:</p>
               {conflict.conflictingFields.map((diff) => (
                 <div key={diff.field} className="flex items-center justify-between">
                   <span className="font-medium">{diff.field}</span>
@@ -209,7 +237,7 @@ export function ConflictResolverDialog({
                           : 'bg-muted hover:bg-muted/80'
                       }`}
                     >
-                      本地
+                      Local
                     </button>
                     <button
                       onClick={() => updateFieldSelection(diff.field, 'server')}
@@ -219,7 +247,7 @@ export function ConflictResolverDialog({
                           : 'bg-muted hover:bg-muted/80'
                       }`}
                     >
-                      云端
+                      Cloud
                     </button>
                   </div>
                 </div>
@@ -234,14 +262,14 @@ export function ConflictResolverDialog({
             onClick={onClose}
             className="px-4 py-2 text-sm rounded-md hover:bg-muted"
           >
-            稍后解决
+            Resolve Later
           </button>
           <button
             onClick={handleResolve}
             disabled={isResolving}
             className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
           >
-            {isResolving ? '处理中...' : '应用选择'}
+            {isResolving ? 'Resolving...' : 'Apply Resolution'}
           </button>
         </div>
       </div>

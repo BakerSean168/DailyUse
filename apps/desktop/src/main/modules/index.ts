@@ -1,30 +1,10 @@
 /**
- * Desktop Main Process - Module Registry
+ * Module Registry
  *
- * 统一注册所有模块
+ * Centralizes the registration and initialization of all application modules.
+ * Manages the dependency order and lifecycle of infrastructure, core services, and feature modules.
  *
- * Architecture & Priority Order:
- * ==============================
- * INFRASTRUCTURE (priority: 10)
- *   - infrastructure: Database, Container initialization
- *
- * CORE_SERVICES (priority: 40-50)
- *   - notification-module: 45
- *
- * FEATURE_MODULES (priority: 50-160)
- *   - goal-module: 50
- *   - task-module: 60
- *   - schedule-module: 70
- *   - reminder-module: 80
- *   - dashboard-module: 110
- *   - ai-module: 120
- *   - account-module: 130
- *   - authentication-module: 135 (auth separated from account)
- *   - repository-module: 140
- *   - setting-module: 150
- *   - editor-module: 160
- *
- * Total: 13 modules with 200+ IPC channels
+ * @module modules
  */
 
 import { InitializationManager, InitializationPhase, createLogger } from '@dailyuse/utils';
@@ -51,12 +31,12 @@ import { registerEditorModule } from './editor';
 const logger = createLogger('ModuleRegistry');
 
 /**
- * 注册所有模块
+ * Registers all application modules with the InitializationManager.
  * 
- * 模块将按 InitializationPhase 和 priority 顺序初始化:
- * 1. INFRASTRUCTURE - 基础设施（数据库、Container）[priority: 10]
- * 2. CORE_SERVICES - 核心服务（Account, Setting, Notification）[priority: 50]
- * 3. FEATURE_MODULES - 功能模块（Goal, Task, Schedule 等）[priority: 100+]
+ * Modules are grouped by initialization phase and priority:
+ * 1. **INFRASTRUCTURE** (Priority 10): Database connections, DI containers.
+ * 2. **CORE_SERVICES** (Priority 40-50): Account, Settings, Authentication, Notifications.
+ * 3. **FEATURE_MODULES** (Priority 50-160): Goals, Tasks, Schedule, AI, Dashboard, etc.
  */
 export function registerAllModules(): void {
   const manager = InitializationManager.getInstance();
@@ -98,7 +78,9 @@ export function registerAllModules(): void {
 }
 
 /**
- * 初始化所有模块
+ * Executes the initialization sequence for all registered modules.
+ *
+ * @returns {Promise<Object>} An object containing the success status, any failed modules, and the total duration.
  */
 export async function initializeAllModules(): Promise<{
   success: boolean;
@@ -134,7 +116,10 @@ export async function initializeAllModules(): Promise<{
 }
 
 /**
- * 关闭所有模块（优雅关闭）
+ * Performs a graceful shutdown of all modules.
+ * Executes cleanup tasks in reverse order of initialization priority.
+ *
+ * @returns {Promise<void>} Resolves when all modules have been shut down.
  */
 export async function shutdownAllModules(): Promise<void> {
   logger.info('Shutting down all modules...');

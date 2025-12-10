@@ -1,17 +1,19 @@
 /**
  * Electron Preload Script
  *
- * 遵循 ADR-006: 使用 contextBridge 安全暴露 API
- * 遵循 Electron 安全最佳实践
+ * Implements a secure `contextBridge` to expose specific API capabilities to the renderer process.
+ * Acts as a security barrier, ensuring only authorized IPC channels can be accessed.
+ * Follows Electron security best practices (context isolation, sandboxing).
  *
- * 这个 preload 脚本暴露一个通用的 IPC 接口，
- * 与 @dailyuse/infrastructure-client 的 ElectronAPI 类型匹配。
+ * The exposed API matches the `ElectronAPI` type definition expected by `@dailyuse/infrastructure-client`.
+ *
+ * @module preload
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
 
-// ========== IPC 通道白名单 ==========
-// 只允许这些通道进行通信，提高安全性
+// ========== IPC Channel Whitelist ==========
+// Security: Only allow communication on these specific channels.
 
 const ALLOWED_CHANNELS = [
   // App
@@ -331,30 +333,41 @@ const ALLOWED_CHANNELS = [
   'sync:device:list',
 ] as const;
 
+/**
+ * Type representing valid allowed channels.
+ */
 type AllowedChannel = (typeof ALLOWED_CHANNELS)[number];
 
-// 创建 Set 用于快速查找
+// Fast lookup set for allowed channels
 const allowedChannelsSet = new Set<string>(ALLOWED_CHANNELS);
 
 /**
- * 检查通道是否在白名单中
+ * Validates if a channel string is permitted.
+ *
+ * @param {string} channel - The channel name to check.
+ * @returns {boolean} True if the channel is allowed.
  */
 function isAllowedChannel(channel: string): channel is AllowedChannel {
   return allowedChannelsSet.has(channel);
 }
 
-// 事件监听器映射
+// Map to store event listeners for safe removal
 const eventListeners = new Map<string, Set<(...args: unknown[]) => void>>();
 
 /**
- * 暴露给渲染进程的 API
+ * The API exposed to the renderer process via `window.electronAPI`.
  *
- * 匹配 @dailyuse/infrastructure-client 的 ElectronAPI 接口
+ * Implements the `ElectronAPI` interface used by the frontend infrastructure client.
  */
 const electronAPI = {
   /**
-   * 通用 IPC invoke 方法
-   * 用于请求-响应式通信
+   * Invokes a main process handler via IPC.
+   * Used for request-response communication (e.g., fetching data).
+   *
+   * @template T The expected return type.
+   * @param {string} channel - The IPC channel name.
+   * @param {...unknown[]} args - Arguments to pass to the handler.
+   * @returns {Promise<T>} A promise that resolves with the handler's result.
    */
   invoke: <T = unknown>(channel: string, ...args: unknown[]): Promise<T> => {
     if (!isAllowedChannel(channel)) {
@@ -364,8 +377,11 @@ const electronAPI = {
   },
 
   /**
-   * 注册事件监听器
-   * 用于接收主进程推送的消息
+   * Registers a listener for messages sent from the main process.
+   * Used for push notifications or event updates.
+   *
+   * @param {string} channel - The IPC channel to listen on.
+   * @param {(...args: unknown[]) => void} callback - The function to call when a message is received.
    */
   on: (channel: string, callback: (...args: unknown[]) => void): void => {
     if (!isAllowedChannel(channel)) {
@@ -373,25 +389,28 @@ const electronAPI = {
       return;
     }
 
-    // 包装回调以移除 event 参数
+    // Wrap callback to strip the event object from arguments, exposing only data
     const wrappedCallback = (_event: Electron.IpcRendererEvent, ...args: unknown[]) => {
       callback(...args);
     };
 
-    // 存储映射关系以便后续移除
+    // Store for cleanup
     if (!eventListeners.has(channel)) {
       eventListeners.set(channel, new Set());
     }
     eventListeners.get(channel)!.add(callback);
 
-    // 存储原始回调到包装回调的映射
+    // Attach wrapped reference to original callback for removal
     (callback as unknown as { __wrapped: typeof wrappedCallback }).__wrapped = wrappedCallback;
 
     ipcRenderer.on(channel, wrappedCallback);
   },
 
   /**
-   * 移除事件监听器
+   * Removes a previously registered listener.
+   *
+   * @param {string} channel - The IPC channel.
+   * @param {(...args: unknown[]) => void} callback - The original callback function to remove.
    */
   off: (channel: string, callback: (...args: unknown[]) => void): void => {
     const wrappedCallback = (callback as unknown as { __wrapped: (...args: unknown[]) => void }).__wrapped;
@@ -399,18 +418,20 @@ const electronAPI = {
       ipcRenderer.removeListener(channel, wrappedCallback);
     }
 
-    // 从映射中移除
+    // Clean up internal map
     eventListeners.get(channel)?.delete(callback);
   },
 
-  // ========== 便捷方法（兼容旧代码）==========
+  // ========== Convenience Methods (Backward Compatibility) ==========
   
+  /** Retrieves application info. */
   getAppInfo: () => ipcRenderer.invoke('app:getInfo'),
+  /** Checks Dependency Injection status. */
   checkDIStatus: () => ipcRenderer.invoke('app:checkDIStatus'),
 };
 
-// 安全地暴露 API 给渲染进程
+// Expose the API to the renderer process safely
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
-// 类型声明
+// Export type for TypeScript usage in renderer
 export type ElectronAPI = typeof electronAPI;

@@ -1,44 +1,56 @@
 /**
  * useAutoCleanup Hook
  *
- * 自动清理 Hook - 组件卸载时自动清理数据
- * 防止内存泄漏，优化路由切换时的内存占用
+ * A custom hook to fetch data and automatically clean it up when the component unmounts or dependencies change.
+ * This helps preventing memory leaks and managing data freshness, especially during route transitions.
+ *
+ * @module renderer/shared/hooks/useAutoCleanup
  */
 
 import { useState, useEffect, useCallback, useRef, type DependencyList } from 'react';
 
 // ============ Types ============
 
+/**
+ * Options for the useAutoCleanup hook.
+ *
+ * @template T The type of data being fetched.
+ */
 export interface UseAutoCleanupOptions<T> {
-  /** 数据获取函数 */
+  /** Async function to fetch the data. */
   fetcher: () => Promise<T>;
-  /** 依赖项 */
+  /** Dependency list that triggers a re-fetch when changed. Defaults to []. */
   deps?: DependencyList;
-  /** 是否立即加载 */
+  /** Whether to trigger the fetch immediately on mount. Defaults to true. */
   loadOnMount?: boolean;
-  /** 自定义清理函数 */
+  /** Optional callback to run during cleanup phase. */
   onCleanup?: () => void;
-  /** 卸载延迟清理时间 (ms)，0 表示立即清理 */
+  /** Delay in milliseconds before cleaning up data after unmount (useful for animations). 0 means immediate. */
   cleanupDelay?: number;
 }
 
+/**
+ * Result object returned by the useAutoCleanup hook.
+ *
+ * @template T The type of data.
+ */
 export interface UseAutoCleanupResult<T> {
-  /** 数据 */
+  /** The fetched data, or null if loading/error/cleaned up. */
   data: T | null;
-  /** 是否加载中 */
+  /** Whether the fetcher is currently running. */
   loading: boolean;
-  /** 错误信息 */
+  /** Error message if the fetch failed. */
   error: string | null;
-  /** 刷新数据 */
+  /** Function to manually trigger a re-fetch. */
   refresh: () => Promise<void>;
-  /** 手动清理 */
+  /** Function to manually trigger cleanup. */
   cleanup: () => void;
 }
 
 // ============ Hook ============
 
 /**
- * 自动清理数据的 Hook
+ * Hook for managing data fetching with automatic cleanup lifecycle.
  *
  * @example
  * ```tsx
@@ -48,12 +60,15 @@ export interface UseAutoCleanupResult<T> {
  *     deps: [goalId],
  *   });
  *
- *   // 当组件卸载或 goalId 变化时，旧数据会被自动清理
  *   if (loading) return <Skeleton />;
  *   if (!goal) return null;
  *   return <GoalDetail goal={goal} />;
  * }
  * ```
+ *
+ * @template T The data type.
+ * @param {UseAutoCleanupOptions<T>} options - Configuration options.
+ * @returns {UseAutoCleanupResult<T>} The data state and control functions.
  */
 export function useAutoCleanup<T>(
   options: UseAutoCleanupOptions<T>
@@ -86,13 +101,13 @@ export function useAutoCleanup<T>(
 
       const result = await fetcher();
 
-      // 只在组件仍然挂载时更新状态
+      // Only update state if component is still mounted
       if (isMountedRef.current) {
         setData(result);
       }
     } catch (err) {
       if (isMountedRef.current) {
-        const message = err instanceof Error ? err.message : '加载失败';
+        const message = err instanceof Error ? err.message : 'Failed to load data';
         setError(message);
       }
     } finally {
@@ -106,11 +121,11 @@ export function useAutoCleanup<T>(
     await load();
   }, [load]);
 
-  // 加载数据
+  // Effect to handle data loading and cleanup
   useEffect(() => {
     isMountedRef.current = true;
 
-    // 清除之前的清理定时器
+    // Clear any pending delayed cleanup
     if (cleanupTimerRef.current) {
       clearTimeout(cleanupTimerRef.current);
       cleanupTimerRef.current = null;
@@ -120,21 +135,21 @@ export function useAutoCleanup<T>(
       load();
     }
 
-    // 卸载时清理
+    // Cleanup function
     return () => {
       isMountedRef.current = false;
 
       if (cleanupDelay > 0) {
-        // 延迟清理，给动画等留出时间
+        // Schedule cleanup if delay is requested
         cleanupTimerRef.current = setTimeout(() => {
           cleanup();
         }, cleanupDelay);
       } else {
-        // 立即清理
+        // Immediate cleanup
         cleanup();
       }
     };
-  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  }, deps);
 
   return {
     data,
@@ -148,8 +163,11 @@ export function useAutoCleanup<T>(
 // ============ Companion Hook: useCleanupOnRouteChange ============
 
 /**
- * 路由变化时清理状态的 Hook
- * 用于全局状态管理器或 Context
+ * Hook to trigger cleanup actions when the route pathname changes.
+ * Useful for resetting global state stores or contexts that persist across components but should reset on navigation.
+ *
+ * @param {() => void} cleanupFn - The function to execute on route change.
+ * @param {string} pathname - The current route pathname (usually from `useLocation`).
  */
 export function useCleanupOnRouteChange(
   cleanupFn: () => void,
@@ -159,7 +177,7 @@ export function useCleanupOnRouteChange(
 
   useEffect(() => {
     if (prevPathnameRef.current !== pathname) {
-      // 路由变化，执行清理
+      // Route changed, run cleanup
       cleanupFn();
       prevPathnameRef.current = pathname;
     }
@@ -169,30 +187,56 @@ export function useCleanupOnRouteChange(
 // ============ WeakMap based cache ============
 
 /**
- * 使用 WeakMap 的缓存，允许自动垃圾回收
- * 当 key 对象被回收时，对应的缓存值也会被回收
+ * A simple cache implementation using `WeakMap`.
+ * Entries are automatically garbage collected when the key object is no longer referenced elsewhere.
+ *
+ * @template K Key type (must be an object).
+ * @template V Value type.
  */
 export class WeakCache<K extends object, V> {
   private cache = new WeakMap<K, V>();
 
+  /**
+   * Retrieves a value from the cache.
+   * @param {K} key - The key object.
+   * @returns {V | undefined} The cached value.
+   */
   get(key: K): V | undefined {
     return this.cache.get(key);
   }
 
+  /**
+   * Stores a value in the cache.
+   * @param {K} key - The key object.
+   * @param {V} value - The value to cache.
+   */
   set(key: K, value: V): void {
     this.cache.set(key, value);
   }
 
+  /**
+   * Checks if a key exists in the cache.
+   * @param {K} key - The key object.
+   * @returns {boolean} True if the key exists.
+   */
   has(key: K): boolean {
     return this.cache.has(key);
   }
 
+  /**
+   * Removes a key from the cache.
+   * @param {K} key - The key object.
+   * @returns {boolean} True if an element existed and has been removed.
+   */
   delete(key: K): boolean {
     return this.cache.delete(key);
   }
 
   /**
-   * 获取或创建缓存值
+   * Retrieves a value or creates it using the factory function if it doesn't exist.
+   * @param {K} key - The key object.
+   * @param {() => V} factory - Function to create the value if missing.
+   * @returns {V} The cached or newly created value.
    */
   getOrCreate(key: K, factory: () => V): V {
     const existing = this.cache.get(key);

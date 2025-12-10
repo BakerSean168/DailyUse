@@ -1,63 +1,81 @@
 /**
  * IPC Handler Utilities
  *
- * 统一的 IPC handler 创建工具，提供：
- * - 自动错误处理和日志记录
- * - 类型安全的 handler 定义
- * - 简化的 handler 注册语法
+ * Provides a unified set of tools for creating and registering IPC handlers with:
+ * - Automatic error handling and logging
+ * - Type-safe handler definitions
+ * - Simplified registration syntax
+ *
+ * @module utils/ipc-handler
  */
 
 import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { createLogger, type ILogger } from '@dailyuse/utils';
 
 /**
- * IPC Handler 函数类型
+ * Type definition for an IPC Handler function.
+ *
+ * It represents a function that processes an IPC request.
+ *
+ * @template TInput The type of the input argument. defaults to void.
+ * @template TOutput The type of the return value. defaults to void.
  */
 export type IpcHandlerFn<TInput = void, TOutput = void> = TInput extends void
   ? () => Promise<TOutput> | TOutput
   : (input: TInput) => Promise<TOutput> | TOutput;
 
 /**
- * IPC Handler 配置选项
+ * Configuration options for an IPC Handler.
  */
 export interface IpcHandlerOptions {
-  /** 自定义 logger（默认使用 channel 名称创建） */
+  /** Custom logger instance (defaults to a logger created with the channel name). */
   logger?: ILogger;
-  /** 是否在错误时重新抛出异常（默认 true） */
+  /** Whether to rethrow exceptions after logging them (defaults to true). */
   rethrow?: boolean;
-  /** 错误时的默认返回值 */
+  /** Default return value in case of an error (if rethrow is false). */
   errorResult?: unknown;
 }
 
 /**
- * IPC Handler 定义
+ * Definition structure for an IPC Handler.
+ * Contains the channel name, the handler function, and configuration options.
  */
 export interface IpcHandlerDefinition<TInput = void, TOutput = void> {
+  /** The IPC channel name to listen on. */
   channel: string;
+  /** The function to execute when a message is received on the channel. */
   handler: IpcHandlerFn<TInput, TOutput>;
+  /** Optional configuration for the handler. */
   options?: IpcHandlerOptions;
 }
 
-// 全局默认 logger
+// Global default logger
 const defaultLogger = createLogger('IpcHandler');
 
 /**
- * 创建带有自动错误处理的 IPC handler
+ * Creates an IPC handler definition with automatic error handling.
  *
  * @example
- * // 无参数
+ * // No arguments
  * const handler = createIpcHandler('account:me:get', () => service.getCurrentUser());
  *
  * @example
- * // 带参数
+ * // With arguments
  * const handler = createIpcHandler('account:get', (uuid: string) => service.getAccount(uuid));
  *
  * @example
- * // 带选项
+ * // With options
  * const handler = createIpcHandler('account:get', (uuid: string) => service.getAccount(uuid), {
  *   errorResult: null,
  *   rethrow: false,
  * });
+ *
+ * @template TInput The input type of the handler.
+ * @template TOutput The output type of the handler.
+ * @param {string} channel - The IPC channel name.
+ * @param {IpcHandlerFn<TInput, TOutput>} handler - The handler function.
+ * @param {IpcHandlerOptions} [options={}] - Configuration options.
+ * @returns {IpcHandlerDefinition<TInput, TOutput>} The handler definition object.
  */
 export function createIpcHandler<TInput = void, TOutput = void>(
   channel: string,
@@ -68,7 +86,13 @@ export function createIpcHandler<TInput = void, TOutput = void>(
 }
 
 /**
- * 注册单个 IPC handler
+ * Registers a single IPC handler with Electron's ipcMain.
+ *
+ * Wraps the handler execution in a try-catch block for error logging and handling.
+ *
+ * @template TInput The input type.
+ * @template TOutput The output type.
+ * @param {IpcHandlerDefinition<TInput, TOutput>} definition - The handler definition to register.
  */
 export function registerIpcHandler<TInput = void, TOutput = void>(
   definition: IpcHandlerDefinition<TInput, TOutput>,
@@ -78,11 +102,11 @@ export function registerIpcHandler<TInput = void, TOutput = void>(
 
   ipcMain.handle(channel, async (_event: IpcMainInvokeEvent, ...args: unknown[]) => {
     try {
-      // 根据参数数量决定如何调用 handler
+      // Determine how to call the handler based on argument count
       if (args.length === 0) {
         return await (handler as () => Promise<TOutput>)();
       }
-      // 单参数或多参数都传递第一个参数（大多数场景是单参数对象）
+      // Pass the first argument (assuming single argument object pattern for most cases)
       return await (handler as (input: TInput) => Promise<TOutput>)(args[0] as TInput);
     } catch (error) {
       logger.error(`IPC handler error [${channel}]`, error);
@@ -95,13 +119,16 @@ export function registerIpcHandler<TInput = void, TOutput = void>(
 }
 
 /**
- * 批量注册 IPC handlers
+ * Registers multiple IPC handlers at once.
  *
  * @example
  * registerIpcHandlers([
  *   createIpcHandler('account:get', (uuid) => service.getAccount(uuid)),
  *   createIpcHandler('account:create', (input) => service.createAccount(input)),
  * ], { logger: accountLogger });
+ *
+ * @param {IpcHandlerDefinition<unknown, unknown>[]} definitions - An array of handler definitions.
+ * @param {IpcHandlerOptions} [globalOptions={}] - Global options to apply to all handlers (can be overridden by individual handler options).
  */
 export function registerIpcHandlers(
   definitions: IpcHandlerDefinition<unknown, unknown>[],
@@ -117,9 +144,9 @@ export function registerIpcHandlers(
 }
 
 /**
- * 创建模块 IPC handler 注册器
+ * Creates a helper for registering module-specific IPC handlers.
  *
- * 提供更简洁的 API 来注册某个模块的所有 handlers
+ * Provides a cleaner API for collecting and registering all handlers for a specific module.
  *
  * @example
  * const { handle, register } = createModuleIpcHandlers('Account', accountLogger);
@@ -127,7 +154,11 @@ export function registerIpcHandlers(
  * handle('account:get', (uuid) => service.getAccount(uuid));
  * handle('account:create', (input) => service.createAccount(input));
  *
- * register(); // 注册所有 handlers
+ * register(); // Registers all collected handlers
+ *
+ * @param {string} moduleName - The name of the module (used for logging).
+ * @param {ILogger} [logger] - Optional logger instance for the module.
+ * @returns {Object} An object containing methods to add handlers (`handle`), register them (`register`), and get channel names (`getChannels`).
  */
 export function createModuleIpcHandlers(
   moduleName: string,
@@ -168,7 +199,9 @@ export function createModuleIpcHandlers(
 }
 
 /**
- * 移除已注册的 IPC handlers
+ * Removes registered IPC handlers for the given channels.
+ *
+ * @param {string[]} channels - The list of channel names to remove handlers for.
  */
 export function removeIpcHandlers(channels: string[]): void {
   for (const channel of channels) {

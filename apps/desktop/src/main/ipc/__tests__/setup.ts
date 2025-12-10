@@ -32,7 +32,7 @@ afterEach(() => {
 
 // 全局辅助函数
 declare global {
-  // eslint-disable-next-line no-var
+
   var testHelpers: {
     createMockAccountUuid: () => string;
     delay: (ms: number) => Promise<void>;

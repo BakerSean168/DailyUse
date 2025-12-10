@@ -1,24 +1,36 @@
 /**
  * TrayManager
  *
- * 系统托盘管理器
- * Story-012: Desktop Native Features
+ * Manages the application's system tray presence.
+ * Handles the tray icon, context menu creation, window toggling behavior,
+ * and "flash" notifications.
+ *
+ * @module modules/tray
  */
 
 import { app, Tray, Menu, nativeImage, BrowserWindow } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// ESM 兼容的 __dirname
+// ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * Configuration options for the TrayManager.
+ */
 export interface TrayConfig {
+  /** Path to the tray icon file. If not provided, a default platform-specific icon is used. */
   iconPath?: string;
+  /** Tooltip text to show on hover. Defaults to "DailyUse". */
   tooltip?: string;
+  /** Whether to hide the window instead of quitting when the close button is clicked. Defaults to true. */
   hideOnClose?: boolean;
 }
 
+/**
+ * Class for managing the system tray.
+ */
 export class TrayManager {
   private tray: Tray | null = null;
   private mainWindow: BrowserWindow;
@@ -29,6 +41,12 @@ export class TrayManager {
   private emptyIcon: Electron.NativeImage | null = null;
   private isQuitting = false;
 
+  /**
+   * Creates an instance of TrayManager.
+   *
+   * @param {BrowserWindow} mainWindow - The main application window to control.
+   * @param {TrayConfig} [config={}] - Configuration options.
+   */
   constructor(mainWindow: BrowserWindow, config: TrayConfig = {}) {
     this.mainWindow = mainWindow;
     this.config = {
@@ -39,10 +57,11 @@ export class TrayManager {
   }
 
   /**
-   * 初始化托盘
+   * Initializes the system tray.
+   * Sets up the icon, tooltip, context menu, and event listeners.
    */
   init(): void {
-    // 获取图标路径
+    // Determine icon path
     const iconPath = this.config.iconPath || this.getDefaultIconPath();
     this.originalIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
     this.emptyIcon = nativeImage.createEmpty();
@@ -51,34 +70,37 @@ export class TrayManager {
     this.tray.setToolTip(this.config.tooltip || 'DailyUse');
     this.tray.setContextMenu(this.createContextMenu());
 
-    // 点击托盘图标
+    // Click handler
     this.tray.on('click', () => {
       this.toggleWindow();
     });
 
-    // 双击托盘图标
+    // Double-click handler
     this.tray.on('double-click', () => {
       this.showWindow();
     });
 
-    // 设置关闭行为
+    // Setup close behavior
     if (this.config.hideOnClose) {
       this.setupHideOnClose();
     }
   }
 
   /**
-   * 获取默认图标路径
+   * Resolves the default icon path based on the operating system.
+   *
+   * @returns {string} The path to the default icon.
    */
   private getDefaultIconPath(): string {
-    // 根据平台选择不同的图标
     const platform = process.platform;
     const iconName = platform === 'win32' ? 'icon.ico' : 'icon.png';
     return path.join(__dirname, '..', '..', 'assets', iconName);
   }
 
   /**
-   * 创建托盘菜单
+   * Creates the context menu for the tray icon.
+   *
+   * @returns {Menu} The constructed Electron Menu.
    */
   private createContextMenu(): Menu {
     return Menu.buildFromTemplate([
@@ -122,10 +144,11 @@ export class TrayManager {
   }
 
   /**
-   * 设置关闭时隐藏到托盘
+   * Configures the window to hide instead of closing when the close button is clicked,
+   * unless the application is explicitly quitting.
    */
   private setupHideOnClose(): void {
-    // 监听 before-quit 事件来标记正在退出
+    // Listen for before-quit to know when to actually close
     app.on('before-quit', () => {
       this.isQuitting = true;
     });
@@ -139,7 +162,7 @@ export class TrayManager {
   }
 
   /**
-   * 显示窗口
+   * Shows and focuses the main window.
    */
   showWindow(): void {
     if (this.mainWindow.isMinimized()) {
@@ -150,14 +173,14 @@ export class TrayManager {
   }
 
   /**
-   * 隐藏窗口
+   * Hides the main window.
    */
   hideWindow(): void {
     this.mainWindow.hide();
   }
 
   /**
-   * 切换窗口显示/隐藏
+   * Toggles the visibility of the main window.
    */
   toggleWindow(): void {
     if (this.mainWindow.isVisible()) {
@@ -168,7 +191,10 @@ export class TrayManager {
   }
 
   /**
-   * 开始闪烁（有通知时）
+   * Starts flashing the tray icon (toggling between the icon and empty image).
+   * Useful for alerting the user to notifications.
+   *
+   * @param {number} [interval=500] - The interval in milliseconds between flashes.
    */
   startFlashing(interval = 500): void {
     if (this.isFlashing || !this.tray) return;
@@ -184,7 +210,7 @@ export class TrayManager {
   }
 
   /**
-   * 停止闪烁
+   * Stops the tray icon from flashing and restores the original icon.
    */
   stopFlashing(): void {
     if (!this.isFlashing) return;
@@ -201,7 +227,9 @@ export class TrayManager {
   }
 
   /**
-   * 设置托盘提示文字
+   * Updates the tooltip text shown when hovering over the tray icon.
+   *
+   * @param {string} tooltip - The new tooltip text.
    */
   setTooltip(tooltip: string): void {
     if (this.tray) {
@@ -210,7 +238,9 @@ export class TrayManager {
   }
 
   /**
-   * 更新托盘图标
+   * Updates the tray icon image.
+   *
+   * @param {string} iconPath - The path to the new icon image.
    */
   setIcon(iconPath: string): void {
     if (this.tray) {
@@ -221,7 +251,8 @@ export class TrayManager {
   }
 
   /**
-   * 销毁托盘
+   * Destroys the tray icon and cleans up resources.
+   * Should be called when the application is quitting.
    */
   destroy(): void {
     this.stopFlashing();
@@ -232,7 +263,9 @@ export class TrayManager {
   }
 
   /**
-   * 是否已初始化
+   * Checks if the tray has been initialized.
+   *
+   * @returns {boolean} True if initialized.
    */
   isInitialized(): boolean {
     return this.tray !== null;

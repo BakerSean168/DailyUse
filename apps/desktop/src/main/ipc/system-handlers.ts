@@ -1,14 +1,16 @@
 /**
  * System IPC Handlers
  * 
- * 统一处理系统级 IPC 频道：
- * - app:* - 应用信息和检查
- * - system:* - 系统级工具（DI状态、内存、性能）
- * - desktop:* - 桌面功能（自启、快捷键、托盘）
- * - sync:* - 同步相关操作
+ * Centralized registration for system-level IPC channels, including:
+ * - app:* - Application information and status checks.
+ * - system:* - System utilities (DI status, memory usage, performance stats).
+ * - desktop:* - Desktop features (auto-launch, shortcuts, tray).
+ * - sync:* - Synchronization operations and status.
+ *
+ * @module ipc/system-handlers
  */
 
-import { app, ipcMain, type BrowserWindow } from 'electron';
+import { app, ipcMain } from 'electron';
 import type { TrayManager } from '../modules/tray';
 import type { ShortcutManager } from '../modules/shortcuts';
 import type { AutoLaunchManager } from '../modules/autolaunch';
@@ -17,7 +19,8 @@ import { getSyncManager } from '../services';
 import { getIpcCache } from '../utils';
 
 /**
- * 应用信息相关 IPC 处理器
+ * Registers application information IPC handlers.
+ * Channels: 'app:getInfo', 'app:checkDIStatus'
  */
 function registerAppInfoHandlers(): void {
   ipcMain.handle('app:getInfo', async () => {
@@ -33,7 +36,9 @@ function registerAppInfoHandlers(): void {
 }
 
 /**
- * 系统级 IPC 处理器（DI、内存、性能等）
+ * Registers system-level utility IPC handlers.
+ * Channels: 'system:getDIStatus', 'system:getAppVersion', 'system:getLazyModuleStats',
+ * 'system:getMemoryUsage', 'system:getIpcCacheStats'
  */
 function registerSystemHandlers(): void {
   ipcMain.handle('system:getDIStatus', async () => {
@@ -64,7 +69,12 @@ function registerSystemHandlers(): void {
 }
 
 /**
- * 桌面功能相关 IPC 处理器（托盘、快捷键、自启）
+ * Registers desktop feature IPC handlers (Tray, Shortcuts, AutoLaunch).
+ * Channels start with 'desktop:'.
+ *
+ * @param {TrayManager | null} trayManager - The tray manager instance.
+ * @param {ShortcutManager | null} shortcutManager - The shortcut manager instance.
+ * @param {AutoLaunchManager | null} autoLaunchManager - The auto-launch manager instance.
  */
 function registerDesktopFeaturesHandlers(
   trayManager: TrayManager | null,
@@ -84,7 +94,7 @@ function registerDesktopFeaturesHandlers(
     return autoLaunchManager?.disable() ?? false;
   });
 
-  // 快捷键
+  // Shortcuts
   ipcMain.handle('desktop:shortcuts:getAll', async () => {
     return shortcutManager?.getShortcuts() ?? [];
   });
@@ -103,7 +113,7 @@ function registerDesktopFeaturesHandlers(
     return true;
   });
 
-  // 托盘
+  // Tray
   ipcMain.handle('desktop:tray:flash', async () => {
     trayManager?.startFlashing();
   });
@@ -114,7 +124,8 @@ function registerDesktopFeaturesHandlers(
 }
 
 /**
- * 同步相关 IPC 处理器
+ * Registers synchronization IPC handlers.
+ * Channels start with 'sync:'.
  */
 function registerSyncHandlers(): void {
   // ========== Basic Sync Channels ==========
@@ -252,7 +263,11 @@ function registerSyncHandlers(): void {
 }
 
 /**
- * 注册所有系统级 IPC 处理器
+ * Registers all system-level IPC handlers.
+ *
+ * @param {TrayManager | null} trayManager - The tray manager instance.
+ * @param {ShortcutManager | null} shortcutManager - The shortcut manager instance.
+ * @param {AutoLaunchManager | null} autoLaunchManager - The auto-launch manager instance.
  */
 export function registerSystemIpcHandlers(
   trayManager: TrayManager | null,

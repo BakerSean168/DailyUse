@@ -1,43 +1,55 @@
 /**
  * Notification Service
  *
- * Electron 原生通知服务 - 管理系统托盘通知
+ * Manages native desktop notifications using Electron's Notification API.
+ * Handles system tray notifications, sounds, and interaction events.
+ * Includes support for "Do Not Disturb" (DND) mode and scheduling.
+ *
+ * @module services/notification
  */
 
 import { Notification, nativeImage, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// ESM 兼容的 __dirname
+// ESM compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { eventBus } from '@dailyuse/utils';
 
 /**
- * 通知配置
+ * Configuration options for displaying a notification.
  */
 export interface NotificationOptions {
+  /** The title of the notification. */
   title: string;
+  /** The body text of the notification. */
   body: string;
+  /** Path to a custom icon. */
   icon?: string;
+  /** Whether to play a sound. */
   sound?: boolean;
+  /** The urgency level of the notification. */
   urgency?: 'normal' | 'critical' | 'low';
+  /** Whether the notification should be silent. Overrides `sound` if true. */
   silent?: boolean;
+  /** Arbitrary data payload to attach to the notification (useful for click handling). */
   data?: Record<string, unknown>;
 }
 
 /**
- * 通知服务类
+ * Service class for managing application notifications.
+ * Implements the Singleton pattern.
  */
 export class NotificationService {
   private static instance: NotificationService;
   private mainWindow: BrowserWindow | null = null;
   private defaultIcon: Electron.NativeImage | null = null;
   
-  // Do Not Disturb (DND) 模式
+  // Do Not Disturb (DND) state
   private dndEnabled: boolean = false;
-  private dndStartHour: number = 22;  // 默认 22:00 开始
-  private dndEndHour: number = 7;     // 默认 07:00 结束
+  private dndStartHour: number = 22;  // Default: Starts at 22:00
+  private dndEndHour: number = 7;     // Default: Ends at 07:00
   private dndScheduleEnabled: boolean = false;
 
   private constructor() {
@@ -45,6 +57,11 @@ export class NotificationService {
     this.initEventListeners();
   }
 
+  /**
+   * Retrieves the singleton instance of the NotificationService.
+   *
+   * @returns {NotificationService} The singleton instance.
+   */
   static getInstance(): NotificationService {
     if (!NotificationService.instance) {
       NotificationService.instance = new NotificationService();
@@ -53,16 +70,20 @@ export class NotificationService {
   }
 
   /**
-   * 设置主窗口引用
+   * Sets the main window reference.
+   * Required for sending IPC messages back to the renderer process upon notification interaction.
+   *
+   * @param {BrowserWindow} window - The main application window.
    */
   setMainWindow(window: BrowserWindow): void {
     this.mainWindow = window;
   }
 
-  // ===== Do Not Disturb 相关方法 =====
+  // ===== Do Not Disturb Methods =====
 
   /**
-   * 启用勿扰模式
+   * Manually enables Do Not Disturb mode.
+   * Suppresses all non-critical notifications.
    */
   enableDND(): void {
     this.dndEnabled = true;
@@ -70,7 +91,7 @@ export class NotificationService {
   }
 
   /**
-   * 禁用勿扰模式
+   * Manually disables Do Not Disturb mode.
    */
   disableDND(): void {
     this.dndEnabled = false;
@@ -78,7 +99,9 @@ export class NotificationService {
   }
 
   /**
-   * 切换勿扰模式
+   * Toggles the state of Do Not Disturb mode.
+   *
+   * @returns {boolean} The new state of DND mode (true = enabled).
    */
   toggleDND(): boolean {
     this.dndEnabled = !this.dndEnabled;
@@ -87,14 +110,19 @@ export class NotificationService {
   }
 
   /**
-   * 获取勿扰模式状态
+   * Checks if Do Not Disturb mode is manually enabled.
+   *
+   * @returns {boolean} True if DND is manually enabled.
    */
   isDNDEnabled(): boolean {
     return this.dndEnabled;
   }
 
   /**
-   * 设置定时勿扰
+   * Configures the automatic schedule for Do Not Disturb mode.
+   *
+   * @param {number} startHour - The hour (0-23) to start DND.
+   * @param {number} endHour - The hour (0-23) to end DND.
    */
   setDNDSchedule(startHour: number, endHour: number): void {
     this.dndStartHour = startHour;
@@ -104,7 +132,7 @@ export class NotificationService {
   }
 
   /**
-   * 禁用定时勿扰
+   * Disables the automatic DND schedule.
    */
   disableDNDSchedule(): void {
     this.dndScheduleEnabled = false;
@@ -112,7 +140,9 @@ export class NotificationService {
   }
 
   /**
-   * 获取勿扰模式配置
+   * Retrieves the current DND configuration.
+   *
+   * @returns {Object} The current DND settings.
    */
   getDNDConfig(): {
     enabled: boolean;
@@ -129,7 +159,9 @@ export class NotificationService {
   }
 
   /**
-   * 检查当前是否在勿扰时间段内
+   * Checks if the application is currently in a DND period (either manual or scheduled).
+   *
+   * @returns {boolean} True if notifications should be suppressed.
    */
   private isInDNDPeriod(): boolean {
     if (this.dndEnabled) {
@@ -143,21 +175,21 @@ export class NotificationService {
     const now = new Date();
     const currentHour = now.getHours();
 
-    // 处理跨午夜的时间段（如 22:00 - 07:00）
+    // Handle overnight schedules (e.g., 22:00 - 07:00)
     if (this.dndStartHour > this.dndEndHour) {
       return currentHour >= this.dndStartHour || currentHour < this.dndEndHour;
     }
 
-    // 普通时间段（如 14:00 - 16:00）
+    // Handle same-day schedules (e.g., 14:00 - 16:00)
     return currentHour >= this.dndStartHour && currentHour < this.dndEndHour;
   }
 
   /**
-   * 初始化默认图标
+   * Initializes the default application icon for notifications.
    */
   private initDefaultIcon(): void {
     try {
-      // 尝试加载应用图标
+      // Attempt to load the app icon
       const iconPath = path.join(__dirname, '../assets/icon.png');
       this.defaultIcon = nativeImage.createFromPath(iconPath);
     } catch (err) {
@@ -166,10 +198,10 @@ export class NotificationService {
   }
 
   /**
-   * 初始化事件监听器
+   * Initializes internal event listeners for system events (reminders, schedules).
    */
   private initEventListeners(): void {
-    // 监听提醒触发事件
+    // Listen for reminder triggers
     eventBus.on('reminder.triggered', (data: {
       uuid: string;
       title: string;
@@ -187,7 +219,7 @@ export class NotificationService {
       });
     });
 
-    // 监听调度任务触发事件
+    // Listen for schedule triggers
     eventBus.on('schedule.task.executed', (data: {
       uuid: string;
       name: string;
@@ -205,13 +237,16 @@ export class NotificationService {
   }
 
   /**
-   * 显示通知
+   * Displays a system notification.
+   *
+   * @param {NotificationOptions} options - The notification options.
+   * @returns {Notification | null} The Notification instance, or null if suppressed/unsupported.
    */
   showNotification(options: NotificationOptions): Notification | null {
-    // 检查勿扰模式
+    // Check DND status
     if (this.isInDNDPeriod()) {
       console.log('[NotificationService] Notification suppressed (DND mode):', options.title);
-      // 仍然记录通知，但不显示
+      // Log notification but do not show, optionally inform renderer of suppression
       if (this.mainWindow) {
         this.mainWindow.webContents.send('notification:suppressed', {
           title: options.title,
@@ -222,7 +257,7 @@ export class NotificationService {
       return null;
     }
 
-    // 检查是否支持通知
+    // Check system support
     if (!Notification.isSupported()) {
       console.warn('[NotificationService] Notifications are not supported on this system');
       return null;
@@ -236,12 +271,12 @@ export class NotificationService {
       urgency: options.urgency ?? 'normal',
     });
 
-    // 点击通知时聚焦窗口并导航
+    // Handle click: focus window and navigate
     notification.on('click', () => {
       this.handleNotificationClick(options.data);
     });
 
-    // 通知关闭时的处理
+    // Handle close
     notification.on('close', () => {
       console.log('[NotificationService] Notification closed:', options.title);
     });
@@ -251,17 +286,20 @@ export class NotificationService {
   }
 
   /**
-   * 处理通知点击
+   * Handles user click on a notification.
+   * Restores focus to the main window and sends a navigation event to the renderer.
+   *
+   * @param {Record<string, unknown>} [data] - The data payload associated with the notification.
    */
   private handleNotificationClick(data?: Record<string, unknown>): void {
-    // 聚焦主窗口
+    // Focus main window
     if (this.mainWindow) {
       if (this.mainWindow.isMinimized()) {
         this.mainWindow.restore();
       }
       this.mainWindow.focus();
 
-      // 发送 IPC 消息到渲染进程
+      // Send IPC message to renderer
       if (data) {
         this.mainWindow.webContents.send('notification:clicked', data);
       }
@@ -269,7 +307,10 @@ export class NotificationService {
   }
 
   /**
-   * 处理通知操作按钮
+   * Handles custom actions on notifications (if implemented).
+   *
+   * @param {string} actionType - The type of action performed.
+   * @param {Record<string, unknown>} [data] - Associated data.
    */
   private handleNotificationAction(actionType: string, data?: Record<string, unknown>): void {
     if (this.mainWindow) {
@@ -281,7 +322,10 @@ export class NotificationService {
   }
 
   /**
-   * 显示提醒通知
+   * Helper to show a reminder notification.
+   *
+   * @param {Object} reminder - Reminder details.
+   * @returns {Notification | null} The notification instance.
    */
   showReminderNotification(reminder: {
     uuid: string;
@@ -306,7 +350,10 @@ export class NotificationService {
   }
 
   /**
-   * 显示调度任务通知
+   * Helper to show a schedule notification.
+   *
+   * @param {Object} task - Schedule task details.
+   * @returns {Notification | null} The notification instance.
    */
   showScheduleNotification(task: {
     uuid: string;
@@ -325,7 +372,10 @@ export class NotificationService {
   }
 
   /**
-   * 显示目标进度通知
+   * Helper to show a goal progress notification.
+   *
+   * @param {Object} goal - Goal progress details.
+   * @returns {Notification | null} The notification instance.
    */
   showGoalProgressNotification(goal: {
     uuid: string;
@@ -345,7 +395,10 @@ export class NotificationService {
   }
 
   /**
-   * 显示任务完成通知
+   * Helper to show a task completion notification.
+   *
+   * @param {Object} task - Completed task details.
+   * @returns {Notification | null} The notification instance.
    */
   showTaskCompletedNotification(task: {
     uuid: string;
@@ -363,7 +416,10 @@ export class NotificationService {
 }
 
 /**
- * 初始化通知服务
+ * Initializes the notification service with the main window.
+ *
+ * @param {BrowserWindow} mainWindow - The main application window.
+ * @returns {NotificationService} The initialized service instance.
  */
 export function initNotificationService(mainWindow: BrowserWindow): NotificationService {
   const service = NotificationService.getInstance();

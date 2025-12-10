@@ -1,39 +1,61 @@
 /**
  * Memory Monitor
  *
- * 开发模式内存监控工具
- * 提供实时内存使用指示和趋势分析
+ * Development utility for monitoring memory usage in the Electron main process.
+ * Provides real-time memory stats, historical snapshots, and leak detection analysis.
+ *
+ * @module utils/memory-monitor
  */
 
-import { ipcMain, BrowserWindow } from 'electron';
+import { ipcMain } from 'electron';
 
 // ============ Types ============
 
+/**
+ * Snapshot of memory usage at a specific point in time.
+ */
 interface MemorySnapshot {
+  /** Timestamp when the snapshot was taken. */
   timestamp: number;
-  heapUsed: number;    // MB
-  heapTotal: number;   // MB
-  external: number;    // MB
-  rss: number;         // MB
-  arrayBuffers: number; // MB
+  /** Heap used in MB. */
+  heapUsed: number;
+  /** Total heap allocated in MB. */
+  heapTotal: number;
+  /** External memory usage in MB. */
+  external: number;
+  /** Resident Set Size in MB. */
+  rss: number;
+  /** Memory used by ArrayBuffers in MB. */
+  arrayBuffers: number;
 }
 
+/**
+ * Analysis of memory usage trend.
+ */
 interface MemoryTrend {
+  /** Direction of memory usage trend. */
   direction: 'up' | 'down' | 'stable';
-  changePerHour: number; // MB/hour
+  /** Estimated change in memory usage per hour (MB/h). */
+  changePerHour: number;
+  /** Whether the trend suggests a memory leak. */
   isLikelyLeak: boolean;
 }
 
 // ============ Memory Monitor Class ============
 
+/**
+ * Class responsible for monitoring memory usage.
+ */
 export class MemoryMonitor {
   private snapshots: MemorySnapshot[] = [];
   private interval: NodeJS.Timeout | null = null;
-  private readonly maxSnapshots = 120; // 保留 2 小时的数据 (每分钟一次)
-  private readonly leakThresholdPerHour = 10; // MB/hour
+  private readonly maxSnapshots = 120; // Keep 2 hours of data (at 1 snapshot/min)
+  private readonly leakThresholdPerHour = 10; // MB/hour threshold for leak warning
 
   /**
-   * 开始监控
+   * Starts the memory monitoring process.
+   *
+   * @param {number} [intervalMs=60000] - Interval between snapshots in milliseconds. Defaults to 60000 (1 minute).
    */
   start(intervalMs: number = 60000): void {
     if (this.interval) {
@@ -43,10 +65,10 @@ export class MemoryMonitor {
 
     console.log('[MemoryMonitor] Starting memory monitoring...');
 
-    // 立即获取一次快照
+    // Take immediate snapshot
     this.takeSnapshot();
 
-    // 定期获取快照
+    // Schedule regular snapshots
     this.interval = setInterval(() => {
       this.takeSnapshot();
       this.logMemoryStatus();
@@ -54,7 +76,7 @@ export class MemoryMonitor {
   }
 
   /**
-   * 停止监控
+   * Stops the memory monitoring process.
    */
   stop(): void {
     if (this.interval) {
@@ -65,7 +87,9 @@ export class MemoryMonitor {
   }
 
   /**
-   * 获取快照
+   * Captures the current memory usage snapshot.
+   *
+   * @returns {MemorySnapshot} The current memory snapshot.
    */
   takeSnapshot(): MemorySnapshot {
     const usage = process.memoryUsage();
@@ -80,7 +104,7 @@ export class MemoryMonitor {
 
     this.snapshots.push(snapshot);
 
-    // 保持最大快照数量
+    // Maintain max snapshots limit
     while (this.snapshots.length > this.maxSnapshots) {
       this.snapshots.shift();
     }
@@ -89,7 +113,9 @@ export class MemoryMonitor {
   }
 
   /**
-   * 获取当前内存状态
+   * Gets the current memory status including the latest snapshot and trend analysis.
+   *
+   * @returns {MemorySnapshot & { trend: MemoryTrend }} Current status with trend.
    */
   getCurrentStatus(): MemorySnapshot & { trend: MemoryTrend } {
     const current = this.snapshots[this.snapshots.length - 1] || this.takeSnapshot();
@@ -100,7 +126,9 @@ export class MemoryMonitor {
   }
 
   /**
-   * 分析内存趋势
+   * Analyzes memory usage history to determine trends and potential leaks.
+   *
+   * @returns {MemoryTrend} The analysis result.
    */
   analyzeTrend(): MemoryTrend {
     if (this.snapshots.length < 5) {
@@ -110,7 +138,7 @@ export class MemoryMonitor {
     const values = this.snapshots.map(s => s.heapUsed);
     const slope = this.calculateSlope(values);
 
-    // 计算每小时变化量
+    // Calculate change per hour
     const duration = (this.snapshots[this.snapshots.length - 1].timestamp -
                       this.snapshots[0].timestamp) / (1000 * 60 * 60);
     const changePerHour = duration > 0 ? (slope * this.snapshots.length) / duration : 0;
@@ -127,14 +155,19 @@ export class MemoryMonitor {
   }
 
   /**
-   * 获取所有快照
+   * Retrieves all recorded memory snapshots.
+   *
+   * @returns {MemorySnapshot[]} Array of memory snapshots.
    */
   getSnapshots(): MemorySnapshot[] {
     return [...this.snapshots];
   }
 
   /**
-   * 强制垃圾回收 (如果可用)
+   * Forces garbage collection if the environment allows it.
+   * Note: Requires the application to be started with --expose-gc flag.
+   *
+   * @returns {boolean} True if GC was triggered, false otherwise.
    */
   forceGC(): boolean {
     if (global.gc) {
@@ -147,7 +180,7 @@ export class MemoryMonitor {
   }
 
   /**
-   * 打印内存状态日志
+   * Logs current memory status to the console.
    */
   private logMemoryStatus(): void {
     const status = this.getCurrentStatus();
@@ -165,7 +198,10 @@ export class MemoryMonitor {
   }
 
   /**
-   * 计算线性回归斜率
+   * Calculates the slope of the linear regression line for the given values.
+   *
+   * @param {number[]} values - The data points.
+   * @returns {number} The slope of the line.
    */
   private calculateSlope(values: number[]): number {
     const n = values.length;
@@ -191,6 +227,11 @@ export class MemoryMonitor {
 
 let memoryMonitor: MemoryMonitor | null = null;
 
+/**
+ * Retrieves the singleton instance of MemoryMonitor.
+ *
+ * @returns {MemoryMonitor} The memory monitor instance.
+ */
 export function getMemoryMonitor(): MemoryMonitor {
   if (!memoryMonitor) {
     memoryMonitor = new MemoryMonitor();
@@ -201,7 +242,8 @@ export function getMemoryMonitor(): MemoryMonitor {
 // ============ IPC Handlers ============
 
 /**
- * 注册内存监控 IPC handlers (仅开发模式)
+ * Registers IPC handlers for memory monitoring.
+ * Only active in development mode.
  */
 export function registerMemoryMonitorIpcHandlers(): void {
   if (process.env.NODE_ENV !== 'development') {
@@ -228,7 +270,8 @@ export function registerMemoryMonitorIpcHandlers(): void {
 // ============ Auto-start in Development ============
 
 /**
- * 开发模式自动启动内存监控
+ * Initializes and starts the memory monitor if in development mode.
+ * Also registers the necessary IPC handlers.
  */
 export function initMemoryMonitorForDev(): void {
   if (process.env.NODE_ENV !== 'development') {
@@ -236,8 +279,8 @@ export function initMemoryMonitorForDev(): void {
   }
 
   const monitor = getMemoryMonitor();
-  monitor.start(60000); // 每分钟监控一次
+  monitor.start(60000); // Check every minute
 
-  // 注册 IPC handlers
+  // Register IPC handlers
   registerMemoryMonitorIpcHandlers();
 }

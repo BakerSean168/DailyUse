@@ -1,6 +1,12 @@
 /**
- * Components Module Exports
+ * Shared UI Components
+ *
+ * Exports all reusable UI components available for the renderer process.
+ * Includes layouts, skeletons for loading states, virtual lists, performance optimizations, and sync-related UI.
+ *
+ * @module renderer/shared/components
  */
+
 export { Layout } from './Layout';
 export {
   Skeleton,

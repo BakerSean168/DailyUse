@@ -1,14 +1,20 @@
 /**
  * Sync Status Indicator Component
  * 
- * EPIC-004: Offline Sync - STORY-022 UI 集成
+ * Visualizes the current data synchronization state, including online/offline status,
+ * sync progress, pending changes, and conflicts.
+ * Allows users to manually trigger a sync by clicking.
  * 
- * 显示同步状态图标和待同步数量
+ * Part of EPIC-004: Offline Sync - STORY-022 UI Integration.
+ *
+ * @module renderer/shared/components/SyncStatusIndicator
  */
 
 import { useSyncStatus, type SyncState } from '../hooks/useSyncStatus';
 
-// 状态图标映射
+/**
+ * Configuration for status icons and colors.
+ */
 const STATUS_ICONS: Record<SyncState, { icon: string; color: string; label: string }> = {
   idle: { icon: '☁️', color: 'text-green-500', label: '已同步' },
   syncing: { icon: '🔄', color: 'text-blue-500', label: '同步中...' },
@@ -16,11 +22,19 @@ const STATUS_ICONS: Record<SyncState, { icon: string; color: string; label: stri
   offline: { icon: '📴', color: 'text-gray-400', label: '离线' },
 };
 
+/**
+ * Props for the SyncStatusIndicator component.
+ */
 interface SyncStatusIndicatorProps {
+  /** Whether to show the text label alongside the icon. Defaults to false. */
   showLabel?: boolean;
+  /** Additional CSS classes. */
   className?: string;
 }
 
+/**
+ * Component to display the synchronization status.
+ */
 export function SyncStatusIndicator({ showLabel = false, className = '' }: SyncStatusIndicatorProps) {
   const {
     status,
@@ -33,11 +47,13 @@ export function SyncStatusIndicator({ showLabel = false, className = '' }: SyncS
     isLoading,
   } = useSyncStatus();
 
-  // 确定显示状态
+  // Determine display status (override with 'offline' if network is down)
   const displayStatus: SyncState = !isOnline ? 'offline' : status;
   const statusInfo = STATUS_ICONS[displayStatus] || STATUS_ICONS.idle;
 
-  // 格式化上次同步时间
+  /**
+   * Formats the last sync timestamp into a relative string.
+   */
   const formatLastSync = (timestamp: number | null): string => {
     if (!timestamp) return '从未同步';
     
@@ -48,7 +64,9 @@ export function SyncStatusIndicator({ showLabel = false, className = '' }: SyncS
     return `${Math.floor(diff / 86400000)} 天前`;
   };
 
-  // 生成 Tooltip 内容
+  /**
+   * Generates the tooltip text based on current state.
+   */
   const getTooltipContent = (): string => {
     const lines = [statusInfo.label];
     
@@ -69,10 +87,11 @@ export function SyncStatusIndicator({ showLabel = false, className = '' }: SyncS
     return lines.join('\n');
   };
 
-  // 是否有冲突
   const hasConflicts = unresolvedConflicts > 0;
 
-  // 处理点击
+  /**
+   * Handles click event to trigger sync manually.
+   */
   const handleClick = async () => {
     if (status !== 'syncing' && isOnline) {
       await triggerSync();
@@ -99,12 +118,12 @@ export function SyncStatusIndicator({ showLabel = false, className = '' }: SyncS
       `}
       title={getTooltipContent()}
     >
-      {/* 状态图标 */}
+      {/* Status Icon */}
       <span className={`text-lg ${status === 'syncing' ? 'animate-spin' : ''}`}>
         {statusInfo.icon}
       </span>
 
-      {/* 待同步数量 Badge */}
+      {/* Pending Count Badge */}
       {pendingCount > 0 && !hasConflicts && (
         <span className="
           absolute -top-1 -right-1 
@@ -118,7 +137,7 @@ export function SyncStatusIndicator({ showLabel = false, className = '' }: SyncS
         </span>
       )}
 
-      {/* 冲突警告 Badge */}
+      {/* Conflict Warning Badge */}
       {hasConflicts && (
         <span className="
           absolute -top-1 -right-1 
@@ -132,7 +151,7 @@ export function SyncStatusIndicator({ showLabel = false, className = '' }: SyncS
         </span>
       )}
 
-      {/* 文字标签 */}
+      {/* Text Label */}
       {showLabel && (
         <span className={`text-sm ${statusInfo.color}`}>
           {statusInfo.label}

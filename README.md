@@ -12,7 +12,7 @@
 
 ### 核心框架
 
-- **前端**: Vue 3 + Vuetify + TypeScript
+- **前端**: Vue 3 + Vuetify + TypeScript (Web), React + shadcn/ui + TypeScript (Desktop Renderer)
 - **桌面**: Electron 30.x
 - **后端**: Node.js + Prisma + SQLite
 - **构建**: Nx + Vite + pnpm
@@ -29,7 +29,7 @@
 ```
 DailyUse/                    # 根目录
 ├── apps/                    # 应用程序
-│   ├── desktop/            # Electron 桌面应用
+│   ├── desktop/            # Electron 桌面应用 (React)
 │   ├── web/                # Vue 3 Web 应用
 │   └── api/                # Node.js API 服务
 ├── packages/               # 共享包
@@ -126,7 +126,7 @@ pnpm build:desktop    # 构建桌面应用
 - **离线优先**: 本地 SQLite 数据库
 - **模块化**: Nx Monorepo 架构
 - **类型安全**: 全栈 TypeScript
-- **现代 UI**: Vuetify Material Design
+- **现代 UI**: Vuetify Material Design (Web) / shadcn/ui (Desktop)
 
 ### 🚧 开发中功能
 
@@ -153,7 +153,11 @@ pnpm build:desktop    # 构建桌面应用
 
 ## 📖 开发文档
 
-### � 产品需求与开发规划 (新增 🎯)
+### 📦 Desktop App Documentation (New!)
+
+- **[Desktop App README](apps/desktop/README.md)** - Specific guide for the Electron Desktop Application.
+
+###  产品需求与开发规划
 
 - **[PRD - 产品需求文档](docs/PRD-PRODUCT-REQUIREMENTS.md)** - 🎯 完整的功能需求规格说明
   - 10 个核心模块
@@ -167,13 +171,13 @@ pnpm build:desktop    # 构建桌面应用
   - 7 个 Sprint (8-10 周)
   - User Stories 拆分与依赖关系
 
-- **[Sprint Status 追踪 (NEW! ✨)](docs/sprint-status.yaml)** - 📊 开发状态实时追踪
+- **[Sprint Status 追踪](docs/sprint-status.yaml)** - 📊 开发状态实时追踪
   - 9 个 Epic 状态追踪
   - 27 个 Story 状态追踪
   - 开发工作流定义 (backlog → contexted → drafted → ready-for-dev → in-progress → review → done)
   - Sprint 进度可视化
 
-- **[Epic 技术上下文文档 (NEW! 🎯)](docs/)** - 📐 技术设计规格说明
+- **[Epic 技术上下文文档](docs/)** - 📐 技术设计规格说明
   - [Epic 1: Account & Authentication](docs/epic-1-context.md) - 账户与认证系统
   - [Epic 2: Goal Module](docs/epic-2-context.md) - OKR 目标管理
   - [Epic 3: Task Module](docs/epic-3-context.md) - GTD 任务管理
@@ -184,7 +188,7 @@ pnpm build:desktop    # 构建桌面应用
   - [Epic 8: Editor Module](docs/epic-8-context.md) - Markdown 编辑器
   - [Epic 9: Setting Module](docs/epic-9-context.md) - 用户设置
 
-### �📦 包文档 (新增 ✨)
+### 📦 包文档
 
 - **[包文档总索引](docs/packages-index.md)** - 📑 从这里开始，查看所有包文档
 - [@dailyuse/contracts](docs/packages-contracts.md) - TypeScript 类型契约层

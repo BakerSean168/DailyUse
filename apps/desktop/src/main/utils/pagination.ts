@@ -1,52 +1,69 @@
 /**
  * Pagination Utilities
  *
- * 通用分页工具，用于 IPC Handler 和 Repository
+ * Common pagination utilities for IPC Handlers and Repositories.
+ * Provides types, constants, and helper functions for handling paginated data.
+ *
+ * @module utils/pagination
  */
 
 // ============ Types ============
 
+/**
+ * Parameters for requesting paginated data.
+ */
 export interface PaginationParams {
-  /** 页码 (1-based) */
+  /** Page number (1-based). Defaults to 1. */
   page?: number;
-  /** 每页数量 */
+  /** Number of items per page. Defaults to 20. */
   pageSize?: number;
-  /** 排序字段 */
+  /** Field name to sort by. Defaults to 'createdAt'. */
   sortBy?: string;
-  /** 排序方向 */
+  /** Sort direction ('asc' or 'desc'). Defaults to 'desc'. */
   sortOrder?: 'asc' | 'desc';
 }
 
+/**
+ * Structure of a paginated result.
+ *
+ * @template T The type of the data items.
+ */
 export interface PaginatedResult<T> {
-  /** 数据列表 */
+  /** List of data items for the current page. */
   data: T[];
-  /** 分页信息 */
+  /** Pagination metadata. */
   pagination: {
-    /** 当前页码 */
+    /** Current page number. */
     page: number;
-    /** 每页数量 */
+    /** Number of items per page. */
     pageSize: number;
-    /** 总数量 */
+    /** Total number of items available. */
     total: number;
-    /** 总页数 */
+    /** Total number of pages. */
     totalPages: number;
-    /** 是否有下一页 */
+    /** Whether there is a next page. */
     hasNext: boolean;
-    /** 是否有上一页 */
+    /** Whether there is a previous page. */
     hasPrev: boolean;
   };
 }
 
 // ============ Constants ============
 
+/** Default page number (1). */
 export const DEFAULT_PAGE = 1;
+/** Default page size (20). */
 export const DEFAULT_PAGE_SIZE = 20;
+/** Maximum allowed page size (100). */
 export const MAX_PAGE_SIZE = 100;
 
 // ============ Functions ============
 
 /**
- * 规范化分页参数
+ * Normalizes pagination parameters, applying defaults and constraints.
+ *
+ * @param {PaginationParams} [params] - The input pagination parameters.
+ * @returns {Required<PaginationParams>} The normalized parameters with all fields populated.
  */
 export function normalizePaginationParams(params?: PaginationParams): Required<PaginationParams> {
   const page = Math.max(1, params?.page ?? DEFAULT_PAGE);
@@ -58,14 +75,24 @@ export function normalizePaginationParams(params?: PaginationParams): Required<P
 }
 
 /**
- * 计算分页偏移量
+ * Calculates the offset (starting index) for database queries based on page and page size.
+ *
+ * @param {number} page - The current page number (1-based).
+ * @param {number} pageSize - The number of items per page.
+ * @returns {number} The calculated offset (0-based index).
  */
 export function calculateOffset(page: number, pageSize: number): number {
   return (page - 1) * pageSize;
 }
 
 /**
- * 创建分页结果
+ * Creates a standardized paginated result object.
+ *
+ * @template T The type of data items.
+ * @param {T[]} data - The array of data items for the current page.
+ * @param {number} total - The total count of items across all pages.
+ * @param {Required<PaginationParams>} params - The normalized pagination parameters used to fetch the data.
+ * @returns {PaginatedResult<T>} The structured paginated result.
  */
 export function createPaginatedResult<T>(
   data: T[],
@@ -88,8 +115,13 @@ export function createPaginatedResult<T>(
 }
 
 /**
- * 在内存中对数组进行分页
- * 用于已获取全部数据后的客户端分页
+ * Paginates an array in memory.
+ * Useful for scenarios where all data is fetched or available in memory, and client-side-like pagination is needed.
+ *
+ * @template T The type of data items.
+ * @param {T[]} items - The full array of items to paginate.
+ * @param {PaginationParams} [params] - The pagination parameters.
+ * @returns {PaginatedResult<T>} The paginated subset of the array wrapped in a result object.
  */
 export function paginateArray<T>(
   items: T[],
@@ -103,30 +135,38 @@ export function paginateArray<T>(
 }
 
 /**
- * 无限滚动加载的游标分页参数
+ * Parameters for cursor-based pagination (infinite scroll).
  */
 export interface CursorPaginationParams {
-  /** 游标 (上次最后一条记录的标识) */
+  /** The cursor pointing to the last item of the previous page. */
   cursor?: string;
-  /** 每次加载数量 */
+  /** Number of items to fetch. */
   limit?: number;
-  /** 加载方向 */
+  /** Direction to fetch data. Defaults to 'forward'. */
   direction?: 'forward' | 'backward';
 }
 
+/**
+ * Structure of a cursor-based paginated result.
+ *
+ * @template T The type of data items.
+ */
 export interface CursorPaginatedResult<T> {
-  /** 数据列表 */
+  /** List of data items. */
   data: T[];
-  /** 下一页游标 (null 表示没有更多数据) */
+  /** Cursor for the next page (null if no more data). */
   nextCursor: string | null;
-  /** 上一页游标 */
+  /** Cursor for the previous page. */
   prevCursor: string | null;
-  /** 是否有更多数据 */
+  /** Whether there is more data available. */
   hasMore: boolean;
 }
 
 /**
- * 规范化游标分页参数
+ * Normalizes cursor-based pagination parameters.
+ *
+ * @param {CursorPaginationParams} [params] - The input cursor parameters.
+ * @returns {Required<CursorPaginationParams>} The normalized parameters.
  */
 export function normalizeCursorParams(params?: CursorPaginationParams): Required<CursorPaginationParams> {
   return {

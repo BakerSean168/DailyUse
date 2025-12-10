@@ -1,41 +1,48 @@
 /**
  * LazyImage Component
  *
- * 图片懒加载组件
- * 使用 Intersection Observer 在图片进入视口时才加载
+ * Provides a performant image component that lazily loads images when they enter the viewport.
+ * Uses the Intersection Observer API for efficient visibility detection.
+ * Includes variants for Avatars and Background Images.
+ *
+ * @module renderer/shared/components/LazyImage
  */
 
 import { useState, useRef, useEffect, type ImgHTMLAttributes } from 'react';
 
 // ============ Types ============
 
+/**
+ * Props for the LazyImage component.
+ */
 export interface LazyImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
-  /** 图片源 */
+  /** The source URL of the image. */
   src: string;
-  /** 占位图 */
+  /** URL for a placeholder image (e.g., a tiny blurry version) displayed while loading. */
   placeholder?: string;
-  /** 加载失败时的备用图 */
+  /** URL for a fallback image if the main image fails to load. */
   fallback?: string;
-  /** 提前加载的距离 (px) */
+  /** Margin around the root to start loading before the image enters viewport (default: '100px'). */
   rootMargin?: string;
-  /** 是否禁用懒加载 */
+  /** If true, disables lazy loading and loads immediately (default: false). */
   eager?: boolean;
-  /** 淡入动画时长 (ms) */
+  /** Duration of the fade-in animation in milliseconds (default: 200). */
   fadeInDuration?: number;
-  /** 加载完成回调 */
+  /** Callback fired when the image successfully loads. */
   onLoad?: () => void;
-  /** 加载失败回调 */
+  /** Callback fired when the image fails to load. */
   onError?: () => void;
 }
 
 // ============ Constants ============
 
+/** Default gray placeholder SVG. */
 const DEFAULT_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect fill="%23f3f4f6" width="100" height="100"/%3E%3C/svg%3E';
 
 // ============ Component ============
 
 /**
- * 懒加载图片组件
+ * A drop-in replacement for the `<img>` tag that supports lazy loading and placeholders.
  *
  * @example
  * ```tsx
@@ -125,10 +132,13 @@ export function LazyImage({
 
 // ============ Avatar Variant ============
 
+/**
+ * Props for the LazyAvatar component.
+ */
 export interface LazyAvatarProps extends Omit<LazyImageProps, 'fallback'> {
-  /** 用户名 (用于生成默认头像) */
+  /** The name of the user/entity to generate initials if image fails. */
   name?: string;
-  /** 尺寸 */
+  /** Preset size of the avatar. */
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
@@ -140,7 +150,8 @@ const AVATAR_SIZES = {
 };
 
 /**
- * 懒加载头像组件
+ * Specialized LazyImage for user avatars.
+ * Automatically handles fallbacks by generating initials on a colored background.
  *
  * @example
  * ```tsx
@@ -165,7 +176,7 @@ export function LazyAvatar({
     .toUpperCase()
     .slice(0, 2);
 
-  // 根据名字生成一致的颜色
+  // Generate a consistent color based on the name string
   const colorIndex = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 6;
   const colors = [
     'bg-blue-500',
@@ -180,7 +191,7 @@ export function LazyAvatar({
   const sizeClass = AVATAR_SIZES[size];
 
   if (!src || hasError) {
-    // 显示首字母头像
+    // Render initials fallback
     return (
       <div
         className={`${sizeClass} ${colors[colorIndex]} rounded-full flex items-center justify-center text-white font-medium ${className}`}
@@ -205,23 +216,26 @@ export function LazyAvatar({
 
 // ============ Background Image Variant ============
 
+/**
+ * Props for LazyBackground component.
+ */
 export interface LazyBackgroundProps {
-  /** 图片源 */
+  /** The source URL of the background image. */
   src: string;
-  /** 占位图 */
+  /** URL for a placeholder image. */
   placeholder?: string;
-  /** 子元素 */
+  /** Child elements to render inside the container. */
   children?: React.ReactNode;
-  /** 类名 */
+  /** Additional CSS classes. */
   className?: string;
-  /** 提前加载距离 */
+  /** Margin around the root to start loading. */
   rootMargin?: string;
-  /** 样式 */
+  /** Inline styles. */
   style?: React.CSSProperties;
 }
 
 /**
- * 懒加载背景图组件
+ * A container that lazily loads its background image.
  */
 export function LazyBackground({
   src,
@@ -253,7 +267,7 @@ export function LazyBackground({
     return () => observer.disconnect();
   }, [rootMargin]);
 
-  // 预加载图片
+  // Preload image object
   useEffect(() => {
     if (!isInView) return;
 
