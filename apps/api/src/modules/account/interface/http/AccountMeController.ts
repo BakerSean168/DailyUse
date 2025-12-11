@@ -298,7 +298,7 @@ export class AccountMeController {
       if (error instanceof z.ZodError) {
         return AccountMeController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
-          message: error.errors[0]?.message || 'Invalid password format',
+          message: error.issues[0]?.message || 'Invalid password format',
         });
       }
 
@@ -558,7 +558,7 @@ export class AccountMeController {
       if (error instanceof z.ZodError) {
         return AccountMeController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
-          message: error.errors[0]?.message || 'Invalid input',
+          message: error.issues[0]?.message || 'Invalid input',
         });
       }
 

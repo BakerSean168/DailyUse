@@ -4,7 +4,7 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { type ZodSchema, ZodError } from 'zod';
 
 /**
  * 验证目标类型
@@ -55,7 +55,7 @@ export function validate(schema: ZodSchema, target: ValidationTarget = 'body') {
     } catch (error) {
       if (error instanceof ZodError) {
         // 格式化 Zod 错误信息
-        const errors = error.errors.map((err) => ({
+        const errors = error.issues.map((err) => ({
           field: err.path.join('.'),
           message: err.message,
         }));
@@ -114,7 +114,7 @@ export function validateAll(schemas: { body?: ZodSchema; params?: ZodSchema; que
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errors = error.errors.map((err) => ({
+        const errors = error.issues.map((err) => ({
           field: err.path.join('.'),
           message: err.message,
         }));

@@ -71,23 +71,23 @@
     "test:ui": "node ../../node_modules/vitest/vitest.mjs --ui"
   },
   "dependencies": {
-    "@dailyuse/utils": "workspace:*",
     "@dailyuse/contracts": "workspace:*",
-    "bcryptjs": "^2.4.3",
+    "@dailyuse/utils": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
-    "uuid": "^11.1.0"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@ai-sdk/openai": "2.0.64",
-    "@types/bcryptjs": "^2.4.6",
+    "@ai-sdk/openai": "2.0.80",
+    "@types/bcryptjs": "^3.0.0",
     "@types/jsonwebtoken": "^9.0.6",
-    "@vitest/coverage-v8": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
-    "ai": "5.0.89",
+    "@vitest/coverage-v8": "^4.0.15",
+    "@vitest/ui": "^4.0.15",
+    "ai": "5.0.110",
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^3.2.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15",
     "zod": "4.1.12"
   }
 }

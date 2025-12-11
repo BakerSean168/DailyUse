@@ -148,7 +148,7 @@ export class SessionManagementController {
         return SessionManagementController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -277,7 +277,7 @@ export class SessionManagementController {
         return SessionManagementController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -356,7 +356,7 @@ export class SessionManagementController {
         return SessionManagementController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -426,7 +426,7 @@ export class SessionManagementController {
         return SessionManagementController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -501,7 +501,7 @@ export class SessionManagementController {
         return SessionManagementController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,

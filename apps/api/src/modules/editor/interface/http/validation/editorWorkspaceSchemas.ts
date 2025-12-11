@@ -19,9 +19,7 @@ const uuidSchema = z
  * 项目类型枚举
  */
 const projectTypeSchema = z.enum(['code', 'markdown', 'mixed', 'other'], {
-  errorMap: () => ({
-    message: 'Invalid project type. Must be one of: code, markdown, mixed, other',
-  }),
+  message: 'Invalid project type. Must be one of: code, markdown, mixed, other'
 });
 
 // ============ Workspace 相关 Schemas ============

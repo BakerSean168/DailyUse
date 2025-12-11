@@ -172,11 +172,11 @@ export class ScheduleConflictController {
     } catch (error) {
       // Step 5: Handle errors
       if (error instanceof z.ZodError) {
-        logger.warn('Validation error detecting conflicts', { errors: error.errors });
+        logger.warn('Validation error detecting conflicts', { errors: error.issues });
         return ScheduleConflictController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             field: err.path.join('.'),
             code: 'VALIDATION_ERROR',
             message: err.message,
@@ -299,11 +299,11 @@ export class ScheduleConflictController {
       );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        logger.warn('Validation error creating schedule', { errors: error.errors });
+        logger.warn('Validation error creating schedule', { errors: error.issues });
         return ScheduleConflictController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             field: err.path.join('.'),
             code: 'VALIDATION_ERROR',
             message: err.message,
@@ -472,11 +472,11 @@ export class ScheduleConflictController {
       );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        logger.warn('Validation error resolving conflict', { errors: error.errors });
+        logger.warn('Validation error resolving conflict', { errors: error.issues });
         return ScheduleConflictController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             field: err.path.join('.'),
             code: 'VALIDATION_ERROR',
             message: err.message,

@@ -42,10 +42,11 @@ const deactivateAccountSchema = z.object({
 const deleteAccountSchema = z.object({
   accountUuid: z.string().uuid('Invalid account UUID'),
   password: z.string().min(1, 'Password is required'),
-  confirmation: z.literal('DELETE', {
-    errorMap: () => ({ message: 'Must type DELETE to confirm' }),
-  }),
-});
+  confirmation: z.literal('DELETE'),
+}).refine(
+  (data) => data.confirmation === 'DELETE',
+  { message: 'Must type DELETE to confirm', path: ['confirmation'] }
+);
 
 /**
  * 激活账户请求验证
@@ -112,7 +113,7 @@ export class AccountStatusController {
         return AccountStatusController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -184,7 +185,7 @@ export class AccountStatusController {
         return AccountStatusController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -269,7 +270,7 @@ export class AccountStatusController {
         return AccountStatusController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -348,7 +349,7 @@ export class AccountStatusController {
         return AccountStatusController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,

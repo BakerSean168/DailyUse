@@ -27,7 +27,7 @@ const logger = createLogger('TwoFactorController');
 const enableTwoFactorSchema = z.object({
   accountUuid: z.string().uuid('Invalid account UUID'),
   method: z.enum(['TOTP', 'SMS', 'EMAIL', 'AUTHENTICATOR_APP'], {
-    errorMap: () => ({ message: 'Method must be one of: TOTP, SMS, EMAIL, AUTHENTICATOR_APP' }),
+    message: 'Method must be one of: TOTP, SMS, EMAIL, AUTHENTICATOR_APP'
   }),
   secret: z.string().min(1, 'Secret is required'),
   verificationCode: z
@@ -118,7 +118,7 @@ export class TwoFactorController {
         return TwoFactorController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -195,7 +195,7 @@ export class TwoFactorController {
         return TwoFactorController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -281,7 +281,7 @@ export class TwoFactorController {
         return TwoFactorController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,

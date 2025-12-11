@@ -79,7 +79,7 @@ export class ScheduleEventController {
       const validation = createScheduleSchema.safeParse(req.body);
       if (!validation.success) {
         logger.warn('Invalid create schedule request', {
-          errors: validation.error.errors,
+          errors: validation.error.issues,
         });
         return res
           .status(400)
@@ -87,7 +87,7 @@ export class ScheduleEventController {
             ScheduleEventController.responseBuilder.error(
               ResponseCode.VALIDATION_ERROR,
               'Invalid request data',
-              validation.error.errors,
+              validation.error.issues,
             ),
           );
       }
@@ -290,7 +290,7 @@ export class ScheduleEventController {
       const validation = updateScheduleSchema.safeParse(req.body);
       if (!validation.success) {
         logger.warn('Invalid update schedule request', {
-          errors: validation.error.errors,
+          errors: validation.error.issues,
         });
         return res
           .status(400)
@@ -298,7 +298,7 @@ export class ScheduleEventController {
             ScheduleEventController.responseBuilder.error(
               ResponseCode.VALIDATION_ERROR,
               'Invalid request data',
-              validation.error.errors,
+              validation.error.issues,
             ),
           );
       }

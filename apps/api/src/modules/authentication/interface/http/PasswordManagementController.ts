@@ -111,7 +111,7 @@ export class PasswordManagementController {
         return PasswordManagementController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -195,7 +195,7 @@ export class PasswordManagementController {
         return PasswordManagementController.responseBuilder.sendError(res, {
           code: ResponseCode.VALIDATION_ERROR,
           message: 'Validation failed',
-          errors: error.errors.map((err) => ({
+          errors: error.issues.map((err) => ({
             code: 'VALIDATION_ERROR',
             field: err.path.join('.'),
             message: err.message,
@@ -267,7 +267,7 @@ export class PasswordManagementController {
           res,
           {
             valid: false,
-            errors: result.error.errors.map((err) => err.message),
+            errors: result.error.issues.map((err) => err.message),
           },
           'Password does not meet security requirements',
         );
