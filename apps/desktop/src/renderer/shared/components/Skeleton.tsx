@@ -1,16 +1,22 @@
 /**
  * Skeleton Components
  *
- * 骨架屏组件 - 用于页面加载时显示占位内容
- * 避免白屏，提升用户体验
+ * A collection of placeholder components used to display loading states.
+ * These improve perceived performance and prevent layout shifts (CLS).
+ *
+ * @module renderer/shared/components/Skeleton
  */
 
 // ============ Base Skeleton ============
 
 interface SkeletonProps {
+  /** Optional additional CSS classes. */
   className?: string;
 }
 
+/**
+ * Basic skeleton block with pulse animation.
+ */
 export function Skeleton({ className = '' }: SkeletonProps) {
   return (
     <div
@@ -23,6 +29,9 @@ export function Skeleton({ className = '' }: SkeletonProps) {
 
 // ============ Dashboard Skeleton ============
 
+/**
+ * Skeleton layout for the Dashboard view.
+ */
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6 p-4">
@@ -76,6 +85,9 @@ export function DashboardSkeleton() {
 
 // ============ Stat Card Skeleton ============
 
+/**
+ * Skeleton for a statistics summary card.
+ */
 export function StatCardSkeleton() {
   return (
     <div className="rounded-lg border bg-card p-4 space-y-3">
@@ -91,6 +103,9 @@ export function StatCardSkeleton() {
 
 // ============ Goal Card Skeleton ============
 
+/**
+ * Skeleton for a goal progress card.
+ */
 export function GoalCardSkeleton() {
   return (
     <div className="rounded-lg border bg-card p-4 space-y-3">
@@ -118,6 +133,9 @@ export function GoalCardSkeleton() {
 
 // ============ Goal List Skeleton ============
 
+/**
+ * Skeleton for the full Goal List view.
+ */
 export function GoalListSkeleton() {
   return (
     <div className="space-y-6 p-4">
@@ -149,6 +167,9 @@ export function GoalListSkeleton() {
 
 // ============ Task Card Skeleton ============
 
+/**
+ * Skeleton for a task item card.
+ */
 export function TaskCardSkeleton() {
   return (
     <div className="rounded-lg border bg-card p-4 space-y-3">
@@ -171,6 +192,9 @@ export function TaskCardSkeleton() {
 
 // ============ Task List Skeleton ============
 
+/**
+ * Skeleton for the Task List view.
+ */
 export function TaskListSkeleton() {
   return (
     <div className="space-y-6 p-4">
@@ -206,6 +230,9 @@ export function TaskListSkeleton() {
 
 // ============ Schedule Item Skeleton ============
 
+/**
+ * Skeleton for a schedule/calendar event item.
+ */
 export function ScheduleItemSkeleton() {
   return (
     <div className="flex items-center gap-3 p-2 rounded-md">
@@ -221,6 +248,9 @@ export function ScheduleItemSkeleton() {
 
 // ============ Reminder Item Skeleton ============
 
+/**
+ * Skeleton for a reminder item.
+ */
 export function ReminderItemSkeleton() {
   return (
     <div className="flex items-center gap-3 p-2 rounded-md">
@@ -235,6 +265,9 @@ export function ReminderItemSkeleton() {
 
 // ============ List Item Skeleton ============
 
+/**
+ * Generic skeleton for a list item with an avatar/icon.
+ */
 export function ListItemSkeleton() {
   return (
     <div className="flex items-center gap-3 p-3 border-b">
@@ -251,10 +284,15 @@ export function ListItemSkeleton() {
 // ============ Table Skeleton ============
 
 interface TableSkeletonProps {
+  /** Number of rows to render. Default: 5 */
   rows?: number;
+  /** Number of columns to render. Default: 4 */
   columns?: number;
 }
 
+/**
+ * Skeleton for a table view.
+ */
 export function TableSkeleton({ rows = 5, columns = 4 }: TableSkeletonProps) {
   return (
     <div className="rounded-md border">

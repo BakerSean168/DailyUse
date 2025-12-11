@@ -1,43 +1,51 @@
 /**
  * VirtualList Component
  *
- * 虚拟滚动列表组件
- * 封装 useVirtualList hook，提供开箱即用的虚拟列表
+ * A reusable component for efficiently rendering large lists using virtual scrolling.
+ * It wraps the `useVirtualList` hook to provide a simple, declarative API.
+ * Automatically switches between virtualized and standard rendering based on item count.
+ *
+ * @module renderer/shared/components/VirtualList
  */
 
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
 import { useVirtualList, type VirtualItem } from '../hooks/useVirtualList';
 
+/**
+ * Props for the VirtualList component.
+ *
+ * @template T The type of the items in the list.
+ */
 export interface VirtualListProps<T> {
-  /** 列表数据 */
+  /** Array of items to render. */
   items: T[];
-  /** 渲染每一项的函数 */
+  /** Function to render each item. */
   renderItem: (item: T, index: number, virtualItem?: VirtualItem) => ReactNode;
-  /** 获取每项的唯一 key */
+  /** Function to generate a unique key for each item. */
   getItemKey: (item: T, index: number) => string | number;
-  /** 估算的每项高度 */
+  /** Estimated height of an item in pixels. Defaults to 80. */
   estimateSize?: number;
-  /** 容器过扫描数量 */
+  /** Number of items to render outside the visible area. Defaults to 5. */
   overscan?: number;
-  /** 启用虚拟滚动的阈值（默认 50） */
+  /** Minimum number of items required to enable virtualization. Defaults to 50. */
   threshold?: number;
-  /** 容器类名 */
+  /** CSS class for the scroll container. */
   className?: string;
-  /** 列表类名 */
+  /** CSS class for the inner list wrapper. */
   listClassName?: string;
-  /** 项目容器类名 */
+  /** CSS class for each item container. */
   itemClassName?: string;
-  /** 空状态渲染 */
+  /** Function to render content when the list is empty. */
   renderEmpty?: () => ReactNode;
-  /** 是否显示索引 */
+  /** Whether to show the item index (debug/helper). */
   showIndex?: boolean;
-  /** 容器高度 */
+  /** Explicit height of the container (e.g., '400px', 500). Defaults to '100%'. */
   height?: string | number;
 }
 
 /**
- * 虚拟滚动列表组件
+ * Virtual Scrolling List Component.
  *
  * @example
  * ```tsx
@@ -47,6 +55,7 @@ export interface VirtualListProps<T> {
  *   getItemKey={(goal) => goal.uuid}
  *   estimateSize={100}
  *   threshold={30}
+ *   height="500px"
  * />
  * ```
  */
@@ -83,7 +92,7 @@ export function VirtualList<T>({
     getItemKey: getKey,
   });
 
-  // 合并容器样式
+  // Merge container style with explicit height prop
   const containerStyle = useMemo(
     () => ({
       ...getContainerStyle(),
@@ -92,18 +101,18 @@ export function VirtualList<T>({
     [getContainerStyle, height]
   );
 
-  // 空状态
+  // Render empty state
   if (items.length === 0) {
     return renderEmpty ? (
       <>{renderEmpty()}</>
     ) : (
       <div className="flex items-center justify-center h-32 text-muted-foreground">
-        暂无数据
+        No data available
       </div>
     );
   }
 
-  // 虚拟滚动模式
+  // Virtualized rendering mode
   if (isVirtualized) {
     return (
       <div
@@ -130,7 +139,7 @@ export function VirtualList<T>({
     );
   }
 
-  // 普通列表模式（数据量少时）
+  // Standard rendering mode (for small lists)
   return (
     <div className={`space-y-3 ${className || ''}`}>
       {items.map((item, index) => (
@@ -143,39 +152,44 @@ export function VirtualList<T>({
 }
 
 /**
- * 带分组的虚拟列表
+ * Props for the VirtualGroupedList component.
+ *
+ * @template T Type of items.
+ * @template G Type of group (unused in generic but kept for consistency).
  */
 export interface VirtualGroupedListProps<T, G> {
-  /** 分组数据 */
+  /** Array of grouped data. */
   groups: Array<{
     key: string | number;
     label: string;
     items: T[];
   }>;
-  /** 渲染每一项 */
+  /** Function to render a regular item. */
   renderItem: (item: T, index: number) => ReactNode;
-  /** 渲染分组头 */
+  /** Function to render a group header. */
   renderGroupHeader: (group: { key: string | number; label: string; items: T[] }) => ReactNode;
-  /** 获取项目 key */
+  /** Function to get a unique key for an item. */
   getItemKey: (item: T) => string | number;
-  /** 估算项目高度 */
+  /** Estimated height of an item. */
   estimateItemSize?: number;
-  /** 估算分组头高度 */
+  /** Estimated height of a group header. */
   estimateHeaderSize?: number;
-  /** 虚拟滚动阈值 */
+  /** Threshold for enabling virtualization. */
   threshold?: number;
-  /** 容器类名 */
+  /** Container CSS class. */
   className?: string;
-  /** 容器高度 */
+  /** Container height. */
   height?: string | number;
 }
 
+/** Internal type for flattening grouped lists. */
 type GroupedItem<T> =
   | { type: 'header'; key: string | number; label: string; itemCount: number }
   | { type: 'item'; data: T; groupKey: string | number };
 
 /**
- * 分组虚拟列表
+ * A virtual list that supports grouped data with sticky headers (conceptually, though sticky logic is CSS).
+ * Flattens the group structure into a single virtualized list.
  */
 export function VirtualGroupedList<T, G>({
   groups,
@@ -188,7 +202,7 @@ export function VirtualGroupedList<T, G>({
   className,
   height = '100%',
 }: VirtualGroupedListProps<T, G>) {
-  // 扁平化分组数据
+  // Flatten groups into a single array of items and headers
   const flatItems = useMemo(() => {
     const result: GroupedItem<T>[] = [];
     for (const group of groups) {
@@ -209,13 +223,17 @@ export function VirtualGroupedList<T, G>({
     return result;
   }, [groups]);
 
-  // 动态估算尺寸
+  // Dynamic size estimation based on item type
   const getEstimateSize = useCallback(
     (index: number) => {
-      const item = flatItems[index];
-      return item.type === 'header' ? estimateHeaderSize : estimateItemSize;
+      // Note: This logic assumes VirtualList supports dynamic sizing per index,
+      // which `useVirtualList` (based on react-virtual) usually does via `estimateSize` function if passed correctly.
+      // However, our `VirtualList` currently takes a static number.
+      // TODO: Enhance VirtualList to accept `(index: number) => number` for `estimateSize`.
+      // For now, using average or static size.
+      return estimateItemSize;
     },
-    [flatItems, estimateHeaderSize, estimateItemSize]
+    [estimateItemSize]
   );
 
   const renderGroupedItem = useCallback(

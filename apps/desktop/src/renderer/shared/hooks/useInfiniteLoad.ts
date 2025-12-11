@@ -1,59 +1,88 @@
 /**
  * useInfiniteLoad Hook
  *
- * 无限滚动加载 Hook
- * 支持分页数据的增量加载
+ * A custom hook to handle infinite scrolling/pagination logic.
+ * Manages loading state, pagination metadata, and deduplication of items.
+ *
+ * @module renderer/shared/hooks/useInfiniteLoad
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 // ============ Types ============
 
+/**
+ * Standard pagination metadata structure.
+ */
 export interface PaginationInfo {
+  /** Current page number (1-based). */
   page: number;
+  /** Number of items per page. */
   pageSize: number;
+  /** Total number of items across all pages. */
   total: number;
+  /** Total number of pages. */
   totalPages: number;
+  /** Whether a next page exists. */
   hasNext: boolean;
+  /** Whether a previous page exists. */
   hasPrev: boolean;
 }
 
+/**
+ * Response structure expected from the fetcher.
+ *
+ * @template T Type of the data items.
+ */
 export interface PaginatedResponse<T> {
+  /** Array of fetched items. */
   data: T[];
+  /** Pagination metadata. */
   pagination: PaginationInfo;
 }
 
+/**
+ * Configuration options for useInfiniteLoad.
+ *
+ * @template T Type of data items.
+ * @template P Type of additional query parameters.
+ */
 export interface UseInfiniteLoadOptions<T, P = Record<string, unknown>> {
-  /** 数据获取函数 */
+  /** Async function to fetch a page of data. */
   fetcher: (params: P & { page: number; pageSize: number }) => Promise<PaginatedResponse<T>>;
-  /** 额外的过滤参数 */
+  /** Additional filter/sort parameters to pass to the fetcher. */
   params?: P;
-  /** 每页数量 */
+  /** Number of items to fetch per page. Defaults to 20. */
   pageSize?: number;
-  /** 是否立即加载 */
+  /** Whether to trigger the first fetch on mount. Defaults to true. */
   loadOnMount?: boolean;
-  /** 获取项目唯一标识 */
+  /** Function to extract a unique key from an item for deduplication. */
   getItemKey: (item: T) => string | number;
 }
 
+/**
+ * Result returned by useInfiniteLoad.
+ *
+ * @template T Type of data items.
+ */
 export interface UseInfiniteLoadResult<T> {
-  /** 所有已加载的数据 */
+  /** All loaded items accumulated so far. */
   items: T[];
-  /** 是否正在加载 */
+  /** Whether the initial load or a refresh is in progress. */
   loading: boolean;
-  /** 是否正在加载更多 */
+  /** Whether a "load more" operation is in progress. */
   loadingMore: boolean;
-  /** 错误信息 */
+  /** Error message if a fetch failed. */
   error: string | null;
-  /** 分页信息 */
+  /** Current pagination state. */
   pagination: PaginationInfo | null;
-  /** 是否有更多数据 */
+  /** Convenience flag indicating if more pages are available. */
   hasMore: boolean;
-  /** 加载更多 */
+  /** Function to trigger loading the next page. */
   loadMore: () => Promise<void>;
-  /** 刷新 (重新加载第一页) */
+  /** Function to reset and reload from the first page. */
   refresh: () => Promise<void>;
-  /** 重置 */
+  /** Function to clear all data and reset state. */
   reset: () => void;
 }
 
@@ -64,7 +93,7 @@ const DEFAULT_PAGE_SIZE = 20;
 // ============ Hook ============
 
 /**
- * 无限滚动加载 Hook
+ * Hook for managing infinite scroll data fetching.
  *
  * @example
  * ```tsx
@@ -89,6 +118,11 @@ const DEFAULT_PAGE_SIZE = 20;
  *   />
  * );
  * ```
+ *
+ * @template T Item type.
+ * @template P Params type.
+ * @param {UseInfiniteLoadOptions<T, P>} options - Configuration options.
+ * @returns {UseInfiniteLoadResult<T>} The state and control functions.
  */
 export function useInfiniteLoad<T, P = Record<string, unknown>>(
   options: UseInfiniteLoadOptions<T, P>
@@ -134,7 +168,7 @@ export function useInfiniteLoad<T, P = Record<string, unknown>>(
           pageSize,
         } as P & { page: number; pageSize: number });
 
-        // 去重处理
+        // Deduplicate items based on unique key
         const newItems = response.data.filter((item) => {
           const key = getItemKey(item);
           if (seenKeysRef.current.has(key)) {
@@ -154,7 +188,7 @@ export function useInfiniteLoad<T, P = Record<string, unknown>>(
         setPagination(response.pagination);
         currentPageRef.current = page;
       } catch (err) {
-        const message = err instanceof Error ? err.message : '加载失败';
+        const message = err instanceof Error ? err.message : 'Failed to load data';
         setError(message);
         console.error('[useInfiniteLoad] Failed to load:', err);
       } finally {
@@ -194,14 +228,14 @@ export function useInfiniteLoad<T, P = Record<string, unknown>>(
     if (loadOnMount) {
       loadPage(1, true);
     }
-  }, [loadOnMount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadOnMount]);
 
   // Reload when params change
   useEffect(() => {
     if (loadOnMount && currentPageRef.current > 0) {
       refresh();
     }
-  }, [JSON.stringify(params)]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(params)]);
 
   return {
     items,

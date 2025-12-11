@@ -1,8 +1,11 @@
 /**
  * Desktop App Event Listeners Initialization
  * 
- * 初始化所有模块的事件监听器
- * 主要用于跨模块的业务逻辑协调
+ * Initializes global event listeners for the desktop application.
+ * These listeners orchestrate cross-module business logic, such as updating
+ * goal progress when a task is completed.
+ *
+ * @module events/initialize-event-listeners
  */
 
 import { eventBus, type DomainEvent } from '@dailyuse/utils';
@@ -12,7 +15,10 @@ import { GoalRecord, type KeyResult } from '@dailyuse/domain-server/goal';
 let isInitialized = false;
 
 /**
- * 初始化事件监听器
+ * Initializes all desktop application event listeners.
+ * Idempotent: safe to call multiple times, but will only initialize once.
+ *
+ * @returns {Promise<void>} A promise that resolves when all listeners are set up.
  */
 export async function initializeEventListeners(): Promise<void> {
   if (isInitialized) {
@@ -22,7 +28,7 @@ export async function initializeEventListeners(): Promise<void> {
 
   console.log('🚀 [EventListeners] Initializing desktop app event listeners...');
 
-  // 初始化任务完成 → 目标进度更新监听器
+  // Initialize Task Completion -> Goal Progress Update listener
   initializeTaskToGoalProgressListener();
 
   isInitialized = true;
@@ -30,7 +36,8 @@ export async function initializeEventListeners(): Promise<void> {
 }
 
 /**
- * 监听任务完成事件，自动更新目标进度
+ * Registers a listener for the 'task.instance.completed' event.
+ * Automatically updates the associated Goal's Key Result progress when a task is finished.
  */
 function initializeTaskToGoalProgressListener(): void {
   eventBus.on('task.instance.completed', async (event: DomainEvent) => {
@@ -52,7 +59,7 @@ function initializeTaskToGoalProgressListener(): void {
         title: string;
       };
 
-      // 如果任务没有关联目标，直接返回
+      // If the task is not bound to a goal, ignore
       if (!goalBinding) {
         console.log(
           `ℹ️ [TaskToGoalProgress] Task ${taskInstanceUuid} completed without goal binding`,
@@ -69,19 +76,19 @@ function initializeTaskToGoalProgressListener(): void {
         },
       );
 
-      // 如果有指定关键结果，通过添加记录来增加进度
+      // If a Key Result is specified, add a progress record
       if (goalBinding.keyResultUuid) {
         const container = GoalContainer.getInstance();
         const goalRepository = container.getGoalRepository();
 
-        // 1. 查询目标（包含子实体）
+        // 1. Fetch goal with children (Key Results)
         const goal = await goalRepository.findById(goalBinding.goalUuid, { includeChildren: true });
         if (!goal) {
           console.error(`❌ [TaskToGoalProgress] Goal not found: ${goalBinding.goalUuid}`);
           return;
         }
 
-        // 2. 查找关键结果
+        // 2. Find the target Key Result
         const keyResult = goal.keyResults.find((kr: KeyResult) => kr.uuid === goalBinding.keyResultUuid);
         if (!keyResult) {
           console.error(
@@ -90,7 +97,7 @@ function initializeTaskToGoalProgressListener(): void {
           return;
         }
 
-        // 3. 创建记录实体
+        // 3. Create a new GoalRecord entity
         const record = GoalRecord.create({
           keyResultUuid: goalBinding.keyResultUuid,
           goalUuid: goalBinding.goalUuid,
@@ -99,17 +106,17 @@ function initializeTaskToGoalProgressListener(): void {
           recordedAt: Date.now(),
         });
 
-        // 4. 添加到关键结果（会自动重新计算 currentValue）
+        // 4. Add record to Key Result (triggers recalculation of current value)
         keyResult.addRecord(record.toServerDTO());
 
-        // 5. 持久化
+        // 5. Persist changes
         await goalRepository.save(goal);
 
         console.log(
           `✅ [TaskToGoalProgress] Added progress record for key result ${goalBinding.keyResultUuid} with value ${goalBinding.incrementValue}`,
         );
       } else {
-        // TODO: 如果没有指定关键结果，可以更新目标的整体进度或记录
+        // TODO: Handle goal-level progress update if no specific key result is targeted
         console.log(
           `ℹ️ [TaskToGoalProgress] Task completed for goal ${goalBinding.goalUuid}, but no key result specified`,
         );
@@ -123,7 +130,8 @@ function initializeTaskToGoalProgressListener(): void {
 }
 
 /**
- * 重置事件监听器（用于测试）
+ * Resets all event listeners.
+ * Primarily used for testing to clean up side effects.
  */
 export function resetEventListeners(): void {
   console.log('🔄 [EventListeners] Resetting event listeners...');

@@ -1,7 +1,10 @@
 /**
- * Renderer Shared - 统一导出
+ * Renderer Shared Module
  *
- * 渲染进程共享代码入口
+ * The main entry point for shared code within the renderer process.
+ * Re-exports components and hooks for easy access across the application.
+ *
+ * @module renderer/shared
  */
 
 // ============================================================

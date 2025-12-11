@@ -1,21 +1,24 @@
 /**
  * Conflict Management Hook
  * 
- * EPIC-004: Offline Sync - STORY-022 UI 集成
+ * Provides an interface to access and resolve data conflicts detected during synchronization.
+ * Supports retrieving conflict lists, statistics, and applying resolution strategies.
  * 
- * 提供冲突记录的管理功能
+ * Part of EPIC-004: Offline Sync - STORY-022 UI Integration.
+ *
+ * @module renderer/shared/hooks/useConflicts
  */
 
 import { useState, useEffect, useCallback } from 'react';
 
-// 字段差异
+/** Represents a difference in a single field between local and remote versions. */
 export interface FieldDiff {
   field: string;
   localValue: unknown;
   serverValue: unknown;
 }
 
-// 冲突记录
+/** Represents a full conflict record for an entity. */
 export interface ConflictRecord {
   id: string;
   entityType: string;
@@ -30,7 +33,7 @@ export interface ConflictRecord {
   createdAt: number;
 }
 
-// 分页结果
+/** Paginated list of conflict records. */
 export interface PaginatedConflicts {
   items: ConflictRecord[];
   total: number;
@@ -39,7 +42,7 @@ export interface PaginatedConflicts {
   totalPages: number;
 }
 
-// 冲突统计
+/** Statistical summary of conflicts. */
 export interface ConflictStats {
   total: number;
   unresolved: number;
@@ -49,7 +52,7 @@ export interface ConflictStats {
   averageResolutionTime: number;
 }
 
-// 合并结果
+/** Result of a conflict resolution operation. */
 export interface MergeResult {
   success: boolean;
   strategy: string;
@@ -57,26 +60,40 @@ export interface MergeResult {
   manualFields?: string[];
 }
 
-// Hook 返回类型
+/** Result object returned by the useConflicts hook. */
 export interface UseConflictsResult {
-  // 数据
+  // --- Data ---
+  /** List of unresolved conflict records. */
   conflicts: ConflictRecord[];
+  /** Total count of unresolved conflicts. */
   unresolvedCount: number;
+  /** Detailed conflict statistics. */
   stats: ConflictStats | null;
   
-  // 操作
+  // --- Actions ---
+  /** Resolve a conflict by accepting the local version. */
   resolveWithLocal: (conflictId: string) => Promise<MergeResult | null>;
+  /** Resolve a conflict by accepting the server version. */
   resolveWithServer: (conflictId: string) => Promise<MergeResult | null>;
+  /** Resolve a conflict by manually selecting field values. */
   resolveManually: (conflictId: string, selections: Record<string, 'local' | 'server'>) => Promise<MergeResult | null>;
   
-  // 状态
+  // --- State ---
+  /** Whether data is being fetched. */
   isLoading: boolean;
+  /** Last error encountered. */
   error: Error | null;
   
-  // 刷新
+  /** Manually refresh the conflict list. */
   refresh: () => Promise<void>;
 }
 
+/**
+ * Hook to manage data synchronization conflicts.
+ *
+ * @param {string} [entityType] - Optional filter to retrieve conflicts only for a specific entity type.
+ * @returns {UseConflictsResult} The conflict data and management functions.
+ */
 export function useConflicts(entityType?: string): UseConflictsResult {
   const [conflicts, setConflicts] = useState<ConflictRecord[]>([]);
   const [unresolvedCount, setUnresolvedCount] = useState(0);
@@ -84,7 +101,9 @@ export function useConflicts(entityType?: string): UseConflictsResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // 获取冲突列表
+  /**
+   * Fetches the current list of unresolved conflicts and statistics.
+   */
   const fetchConflicts = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -105,7 +124,9 @@ export function useConflicts(entityType?: string): UseConflictsResult {
     }
   }, [entityType]);
 
-  // 使用本地版本解决
+  /**
+   * Resolves a conflict using the local version strategy.
+   */
   const resolveWithLocal = useCallback(async (conflictId: string): Promise<MergeResult | null> => {
     try {
       const result = await window.electronAPI.invoke<MergeResult>('sync:conflict:resolveWithLocal', conflictId);
@@ -117,7 +138,9 @@ export function useConflicts(entityType?: string): UseConflictsResult {
     }
   }, [fetchConflicts]);
 
-  // 使用服务器版本解决
+  /**
+   * Resolves a conflict using the server version strategy.
+   */
   const resolveWithServer = useCallback(async (conflictId: string): Promise<MergeResult | null> => {
     try {
       const result = await window.electronAPI.invoke<MergeResult>('sync:conflict:resolveWithServer', conflictId);
@@ -129,7 +152,9 @@ export function useConflicts(entityType?: string): UseConflictsResult {
     }
   }, [fetchConflicts]);
 
-  // 手动选择解决
+  /**
+   * Resolves a conflict using manual field selection strategy.
+   */
   const resolveManually = useCallback(async (
     conflictId: string,
     selections: Record<string, 'local' | 'server'>
@@ -144,7 +169,7 @@ export function useConflicts(entityType?: string): UseConflictsResult {
     }
   }, [fetchConflicts]);
 
-  // 初始加载
+  // Initial load
   useEffect(() => {
     fetchConflicts();
   }, [fetchConflicts]);

@@ -1,37 +1,38 @@
 /**
- * Shared Hooks - 统一导出
+ * Shared Hooks
  *
- * 跨模块共享的 Hooks
+ * Central export point for all shared React hooks used across the renderer process.
+ *
+ * @module renderer/shared/hooks
  */
 
-// 基础设施 Hooks（重新导出原有的）
 export {
   useVirtualList,
   type VirtualListOptions,
   type VirtualListResult,
   type VirtualItem,
-} from '../../hooks/useVirtualList';
+} from './useVirtualList';
 
 export {
   useInfiniteLoad,
   type UseInfiniteLoadOptions,
   type UseInfiniteLoadResult,
-} from '../../hooks/useInfiniteLoad';
+} from './useInfiniteLoad';
 
 export {
   useAutoCleanup,
   type UseAutoCleanupOptions,
-} from '../../hooks/useAutoCleanup';
+} from './useAutoCleanup';
 
 export {
   useSyncStatus,
   type SyncState,
   type SyncSummary,
   type UseSyncStatusResult,
-} from '../../hooks/useSyncStatus';
+} from './useSyncStatus';
 
 export {
   useConflicts,
-  type ConflictItem,
+  type ConflictRecord,
   type UseConflictsResult,
-} from '../../hooks/useConflicts';
+} from './useConflicts';

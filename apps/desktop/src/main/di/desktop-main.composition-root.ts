@@ -1,19 +1,21 @@
 /**
  * Desktop Main Process - Composition Root
  *
- * 主进程依赖注入配置
- * 遵循 STORY-002 设计：使用 @dailyuse/infrastructure-server 的 Container 模式
- * 遵循 EPIC-003: 性能优化 - 模块懒加载
+ * Configures Dependency Injection (DI) for the main process.
+ * Follows the Container pattern from `@dailyuse/infrastructure-server`.
+ * Implements lazy loading for non-core modules to optimize startup performance.
  *
- * 职责：
- * 1. 初始化数据库连接
- * 2. 创建 SQLite Repository 适配器
- * 3. 注册到对应的 Container
- * 4. 核心模块立即加载，非核心模块懒加载
+ * Responsibilities:
+ * 1. Initialize database connections (implicitly via repositories).
+ * 2. Instantiate SQLite Repository adapters.
+ * 3. Register repositories to their respective Containers.
+ * 4. Load core modules immediately and schedule lazy loading for others.
  *
- * 模块分类：
- * - 核心模块（立即加载）: Goal, Task, Dashboard, Account, Auth, Schedule
- * - 非核心模块（懒加载）: AI, Notification, Repository, Setting, Reminder
+ * Module Categorization:
+ * - Core Modules (Loaded Immediately): Goal, Task, Dashboard, Account, Auth, Schedule
+ * - Non-Core Modules (Lazy Loaded): AI, Notification, Repository, Setting, Reminder
+ *
+ * @module di/desktop-main
  */
 
 import {
@@ -76,19 +78,19 @@ import {
 } from './sqlite-adapters';
 
 /**
- * 配置主进程所有模块的依赖注入
+ * Configures dependency injection for all main process modules.
  *
- * EPIC-003 优化：
- * - 核心模块立即同步加载（启动时必需）
- * - 非核心模块注册为懒加载（首次使用时加载）
- * - 启动后空闲时预加载常用模块
+ * Strategy:
+ * - **Core Modules**: Loaded synchronously at startup because they are essential for the app to function immediately.
+ * - **Lazy Modules**: Registered to be loaded only when first requested.
+ * - **Preloading**: Frequently used lazy modules are scheduled to load after a short delay (e.g., 3s) to avoid jank during startup.
  */
 export function configureMainProcessDependencies(): void {
   const startTime = performance.now();
   console.log('[DI] Configuring main process dependencies...');
 
-  // ========== 核心模块 - 立即加载 ==========
-  // 这些模块是启动后立即需要的
+  // ========== Core Modules - Immediate Load ==========
+  // These are required immediately upon startup
   configureGoalModule();
   configureAccountModule();
   configureAuthModule();
@@ -99,8 +101,8 @@ export function configureMainProcessDependencies(): void {
   const coreLoadTime = performance.now() - startTime;
   console.log(`[DI] Core modules loaded in ${coreLoadTime.toFixed(2)}ms`);
 
-  // ========== 非核心模块 - 懒加载 ==========
-  // 这些模块延迟到首次使用时加载
+  // ========== Non-Core Modules - Lazy Load ==========
+  // These are loaded on first use
   registerLazyModule('ai', async () => configureAIModule());
   registerLazyModule('notification', async () => configureNotificationModule());
   registerLazyModule('repository', async () => configureRepositoryModule());
@@ -109,7 +111,7 @@ export function configureMainProcessDependencies(): void {
 
   console.log('[DI] Lazy modules registered (AI, Notification, Repository, Setting, Reminder)');
 
-  // 启动后 3 秒空闲时预加载常用模块
+  // Preload frequently used modules after 3 seconds of idle time
   setTimeout(() => {
     console.log('[DI] Preloading frequently used modules...');
     preloadModules(['reminder', 'notification', 'setting']);
@@ -119,7 +121,7 @@ export function configureMainProcessDependencies(): void {
 }
 
 /**
- * 配置 Goal 模块的依赖
+ * Configures dependencies for the Goal module.
  */
 function configureGoalModule(): void {
   const goalRepository = new SqliteGoalRepository();
@@ -135,12 +137,12 @@ function configureGoalModule(): void {
 }
 
 /**
- * 配置 Account 模块的依赖
+ * Configures dependencies for the Account module.
  */
 function configureAccountModule(): void {
   const accountRepository = new SqliteAccountRepository();
   
-  // 使用类型断言绕过接口不匹配
+  // Use type assertion if necessary to bypass minor interface mismatches
   AccountContainer.getInstance()
     .registerAccountRepository(accountRepository);
 
@@ -148,7 +150,7 @@ function configureAccountModule(): void {
 }
 
 /**
- * 配置 Auth 模块的依赖
+ * Configures dependencies for the Auth module.
  */
 function configureAuthModule(): void {
   const credentialRepository = new SqliteAuthCredentialRepository();
@@ -162,7 +164,7 @@ function configureAuthModule(): void {
 }
 
 /**
- * 配置 Task 模块的依赖
+ * Configures dependencies for the Task module.
  */
 function configureTaskModule(): void {
   const templateRepository = new SqliteTaskTemplateRepository();
@@ -178,7 +180,7 @@ function configureTaskModule(): void {
 }
 
 /**
- * 配置 Schedule 模块的依赖
+ * Configures dependencies for the Schedule module.
  */
 function configureScheduleModule(): void {
   const scheduleTaskRepository = new SqliteScheduleTaskRepository();
@@ -192,7 +194,7 @@ function configureScheduleModule(): void {
 }
 
 /**
- * 配置 Reminder 模块的依赖
+ * Configures dependencies for the Reminder module.
  */
 function configureReminderModule(): void {
   const templateRepository = new SqliteReminderTemplateRepository();
@@ -208,7 +210,7 @@ function configureReminderModule(): void {
 }
 
 /**
- * 配置 AI 模块的依赖
+ * Configures dependencies for the AI module.
  */
 function configureAIModule(): void {
   const conversationRepository = new SqliteAIConversationRepository();
@@ -226,7 +228,7 @@ function configureAIModule(): void {
 }
 
 /**
- * 配置 Notification 模块的依赖
+ * Configures dependencies for the Notification module.
  */
 function configureNotificationModule(): void {
   const notificationRepository = new SqliteNotificationRepository();
@@ -242,7 +244,7 @@ function configureNotificationModule(): void {
 }
 
 /**
- * 配置 Dashboard 模块的依赖
+ * Configures dependencies for the Dashboard module.
  */
 function configureDashboardModule(): void {
   const dashboardConfigRepository = new SqliteDashboardConfigRepository();
@@ -250,7 +252,7 @@ function configureDashboardModule(): void {
   DashboardContainer.getInstance()
     .registerDashboardConfigRepository(dashboardConfigRepository);
 
-  // 注册简单的内存缓存服务
+  // Register a simple in-memory cache service (stub implementation for now)
   DashboardContainer.getInstance()
     .registerStatisticsCacheService({
       async get<T>(_key: string): Promise<T | null> { return null; },
@@ -263,7 +265,7 @@ function configureDashboardModule(): void {
 }
 
 /**
- * 配置 Repository 模块的依赖
+ * Configures dependencies for the Repository module.
  */
 function configureRepositoryModule(): void {
   const repositoryRepository = new SqliteRepositoryRepository();
@@ -281,7 +283,7 @@ function configureRepositoryModule(): void {
 }
 
 /**
- * 配置 Setting 模块的依赖
+ * Configures dependencies for the Setting module.
  */
 function configureSettingModule(): void {
   const appConfigRepository = new SqliteAppConfigRepository();
@@ -297,7 +299,8 @@ function configureSettingModule(): void {
 }
 
 /**
- * 重置所有 Container（用于测试）
+ * Resets all singleton Containers.
+ * Use this primarily for testing purposes to ensure a clean state between tests.
  */
 export function resetAllContainers(): void {
   GoalContainer.resetInstance();
@@ -315,7 +318,9 @@ export function resetAllContainers(): void {
 }
 
 /**
- * 检查 DI 是否已配置
+ * Checks if the Dependency Injection system is configured.
+ *
+ * @returns {boolean} True if the GoalContainer (as a proxy for core modules) is configured.
  */
 export function isDIConfigured(): boolean {
   return GoalContainer.getInstance().isConfigured();

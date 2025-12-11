@@ -1,56 +1,69 @@
 /**
  * useVirtualList Hook
  *
- * 基于 @tanstack/react-virtual 的虚拟滚动 Hook
- * 用于优化长列表渲染性能
+ * A custom hook wrapping `@tanstack/react-virtual` to simplify virtual scrolling integration.
+ * Optimized for rendering large lists by only rendering items currently in the viewport.
+ * Automatically enables/disables based on item count threshold.
+ *
+ * @module renderer/shared/hooks/useVirtualList
  */
 
 import { useRef, useMemo } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { VirtualItem } from '@tanstack/react-virtual';
 
+/**
+ * Configuration options for useVirtualList.
+ *
+ * @template T Type of items in the list.
+ */
 export interface VirtualListOptions<T> {
-  /** 列表数据 */
+  /** Array of data items. */
   items: T[];
-  /** 估算的每项高度 */
+  /** Estimated height of a single item in pixels. Defaults to 80. */
   estimateSize?: number;
-  /** 容器过扫描数量（预渲染项数） */
+  /** Number of items to render outside the viewport. Defaults to 5. */
   overscan?: number;
-  /** 获取每项的唯一 key */
+  /** Function to get a stable key for an item. Essential for correct state management. */
   getItemKey?: (index: number, item: T) => string | number;
-  /** 是否启用虚拟滚动（数据少时可禁用） */
+  /** Manually enable or disable virtualization. Defaults to true. */
   enabled?: boolean;
-  /** 启用虚拟滚动的阈值 */
+  /** Minimum item count required to activate virtual scrolling. Defaults to 50. */
   threshold?: number;
 }
 
+/**
+ * Result returned by useVirtualList.
+ *
+ * @template T Type of items in the list.
+ */
 export interface VirtualListResult<T> {
-  /** 容器 ref */
+  /** Ref to attach to the scroll container element. */
   parentRef: React.RefObject<HTMLDivElement>;
-  /** 虚拟化后的项目 */
+  /** Array of items currently to be rendered. */
   virtualItems: VirtualItem[];
-  /** 总高度（用于占位） */
+  /** Total calculated height of the list (for the spacer). */
   totalSize: number;
-  /** 是否启用虚拟滚动 */
+  /** Whether virtual scrolling is currently active. */
   isVirtualized: boolean;
-  /** 获取项目样式 */
+  /** Function to get styles for an individual item wrapper. */
   getItemStyle: (virtualItem: VirtualItem) => React.CSSProperties;
-  /** 获取容器样式 */
+  /** Function to get styles for the scroll container. */
   getContainerStyle: () => React.CSSProperties;
-  /** 获取列表内容样式 */
+  /** Function to get styles for the inner list wrapper. */
   getListStyle: () => React.CSSProperties;
-  /** 滚动到指定索引 */
+  /** Scroll the container to a specific item index. */
   scrollToIndex: (index: number) => void;
-  /** 滚动到开始 */
+  /** Scroll to the top of the list. */
   scrollToStart: () => void;
-  /** 滚动到结束 */
+  /** Scroll to the bottom of the list. */
   scrollToEnd: () => void;
-  /** 测量某一项（高度变化后调用） */
+  /** Trigger a re-measurement of a specific item's size. */
   measureItem: (index: number) => void;
 }
 
 /**
- * 虚拟滚动 Hook
+ * Hook to manage virtual scrolling state and logic.
  *
  * @example
  * ```tsx
@@ -72,6 +85,10 @@ export interface VirtualListResult<T> {
  *   </div>
  * );
  * ```
+ *
+ * @template T Type of items.
+ * @param {VirtualListOptions<T>} options - Configuration options.
+ * @returns {VirtualListResult<T>} Virtualizer state and helpers.
  */
 export function useVirtualList<T>(
   options: VirtualListOptions<T>
@@ -87,7 +104,7 @@ export function useVirtualList<T>(
 
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // 决定是否启用虚拟滚动
+  // Enable virtualization only if enabled AND item count exceeds threshold
   const isVirtualized = enabled && items.length > threshold;
 
   const virtualizer = useVirtualizer({
@@ -104,7 +121,7 @@ export function useVirtualList<T>(
   const virtualItems = virtualizer.getVirtualItems();
   const totalSize = virtualizer.getTotalSize();
 
-  // 样式生成器
+  // Style generators
   const getContainerStyle = useMemo(
     () => (): React.CSSProperties => ({
       height: '100%',
@@ -140,7 +157,7 @@ export function useVirtualList<T>(
     [isVirtualized]
   );
 
-  // 滚动方法
+  // Scroll helpers
   const scrollToIndex = (index: number) => {
     virtualizer.scrollToIndex(index, { align: 'center' });
   };

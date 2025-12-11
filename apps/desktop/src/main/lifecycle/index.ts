@@ -1,7 +1,10 @@
 /**
  * Application Lifecycle Module
  * 
- * 导出所有生命周期相关的函数和工具
+ * Exports all lifecycle-related functions and utilities for the Electron application.
+ * This module coordinates the startup, window management, and shutdown processes.
+ *
+ * @module lifecycle
  */
 
 export { registerAppLifecycleHandlers, createMainWindow, getMainWindow } from './app-lifecycle';

@@ -1,7 +1,11 @@
 /**
- * SQLite Adapters Index
+ * SQLite Adapters Module
  *
- * 导出所有 SQLite Repository 适配器
+ * Exports all SQLite Repository adapters for various modules.
+ * These adapters implement the repository interfaces defined in the domain layer,
+ * providing concrete data access implementation using SQLite.
+ *
+ * @module di/sqlite-adapters
  */
 
 // Goal Module

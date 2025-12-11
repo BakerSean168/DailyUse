@@ -175,7 +175,7 @@ export function createMockGoalDTO(overrides: Partial<GoalServerDTO> = {}): GoalS
 
 export function createMockGoal(overrides: Partial<GoalServerDTO> = {}): Goal {
   // 动态导入以避免循环依赖
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+
   const { Goal } = require('@dailyuse/domain-server/goal');
   const dto = createMockGoalDTO(overrides);
   return Goal.fromPersistenceDTO(dto);

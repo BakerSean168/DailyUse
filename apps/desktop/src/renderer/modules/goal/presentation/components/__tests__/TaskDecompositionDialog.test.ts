@@ -109,7 +109,7 @@ describe('TaskDecompositionDialog - Logic Tests', () => {
     });
 
     it('应该在加载时更新 loading 状态', () => {
-      let state = {
+      const state = {
         loading: false,
       };
 
@@ -121,7 +121,7 @@ describe('TaskDecompositionDialog - Logic Tests', () => {
     });
 
     it('应该在发生错误时设置错误消息', () => {
-      let state = {
+      const state = {
         error: null as string | null,
       };
 
@@ -258,7 +258,7 @@ describe('TaskDecompositionDialog - Logic Tests', () => {
     });
 
     it('应该清除错误信息', () => {
-      let errorState = { error: '某个错误消息' };
+      const errorState = { error: '某个错误消息' };
 
       errorState.error = '';
       expect(errorState.error).toBe('');

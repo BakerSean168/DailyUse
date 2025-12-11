@@ -1,12 +1,19 @@
 /**
  * App Layout with Navigation
  *
- * 应用布局组件 - 侧边栏导航
+ * The main layout component for the authenticated application state.
+ * It renders a persistent sidebar navigation and a content area for routed views.
+ * Includes the sync status indicator in the header.
+ *
+ * @module renderer/shared/components/Layout
  */
 
 import { NavLink, Outlet } from 'react-router-dom';
 import { SyncStatusIndicator } from './SyncStatusIndicator';
 
+/**
+ * Navigation item configuration.
+ */
 const navItems = [
   { path: '/', label: '仪表盘', icon: '📊' },
   { path: '/goals', label: '目标', icon: '🎯' },
@@ -16,6 +23,13 @@ const navItems = [
   { path: '/settings', label: '设置', icon: '⚙️' },
 ];
 
+/**
+ * Main application layout component.
+ *
+ * Structure:
+ * - Sidebar: Contains app title, sync status, and navigation links.
+ * - Main: Content area rendering the current route via `Outlet`.
+ */
 export function Layout() {
   return (
     <div className="flex min-h-screen bg-background">

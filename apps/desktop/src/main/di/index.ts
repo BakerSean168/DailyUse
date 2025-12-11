@@ -1,5 +1,10 @@
 /**
- * Desktop Main Process - DI Module
+ * Dependency Injection (DI) Module
+ *
+ * Exports the main composition root for configuring dependencies and lazy module loading utilities.
+ * Also re-exports all SQLite adapter implementations.
+ *
+ * @module di
  */
 
 export {

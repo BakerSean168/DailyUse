@@ -1,24 +1,38 @@
 /**
  * Sync Manager Service
  *
- * Manages synchronization of data between local database and remote server.
- * This is a stub implementation for now.
+ * Manages synchronization of data between the local SQLite database and a remote server.
+ * This file currently provides a stub implementation to fulfill interface requirements
+ * until the full synchronization logic is implemented.
+ *
+ * @module services/sync
  */
 
 import type { Database } from 'better-sqlite3';
 
+/**
+ * Interface definition for the Sync Manager.
+ */
 interface SyncManager {
+  /** Gets a summary of the current sync status. */
   getSyncSummary(): any;
+  /** Gets detailed sync statistics. */
   getStats(): any;
+  /** Accesses the sync log service. */
   getSyncLogService(): {
     getPendingCount(): number;
   };
+  /** Accesses the sync state service. */
   getSyncStateService(): {
     getState(): any;
   };
+  /** Triggers a standard sync operation. */
   triggerSync(): void;
+  /** Forces a sync operation immediately. */
   forceSync(): Promise<any>;
+  /** Checks if the sync manager believes the app is online. */
   isOnline(): boolean;
+  /** Accesses the conflict manager. */
   getConflictManager(): {
     getUnresolvedConflicts(entityType: string): any[];
     getUnresolvedCount(entityType: string): number;
@@ -28,6 +42,7 @@ interface SyncManager {
     queryHistory(filter: any, pagination: any): Promise<any>;
     getStats(): any;
   };
+  /** Accesses the device management service. */
   getDeviceService(): {
     getDeviceInfo(): any;
     updateDeviceName(newName: string): void;
@@ -37,7 +52,9 @@ interface SyncManager {
 let syncManagerInstance: SyncManager | null = null;
 
 /**
- * Initialize sync manager with database connection
+ * Initializes the sync manager with the given database connection.
+ *
+ * @param {Database} db - The initialized `better-sqlite3` database instance.
  */
 export function initSyncManager(db: Database): void {
   console.log('[SyncManager] Initializing sync manager');
@@ -48,7 +65,10 @@ export function initSyncManager(db: Database): void {
 }
 
 /**
- * Get the sync manager instance
+ * Retrieves the singleton instance of the Sync Manager.
+ *
+ * @throws {Error} If the manager has not been initialized.
+ * @returns {SyncManager} The sync manager instance.
  */
 export function getSyncManager(): SyncManager {
   if (!syncManagerInstance) {
@@ -58,7 +78,10 @@ export function getSyncManager(): SyncManager {
 }
 
 /**
- * Create a stub sync manager instance
+ * Creates a stub implementation of the Sync Manager.
+ *
+ * @param {Database} db - The database connection.
+ * @returns {SyncManager} A stub object conforming to the SyncManager interface.
  */
 function createSyncManager(db: Database): SyncManager {
   const syncLogService = {
