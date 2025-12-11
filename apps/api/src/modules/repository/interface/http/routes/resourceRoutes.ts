@@ -17,7 +17,7 @@ const upload = multer({
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB 限制
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     // 允许的文件类型
     const allowedMimes = [
       'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',

@@ -20,6 +20,7 @@ const navItems = [
   { path: '/tasks', label: '任务', icon: '✅' },
   { path: '/schedule', label: '日程', icon: '📅' },
   { path: '/reminders', label: '提醒', icon: '🔔' },
+  { path: '/ai', label: 'AI 助手', icon: '🤖' },
   { path: '/settings', label: '设置', icon: '⚙️' },
 ];
 

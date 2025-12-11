@@ -140,7 +140,7 @@ export class EditorSessionApplicationService {
    */
   async listSessions(workspaceUuid: string): Promise<EditorSessionClientDTO[]> {
     const sessions = await this.sessionRepository.findByWorkspaceUuid(workspaceUuid);
-    return sessions.map((s) => s.toClientDTO());
+    return sessions.map((s: any) => s.toClientDTO());
   }
 
   /**

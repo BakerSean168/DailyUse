@@ -355,7 +355,7 @@ export class AIProviderConfigService {
         return this.getDefaultModels(providerType);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as { data?: any; models?: any };
       const models = data.data || data.models || [];
 
       return models.map((m: any) => ({

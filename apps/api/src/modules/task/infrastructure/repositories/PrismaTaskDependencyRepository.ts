@@ -1,9 +1,9 @@
 /**
  * TaskDependency Prisma Repository
  * 任务依赖关系 Prisma 仓储实现
+ * 标准 Express/TypeScript 模式 - 移除了 NestJS @Injectable 装饰器
  */
 
-import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import type { ITaskDependencyRepository } from '@dailyuse/domain-server/task';
 import type {
@@ -15,7 +15,6 @@ import type {
 /**
  * Prisma 实现的任务依赖仓储
  */
-@Injectable()
 export class PrismaTaskDependencyRepository implements ITaskDependencyRepository {
   constructor(private readonly prisma: PrismaClient) {}
 

@@ -15,20 +15,31 @@ import { Layout } from './shared/components';
 const DashboardView = lazy(() =>
   import('./views/dashboard').then((m) => ({ default: m.DashboardView }))
 );
-// Note: GoalListView and TaskListView imports are placeholders or need to be verified against file structure
+
 const GoalListView = lazy(() =>
-  import('./modules/goal/presentation/views/GoalListView').then((m) => ({ default: m.GoalListView }))
-);
-const TaskListView = lazy(() =>
-  import('./modules/task/presentation/views/TaskListView').then((m) => ({ default: m.TaskListView }))
+  import('./views/goal').then((m) => ({ default: m.GoalListView }))
 );
 
-// Route-level Lazy Loading - Secondary Views (Placeholders, adjust paths as needed)
-// Assuming standard module structure if views folder doesn't exist directly
-const ScheduleView = lazy(() => import('./modules/schedule/presentation/views/ScheduleView').catch(() => ({ default: () => <div>Schedule View (Not Implemented)</div> })));
-const ReminderView = lazy(() => import('./modules/reminder/presentation/views/ReminderView').catch(() => ({ default: () => <div>Reminder View (Not Implemented)</div> })));
-const SettingsView = lazy(() => import('./modules/settings/presentation/views/SettingsView').catch(() => ({ default: () => <div>Settings View (Not Implemented)</div> })));
-const AIAssistantView = lazy(() => import('./modules/ai/presentation/views/AIAssistantView').catch(() => ({ default: () => <div>AI Assistant View (Not Implemented)</div> })));
+const TaskListView = lazy(() =>
+  import('./views/task').then((m) => ({ default: m.TaskListView }))
+);
+
+// Route-level Lazy Loading - Secondary Views
+const ScheduleView = lazy(() =>
+  import('./views/schedule').then((m) => ({ default: m.default }))
+);
+
+const ReminderView = lazy(() =>
+  import('./views/reminder').then((m) => ({ default: m.default }))
+);
+
+const SettingsView = lazy(() =>
+  import('./views/settings').then((m) => ({ default: m.default }))
+);
+
+const AIAssistantView = lazy(() =>
+  import('./views/ai').then((m) => ({ default: m.default }))
+);
 
 /**
  * Loading skeleton component displayed while routes are being lazily loaded.

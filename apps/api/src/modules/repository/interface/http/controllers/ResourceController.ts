@@ -22,10 +22,10 @@ interface MulterFile {
 }
 
 // 扩展 Express Request 类型以支持 multer
-interface MulterRequest extends Request {
+type MulterRequest = Request & {
   file?: MulterFile;
   files?: MulterFile[] | { [fieldname: string]: MulterFile[] };
-}
+};
 
 export class ResourceController {
   /**

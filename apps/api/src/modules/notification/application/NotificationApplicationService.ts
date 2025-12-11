@@ -2,16 +2,22 @@
 /**
  * NotificationApplicationService
  * 通知应用服务 - 处理业务逻辑
+ * 标准 Express/TypeScript 模式 - 移除了 NestJS @Injectable 装饰器
  */
 
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { Notification } from '@dailyuse/domain-server/notification';
 import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
+// 自定义异常类，替代 NestJS NotFoundException
+export class NotFoundException extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundException';
+  }
+}
 
-@Injectable()
 export class NotificationApplicationService {
   constructor(
     private readonly notificationRepository: NotificationRepository

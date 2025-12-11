@@ -2,149 +2,198 @@
 /**
  * NotificationController
  * 通知控制器 - 处理 HTTP 请求
+ * 标准 Express 路由工厂模式 - 移除了 NestJS 装饰器
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Router, Request, Response } from 'express';
 import { NotificationApplicationService } from '../application/NotificationApplicationService';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
-
-@ApiTags('Notifications')
-@ApiBearerAuth()
-@Controller('api/v1/notifications')
-@UseGuards(JwtAuthGuard)
-export class NotificationController {
-  constructor(
-    private readonly notificationService: NotificationApplicationService
-  ) {}
+/**
+ * 创建通知路由
+ */
+export function createNotificationRouter(
+  notificationService: NotificationApplicationService
+): Router {
+  const router = Router();
 
   /**
    * 创建通知
    * POST /api/v1/notifications
    */
-  @Post()
-  @ApiOperation({ summary: '创建通知' })
-  @ApiResponse({ status: 201, description: '通知创建成功' })
-  async createNotification(
-    @Req() req: any,
-    @Body() body: CreateNotificationRequest
-  ) {
-    const accountUuid = req.user.accountUuid;
-    return this.notificationService.createNotification(accountUuid, body);
-  }
+  router.post('/', async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user.accountUuid;
+      const body = req.body as CreateNotificationRequest;
+      const result = await notificationService.createNotification(accountUuid, body);
+      res.status(201).json(result);
+    } catch (error) {
+      res.status(400).json({ error: String(error) });
+    }
+  });
 
   /**
    * 查询通知列表
    * GET /api/v1/notifications
    */
-  @Get()
-  @ApiOperation({ summary: '查询通知列表' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  async findNotifications(
-    @Req() req: any,
-    @Query() query: QueryNotificationsRequest
-  ) {
-    const accountUuid = req.user.accountUuid;
-    return this.notificationService.findNotifications(accountUuid, query);
-  }
+  router.get('/', async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user.accountUuid;
+      const query = req.query as unknown as QueryNotificationsRequest;
+      const result = await notificationService.findNotifications(accountUuid, query);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ error: String(error) });
+    }
+  });
 
   /**
    * 获取未读数量
    * GET /api/v1/notifications/unread-count
    */
-  @Get('unread-count')
-  @ApiOperation({ summary: '获取未读数量' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  async getUnreadCount(@Req() req: any) {
-    const accountUuid = req.user.accountUuid;
-    return this.notificationService.getUnreadCount(accountUuid);
-  }
+  router.get('/unread-count', async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user.accountUuid;
+      const result = await notificationService.getUnreadCount(accountUuid);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ error: String(error) });
+    }
+  });
 
   /**
    * 标记所有通知为已读
    * PATCH /api/v1/notifications/read-all
    */
-  @Patch('read-all')
-  @ApiOperation({ summary: '标记所有通知为已读' })
-  @ApiResponse({ status: 200, description: '操作成功' })
-  async markAllAsRead(@Req() req: any) {
-    const accountUuid = req.user.accountUuid;
-    return this.notificationService.markAllAsRead(accountUuid);
-  }
+  router.patch('/read-all', async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user.accountUuid;
+      const result = await notificationService.markAllAsRead(accountUuid);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ error: String(error) });
+    }
+  });
 
   /**
    * 根据 UUID 查询通知
    * GET /api/v1/notifications/:uuid
    */
-  @Get(':uuid')
-  @ApiOperation({ summary: '根据 UUID 查询通知' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  @ApiResponse({ status: 404, description: '通知不存在' })
-  async findNotificationByUuid(
-    @Req() req: any,
-    @Param('uuid') uuid: string
-  ) {
-    const accountUuid = req.user.accountUuid;
-    return this.notificationService.findNotificationByUuid(uuid, accountUuid);
-  }
+  router.get('/:uuid', async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user.accountUuid;
+      const uuid = req.params.uuid;
+      const result = await notificationService.findNotificationByUuid(uuid, accountUuid);
+      res.status(200).json(result);
+    } catch (error: any) {
+      if (error.name === 'NotFoundException') {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: String(error) });
+      }
+    }
+  });
 
   /**
    * 标记通知为已读
    * PATCH /api/v1/notifications/:uuid/read
    */
-  @Patch(':uuid/read')
-  @ApiOperation({ summary: '标记通知为已读' })
-  @ApiResponse({ status: 200, description: '操作成功' })
-  @ApiResponse({ status: 404, description: '通知不存在' })
-  async markAsRead(
-    @Req() req: any,
-    @Param('uuid') uuid: string
-  ) {
-    const accountUuid = req.user.accountUuid;
-    return this.notificationService.markAsRead(uuid, accountUuid);
-  }
+  router.patch('/:uuid/read', async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user.accountUuid;
+      const uuid = req.params.uuid;
+      const result = await notificationService.markAsRead(uuid, accountUuid);
+      res.status(200).json(result);
+    } catch (error: any) {
+      if (error.name === 'NotFoundException') {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: String(error) });
+      }
+    }
+  });
 
   /**
    * 删除通知
    * DELETE /api/v1/notifications/:uuid
    */
-  @Delete(':uuid')
-  @ApiOperation({ summary: '删除通知' })
-  @ApiResponse({ status: 200, description: '删除成功' })
-  @ApiResponse({ status: 404, description: '通知不存在' })
-  async deleteNotification(
-    @Req() req: any,
-    @Param('uuid') uuid: string
-  ) {
-    const accountUuid = req.user.accountUuid;
-    return this.notificationService.deleteNotification(uuid, accountUuid);
-  }
+  router.delete('/:uuid', async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user.accountUuid;
+      const uuid = req.params.uuid;
+      const result = await notificationService.deleteNotification(uuid, accountUuid);
+      res.status(200).json(result);
+    } catch (error: any) {
+      if (error.name === 'NotFoundException') {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(400).json({ error: String(error) });
+      }
+    }
+  });
 
   /**
    * 批量删除通知
    * DELETE /api/v1/notifications
    */
-  @Delete()
-  @ApiOperation({ summary: '批量删除通知' })
-  @ApiResponse({ status: 200, description: '删除成功' })
-  async batchDeleteNotifications(
-    @Req() req: any,
-    @Body() body: BatchDeleteNotificationsRequest
-  ) {
-    const accountUuid = req.user.accountUuid;
+  router.delete('/', async (req: Request, res: Response) => {
+    try {
+      const accountUuid = (req as any).user.accountUuid;
+      const body = req.body as BatchDeleteNotificationsRequest;
+      const result = await notificationService.batchDeleteNotifications(body.uuids, accountUuid);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ error: String(error) });
+    }
+  });
+
+  return router;
+}
+
+// 为了向后兼容，导出一个默认的控制器类
+export class NotificationController {
+  constructor(
+    private readonly notificationService: NotificationApplicationService
+  ) {}
+
+  async createNotification(req: Request, body: CreateNotificationRequest) {
+    const accountUuid = (req as any).user.accountUuid;
+    return this.notificationService.createNotification(accountUuid, body);
+  }
+
+  async findNotifications(req: Request, query: QueryNotificationsRequest) {
+    const accountUuid = (req as any).user.accountUuid;
+    return this.notificationService.findNotifications(accountUuid, query);
+  }
+
+  async getUnreadCount(req: Request) {
+    const accountUuid = (req as any).user.accountUuid;
+    return this.notificationService.getUnreadCount(accountUuid);
+  }
+
+  async markAllAsRead(req: Request) {
+    const accountUuid = (req as any).user.accountUuid;
+    return this.notificationService.markAllAsRead(accountUuid);
+  }
+
+  async findNotificationByUuid(req: Request, uuid: string) {
+    const accountUuid = (req as any).user.accountUuid;
+    return this.notificationService.findNotificationByUuid(uuid, accountUuid);
+  }
+
+  async markAsRead(req: Request, uuid: string) {
+    const accountUuid = (req as any).user.accountUuid;
+    return this.notificationService.markAsRead(uuid, accountUuid);
+  }
+
+  async deleteNotification(req: Request, uuid: string) {
+    const accountUuid = (req as any).user.accountUuid;
+    return this.notificationService.deleteNotification(uuid, accountUuid);
+  }
+
+  async batchDeleteNotifications(req: Request, body: BatchDeleteNotificationsRequest) {
+    const accountUuid = (req as any).user.accountUuid;
     return this.notificationService.batchDeleteNotifications(body.uuids, accountUuid);
   }
 }

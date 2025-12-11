@@ -2,15 +2,14 @@
  * Story 11.5: 标签统计与过滤
  * 
  * 标签应用服务 - 提供标签统计功能
+ * 标准 Express/TypeScript 模式 - 移除了 NestJS @Injectable 装饰器
  */
 
-import { Injectable } from '@nestjs/common';
 import type { IResourceRepository } from '@dailyuse/domain-server/repository';
 import type { RepositoryServerDTO, ResourceServerDTO, FolderServerDTO, TagStatisticsDto } from '@dailyuse/contracts/repository';
 import { RepositoryContainer } from '../../infrastructure/di/RepositoryContainer';
 
 
-@Injectable()
 export class TagsApplicationService {
   private static instance: TagsApplicationService | null = null;
 

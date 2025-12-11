@@ -98,12 +98,12 @@ export function validateAll(schemas: { body?: ZodSchema; params?: ZodSchema; que
     try {
       // 验证 params
       if (schemas.params) {
-        req.params = schemas.params.parse(req.params);
+        req.params = schemas.params.parse(req.params) as any;
       }
 
       // 验证 query
       if (schemas.query) {
-        req.query = schemas.query.parse(req.query);
+        req.query = schemas.query.parse(req.query) as any;
       }
 
       // 验证 body

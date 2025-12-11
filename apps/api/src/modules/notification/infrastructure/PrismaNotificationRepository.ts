@@ -2,18 +2,17 @@
 /**
  * PrismaNotificationRepository 实现
  * 使用 Prisma 实现 NotificationRepository
+ * 标准 Express/TypeScript 模式 - 移除了 NestJS @Injectable 装饰器
  */
 
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
+import { PrismaClient } from '@prisma/client';
 import type { NotificationRepository, FindNotificationsOptions } from '@dailyuse/domain-server/notification';
 import { Notification } from '@dailyuse/domain-server/notification';
 import type { NotificationServerDTO, NotificationPreferenceServerDTO } from '@dailyuse/contracts/notification';
 
 
-@Injectable()
 export class PrismaNotificationRepository implements NotificationRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async save(notification: Notification): Promise<void> {
     const data = notification.toPersistence();
