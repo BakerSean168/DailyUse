@@ -5,6 +5,7 @@
  */
 
 import type { INotificationPreferenceRepository, NotificationPreference } from '@dailyuse/domain-server/notification';
+import { NotificationPreference as NotificationPreferenceEntity } from '@dailyuse/domain-server/notification';
 import { getDatabase, transaction } from '../../database';
 
 interface NotificationPreferenceRow {
@@ -108,15 +109,13 @@ export class SqliteNotificationPreferenceRepository implements INotificationPref
     }
 
     // 创建默认偏好设置
-    const { NotificationPreference } = require('@dailyuse/domain-server/notification');
-    const defaultPreference = NotificationPreference.create({ accountUuid });
+    const defaultPreference = NotificationPreferenceEntity.create({ accountUuid });
     await this.save(defaultPreference);
     return defaultPreference;
   }
 
   private mapToEntity(row: NotificationPreferenceRow): NotificationPreference {
-    const { NotificationPreference } = require('@dailyuse/domain-server/notification');
-    return NotificationPreference.fromPersistenceDTO({
+    return NotificationPreferenceEntity.fromPersistenceDTO({
       uuid: row.uuid,
       accountUuid: row.account_uuid,
       enabled: row.enabled === 1,

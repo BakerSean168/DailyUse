@@ -88,19 +88,10 @@
   "devDependencies": {
     "@lhci/cli": "^0.14.0",
     "@playwright/test": "^1.56.0",
-    "@testing-library/jest-dom": "^6.8.0",
-    "@testing-library/vue": "^8.1.0",
     "@types/markdown-it": "^14.1.2",
-    "@types/node": "^22.17.1",
     "@types/uuid": "^10.0.0",
-    "@vitejs/plugin-vue": "^5.2.4",
-    "@vue/test-utils": "^2.4.6",
-    "happy-dom": "^18.0.1",
     "rollup-plugin-visualizer": "6.0.5",
     "shadcn": "3.5.1",
-    "typescript": "^5.8.3",
-    "vite": "^7.1.7",
-    "vitest": "^3.2.4",
     "vue-tsc": "^2.1.10"
   }
 }

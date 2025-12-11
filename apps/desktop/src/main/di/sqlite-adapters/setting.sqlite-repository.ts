@@ -230,8 +230,7 @@ export class SqliteSettingRepository implements ISettingRepository {
   }
 
   private mapToEntity(row: SettingRow): Setting {
-    const { Setting } = require('@dailyuse/domain-server/setting');
-    return Setting.fromPersistenceDTO({
+    return SettingEntity.fromPersistenceDTO({
       uuid: row.uuid,
       key: row.key,
       name: row.name,

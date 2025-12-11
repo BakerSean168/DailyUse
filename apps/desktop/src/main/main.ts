@@ -18,7 +18,8 @@
  */
 
 import { app } from 'electron';
-import { initializeDatabase, startMemoryCleanup, initMemoryMonitorForDev, registerCacheIpcHandlers } from './database';
+import { initializeDatabase, startMemoryCleanup } from './database';
+import { initMemoryMonitorForDev, registerCacheIpcHandlers } from './utils';
 import { configureMainProcessDependencies } from './di';
 import { registerAllModules, initializeAllModules } from './modules';
 import { initSyncManager } from './services';

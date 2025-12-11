@@ -103,8 +103,7 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
   }
 
   private mapToEntity(row: RepositoryRow): Repository {
-    const { Repository } = require('@dailyuse/domain-server/repository');
-    return Repository.fromPersistenceDTO({
+    return RepositoryEntity.fromPersistenceDTO({
       uuid: row.uuid,
       accountUuid: row.account_uuid,
       name: row.name,

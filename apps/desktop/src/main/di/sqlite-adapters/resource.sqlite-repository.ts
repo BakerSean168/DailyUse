@@ -5,6 +5,7 @@
  */
 
 import type { IResourceRepository, Resource } from '@dailyuse/domain-server/repository';
+import { Resource as ResourceEntity } from '@dailyuse/domain-server/repository';
 import { getDatabase, transaction } from '../../database';
 
 interface ResourceRow {
@@ -126,8 +127,7 @@ export class SqliteResourceRepository implements IResourceRepository {
   }
 
   private mapToEntity(row: ResourceRow): Resource {
-    const { Resource } = require('@dailyuse/domain-server/repository');
-    return Resource.fromPersistenceDTO({
+    return ResourceEntity.fromPersistenceDTO({
       uuid: row.uuid,
       repository_uuid: row.repository_uuid,
       folder_uuid: row.folder_uuid,

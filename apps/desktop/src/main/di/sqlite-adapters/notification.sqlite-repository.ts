@@ -5,6 +5,7 @@
  */
 
 import type { INotificationRepository, Notification } from '@dailyuse/domain-server/notification';
+import { Notification as NotificationEntity } from '@dailyuse/domain-server/notification';
 import { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
 import { getDatabase, transaction } from '../../database';
 
@@ -309,8 +310,7 @@ export class SqliteNotificationRepository implements INotificationRepository {
   }
 
   private mapToEntity(row: NotificationRow): Notification {
-    const { Notification } = require('@dailyuse/domain-server/notification');
-    return Notification.fromPersistenceDTO({
+    return NotificationEntity.fromPersistenceDTO({
       uuid: row.uuid,
       accountUuid: row.account_uuid,
       title: row.title,

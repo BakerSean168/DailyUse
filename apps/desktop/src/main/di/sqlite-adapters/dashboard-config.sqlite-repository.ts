@@ -5,6 +5,7 @@
  */
 
 import type { IDashboardConfigRepository, DashboardConfig } from '@dailyuse/domain-server/dashboard';
+import { DashboardConfig as DashboardConfigEntity } from '@dailyuse/domain-server/dashboard';
 import { getDatabase, transaction } from '../../database';
 
 interface DashboardConfigRow {
@@ -74,8 +75,7 @@ export class SqliteDashboardConfigRepository implements IDashboardConfigReposito
   }
 
   private mapToEntity(row: DashboardConfigRow): DashboardConfig {
-    const { DashboardConfig } = require('@dailyuse/domain-server/dashboard');
-    return DashboardConfig.fromPersistence({
+    return DashboardConfigEntity.fromPersistenceDTO({
       id: row.id,
       accountUuid: row.account_uuid,
       widgetConfig: row.widget_config,

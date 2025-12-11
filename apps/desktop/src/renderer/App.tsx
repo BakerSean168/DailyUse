@@ -9,7 +9,7 @@
 
 import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { Layout } from './shared/components/Layout';
+import { Layout } from './shared/components';
 
 // Route-level Lazy Loading - Core Views
 const DashboardView = lazy(() =>

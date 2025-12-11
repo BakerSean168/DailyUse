@@ -5,6 +5,7 @@
  */
 
 import type { IFolderRepository, Folder } from '@dailyuse/domain-server/repository';
+import { Folder as FolderEntity } from '@dailyuse/domain-server/repository';
 import { getDatabase, transaction } from '../../database';
 
 interface FolderRow {
@@ -118,8 +119,7 @@ export class SqliteFolderRepository implements IFolderRepository {
   }
 
   private mapToEntity(row: FolderRow): Folder {
-    const { Folder } = require('@dailyuse/domain-server/repository');
-    return Folder.fromPersistenceDTO({
+    return FolderEntity.fromPersistenceDTO({
       uuid: row.uuid,
       repositoryUuid: row.repository_uuid,
       parentUuid: row.parent_uuid,

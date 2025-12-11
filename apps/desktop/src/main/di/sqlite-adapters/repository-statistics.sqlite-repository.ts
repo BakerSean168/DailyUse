@@ -101,7 +101,6 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
   }
 
   private mapToEntity(row: RepositoryStatisticsRow): RepositoryStatistics {
-    const { RepositoryStatistics } = require('@dailyuse/domain-server/repository');
     const dto: RepositoryStatisticsPersistenceDTO = {
       uuid: row.uuid,
       accountUuid: row.account_uuid,
@@ -116,6 +115,6 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
-    return RepositoryStatistics.fromPersistence(dto);
+    return RepositoryStatisticsEntity.fromPersistence(dto);
   }
 }

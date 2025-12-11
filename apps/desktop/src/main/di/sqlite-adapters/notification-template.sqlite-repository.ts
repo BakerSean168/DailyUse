@@ -215,8 +215,7 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
   }
 
   private mapToEntity(row: NotificationTemplateRow): NotificationTemplate {
-    const { NotificationTemplate } = require('@dailyuse/domain-server/notification');
-    return NotificationTemplate.fromPersistenceDTO({
+    return NotificationTemplateEntity.fromPersistenceDTO({
       uuid: row.uuid,
       name: row.name,
       description: row.description,

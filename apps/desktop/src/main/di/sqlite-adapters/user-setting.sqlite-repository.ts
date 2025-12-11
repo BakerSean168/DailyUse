@@ -5,6 +5,7 @@
  */
 
 import type { IUserSettingRepository, UserSetting } from '@dailyuse/domain-server/setting';
+import { UserSetting as UserSettingEntity } from '@dailyuse/domain-server/setting';
 import { getDatabase, transaction } from '../../database';
 
 interface UserSettingRow {
@@ -140,8 +141,7 @@ export class SqliteUserSettingRepository implements IUserSettingRepository {
   }
 
   private mapToEntity(row: UserSettingRow): UserSetting {
-    const { UserSetting } = require('@dailyuse/domain-server/setting');
-    return UserSetting.fromPersistenceDTO({
+    return UserSettingEntity.fromPersistenceDTO({
       uuid: row.uuid,
       accountUuid: row.account_uuid,
       appearanceTheme: row.appearance_theme,
