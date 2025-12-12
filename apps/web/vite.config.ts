@@ -6,6 +6,10 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ mode }) => {
   const isDev = mode !== 'production';
+  const isCiOrDocker =
+    process.env.CI === 'true' ||
+    process.env.DOCKER === 'true' ||
+    process.env.NO_OPEN === 'true';
   return {
     resolve: {
       alias: {
@@ -28,14 +32,8 @@ export default defineConfig(({ mode }) => {
         },
       }),
       // 打包分析插件（仅生产模式）
-      !isDev &&
-        visualizer({
-          filename: './dist/stats.html', // 输出文件
-          open: true, // 构建后自动打开浏览器
-          gzipSize: true, // 显示 gzip 大小
-          brotliSize: true, // 显示 brotli 大小
-          template: 'treemap', // 使用树状图模式（可选：sunburst, treemap, network）
-        }),
+      // 生产分析在本地执行，Docker/CI 环境不启用以避免打开浏览器/PowerShell
+      // （如需启用请设置环境变量并在宿主机运行）
     ].filter(Boolean),
     server: {
       port: 5173,

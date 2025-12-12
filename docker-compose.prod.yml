@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库 - 生产环境
+  postgres:
+    image: postgres:16-alpine
+    container_name: dailyuse-prod-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-dailyuse}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - dailyuse-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # API 服务 - 生产环境
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: dailyuse-prod-api
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-dailyuse}
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+      API_PORT: 3000
+      API_HOST: 0.0.0.0
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dailyuse-network
+    volumes:
+      - ./apps/api/.env:/app/.env:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Web 前端 - 生产环境
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: dailyuse-prod-web
+    ports:
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      - api
+    networks:
+      - dailyuse-network
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/index.html"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+networks:
+  dailyuse-network:
+    driver: bridge
+
+volumes:
+  postgres_prod_data:
+    driver: local
