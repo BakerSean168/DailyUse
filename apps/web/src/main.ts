@@ -15,6 +15,19 @@ import { initWebVitals } from './utils/performance/webVitals';
 initializeLogger();
 const logger = createLogger('WebApp');
 
+// Polyfill crypto.randomUUID for non-secure contexts or older browsers
+if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
+  crypto.randomUUID = () => {
+    return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c: any) =>
+      (
+        c ^
+        (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+      ).toString(16),
+    ) as `${string}-${string}-${string}-${string}-${string}`;
+  };
+  logger.info('Polyfilled crypto.randomUUID');
+}
+
 // 初始化 Web Vitals 监控 (生产环境)
 if (import.meta.env.PROD) {
   initWebVitals();

@@ -30,13 +30,14 @@ services:
     container_name: dailyuse-prod-api
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-dailyuse}
+      # DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-dailyuse}
       JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+      PORT: 3000
       API_PORT: 3000
       API_HOST: 0.0.0.0
       LOG_LEVEL: ${LOG_LEVEL:-info}
     ports:
-      - "${API_PORT:-3000}:3000"
+      - "${API_PORT:-3888}:3000"
     depends_on:
       postgres:
         condition: service_healthy
