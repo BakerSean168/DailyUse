@@ -12,6 +12,7 @@
     "build": "nx build",
     "preview": "nx vite:preview",
     "lint": "nx lint",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "test": "nx test",
     "test:ipc": "vitest run --config vitest.ipc.config.ts",
     "test:ipc:watch": "vitest --config vitest.ipc.config.ts",
