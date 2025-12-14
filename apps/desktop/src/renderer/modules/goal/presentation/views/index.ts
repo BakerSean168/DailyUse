@@ -3,5 +3,5 @@
  */
 
 export { GoalListView } from './GoalListView';
-export { GoalCard } from './components/GoalCard';
-export { GoalCreateDialog } from './components/GoalCreateDialog';
+export { GoalDetailView } from './GoalDetailView';
+export { KeyResultDetailView } from './KeyResultDetailView';
