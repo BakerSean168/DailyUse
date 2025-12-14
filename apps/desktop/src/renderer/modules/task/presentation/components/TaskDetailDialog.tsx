@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplateClientDTO, UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { TimeEstimationCard } from '../../../components/task/TimeEstimationCard';
 import type { TimeEstimate } from '@dailyuse/contracts/goal';
@@ -72,12 +72,16 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
     try {
       setIsSaving(true);
       setError(null);
-      await taskApiClient.updateTaskTemplate(template.uuid, {
+      
+      // 构建符合 contracts 类型的请求
+      const request: UpdateTaskTemplateRequest = {
         title: editTitle,
         description: editDescription || undefined,
         importance: editImportance,
         urgency: editUrgency,
-      });
+      };
+      
+      await taskApiClient.updateTaskTemplate(template.uuid, request);
       setIsEditing(false);
       onUpdated();
     } catch (err) {

@@ -5,7 +5,11 @@
  */
 
 import { useState, useEffect } from 'react';
-import type { GoalRecordClientDTO, KeyResultClientDTO } from '@dailyuse/contracts/goal';
+import type { 
+  GoalRecordClientDTO, 
+  KeyResultClientDTO,
+  CreateGoalRecordRequest,
+} from '@dailyuse/contracts/goal';
 import {
   Dialog,
   DialogContent,
@@ -29,7 +33,8 @@ interface GoalRecordDialogProps {
   record?: GoalRecordClientDTO | null;
   goalColor?: string;
   onClose: () => void;
-  onSave: (data: { value: number; note?: string }) => Promise<void>;
+  /** 保存回调 - 使用 contracts 类型 */
+  onSave: (data: CreateGoalRecordRequest) => Promise<void>;
 }
 
 // 快速选择值

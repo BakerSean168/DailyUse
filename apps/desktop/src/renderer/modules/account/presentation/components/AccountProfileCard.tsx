@@ -3,10 +3,12 @@
  *
  * 账户资料卡片
  * Story 11-6: Auxiliary Modules
+ * 
+ * 使用 contracts 中的 AccountClientDTO 作为数据类型
  */
 
 import { useState } from 'react';
-import { User, Mail, MapPin, Globe, Calendar, Edit2, Camera } from 'lucide-react';
+import { Mail, MapPin, Globe, Calendar, Edit2, Camera } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -22,7 +24,12 @@ import {
 
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import type { AccountClientDTO, SubscriptionPlan } from '@dailyuse/contracts/account';
 
+/**
+ * 账户资料展示类型
+ * 从 AccountClientDTO 提取展示所需的字段
+ */
 export interface AccountProfile {
   uuid: string;
   email: string;
@@ -36,6 +43,27 @@ export interface AccountProfile {
   createdAt?: Date;
   isVerified?: boolean;
   isPremium?: boolean;
+}
+
+/**
+ * 从 AccountClientDTO 转换为 AccountProfile
+ * 便于组件使用简化的展示数据
+ */
+export function accountClientToProfile(account: AccountClientDTO): AccountProfile {
+  return {
+    uuid: account.uuid,
+    email: account.email,
+    username: account.username,
+    displayName: account.profile.displayName,
+    avatarUrl: account.profile.avatar ?? undefined,
+    bio: account.profile.bio ?? undefined,
+    location: account.profile.location ?? undefined,
+    timezone: account.profile.timezone,
+    language: account.profile.language,
+    createdAt: account.createdAt ? new Date(account.createdAt) : undefined,
+    isVerified: account.emailVerified,
+    isPremium: account.subscription?.plan !== undefined && account.subscription.plan !== 'FREE' as unknown as SubscriptionPlan,
+  };
 }
 
 interface AccountProfileCardProps {

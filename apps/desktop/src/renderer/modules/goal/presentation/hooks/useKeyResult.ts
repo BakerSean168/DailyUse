@@ -8,39 +8,19 @@ import { useState, useCallback } from 'react';
 import type {
   KeyResultClientDTO,
   GoalRecordClientDTO,
+  AddKeyResultRequest,
+  UpdateKeyResultRequest,
+  CreateGoalRecordRequest,
 } from '@dailyuse/contracts/goal';
-import { AggregationMethod, KeyResultValueType } from '@dailyuse/contracts/goal';
+import { KeyResultValueType, AggregationMethod } from '@dailyuse/contracts/goal';
 import { goalApplicationService } from '../../application/services';
 
 // ===== Types =====
 
-export interface CreateKeyResultInput {
-  title: string;
-  description?: string;
-  targetValue: number;
-  currentValue?: number;
-  unit?: string;
-  weight: number;
-  valueType?: KeyResultValueType;
-  aggregationMethod?: AggregationMethod;
-}
-
-export interface UpdateKeyResultInput {
-  title?: string;
-  description?: string;
-  targetValue?: number;
-  currentValue?: number;
-  unit?: string;
-  weight?: number;
-  valueType?: KeyResultValueType;
-  aggregationMethod?: AggregationMethod;
-}
-
-export interface CreateRecordInput {
-  value: number;
-  note?: string;
-  recordedAt?: number;
-}
+// 使用 contracts 类型别名，保持向后兼容
+export type CreateKeyResultInput = AddKeyResultRequest;
+export type UpdateKeyResultInput = UpdateKeyResultRequest;
+export type CreateRecordInput = CreateGoalRecordRequest;
 
 export interface KeyResultState {
   loading: boolean;

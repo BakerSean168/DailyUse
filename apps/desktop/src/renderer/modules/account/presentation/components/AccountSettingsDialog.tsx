@@ -3,10 +3,12 @@
  *
  * 账户设置对话框
  * Story 11-6: Auxiliary Modules
+ * 
+ * 使用 contracts 中的 UpdateAccountProfileRequest 作为保存类型
  */
 
 import { useState, useEffect } from 'react';
-import { User, Mail, MapPin, Globe, Languages, Shield, Bell, Trash2 } from 'lucide-react';
+import { User, MapPin, Globe, Languages, Shield, Bell, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -44,13 +46,14 @@ import {
   Separator,
 } from '@dailyuse/ui-shadcn';
 
+import type { UpdateAccountProfileRequest } from '@dailyuse/contracts/account';
 import type { AccountProfile } from './AccountProfileCard';
 
 interface AccountSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   profile: AccountProfile;
-  onSave: (updates: Partial<AccountProfile>) => Promise<void>;
+  onSave: (updates: UpdateAccountProfileRequest) => Promise<void>;
   onChangePassword?: () => void;
   onDeleteAccount?: () => Promise<void>;
 }
@@ -95,13 +98,15 @@ export function AccountSettingsDialog({
   const handleSave = async () => {
     setSaving(true);
     try {
-      await onSave({
+      const request: UpdateAccountProfileRequest = {
         displayName: displayName.trim() || undefined,
         bio: bio.trim() || undefined,
         location: location.trim() || undefined,
         timezone,
         language,
-      });
+      };
+      
+      await onSave(request);
       onOpenChange(false);
     } catch (error) {
       console.error('保存失败:', error);

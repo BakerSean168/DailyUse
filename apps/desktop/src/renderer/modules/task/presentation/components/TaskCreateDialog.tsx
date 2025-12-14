@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
+import type { CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { TaskType, TimeType } from '@dailyuse/contracts/task';
 
@@ -38,9 +39,8 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
       setIsSubmitting(true);
       setError(null);
 
-      // 创建一次性全天任务
-      // 注意：Desktop 版使用固定的本地账户 UUID
-      await taskApiClient.createTaskTemplate({
+      // 构建符合 contracts 类型的请求
+      const request: CreateTaskTemplateRequest = {
         accountUuid: 'local-user', // Desktop 本地用户
         title: title.trim(),
         description: description.trim() || undefined,
@@ -50,7 +50,9 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
         },
         importance,
         urgency,
-      });
+      };
+      
+      await taskApiClient.createTaskTemplate(request);
 
       onCreated();
     } catch (err) {

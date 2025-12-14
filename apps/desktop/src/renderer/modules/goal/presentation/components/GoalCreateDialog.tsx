@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
+import type { CreateGoalRequest } from '@dailyuse/contracts/goal';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
 interface GoalCreateDialogProps {
@@ -38,13 +39,16 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
       setIsSubmitting(true);
       setError(null);
       
-      await goalApiClient.createGoal({
+      // 构建符合 contracts 类型的请求
+      const request: CreateGoalRequest = {
         title: title.trim(),
         description: description.trim() || undefined,
         importance,
         urgency,
         targetDate: targetDate ? new Date(targetDate).getTime() : undefined,
-      });
+      };
+      
+      await goalApiClient.createGoal(request);
 
       onCreated();
     } catch (err) {
