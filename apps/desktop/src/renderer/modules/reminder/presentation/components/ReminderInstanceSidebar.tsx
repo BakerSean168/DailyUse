@@ -30,7 +30,7 @@ import {
 } from '@dailyuse/ui-shadcn';
 
 import {
-  BellClock,
+  Bell,
   RefreshCw,
   Settings,
   ChevronDown,
@@ -214,7 +214,7 @@ export function ReminderInstanceSidebar({
       {/* 标题栏 */}
       <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
         <div className="flex items-center gap-2">
-          <BellClock className="h-5 w-5" />
+          <Bell className="h-5 w-5" />
           <span className="font-semibold">即将到来的提醒</span>
         </div>
         <div className="flex items-center gap-1">

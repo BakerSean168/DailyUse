@@ -6,8 +6,8 @@
  */
 
 import { useEffect, useCallback } from 'react';
-import { useNotification } from '../../hooks/useNotification';
-import { NotificationItem, NotificationFilter, NotificationBadge } from './components';
+import { useNotification } from '../hooks/useNotification';
+import { NotificationItem, NotificationFilter, NotificationBadge } from '../components';
 
 export function NotificationListView() {
   const {

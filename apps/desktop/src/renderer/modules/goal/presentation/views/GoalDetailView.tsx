@@ -5,6 +5,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import type { GoalClientDTO, KeyResultClientDTO, GoalReviewClientDTO } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { goalApplicationService } from '../../application/services';
@@ -360,7 +362,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                   ? '今天到期'
                   : goal.isOverdue
                   ? `已逾期 ${Math.abs(goal.daysRemaining || 0)} 天`
-                  : new Date(goal.targetDate).toLocaleDateString('zh-CN')}
+                  : format(new Date(goal.targetDate), 'yyyy-MM-dd', { locale: zhCN })}
               </span>
             </div>
           )}
@@ -447,7 +449,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                   <div className="text-sm text-muted-foreground mb-1">开始时间</div>
                   <div className="font-medium">
                     {goal.startDate
-                      ? new Date(goal.startDate).toLocaleDateString('zh-CN')
+                      ? format(new Date(goal.startDate), 'yyyy-MM-dd', { locale: zhCN })
                       : '未设置'}
                   </div>
                 </div>
@@ -455,20 +457,20 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
                   <div className="text-sm text-muted-foreground mb-1">目标时间</div>
                   <div className="font-medium">
                     {goal.targetDate
-                      ? new Date(goal.targetDate).toLocaleDateString('zh-CN')
+                      ? format(new Date(goal.targetDate), 'yyyy-MM-dd', { locale: zhCN })
                       : '未设置'}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">创建时间</div>
                   <div className="font-medium">
-                    {new Date(goal.createdAt).toLocaleDateString('zh-CN')}
+                    {format(new Date(goal.createdAt), 'yyyy-MM-dd', { locale: zhCN })}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">更新时间</div>
                   <div className="font-medium">
-                    {new Date(goal.updatedAt).toLocaleDateString('zh-CN')}
+                    {format(new Date(goal.updatedAt), 'yyyy-MM-dd', { locale: zhCN })}
                   </div>
                 </div>
               </CardContent>

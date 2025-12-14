@@ -5,6 +5,8 @@
  */
 
 import { useState } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { GoalDetailDialog } from './GoalDetailDialog';
@@ -164,7 +166,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
               ? '今天到期'
               : daysRemaining !== null && daysRemaining <= 7
               ? `${daysRemaining} 天后到期`
-              : new Date(goal.targetDate).toLocaleDateString('zh-CN')
+              : format(new Date(goal.targetDate), 'yyyy-MM-dd', { locale: zhCN })
             }
           </span>
         )}

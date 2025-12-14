@@ -5,6 +5,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
@@ -210,7 +212,7 @@ export function ScheduleListView() {
           onTaskDrop={(task, newDate) => {
             // 显示提示 - 由于API限制，拖拽调整时间功能需要后端支持
             console.log(`[ScheduleListView] Task ${task.name} dropped to ${newDate.toISOString()}`);
-            alert(`拖拽功能预览：将 "${task.name}" 移动到 ${newDate.toLocaleDateString('zh-CN')}\n\n注意：完整的日期调整功能需要后端 API 支持更新任务调度配置。`);
+            alert(`拖拽功能预览：将 "${task.name}" 移动到 ${format(newDate, 'yyyy-MM-dd', { locale: zhCN })}\n\n注意：完整的日期调整功能需要后端 API 支持更新任务调度配置。`);
           }}
         />
       )}

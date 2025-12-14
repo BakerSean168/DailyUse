@@ -6,7 +6,7 @@
  */
 
 import { useState, type FormEvent } from 'react';
-import { useAISettings } from '../../hooks/useAISettings';
+import { useAISettings } from '../hooks/useAISettings';
 import { AIProviderType } from '@dailyuse/contracts/ai';
 
 export function AISettingsView() {

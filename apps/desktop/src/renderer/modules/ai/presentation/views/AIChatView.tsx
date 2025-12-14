@@ -6,8 +6,8 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useAI } from '../../hooks/useAI';
-import { ChatMessage, ChatInput, ConversationList } from './components';
+import { useAI } from '../hooks/useAI';
+import { ChatMessage, ChatInput, ConversationList } from '../components';
 
 export function AIChatView() {
   const {

@@ -9,14 +9,15 @@
 export {
   RepositoryApplicationService,
   repositoryApplicationService,
-  type FileTreeNode,
 } from './application/services';
 
 // ===== Presentation Layer =====
 export {
   useRepository,
-  type RepositoryState,
-  type UseRepositoryReturn,
+} from './presentation/hooks';
+export type {
+  RepositoryState,
+  UseRepositoryReturn,
 } from './presentation/hooks';
 
 // ===== Initialization =====

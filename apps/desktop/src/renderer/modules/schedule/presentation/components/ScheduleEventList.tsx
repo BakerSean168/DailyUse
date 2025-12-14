@@ -10,6 +10,8 @@
  */
 
 import { useMemo, useCallback } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
 import { Button } from '@dailyuse/ui-shadcn';
@@ -41,12 +43,7 @@ interface ScheduleEventListProps {
 
 function formatDateTime(date: Date | number): string {
   const d = typeof date === 'number' ? new Date(date) : date;
-  return d.toLocaleString('zh-CN', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return format(d, 'M月d日 HH:mm', { locale: zhCN });
 }
 
 function getPriorityColor(priority?: number): string {

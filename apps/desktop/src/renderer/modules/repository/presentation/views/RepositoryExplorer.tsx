@@ -7,6 +7,18 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import {
+  Search,
+  Grid3X3,
+  List,
+  Upload,
+  FolderPlus,
+  RefreshCw,
+  Filter,
+  SortAsc,
+  SortDesc,
+  ChevronRight,
+  Home,
+} from 'lucide-react';
 import {
   Button,
   Input,
@@ -28,18 +40,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@dailyuse/ui-shadcn';
-  Search,
-  Grid3X3,
-  List,
-  Upload,
-  FolderPlus,
-  RefreshCw,
-  Filter,
-  SortAsc,
-  SortDesc,
-  ChevronRight,
-  Home,
-} from 'lucide-react';
 
 import { FolderTree, type FolderNode } from '../components/FolderTree';
 import { ResourceCard, type Resource } from '../components/ResourceCard';

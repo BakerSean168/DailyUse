@@ -7,6 +7,20 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import {
+  Sparkles,
+  Loader2,
+  Calendar,
+  Clock,
+  Sun,
+  Moon,
+  Coffee,
+  Zap,
+  Check,
+  X,
+  RefreshCw,
+  ArrowRight,
+  Info,
+} from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -30,21 +44,6 @@ import {
   TooltipTrigger,
   cn,
 } from '@dailyuse/ui-shadcn';
-  Sparkles,
-  Loader2,
-  Calendar,
-  Clock,
-  Sun,
-  Moon,
-  Coffee,
-  Zap,
-  Check,
-  X,
-  RefreshCw,
-  ArrowRight,
-  Info,
-} from 'lucide-react';
-
 import { format, addHours, setHours, setMinutes, isToday, isTomorrow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

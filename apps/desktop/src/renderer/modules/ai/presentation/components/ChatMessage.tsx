@@ -6,6 +6,8 @@
  */
 
 import { memo } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant' | 'system';
@@ -58,10 +60,7 @@ export const ChatMessage = memo(function ChatMessage({
             isUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
           }`}
         >
-          {new Date(timestamp).toLocaleTimeString('zh-CN', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+          {format(timestamp, 'HH:mm', { locale: zhCN })}
         </div>
       </div>
     </div>

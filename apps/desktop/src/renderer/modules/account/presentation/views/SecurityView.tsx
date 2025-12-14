@@ -6,8 +6,10 @@
  */
 
 import { useState, type FormEvent } from 'react';
-import { useAccount } from '../../hooks/useAccount';
-import { useAuth } from '../../hooks/useAuth';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
+import { useAccount } from '../hooks/useAccount';
+import { useAuth } from '../../../auth/presentation/hooks/useAuth';
 
 export function SecurityView() {
   const { account, loading: accountLoading } = useAccount();
@@ -274,7 +276,7 @@ export function SecurityView() {
                   <p className="text-sm text-muted-foreground">
                     桌面应用 • 
                     {account?.stats?.lastLoginAt
-                      ? ` 最后活动 ${new Date(account.stats.lastLoginAt).toLocaleString('zh-CN')}`
+                      ? ` 最后活动 ${format(new Date(account.stats.lastLoginAt), 'yyyy-MM-dd HH:mm:ss', { locale: zhCN })}`
                       : ' 活跃中'}
                   </p>
                 </div>

@@ -82,8 +82,8 @@ export {
   // Hooks
   useDashboard,
   // Types
-  type UseDashboardReturn,
-  type DashboardState,
+  type UseDashboardResult,
+  type DashboardStats,
 } from './dashboard';
 
 // ============================================================
@@ -117,7 +117,6 @@ export {
   useNotification,
   // Types
   type UseNotificationReturn,
-  type NotificationState,
 } from './notification';
 
 // ============================================================
@@ -132,7 +131,6 @@ export {
   // Types
   type UseRepositoryReturn,
   type RepositoryState,
-  type FileTreeNode,
 } from './repository';
 
 // ============================================================

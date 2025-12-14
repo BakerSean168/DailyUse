@@ -5,6 +5,8 @@
  */
 
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 import type { GoalClientDTO } from '@dailyuse/contracts/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
@@ -218,7 +220,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground">创建时间</label>
                   <p className="text-sm">
-                    {new Date(goal.createdAt).toLocaleString('zh-CN')}
+                    {format(new Date(goal.createdAt), 'yyyy-MM-dd HH:mm:ss', { locale: zhCN })}
                   </p>
                 </div>
 
@@ -226,7 +228,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">目标日期</label>
                     <p className="text-sm">
-                      {new Date(goal.targetDate).toLocaleDateString('zh-CN')}
+                      {format(new Date(goal.targetDate), 'yyyy-MM-dd', { locale: zhCN })}
                     </p>
                   </div>
                 )}

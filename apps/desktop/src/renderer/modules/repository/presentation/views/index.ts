@@ -9,4 +9,4 @@ export { RepositoryDetailView } from './RepositoryDetailView';
 export { RepositoryExplorer } from './RepositoryExplorer';
 
 // Re-export components
-export * from './components';
+export * from '../components';

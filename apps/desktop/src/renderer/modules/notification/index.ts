@@ -9,11 +9,8 @@
 export { NotificationApplicationService, notificationApplicationService } from './application/services';
 
 // ===== Presentation Layer =====
-export {
-  useNotification,
-  type NotificationState,
-  type UseNotificationReturn,
-} from './presentation/hooks';
+export { useNotification } from './presentation/hooks';
+export type { UseNotificationReturn } from './presentation/hooks';
 
 // ===== Initialization =====
 export { registerNotificationModule, initializeNotificationModule } from './initialization';

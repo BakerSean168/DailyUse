@@ -7,6 +7,20 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import {
+  Sparkles,
+  Loader2,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Calendar,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+  Info,
+  RefreshCw,
+  Zap,
+} from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -23,21 +37,6 @@ import {
   TooltipTrigger,
   cn,
 } from '@dailyuse/ui-shadcn';
-  Sparkles,
-  Loader2,
-  TrendingUp,
-  TrendingDown,
-  Target,
-  Calendar,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  ArrowRight,
-  Info,
-  RefreshCw,
-  Zap,
-} from 'lucide-react';
-
 import { format, differenceInDays, addDays, isBefore, isAfter } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

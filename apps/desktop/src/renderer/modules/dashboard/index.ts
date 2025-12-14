@@ -11,8 +11,8 @@ export { DashboardApplicationService, dashboardApplicationService } from './appl
 // ===== Presentation Layer =====
 export {
   useDashboard,
-  type DashboardState,
-  type UseDashboardReturn,
+  type DashboardStats,
+  type UseDashboardResult,
 } from './presentation/hooks';
 
 // ===== Initialization =====

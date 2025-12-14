@@ -6,6 +6,8 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 
 interface ScheduleCalendarViewProps {
@@ -87,7 +89,7 @@ export function ScheduleCalendarView({ tasks, onTaskClick, onTaskDrop }: Schedul
   };
 
   const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-  const monthYear = currentDate.toLocaleString('zh-CN', { year: 'numeric', month: 'long' });
+  const monthYear = format(currentDate, 'yyyy年M月', { locale: zhCN });
 
   // 拖拽事件处理
   const handleDragStart = useCallback((e: React.DragEvent, task: ScheduleTaskClientDTO) => {
@@ -128,7 +130,7 @@ export function ScheduleCalendarView({ tasks, onTaskClick, onTaskDrop }: Schedul
           📦 正在拖动: <strong>{draggedTask.name}</strong>
           {dragOverDate && (
             <span className="ml-2">
-              → {dragOverDate.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })}
+              → {format(dragOverDate, 'M月d日', { locale: zhCN })}
             </span>
           )}
         </div>

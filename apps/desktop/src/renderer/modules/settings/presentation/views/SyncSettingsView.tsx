@@ -7,6 +7,8 @@
  */
 
 import { useState } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import { useSyncStatus } from '../../hooks/useSyncStatus';
 import { useConflicts } from '../../hooks/useConflicts';
 import { ConflictResolverDialog } from '../../components/ConflictResolverDialog';
@@ -43,7 +45,7 @@ export function SyncSettingsView() {
   // 格式化时间
   const formatTime = (timestamp: number | null): string => {
     if (!timestamp) return '从未';
-    return new Date(timestamp).toLocaleString('zh-CN');
+    return format(timestamp, 'yyyy-MM-dd HH:mm:ss', { locale: zhCN });
   };
 
   // 处理冲突解决
@@ -167,7 +169,7 @@ export function SyncSettingsView() {
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {conflict.conflictingFields.length} 个冲突字段 • 
-                    {new Date(conflict.createdAt).toLocaleString('zh-CN')}
+                    {format(new Date(conflict.createdAt), 'yyyy-MM-dd HH:mm:ss', { locale: zhCN })}
                   </div>
                 </div>
                 <button

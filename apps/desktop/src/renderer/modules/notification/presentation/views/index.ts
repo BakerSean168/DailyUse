@@ -8,4 +8,4 @@ export { NotificationListView } from './NotificationListView';
 export { NotificationSettingsView } from './NotificationSettingsView';
 
 // Re-export components
-export * from './components';
+export * from '../components';

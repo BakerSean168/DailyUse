@@ -5,6 +5,8 @@
  */
 
 import { useState } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
 import { Badge } from '@dailyuse/ui-shadcn';
 import { Button } from '@dailyuse/ui-shadcn';
@@ -142,7 +144,7 @@ export function TaskInstanceCard({
           <Clock className="h-3.5 w-3.5" />
           <span>
             {instance.isCompleted
-              ? `完成于 ${instance.actualEndTime ? new Date(instance.actualEndTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : ''}`
+              ? `完成于 ${instance.actualEndTime ? format(instance.actualEndTime, 'HH:mm', { locale: zhCN }) : ''}`
               : getTimeLabel()}
           </span>
         </div>

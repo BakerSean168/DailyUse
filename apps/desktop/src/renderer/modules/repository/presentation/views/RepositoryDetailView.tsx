@@ -6,8 +6,8 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { useRepository } from '../../hooks/useRepository';
-import { Breadcrumb, SearchBar, FolderItem, ResourceItem } from './components';
+import { useRepository } from '../hooks/useRepository';
+import { Breadcrumb, SearchBar, FolderItem, ResourceItem } from '../components';
 import type { ResourceClientDTO } from '@dailyuse/contracts/repository';
 
 export function RepositoryDetailView() {

@@ -4,5 +4,8 @@
 
 export {
   useNotification,
-  type UseNotificationReturn,
+} from './useNotification';
+
+export type {
+  UseNotificationReturn,
 } from './useNotification';

@@ -5,4 +5,4 @@
 export { ReminderListView } from './ReminderListView';
 export { ReminderTemplateView } from './ReminderTemplateView';
 export { ReminderDesktopView } from './ReminderDesktopView';
-export * from './components';
+export * from '../components';

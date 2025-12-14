@@ -469,4 +469,5 @@ export function useRepository(): UseRepositoryReturn {
   };
 }
 
+export type { RepositoryState, UseRepositoryReturn };
 export default useRepository;

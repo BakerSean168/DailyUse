@@ -10,6 +10,8 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus, SourceModule, ExecutionStatus } from '@dailyuse/contracts/schedule';
 import {
@@ -59,19 +61,13 @@ interface ScheduleTaskDetailDialogProps {
 function formatDateTime(date: Date | number | null | undefined): string {
   if (!date) return '-';
   const d = typeof date === 'number' ? new Date(date) : date;
-  return d.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return format(d, 'yyyy-MM-dd HH:mm', { locale: zhCN });
 }
 
 function formatDate(date: Date | number | null | undefined): string {
   if (!date) return '-';
   const d = typeof date === 'number' ? new Date(date) : date;
-  return d.toLocaleDateString('zh-CN');
+  return format(d, 'yyyy-MM-dd', { locale: zhCN });
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: typeof Check }> = {

@@ -26,7 +26,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  useToast,
 } from '@dailyuse/ui-shadcn';
 
 import { ThemeSettings } from '../components/ThemeSettings';
@@ -34,8 +33,13 @@ import { GeneralSettings } from '../components/GeneralSettings';
 import { useSettingStore } from '../stores/settingStore';
 import type { AppSettings } from '../stores/settingStore';
 
+// 简单的消息提示函数
+const showMessage = (title: string, _description?: string) => {
+  // TODO: 替换为统一的消息提示组件
+  console.log(`[Settings] ${title}`);
+};
+
 export function SettingsView() {
-  const { toast } = useToast();
   const { settings, setSettings, setSetting, resetToDefault, saveSettings } = useSettingStore();
 
   const [activeTab, setActiveTab] = useState('general');
@@ -47,30 +51,20 @@ export function SettingsView() {
     setSaving(true);
     try {
       await saveSettings();
-      toast({
-        title: '设置已保存',
-        description: '您的设置已成功保存',
-      });
+      showMessage('设置已保存', '您的设置已成功保存');
     } catch {
-      toast({
-        title: '保存失败',
-        description: '保存设置时发生错误',
-        variant: 'destructive',
-      });
+      showMessage('保存失败', '保存设置时发生错误');
     } finally {
       setSaving(false);
     }
-  }, [saveSettings, toast]);
+  }, [saveSettings]);
 
   // Reset settings
   const handleReset = useCallback(() => {
     resetToDefault();
     setShowResetConfirm(false);
-    toast({
-      title: '设置已重置',
-      description: '所有设置已恢复为默认值',
-    });
-  }, [resetToDefault, toast]);
+    showMessage('设置已重置', '所有设置已恢复为默认值');
+  }, [resetToDefault]);
 
   // Export settings
   const handleExport = useCallback(() => {
@@ -82,11 +76,8 @@ export function SettingsView() {
     a.download = `dailyuse-settings-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast({
-      title: '导出成功',
-      description: '设置已导出为 JSON 文件',
-    });
-  }, [settings, toast]);
+    showMessage('导出成功', '设置已导出为 JSON 文件');
+  }, [settings]);
 
   // Import settings
   const handleImport = useCallback(() => {
@@ -101,20 +92,13 @@ export function SettingsView() {
         const text = await file.text();
         const imported = JSON.parse(text) as Partial<AppSettings>;
         setSettings(imported);
-        toast({
-          title: '导入成功',
-          description: '设置已从文件导入',
-        });
+        showMessage('导入成功', '设置已从文件导入');
       } catch {
-        toast({
-          title: '导入失败',
-          description: '文件格式无效',
-          variant: 'destructive',
-        });
+        showMessage('导入失败', '文件格式无效');
       }
     };
     input.click();
-  }, [setSettings, toast]);
+  }, [setSettings]);
 
   // Handler shortcuts
   const handleShortcutChange = useCallback(

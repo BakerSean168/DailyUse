@@ -8,6 +8,8 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import {
   Card,
   CardContent,
@@ -79,7 +81,7 @@ const SyncStatusCard: React.FC<{ stats: SyncStats }> = ({ stats }) => {
             <p className="text-sm text-gray-600">Last Sync</p>
             <p className="text-lg font-semibold">
               {stats.lastSync
-                ? stats.lastSync.toLocaleString()
+                ? format(stats.lastSync, 'yyyy-MM-dd HH:mm:ss', { locale: zhCN })
                 : 'Never'}
             </p>
           </div>
@@ -87,7 +89,7 @@ const SyncStatusCard: React.FC<{ stats: SyncStats }> = ({ stats }) => {
             <p className="text-sm text-gray-600">Next Sync</p>
             <p className="text-lg font-semibold">
               {stats.nextSync
-                ? stats.nextSync.toLocaleTimeString()
+                ? format(stats.nextSync, 'HH:mm:ss', { locale: zhCN })
                 : 'Not scheduled'}
             </p>
           </div>

@@ -6,7 +6,9 @@
  */
 
 import { useState, type FormEvent } from 'react';
-import { useAccount } from '../../hooks/useAccount';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
+import { useAccount } from '../hooks/useAccount';
 
 export function ProfileView() {
   const { account, loading, error, updateProfile, clearError, refresh } =
@@ -335,7 +337,7 @@ export function ProfileView() {
                   </h3>
                   <p>
                     {account?.createdAt
-                      ? new Date(account.createdAt).toLocaleDateString('zh-CN')
+                      ? format(new Date(account.createdAt), 'yyyy-MM-dd', { locale: zhCN })
                       : '未知'}
                   </p>
                 </div>

@@ -9,6 +9,8 @@
  */
 
 import { useMemo } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import type { ConflictDetectionResult, ConflictSuggestion } from '@dailyuse/contracts/schedule';
 import { Alert, AlertDescription, AlertTitle } from '@dailyuse/ui-shadcn';
 import { Badge } from '@dailyuse/ui-shadcn';
@@ -37,10 +39,7 @@ function formatDuration(ms: number): string {
 
 function formatTime(date: Date | number): string {
   const d = typeof date === 'number' ? new Date(date) : date;
-  return d.toLocaleTimeString('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return format(d, 'HH:mm', { locale: zhCN });
 }
 
 function formatSuggestion(suggestion: ConflictSuggestion): string {

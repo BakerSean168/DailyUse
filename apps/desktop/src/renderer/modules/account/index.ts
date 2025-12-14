@@ -10,7 +10,8 @@ export { AccountApplicationService } from './application/services/AccountApplica
 
 // ===== Presentation Layer =====
 // Hooks
-export { useAccount, type UseAccountReturn, type AccountState } from './presentation/hooks/useAccount';
+export { useAccount } from './presentation/hooks/useAccount';
+export type { UseAccountReturn, AccountState } from './presentation/hooks/useAccount';
 export { useAccountProfile } from './presentation/hooks/useAccountProfile';
 
 // Views (按需导出)

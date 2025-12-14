@@ -10,6 +10,8 @@
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
 import { useScheduleStore } from '../stores/scheduleStore';
 import { WeekViewCalendar } from '../components/WeekViewCalendar';
@@ -59,16 +61,7 @@ function formatEventTime(event: ScheduleClientDTO): string {
   const start = new Date(event.startTime);
   const end = new Date(event.endTime);
   
-  const formatDateTime = (date: Date) => {
-    return date.toLocaleString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-  
-  return `${formatDateTime(start)} - ${formatDateTime(end)}`;
+  return `${format(start, 'MM-dd HH:mm', { locale: zhCN })} - ${format(end, 'MM-dd HH:mm', { locale: zhCN })}`;
 }
 
 function getWeekStart(date: Date): Date {

@@ -2,5 +2,7 @@
  * Account Presentation Hooks - Index
  */
 
-export { useAccount, type UseAccountReturn, type AccountState } from './useAccount';
-export { useAccountProfile, type UseAccountProfileReturn } from './useAccountProfile';
+export { useAccount } from './useAccount';
+export type { UseAccountReturn, AccountState } from './useAccount';
+export { useAccountProfile } from './useAccountProfile';
+export type { UseAccountProfileReturn } from './useAccountProfile';

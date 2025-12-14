@@ -87,10 +87,11 @@ const TRIGGER_TYPES = [
 ];
 
 const IMPORTANCE_LEVELS = [
-  { value: ImportanceLevel.LOW, label: '低' },
-  { value: ImportanceLevel.NORMAL, label: '普通' },
-  { value: ImportanceLevel.HIGH, label: '高' },
-  { value: ImportanceLevel.URGENT, label: '紧急' },
+  { value: ImportanceLevel.Vital, label: '极其重要' },
+  { value: ImportanceLevel.Important, label: '非常重要' },
+  { value: ImportanceLevel.Moderate, label: '中等重要' },
+  { value: ImportanceLevel.Minor, label: '不太重要' },
+  { value: ImportanceLevel.Trivial, label: '无关紧要' },
 ];
 
 const COLOR_OPTIONS = [
@@ -108,7 +109,7 @@ const DEFAULT_FORM_DATA: ReminderTemplateFormData = {
   title: '',
   description: '',
   groupUuid: null,
-  importanceLevel: ImportanceLevel.NORMAL,
+  importanceLevel: ImportanceLevel.Moderate,
   triggerType: TriggerType.FIXED_TIME,
   fixedTime: '09:00',
   intervalMinutes: 60,
@@ -144,7 +145,7 @@ export function ReminderTemplateDialog({
           title: template.title || '',
           description: template.description || '',
           groupUuid: template.groupUuid || null,
-          importanceLevel: template.importanceLevel || ImportanceLevel.NORMAL,
+          importanceLevel: template.importanceLevel || ImportanceLevel.Moderate,
           triggerType: (template.trigger?.type as TriggerType) || TriggerType.FIXED_TIME,
           fixedTime: template.trigger?.fixedTime?.time || '09:00',
           intervalMinutes: template.trigger?.interval?.minutes || 60,

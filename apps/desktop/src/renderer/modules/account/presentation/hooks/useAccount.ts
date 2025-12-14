@@ -169,4 +169,5 @@ export function useAccount(): UseAccountReturn {
   };
 }
 
+export type { AccountState, UseAccountReturn };
 export default useAccount;
