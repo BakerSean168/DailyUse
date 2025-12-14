@@ -7,18 +7,19 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Play, Pause, RotateCcw, SkipForward, Coffee, Zap, Settings, Volume2, VolumeX } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import {
+  Card,
+  CardContent,
+  Button,
+  Progress,
+  Badge,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+  Label,
+  Input,
+  cn,
+} from '@dailyuse/ui-shadcn';
 
 // Types
 type TimerPhase = 'work' | 'short_break' | 'long_break';

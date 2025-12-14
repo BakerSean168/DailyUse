@@ -7,10 +7,16 @@
 
 import { useMemo } from 'react';
 import { Clock, Zap, Target, TrendingUp, Calendar, Award, Timer, Coffee } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Progress,
+  Badge,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isToday, isSameDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

@@ -7,18 +7,21 @@
 
 import { memo } from 'react';
 import { ZoomIn, ZoomOut, Maximize2, Download, RefreshCw, Grid3X3, GitBranch, CircleDot } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+  Separator,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  cn,
+} from '@dailyuse/ui-shadcn';
 
 export type LayoutType = 'tree' | 'radial' | 'force';
 

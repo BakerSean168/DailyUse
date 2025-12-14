@@ -7,10 +7,17 @@
 
 import { useState, useCallback } from 'react';
 import { Settings, Palette, User, Database, Info, RotateCcw, Download, Upload } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -19,8 +26,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { useToast } from '@/components/ui/use-toast';
+  useToast,
+} from '@dailyuse/ui-shadcn';
+
 import { ThemeSettings } from '../components/ThemeSettings';
 import { GeneralSettings } from '../components/GeneralSettings';
 import { useSettingStore } from '../stores/settingStore';

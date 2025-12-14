@@ -11,19 +11,20 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Button } from '@/shared/components/ui/button';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 import {
+  Button,
+  Skeleton,
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/shared/components/ui/sheet';
-import { Switch } from '@/shared/components/ui/switch';
-import { Label } from '@/shared/components/ui/label';
-import { Separator } from '@/shared/components/ui/separator';
-import { cn } from '@/shared/lib/utils';
+  Switch,
+  Label,
+  Separator,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import {
   LayoutDashboard,
   RefreshCw,

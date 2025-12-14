@@ -16,11 +16,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
-import { Button } from '@/shared/components/ui/button';
-import { Switch } from '@/shared/components/ui/switch';
-import { Label } from '@/shared/components/ui/label';
-import { cn } from '@/shared/lib/utils';
+  Button,
+  Switch,
+  Label,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import {
   Folder,
   Pencil,

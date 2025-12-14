@@ -10,10 +10,15 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { cn } from '@/shared/lib/utils';
+import {
+  Badge,
+  Button,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { BarChart3, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { DashboardWidget, type WidgetSize } from '../DashboardWidget';
 

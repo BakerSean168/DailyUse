@@ -11,9 +11,8 @@
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { cn } from '@/shared/lib/utils';
-import { Button } from '@/shared/components/ui/button';
 import {
+  Button,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -22,7 +21,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/shared/components/ui/alert-dialog';
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import {
   Bell,
   Folder,

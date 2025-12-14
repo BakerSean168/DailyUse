@@ -7,11 +7,19 @@
 
 import { useState } from 'react';
 import { User, Mail, MapPin, Globe, Calendar, Edit2, Camera } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Separator,
+} from '@dailyuse/ui-shadcn';
+
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

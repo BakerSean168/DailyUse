@@ -7,17 +7,19 @@
 
 import { memo } from 'react';
 import { FileText, Image, Video, Music, Archive, Code, FileJson, MoreHorizontal, Eye, Download, Trash2, Copy, ExternalLink } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
+  Card,
+  CardContent,
+  Badge,
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

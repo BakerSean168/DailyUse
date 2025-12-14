@@ -7,20 +7,18 @@
 
 import { useState, useCallback, memo } from 'react';
 import { ChevronRight, ChevronDown, Folder, FolderOpen, File, Plus, MoreHorizontal, Trash2, Edit2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { cn } from '@/lib/utils';
+  cn,
+} from '@dailyuse/ui-shadcn';
 
 export interface FolderNode {
   id: string;

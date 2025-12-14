@@ -7,13 +7,21 @@
 
 import { useMemo, useState } from 'react';
 import { Target, Flag, Calendar, CheckCircle2, Circle, Clock, ChevronRight } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Badge,
+  Progress,
+  Button,
+  ScrollArea,
+  ScrollBar,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { TimeRangeSelector, type TimeRange } from '@/renderer/shared/components/selectors/TimeRangeSelector';
-import { cn } from '@/lib/utils';
+
 import { format, differenceInDays, isWithinInterval, isBefore, isAfter, startOfMonth, endOfMonth } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

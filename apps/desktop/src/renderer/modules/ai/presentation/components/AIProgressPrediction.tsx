@@ -7,6 +7,22 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import {
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  Button,
+  Badge,
+  Progress,
+  ScrollArea,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  cn,
+} from '@dailyuse/ui-shadcn';
   Sparkles,
   Loader2,
   TrendingUp,
@@ -21,18 +37,7 @@ import {
   RefreshCw,
   Zap,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+
 import { format, differenceInDays, addDays, isBefore, isAfter } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 

@@ -6,18 +6,22 @@
  */
 
 import { Globe, Bell, RefreshCw, Keyboard, Monitor } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Label,
+  Switch,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
+  Separator,
+  Input,
+} from '@dailyuse/ui-shadcn';
 
 interface GeneralSettingsProps {
   language: 'zh-CN' | 'en-US';

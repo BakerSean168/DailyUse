@@ -9,18 +9,19 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Target, ChevronDown, ChevronRight, Plus, MoreHorizontal, ExternalLink } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
+  Card,
+  Button,
+  Badge,
+  Progress,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { DAGControls, type LayoutType } from '@/renderer/shared/components/dag/DAGControls';
-import { cn } from '@/lib/utils';
 
 // Types
 interface GoalNode {

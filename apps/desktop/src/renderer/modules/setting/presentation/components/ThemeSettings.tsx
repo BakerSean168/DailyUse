@@ -6,10 +6,17 @@
  */
 
 import { Moon, Sun, Monitor, Palette, Check } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { cn } from '@/lib/utils';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Label,
+  RadioGroup,
+  RadioGroupItem,
+  cn,
+} from '@dailyuse/ui-shadcn';
 
 interface ThemeSettingsProps {
   theme: 'light' | 'dark' | 'system';

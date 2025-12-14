@@ -7,12 +7,21 @@
 
 import { useState, useCallback } from 'react';
 import { Zap, Target, CheckSquare, Play, Pause, Clock, List, Settings, Maximize2, Minimize2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  ScrollArea,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { PomodoroTimer } from './PomodoroTimer';
 import { FocusStatistics } from './FocusStatistics';
 

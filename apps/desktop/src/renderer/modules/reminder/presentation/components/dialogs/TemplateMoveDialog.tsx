@@ -17,20 +17,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/shared/components/ui/dialog';
-import { Button } from '@/shared/components/ui/button';
-import { Label } from '@/shared/components/ui/label';
-import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import {
+  Button,
+  Label,
+  Checkbox,
+  Alert,
+  AlertDescription,
+  Card,
+  CardContent,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { Separator } from '@/shared/components/ui/separator';
+  Separator,
+} from '@dailyuse/ui-shadcn';
+
 import {
   FolderInput,
   Bell,

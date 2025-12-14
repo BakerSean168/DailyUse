@@ -11,15 +11,19 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Button,
+  Skeleton,
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/shared/components/ui/collapsible';
-import { cn } from '@/shared/lib/utils';
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { RefreshCw, ChevronDown, AlertCircle } from 'lucide-react';
 
 // ============ Types ============

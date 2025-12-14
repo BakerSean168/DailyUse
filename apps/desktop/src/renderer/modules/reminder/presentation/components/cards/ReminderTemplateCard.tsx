@@ -18,14 +18,16 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import { Switch } from '@/shared/components/ui/switch';
-import { Label } from '@/shared/components/ui/label';
-import { Separator } from '@/shared/components/ui/separator';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { cn } from '@/shared/lib/utils';
+  Button,
+  Badge,
+  Switch,
+  Label,
+  Separator,
+  Card,
+  CardContent,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import {
   Bell,
   FileText,

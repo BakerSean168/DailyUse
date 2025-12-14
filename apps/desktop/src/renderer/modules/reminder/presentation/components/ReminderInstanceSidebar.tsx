@@ -11,24 +11,24 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 import {
+  Button,
+  Badge,
+  Card,
+  CardContent,
+  Skeleton,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/shared/components/ui/collapsible';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import { cn } from '@/shared/lib/utils';
+  ScrollArea,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import {
   BellClock,
   RefreshCw,

@@ -10,10 +10,13 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import { cn } from '@/shared/lib/utils';
+import {
+  Badge,
+  Button,
+  ScrollArea,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { Bell, ArrowRight, Clock, Check, AlarmClockPlus } from 'lucide-react';
 import { format, formatDistanceToNow, isBefore, addMinutes } from 'date-fns';
 import { zhCN } from 'date-fns/locale';

@@ -7,14 +7,18 @@
 
 import { useState, useCallback } from 'react';
 import { Sparkles, Loader2, Plus, X, Check, RefreshCw, Wand2, ListTree, Edit2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+  Button,
+  Input,
+  Textarea,
+  Badge,
+  Checkbox,
+  ScrollArea,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -22,8 +26,8 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+  cn,
+} from '@dailyuse/ui-shadcn';
 
 // Types
 interface SubTask {

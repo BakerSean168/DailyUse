@@ -10,11 +10,14 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Progress } from '@/shared/components/ui/progress';
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import { cn } from '@/shared/lib/utils';
+import {
+  Progress,
+  Badge,
+  Button,
+  ScrollArea,
+  cn,
+} from '@dailyuse/ui-shadcn';
+
 import { Target, TrendingUp, ArrowRight, CheckCircle, Clock } from 'lucide-react';
 import { DashboardWidget, type WidgetSize } from '../DashboardWidget';
 

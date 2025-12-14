@@ -7,6 +7,27 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import {
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  ScrollArea,
+  Separator,
+  Skeleton,
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@dailyuse/ui-shadcn';
   Search,
   Grid3X3,
   List,
@@ -19,31 +40,7 @@ import {
   ChevronRight,
   Home,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/ui/resizable';
+
 import { FolderTree, type FolderNode } from '../components/FolderTree';
 import { ResourceCard, type Resource } from '../components/ResourceCard';
 
