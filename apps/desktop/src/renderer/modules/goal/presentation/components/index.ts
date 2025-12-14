@@ -22,3 +22,7 @@ export type { GoalReviewFormData } from './GoalReviewDialog';
 
 // Managers
 export { GoalFolderManager } from './GoalFolderManager';
+
+// Visualization
+export { GoalDAG } from './GoalDAG';
+export { GoalTimeline } from './GoalTimeline';

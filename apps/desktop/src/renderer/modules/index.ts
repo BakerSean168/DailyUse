@@ -150,6 +150,23 @@ export {
 } from './setting';
 
 // ============================================================
+// Focus Module
+// ============================================================
+export {
+  // Components
+  PomodoroTimer,
+  FocusStatistics,
+  FocusModePanel,
+  // Hooks
+  useFocus,
+  // Types
+  type FocusSession,
+  type FocusSettings,
+  type FocusState,
+  type UseFocusReturn,
+} from './focus';
+
+// ============================================================
 // Module Initialization
 // ============================================================
 export { initializeModules, type ModuleInitializationResult } from './initialization';
