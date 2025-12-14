@@ -23,19 +23,18 @@
       }
     },
     "serve": {
-      "executor": "@nx/vite:dev-server",
+      "executor": "nx:run-commands",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "desktop:build"
+        "command": "vite",
+        "cwd": "apps/desktop"
       },
       "configurations": {
         "development": {
-          "buildTarget": "desktop:build:development",
-          "hmr": true
+          "command": "vite"
         },
         "production": {
-          "buildTarget": "desktop:build:production",
-          "devServerTarget": "desktop:serve:development"
+          "command": "vite build && vite preview"
         }
       }
     },

@@ -75,7 +75,7 @@ export default defineConfig({
     react(),
     electron({
       main: {
-        entry: 'src/main/main.ts',
+        entry: path.resolve(__dirname, 'src/main/main.ts'),
         vite: {
           resolve: {
             alias: {
@@ -90,6 +90,9 @@ export default defineConfig({
               external: nativeModules,
               output: {
                 format: 'es',
+                entryFileNames: '[name].js',
+                chunkFileNames: '[name].js',
+                assetFileNames: '[name].[ext]',
               },
             },
           },
