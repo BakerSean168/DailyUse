@@ -80,10 +80,8 @@ const statusConfig: Record<TaskTemplateStatus, { label: string; icon: typeof Pla
 };
 
 const taskTypeLabels: Record<string, string> = {
-  [TaskType.HABIT]: '习惯',
-  [TaskType.EVENT]: '事件',
-  [TaskType.DEADLINE]: '截止日',
-  [TaskType.GENERAL]: '通用',
+  [TaskType.ONE_TIME]: '单次任务',
+  [TaskType.RECURRING]: '重复任务',
 };
 
 // ===================== 组件 =====================
@@ -104,7 +102,7 @@ export function TaskManagementView({
   // 使用 hook 获取模板数据
   const {
     templates,
-    isLoading,
+    loading: isLoading,
     error,
     loadTemplates,
     deleteTemplate,

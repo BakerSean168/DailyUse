@@ -220,13 +220,10 @@ export function ReminderDesktopView() {
         ...data,
       });
     } else {
-      await createTemplate({
-        accountUuid,
-        ...data,
-      });
+      await createTemplate(data);
     }
     setTemplateDialog({ open: false, template: null });
-  }, [templateDialog.template, updateTemplate, createTemplate, accountUuid]);
+  }, [templateDialog.template, updateTemplate, createTemplate]);
 
   const handleDeleteTemplate = useCallback((template: ReminderTemplateClientDTO) => {
     setDeleteDialog({
@@ -275,13 +272,10 @@ export function ReminderDesktopView() {
         ...data,
       });
     } else {
-      await createGroup({
-        accountUuid,
-        ...data,
-      });
+      await createGroup(data);
     }
     setGroupDialog({ open: false, group: null });
-  }, [groupDialog.group, updateGroup, createGroup, accountUuid]);
+  }, [groupDialog.group, updateGroup, createGroup]);
 
   const handleDeleteGroup = useCallback((group: ReminderGroupClientDTO) => {
     setDeleteDialog({

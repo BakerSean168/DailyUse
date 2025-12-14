@@ -39,7 +39,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
     try {
       setLoading(true);
       setError(null);
-      const result = await goalApiClient.getGoal(goalUuid);
+      const result = await goalApiClient.getGoalById(goalUuid);
       setGoal(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败');

@@ -33,7 +33,7 @@ export function GoalListView() {
       setLoading(true);
       setError(null);
       const result = await goalApiClient.getGoals({
-        folderUuid: selectedFolder?.uuid,
+        dirUuid: selectedFolder?.uuid,
       });
       setGoals(result.goals);
     } catch (err) {
