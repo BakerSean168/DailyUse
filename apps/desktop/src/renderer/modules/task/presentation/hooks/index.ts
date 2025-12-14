@@ -19,3 +19,8 @@ export {
   type TaskStatisticsState,
   type UseTaskStatisticsReturn,
 } from './useTaskStatistics';
+
+export {
+  useTaskDependency,
+  type UseTaskDependencyReturn,
+} from './useTaskDependency';
