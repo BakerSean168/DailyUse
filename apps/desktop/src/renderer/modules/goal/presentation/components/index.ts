@@ -16,10 +16,6 @@ export { GoalRecordDialog } from './GoalRecordDialog';
 export { GoalReviewDialog } from './GoalReviewDialog';
 export { KeyResultDialog } from './KeyResultDialog';
 
-// Dialog Form Types
-export type { KeyResultFormData } from './KeyResultDialog';
-export type { GoalReviewFormData } from './GoalReviewDialog';
-
 // Managers
 export { GoalFolderManager } from './GoalFolderManager';
 

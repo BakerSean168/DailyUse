@@ -45,13 +45,20 @@ import {
   TemplateMoveDialog,
   ReminderInstanceSidebar,
 } from '../components';
-import type { ReminderGroupFormData, ReminderTemplateFormData, TemplateStats, UpcomingData } from '../components';
+import type { TemplateStats, UpcomingData } from '../components';
 
 // Hooks
 import { useReminder } from '../hooks';
 
-// 类型
-import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
+// 类型 - 直接使用 contracts 类型
+import type { 
+  ReminderTemplateClientDTO, 
+  ReminderGroupClientDTO,
+  CreateReminderTemplateRequest,
+  UpdateReminderTemplateRequest,
+  CreateReminderGroupRequest,
+  UpdateReminderGroupRequest,
+} from '@dailyuse/contracts/reminder';
 
 // ============ Types ============
 
@@ -213,14 +220,19 @@ export function ReminderDesktopView() {
     setTemplateDialog({ open: true, template: newTemplate });
   }, []);
 
-  const handleSaveTemplate = useCallback(async (data: ReminderTemplateFormData, isEdit: boolean) => {
+  const handleSaveTemplate = useCallback(async (
+    data: CreateReminderTemplateRequest | UpdateReminderTemplateRequest, 
+    isEdit: boolean
+  ) => {
     if (isEdit && templateDialog.template?.uuid) {
+      // 更新模板 - 使用 contracts 类型
       await updateTemplate({
         uuid: templateDialog.template.uuid,
-        ...data,
+        request: data as UpdateReminderTemplateRequest,
       });
     } else {
-      await createTemplate(data);
+      // 创建模板 - 直接传递 CreateReminderTemplateRequest
+      await createTemplate(data as CreateReminderTemplateRequest);
     }
     setTemplateDialog({ open: false, template: null });
   }, [templateDialog.template, updateTemplate, createTemplate]);
@@ -245,7 +257,9 @@ export function ReminderDesktopView() {
   const handleMoveTemplateSave = useCallback(async (templateUuid: string, targetGroupUuid: string | null) => {
     await updateTemplate({
       uuid: templateUuid,
-      groupUuid: targetGroupUuid,
+      request: {
+        groupUuid: targetGroupUuid || undefined,
+      },
     });
     setMoveDialog({ open: false, template: null });
   }, [updateTemplate]);
@@ -265,14 +279,19 @@ export function ReminderDesktopView() {
     setGroupDialog({ open: true, group: null });
   }, []);
 
-  const handleSaveGroup = useCallback(async (data: ReminderGroupFormData, isEdit: boolean) => {
+  const handleSaveGroup = useCallback(async (
+    data: CreateReminderGroupRequest | UpdateReminderGroupRequest, 
+    isEdit: boolean
+  ) => {
     if (isEdit && groupDialog.group?.uuid) {
+      // 更新分组 - 使用 contracts 类型
       await updateGroup({
         uuid: groupDialog.group.uuid,
-        ...data,
+        request: data as UpdateReminderGroupRequest,
       });
     } else {
-      await createGroup(data);
+      // 创建分组 - 直接传递 CreateReminderGroupRequest
+      await createGroup(data as CreateReminderGroupRequest);
     }
     setGroupDialog({ open: false, group: null });
   }, [groupDialog.group, updateGroup, createGroup]);

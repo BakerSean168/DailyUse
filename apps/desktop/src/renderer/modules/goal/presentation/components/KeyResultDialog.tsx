@@ -5,8 +5,13 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import type { KeyResultClientDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
-import { AggregationMethod } from '@dailyuse/contracts/goal';
+import type { 
+  KeyResultClientDTO, 
+  GoalClientDTO,
+  AddKeyResultRequest,
+  UpdateKeyResultRequest,
+} from '@dailyuse/contracts/goal';
+import { AggregationMethod, KeyResultValueType } from '@dailyuse/contracts/goal';
 import {
   Dialog,
   DialogContent,
@@ -35,12 +40,16 @@ interface KeyResultDialogProps {
   goal?: GoalClientDTO | null;
   keyResult?: KeyResultClientDTO | null;
   onClose: () => void;
-  onSave: (data: KeyResultFormData) => Promise<void>;
+  /** 保存回调 - 使用 contracts 类型 */
+  onSave: (data: AddKeyResultRequest | UpdateKeyResultRequest) => Promise<void>;
 }
 
-export interface KeyResultFormData {
+/**
+ * 表单 UI 状态（内部使用）
+ */
+interface FormState {
   title: string;
-  description?: string;
+  description: string;
   startValue: number;
   targetValue: number;
   currentValue: number;
@@ -57,7 +66,7 @@ const AGGREGATION_METHODS = [
   { value: AggregationMethod.LAST, label: '取最后一次', hint: '适合绝对值型指标' },
 ];
 
-const DEFAULT_FORM_DATA: KeyResultFormData = {
+const DEFAULT_FORM_STATE: FormState = {
   title: '',
   description: '',
   startValue: 0,
@@ -67,6 +76,37 @@ const DEFAULT_FORM_DATA: KeyResultFormData = {
   aggregationMethod: AggregationMethod.SUM,
 };
 
+// ============ Helper Functions ============
+
+/**
+ * 将表单状态转换为 AddKeyResultRequest
+ */
+function formStateToAddRequest(goalUuid: string, form: FormState): AddKeyResultRequest {
+  return {
+    goalUuid,
+    title: form.title,
+    description: form.description || undefined,
+    valueType: KeyResultValueType.INCREMENTAL, // 默认使用累积值类型
+    aggregationMethod: form.aggregationMethod,
+    targetValue: form.targetValue,
+    currentValue: form.currentValue,
+    weight: form.weight,
+  };
+}
+
+/**
+ * 将表单状态转换为 UpdateKeyResultRequest
+ */
+function formStateToUpdateRequest(form: FormState): UpdateKeyResultRequest {
+  return {
+    title: form.title,
+    description: form.description || undefined,
+    startValue: form.startValue,
+    targetValue: form.targetValue,
+    weight: form.weight,
+  };
+}
+
 export function KeyResultDialog({
   open,
   goalUuid,
@@ -75,7 +115,7 @@ export function KeyResultDialog({
   onClose,
   onSave,
 }: KeyResultDialogProps) {
-  const [formData, setFormData] = useState<KeyResultFormData>(DEFAULT_FORM_DATA);
+  const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,7 +126,7 @@ export function KeyResultDialog({
   useEffect(() => {
     if (open) {
       if (keyResult) {
-        setFormData({
+        setFormState({
           title: keyResult.title,
           description: keyResult.description || '',
           startValue: 0, // 初始值默认为0
@@ -96,7 +136,7 @@ export function KeyResultDialog({
           aggregationMethod: keyResult.progress.aggregationMethod || AggregationMethod.SUM,
         });
       } else {
-        setFormData(DEFAULT_FORM_DATA);
+        setFormState(DEFAULT_FORM_STATE);
       }
       setError(null);
     }
@@ -104,28 +144,28 @@ export function KeyResultDialog({
 
   // 计算预览进度
   const progressPreview = useMemo(() => {
-    const { startValue, currentValue, targetValue } = formData;
+    const { startValue, currentValue, targetValue } = formState;
     const range = targetValue - startValue;
     if (range <= 0) return 0;
     const progress = ((currentValue - startValue) / range) * 100;
     return Math.min(Math.max(progress, 0), 100);
-  }, [formData.startValue, formData.currentValue, formData.targetValue]);
+  }, [formState.startValue, formState.currentValue, formState.targetValue]);
 
   // 表单验证
   const isValid = useMemo(() => {
     return (
-      formData.title.trim().length > 0 &&
-      formData.targetValue > formData.startValue &&
-      formData.weight >= 1 &&
-      formData.weight <= 10
+      formState.title.trim().length > 0 &&
+      formState.targetValue > formState.startValue &&
+      formState.weight >= 1 &&
+      formState.weight <= 10
     );
-  }, [formData]);
+  }, [formState]);
 
-  const handleChange = <K extends keyof KeyResultFormData>(
+  const handleChange = <K extends keyof FormState>(
     key: K,
-    value: KeyResultFormData[K]
+    value: FormState[K]
   ) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormState((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSave = async () => {
@@ -137,7 +177,11 @@ export function KeyResultDialog({
     try {
       setLoading(true);
       setError(null);
-      await onSave(formData);
+      // 转换为 contracts 类型
+      const request = isEditing 
+        ? formStateToUpdateRequest(formState)
+        : formStateToAddRequest(goalUuid, formState);
+      await onSave(request);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存失败');
@@ -172,7 +216,7 @@ export function KeyResultDialog({
               <Input
                 id="title"
                 placeholder="例如：新增活跃用户数量"
-                value={formData.title}
+                value={formState.title}
                 onChange={(e) => handleChange('title', e.target.value)}
               />
             </div>
@@ -182,7 +226,7 @@ export function KeyResultDialog({
               <Textarea
                 id="description"
                 placeholder="描述这个关键结果..."
-                value={formData.description}
+                value={formState.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={2}
               />
@@ -199,7 +243,7 @@ export function KeyResultDialog({
                 <Input
                   id="startValue"
                   type="number"
-                  value={formData.startValue}
+                  value={formState.startValue}
                   onChange={(e) => handleChange('startValue', Number(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground">初始数值</p>
@@ -210,7 +254,7 @@ export function KeyResultDialog({
                 <Input
                   id="targetValue"
                   type="number"
-                  value={formData.targetValue}
+                  value={formState.targetValue}
                   onChange={(e) => handleChange('targetValue', Number(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground">期望达到的数值</p>
@@ -221,7 +265,7 @@ export function KeyResultDialog({
                 <Input
                   id="currentValue"
                   type="number"
-                  value={formData.currentValue}
+                  value={formState.currentValue}
                   onChange={(e) => handleChange('currentValue', Number(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground">目前的实际数值</p>
@@ -237,7 +281,7 @@ export function KeyResultDialog({
               <div className="space-y-2">
                 <Label htmlFor="aggregationMethod">进度计算方法</Label>
                 <Select
-                  value={formData.aggregationMethod}
+                  value={formState.aggregationMethod}
                   onValueChange={(value) =>
                     handleChange('aggregationMethod', value as AggregationMethod)
                   }
@@ -267,7 +311,7 @@ export function KeyResultDialog({
                   type="number"
                   min={1}
                   max={10}
-                  value={formData.weight}
+                  value={formState.weight}
                   onChange={(e) => handleChange('weight', Number(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground">
@@ -278,12 +322,12 @@ export function KeyResultDialog({
           </div>
 
           {/* 进度预览 */}
-          {formData.title && (
+          {formState.title && (
             <div className="rounded-lg border p-4 space-y-3">
               <h4 className="font-medium">进度预览</h4>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm truncate max-w-[70%]">
-                  {formData.title || '关键结果名称'}
+                  {formState.title || '关键结果名称'}
                 </span>
                 <span
                   className="text-lg font-bold"
@@ -297,9 +341,9 @@ export function KeyResultDialog({
                 className="h-3"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{formData.startValue}</span>
+                <span>{formState.startValue}</span>
                 <span>
-                  {formData.currentValue} / {formData.targetValue}
+                  {formState.currentValue} / {formState.targetValue}
                 </span>
               </div>
             </div>

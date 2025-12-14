@@ -131,7 +131,67 @@ endTime: number;        // 结束时间 (timestamp)
 
 ### 实现最佳实践
 
-#### 1. 在 contracts 包中定义完整的 API Client 接口
+#### 1. 组件类型使用规范：直接使用 contracts 类型
+
+**核心原则**：TSX 组件中不应自定义数据类型，必须直接使用 contracts 包中的类型。
+
+```typescript
+// ❌ 错误做法：组件中自定义类型
+// components/ReminderTemplateDialog.tsx
+export interface ReminderTemplateFormData {  // ❌ 不允许
+  title: string;
+  description: string;
+  triggerType: TriggerType;
+  fixedTime: string;
+  // ...扁平化字段
+}
+
+// ✅ 正确做法：直接使用 contracts 类型
+// components/ReminderTemplateDialog.tsx
+import type { 
+  CreateReminderTemplateRequest,
+  UpdateReminderTemplateRequest 
+} from '@dailyuse/contracts/reminder';
+
+interface ReminderTemplateDialogProps {
+  onSave: (data: CreateReminderTemplateRequest, isEdit: boolean) => Promise<void>;
+  // 使用 contracts 的类型作为回调参数
+}
+
+// 组件内部负责将表单 UI 状态转换为 Request 类型
+function ReminderTemplateDialog({ onSave }: ReminderTemplateDialogProps) {
+  // 表单 UI 状态可以使用简单类型
+  const [title, setTitle] = useState('');
+  const [triggerType, setTriggerType] = useState<TriggerType>(TriggerType.FIXED_TIME);
+  
+  const handleSubmit = () => {
+    // 在提交时构建符合 contracts 的请求对象
+    const request: CreateReminderTemplateRequest = {
+      title,
+      type: ReminderType.CUSTOM,
+      trigger: {
+        type: triggerType,
+        fixedTime: triggerType === TriggerType.FIXED_TIME 
+          ? { time: fixedTime } 
+          : null,
+        interval: triggerType === TriggerType.INTERVAL
+          ? { minutes: intervalMinutes }
+          : null,
+      },
+      // ...其他字段
+    };
+    onSave(request, isEdit);
+  };
+}
+```
+
+**优势**：
+- 前后端类型完全一致
+- 编译时即可发现类型不匹配
+- 重构时自动检测所有影响点
+- 减少类型定义重复
+
+#### 2. 在 contracts 包中定义完整的 API Client 接口
 
 ```typescript
 // packages/contracts/src/modules/goal/api-client.interface.ts

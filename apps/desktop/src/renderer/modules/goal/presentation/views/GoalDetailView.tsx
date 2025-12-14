@@ -50,9 +50,15 @@ import {
 // Components
 import { KeyResultCard } from '../components/KeyResultCard';
 import { GoalReviewCard } from '../components/GoalReviewCard';
-import { KeyResultDialog, type KeyResultFormData } from '../components/KeyResultDialog';
+import { KeyResultDialog } from '../components/KeyResultDialog';
 import { GoalRecordDialog } from '../components/GoalRecordDialog';
-import { GoalReviewDialog, type GoalReviewFormData } from '../components/GoalReviewDialog';
+import { GoalReviewDialog } from '../components/GoalReviewDialog';
+import type { 
+  AddKeyResultRequest, 
+  UpdateKeyResultRequest,
+  CreateGoalReviewRequest,
+  UpdateGoalReviewRequest,
+} from '@dailyuse/contracts/goal';
 
 // Hooks
 import { useKeyResult, useGoalReview } from '../hooks';
@@ -181,25 +187,17 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     }
   };
 
-  const handleSaveKeyResult = async (data: KeyResultFormData) => {
+  const handleSaveKeyResult = async (data: AddKeyResultRequest | UpdateKeyResultRequest) => {
     if (!goal) return;
 
     if (selectedKeyResult) {
-      await updateKeyResult(goal.uuid, selectedKeyResult.uuid, {
-        title: data.title,
-        description: data.description,
-        targetValue: data.targetValue,
-        weight: data.weight,
-      });
+      // Update 模式 - data 是 UpdateKeyResultRequest
+      const updateData = data as UpdateKeyResultRequest;
+      await updateKeyResult(goal.uuid, selectedKeyResult.uuid, updateData);
     } else {
-      await createKeyResult(goal.uuid, {
-        title: data.title,
-        description: data.description,
-        targetValue: data.targetValue,
-        currentValue: data.currentValue,
-        weight: data.weight,
-        aggregationMethod: data.aggregationMethod,
-      });
+      // Create 模式 - data 是 AddKeyResultRequest
+      const createData = data as AddKeyResultRequest;
+      await createKeyResult(goal.uuid, createData);
     }
     await loadGoal();
     setShowKeyResultDialog(false);
@@ -213,10 +211,11 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
     setShowRecordDialog(false);
   };
 
-  const handleSaveReview = async (data: GoalReviewFormData) => {
+  const handleSaveReview = async (data: CreateGoalReviewRequest | UpdateGoalReviewRequest) => {
     if (!goal) return;
 
-    await createReview(goal.uuid, data);
+    // 直接传递 contracts 类型
+    await createReview(goal.uuid, data as CreateGoalReviewRequest);
     setShowReviewDialog(false);
   };
 

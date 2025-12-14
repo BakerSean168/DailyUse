@@ -5,29 +5,18 @@
  */
 
 import { useState, useCallback } from 'react';
-import type { GoalReviewClientDTO } from '@dailyuse/contracts/goal';
-import { ReviewType } from '@dailyuse/contracts/goal';
+import type { 
+  GoalReviewClientDTO,
+  CreateGoalReviewRequest,
+  UpdateGoalReviewRequest,
+} from '@dailyuse/contracts/goal';
 import { goalApplicationService } from '../../application/services';
 
 // ===== Types =====
 
-export interface CreateReviewInput {
-  type: ReviewType;
-  rating: number;
-  summary: string;
-  achievements?: string;
-  challenges?: string;
-  improvements?: string;
-}
-
-export interface UpdateReviewInput {
-  type?: ReviewType;
-  rating?: number;
-  summary?: string;
-  achievements?: string;
-  challenges?: string;
-  improvements?: string;
-}
+// 使用 contracts 类型别名，保持向后兼容
+export type CreateReviewInput = CreateGoalReviewRequest;
+export type UpdateReviewInput = UpdateGoalReviewRequest;
 
 export interface GoalReviewState {
   reviews: GoalReviewClientDTO[];

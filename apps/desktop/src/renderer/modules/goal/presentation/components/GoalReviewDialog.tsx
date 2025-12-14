@@ -5,7 +5,12 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import type { GoalReviewClientDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { 
+  GoalReviewClientDTO, 
+  GoalClientDTO,
+  CreateGoalReviewRequest,
+  UpdateGoalReviewRequest,
+} from '@dailyuse/contracts/goal';
 import { ReviewType } from '@dailyuse/contracts/goal';
 import {
   Dialog,
@@ -34,16 +39,20 @@ interface GoalReviewDialogProps {
   goal?: GoalClientDTO | null;
   review?: GoalReviewClientDTO | null;
   onClose: () => void;
-  onSave: (data: GoalReviewFormData) => Promise<void>;
+  /** 保存回调 - 使用 contracts 类型 */
+  onSave: (data: CreateGoalReviewRequest | UpdateGoalReviewRequest) => Promise<void>;
 }
 
-export interface GoalReviewFormData {
+/**
+ * 表单 UI 状态（内部使用）
+ */
+interface FormState {
   type: ReviewType;
   rating: number;
   summary: string;
-  achievements?: string;
-  challenges?: string;
-  improvements?: string;
+  achievements: string;
+  challenges: string;
+  improvements: string;
 }
 
 // 复盘类型选项
@@ -55,7 +64,7 @@ const REVIEW_TYPES = [
   { value: ReviewType.ADHOC, label: '临时复盘' },
 ];
 
-const DEFAULT_FORM_DATA: GoalReviewFormData = {
+const DEFAULT_FORM_STATE: FormState = {
   type: ReviewType.WEEKLY,
   rating: 3,
   summary: '',
@@ -63,6 +72,38 @@ const DEFAULT_FORM_DATA: GoalReviewFormData = {
   challenges: '',
   improvements: '',
 };
+
+// ============ Helper Functions ============
+
+/**
+ * 将表单状态转换为 CreateGoalReviewRequest
+ */
+function formStateToCreateRequest(goalUuid: string, form: FormState): CreateGoalReviewRequest {
+  return {
+    goalUuid,
+    title: form.summary, // 使用 summary 作为 title
+    content: form.summary,
+    reviewType: form.type,
+    rating: form.rating,
+    achievements: form.achievements || undefined,
+    challenges: form.challenges || undefined,
+    nextActions: form.improvements || undefined,
+  };
+}
+
+/**
+ * 将表单状态转换为 UpdateGoalReviewRequest
+ */
+function formStateToUpdateRequest(form: FormState): UpdateGoalReviewRequest {
+  return {
+    title: form.summary,
+    content: form.summary,
+    rating: form.rating,
+    achievements: form.achievements || undefined,
+    challenges: form.challenges || undefined,
+    nextActions: form.improvements || undefined,
+  };
+}
 
 export function GoalReviewDialog({
   open,
@@ -72,7 +113,7 @@ export function GoalReviewDialog({
   onClose,
   onSave,
 }: GoalReviewDialogProps) {
-  const [formData, setFormData] = useState<GoalReviewFormData>(DEFAULT_FORM_DATA);
+  const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,7 +124,7 @@ export function GoalReviewDialog({
   useEffect(() => {
     if (open) {
       if (review) {
-        setFormData({
+        setFormState({
           type: review.type,
           rating: review.rating,
           summary: review.summary,
@@ -92,7 +133,7 @@ export function GoalReviewDialog({
           improvements: review.improvements || '',
         });
       } else {
-        setFormData(DEFAULT_FORM_DATA);
+        setFormState(DEFAULT_FORM_STATE);
       }
       setError(null);
     }
@@ -101,17 +142,17 @@ export function GoalReviewDialog({
   // 表单验证
   const isValid = useMemo(() => {
     return (
-      formData.summary.trim().length > 0 &&
-      formData.rating >= 1 &&
-      formData.rating <= 5
+      formState.summary.trim().length > 0 &&
+      formState.rating >= 1 &&
+      formState.rating <= 5
     );
-  }, [formData]);
+  }, [formState]);
 
-  const handleChange = <K extends keyof GoalReviewFormData>(
+  const handleChange = <K extends keyof FormState>(
     key: K,
-    value: GoalReviewFormData[K]
+    value: FormState[K]
   ) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormState((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSave = async () => {
@@ -123,7 +164,11 @@ export function GoalReviewDialog({
     try {
       setLoading(true);
       setError(null);
-      await onSave(formData);
+      // 转换为 contracts 类型
+      const request = isEditing 
+        ? formStateToUpdateRequest(formState)
+        : formStateToCreateRequest(goalUuid, formState);
+      await onSave(request);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存失败');
@@ -146,7 +191,7 @@ export function GoalReviewDialog({
           >
             <Star
               className={`h-6 w-6 ${
-                star <= formData.rating
+                star <= formState.rating
                   ? 'text-yellow-500 fill-yellow-500'
                   : 'text-muted-foreground/30'
               }`}
@@ -178,7 +223,7 @@ export function GoalReviewDialog({
             <div className="space-y-2">
               <Label>复盘类型</Label>
               <Select
-                value={formData.type}
+                value={formState.type}
                 onValueChange={(value) => handleChange('type', value as ReviewType)}
               >
                 <SelectTrigger>
@@ -206,7 +251,7 @@ export function GoalReviewDialog({
             <Input
               id="summary"
               placeholder="一句话总结本次复盘"
-              value={formData.summary}
+              value={formState.summary}
               onChange={(e) => handleChange('summary', e.target.value)}
             />
           </div>
@@ -217,7 +262,7 @@ export function GoalReviewDialog({
             <Textarea
               id="achievements"
               placeholder="本阶段取得了哪些主要成果？"
-              value={formData.achievements}
+              value={formState.achievements}
               onChange={(e) => handleChange('achievements', e.target.value)}
               rows={3}
             />
@@ -229,7 +274,7 @@ export function GoalReviewDialog({
             <Textarea
               id="challenges"
               placeholder="在实现目标过程中遇到了哪些挑战？"
-              value={formData.challenges}
+              value={formState.challenges}
               onChange={(e) => handleChange('challenges', e.target.value)}
               rows={3}
             />
@@ -241,7 +286,7 @@ export function GoalReviewDialog({
             <Textarea
               id="improvements"
               placeholder="下一阶段有哪些可以改进的地方？"
-              value={formData.improvements}
+              value={formState.improvements}
               onChange={(e) => handleChange('improvements', e.target.value)}
               rows={3}
             />

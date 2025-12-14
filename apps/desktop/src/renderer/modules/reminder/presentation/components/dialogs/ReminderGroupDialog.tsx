@@ -43,12 +43,20 @@ import {
   DollarSign,
   Users,
 } from 'lucide-react';
-import type { ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
+import type { 
+  ReminderGroupClientDTO,
+  CreateReminderGroupRequest,
+  UpdateReminderGroupRequest,
+} from '@dailyuse/contracts/reminder';
 import { ControlMode } from '@dailyuse/contracts/reminder';
 
 // ============ Types ============
 
-export interface ReminderGroupFormData {
+/**
+ * 表单 UI 状态（内部使用）
+ * 最终会转换为 CreateReminderGroupRequest 或 UpdateReminderGroupRequest
+ */
+interface FormState {
   name: string;
   description: string;
   icon: string;
@@ -64,8 +72,8 @@ export interface ReminderGroupDialogProps {
   group?: ReminderGroupClientDTO | null;
   /** 关闭回调 */
   onClose: () => void;
-  /** 保存回调 */
-  onSave: (data: ReminderGroupFormData, isEdit: boolean) => Promise<void>;
+  /** 保存回调 - 使用 contracts 类型 */
+  onSave: (data: CreateReminderGroupRequest | UpdateReminderGroupRequest, isEdit: boolean) => Promise<void>;
 }
 
 // ============ Constants ============
@@ -107,7 +115,7 @@ const CONTROL_MODE_OPTIONS = [
   },
 ];
 
-const DEFAULT_FORM_DATA: ReminderGroupFormData = {
+const DEFAULT_FORM_STATE: FormState = {
   name: '',
   description: '',
   icon: 'folder',
@@ -115,6 +123,36 @@ const DEFAULT_FORM_DATA: ReminderGroupFormData = {
   controlMode: ControlMode.INDIVIDUAL,
   order: 0,
 };
+
+// ============ Helper Functions ============
+
+/**
+ * 将表单状态转换为 CreateReminderGroupRequest
+ */
+function formStateToCreateRequest(form: FormState): CreateReminderGroupRequest {
+  return {
+    name: form.name,
+    description: form.description || undefined,
+    color: form.color,
+    icon: form.icon,
+    controlMode: form.controlMode,
+    order: form.order,
+  };
+}
+
+/**
+ * 将表单状态转换为 UpdateReminderGroupRequest
+ */
+function formStateToUpdateRequest(form: FormState): UpdateReminderGroupRequest {
+  return {
+    name: form.name,
+    description: form.description || undefined,
+    color: form.color,
+    icon: form.icon,
+    controlMode: form.controlMode,
+    order: form.order,
+  };
+}
 
 // ============ Component ============
 
@@ -124,7 +162,7 @@ export function ReminderGroupDialog({
   onClose,
   onSave,
 }: ReminderGroupDialogProps) {
-  const [formData, setFormData] = useState<ReminderGroupFormData>(DEFAULT_FORM_DATA);
+  const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -134,7 +172,7 @@ export function ReminderGroupDialog({
   useEffect(() => {
     if (open) {
       if (group) {
-        setFormData({
+        setFormState({
           name: group.name || '',
           description: group.description || '',
           icon: group.icon || 'folder',
@@ -143,7 +181,7 @@ export function ReminderGroupDialog({
           order: group.order || 0,
         });
       } else {
-        setFormData(DEFAULT_FORM_DATA);
+        setFormState(DEFAULT_FORM_STATE);
       }
       setErrors({});
     }
@@ -153,41 +191,46 @@ export function ReminderGroupDialog({
   const validateForm = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
+    if (!formState.name.trim()) {
       newErrors.name = '分组名称不能为空';
-    } else if (formData.name.length > 50) {
+    } else if (formState.name.length > 50) {
       newErrors.name = '分组名称不能超过50个字符';
     }
 
-    if (formData.description && formData.description.length > 200) {
+    if (formState.description && formState.description.length > 200) {
       newErrors.description = '描述不能超过200个字符';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  }, [formState]);
 
-  // 处理保存
+  // 处理保存 - 转换为 contracts 类型
   const handleSave = useCallback(async () => {
     if (!validateForm()) return;
 
     setIsSaving(true);
     try {
-      await onSave(formData, isEditMode);
+      // 根据模式转换为对应的 Request 类型
+      const request = isEditMode 
+        ? formStateToUpdateRequest(formState)
+        : formStateToCreateRequest(formState);
+      
+      await onSave(request, isEditMode);
       onClose();
     } catch (error) {
       console.error('保存分组失败:', error);
     } finally {
       setIsSaving(false);
     }
-  }, [formData, isEditMode, onSave, onClose, validateForm]);
+  }, [formState, isEditMode, onSave, onClose, validateForm]);
 
   // 更新表单字段
-  const updateField = useCallback(<K extends keyof ReminderGroupFormData>(
+  const updateField = useCallback(<K extends keyof FormState>(
     field: K,
-    value: ReminderGroupFormData[K]
+    value: FormState[K]
   ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormState(prev => ({ ...prev, [field]: value }));
     // 清除该字段的错误
     if (errors[field]) {
       setErrors(prev => {
@@ -198,7 +241,7 @@ export function ReminderGroupDialog({
     }
   }, [errors]);
 
-  const isFormValid = formData.name.trim().length > 0;
+  const isFormValid = formState.name.trim().length > 0;
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
@@ -240,7 +283,7 @@ export function ReminderGroupDialog({
                 <Label htmlFor="name">分组名称 *</Label>
                 <Input
                   id="name"
-                  value={formData.name}
+                  value={formState.name}
                   onChange={(e) => updateField('name', e.target.value)}
                   placeholder="例如: 工作提醒、生活提醒"
                   maxLength={50}
@@ -250,7 +293,7 @@ export function ReminderGroupDialog({
                   <p className="text-xs text-destructive">{errors.name}</p>
                 )}
                 <p className="text-xs text-muted-foreground text-right">
-                  {formData.name.length}/50
+                  {formState.name.length}/50
                 </p>
               </div>
 
@@ -263,7 +306,7 @@ export function ReminderGroupDialog({
                       key={color.value}
                       type="button"
                       className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${
-                        formData.color === color.value
+                        formState.color === color.value
                           ? 'border-primary ring-2 ring-primary/30'
                           : 'border-transparent'
                       }`}
@@ -281,7 +324,7 @@ export function ReminderGroupDialog({
               <Label htmlFor="description">分组描述</Label>
               <Textarea
                 id="description"
-                value={formData.description}
+                value={formState.description}
                 onChange={(e) => updateField('description', e.target.value)}
                 placeholder="描述该分组的用途..."
                 rows={3}
@@ -291,7 +334,7 @@ export function ReminderGroupDialog({
                 <p className="text-xs text-destructive">{errors.description}</p>
               )}
               <p className="text-xs text-muted-foreground text-right">
-                {formData.description.length}/200
+                {formState.description.length}/200
               </p>
             </div>
           </div>
@@ -315,7 +358,7 @@ export function ReminderGroupDialog({
                       key={option.value}
                       type="button"
                       className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-colors ${
-                        formData.icon === option.value
+                        formState.icon === option.value
                           ? 'border-primary bg-primary/10'
                           : 'border-border hover:bg-accent'
                       }`}
@@ -335,7 +378,7 @@ export function ReminderGroupDialog({
               <Input
                 id="order"
                 type="number"
-                value={formData.order}
+                value={formState.order}
                 onChange={(e) => updateField('order', parseInt(e.target.value) || 0)}
                 placeholder="0"
               />
@@ -354,7 +397,7 @@ export function ReminderGroupDialog({
             <div className="space-y-2">
               <Label>控制模式</Label>
               <Select
-                value={formData.controlMode}
+                value={formState.controlMode}
                 onValueChange={(value) => updateField('controlMode', value as ControlMode)}
               >
                 <SelectTrigger>

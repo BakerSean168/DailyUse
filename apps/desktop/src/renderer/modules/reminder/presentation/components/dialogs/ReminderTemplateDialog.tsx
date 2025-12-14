@@ -45,13 +45,23 @@ import {
   ChevronDown,
   X,
 } from 'lucide-react';
-import type { ReminderTemplateClientDTO, ReminderGroupClientDTO } from '@dailyuse/contracts/reminder';
-import { TriggerType } from '@dailyuse/contracts/reminder';
+import type { 
+  ReminderTemplateClientDTO, 
+  ReminderGroupClientDTO,
+  CreateReminderTemplateRequest,
+  UpdateReminderTemplateRequest,
+  NotificationConfigServerDTO,
+} from '@dailyuse/contracts/reminder';
+import { TriggerType, ReminderType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
 
 // ============ Types ============
 
-export interface ReminderTemplateFormData {
+/**
+ * 表单 UI 状态（内部使用，扁平化便于表单绑定）
+ * 最终会转换为 CreateReminderTemplateRequest 或 UpdateReminderTemplateRequest
+ */
+interface FormState {
   title: string;
   description: string;
   groupUuid: string | null;
@@ -75,8 +85,8 @@ export interface ReminderTemplateDialogProps {
   groups: ReminderGroupClientDTO[];
   /** 关闭回调 */
   onClose: () => void;
-  /** 保存回调 */
-  onSave: (data: ReminderTemplateFormData, isEdit: boolean) => Promise<void>;
+  /** 保存回调 - 使用 contracts 类型 */
+  onSave: (data: CreateReminderTemplateRequest | UpdateReminderTemplateRequest, isEdit: boolean) => Promise<void>;
 }
 
 // ============ Constants ============
@@ -105,7 +115,7 @@ const COLOR_OPTIONS = [
   { value: '#F5F5F5', label: '浅灰' },
 ];
 
-const DEFAULT_FORM_DATA: ReminderTemplateFormData = {
+const DEFAULT_FORM_STATE: FormState = {
   title: '',
   description: '',
   groupUuid: null,
@@ -120,6 +130,74 @@ const DEFAULT_FORM_DATA: ReminderTemplateFormData = {
   notificationBody: '',
 };
 
+// ============ Helper Functions ============
+
+/**
+ * 将表单状态转换为 CreateReminderTemplateRequest
+ */
+function formStateToCreateRequest(form: FormState): CreateReminderTemplateRequest {
+  const notificationConfig: NotificationConfigServerDTO = {
+    channels: [NotificationChannel.PUSH],
+    title: form.notificationTitle || null,
+    body: form.notificationBody || null,
+  };
+
+  return {
+    title: form.title,
+    type: ReminderType.RECURRING, // 默认为循环提醒
+    trigger: {
+      type: form.triggerType,
+      fixedTime: form.triggerType === TriggerType.FIXED_TIME 
+        ? { time: form.fixedTime } 
+        : null,
+      interval: form.triggerType === TriggerType.INTERVAL 
+        ? { minutes: form.intervalMinutes } 
+        : null,
+    },
+    activeTime: {
+      activatedAt: Date.now(),
+    },
+    notificationConfig,
+    description: form.description || undefined,
+    importanceLevel: form.importanceLevel,
+    tags: form.tags.length > 0 ? form.tags : undefined,
+    color: form.color,
+    icon: form.icon,
+    groupUuid: form.groupUuid || undefined,
+  };
+}
+
+/**
+ * 将表单状态转换为 UpdateReminderTemplateRequest
+ */
+function formStateToUpdateRequest(form: FormState): UpdateReminderTemplateRequest {
+  const notificationConfig: NotificationConfigServerDTO = {
+    channels: [NotificationChannel.PUSH],
+    title: form.notificationTitle || null,
+    body: form.notificationBody || null,
+  };
+
+  return {
+    title: form.title,
+    trigger: {
+      type: form.triggerType,
+      fixedTime: form.triggerType === TriggerType.FIXED_TIME 
+        ? { time: form.fixedTime } 
+        : null,
+      interval: form.triggerType === TriggerType.INTERVAL 
+        ? { minutes: form.intervalMinutes } 
+        : null,
+    },
+    notificationConfig,
+    description: form.description || undefined,
+    importanceLevel: form.importanceLevel,
+    tags: form.tags.length > 0 ? form.tags : undefined,
+    color: form.color,
+    icon: form.icon,
+    groupUuid: form.groupUuid || undefined,
+  };
+}
+
 // ============ Component ============
 
 export function ReminderTemplateDialog({
@@ -129,7 +207,7 @@ export function ReminderTemplateDialog({
   onClose,
   onSave,
 }: ReminderTemplateDialogProps) {
-  const [formData, setFormData] = useState<ReminderTemplateFormData>(DEFAULT_FORM_DATA);
+  const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tagInput, setTagInput] = useState('');
@@ -141,7 +219,7 @@ export function ReminderTemplateDialog({
   useEffect(() => {
     if (open) {
       if (template) {
-        setFormData({
+        setFormState({
           title: template.title || '',
           description: template.description || '',
           groupUuid: template.groupUuid || null,
@@ -156,7 +234,7 @@ export function ReminderTemplateDialog({
           notificationBody: template.notificationConfig?.body || '',
         });
       } else {
-        setFormData(DEFAULT_FORM_DATA);
+        setFormState(DEFAULT_FORM_STATE);
       }
       setErrors({});
       setTagInput('');
@@ -176,47 +254,52 @@ export function ReminderTemplateDialog({
   const validateForm = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.title.trim()) {
+    if (!formState.title.trim()) {
       newErrors.title = '标题不能为空';
     }
 
-    if (formData.triggerType === TriggerType.FIXED_TIME) {
-      if (!formData.fixedTime || !/^\d{2}:\d{2}$/.test(formData.fixedTime)) {
+    if (formState.triggerType === TriggerType.FIXED_TIME) {
+      if (!formState.fixedTime || !/^\d{2}:\d{2}$/.test(formState.fixedTime)) {
         newErrors.fixedTime = '请输入有效的时间格式 (HH:MM)';
       }
     }
 
-    if (formData.triggerType === TriggerType.INTERVAL) {
-      if (formData.intervalMinutes <= 0) {
+    if (formState.triggerType === TriggerType.INTERVAL) {
+      if (formState.intervalMinutes <= 0) {
         newErrors.intervalMinutes = '间隔时间必须大于0';
       }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  }, [formState]);
 
-  // 处理保存
+  // 处理保存 - 转换为 contracts 类型
   const handleSave = useCallback(async () => {
     if (!validateForm()) return;
 
     setIsSaving(true);
     try {
-      await onSave(formData, isEditMode);
+      // 根据模式转换为对应的 Request 类型
+      const request = isEditMode 
+        ? formStateToUpdateRequest(formState)
+        : formStateToCreateRequest(formState);
+      
+      await onSave(request, isEditMode);
       onClose();
     } catch (error) {
       console.error('保存模板失败:', error);
     } finally {
       setIsSaving(false);
     }
-  }, [formData, isEditMode, onSave, onClose, validateForm]);
+  }, [formState, isEditMode, onSave, onClose, validateForm]);
 
   // 更新表单字段
-  const updateField = useCallback(<K extends keyof ReminderTemplateFormData>(
+  const updateField = useCallback(<K extends keyof FormState>(
     field: K,
-    value: ReminderTemplateFormData[K]
+    value: FormState[K]
   ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormState(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -229,16 +312,16 @@ export function ReminderTemplateDialog({
   // 添加标签
   const addTag = useCallback(() => {
     const tag = tagInput.trim();
-    if (tag && !formData.tags.includes(tag)) {
-      updateField('tags', [...formData.tags, tag]);
+    if (tag && !formState.tags.includes(tag)) {
+      updateField('tags', [...formState.tags, tag]);
     }
     setTagInput('');
-  }, [tagInput, formData.tags, updateField]);
+  }, [tagInput, formState.tags, updateField]);
 
   // 删除标签
   const removeTag = useCallback((tag: string) => {
-    updateField('tags', formData.tags.filter(t => t !== tag));
-  }, [formData.tags, updateField]);
+    updateField('tags', formState.tags.filter(t => t !== tag));
+  }, [formState.tags, updateField]);
 
   // 处理标签输入回车
   const handleTagKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -248,7 +331,7 @@ export function ReminderTemplateDialog({
     }
   }, [addTag]);
 
-  const isFormValid = formData.title.trim().length > 0;
+  const isFormValid = formState.title.trim().length > 0;
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
@@ -290,7 +373,7 @@ export function ReminderTemplateDialog({
                 <Label htmlFor="title">标题 *</Label>
                 <Input
                   id="title"
-                  value={formData.title}
+                  value={formState.title}
                   onChange={(e) => updateField('title', e.target.value)}
                   placeholder="例如：每日喝水提醒"
                   autoFocus
@@ -309,7 +392,7 @@ export function ReminderTemplateDialog({
                       key={color.value}
                       type="button"
                       className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 ${
-                        formData.color === color.value
+                        formState.color === color.value
                           ? 'border-primary ring-2 ring-primary/30'
                           : 'border-gray-200'
                       }`}
@@ -327,7 +410,7 @@ export function ReminderTemplateDialog({
               <Label htmlFor="description">描述</Label>
               <Textarea
                 id="description"
-                value={formData.description}
+                value={formState.description}
                 onChange={(e) => updateField('description', e.target.value)}
                 placeholder="描述这个提醒的目的和注意事项"
                 rows={2}
@@ -339,7 +422,7 @@ export function ReminderTemplateDialog({
               <div className="space-y-2">
                 <Label>所属分组</Label>
                 <Select
-                  value={formData.groupUuid || ''}
+                  value={formState.groupUuid || ''}
                   onValueChange={(value) => updateField('groupUuid', value || null)}
                 >
                   <SelectTrigger>
@@ -360,7 +443,7 @@ export function ReminderTemplateDialog({
               <div className="space-y-2">
                 <Label>重要程度</Label>
                 <Select
-                  value={formData.importanceLevel}
+                  value={formState.importanceLevel}
                   onValueChange={(value) => updateField('importanceLevel', value as ImportanceLevel)}
                 >
                   <SelectTrigger>
@@ -391,7 +474,7 @@ export function ReminderTemplateDialog({
             <div className="space-y-2">
               <Label>触发类型 *</Label>
               <Select
-                value={formData.triggerType}
+                value={formState.triggerType}
                 onValueChange={(value) => updateField('triggerType', value as TriggerType)}
               >
                 <SelectTrigger>
@@ -409,13 +492,13 @@ export function ReminderTemplateDialog({
             </div>
 
             {/* 固定时间 */}
-            {formData.triggerType === TriggerType.FIXED_TIME && (
+            {formState.triggerType === TriggerType.FIXED_TIME && (
               <div className="space-y-2">
                 <Label htmlFor="fixedTime">固定时间 (HH:MM)</Label>
                 <Input
                   id="fixedTime"
                   type="time"
-                  value={formData.fixedTime}
+                  value={formState.fixedTime}
                   onChange={(e) => updateField('fixedTime', e.target.value)}
                   placeholder="09:00"
                 />
@@ -427,13 +510,13 @@ export function ReminderTemplateDialog({
             )}
 
             {/* 间隔时间 */}
-            {formData.triggerType === TriggerType.INTERVAL && (
+            {formState.triggerType === TriggerType.INTERVAL && (
               <div className="space-y-2">
                 <Label htmlFor="intervalMinutes">间隔时间（分钟）</Label>
                 <Input
                   id="intervalMinutes"
                   type="number"
-                  value={formData.intervalMinutes}
+                  value={formState.intervalMinutes}
                   onChange={(e) => updateField('intervalMinutes', parseInt(e.target.value) || 0)}
                   min={1}
                 />
@@ -467,9 +550,9 @@ export function ReminderTemplateDialog({
                   添加
                 </Button>
               </div>
-              {formData.tags.length > 0 && (
+              {formState.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.tags.map((tag) => (
+                  {formState.tags.map((tag) => (
                     <Badge key={tag} variant="secondary" className="gap-1">
                       {tag}
                       <X
@@ -504,7 +587,7 @@ export function ReminderTemplateDialog({
                 <Label htmlFor="notificationTitle">通知标题</Label>
                 <Input
                   id="notificationTitle"
-                  value={formData.notificationTitle}
+                  value={formState.notificationTitle}
                   onChange={(e) => updateField('notificationTitle', e.target.value)}
                   placeholder="留空则使用模板标题"
                 />
@@ -513,7 +596,7 @@ export function ReminderTemplateDialog({
                 <Label htmlFor="notificationBody">通知内容</Label>
                 <Textarea
                   id="notificationBody"
-                  value={formData.notificationBody}
+                  value={formState.notificationBody}
                   onChange={(e) => updateField('notificationBody', e.target.value)}
                   placeholder="留空则使用模板描述"
                   rows={2}

@@ -41,7 +41,8 @@ import {
 // Components
 import { GoalRecordCard } from '../components/GoalRecordCard';
 import { GoalRecordDialog } from '../components/GoalRecordDialog';
-import { KeyResultDialog, type KeyResultFormData } from '../components/KeyResultDialog';
+import { KeyResultDialog } from '../components/KeyResultDialog';
+import type { AddKeyResultRequest, UpdateKeyResultRequest } from '@dailyuse/contracts/goal';
 
 // Hooks
 import { useKeyResult } from '../hooks';
@@ -108,15 +109,11 @@ export function KeyResultDetailView({
   }, [loadData]);
 
   // Handlers
-  const handleSaveKeyResult = async (data: KeyResultFormData) => {
+  const handleSaveKeyResult = async (data: AddKeyResultRequest | UpdateKeyResultRequest) => {
     if (!goal || !keyResult) return;
 
-    await updateKeyResult(goal.uuid, keyResult.uuid, {
-      title: data.title,
-      description: data.description,
-      targetValue: data.targetValue,
-      weight: data.weight,
-    });
+    // 这里只处理更新场景
+    await updateKeyResult(goal.uuid, keyResult.uuid, data as UpdateKeyResultRequest);
 
     await loadData();
     onGoalUpdated?.();
