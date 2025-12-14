@@ -74,17 +74,42 @@ export interface DashboardAllData {
 }
 
 export class DashboardDesktopApplicationService {
-  private statisticsService: GetDashboardStatistics;
-  private getWidgetConfigService: GetWidgetConfig;
-  private updateWidgetConfigService: UpdateWidgetConfig;
-  private resetWidgetConfigService: ResetWidgetConfig;
+  private statisticsService: GetDashboardStatistics | null = null;
+  private getWidgetConfigService: GetWidgetConfig | null = null;
+  private updateWidgetConfigService: UpdateWidgetConfig | null = null;
+  private resetWidgetConfigService: ResetWidgetConfig | null = null;
 
   constructor() {
-    // Services will be lazily initialized when needed
-    this.statisticsService = GetDashboardStatistics.getInstance();
-    this.getWidgetConfigService = GetWidgetConfig.getInstance();
-    this.updateWidgetConfigService = UpdateWidgetConfig.getInstance();
-    this.resetWidgetConfigService = ResetWidgetConfig.getInstance();
+    // Services will be lazily initialized when first accessed
+    // This ensures all module dependencies are fully configured
+  }
+
+  private getStatisticsService(): GetDashboardStatistics {
+    if (!this.statisticsService) {
+      this.statisticsService = GetDashboardStatistics.getInstance();
+    }
+    return this.statisticsService;
+  }
+
+  private getWidgetService(): GetWidgetConfig {
+    if (!this.getWidgetConfigService) {
+      this.getWidgetConfigService = GetWidgetConfig.getInstance();
+    }
+    return this.getWidgetConfigService;
+  }
+
+  private getUpdateWidgetService(): UpdateWidgetConfig {
+    if (!this.updateWidgetConfigService) {
+      this.updateWidgetConfigService = UpdateWidgetConfig.getInstance();
+    }
+    return this.updateWidgetConfigService;
+  }
+
+  private getResetWidgetService(): ResetWidgetConfig {
+    if (!this.resetWidgetConfigService) {
+      this.resetWidgetConfigService = ResetWidgetConfig.getInstance();
+    }
+    return this.resetWidgetConfigService;
   }
 
   // ===== Statistics =====
@@ -94,7 +119,7 @@ export class DashboardDesktopApplicationService {
    */
   async getStatistics(accountUuid: string): Promise<DashboardStatisticsClientDTO> {
     logger.debug('Getting dashboard statistics', { accountUuid });
-    const result = await this.statisticsService.execute({ accountUuid });
+    const result = await this.getStatisticsService().execute({ accountUuid });
     return result.statistics;
   }
 
@@ -116,7 +141,7 @@ export class DashboardDesktopApplicationService {
    */
   async getWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     logger.debug('Getting widget config', { accountUuid });
-    const result = await this.getWidgetConfigService.execute({ accountUuid });
+    const result = await this.getWidgetService().execute({ accountUuid });
     return result.widgetConfig;
   }
 
@@ -128,7 +153,7 @@ export class DashboardDesktopApplicationService {
     configs: Partial<WidgetConfigData>,
   ): Promise<WidgetConfigData> {
     logger.debug('Updating widget config', { accountUuid });
-    const result = await this.updateWidgetConfigService.execute({
+    const result = await this.getUpdateWidgetService().execute({
       accountUuid,
       configs,
     });
@@ -140,7 +165,7 @@ export class DashboardDesktopApplicationService {
    */
   async resetWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     logger.debug('Resetting widget config', { accountUuid });
-    const result = await this.resetWidgetConfigService.execute({ accountUuid });
+    const result = await this.getResetWidgetService().execute({ accountUuid });
     return result.widgetConfig;
   }
 

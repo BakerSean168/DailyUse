@@ -7,12 +7,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import { TaskCard } from './components/TaskCard';
-import { TaskCreateDialog } from './components/TaskCreateDialog';
-import { TaskStatistics } from './components/TaskStatistics';
-import { TaskDependencyGraph } from './components/TaskDependencyGraph';
-import { TaskListSkeleton } from '../../components/Skeleton';
-import { VirtualList } from '../../components/VirtualList';
+import { TaskCard } from '../components/TaskCard';
+import { TaskCreateDialog } from '../components/TaskCreateDialog';
+import { TaskStatistics } from '../components/TaskStatistics';
+import { TaskDependencyGraph } from '../components/TaskDependencyGraph';
+import { TaskListSkeleton } from '../../../../shared/components/Skeleton';
+import { VirtualList } from '../../../../shared/components/VirtualList';
 
 export function TaskListView() {
   const [templates, setTemplates] = useState<TaskTemplateClientDTO[]>([]);

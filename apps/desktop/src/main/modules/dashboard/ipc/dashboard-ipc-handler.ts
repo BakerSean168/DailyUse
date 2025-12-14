@@ -9,14 +9,18 @@ import { DashboardDesktopApplicationService } from '../application/DashboardDesk
 
 export class DashboardIPCHandler extends BaseIPCHandler {
   private dashboardService: DashboardDesktopApplicationService | null = null;
-  private handlersRegistered = false;
 
   constructor() {
     super('DashboardIPCHandler');
-    // Delay handler registration to allow all modules to initialize first
-    setImmediate(() => this.registerHandlers());
+    // Register handlers immediately, but service creation is deferred
+    this.registerHandlers();
   }
 
+  /**
+   * Lazy initialization of DashboardDesktopApplicationService
+   * This ensures Reminder module and its repositories are fully configured
+   * before Dashboard tries to access them
+   */
   private getDashboardService(): DashboardDesktopApplicationService {
     if (!this.dashboardService) {
       this.dashboardService = new DashboardDesktopApplicationService();
@@ -25,10 +29,6 @@ export class DashboardIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    if (this.handlersRegistered) {
-      return;
-    }
-    this.handlersRegistered = true;
     // 获取统计数据
     ipcMain.handle('dashboard:get-statistics', async (event, accountUuid: string) => {
       return this.handleRequest(

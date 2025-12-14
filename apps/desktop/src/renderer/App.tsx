@@ -10,6 +10,7 @@
 import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './shared/components';
+import { Toaster } from './shared/components/common';
 
 // Route-level Lazy Loading - Core Views
 const DashboardView = lazy(() =>
@@ -129,6 +130,7 @@ export function App() {
           />
         </Route>
       </Routes>
+      <Toaster />
     </HashRouter>
   );
 }

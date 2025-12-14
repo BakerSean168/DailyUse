@@ -37,13 +37,16 @@ let mainWindow: BrowserWindow | null = null;
  * @returns {BrowserWindow} The created BrowserWindow instance.
  */
 export function createMainWindow(): BrowserWindow {
+  // Resolve preload script path correctly in both dev and production
+  const preloadPath = path.join(__dirname, 'preload.cjs');
+  
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, '../preload.cjs'),
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,

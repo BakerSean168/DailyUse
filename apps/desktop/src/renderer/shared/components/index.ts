@@ -7,7 +7,14 @@
  * @module renderer/shared/components
  */
 
+// Layout Components
 export { Layout } from './Layout';
+export * from './layouts';
+
+// Common Components
+export * from './common';
+
+// Skeleton Components
 export {
   Skeleton,
   DashboardSkeleton,
@@ -21,6 +28,8 @@ export {
   ListItemSkeleton,
   TableSkeleton,
 } from './Skeleton';
+
+// Virtual List
 export { VirtualList, VirtualGroupedList, type VirtualListProps, type VirtualGroupedListProps } from './VirtualList';
 
 // EPIC-003: Performance Optimization Components

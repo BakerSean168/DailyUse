@@ -8,10 +8,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { ScheduleContainer } from '@dailyuse/infrastructure-client';
 import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
-import { ScheduleCard } from './components/ScheduleCard';
-import { ScheduleCreateDialog } from './components/ScheduleCreateDialog';
-import { ScheduleCalendarView } from './components/ScheduleCalendarView';
-import { ScheduleEditDialog } from './components/ScheduleEditDialog';
+import { ScheduleCard } from '../components/ScheduleCard';
+import { ScheduleCreateDialog } from '../components/ScheduleCreateDialog';
+import { ScheduleCalendarView } from '../components/ScheduleCalendarView';
+import { ScheduleEditDialog } from '../components/ScheduleEditDialog';
 
 type ViewMode = 'list' | 'calendar';
 type StatusFilter = 'ALL' | ScheduleTaskStatus;

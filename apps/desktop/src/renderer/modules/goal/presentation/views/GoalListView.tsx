@@ -7,11 +7,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GoalContainer } from '@dailyuse/infrastructure-client';
 import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
-import { GoalCard } from './components/GoalCard';
-import { GoalCreateDialog } from './components/GoalCreateDialog';
-import { GoalFolderManager } from './components/GoalFolderManager';
-import { GoalListSkeleton } from '../../components/Skeleton';
-import { VirtualList } from '../../components/VirtualList';
+import { GoalCard } from '../components/GoalCard';
+import { GoalCreateDialog } from '../components/GoalCreateDialog';
+import { GoalFolderManager } from '../components/GoalFolderManager';
+import { GoalListSkeleton } from '../../../../shared/components/Skeleton';
+import { VirtualList } from '../../../../shared/components/VirtualList';
 
 export function GoalListView() {
   const [goals, setGoals] = useState<GoalClientDTO[]>([]);
