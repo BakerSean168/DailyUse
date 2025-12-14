@@ -9,3 +9,5 @@ export { ResourceItem } from './ResourceItem';
 export { FolderItem } from './FolderItem';
 export { SearchBar } from './SearchBar';
 export { Breadcrumb } from './Breadcrumb';
+export { FolderTree, type FolderNode } from './FolderTree';
+export { ResourceCard, type Resource } from './ResourceCard';

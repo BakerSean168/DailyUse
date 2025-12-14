@@ -7,3 +7,4 @@
 export { NotificationItem } from './NotificationItem';
 export { NotificationBadge } from './NotificationBadge';
 export { NotificationFilter } from './NotificationFilter';
+export { NotificationCenter } from './NotificationCenter';
