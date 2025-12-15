@@ -11,6 +11,8 @@
 
 import type { GoalClientDTO, GoalFolderClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
 import type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
+import type { AccountDTO, SubscriptionDTO, AccountHistoryServerDTO, AccountStatsResponseDTO } from '@dailyuse/contracts/account';
+import type { RepositoryClientDTO, ResourceClientDTO, FolderClientDTO } from '@dailyuse/contracts/repository';
 
 /**
  * Goal IPC Interface
@@ -107,6 +109,28 @@ interface AuthUser {
 }
 
 /**
+ * Account IPC Interface - Placeholder
+ */
+interface AccountIPC {
+  // 将在后续 Story 中实现
+  getCurrent(): Promise<AccountDTO | null>;
+  getSubscription(): Promise<SubscriptionDTO | null>;
+  getHistory(): Promise<AccountHistoryServerDTO[]>;
+  getStats(): Promise<AccountStatsResponseDTO>;
+}
+
+/**
+ * Repository IPC Interface - Placeholder
+ */
+interface RepositoryIPC {
+  // 将在后续 Story 中实现
+  getAll(): Promise<RepositoryClientDTO[]>;
+  getResources(repositoryId: string): Promise<ResourceClientDTO[]>;
+  getFolders(repositoryId: string): Promise<FolderClientDTO[]>;
+  search(query: string): Promise<ResourceClientDTO[]>;
+}
+
+/**
  * Main Electron IPC Interface
  */
 export interface ElectronAPI {
@@ -118,6 +142,8 @@ export interface ElectronAPI {
   settings: SettingsIPC;
   setting: SettingsIPC; // Alias for settings
   auth: AuthIPC;
+  account: AccountIPC;
+  repository: RepositoryIPC;
 }
 
 /**

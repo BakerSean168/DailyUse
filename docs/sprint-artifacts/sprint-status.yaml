@@ -135,10 +135,10 @@ development_status:
   epic-11: in-progress
   
   # Phase 0: 基础设施建设 (28h, Week 1)
-  11-0-infrastructure: ready-for-dev           # STORY-056 (28h) - P0 | Zustand + shadcn/ui + 共享组件
+  11-0-infrastructure: done                    # STORY-056 (28h) - P0 | Zustand + shadcn/ui + 共享组件 ✅
   
   # Phase 1: Goal 模块 (33.5h, Week 2)
-  11-1-goal-module: ready-for-dev              # STORY-057 (33.5h) - P0 | Goal 模块完整迁移 (35+组件)
+  11-1-goal-module: done                       # STORY-057 (33.5h) - P0 | Goal 模块完整迁移 (35+组件) ✅
   
   # Phase 2: Task 模块 (25.5h, Week 3)
   11-2-task-module: ready-for-dev              # STORY-058 (25.5h) - P0 | Task 模块完整迁移 (25+组件)
@@ -161,36 +161,116 @@ development_status:
   epic-11-retrospective: optional
   
   # ========================================
-  # SPRINT SUMMARY (Updated 2025-12-14)
+  # EPIC-013: Desktop 全模块架构完善
   # ========================================
-  # Total New Stories: 51 (43 previous + 8 EPIC-011)
-  # Total Work Days: 90 days (63 previous + 27 EPIC-011)
-  # Estimated Duration: 18 weeks (4.5 months)
-  # Target Completion: 2025-04-30
+  # Priority: P0 | Duration: Open-ended (quality-focused)
+  # Location: docs/sprint-artifacts/EPIC-013-DESKTOP-ARCHITECTURE-COMPLETION.md
+  # Goal: 完善 Desktop 所有模块的 IPC Client、Store、UI，统一架构模式
+  # Note: Focus/专注功能整合到 Goal 模块，不作为独立模块
+  epic-13: in-progress
+  
+  # Phase 1: 基础设施层建设 (5 stories) ✅ ALL COMPLETED
+  13-1-ipc-client-base: done                   # Story 13.1 - P0 | IPC Client 基础架构 ✅
+  13-2-di-container-pattern: done              # Story 13.2 - P0 | DI 容器模式 ✅
+  13-3-initialization-manager: done            # Story 13.3 - P0 | 统一初始化机制 ✅
+  13-4-ipc-channel-types: done                 # Story 13.4 - P0 | IPC 通道类型定义 ✅
+  13-5-ipc-test-infra: done                    # Story 13.5 - P1 | IPC 测试基础设施 ✅
+  
+  # Phase 2: 核心模块完善 (13 stories, 含 Goal 专注功能) - IPC/DI 完成
+  13-6-task-ipc-client: done                   # Story 13.6 - P0 | Task IPC Client ✅ (已存在)
+  13-7-task-di-container: done                 # Story 13.7 - P0 | Task DI Container ✅ (已存在)
+  13-8-task-store-refactor: backlog            # Story 13.8 - P0 | Task Store 重构
+  13-9-goal-ipc-client: done                   # Story 13.9 - P0 | Goal IPC Client ✅ (已存在)
+  13-10-goal-di-store: done                    # Story 13.10 - P0 | Goal DI Container ✅ (已存在)
+  13-11-goal-focus-main: backlog               # Story 13.11 - P1 | Goal 专注功能 Main Process
+  13-12-goal-focus-ipc: backlog                # Story 13.12 - P1 | Goal 专注功能 IPC Client
+  13-13-goal-focus-ui: backlog                 # Story 13.13 - P1 | Goal 专注功能 Store + UI
+  13-14-schedule-main-handler: backlog         # Story 13.14 - P0 | Schedule Main Handler 补全
+  13-15-schedule-ipc-client: done              # Story 13.15 - P0 | Schedule IPC Client ✅
+  13-16-schedule-store-ui: backlog             # Story 13.16 - P0 | Schedule Store + UI
+  13-17-reminder-ipc-client: done              # Story 13.17 - P1 | Reminder IPC Client ✅
+  13-18-reminder-store: backlog                # Story 13.18 - P1 | Reminder Store 重构
+  
+  # Phase 3: 内容模块实现 (10 stories) - IPC 完成
+  13-19-repository-main: backlog               # Story 13.19 - P1 | Repository Main Handler
+  13-20-repository-ipc: done                   # Story 13.20 - P1 | Repository IPC Client ✅
+  13-21-repository-store: backlog              # Story 13.21 - P1 | Repository Store
+  13-22-repository-ui: backlog                 # Story 13.22 - P1 | Repository UI 组件
+  13-23-repository-views: backlog              # Story 13.23 - P1 | Repository Views
+  13-24-editor-main: backlog                   # Story 13.24 - P1 | Editor Main Handler
+  13-25-editor-ipc: done                       # Story 13.25 - P1 | Editor IPC Client ✅
+  13-26-editor-store: backlog                  # Story 13.26 - P1 | Editor Store
+  13-27-editor-ui: backlog                     # Story 13.27 - P1 | Editor UI 组件
+  13-28-editor-views: backlog                  # Story 13.28 - P1 | Editor Views
+  
+  # Phase 4: 系统模块完善 (10 stories) - IPC 完成
+  13-29-account-main: backlog                  # Story 13.29 - P1 | Account Main Handler
+  13-30-account-ipc: done                      # Story 13.30 - P1 | Account IPC Client ✅
+  13-31-account-store-ui: backlog              # Story 13.31 - P1 | Account Store + UI
+  13-32-auth-main: backlog                     # Story 13.32 - P1 | Auth Main Handler
+  13-33-auth-ipc-store: done                   # Story 13.33 - P1 | Auth IPC Client ✅
+  13-34-setting-main: backlog                  # Story 13.34 - P1 | Setting Main Handler
+  13-35-setting-ipc: done                      # Story 13.35 - P1 | Setting IPC Client ✅
+  13-36-setting-store-ui: backlog              # Story 13.36 - P1 | Setting Store + UI
+  13-37-dashboard-ipc: done                    # Story 13.37 - P1 | Dashboard IPC Client ✅
+  13-38-dashboard-store-ui: backlog            # Story 13.38 - P1 | Dashboard Store + UI
+  
+  # Phase 5: 功能模块实现 (9 stories) - IPC 完成
+  13-39-ai-main: backlog                       # Story 13.39 - P2 | AI Main Handler
+  13-40-ai-ipc: done                           # Story 13.40 - P2 | AI IPC Client ✅
+  13-41-ai-store: backlog                      # Story 13.41 - P2 | AI Store
+  13-42-ai-ui: backlog                         # Story 13.42 - P2 | AI UI 组件
+  13-43-ai-views: backlog                      # Story 13.43 - P2 | AI Views
+  13-44-notification-main: backlog             # Story 13.44 - P2 | Notification Main Handler
+  13-45-notification-ipc: done                 # Story 13.45 - P2 | Notification IPC Client ✅
+  13-46-notification-store: backlog            # Story 13.46 - P2 | Notification Store
+  13-47-notification-ui: backlog               # Story 13.47 - P2 | Notification UI
+  
+  # Phase 6: 平台集成完善 (5 stories)
+  13-48-shortcuts-ui: backlog                  # Story 13.48 - P2 | Shortcuts UI 配置
+  13-49-window-enhance: backlog                # Story 13.49 - P2 | Window 管理增强
+  13-50-tray-enhance: backlog                  # Story 13.50 - P2 | Tray 菜单增强
+  13-51-auto-update: backlog                   # Story 13.51 - P2 | 自动更新集成
+  13-52-startup-optimize: backlog              # Story 13.52 - P1 | 应用启动优化
+  
+  # Phase 7: 测试与文档 (5 stories)
+  13-53-ipc-unit-tests: backlog                # Story 13.53 - P1 | IPC Client 单元测试
+  13-54-store-unit-tests: backlog              # Story 13.54 - P1 | Store 单元测试
+  13-55-integration-tests: backlog             # Story 13.55 - P1 | 集成测试
+  13-56-architecture-docs: backlog             # Story 13.56 - P1 | 架构文档更新
+  13-57-dev-tools: backlog                     # Story 13.57 - P2 | 开发者工具
+  
+  epic-13-retrospective: optional
+  
+  # ========================================
+  # SPRINT SUMMARY (Updated 2025-12-15)
+  # ========================================
+  # Total Stories: 108 (51 previous + 57 EPIC-013)
+  # EPIC-013: 57 stories (Focus 整合到 Goal 模块)
+  # Estimated Duration: Open-ended (quality-focused)
   
   # Sprint Breakdown:
-  # - Sprint 1 (Week 1-2): EPIC-006 (5 stories, 12 days) ✅ DONE
-  # - Sprint 2 (Week 3-4): EPIC-007 (5 stories, 9 days) ✅ DONE
-  # - Sprint 3 (Week 5-6): EPIC-008 (6 stories, 13 days) ✅ DONE
-  # - Sprint 4 (Week 7-8): EPIC-009补充 (8 stories, 15 days) - BACKLOG
-  # - Sprint 5-8 (Week 9-12): EPIC-010 (14 stories, 14 days / 112h) ✅ DONE
-  # - Sprint 9-14 (Week 13-18): EPIC-011 (8 stories, 27 days / 213h) - ACTIVE
+  # - Sprint 1 (Week 1-2): EPIC-006 (5 stories) ✅ DONE
+  # - Sprint 2 (Week 3-4): EPIC-007 (5 stories) ✅ DONE
+  # - Sprint 3 (Week 5-6): EPIC-008 (6 stories) ✅ DONE
+  # - Sprint 4 (Week 7-8): EPIC-009补充 (8 stories) - BACKLOG
+  # - Sprint 5-8 (Week 9-12): EPIC-010 (14 stories) ✅ DONE
+  # - Sprint 9-14 (Week 13-18): EPIC-011 (8 stories) - ACTIVE
+  # - Sprint 15+: EPIC-013 (57 stories) - BACKLOG
   
-  # EPIC-011 Phase Breakdown:
-  # - Phase 0: Infrastructure (28h) - Zustand + shadcn/ui foundation
-  # - Phase 1: Goal Module (33.5h) - Core business module
-  # - Phase 2: Task Module (25.5h) - Core business module  
-  # - Phase 3: Schedule Module (19.5h) - Time management
-  # - Phase 4: Reminder Module (19.5h) - Notifications
-  # - Phase 5: Dashboard Module (12h) - Widgets
-  # - Phase 6: Auxiliary Modules (34.5h) - Account/Auth/AI/etc
-  # - Phase 7: Advanced Features (40.5h) - DAG/Timeline/Focus/AI
+  # EPIC-013 Phase Breakdown:
+  # - Phase 1: 基础设施层 (5 stories) - IPC/DI/Init
+  # - Phase 2: 核心模块 (13 stories) - Task/Goal(+Focus)/Schedule/Reminder
+  # - Phase 3: 内容模块 (10 stories) - Repository/Editor
+  # - Phase 4: 系统模块 (10 stories) - Account/Auth/Setting/Dashboard
+  # - Phase 5: 功能模块 (9 stories) - AI/Notification
+  # - Phase 6: 平台集成 (5 stories) - Shortcuts/Window/Tray/Update
+  # - Phase 7: 测试文档 (5 stories) - Tests/Docs/DevTools
   
-  # Priority Distribution:
-  # - P0 (Critical): 10 stories (6 EPIC-010 + 4 EPIC-011)
-  # - P1 (High): 19 stories (16 previous + 3 EPIC-011)
-  # - P2 (Medium): 19 stories (18 previous + 1 EPIC-011)
-  # - P3 (Low): 1 story (STORY-042)
+  # Priority Distribution (EPIC-013):
+  # - P0 (Critical): 11 stories (基础设施 + 核心 IPC)
+  # - P1 (High): 28 stories (核心模块 + 内容/系统模块 + 测试)
+  # - P2 (Medium): 18 stories (功能模块 + 平台集成 + 工具)
 
 # ========================================
 # DEVELOPMENT WORKFLOW NOTES
