@@ -32,11 +32,12 @@ import { ImportanceLevel } from '@dailyuse/contracts/shared';
 import { 
   createLogger,
   eventBus,
+} from '@dailyuse/utils';
+import {
   ReminderTemplateNotFoundError,
   ReminderTemplateUpdateError,
   ReminderTemplateMethodMissingError,
-  ReminderTemplateSaveError,
-} from '@dailyuse/utils';
+} from '../../errors/ReminderErrors';
 
 const logger = createLogger('ReminderApplicationService');
 
@@ -205,7 +206,7 @@ export class ReminderApplicationService {
       // Step 1: 获取模板
       const template = await this.domainService.getTemplate(uuid);
       if (!template) {
-        throw new ReminderTemplateNotFoundError(uuid, operationId);
+        throw new ReminderTemplateNotFoundError(uuid, { operationId });
       }
 
       logger.debug('Template loaded', {

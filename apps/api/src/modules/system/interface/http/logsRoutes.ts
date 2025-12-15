@@ -1,7 +1,7 @@
-import { type Request, type Response, Router } from 'express';
+import { type Request, type Response, Router, type Router as ExpressRouter } from 'express';
 import { createLogger } from '@dailyuse/utils';
 
-const router = Router();
+const router: ExpressRouter = Router();
 const logger = createLogger('ClientLogs');
 
 /**
