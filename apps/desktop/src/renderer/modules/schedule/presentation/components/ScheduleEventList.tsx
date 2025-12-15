@@ -46,7 +46,7 @@ function formatDateTime(date: Date | number): string {
   return format(d, 'M月d日 HH:mm', { locale: zhCN });
 }
 
-function getPriorityColor(priority?: number): string {
+function getPriorityColor(priority?: number | null): string {
   if (!priority) return 'bg-gray-500';
   if (priority >= 4) return 'bg-red-500';
   if (priority >= 3) return 'bg-orange-500';

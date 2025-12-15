@@ -6,8 +6,8 @@
  */
 
 import { useCallback, useState } from 'react';
-import { useAppSettings, type ShortcutConfig } from '../../hooks/useAppSettings';
-import { ShortcutRecorder } from './components';
+import { useAppSettings, type ShortcutConfig } from '../hooks/useAppSettings';
+import { ShortcutRecorder } from '../components/ShortcutRecorder';
 
 export function ShortcutSettingsView() {
   const { settings, loading, error, updateShortcut, isElectron } = useAppSettings();

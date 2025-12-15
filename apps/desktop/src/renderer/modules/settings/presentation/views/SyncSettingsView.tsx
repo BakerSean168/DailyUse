@@ -9,10 +9,9 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { useSyncStatus } from '../../hooks/useSyncStatus';
-import { useConflicts } from '../../hooks/useConflicts';
-import { ConflictResolverDialog } from '../../components/ConflictResolverDialog';
-import type { ConflictRecord, MergeResult } from '../../hooks/useConflicts';
+import { useSyncStatus } from '../hooks/useSyncStatus';
+import { useConflicts, type ConflictRecord, type MergeResult } from '../hooks/useConflicts';
+import { ConflictResolverDialog } from '../components/ConflictResolverDialog';
 
 export function SyncSettingsView() {
   const {

@@ -136,7 +136,7 @@ export function PomodoroTimer({
   const [totalTime, setTotalTime] = useState(settings.workDuration * 60);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   // Get current phase duration
   const getPhaseDuration = useCallback(

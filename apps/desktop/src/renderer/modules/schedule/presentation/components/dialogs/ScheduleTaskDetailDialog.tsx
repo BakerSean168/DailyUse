@@ -58,15 +58,15 @@ interface ScheduleTaskDetailDialogProps {
 
 // ===================== 工具函数 =====================
 
-function formatDateTime(date: Date | number | null | undefined): string {
+function formatDateTime(date: Date | number | string | null | undefined): string {
   if (!date) return '-';
-  const d = typeof date === 'number' ? new Date(date) : date;
+  const d = typeof date === 'number' ? new Date(date) : typeof date === 'string' ? new Date(date) : date;
   return format(d, 'yyyy-MM-dd HH:mm', { locale: zhCN });
 }
 
-function formatDate(date: Date | number | null | undefined): string {
+function formatDate(date: Date | number | string | null | undefined): string {
   if (!date) return '-';
-  const d = typeof date === 'number' ? new Date(date) : date;
+  const d = typeof date === 'number' ? new Date(date) : typeof date === 'string' ? new Date(date) : date;
   return format(d, 'yyyy-MM-dd', { locale: zhCN });
 }
 

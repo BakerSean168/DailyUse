@@ -7,9 +7,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
-import { ReminderCard } from '../components/cards/ReminderCard';
-import { ReminderCreateDialog } from '../components/dialogs/ReminderCreateDialog';
-import { ReminderEditDialog } from '../components/dialogs/ReminderEditDialog';
+import { ReminderCard } from '../components/ReminderCard';
+import { ReminderCreateDialog } from '../components/ReminderCreateDialog';
+import { ReminderEditDialog } from '../components/ReminderEditDialog';
 
 type FilterStatus = 'ALL' | 'ACTIVE' | 'PAUSED';
 

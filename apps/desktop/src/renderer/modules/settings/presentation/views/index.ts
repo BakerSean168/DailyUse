@@ -8,6 +8,3 @@
 export { GeneralSettingsView } from './GeneralSettingsView';
 export { ShortcutSettingsView } from './ShortcutSettingsView';
 export { SyncSettingsView } from './SyncSettingsView';
-
-// Re-export components
-export * from './components';

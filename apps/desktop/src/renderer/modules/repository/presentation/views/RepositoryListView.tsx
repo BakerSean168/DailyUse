@@ -6,8 +6,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import { useRepository } from '../../hooks/useRepository';
-import { RepositoryCard } from './components';
+import { useRepository } from '../hooks/useRepository';
+import { RepositoryCard } from '../components/RepositoryCard';
 
 export function RepositoryListView() {
   const {

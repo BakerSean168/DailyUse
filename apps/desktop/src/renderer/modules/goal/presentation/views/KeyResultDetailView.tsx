@@ -88,6 +88,10 @@ export function KeyResultDetailView({
       setError(null);
 
       const goalData = await goalApplicationService.getGoal(goalUuid);
+      if (!goalData) {
+        setError('目标不存在');
+        return;
+      }
       setGoal(goalData);
 
       const krData = goalData.keyResults?.find((kr) => kr.uuid === keyResultUuid);

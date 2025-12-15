@@ -32,6 +32,11 @@ import {
   getGoalRecordsByGoal,
   createGoalRecord,
   deleteGoalRecord,
+  // Review Use Cases
+  getGoalReviews,
+  createGoalReview,
+  updateGoalReview,
+  deleteGoalReview,
   // Types
   type CreateGoalInput,
   type CreateGoalFolderInput,
@@ -43,11 +48,14 @@ import type {
   KeyResultClientDTO,
   GoalFolderClientDTO,
   GoalRecordClientDTO,
+  GoalReviewClientDTO,
   UpdateGoalRequest,
   AddKeyResultRequest,
   UpdateKeyResultRequest,
   UpdateGoalFolderRequest,
   CreateGoalRecordRequest,
+  CreateGoalReviewRequest,
+  UpdateGoalReviewRequest,
 } from '@dailyuse/contracts/goal';
 
 /**
@@ -171,6 +179,27 @@ export class GoalApplicationService {
 
   async deleteRecord(goalUuid: string, keyResultUuid: string, recordUuid: string) {
     return deleteGoalRecord(goalUuid, keyResultUuid, recordUuid);
+  }
+
+  // ===== Review Operations =====
+
+  async getReviews(goalUuid: string): Promise<GoalReviewClientDTO[]> {
+    const response = await getGoalReviews(goalUuid);
+    // GoalReviewsResponse 返回 ServerDTO，但客户端需要 ClientDTO
+    // application-client 内部应该已经做了转换，这里做类型断言
+    return response.reviews as unknown as GoalReviewClientDTO[];
+  }
+
+  async createReview(goalUuid: string, request: CreateGoalReviewRequest): Promise<GoalReviewClientDTO> {
+    return createGoalReview(goalUuid, request);
+  }
+
+  async updateReview(goalUuid: string, reviewUuid: string, request: UpdateGoalReviewRequest): Promise<GoalReviewClientDTO> {
+    return updateGoalReview(goalUuid, reviewUuid, request);
+  }
+
+  async deleteReview(goalUuid: string, reviewUuid: string): Promise<void> {
+    return deleteGoalReview(goalUuid, reviewUuid);
   }
 }
 

@@ -120,8 +120,8 @@ export function useFocus(options: UseFocusOptions = {}): UseFocusReturn {
   const [sessions, setSessions] = useState<FocusSession[]>([]);
 
   // Timer ref
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
-  const sessionStartRef = useRef<Date>();
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const sessionStartRef = useRef<Date | undefined>(undefined);
 
   // Get phase duration
   const getPhaseDuration = useCallback(

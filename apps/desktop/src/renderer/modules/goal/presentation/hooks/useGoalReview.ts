@@ -28,7 +28,6 @@ export interface GoalReviewState {
 export interface UseGoalReviewReturn extends GoalReviewState {
   // Query
   loadReviews: (goalUuid: string) => Promise<GoalReviewClientDTO[]>;
-  getReview: (goalUuid: string, reviewUuid: string) => Promise<GoalReviewClientDTO | null>;
 
   // Mutations
   createReview: (goalUuid: string, data: CreateReviewInput) => Promise<GoalReviewClientDTO>;
@@ -75,23 +74,6 @@ export function useGoalReview(): UseGoalReviewReturn {
     }
   }, []);
 
-  const getReview = useCallback(async (
-    goalUuid: string,
-    reviewUuid: string
-  ): Promise<GoalReviewClientDTO | null> => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const review = await goalApplicationService.getReview(goalUuid, reviewUuid);
-      setState((prev) => ({ ...prev, loading: false }));
-      return review;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '获取复盘详情失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
-      throw e;
-    }
-  }, []);
-
   // ===== Mutations =====
 
   const createReview = useCallback(async (
@@ -101,17 +83,9 @@ export function useGoalReview(): UseGoalReviewReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const request = {
-        type: data.type,
-        rating: data.rating,
-        summary: data.summary,
-        achievements: data.achievements,
-        challenges: data.challenges,
-        improvements: data.improvements,
-        reviewedAt: Date.now(),
-      };
-
-      const review = await goalApplicationService.createReview(goalUuid, request);
+      // 直接传递 CreateGoalReviewRequest，不做字段转换
+      // data 已经是符合 CreateGoalReviewRequest 结构的对象
+      const review = await goalApplicationService.createReview(goalUuid, data);
       
       setState((prev) => ({
         ...prev,
@@ -195,7 +169,6 @@ export function useGoalReview(): UseGoalReviewReturn {
 
     // Query
     loadReviews,
-    getReview,
 
     // Mutations
     createReview,

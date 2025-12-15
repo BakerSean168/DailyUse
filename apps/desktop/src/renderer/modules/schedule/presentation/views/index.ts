@@ -4,4 +4,4 @@
 
 export { ScheduleListView } from './ScheduleListView';
 export { ScheduleWeekView } from './ScheduleWeekView';
-export * from './components';
+export { default as ScheduleView } from './ScheduleView';

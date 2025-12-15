@@ -6,7 +6,7 @@
  */
 
 import { useCallback } from 'react';
-import { useAppSettings } from '../../hooks/useAppSettings';
+import { useAppSettings } from '../hooks/useAppSettings';
 
 export function GeneralSettingsView() {
   const {
