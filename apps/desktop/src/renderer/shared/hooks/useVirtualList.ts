@@ -39,7 +39,7 @@ export interface VirtualListOptions<T> {
  */
 export interface VirtualListResult<T> {
   /** Ref to attach to the scroll container element. */
-  parentRef: React.RefObject<HTMLDivElement>;
+  parentRef: React.RefObject<HTMLDivElement | null>;
   /** Array of items currently to be rendered. */
   virtualItems: VirtualItem[];
   /** Total calculated height of the list (for the spacer). */

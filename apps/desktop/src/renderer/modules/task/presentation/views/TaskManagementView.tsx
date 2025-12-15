@@ -61,7 +61,7 @@ import {
 } from 'lucide-react';
 import { TaskCard } from '../components/TaskCard';
 import { useTaskTemplate } from '../hooks/useTaskTemplate';
-import { taskStore } from '../stores/taskStore';
+import { useTaskStore } from '../stores/taskStore';
 
 // ===================== 接口定义 =====================
 
@@ -77,6 +77,7 @@ const statusConfig: Record<TaskTemplateStatus, { label: string; icon: typeof Pla
   [TaskTemplateStatus.ACTIVE]: { label: '进行中', icon: PlayCircle, color: 'text-green-600' },
   [TaskTemplateStatus.PAUSED]: { label: '已暂停', icon: PauseCircle, color: 'text-yellow-600' },
   [TaskTemplateStatus.ARCHIVED]: { label: '已归档', icon: Archive, color: 'text-gray-600' },
+  [TaskTemplateStatus.DELETED]: { label: '已删除', icon: Trash2, color: 'text-red-600' },
 };
 
 const taskTypeLabels: Record<string, string> = {
@@ -107,6 +108,9 @@ export function TaskManagementView({
     loadTemplates,
     deleteTemplate,
     updateTemplate,
+    activateTemplate,
+    pauseTemplate,
+    archiveTemplate,
   } = useTaskTemplate();
 
   // 初始加载
@@ -137,6 +141,7 @@ export function TaskManagementView({
       [TaskTemplateStatus.ACTIVE]: templates.filter((t) => t.status === TaskTemplateStatus.ACTIVE).length,
       [TaskTemplateStatus.PAUSED]: templates.filter((t) => t.status === TaskTemplateStatus.PAUSED).length,
       [TaskTemplateStatus.ARCHIVED]: templates.filter((t) => t.status === TaskTemplateStatus.ARCHIVED).length,
+      [TaskTemplateStatus.DELETED]: templates.filter((t) => t.status === TaskTemplateStatus.DELETED).length,
     };
   }, [templates]);
 
@@ -184,29 +189,29 @@ export function TaskManagementView({
   // 恢复模板（从暂停/归档状态）
   const handleResumeTemplate = useCallback(async (uuid: string) => {
     try {
-      await updateTemplate(uuid, { status: TaskTemplateStatus.ACTIVE });
+      await activateTemplate(uuid);
     } catch (err) {
       console.error('Resume template failed:', err);
     }
-  }, [updateTemplate]);
+  }, [activateTemplate]);
 
   // 暂停模板
   const handlePauseTemplate = useCallback(async (uuid: string) => {
     try {
-      await updateTemplate(uuid, { status: TaskTemplateStatus.PAUSED });
+      await pauseTemplate(uuid);
     } catch (err) {
       console.error('Pause template failed:', err);
     }
-  }, [updateTemplate]);
+  }, [pauseTemplate]);
 
   // 归档模板
   const handleArchiveTemplate = useCallback(async (uuid: string) => {
     try {
-      await updateTemplate(uuid, { status: TaskTemplateStatus.ARCHIVED });
+      await archiveTemplate(uuid);
     } catch (err) {
       console.error('Archive template failed:', err);
     }
-  }, [updateTemplate]);
+  }, [archiveTemplate]);
 
   // 空状态配置
   const getEmptyState = () => {
@@ -230,6 +235,14 @@ export function TaskManagementView({
           icon: <Archive className="h-16 w-16 text-gray-500/50" />,
           title: '暂无已归档的任务',
           description: '归档的任务会显示在这里',
+          showCreate: false,
+        };
+      case TaskTemplateStatus.DELETED:
+      default:
+        return {
+          icon: <Archive className="h-16 w-16 text-gray-500/50" />,
+          title: '暂无已删除的任务',
+          description: '已删除的任务会显示在这里',
           showCreate: false,
         };
     }

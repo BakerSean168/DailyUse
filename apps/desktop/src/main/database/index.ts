@@ -159,11 +159,17 @@ export function getDatabaseStats(): {
     throw new Error('Database not initialized');
   }
   
-  const cacheSize = db.pragma('cache_size')[0]?.cache_size ?? 0;
-  const pageSize = db.pragma('page_size')[0]?.page_size ?? 0;
-  const pageCount = db.pragma('page_count')[0]?.page_count ?? 0;
-  const journalMode = db.pragma('journal_mode')[0]?.journal_mode ?? '';
-  const mmapSize = db.pragma('mmap_size')[0]?.mmap_size ?? 0;
+  const cacheSizeResult = db.pragma('cache_size') as Array<{ cache_size: number }>;
+  const pageSizeResult = db.pragma('page_size') as Array<{ page_size: number }>;
+  const pageCountResult = db.pragma('page_count') as Array<{ page_count: number }>;
+  const journalModeResult = db.pragma('journal_mode') as Array<{ journal_mode: string }>;
+  const mmapSizeResult = db.pragma('mmap_size') as Array<{ mmap_size: number }>;
+  
+  const cacheSize = cacheSizeResult[0]?.cache_size ?? 0;
+  const pageSize = pageSizeResult[0]?.page_size ?? 0;
+  const pageCount = pageCountResult[0]?.page_count ?? 0;
+  const journalMode = journalModeResult[0]?.journal_mode ?? '';
+  const mmapSize = mmapSizeResult[0]?.mmap_size ?? 0;
   
   return {
     cacheSize: Math.abs(cacheSize),

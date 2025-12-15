@@ -54,7 +54,7 @@ export class ReminderDesktopApplicationService {
     return getTemplateService(uuid);
   }
 
-  async listTemplates(params?: ListReminderTemplatesInput): Promise<{
+  async listTemplates(params: ListReminderTemplatesInput): Promise<{
     templates: ReminderTemplateClientDTO[];
     total: number;
   }> {

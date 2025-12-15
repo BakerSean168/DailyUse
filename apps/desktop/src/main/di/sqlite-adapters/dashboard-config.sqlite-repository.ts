@@ -75,7 +75,7 @@ export class SqliteDashboardConfigRepository implements IDashboardConfigReposito
   }
 
   private mapToEntity(row: DashboardConfigRow): DashboardConfig {
-    return DashboardConfigEntity.fromPersistenceDTO({
+    return DashboardConfigEntity.fromPersistence({
       id: row.id,
       accountUuid: row.account_uuid,
       widgetConfig: row.widget_config,

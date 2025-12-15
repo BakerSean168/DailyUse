@@ -3,7 +3,7 @@
  */
 
 import type { IRepositoryStatisticsRepository } from '@dailyuse/domain-server/repository';
-import type { RepositoryStatistics } from '@dailyuse/domain-server/repository';
+import { RepositoryStatistics } from '@dailyuse/domain-server/repository';
 import type { RepositoryStatisticsPersistenceDTO } from '@dailyuse/contracts/repository';
 import { getDatabase, transaction } from '../../database';
 
@@ -115,6 +115,6 @@ export class SqliteRepositoryStatisticsRepository implements IRepositoryStatisti
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
-    return RepositoryStatisticsEntity.fromPersistence(dto);
+    return RepositoryStatistics.fromPersistence(dto);
   }
 }

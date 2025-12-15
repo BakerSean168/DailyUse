@@ -219,10 +219,10 @@ export function TemplateSelectionDialog({
                               </div>
                             )}
 
-                            {template.estimatedTime && (
+                            {template.estimatedMinutes && (
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                <span>{template.estimatedTime}分钟</span>
+                                <span>{template.estimatedMinutes}分钟</span>
                               </div>
                             )}
 

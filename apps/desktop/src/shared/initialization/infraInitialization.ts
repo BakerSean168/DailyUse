@@ -1,7 +1,5 @@
 import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
 import type { InitializationTask } from '@dailyuse/utils';
-import { initializeDatabase, getDatabase } from '../infrastructure';
-import { configureMainProcessDependencies } from '../infrastructure';
 
 /**
  * Registers infrastructure initialization tasks with the InitializationManager.
@@ -38,6 +36,8 @@ export function registerInfrastructureInitializationTasks(): void {
       const startTime = performance.now();
 
       try {
+        // Dynamic import for main process only module
+        const { initializeDatabase } = await import('../../main/database');
         const db = initializeDatabase();
         const duration = performance.now() - startTime;
 
@@ -82,6 +82,8 @@ export function registerInfrastructureInitializationTasks(): void {
       const startTime = performance.now();
 
       try {
+        // Dynamic import for main process only module
+        const { configureMainProcessDependencies } = await import('../../main/di');
         configureMainProcessDependencies();
         const duration = performance.now() - startTime;
 

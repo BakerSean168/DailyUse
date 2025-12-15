@@ -17,7 +17,7 @@
  */
 
 export { registerSystemIpcHandlers } from './system-handlers';
-export { getLazyIpcHandler } from './lazy-ipc-handler';
+export { lazyHandle, registerLazyHandlers, createLazyModule } from './lazy-ipc-handler';
 
 
 /**

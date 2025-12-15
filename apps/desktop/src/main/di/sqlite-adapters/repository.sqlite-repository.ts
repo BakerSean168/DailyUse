@@ -4,8 +4,9 @@
  * 实现 IRepositoryRepository 接口
  */
 
-import type { IRepositoryRepository, Repository } from '@dailyuse/domain-server/repository';
-import { RepositoryStatus } from '@dailyuse/contracts/repository';
+import type { IRepositoryRepository } from '@dailyuse/domain-server/repository';
+import { Repository } from '@dailyuse/domain-server/repository';
+import { RepositoryStatus, RepositoryType } from '@dailyuse/contracts/repository';
 import { getDatabase, transaction } from '../../database';
 
 interface RepositoryRow {
@@ -103,16 +104,16 @@ export class SqliteRepositoryRepository implements IRepositoryRepository {
   }
 
   private mapToEntity(row: RepositoryRow): Repository {
-    return RepositoryEntity.fromPersistenceDTO({
+    return Repository.fromPersistenceDTO({
       uuid: row.uuid,
       accountUuid: row.account_uuid,
       name: row.name,
-      type: row.type,
+      type: row.type as RepositoryType,
       path: row.path,
       description: row.description,
       config: row.config,
       stats: row.stats,
-      status: row.status,
+      status: row.status as RepositoryStatus,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     });

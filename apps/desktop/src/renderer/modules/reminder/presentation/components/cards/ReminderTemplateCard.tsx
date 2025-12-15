@@ -74,9 +74,13 @@ export interface ReminderTemplateCardProps {
 
 // ============ Utils ============
 
-function formatDate(dateString?: string | Date): string {
-  if (!dateString) return '未知';
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+function formatDate(dateValue?: string | number | Date): string {
+  if (!dateValue) return '未知';
+  const date = typeof dateValue === 'number' 
+    ? new Date(dateValue)
+    : typeof dateValue === 'string' 
+      ? new Date(dateValue) 
+      : dateValue;
   return format(date, 'yyyy年MM月dd日 HH:mm', { locale: zhCN });
 }
 

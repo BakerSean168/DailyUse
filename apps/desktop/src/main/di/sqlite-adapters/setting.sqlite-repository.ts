@@ -4,8 +4,9 @@
  * 实现 ISettingRepository 接口
  */
 
-import type { ISettingRepository, Setting } from '@dailyuse/domain-server/setting';
-import { SettingScope } from '@dailyuse/contracts/setting';
+import type { ISettingRepository } from '@dailyuse/domain-server/setting';
+import { Setting } from '@dailyuse/domain-server/setting';
+import { SettingScope, SettingValueType } from '@dailyuse/contracts/setting';
 import { getDatabase, transaction } from '../../database';
 
 interface SettingRow {
@@ -230,15 +231,15 @@ export class SqliteSettingRepository implements ISettingRepository {
   }
 
   private mapToEntity(row: SettingRow): Setting {
-    return SettingEntity.fromPersistenceDTO({
+    return Setting.fromPersistenceDTO({
       uuid: row.uuid,
       key: row.key,
       name: row.name,
       description: row.description,
-      valueType: row.value_type,
+      valueType: row.value_type as SettingValueType,
       value: row.value,
       defaultValue: row.default_value,
-      scope: row.scope,
+      scope: row.scope as SettingScope,
       accountUuid: row.account_uuid,
       deviceId: row.device_id,
       groupUuid: row.group_uuid,

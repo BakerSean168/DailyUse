@@ -19,7 +19,7 @@ import type {
   ValidateDependencyResponse,
 } from '@dailyuse/contracts/task';
 import { DependencyType, DependencyStatus } from '@dailyuse/contracts/task';
-import { taskStore } from '../stores/taskStore';
+import { useTaskStore } from '../stores/taskStore';
 
 // ===================== 接口定义 =====================
 
@@ -27,7 +27,7 @@ interface UseTaskDependencyOptions {
   accountUuid?: string;
 }
 
-interface UseTaskDependencyReturn {
+export interface UseTaskDependencyReturn {
   // 数据
   dependencies: TaskDependencyClientDTO[];
   dependencyChain: DependencyChainClientDTO | null;
@@ -77,8 +77,8 @@ export function useTaskDependency(options: UseTaskDependencyOptions = {}): UseTa
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 从 store 获取 accountUuid
-  const accountUuid = options.accountUuid || taskStore.getState().accountUuid;
+  // accountUuid 从 options 获取（由调用方提供）
+  const accountUuid = options.accountUuid ?? '';
 
   /**
    * 加载任务的依赖列表

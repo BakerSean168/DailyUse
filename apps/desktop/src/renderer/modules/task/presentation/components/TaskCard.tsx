@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { UrgencyLevel } from '@dailyuse/contracts/shared';
 import { TaskDetailDialog } from './TaskDetailDialog';
 
 interface TaskCardProps {
@@ -131,7 +132,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
             ⚡ {template.importanceText ?? template.importance}
           </span>
         )}
-        {template.urgency && template.urgency !== 'None' && (
+        {template.urgency && template.urgency !== UrgencyLevel.None && (
           <span className={`px-1.5 py-0.5 text-xs rounded ${urgencyColors[template.urgency] ?? 'bg-gray-100'}`}>
             🔥 {template.urgencyText ?? template.urgency}
           </span>

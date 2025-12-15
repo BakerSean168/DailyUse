@@ -1,22 +1,14 @@
 /**
  * Shared DI Container Infrastructure Adapter
  *
- * Re-exports DI container initialization from main process
- * Centralizes all dependency injection infrastructure for the shared layer
+ * NOTE: These exports are only available in the main process.
+ * This file exists for structural completeness but should not be imported
+ * from the renderer process.
+ * 
+ * The actual DI configuration is done via:
+ * - Main process: import from '../../main/di' directly
+ * - Renderer process: use @dailyuse/infrastructure-client
  */
 
-export {
-  configureMainProcessDependencies,
-  resetAllContainers,
-  isDIConfigured,
-} from '../../main/di';
-
-export {
-  ensureModuleLoaded,
-  isModuleLoaded,
-  getLoadedModules,
-  getLazyModuleStats,
-  getModuleLoadTimes,
-} from '../../main/di';
-
-export * from '../../main/di/sqlite-adapters';
+// Main-process only exports - import directly from main/di when needed
+export const MAIN_PROCESS_ONLY = true;

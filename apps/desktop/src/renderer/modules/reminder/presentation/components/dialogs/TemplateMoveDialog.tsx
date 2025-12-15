@@ -195,7 +195,7 @@ export function TemplateMoveDialog({
                       <div className="flex items-center gap-2">
                         <Folder
                           className="h-4 w-4"
-                          style={{ color: option.color }}
+                          style={{ color: option.color ?? undefined }}
                         />
                         <span>{option.label}</span>
                         {option.value === template.groupUuid && (

@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { TaskContainer } from '@dailyuse/infrastructure-client';
 import type { TaskTemplateClientDTO, UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
-import { TimeEstimationCard } from '../../../components/task/TimeEstimationCard';
+import { TimeEstimationCard } from '../../../../shared/components/task/TimeEstimationCard';
 import type { TimeEstimate } from '@dailyuse/contracts/goal';
 
 interface TaskDetailDialogProps {
@@ -298,7 +298,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
                 {timeEstimate ? (
                   <TimeEstimationCard
                     estimate={timeEstimate}
-                    loading={estimatingTime}
+                    isEstimating={estimatingTime}
                     showDetails={true}
                     onReEstimate={handleEstimateTimeClick}
                     onEstimateChange={handleEstimateChange}

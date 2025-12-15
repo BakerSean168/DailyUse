@@ -5,6 +5,7 @@
  */
 
 import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { UrgencyLevel } from '@dailyuse/contracts/shared';
 import {
   Card,
   CardContent,
@@ -98,8 +99,8 @@ export function TaskInfoCard({ template, onClick }: TaskInfoCardProps) {
             <Flag className="h-3 w-3 mr-1" />
             {template.importanceText}
           </Badge>
-          {template.urgency && template.urgency !== 'None' && (
-            <Badge className={URGENCY_COLORS[template.urgency] || URGENCY_COLORS.None}>
+          {template.urgency && template.urgency !== UrgencyLevel.None && (
+            <Badge className={URGENCY_COLORS[template.urgency] || URGENCY_COLORS[UrgencyLevel.None]}>
               🔥 {template.urgencyText}
             </Badge>
           )}

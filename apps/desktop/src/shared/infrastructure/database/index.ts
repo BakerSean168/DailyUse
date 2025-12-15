@@ -1,17 +1,14 @@
 /**
  * Shared Database Infrastructure Adapter
  *
- * Re-exports database initialization from main process
- * Centralizes all database infrastructure for the shared layer
+ * NOTE: These exports are only available in the main process.
+ * This file exists for structural completeness but should not be imported
+ * from the renderer process.
+ * 
+ * The actual database operations are done via:
+ * - Main process: import from '../../main/database' directly
+ * - Renderer process: use IPC calls to communicate with main process
  */
 
-export {
-  initializeDatabase,
-  getDatabase,
-  closeDatabase,
-  isDatabaseInitialized,
-  getDatabaseStats,
-  enableDetailedLogging,
-} from '../../main/database';
-
-export type { DatabaseStatistics, DatabaseHealthMetrics } from '../../main/database';
+// Main-process only exports - import directly from main/database when needed
+export const MAIN_PROCESS_ONLY = true;

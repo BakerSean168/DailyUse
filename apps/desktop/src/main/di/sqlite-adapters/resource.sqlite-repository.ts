@@ -6,6 +6,7 @@
 
 import type { IResourceRepository, Resource } from '@dailyuse/domain-server/repository';
 import { Resource as ResourceEntity } from '@dailyuse/domain-server/repository';
+import { ResourceType, ResourceStatus } from '@dailyuse/contracts/repository';
 import { getDatabase, transaction } from '../../database';
 
 interface ResourceRow {
@@ -132,13 +133,13 @@ export class SqliteResourceRepository implements IResourceRepository {
       repository_uuid: row.repository_uuid,
       folder_uuid: row.folder_uuid,
       name: row.name,
-      type: row.type,
+      type: row.type as ResourceType,
       path: row.path,
       size: row.size,
       content: row.content,
       metadata: row.metadata,
       stats: row.stats,
-      status: row.status,
+      status: row.status as ResourceStatus,
       created_at: new Date(row.created_at),
       updated_at: new Date(row.updated_at),
     });

@@ -183,11 +183,11 @@ export function ReminderDesktopView() {
       .map(t => ({
         uuid: t.uuid,
         title: t.title,
-        message: t.description,
+        message: t.description ?? undefined,
         nextTriggerAt: new Date(t.nextTriggerAt!).toISOString(),
         priority: 'normal' as const,
         templateUuid: t.uuid,
-        metadata: { tags: t.tags },
+        metadata: { tags: t.tags ?? [] },
       }))
       .slice(0, 20),
   }), [templates]);

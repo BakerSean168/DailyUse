@@ -14,5 +14,5 @@ export async function updateProfileService(
 ): Promise<AccountClientDTO> {
   logger.debug('Updating account profile', { accountUuid });
   const result = await updateAccountProfile({ accountUuid, ...input });
-  return result.profile;
+  return result.account;
 }

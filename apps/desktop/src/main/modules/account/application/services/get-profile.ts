@@ -5,8 +5,8 @@ import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('getProfileService');
 
-export async function getProfileService(accountUuid: string): Promise<AccountClientDTO> {
+export async function getProfileService(accountUuid: string): Promise<AccountClientDTO | null> {
   logger.debug('Getting account profile', { accountUuid });
   const result = await getAccountProfile({ accountUuid });
-  return result.profile;
+  return result.account;
 }

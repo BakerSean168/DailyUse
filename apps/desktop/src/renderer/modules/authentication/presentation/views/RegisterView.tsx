@@ -118,6 +118,7 @@ export function RegisterView() {
         username: username.trim(),
         email: email.trim(),
         password,
+        confirmPassword,
       });
       navigate('/login', {
         state: { message: '注册成功！请登录您的账户。' },

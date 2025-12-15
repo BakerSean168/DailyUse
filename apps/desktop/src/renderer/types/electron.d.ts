@@ -10,6 +10,7 @@
  */
 
 import type { GoalClientDTO, GoalFolderClientDTO, CreateGoalRequest, UpdateGoalRequest } from '@dailyuse/contracts/goal';
+import type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
 
 /**
  * Goal IPC Interface
@@ -48,13 +49,13 @@ interface ReminderIPC {
 }
 
 /**
- * Schedule IPC Interface - Placeholder
+ * Schedule IPC Interface
  */
 interface ScheduleIPC {
-  // 将在 Story 11-4 中实现
-  getAll(params: { startDate: number; endDate: number }): Promise<unknown[]>;
-  create(dto: unknown): Promise<unknown>;
-  update(id: string, dto: unknown): Promise<unknown>;
+  getByDateRange(start: Date, end: Date): Promise<ScheduleClientDTO[]>;
+  getAll(params: { startDate: number; endDate: number }): Promise<ScheduleClientDTO[]>;
+  create(dto: CreateScheduleRequest): Promise<ScheduleClientDTO>;
+  update(id: string, dto: UpdateScheduleRequest): Promise<ScheduleClientDTO>;
   delete(id: string): Promise<void>;
 }
 

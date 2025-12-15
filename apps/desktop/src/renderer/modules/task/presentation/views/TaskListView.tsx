@@ -180,7 +180,9 @@ export function TaskListView() {
           </div>
           
           {selectedTemplateId ? (
-            <TaskDependencyGraph templateId={selectedTemplateId} />
+            <TaskDependencyGraph 
+              tasks={templates.filter(t => t.uuid === selectedTemplateId || t.parentTaskUuid === selectedTemplateId)} 
+            />
           ) : (
             <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-card">
               <div className="text-4xl mb-2">🔗</div>

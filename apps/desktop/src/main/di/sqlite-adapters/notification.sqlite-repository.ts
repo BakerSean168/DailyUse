@@ -6,7 +6,13 @@
 
 import type { INotificationRepository, Notification } from '@dailyuse/domain-server/notification';
 import { Notification as NotificationEntity } from '@dailyuse/domain-server/notification';
-import { NotificationCategory, NotificationStatus } from '@dailyuse/contracts/notification';
+import { 
+  NotificationCategory, 
+  NotificationStatus,
+  NotificationType,
+  RelatedEntityType 
+} from '@dailyuse/contracts/notification';
+import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { getDatabase, transaction } from '../../database';
 
 interface NotificationRow {
@@ -315,14 +321,14 @@ export class SqliteNotificationRepository implements INotificationRepository {
       accountUuid: row.account_uuid,
       title: row.title,
       content: row.content,
-      type: row.type,
-      category: row.category,
-      importance: row.importance,
-      urgency: row.urgency,
-      status: row.status,
+      type: row.type as NotificationType,
+      category: row.category as NotificationCategory,
+      importance: row.importance as ImportanceLevel,
+      urgency: row.urgency as UrgencyLevel,
+      status: row.status as NotificationStatus,
       isRead: row.is_read === 1,
       readAt: row.read_at,
-      relatedEntityType: row.related_entity_type,
+      relatedEntityType: row.related_entity_type as RelatedEntityType | null,
       relatedEntityUuid: row.related_entity_uuid,
       actions: row.actions,
       metadata: row.metadata,

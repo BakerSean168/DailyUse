@@ -129,7 +129,12 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          const schedules = await window.electron.schedule.getByDateRange(start, end);
+          // TODO: Implement actual IPC call when backend is ready
+          // const schedules = await window.electronAPI.invoke<ScheduleClientDTO[]>(
+          //   'schedule:event:get-by-time-range', 
+          //   { startTime: start.getTime(), endTime: end.getTime() }
+          // );
+          const schedules: ScheduleClientDTO[] = []; // Stub for now
           get().setSchedules(schedules);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to fetch' });
@@ -143,7 +148,9 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          const schedule = await window.electron.schedule.create(dto);
+          // TODO: Implement actual IPC call when backend is ready  
+          // const schedule = await window.electronAPI.invoke<ScheduleClientDTO>('schedule:event:create', dto);
+          const schedule = { ...dto, uuid: crypto.randomUUID() } as ScheduleClientDTO; // Stub
           get().addSchedule(schedule);
           return schedule;
         } catch (error) {
@@ -158,7 +165,9 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          const schedule = await window.electron.schedule.update(id, dto);
+          // TODO: Implement actual IPC call when backend is ready
+          // const schedule = await window.electronAPI.invoke<ScheduleClientDTO>('schedule:event:update', { uuid: id, ...dto });
+          const schedule = { ...get().schedulesById[id], ...dto } as ScheduleClientDTO; // Stub
           get().updateSchedule(id, schedule);
           return schedule;
         } catch (error) {
@@ -173,7 +182,8 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          await window.electron.schedule.delete(id);
+          // TODO: Implement actual IPC call when backend is ready
+          // await window.electronAPI.invoke('schedule:event:delete', id);
           get().removeSchedule(id);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to delete' });

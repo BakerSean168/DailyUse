@@ -4,7 +4,8 @@
  * 实现 INotificationTemplateRepository 接口
  */
 
-import type { INotificationTemplateRepository, NotificationTemplate } from '@dailyuse/domain-server/notification';
+import type { INotificationTemplateRepository } from '@dailyuse/domain-server/notification';
+import { NotificationTemplate } from '@dailyuse/domain-server/notification';
 import { NotificationCategory, NotificationType } from '@dailyuse/contracts/notification';
 import { getDatabase, transaction } from '../../database';
 
@@ -215,26 +216,26 @@ export class SqliteNotificationTemplateRepository implements INotificationTempla
   }
 
   private mapToEntity(row: NotificationTemplateRow): NotificationTemplate {
-    return NotificationTemplateEntity.fromPersistenceDTO({
+    return NotificationTemplate.fromPersistenceDTO({
       uuid: row.uuid,
       name: row.name,
-      description: row.description,
-      type: row.type,
-      category: row.category,
+      description: row.description ?? undefined,
+      type: row.type as NotificationType,
+      category: row.category as NotificationCategory,
       isActive: row.is_active === 1,
       isSystemTemplate: row.is_system_template === 1,
       templateTitle: row.template_title,
       templateContent: row.template_content,
-      templateVariables: row.template_variables,
-      templateLayout: row.template_layout,
-      templateStyle: row.template_style,
-      templateEmailSubject: row.template_email_subject,
-      templateEmailHtmlBody: row.template_email_html_body,
-      templateEmailTextBody: row.template_email_text_body,
-      templatePushTitle: row.template_push_title,
-      templatePushBody: row.template_push_body,
-      templatePushIcon: row.template_push_icon,
-      templatePushSound: row.template_push_sound,
+      templateVariables: row.template_variables ?? undefined,
+      templateLayout: row.template_layout ?? undefined,
+      templateStyle: row.template_style ?? undefined,
+      templateEmailSubject: row.template_email_subject ?? undefined,
+      templateEmailHtmlBody: row.template_email_html_body ?? undefined,
+      templateEmailTextBody: row.template_email_text_body ?? undefined,
+      templatePushTitle: row.template_push_title ?? undefined,
+      templatePushBody: row.template_push_body ?? undefined,
+      templatePushIcon: row.template_push_icon ?? undefined,
+      templatePushSound: row.template_push_sound ?? undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     });

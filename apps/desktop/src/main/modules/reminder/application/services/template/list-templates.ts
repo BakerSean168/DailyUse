@@ -12,13 +12,13 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('listTemplatesService');
 
 export async function listTemplatesService(
-  params?: ListReminderTemplatesInput,
+  params: ListReminderTemplatesInput,
 ): Promise<{
   templates: ReminderTemplateClientDTO[];
   total: number;
 }> {
   logger.debug('Listing reminder templates', { params });
-  const result = await listReminderTemplates(params || {});
+  const result = await listReminderTemplates(params);
   return {
     templates: result.templates,
     total: result.total,
