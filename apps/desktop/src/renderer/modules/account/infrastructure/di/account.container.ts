@@ -36,7 +36,14 @@ export class AccountContainer extends RendererContainer {
 
   // ============ Service Accessors ============
 
+  get accountClient(): AccountIPCClient {
+    return this.get(AccountTokens.AccountIPCClient);
+  }
+
   get accountIPCClient(): AccountIPCClient {
     return this.get(AccountTokens.AccountIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const accountContainer = new AccountContainer();

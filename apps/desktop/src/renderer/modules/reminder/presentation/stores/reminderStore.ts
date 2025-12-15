@@ -17,6 +17,7 @@ import type {
   ReminderGroupClientDTO,
   ReminderStatus,
 } from '@dailyuse/contracts/reminder';
+import { reminderContainer } from '../../infrastructure/di';
 
 // ============ State Interface ============
 export interface ReminderState {
@@ -236,7 +237,6 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
       reset: () => set(initialState),
       
       // ========== IPC Operations ==========
-      // TODO: 实际的 IPC 调用将在 Story 11-3 中实现
       fetchReminders: async () => {
         const { setLoading, setReminders, setError } = get();
         
@@ -244,8 +244,38 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           setLoading(true);
           setError(null);
           
-          // TODO: 实际调用 window.electron.reminder.getTemplates()
-          setReminders([]);
+          // 使用 IPC Client 获取提醒
+          const reminderClient = reminderContainer.reminderClient;
+          const reminders = await reminderClient.list({
+            accountUuid: '', // TODO: 从 AuthStore 获取当前账户
+          });
+          
+          // 转换为 ClientDTO 格式
+          const clientReminders: ReminderTemplateClientDTO[] = reminders.map(r => ({
+            uuid: r.uuid,
+            accountUuid: r.accountUuid,
+            title: r.title,
+            description: r.description,
+            type: r.type,
+            priority: r.priority,
+            status: r.status,
+            triggerAt: r.triggerAt,
+            linkedEntityType: r.linkedEntityType,
+            linkedEntityUuid: r.linkedEntityUuid,
+            recurrence: r.recurrence,
+            notification: r.notification,
+            selfEnabled: true,
+            isActive: r.status === 'pending',
+            isPaused: false,
+            nextTriggerAt: r.triggerAt,
+            snoozedUntil: r.snoozedUntil,
+            acknowledgedAt: r.acknowledgedAt,
+            dismissedAt: r.dismissedAt,
+            createdAt: r.createdAt,
+            updatedAt: r.updatedAt,
+          }));
+          
+          setReminders(clientReminders);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminders';
           setError(message);
@@ -261,8 +291,26 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         try {
           setLoading(true);
           
-          // TODO: 实际调用 window.electron.reminder.getGroups()
-          setGroups([]);
+          // 使用 IPC Client 获取分组
+          const reminderClient = reminderContainer.reminderClient;
+          const groups = await reminderClient.listGroups({
+            accountUuid: '', // TODO: 从 AuthStore 获取当前账户
+          });
+          
+          // 转换为 ClientDTO 格式
+          const clientGroups: ReminderGroupClientDTO[] = groups.map(g => ({
+            uuid: g.uuid,
+            accountUuid: g.accountUuid,
+            name: g.name,
+            color: g.color,
+            icon: g.icon,
+            order: g.order ?? 0,
+            reminderCount: g.reminderCount ?? 0,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt,
+          }));
+          
+          setGroups(clientGroups);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminder groups';
           setError(message);
@@ -273,12 +321,19 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
       },
       
       snoozeReminder: async (id, minutes) => {
-        const { setLoading, setError } = get();
-        void id; void minutes; // TODO: 使用实际 IPC
+        const { setLoading, setError, updateReminder } = get();
         
         try {
           setLoading(true);
-          // TODO: 实际调用 window.electron.reminder.snooze(id, minutes)
+          
+          // 使用 IPC Client 延迟提醒
+          const reminderClient = reminderContainer.reminderClient;
+          const result = await reminderClient.snooze(id, minutes);
+          
+          updateReminder(id, {
+            status: 'snoozed' as ReminderStatus,
+            snoozedUntil: result.snoozedUntil,
+          });
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to snooze reminder');
           throw error;
@@ -288,12 +343,19 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
       },
       
       dismissReminder: async (id) => {
-        const { setLoading, setError } = get();
-        void id; // TODO: 使用实际 IPC
+        const { setLoading, setError, updateReminder } = get();
         
         try {
           setLoading(true);
-          // TODO: 实际调用 window.electron.reminder.dismiss(id)
+          
+          // 使用 IPC Client 解除提醒
+          const reminderClient = reminderContainer.reminderClient;
+          await reminderClient.dismiss(id);
+          
+          updateReminder(id, {
+            status: 'dismissed' as ReminderStatus,
+            dismissedAt: Date.now(),
+          });
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to dismiss reminder');
           throw error;
@@ -309,8 +371,16 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         
         try {
           setLoading(true);
-          // TODO: 实际调用 window.electron.reminder.toggleEnabled(id)
-          updateReminder(id, { selfEnabled: !reminder.selfEnabled });
+          
+          // 使用 IPC Client 切换启用状态
+          const reminderClient = reminderContainer.reminderClient;
+          if (reminder.selfEnabled) {
+            await reminderClient.pause(id);
+          } else {
+            await reminderClient.resume(id);
+          }
+          
+          updateReminder(id, { selfEnabled: !reminder.selfEnabled, isPaused: reminder.selfEnabled });
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to toggle reminder');
           throw error;

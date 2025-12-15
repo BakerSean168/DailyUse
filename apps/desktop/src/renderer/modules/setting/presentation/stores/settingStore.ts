@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { settingContainer } from '../../infrastructure/di';
 
 // ============ Types ============
 export interface AppSettings {
@@ -91,7 +92,8 @@ export const useSettingStore = create<SettingStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          const loadedSettings = await window.electron.setting.getAll() as Partial<AppSettings> | null;
+          const settingClient = settingContainer.settingClient;
+          const loadedSettings = await settingClient.getAll() as Partial<AppSettings> | null;
           if (loadedSettings) {
             set({ settings: { ...defaultSettings, ...loadedSettings } });
           }
@@ -106,7 +108,8 @@ export const useSettingStore = create<SettingStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          await window.electron.setting.save(get().settings);
+          const settingClient = settingContainer.settingClient;
+          await settingClient.setAll(get().settings);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to save settings' });
           throw error;

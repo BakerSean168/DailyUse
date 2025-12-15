@@ -36,7 +36,14 @@ export class SettingContainer extends RendererContainer {
 
   // ============ Service Accessors ============
 
+  get settingClient(): SettingIPCClient {
+    return this.get(SettingTokens.SettingIPCClient);
+  }
+
   get settingIPCClient(): SettingIPCClient {
     return this.get(SettingTokens.SettingIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const settingContainer = new SettingContainer();

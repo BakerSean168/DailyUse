@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { aiContainer } from '../../infrastructure/di';
 
 // ============ Types ============
 export interface AIMessage {
@@ -112,13 +113,14 @@ export const useAIStore = create<AIStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // Call AI service
-          const response = await window.electron.ai.chat(conversationId, content);
+          // Call AI service via IPC Client
+          const aiClient = aiContainer.aiClient;
+          const response = await aiClient.chat(conversationId, content);
           
           const assistantMessage: AIMessage = {
             id: crypto.randomUUID(),
             role: 'assistant',
-            content: response,
+            content: response.response ?? response.content ?? '',
             timestamp: Date.now(),
           };
           

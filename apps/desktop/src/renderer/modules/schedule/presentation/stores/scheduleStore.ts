@@ -9,6 +9,7 @@ import type {
   CreateScheduleRequest,
   UpdateScheduleRequest,
 } from '@dailyuse/contracts/schedule';
+import { scheduleContainer } from '../../infrastructure/di';
 
 // ============ Types ============
 export interface ScheduleState {
@@ -129,13 +130,35 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // TODO: Implement actual IPC call when backend is ready
-          // const schedules = await window.electronAPI.invoke<ScheduleClientDTO[]>(
-          //   'schedule:event:get-by-time-range', 
-          //   { startTime: start.getTime(), endTime: end.getTime() }
-          // );
-          const schedules: ScheduleClientDTO[] = []; // Stub for now
-          get().setSchedules(schedules);
+          // 使用 IPC Client 获取日程
+          const scheduleClient = scheduleContainer.scheduleClient;
+          const schedules = await scheduleClient.listByDateRange(
+            '', // TODO: 从 AuthStore 获取当前账户
+            start.getTime(),
+            end.getTime()
+          );
+          
+          // 转换为 ClientDTO 格式
+          const clientSchedules: ScheduleClientDTO[] = schedules.map(s => ({
+            uuid: s.uuid,
+            accountUuid: s.accountUuid,
+            title: s.title,
+            description: s.description,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            allDay: s.allDay,
+            location: s.location,
+            color: s.color,
+            status: s.status,
+            isRecurring: s.isRecurring,
+            recurrenceId: s.recurrenceId,
+            completedAt: s.completedAt,
+            cancelledAt: s.cancelledAt,
+            createdAt: s.createdAt,
+            updatedAt: s.updatedAt,
+          }));
+          
+          get().setSchedules(clientSchedules);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to fetch' });
           throw error;
@@ -148,9 +171,27 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // TODO: Implement actual IPC call when backend is ready  
-          // const schedule = await window.electronAPI.invoke<ScheduleClientDTO>('schedule:event:create', dto);
-          const schedule = { ...dto, uuid: crypto.randomUUID() } as ScheduleClientDTO; // Stub
+          // 使用 IPC Client 创建日程
+          const scheduleClient = scheduleContainer.scheduleClient;
+          const result = await scheduleClient.create(dto as any);
+          
+          const schedule: ScheduleClientDTO = {
+            uuid: result.uuid,
+            accountUuid: result.accountUuid,
+            title: result.title,
+            description: result.description,
+            startTime: result.startTime,
+            endTime: result.endTime,
+            allDay: result.allDay,
+            location: result.location,
+            color: result.color,
+            status: result.status,
+            isRecurring: result.isRecurring,
+            recurrenceId: result.recurrenceId,
+            createdAt: result.createdAt,
+            updatedAt: result.updatedAt,
+          };
+          
           get().addSchedule(schedule);
           return schedule;
         } catch (error) {
@@ -165,9 +206,27 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // TODO: Implement actual IPC call when backend is ready
-          // const schedule = await window.electronAPI.invoke<ScheduleClientDTO>('schedule:event:update', { uuid: id, ...dto });
-          const schedule = { ...get().schedulesById[id], ...dto } as ScheduleClientDTO; // Stub
+          // 使用 IPC Client 更新日程
+          const scheduleClient = scheduleContainer.scheduleClient;
+          const result = await scheduleClient.update({ uuid: id, ...dto } as any);
+          
+          const schedule: ScheduleClientDTO = {
+            uuid: result.uuid,
+            accountUuid: result.accountUuid,
+            title: result.title,
+            description: result.description,
+            startTime: result.startTime,
+            endTime: result.endTime,
+            allDay: result.allDay,
+            location: result.location,
+            color: result.color,
+            status: result.status,
+            isRecurring: result.isRecurring,
+            recurrenceId: result.recurrenceId,
+            createdAt: result.createdAt,
+            updatedAt: result.updatedAt,
+          };
+          
           get().updateSchedule(id, schedule);
           return schedule;
         } catch (error) {
@@ -182,8 +241,10 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // TODO: Implement actual IPC call when backend is ready
-          // await window.electronAPI.invoke('schedule:event:delete', id);
+          // 使用 IPC Client 删除日程
+          const scheduleClient = scheduleContainer.scheduleClient;
+          await scheduleClient.delete(id);
+          
           get().removeSchedule(id);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to delete' });

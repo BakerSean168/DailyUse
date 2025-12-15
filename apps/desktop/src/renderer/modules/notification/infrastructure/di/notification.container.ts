@@ -40,3 +40,6 @@ export class NotificationContainer extends RendererContainer {
     return this.get(NotificationTokens.NotificationIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const notificationContainer = new NotificationContainer();

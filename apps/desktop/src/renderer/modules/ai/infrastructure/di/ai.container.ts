@@ -36,7 +36,14 @@ export class AIContainer extends RendererContainer {
 
   // ============ Service Accessors ============
 
+  get aiClient(): AIIPCClient {
+    return this.get(AITokens.AIIPCClient);
+  }
+
   get aiIPCClient(): AIIPCClient {
     return this.get(AITokens.AIIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const aiContainer = new AIContainer();

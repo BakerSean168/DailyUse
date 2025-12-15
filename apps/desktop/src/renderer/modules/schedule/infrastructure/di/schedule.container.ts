@@ -36,7 +36,14 @@ export class ScheduleContainer extends RendererContainer {
 
   // ============ Service Accessors ============
 
+  get scheduleClient(): ScheduleIPCClient {
+    return this.get(ScheduleTokens.ScheduleIPCClient);
+  }
+
   get scheduleIPCClient(): ScheduleIPCClient {
     return this.get(ScheduleTokens.ScheduleIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const scheduleContainer = new ScheduleContainer();

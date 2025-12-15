@@ -23,6 +23,7 @@ import {
   AccountStatus as AccountStatusEnum,
   SubscriptionPlan as SubscriptionPlanEnum,
 } from '@dailyuse/contracts/account';
+import { accountContainer } from '../../infrastructure/di';
 
 // 本地类型别名
 type AccountHistoryDTO = AccountHistoryServerDTO;
@@ -197,7 +198,8 @@ export const useAccountStore = create<AccountState & AccountActions & AccountSel
             setLoading(true);
             setError(null);
             
-            const account = await window.electron.account.getCurrent();
+            const accountClient = accountContainer.accountClient;
+            const account = await accountClient.getCurrentAccount();
             setCurrentAccount(account);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch account';
@@ -209,13 +211,19 @@ export const useAccountStore = create<AccountState & AccountActions & AccountSel
         },
         
         fetchSubscription: async () => {
-          const { setLoading, setSubscription, setError } = get();
+          const { setLoading, setSubscription, setError, currentAccount } = get();
           
           try {
             setLoading(true);
             setError(null);
             
-            const subscription = await window.electron.account.getSubscription();
+            if (!currentAccount) {
+              setSubscription(null);
+              return;
+            }
+            
+            const accountClient = accountContainer.accountClient;
+            const subscription = await accountClient.getSubscription(currentAccount.uuid);
             setSubscription(subscription);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch subscription';
@@ -227,13 +235,19 @@ export const useAccountStore = create<AccountState & AccountActions & AccountSel
         },
         
         fetchAccountHistory: async () => {
-          const { setLoading, setAccountHistory, setError } = get();
+          const { setLoading, setAccountHistory, setError, currentAccount } = get();
           
           try {
             setLoading(true);
             setError(null);
             
-            const history = await window.electron.account.getHistory();
+            if (!currentAccount) {
+              setAccountHistory([]);
+              return;
+            }
+            
+            const accountClient = accountContainer.accountClient;
+            const history = await accountClient.getHistory(currentAccount.uuid);
             setAccountHistory(history);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch account history';
@@ -245,13 +259,19 @@ export const useAccountStore = create<AccountState & AccountActions & AccountSel
         },
         
         fetchAccountStats: async () => {
-          const { setLoading, setAccountStats, setError } = get();
+          const { setLoading, setAccountStats, setError, currentAccount } = get();
           
           try {
             setLoading(true);
             setError(null);
             
-            const stats = await window.electron.account.getStats();
+            if (!currentAccount) {
+              setAccountStats(null);
+              return;
+            }
+            
+            const accountClient = accountContainer.accountClient;
+            const stats = await accountClient.getStats(currentAccount.uuid);
             setAccountStats(stats);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch account stats';

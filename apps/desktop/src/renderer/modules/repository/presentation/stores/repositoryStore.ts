@@ -20,6 +20,7 @@ import type {
   RepositoryType,
   RepositoryStatus,
 } from '@dailyuse/contracts/repository';
+import { repositoryContainer } from '../../infrastructure/di';
 
 // ============ State Interface ============
 export interface RepositoryState {
@@ -318,8 +319,22 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setLoading(true);
             setError(null);
             
-            const repositories = await window.electron.repository.getAll();
-            setRepositories(repositories);
+            const repositoryClient = repositoryContainer.repositoryClient;
+            const repositories = await repositoryClient.listBackups(''); // TODO: 从 AuthStore 获取账户
+            
+            // 转换为 ClientDTO 格式
+            const clientRepos: RepositoryClientDTO[] = repositories.map(r => ({
+              uuid: r.uuid,
+              name: r.name,
+              type: r.type as RepositoryType,
+              status: r.status as RepositoryStatus,
+              path: r.path,
+              size: r.size,
+              createdAt: r.createdAt,
+              updatedAt: r.updatedAt,
+            }));
+            
+            setRepositories(clientRepos);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch repositories';
             setError(message);
@@ -336,8 +351,23 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setLoading(true);
             setError(null);
             
-            const resources = await window.electron.repository.getResources(repositoryId);
-            setResources(resources);
+            const repositoryClient = repositoryContainer.repositoryClient;
+            const resources = await repositoryClient.getBackupDetails(repositoryId);
+            
+            // 处理资源响应
+            const clientResources: ResourceClientDTO[] = resources.files?.map((f: any) => ({
+              uuid: f.uuid ?? crypto.randomUUID(),
+              repositoryUuid: repositoryId,
+              name: f.name,
+              type: f.type,
+              path: f.path,
+              size: f.size,
+              folderUuid: f.folderUuid,
+              createdAt: f.createdAt ?? Date.now(),
+              updatedAt: f.updatedAt ?? Date.now(),
+            })) ?? [];
+            
+            setResources(clientResources);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch resources';
             setError(message);
@@ -354,8 +384,21 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setLoading(true);
             setError(null);
             
-            const folders = await window.electron.repository.getFolders(repositoryId);
-            setFolders(folders);
+            // Repository Client 当前不支持单独获取文件夹，通过 getBackupDetails 获取
+            const repositoryClient = repositoryContainer.repositoryClient;
+            const details = await repositoryClient.getBackupDetails(repositoryId);
+            
+            const clientFolders: FolderClientDTO[] = details.folders?.map((f: any) => ({
+              uuid: f.uuid ?? crypto.randomUUID(),
+              repositoryUuid: repositoryId,
+              name: f.name,
+              parentUuid: f.parentUuid,
+              path: f.path,
+              createdAt: f.createdAt ?? Date.now(),
+              updatedAt: f.updatedAt ?? Date.now(),
+            })) ?? [];
+            
+            setFolders(clientFolders);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch folders';
             setError(message);
@@ -366,7 +409,7 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
         },
         
         searchResources: async (query) => {
-          const { setSearching, setSearchResults, setSearchQuery, setError } = get();
+          const { setSearching, setSearchResults, setSearchQuery, setError, resources } = get();
           
           if (!query.trim()) {
             setSearchQuery('');

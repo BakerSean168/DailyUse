@@ -40,3 +40,6 @@ export class DashboardContainer extends RendererContainer {
     return this.get(DashboardTokens.DashboardIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const dashboardContainer = new DashboardContainer();

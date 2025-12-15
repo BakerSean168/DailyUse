@@ -17,6 +17,7 @@ import type {
   TaskTemplateClientDTO,
   TaskInstanceStatus,
 } from '@dailyuse/contracts/task';
+import { taskContainer } from '../../infrastructure/di';
 
 // ============ State Interface ============
 export interface TaskState {
@@ -249,7 +250,6 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       reset: () => set(initialState),
       
       // ========== IPC Operations ==========
-      // TODO: 实际的 IPC 调用将在 Story 11-2 中实现
       fetchInstances: async (dateRange) => {
         const { setLoading, setInstances, setError, dateRange: stateRange } = get();
         const range = dateRange ?? stateRange;
@@ -258,16 +258,36 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
           setLoading(true);
           setError(null);
           
-          // TODO: 实际调用 window.electron.task.getInstances(range)
-          // const instances = await window.electron.task.getInstances({
-          //   startDate: range.start.getTime(),
-          //   endDate: range.end.getTime(),
-          // });
-          // setInstances(instances);
+          // 使用 IPC Client 获取任务实例
+          const instanceClient = taskContainer.instanceClient;
+          const instances = await instanceClient.list({
+            accountUuid: '', // TODO: 从 AuthStore 获取当前账户
+            startDate: range.start.getTime(),
+            endDate: range.end.getTime(),
+          });
           
-          // 暂时设置空数组
-          void range; // 避免未使用变量警告
-          setInstances([]);
+          // 转换为 ClientDTO 格式
+          const clientInstances: TaskInstanceClientDTO[] = instances.map(inst => ({
+            uuid: inst.uuid,
+            templateUuid: inst.templateUuid,
+            accountUuid: inst.accountUuid,
+            title: inst.title,
+            description: inst.description,
+            priority: inst.priority,
+            instanceDate: inst.dueDate,
+            dueDate: inst.dueDate,
+            status: inst.completed ? 'completed' : (inst.skipped ? 'skipped' : 'pending') as TaskInstanceStatus,
+            isCompleted: inst.completed,
+            isPending: !inst.completed && !inst.skipped,
+            isSkipped: inst.skipped,
+            completedAt: inst.completedAt,
+            skippedAt: inst.skippedAt,
+            skipReason: inst.skipReason,
+            createdAt: inst.createdAt,
+            updatedAt: inst.updatedAt,
+          }));
+          
+          setInstances(clientInstances);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch task instances';
           setError(message);
@@ -283,11 +303,28 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
         try {
           setLoading(true);
           
-          // TODO: 实际调用 window.electron.task.getTemplates()
-          // const templates = await window.electron.task.getTemplates();
-          // setTemplates(templates);
+          // 使用 IPC Client 获取任务模板
+          const templateClient = taskContainer.templateClient;
+          const templates = await templateClient.list({
+            accountUuid: '', // TODO: 从 AuthStore 获取当前账户
+          });
           
-          setTemplates([]);
+          // 转换为 ClientDTO 格式
+          const clientTemplates: TaskTemplateClientDTO[] = templates.map(tmpl => ({
+            uuid: tmpl.uuid,
+            accountUuid: tmpl.accountUuid,
+            title: tmpl.title,
+            description: tmpl.description,
+            priority: tmpl.priority,
+            tags: tmpl.tags ?? [],
+            folderId: tmpl.folderId,
+            goalUuid: tmpl.goalUuid,
+            isArchived: tmpl.archived,
+            createdAt: tmpl.createdAt,
+            updatedAt: tmpl.updatedAt,
+          }));
+          
+          setTemplates(clientTemplates);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch task templates';
           setError(message);
@@ -298,15 +335,22 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       },
       
       completeInstance: async (id) => {
-        const { setLoading, setError } = get();
-        void id; // TODO: 使用实际 IPC
+        const { setLoading, setError, updateInstance } = get();
         
         try {
           setLoading(true);
           
-          // TODO: 实际调用 window.electron.task.completeInstance(id)
-          // const completed = await window.electron.task.completeInstance(id);
-          // updateInstance(id, completed);
+          // 使用 IPC Client 完成任务
+          const instanceClient = taskContainer.instanceClient;
+          const result = await instanceClient.complete(id);
+          
+          // 更新本地状态
+          updateInstance(id, {
+            status: 'completed' as TaskInstanceStatus,
+            isCompleted: true,
+            isPending: false,
+            completedAt: result.instance.completedAt,
+          });
           
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to complete task');
@@ -317,15 +361,23 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       },
       
       skipInstance: async (id, reason) => {
-        const { setLoading, setError } = get();
-        void id; void reason; // TODO: 使用实际 IPC
+        const { setLoading, setError, updateInstance } = get();
         
         try {
           setLoading(true);
           
-          // TODO: 实际调用 window.electron.task.skipInstance(id, { reason })
-          // const skipped = await window.electron.task.skipInstance(id, { reason });
-          // updateInstance(id, skipped);
+          // 使用 IPC Client 跳过任务
+          const instanceClient = taskContainer.instanceClient;
+          const result = await instanceClient.skip(id, reason);
+          
+          // 更新本地状态
+          updateInstance(id, {
+            status: 'skipped' as TaskInstanceStatus,
+            isSkipped: true,
+            isPending: false,
+            skippedAt: result.skippedAt,
+            skipReason: result.skipReason,
+          });
           
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to skip task');

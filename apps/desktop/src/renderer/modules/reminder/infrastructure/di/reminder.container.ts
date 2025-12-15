@@ -36,7 +36,14 @@ export class ReminderContainer extends RendererContainer {
 
   // ============ Service Accessors ============
 
+  get reminderClient(): ReminderIPCClient {
+    return this.get(ReminderTokens.ReminderIPCClient);
+  }
+
   get reminderIPCClient(): ReminderIPCClient {
     return this.get(ReminderTokens.ReminderIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const reminderContainer = new ReminderContainer();

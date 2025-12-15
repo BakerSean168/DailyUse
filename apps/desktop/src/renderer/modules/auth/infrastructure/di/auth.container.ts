@@ -40,3 +40,6 @@ export class AuthContainer extends RendererContainer {
     return this.get(AuthTokens.AuthIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const authContainer = new AuthContainer();

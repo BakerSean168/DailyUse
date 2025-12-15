@@ -36,7 +36,14 @@ export class RepositoryContainer extends RendererContainer {
 
   // ============ Service Accessors ============
 
+  get repositoryClient(): RepositoryIPCClient {
+    return this.get(RepositoryTokens.RepositoryIPCClient);
+  }
+
   get repositoryIPCClient(): RepositoryIPCClient {
     return this.get(RepositoryTokens.RepositoryIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const repositoryContainer = new RepositoryContainer();

@@ -36,7 +36,14 @@ export class EditorContainer extends RendererContainer {
 
   // ============ Service Accessors ============
 
+  get editorClient(): EditorIPCClient {
+    return this.get(EditorTokens.EditorIPCClient);
+  }
+
   get editorIPCClient(): EditorIPCClient {
     return this.get(EditorTokens.EditorIPCClient);
   }
 }
+
+// ============ Singleton Export ============
+export const editorContainer = new EditorContainer();
