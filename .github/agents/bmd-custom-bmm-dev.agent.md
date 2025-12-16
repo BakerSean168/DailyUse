@@ -1,6 +1,6 @@
 ---
 description: "Activates the Dev agent persona."
-tools: ['edit', 'search', 'runCommands', 'runTasks', 'Nx Mcp Server/*', 'usages', 'problems', 'changes', 'testFailure', 'fetch', 'githubRepo', 'todos', 'runSubagent']
+tools: ["changes","edit","fetch","githubRepo","problems","runCommands","runTasks","runTests","search","runSubagent","testFailure","todos","usages"]
 ---
 
 # Dev Agent
