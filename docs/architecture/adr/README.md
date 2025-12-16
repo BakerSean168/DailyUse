@@ -4,7 +4,7 @@ tags:
   - index
 description: 架构决策记录(ADR)索引
 created: 2025-11-23T15:00:00
-updated: 2025-11-23T15:00:00
+updated: 2025-12-16T10:00:00
 ---
 
 # Architecture Decision Records (ADR)
@@ -27,10 +27,15 @@ ADR (Architecture Decision Record) 是一种记录软件架构决策的轻量级
 
 | ID | 标题 | 日期 | 状态 |
 |----|------|------|------|
-| [[001-use-nx-monorepo|ADR-001]] | 使用 Nx Monorepo | 2024-08-15 | ✅ 已采纳 |
-| [[002-ddd-pattern|ADR-002]] | 采用 DDD 架构模式 | 2024-08-20 | ✅ 已采纳 |
-| [[003-event-driven-architecture|ADR-003]] | 事件驱动架构 | 2024-09-01 | ✅ 已采纳 |
-| [[004-electron-desktop-architecture|ADR-004]] | Electron 桌面应用架构与包提取策略 | 2025-12-03 | ✅ 已采纳 |
+| [ADR-001](./001-use-nx-monorepo.md) | 使用 Nx Monorepo | 2024-08-15 | ✅ 已采纳 |
+| [ADR-002](./002-ddd-pattern.md) | 采用 DDD 架构模式 | 2024-08-20 | ✅ 已采纳 |
+| [ADR-003](./003-event-driven-architecture.md) | 事件驱动架构 | 2024-09-01 | ✅ 已采纳 |
+| [ADR-003b](./003-module-extension-strategy.md) | 模块扩展策略 | 2024-09-05 | ✅ 已采纳 |
+| [ADR-004](./004-electron-desktop-architecture.md) | Electron 桌面应用架构与包提取策略 | 2025-12-03 | ✅ 已采纳 |
+| [ADR-005](./ADR-005-ui-package-multi-framework.md) | UI 包多框架支持架构 | 2025-12-03 | ✅ 已实施 |
+| [ADR-006](./ADR-006-desktop-ipc-communication.md) | Desktop IPC 通信架构与依赖注入集成 | 2025-12-06 | ✅ 已采纳 |
+| [ADR-007](./ADR-007-API-CONSISTENCY.md) | API 一致性规范 | 2025-12-10 | ✅ 已采纳 |
+| [ADR-007b](./ADR-007-main-process-sqlite-access.md) | 主进程 SQLite 访问模式 | 2025-12-10 | ✅ 已采纳 |
 
 ### 提议中 (Proposed)
 

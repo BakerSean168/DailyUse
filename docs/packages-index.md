@@ -1,23 +1,33 @@
 # DailyUse Packages 文档索引
 
-> **生成时间**: 2025-10-28  
-> **文档版本**: v1.0  
-> **包总数**: 6 个
+> **更新时间**: 2025-12-16  
+> **文档版本**: v2.0  
+> **包总数**: 16 个
 
 ---
 
 ## 📦 包概览
 
-DailyUse 项目包含 6 个共享包，每个包都有明确的职责和边界。
+DailyUse 项目包含 16 个共享包，按 DDD 分层架构组织。
 
 ```
 packages/
-├── contracts         # TypeScript 类型契约
-├── domain-client     # 客户端领域层
-├── domain-server     # 服务端领域层
-├── ui                # Vue 3 UI 组件库
-├── utils             # 通用工具函数
-└── assets            # 静态资源
+├── contracts/              # TypeScript 类型契约
+├── domain-server/          # 服务端领域层
+├── domain-client/          # 客户端领域层
+├── application-server/     # 服务端应用层
+├── application-client/     # 客户端应用层
+├── infrastructure-server/  # 服务端基础设施
+├── infrastructure-client/  # 客户端基础设施
+├── ui-core/               # 框架无关 UI
+├── ui-vue/                # Vue 3 组件
+├── ui-vuetify/            # Vuetify 3 组件
+├── ui-react/              # React Hooks
+├── ui-shadcn/             # shadcn/ui 组件
+├── utils/                 # 通用工具函数
+├── assets/                # 静态资源
+├── sync-client/           # 离线同步客户端
+└── test-utils/            # 测试工具
 ```
 
 ---
@@ -155,6 +165,78 @@ packages/
 
 ---
 
+### 7. Application Layer 包
+
+**@dailyuse/application-server** 和 **@dailyuse/application-client** 提供应用服务层。
+
+**关键内容**:
+- 用例 (Use Case) 实现
+- 应用服务协调器
+- 命令/查询处理
+- 缓存管理
+
+[📖 查看完整文档](./packages/application-packages.md)
+
+---
+
+### 8. Infrastructure Layer 包
+
+**@dailyuse/infrastructure-server** 和 **@dailyuse/infrastructure-client** 提供基础设施层。
+
+**关键内容**:
+- DI 容器 (10+ 模块)
+- IPC 客户端 (10+ 适配器)
+- SQLite Repository 适配器
+- API 适配器
+
+[📖 查看 Infrastructure Server 文档](./packages/infrastructure-server.md)  
+[📖 查看 Infrastructure Client 文档](./packages/infrastructure-client.md)
+
+---
+
+### 9. UI 包系列
+
+多框架 UI 组件库：**ui-core**, **ui-vue**, **ui-vuetify**, **ui-react**, **ui-shadcn**
+
+**关键内容**:
+- 框架无关核心逻辑
+- Vue 3 组件和 Composables
+- React Hooks 和组件
+- shadcn/ui 集成
+- Vuetify 3 组件
+
+[📖 查看 UI 包完整文档](./packages/ui-packages.md)
+
+---
+
+### 10. [@dailyuse/sync-client](./packages/sync-client.md) - 数据同步
+
+**职责**: Desktop 与 API 服务器的数据同步。
+
+**关键内容**:
+- 双向同步
+- 冲突解决
+- 离线队列
+- 增量同步
+
+[📖 查看完整文档](./packages/sync-client.md)
+
+---
+
+### 11. [@dailyuse/test-utils](./packages/test-utils.md) - 测试工具
+
+**职责**: 单元测试和集成测试辅助工具。
+
+**关键内容**:
+- Test Factories
+- Mock Repositories
+- IPC Mocks
+- 测试辅助函数
+
+[📖 查看完整文档](./packages/test-utils.md)
+
+---
+
 ## 🔗 包依赖关系
 
 ```mermaid
@@ -192,9 +274,19 @@ graph TD
 | **contracts** | 类型 | 239 | TypeScript, Zod | 14KB |
 | **domain-client** | 业务逻辑 | ~50 | Pinia, TypeScript | 17KB |
 | **domain-server** | 业务逻辑 | ~50 | DDD, TypeScript | 15KB |
+| **application-client** | 应用层 | ~30 | TypeScript | - |
+| **application-server** | 应用层 | ~30 | TypeScript | - |
+| **infrastructure-client** | 基础设施 | ~40 | IPC, TypeScript | - |
+| **infrastructure-server** | 基础设施 | ~40 | DI, TypeScript | - |
+| **ui-core** | UI 核心 | ~20 | TypeScript | - |
+| **ui-vue** | Vue 组件 | ~20 | Vue 3 | - |
+| **ui-vuetify** | Vuetify | ~30 | Vuetify 3 | - |
+| **ui-react** | React 组件 | ~20 | React 19 | - |
+| **ui-shadcn** | shadcn | ~30 | shadcn/ui | - |
 | **utils** | 工具库 | ~30 | TypeScript, date-fns | 17KB |
-| **ui** | 组件库 | ~20 | Vue 3, Vuetify 3 | 14KB |
 | **assets** | 静态资源 | ~20 | 图片, 音频 | 13KB |
+| **sync-client** | 同步 | ~15 | TypeScript | - |
+| **test-utils** | 测试 | ~20 | Vitest | - |
 
 ---
 
@@ -283,8 +375,16 @@ interface Goal { ... } // 应该在 contracts 中定义
 
 ## 🔄 更新日志
 
+### 2025-12-16
+- ✅ 添加 infrastructure-client/server 包文档
+- ✅ 添加 application-client/server 包文档
+- ✅ 添加 UI 包系列文档 (ui-core, ui-vue, ui-vuetify, ui-react, ui-shadcn)
+- ✅ 添加 sync-client 包文档
+- ✅ 添加 test-utils 包文档
+- ✅ 更新包总数从 6 到 16
+
 ### 2025-10-28
-- ✅ 生成所有 6 个包的完整文档
+- ✅ 生成所有 6 个基础包的完整文档
 - ✅ 添加包索引页面
 - ✅ 完善依赖关系图
 - ✅ 添加使用示例和最佳实践
@@ -292,4 +392,4 @@ interface Goal { ... } // 应该在 contracts 中定义
 ---
 
 **文档维护**: BMAD v6 Analyst (Mary)  
-**最后更新**: 2025-10-28 17:10:00
+**最后更新**: 2025-12-16

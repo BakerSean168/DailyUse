@@ -1,9 +1,9 @@
 # API Backend 架构文档
 
-> **生成时间**: 2025-10-28 14:28:07  
+> **更新时间**: 2025-12-16  
 > **应用**: DailyUse API Backend  
-> **技术栈**: Node.js + Express + Prisma + PostgreSQL  
-> **架构模式**: DDD + CQRS + Event-Driven
+> **技术栈**: Node.js 22+ / Express 5.2 / Prisma 6.17 / PostgreSQL  
+> **架构模式**: DDD + Event-Driven
 
 ---
 
@@ -135,15 +135,15 @@ apps/api/
 
 | 组件 | 版本 | 用途 |
 |------|------|------|
-| **Express** | 4.21.2 | Web 框架 |
+| **Express** | 5.2.1 | Web 框架 |
 | **Prisma** | 6.17.1 | ORM |
-| **Zod** | 3.25.76 | 数据验证 |
+| **Zod** | 4.1.13 | 数据验证 |
 | **jsonwebtoken** | 9.0.2 | JWT 认证 |
-| **bcryptjs** | 2.4.3 | 密码哈希 |
+| **bcryptjs** | 3.0.2 | 密码哈希 |
 | **cors** | 2.8.5 | 跨域支持 |
-| **helmet** | 7.2.0 | 安全头 |
-| **compression** | 1.7.4 | 响应压缩 |
-| **cookie-parser** | 1.4.6 | Cookie 解析 |
+| **helmet** | 8.1.0 | 安全头 |
+| **compression** | 1.8.0 | 响应压缩 |
+| **cookie-parser** | 1.4.7 | Cookie 解析 |
 
 ### API 文档
 

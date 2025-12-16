@@ -1,6 +1,6 @@
 # DailyUse 项目概览
 
-> **更新时间**: 2025-12-16
+> **生成时间**: 2025-12-16 10:00:00
 > **文档版本**: 2.0.0
 > **项目版本**: 0.2.x
 
@@ -31,30 +31,30 @@
 
 ```
 DailyUse/
-├── apps/                       # 应用程序 (3个独立应用)
-│   ├── api/                   # Node.js 后端 API 服务
-│   ├── web/                   # Vue 3 Web 应用
-│   └── desktop/               # Electron 桌面应用 (React 19)
-├── packages/                   # 共享代码包 (16个核心包)
-│   ├── contracts/             # TypeScript 类型定义和接口契约
-│   ├── domain-client/         # 客户端业务逻辑层
-│   ├── domain-server/         # 服务端业务逻辑层
-│   ├── application-client/    # 客户端应用服务层
-│   ├── application-server/    # 服务端应用服务层
+├── apps/                    # 应用程序 (3个独立应用)
+│   ├── api/                # Node.js 后端 API 服务
+│   ├── web/                # Vue 3 Web 应用
+│   └── desktop/            # Electron 桌面应用 (React 19)
+├── packages/               # 共享代码包 (16个核心包)
+│   ├── contracts/          # TypeScript 类型定义和接口契约
+│   ├── domain-client/      # 客户端业务逻辑层
+│   ├── domain-server/      # 服务端业务逻辑层
+│   ├── application-client/ # 客户端应用服务层
+│   ├── application-server/ # 服务端应用服务层
 │   ├── infrastructure-client/ # 客户端基础设施层 (IPC Client)
 │   ├── infrastructure-server/ # 服务端基础设施层 (DI Container)
-│   ├── ui-vue/                # Vue 3 组件库
-│   ├── ui-vuetify/            # Vuetify 3 组件库
-│   ├── ui-react/              # React 组件库
-│   ├── ui-shadcn/             # shadcn/ui 组件库
-│   ├── ui-core/               # 框架无关 UI 核心
-│   ├── utils/                 # 工具函数和实用程序
-│   ├── assets/                # 共享资源 (图标、字体等)
-│   ├── sync-client/           # 数据同步客户端
-│   └── test-utils/            # 测试工具库
-├── docs/                       # 项目文档
-├── tools/                      # 构建和开发工具
-└── .bmad/                      # BMAD Method v6 (开发方法论)
+│   ├── ui-vue/             # Vue 3 组件库
+│   ├── ui-vuetify/         # Vuetify 3 组件库
+│   ├── ui-react/           # React 组件库
+│   ├── ui-shadcn/          # shadcn/ui 组件库
+│   ├── ui-core/            # 框架无关 UI 核心
+│   ├── utils/              # 工具函数和实用程序
+│   ├── assets/             # 共享资源 (图标、字体等)
+│   ├── sync-client/        # 数据同步客户端
+│   └── test-utils/         # 测试工具库
+├── docs/                   # 项目文档
+├── tools/                  # 构建和开发工具
+└── .bmad/                  # BMAD Method v6 (开发方法论)
 ```
 
 ---
@@ -126,57 +126,52 @@ DailyUse/
 
 #### 入口文件
 
-- `src/main.ts` - 应用主入口
-- `src/router/index.ts` - 路由配置
-- `src/stores/` - Pinia stores
+- \src/main.ts\ - 应用主入口
+- \src/router/index.ts\ - 路由配置
+- \src/stores/\ - Pinia stores
 
 ---
 
 ### Part 3: Desktop Application
 
-**路径**: `apps/desktop/`  
+**路径**: \pps/desktop/\  
 **类型**: Electron 桌面应用  
-**包名**: `@dailyuse/desktop`
+**包名**: \@dailyuse/desktop\
 
 #### 技术栈
 
 | 组件 | 技术 | 版本 |
 |------|------|------|
-| **桌面框架** | Electron | 39.2.6 |
-| **前端** | React 19 | 19.2.1 |
-| **状态管理** | Zustand | 5.0.5 |
-| **UI 库** | shadcn/ui + Tailwind CSS 4 | - |
+| **桌面框架** | Electron | 30.5.1 |
+| **前端** | Vue 3 + Vuetify 3 | 3.4.21 / 3.7.5 |
 | **本地数据库** | better-sqlite3 | 11.10.0 |
 | **文件监控** | chokidar | 4.0.3 |
 | **Git 集成** | simple-git | 3.27.0 |
 | **任务调度** | node-schedule | 2.1.1 |
 | **日志** | electron-log | 5.4.2 |
 | **打包** | electron-builder | 26.0.12 |
-| **自动更新** | electron-updater | 6.6.2 |
 
 #### 核心功能
 
-- 原生桌面应用体验 (React 19 渲染)
+- 原生桌面应用体验
 - 本地 SQLite 数据存储
 - 系统托盘集成
 - 快捷键支持 (Alt+Space)
 - 桌面通知
 - 文件系统监控
 - Git 版本控制集成
-- 自动更新 (electron-updater)
 
 #### 入口文件
 
-- `src/main/index.ts` - Electron 主进程
-- `src/renderer/main.tsx` - 渲染进程 (React app)
+- \lectron/main.ts\ - Electron 主进程
+- \src/main.ts\ - 渲染进程 (Vue app)
 
 ---
 
 ## 📦 共享包详情
 
-### 基础层包
+### @dailyuse/contracts
 
-#### @dailyuse/contracts
 **功能**: TypeScript 类型定义和接口契约  
 **用途**: 跨应用类型共享，确保前后端类型一致性
 
@@ -186,7 +181,41 @@ DailyUse/
 - 领域模型接口
 - 枚举和常量
 
-#### @dailyuse/utils
+### @dailyuse/domain-client
+
+**功能**: 客户端业务逻辑层  
+**用途**: Web 和 Desktop 应用共享的业务逻辑
+
+**关键模块**:
+- 实体类 (Goal, Task, Reminder, etc.)
+- Repository 接口实现
+- 状态管理服务
+- 本地数据缓存
+
+### @dailyuse/domain-server
+
+**功能**: 服务端业务逻辑层  
+**用途**: API 服务的业务逻辑实现
+
+**关键模块**:
+- 聚合根 (Aggregate Roots)
+- 领域服务 (Domain Services)
+- 应用服务 (Application Services)
+- 事件处理 (Event Handlers)
+
+### @dailyuse/ui
+
+**功能**: 共享 Vue 组件库  
+**用途**: Web 和 Desktop 应用共享的 UI 组件
+
+**关键组件**:
+- 基础组件 (Button, Input, Dialog)
+- 业务组件 (TaskCard, GoalCard)
+- 布局组件 (Header, Sidebar)
+- Composables (Vue 3 组合式函数)
+
+### @dailyuse/utils
+
 **功能**: 工具函数和实用程序  
 **用途**: 跨应用共享的通用功能
 
@@ -196,105 +225,8 @@ DailyUse/
 - SSE (Server-Sent Events)
 - 初始化管理器
 - 验证工具
+- 防抖/节流函数
 - 事件总线
-
-#### @dailyuse/assets
-**功能**: 共享资源  
-**用途**: 图标、字体、图片等静态资源
-
----
-
-### 领域层包
-
-#### @dailyuse/domain-client
-**功能**: 客户端业务逻辑层  
-**用途**: Web 和 Desktop 应用共享的业务逻辑
-
-**关键模块**:
-- 实体类 (Goal, Task, Reminder, etc.)
-- Repository 接口
-- 状态管理服务
-
-#### @dailyuse/domain-server
-**功能**: 服务端业务逻辑层  
-**用途**: API 和 Desktop Main Process 的业务逻辑
-
-**关键模块**:
-- 聚合根 (Aggregate Roots)
-- 领域服务 (Domain Services)
-- Repository 接口定义
-
----
-
-### 应用层包
-
-#### @dailyuse/application-client
-**功能**: 客户端应用服务层  
-**用途**: 协调渲染进程的用例实现
-
-#### @dailyuse/application-server
-**功能**: 服务端应用服务层  
-**用途**: 协调服务端的用例实现
-
----
-
-### 基础设施层包
-
-#### @dailyuse/infrastructure-client
-**功能**: 客户端基础设施层  
-**用途**: IPC Client、API 适配器
-
-**关键组件**:
-- `GoalIpcClient` - 目标模块 IPC 客户端
-- `TaskIpcClient` - 任务模块 IPC 客户端
-- `ScheduleIpcClient` - 日程模块 IPC 客户端
-- ... 等 10+ 模块客户端
-
-#### @dailyuse/infrastructure-server
-**功能**: 服务端基础设施层  
-**用途**: DI 容器、仓储实现
-
-**关键组件**:
-- `GoalContainer` - 目标模块 DI 容器
-- `TaskContainer` - 任务模块 DI 容器
-- `ScheduleContainer` - 日程模块 DI 容器
-- SQLite Repository 适配器
-
----
-
-### UI 组件包
-
-#### @dailyuse/ui-vue
-**功能**: Vue 3 通用组件库  
-**用途**: Vue 应用共享组件
-
-#### @dailyuse/ui-vuetify
-**功能**: Vuetify 3 组件封装  
-**用途**: Web 应用专用组件
-
-#### @dailyuse/ui-react
-**功能**: React 通用组件库  
-**用途**: React 应用共享组件
-
-#### @dailyuse/ui-shadcn
-**功能**: shadcn/ui 组件封装  
-**用途**: Desktop 应用专用组件
-
-#### @dailyuse/ui-core
-**功能**: 框架无关的 UI 核心  
-**用途**: 通用 UI 逻辑和样式
-
----
-
-### 辅助包
-
-#### @dailyuse/sync-client
-**功能**: 数据同步客户端  
-**用途**: Desktop 与 API 的数据同步
-
-#### @dailyuse/test-utils
-**功能**: 测试工具库  
-**用途**: 单元测试、集成测试辅助工具
 
 ---
 
@@ -340,7 +272,7 @@ DailyUse/
 │            ▼                             ▼                          │
 │  ┌────────────────────┐        ┌────────────────────┐              │
 │  │   Renderer Process │  IPC   │   Main Process     │              │
-│  │   (React App)      │◄─────► │   (Electron/API)   │              │
+│  │   (Vue/React App)  │◄─────► │   (Electron/API)   │              │
 │  └────────────────────┘        └────────────────────┘              │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -355,6 +287,8 @@ DailyUse/
 | **Desktop 主进程** | contracts, utils, domain-server, application-server, infrastructure-server | domain-client, application-client, infrastructure-client |
 | **API 服务器** | contracts, utils, domain-server, application-server, infrastructure-server | domain-client, application-client, infrastructure-client |
 
+> 📖 详细使用规范请参阅 [包使用规范](./package-usage.md)
+
 ---
 
 ## 🖥️ Desktop 应用架构
@@ -367,10 +301,10 @@ Desktop 应用采用 Electron 多进程架构：
 ├──────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌────────────────────────────────────────────────────────┐ │
-│  │              Renderer Process (React 19)               │ │
+│  │              Renderer Process (Vue 3)                  │ │
 │  │  ┌──────────────────────────────────────────────────┐  │ │
 │  │  │ @dailyuse/infrastructure-client                  │  │ │
-│  │  │    → GoalIpcClient, TaskIpcClient, etc.          │  │ │
+│  │  │    → GoalClientService, TaskClientService, etc.  │  │ │
 │  │  └──────────────────────────────────────────────────┘  │ │
 │  └──────────────────────────┬─────────────────────────────┘ │
 │                             │ IPC (contextBridge)           │
@@ -437,21 +371,15 @@ Desktop 应用采用 Electron 多进程架构：
    - 文档存储
    - 资源管理
    - Markdown 支持
-   - 文件夹组织
+   - Git 集成
 
-7. **AI (智能助手)**
-   - AI 对话
-   - 目标生成
-   - 任务建议
-   - 知识生成
-
-8. **Setting (设置)**
+7. **Setting (设置)**
    - 用户偏好
    - 主题管理
    - 国际化配置
    - 编辑器设置
 
-9. **Account (账户)**
+8. **Account (账户)**
    - 用户管理
    - 认证授权
    - 数据管理
@@ -466,12 +394,11 @@ Desktop 应用采用 Electron 多进程架构：
 - **CQRS**: 命令查询职责分离
 - **Event-Driven**: 事件驱动架构
 - **Repository Pattern**: 数据访问抽象
-- **Dependency Injection**: 依赖注入容器
 
 ### 数据流
 
-```
-用户界面 (React/Vue Components)
+\\\
+用户界面 (Vue Components)
     ↓
 应用服务 (Application Services)
     ↓
@@ -480,13 +407,12 @@ Desktop 应用采用 Electron 多进程架构：
 仓储层 (Repositories)
     ↓
 数据库 (Prisma + SQLite/PostgreSQL)
-```
+\\\
 
 ### 跨应用通信
 
 - **API ↔ Web**: HTTP/REST API + SSE
 - **API ↔ Desktop**: HTTP/REST API (本地或远程)
-- **Desktop IPC**: Electron IPC (contextBridge)
 - **共享逻辑**: 通过 packages 层复用
 
 ---
@@ -501,7 +427,7 @@ Desktop 应用采用 Electron 多进程架构：
 
 ### 安装
 
-```bash
+\\\ash
 # 克隆仓库
 git clone https://github.com/BakerSean168/DailyUse.git
 cd DailyUse
@@ -514,11 +440,11 @@ pnpm prisma:generate
 
 # 运行数据库迁移
 pnpm prisma:migrate
-```
+\\\
 
 ### 开发模式
 
-```bash
+\\\ash
 # 启动所有服务 (API + Web)
 pnpm dev:all
 
@@ -526,11 +452,11 @@ pnpm dev:all
 pnpm dev:api      # API 服务 (http://localhost:3888)
 pnpm dev:web      # Web 应用 (http://localhost:5173)
 pnpm dev:desktop  # 桌面应用
-```
+\\\
 
 ### 构建
 
-```bash
+\\\ash
 # 构建所有应用
 pnpm build
 
@@ -538,44 +464,49 @@ pnpm build
 pnpm build:api
 pnpm build:web
 pnpm build:desktop
-```
+\\\
 
 ---
 
 ## 📚 文档资源
 
-### 架构文档
-- [API 架构文档](./api-architecture.md)
-- [Web 架构文档](./web-architecture.md)
-- [Desktop 架构文档](./desktop-architecture.md)
-- [集成架构文档](./integration-architecture.md)
+### 已有文档 (422+ 文件)
 
-### 模块文档
-- [Goal 模块](../modules/goal/README.md)
-- [Task 模块](../modules/task/README.md)
-- [Reminder 模块](../modules/reminder/README.md)
-- [AI 模块](../modules/ai/README.md)
-- [Repository 模块](../modules/repository/README.md)
+#### 系统级文档
+- [DDD 规范](./DDD规范.md)
+- [事件 vs Saga 模式分析](./systems/EVENT_VS_SAGA_PATTERN_ANALYSIS.md)
+- [Prisma 事务架构](./systems/PRISMA_TRANSACTION_ARCHITECTURE.md)
+- [SSE 技术文档](./systems/SSE_TECHNICAL_DOCUMENTATION.md)
+- [初始化错误处理最佳实践](./systems/INITIALIZATION_ERROR_HANDLING_BEST_PRACTICES.md)
 
-### 包文档
-- [包索引](../packages-index.md)
-- [Contracts 包](../packages-contracts.md)
-- [Utils 包](../packages-utils.md)
-- [UI 包](../packages-ui.md)
+#### 配置文档
+- [Nx 配置完整指南](./configs/NX_CONFIGURATION_GUIDE.md)
+- [Nx 使用指南](./configs/NX_USAGE_GUIDE.md)
+- [TSConfig 优化总结](./configs/TSCONFIG_OPTIMIZATION_SUMMARY.md)
+- [项目 JSON 指南](./configs/PROJECT_JSON_GUIDE.md)
 
-### 开发指南
-- [开发指南](../development-instructions.md)
-- [数据模型](../data-models.md)
-- [源码树分析](../source-tree-analysis.md)
+#### 模块文档
+- [Goal 模块规划](./modules/goal/GOAL_MODULE_PLAN.md)
+- [Task 模块规划](./modules/task/TASK_MODULE_PLAN.md)
+- [Schedule 模块设计](./modules/schedule/01-SCHEDULE_MODULE_DESIGN.md)
+- [Setting 模块规划](./modules/setting/SETTING_MODULE_PLAN.md)
 
-### ADR (架构决策记录)
-- [ADR-001: Nx Monorepo](./adr/001-use-nx-monorepo.md)
-- [ADR-002: DDD 模式](./adr/002-ddd-pattern.md)
-- [ADR-003: 事件驱动架构](./adr/003-event-driven-architecture.md)
-- [ADR-004: Electron Desktop](./adr/004-electron-desktop-architecture.md)
-- [ADR-005: UI 多框架](./adr/ADR-005-ui-package-multi-framework.md)
-- [ADR-006: Desktop IPC](./adr/ADR-006-desktop-ipc-communication.md)
-- [ADR-007: API 一致性](./adr/ADR-007-API-CONSISTENCY.md)
+#### 包文档
+- [Logger 快速参考](./packages/utils/LOGGER_QUICK_REFERENCE.md)
+- [API 响应系统指南](./packages/utils/API_RESPONSE_SYSTEM_GUIDE.md)
+- [SSE 实现指南](./packages/utils/SSE_IMPLEMENTATION_GUIDE.md)
+
+### 生成文档 (本次)
+
+- ✅ [项目概览](./project-overview.md) *(当前文档)*
+- 🔄 [架构文档 - API](./architecture-api.md) *(待生成)*
+- 🔄 [架构文档 - Web](./architecture-web.md) *(待生成)*
+- 🔄 [架构文档 - Desktop](./architecture-desktop.md) *(待生成)*
+- �� [源码树分析](./source-tree-analysis.md) *(待生成)*
+- 🔄 [集成架构](./integration-architecture.md) *(待生成)*
+- 🔄 [开发指南](./development-guide.md) *(待生成)*
+- 🔄 [API 契约文档](./api-contracts.md) *(待生成)*
+- 🔄 [数据模型](./data-models.md) *(待生成)*
 
 ---
 
@@ -584,11 +515,19 @@ pnpm build:desktop
 - **主仓库**: [GitHub - BakerSean168/DailyUse](https://github.com/BakerSean168/DailyUse)
 - **Nx 文档**: [https://nx.dev](https://nx.dev)
 - **Vue 3 文档**: [https://vuejs.org](https://vuejs.org)
-- **React 文档**: [https://react.dev](https://react.dev)
 - **Electron 文档**: [https://electronjs.org](https://electronjs.org)
 - **Prisma 文档**: [https://prisma.io](https://prisma.io)
 
 ---
 
+## 📝 下一步
+
+1. 阅读 [架构文档](./architecture-api.md) 了解技术细节
+2. 查看 [开发指南](./development-guide.md) 开始开发
+3. 参考 [API 契约文档](./api-contracts.md) 了解 API 端点
+4. 浏览 [模块文档](./modules/) 了解业务逻辑
+
+---
+
 **文档维护**: 本文档由 BMAD v6 Analyst 自动生成  
-**最后更新**: 2025-12-16
+**最后更新**: 2025-10-28 14:17:15

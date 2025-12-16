@@ -1,9 +1,9 @@
 # Web Application 架构文档
 
-> **生成时间**: 2025-10-28 14:32:51  
+> **更新时间**: 2025-12-16  
 > **应用**: DailyUse Web Application  
-> **技术栈**: Vue 3 + Vuetify 3 + Pinia + TypeScript  
-> **架构模式**: 组件化 + 状态管理 + 模块化路由
+> **技术栈**: Vue 3.4 + Vuetify 3.11 + Pinia 3.0 + TypeScript 5.8  
+> **架构模式**: DDD 模块化 + 状态管理 + 组件化
 
 ---
 

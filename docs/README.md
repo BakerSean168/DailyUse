@@ -6,12 +6,14 @@ tags:
   - v2.0
 description: DailyUse项目文档中心 v2.0 - 生产级文档系统
 created: 2025-11-23T14:54:12
-updated: 2025-11-23T15:00:00
+updated: 2025-12-16T10:00:00
 ---
 
 # 📚 DailyUse Documentation v2.0
 
 > 🎯 生产级、开发友好、AI优化的文档系统
+>
+> **最后扫描**: 2025-12-16 | **版本**: 0.2.x | **架构**: Nx Monorepo + DDD | **包数量**: 16
 
 ## 🚀 快速导航
 
@@ -22,9 +24,9 @@ updated: 2025-11-23T15:00:00
 ### 🌱 新手入门
 开始使用 DailyUse
 
-- [[getting-started/quick-start|⚡ 5分钟快速开始]]
-- [[getting-started/installation|📦 完整安装指南]]
-- [[getting-started/project-structure|📁 项目结构导览]]
+- [⚡ 开发指南](./development-instructions.md)
+- [📦 完整安装指南](./getting-started/installation.md)
+- [📁 项目结构导览](./getting-started/project-structure.md)
 
 </td>
 <td width="33%">
@@ -32,10 +34,11 @@ updated: 2025-11-23T15:00:00
 ### 🏗 架构设计
 了解系统架构
 
-- [[architecture/system-overview|🎯 系统架构概览]]
-- [[architecture/api-architecture|🔌 API架构]]
-- [[architecture/web-architecture|🌐 Web架构]]
-- [[architecture/adr/README|📝 架构决策记录 (ADR)]]
+- [🎯 系统架构概览](./architecture/system-overview.md)
+- [🔌 API架构](./architecture/api-architecture.md)
+- [🌐 Web架构](./architecture/web-architecture.md)
+- [🖥️ Desktop架构](./architecture/desktop-architecture.md)
+- [📝 架构决策记录 (ADR)](./architecture/adr/README.md)
 
 </td>
 <td width="33%">
@@ -43,10 +46,12 @@ updated: 2025-11-23T15:00:00
 ### 📦 业务模块
 深入各个模块
 
-- [[modules/goal/README|🎯 目标管理 (OKR)]]
-- [[modules/task/README|✅ 任务管理 (GTD)]]
-- [[modules/schedule/README|📅 日程调度]]
-- [[modules/reminder/README|⏰ 智能提醒]]
+- [🎯 目标管理 (OKR)](./modules/goal/README.md)
+- [✅ 任务管理 (GTD)](./modules/task/README.md)
+- [📅 日程调度](./modules/schedule/README.md)
+- [⏰ 智能提醒](./modules/reminder/README.md)
+- [🤖 AI 智能助手](./modules/ai/README.md)
+- [📚 知识库](./modules/repository/README.md)
 
 </td>
 </tr>
@@ -56,10 +61,10 @@ updated: 2025-11-23T15:00:00
 ### 📖 开发指南
 开发工作流程
 
-- [[guides/development/setup|🛠 开发环境配置]]
-- [[guides/development/coding-standards|📝 代码规范]]
-- [[guides/development/testing|🧪 测试指南]]
-- [[guides/development/git-workflow|🌿 Git工作流]]
+- [🛠 开发环境配置](./guides/development/setup.md)
+- [📝 代码规范](./guides/development/coding-standards.md)
+- [🧪 测试指南](./guides/development/testing.md)
+- [🌿 Git工作流](./guides/development/git-workflow.md)
 
 </td>
 <td width="33%">
@@ -67,10 +72,11 @@ updated: 2025-11-23T15:00:00
 ### 📚 参考文档
 快速查阅
 
-- [[reference/api/README|🔌 API参考]]
-- [[reference/cli/README|⌨️ CLI命令]]
-- [[reference/configuration/README|⚙️ 配置参考]]
-- [[packages-index|📦 包文档索引]]
+- [🔌 API参考](./reference/api/README.md)
+- [⚙️ 配置参考](./reference/configuration/README.md)
+- [📦 包文档索引](./packages-index.md)
+- [🗄️ 数据模型](./data-models.md)
+- [📂 源码树分析](./source-tree-analysis.md)
 
 </td>
 <td width="33%">
@@ -125,8 +131,9 @@ docs/
 
 1. [[getting-started/quick-start|⚡ 5分钟快速开始]] - 启动第一个服务
 2. [[getting-started/installation|📦 完整安装指南]] - 配置开发环境
-3. [[getting-started/project-structure|📁 项目结构]] - 了解代码组织
-4. [[architecture/system-overview|🎯 系统架构]] - 理解整体设计
+3. [[development-instructions|🛠️ 开发指南]] - 开发规范与命令
+4. [[getting-started/project-structure|📁 项目结构]] - 了解代码组织
+5. [[architecture/system-overview|🎯 系统架构]] - 理解整体设计
 
 **预计时间**: 2-3小时
 
@@ -135,9 +142,11 @@ docs/
 **目标**: 理解架构设计与决策
 
 1. [[architecture/system-overview|🎯 系统架构概览]] - C4模型、DDD分层
-2. [[architecture/adr/README|📝 架构决策记录]] - 关键技术选型
-3. [[architecture/integration-architecture|🔗 集成架构]] - 模块间通信
-4. [[concepts/ddd-patterns|🏛 DDD模式]] - 领域驱动设计
+2. [[source-tree-analysis|📂 源码树分析]] - 完整目录结构
+3. [[data-models|🗄️ 数据模型]] - Prisma Schema 文档
+4. [[architecture/adr/README|📝 架构决策记录]] - 关键技术选型
+5. [[architecture/integration-architecture|🔗 集成架构]] - 模块间通信
+6. [[concepts/ddd-patterns|🏛 DDD模式]] - 领域驱动设计
 
 ### 🚀 运维工程师
 
@@ -165,14 +174,21 @@ docs/
 
 | 包名 | 描述 | 文档 |
 |------|------|------|
-| `@dailyuse/contracts` | TypeScript类型契约层 | [[packages-contracts|查看文档]] |
-| `@dailyuse/domain-client` | 客户端领域层 (Pinia) | [[packages-domain-client|查看文档]] |
-| `@dailyuse/domain-server` | 服务端领域层 (DDD) | [[packages-domain-server|查看文档]] |
-| `@dailyuse/utils` | 通用工具库 | [[packages-utils|查看文档]] |
-| `@dailyuse/ui` | Vue 3 UI组件库 | [[packages-ui|查看文档]] |
-| `@dailyuse/assets` | 静态资源 | [[packages-assets|查看文档]] |
+| `@dailyuse/contracts` | TypeScript类型契约层 | [[packages-contracts\|查看文档]] |
+| `@dailyuse/domain-client` | 客户端领域层 | [[packages-domain-client\|查看文档]] |
+| `@dailyuse/domain-server` | 服务端领域层 (DDD) | [[packages-domain-server\|查看文档]] |
+| `@dailyuse/application-*` | 应用服务层 | - |
+| `@dailyuse/infrastructure-*` | 基础设施层 | - |
+| `@dailyuse/ui-vue` | Vue 3 组件 | - |
+| `@dailyuse/ui-vuetify` | Vuetify 3 组件 | - |
+| `@dailyuse/ui-react` | React Hooks | - |
+| `@dailyuse/ui-shadcn` | shadcn/ui 组件 | - |
+| `@dailyuse/utils` | 通用工具库 | [[packages-utils\|查看文档]] |
+| `@dailyuse/assets` | 静态资源 | - |
+| `@dailyuse/sync-client` | 离线同步 | - |
+| `@dailyuse/test-utils` | 测试工具 | - |
 
-📑 [[packages-index|包文档完整索引]]
+📑 [[packages-index|包文档完整索引 (16个包)]]
 
 ---
 
