@@ -387,7 +387,7 @@ export class FocusStatisticsService {
   private calculateLongestStreak(date: Date): number {
     let streak = 0;
     let maxStreak = 0;
-    let current = new Date(date);
+    const current = new Date(date);
 
     for (let i = 0; i < 365; i++) {
       const stats = this.getDailyStatistics(new Date(current));
@@ -405,7 +405,7 @@ export class FocusStatisticsService {
 
   private calculateCurrentStreak(date: Date): number {
     let streak = 0;
-    let current = new Date(date);
+    const current = new Date(date);
 
     for (let i = 0; i < 365; i++) {
       const stats = this.getDailyStatistics(new Date(current));

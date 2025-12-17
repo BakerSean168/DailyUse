@@ -19,11 +19,11 @@ test.describe('Account - Profile Management', () => {
   test('[P0] should update profile information', async ({ page }) => {
     await page.click('[data-testid="edit-profile-button"]');
     
-    const newDisplayName = \Updated User \\;
+    const newDisplayName = 'Updated User';
     await page.fill('[data-testid="display-name-input"]', newDisplayName);
     await page.click('[data-testid="save-profile-button"]');
 
-    await expect(page.locator('text=/????|Updated successfully/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/Updated successfully/i')).toBeVisible({ timeout: 5000 });
   });
 
   test('[P1] should upload avatar', async ({ page }) => {

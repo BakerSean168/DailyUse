@@ -128,7 +128,7 @@ export class AIGenerationController {
       }
 
       // 计算日期
-      let computedStartDate = startDate || Date.now();
+      const computedStartDate = startDate || Date.now();
       let computedEndDate = endDate;
       
       // 如果没有明确的结束日期，根据 timeRange 计算

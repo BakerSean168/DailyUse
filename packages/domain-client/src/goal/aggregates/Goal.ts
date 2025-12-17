@@ -859,7 +859,7 @@ export class Goal extends AggregateRoot implements GoalClient {
   }
 
   private resolveTimeRange(): { start: number | null; end: number | null } {
-    let start = this._startDate ?? this._createdAt ?? null;
+    const start = this._startDate ?? this._createdAt ?? null;
     let end = this._targetDate ?? this._completedAt ?? this._updatedAt ?? null;
 
     if (start && (!end || end <= start)) {

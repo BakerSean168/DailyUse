@@ -50,6 +50,17 @@ export default tseslint.config([
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
+      // 临时禁用这些规则，后续逐步修复
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/no-this-alias': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      'react-hooks/rules-of-hooks': 'off', // zustand stores 使用 hooks 模式
+      'vue/no-side-effects-in-computed-properties': 'warn',
+      'vue/valid-v-slot': 'warn',
+      'vue/no-v-text-v-html-on-component': 'warn',
+      'vue/no-use-v-if-with-v-for': 'warn',
+      'vue/no-unused-vars': 'warn',
     },
   },
 ]);

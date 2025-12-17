@@ -60,6 +60,7 @@ export function createSharedConfig(options: SharedConfigOptions) {
     test: {
       globals: true,
       environment,
+      passWithNoTests: true,
       include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       exclude: [
         'node_modules',

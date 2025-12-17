@@ -61,7 +61,7 @@ export default function ReminderView() {
   const [filterActive, setFilterActive] = useState(true);
 
   const getSortedReminders = () => {
-    let filtered = reminders.filter((r) =>
+    const filtered = reminders.filter((r) =>
       filterActive ? r.isActive : true
     );
 

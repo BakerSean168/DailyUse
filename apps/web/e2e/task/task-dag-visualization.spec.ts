@@ -124,7 +124,7 @@ test.describe('Task DAG Visualization', () => {
     expect(dimensions!.width).toBeGreaterThan(400);
     expect(dimensions!.height).toBeGreaterThan(300);
 
-    console.log(`[PASS] DAG rendered: ${dimensions!.width}x${dimensions!.height}px\n');
+    console.log(`[PASS] DAG rendered: ${dimensions!.width}x${dimensions!.height}px\n`);
 
     console.log('+============================================================+');
     console.log('|  [PASS] Test Passed: Task DAG Rendering                       |');

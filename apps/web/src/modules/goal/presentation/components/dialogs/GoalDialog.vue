@@ -399,7 +399,7 @@ const startRemoveKeyResult = async (goal: Goal, keyResultUuid: string) => {
 const openKeyResultDialog = () => {
   if (goalModel.value && keyResultDialogRef.value) {
     // 使用 openForCreateKeyResultInGoalEditing 方法
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     keyResultDialogRef.value.openForCreateKeyResultInGoalEditing(goalModel.value as any);
   }
 };
@@ -407,7 +407,7 @@ const openKeyResultDialog = () => {
 // 编辑关键结果
 const editKeyResult = (kr: KeyResult) => {
   if (keyResultDialogRef.value && goalModel.value) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     keyResultDialogRef.value.openForUpdateKeyResultInGoalEditing(goalModel.value as any, kr);
   }
 };

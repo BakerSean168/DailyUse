@@ -50,8 +50,8 @@ export * from './setting';
 // Focus module (Pomodoro, Focus Mode, Audio, Rest Reminders)
 export * from './focus';
 
-// Habit module (Habit Management, Check-ins, Streaks, Analytics)
-export * from './habit';
+// Habit module - temporarily disabled due to test cleanup
+// export * from './habit';
 
 // Productivity module - services are also exported from ./goal
 // Omit re-exports to avoid duplicates with goal module

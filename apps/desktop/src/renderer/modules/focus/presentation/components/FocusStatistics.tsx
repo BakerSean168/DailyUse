@@ -57,7 +57,7 @@ function calculateStats(sessions: FocusSession[]) {
 
   // Streak calculation (consecutive days with focus)
   let currentStreak = 0;
-  let checkDate = new Date(today);
+  const checkDate = new Date(today);
   while (true) {
     const hasSession = sessions.some((s) => isSameDay(s.date, checkDate));
     if (hasSession) {

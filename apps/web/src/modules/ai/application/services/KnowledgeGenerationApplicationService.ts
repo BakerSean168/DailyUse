@@ -276,7 +276,7 @@ export class KnowledgeGenerationApplicationService {
       // 1. 获取或创建仓储
       let repositoryUuid = request.repositoryUuid;
       if (!repositoryUuid) {
-        let targetRepository = repositoryStore.repositories[0];
+        const targetRepository = repositoryStore.repositories[0];
         if (!targetRepository) {
           // 创建默认仓储
           const repoDTO = await repositoryApiClient.createRepository({

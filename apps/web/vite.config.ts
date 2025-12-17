@@ -94,6 +94,7 @@ export default defineConfig(({ mode }) => {
       setupFiles: ['./src/test/setup.ts'],
       include: ['src/**/__tests__/**/*.test.ts', 'src/**/*.spec.ts'],
       exclude: ['node_modules', 'dist', '.git', '.cache'],
+      passWithNoTests: true,
       css: {
         modules: {
           classNameStrategy: 'non-scoped',

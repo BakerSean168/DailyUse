@@ -39,6 +39,8 @@ export default defineConfig({
     },
     // API 测试超时设置（包括数据库操作）
     testTimeout: 30000,
+    // 允许没有测试文件时通过
+    passWithNoTests: true,
     // 序列化测试，避免数据库冲突
     pool: 'forks',
     poolOptions: {

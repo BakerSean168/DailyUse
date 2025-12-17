@@ -427,7 +427,7 @@ export function useGoal() {
       goal.updatedAt,
     ];
 
-    let start = startCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
+    const start = startCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
     let end = endCandidates.map(toTimestamp).find((value) => value !== null) ?? null;
 
     if (start && (!end || end <= start)) {

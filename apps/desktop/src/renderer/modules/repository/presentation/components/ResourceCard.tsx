@@ -5,8 +5,8 @@
  * Story 11-6: Auxiliary Modules
  */
 
-import { memo } from 'react';
-import { FileText, Image, Video, Music, Archive, Code, FileJson, MoreHorizontal, Eye, Download, Trash2, Copy, ExternalLink } from 'lucide-react';
+import { memo, useMemo } from 'react';
+import { FileText, Image, Video, Music, Archive, Code, FileJson, MoreHorizontal, Eye, Download, Trash2, Copy, ExternalLink, type LucideIcon } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -46,25 +46,16 @@ interface ResourceCardProps {
   onOpenExternal?: (resource: Resource) => void;
 }
 
-// Get icon for resource type
-function getResourceIcon(type: Resource['type']) {
-  switch (type) {
-    case 'document':
-      return FileText;
-    case 'image':
-      return Image;
-    case 'video':
-      return Video;
-    case 'audio':
-      return Music;
-    case 'archive':
-      return Archive;
-    case 'code':
-      return Code;
-    default:
-      return FileJson;
-  }
-}
+// Icon mapping for resource types
+const iconMap: Record<Resource['type'], LucideIcon> = {
+  document: FileText,
+  image: Image,
+  video: Video,
+  audio: Music,
+  archive: Archive,
+  code: Code,
+  other: FileJson,
+};
 
 // Get color for resource type
 function getTypeColor(type: Resource['type']) {
@@ -115,7 +106,8 @@ export const ResourceCard = memo(function ResourceCard({
   onCopy,
   onOpenExternal,
 }: ResourceCardProps) {
-  const Icon = getResourceIcon(resource.type);
+  // 使用 useMemo 避免在每次渲染时重新获取图标
+  const Icon = useMemo(() => iconMap[resource.type] || FileJson, [resource.type]);
   const typeColor = getTypeColor(resource.type);
 
   if (viewMode === 'list') {

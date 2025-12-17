@@ -6,7 +6,7 @@
 import type { EncryptedData, KeyDerivationParams } from './types';
 
 // 条件导入：浏览器环境使用 Web Crypto API，Node.js 环境使用 crypto 模块
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 let nodeCrypto: any = null;
 
 // 检测是否在 Node.js 环境
@@ -17,7 +17,7 @@ const isNode = typeof process !== 'undefined' &&
 if (isNode) {
   try {
     // 动态导入 crypto 模块（仅在 Node.js 环境）
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     nodeCrypto = require('crypto');
   } catch {
     console.warn('[EncryptionService] Node.js crypto module not available');
