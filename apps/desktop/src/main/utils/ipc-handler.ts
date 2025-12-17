@@ -1,6 +1,6 @@
 /**
- * IPC Handler Utilities
- *
+ * @file IPC Handler Utilities
+ * @description
  * Provides a unified set of tools for creating and registering IPC handlers with:
  * - Automatic error handling and logging
  * - Type-safe handler definitions
@@ -13,7 +13,7 @@ import { ipcMain, type IpcMainInvokeEvent } from 'electron';
 import { createLogger, type ILogger } from '@dailyuse/utils';
 
 /**
- * Type definition for an IPC Handler function.
+ * @description Type definition for an IPC Handler function.
  *
  * It represents a function that processes an IPC request.
  *
@@ -25,7 +25,8 @@ export type IpcHandlerFn<TInput = void, TOutput = void> = TInput extends void
   : (input: TInput) => Promise<TOutput> | TOutput;
 
 /**
- * Configuration options for an IPC Handler.
+ * @interface IpcHandlerOptions
+ * @description Configuration options for an IPC Handler.
  */
 export interface IpcHandlerOptions {
   /** Custom logger instance (defaults to a logger created with the channel name). */
@@ -37,7 +38,8 @@ export interface IpcHandlerOptions {
 }
 
 /**
- * Definition structure for an IPC Handler.
+ * @interface IpcHandlerDefinition
+ * @description Definition structure for an IPC Handler.
  * Contains the channel name, the handler function, and configuration options.
  */
 export interface IpcHandlerDefinition<TInput = void, TOutput = void> {
@@ -53,7 +55,8 @@ export interface IpcHandlerDefinition<TInput = void, TOutput = void> {
 const defaultLogger = createLogger('IpcHandler');
 
 /**
- * Creates an IPC handler definition with automatic error handling.
+ * @function createIpcHandler
+ * @description Creates an IPC handler definition with automatic error handling.
  *
  * @example
  * // No arguments
@@ -86,7 +89,8 @@ export function createIpcHandler<TInput = void, TOutput = void>(
 }
 
 /**
- * Registers a single IPC handler with Electron's ipcMain.
+ * @function registerIpcHandler
+ * @description Registers a single IPC handler with Electron's ipcMain.
  *
  * Wraps the handler execution in a try-catch block for error logging and handling.
  *
@@ -119,7 +123,8 @@ export function registerIpcHandler<TInput = void, TOutput = void>(
 }
 
 /**
- * Registers multiple IPC handlers at once.
+ * @function registerIpcHandlers
+ * @description Registers multiple IPC handlers at once.
  *
  * @example
  * registerIpcHandlers([
@@ -144,7 +149,8 @@ export function registerIpcHandlers(
 }
 
 /**
- * Creates a helper for registering module-specific IPC handlers.
+ * @function createModuleIpcHandlers
+ * @description Creates a helper for registering module-specific IPC handlers.
  *
  * Provides a cleaner API for collecting and registering all handlers for a specific module.
  *
@@ -199,7 +205,8 @@ export function createModuleIpcHandlers(
 }
 
 /**
- * Removes registered IPC handlers for the given channels.
+ * @function removeIpcHandlers
+ * @description Removes registered IPC handlers for the given channels.
  *
  * @param {string[]} channels - The list of channel names to remove handlers for.
  */

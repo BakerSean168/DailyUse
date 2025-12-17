@@ -1,7 +1,6 @@
 /**
- * SQLite Database Connection Manager
- *
- * 使用 better-sqlite3 管理 SQLite 数据库连接
+ * @file SQLite Database Connection Manager
+ * @description 使用 better-sqlite3 管理 SQLite 数据库连接
  * 遵循 ADR-007: 数据库选型 - 本地使用 SQLite
  */
 
@@ -13,7 +12,9 @@ import fs from 'fs';
 let db: Database.Database | null = null;
 
 /**
- * 获取数据库路径
+ * @function getDatabasePath
+ * @description 获取数据库路径
+ * @returns {string} 数据库文件的完整路径
  */
 function getDatabasePath(): string {
   const userDataPath = app.getPath('userData');
@@ -28,13 +29,16 @@ function getDatabasePath(): string {
 }
 
 /**
- * 初始化数据库连接
+ * @function initializeDatabase
+ * @description 初始化数据库连接
  * 
  * EPIC-003 性能优化：
  * - WAL 模式提高并发写入性能
  * - 增大页缓存减少磁盘 I/O
  * - 内存临时存储加速查询
  * - mmap 内存映射提高读取性能
+ *
+ * @returns {Database.Database} Database connection instance
  */
 export function initializeDatabase(): Database.Database {
   if (db) {
@@ -83,8 +87,10 @@ export function initializeDatabase(): Database.Database {
 }
 
 /**
- * 获取数据库连接
- * @throws Error 如果数据库未初始化
+ * @function getDatabase
+ * @description 获取数据库连接
+ * @throws {Error} 如果数据库未初始化
+ * @returns {Database.Database} Database connection instance
  */
 export function getDatabase(): Database.Database {
   if (!db) {
@@ -94,7 +100,8 @@ export function getDatabase(): Database.Database {
 }
 
 /**
- * 关闭数据库连接
+ * @function closeDatabase
+ * @description 关闭数据库连接
  */
 export function closeDatabase(): void {
   if (db) {
@@ -115,8 +122,10 @@ export function closeDatabase(): void {
 let memoryCleanupInterval: NodeJS.Timeout | null = null;
 
 /**
- * 启动定期内存清理
+ * @function startMemoryCleanup
+ * @description 启动定期内存清理
  * 每 5 分钟释放未使用的缓存内存
+ * @param {number} [intervalMs=300000] - 清理间隔（毫秒），默认为 5 分钟
  */
 export function startMemoryCleanup(intervalMs: number = 5 * 60 * 1000): void {
   if (memoryCleanupInterval) return;
@@ -136,7 +145,8 @@ export function startMemoryCleanup(intervalMs: number = 5 * 60 * 1000): void {
 }
 
 /**
- * 停止定期内存清理
+ * @function stopMemoryCleanup
+ * @description 停止定期内存清理
  */
 export function stopMemoryCleanup(): void {
   if (memoryCleanupInterval) {
@@ -146,7 +156,9 @@ export function stopMemoryCleanup(): void {
 }
 
 /**
- * 获取数据库性能统计
+ * @function getDatabaseStats
+ * @description 获取数据库性能统计
+ * @returns {Object} 数据库性能统计信息
  */
 export function getDatabaseStats(): {
   cacheSize: number;
@@ -181,7 +193,8 @@ export function getDatabaseStats(): {
 }
 
 /**
- * 手动执行 WAL checkpoint
+ * @function executeCheckpoint
+ * @description 手动执行 WAL checkpoint
  * 将 WAL 数据合并到主数据库文件
  */
 export function executeCheckpoint(): void {
@@ -192,7 +205,9 @@ export function executeCheckpoint(): void {
 }
 
 /**
- * 初始化所有表结构
+ * @function initializeTables
+ * @description 初始化所有表结构
+ * @param {Database.Database} database - 数据库实例
  */
 function initializeTables(database: Database.Database): void {
   // Goals 表
@@ -396,8 +411,10 @@ function initializeTables(database: Database.Database): void {
 }
 
 /**
- * 初始化同步相关表结构
+ * @function initializeSyncTables
+ * @description 初始化同步相关表结构
  * EPIC-004: Offline Sync - 多设备数据同步
+ * @param {Database.Database} database - 数据库实例
  */
 function initializeSyncTables(database: Database.Database): void {
   // sync_log 表 - 记录所有本地变更
@@ -513,7 +530,11 @@ function initializeSyncTables(database: Database.Database): void {
 }
 
 /**
- * 在事务中执行操作
+ * @function transaction
+ * @description 在事务中执行操作
+ * @template T
+ * @param {() => T} fn - 包含数据库操作的函数
+ * @returns {T} 函数的返回值
  */
 export function transaction<T>(fn: () => T): T {
   const database = getDatabase();

@@ -1,6 +1,6 @@
 /**
- * Main Process Utilities Module
- *
+ * @file Main Process Utilities Module
+ * @description
  * Exports utility functions and classes used throughout the main process, including:
  * - Pagination helpers
  * - Memory monitoring

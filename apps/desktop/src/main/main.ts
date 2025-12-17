@@ -1,5 +1,6 @@
 /**
- * Electron Main Process Entry Point
+ * @file Electron Main Process Entry Point
+ * @description Electron 主进程入口点
  *
  * 遵循 ADR-006: IPC invoke/handle 模式
  * 遵循 STORY-002: 主进程 DI 初始化
@@ -27,12 +28,15 @@ import { registerAppLifecycleHandlers } from './lifecycle';
 import { initializeEventListeners } from './events/initialize-event-listeners';
 
 /**
- * 应用初始化
+ * @function initializeApp
+ * @description 应用初始化
  * 
  * EPIC-003: 性能优化
  * - 添加启动时间测量
  * - 核心模块优先加载
  * - 非核心模块懒加载
+ *
+ * @returns {Promise<void>} Promise indicating completion
  */
 async function initializeApp(): Promise<void> {
   const startTime = performance.now();
@@ -83,7 +87,7 @@ async function initializeApp(): Promise<void> {
 }
 
 /**
- * 注册应用生命周期处理器
+ * @description 注册应用生命周期处理器
  * 
  * 所有关键的生命周期逻辑已迁移到：
  * - lifecycle/app-lifecycle.ts (创建窗口、激活、清理)

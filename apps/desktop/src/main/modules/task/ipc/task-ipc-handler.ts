@@ -18,7 +18,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 创建任务模板
+    /**
+     * @description 创建任务模板
+     * Channel Name: task:create-template
+     * Payload: input (CreateTaskTemplateInput)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:create-template', async (event, input: CreateTaskTemplateInput) => {
       return this.handleRequest(
         'task:create-template',
@@ -27,7 +33,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取任务模板
+    /**
+     * @description 获取任务模板详情
+     * Channel Name: task:get-template
+     * Payload: uuid (string)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:get-template', async (event, uuid: string) => {
       return this.handleRequest(
         'task:get-template',
@@ -35,7 +47,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 列出任务模板
+    /**
+     * @description 列出任务模板
+     * Channel Name: task:list-templates
+     * Payload: params (ListTaskTemplatesInput)
+     * Return: TaskTemplate[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:list-templates', async (event, params: any) => {
       return this.handleRequest(
         'task:list-templates',
@@ -44,7 +62,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 更新任务模板
+    /**
+     * @description 更新任务模板
+     * Channel Name: task:update-template
+     * Payload: uuid (string), updates (UpdateTaskTemplateInput)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:update-template', async (event, uuid: string, updates: any) => {
       return this.handleRequest(
         'task:update-template',
@@ -52,7 +76,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 删除任务模板
+    /**
+     * @description 删除任务模板
+     * Channel Name: task:delete-template
+     * Payload: uuid (string)
+     * Return: void
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:delete-template', async (event, uuid: string) => {
       return this.handleRequest(
         'task:delete-template',
@@ -60,7 +90,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取任务实例
+    /**
+     * @description 获取任务实例详情
+     * Channel Name: task:get-instance
+     * Payload: uuid (string)
+     * Return: TaskInstance
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:get-instance', async (event, uuid: string) => {
       return this.handleRequest(
         'task:get-instance',
@@ -68,7 +104,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 列出任务实例
+    /**
+     * @description 列出任务实例
+     * Channel Name: task:list-instances
+     * Payload: params (ListTaskInstancesInput)
+     * Return: TaskInstance[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:list-instances', async (event, params: any) => {
       return this.handleRequest(
         'task:list-instances',
@@ -77,7 +119,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 完成任务实例
+    /**
+     * @description 完成任务实例
+     * Channel Name: task:complete-instance
+     * Payload: uuid (string)
+     * Return: TaskInstance
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:complete-instance', async (event, uuid: string) => {
       return this.handleRequest(
         'task:complete-instance',
@@ -85,7 +133,13 @@ export class TaskIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取仪表板数据
+    /**
+     * @description 获取任务仪表板数据
+     * Channel Name: task:get-dashboard
+     * Payload: accountUuid (string)
+     * Return: TaskDashboardData
+     * Security: Requires authentication
+     */
     ipcMain.handle('task:get-dashboard', async (event, accountUuid: string) => {
       return this.handleRequest(
         'task:get-dashboard',

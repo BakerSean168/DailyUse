@@ -235,7 +235,13 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 开始专注
+    /**
+     * @description 开始专注
+     * Channel Name: goal:focus:start
+     * Payload: { goalUuid: string; duration: number; accountUuid?: string }
+     * Return: FocusSession
+     * Security: Requires authentication
+     */
     ipcMain.handle(GoalChannels.FOCUS_START, async (_event, params: { goalUuid: string; duration: number; accountUuid?: string }) => {
       return this.handleRequest(
         GoalChannels.FOCUS_START,
@@ -244,7 +250,13 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 暂停专注
+    /**
+     * @description 暂停专注
+     * Channel Name: goal:focus:pause
+     * Payload: void
+     * Return: FocusSession | null
+     * Security: Requires authentication
+     */
     ipcMain.handle(GoalChannels.FOCUS_PAUSE, async () => {
       return this.handleRequest(
         GoalChannels.FOCUS_PAUSE,
@@ -252,7 +264,13 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 恢复专注
+    /**
+     * @description 恢复专注
+     * Channel Name: goal:focus:resume
+     * Payload: void
+     * Return: FocusSession | null
+     * Security: Requires authentication
+     */
     ipcMain.handle(GoalChannels.FOCUS_RESUME, async () => {
       return this.handleRequest(
         GoalChannels.FOCUS_RESUME,
@@ -260,7 +278,13 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 停止专注
+    /**
+     * @description 停止专注
+     * Channel Name: goal:focus:stop
+     * Payload: { notes?: string }
+     * Return: FocusSession | null
+     * Security: Requires authentication
+     */
     ipcMain.handle(GoalChannels.FOCUS_STOP, async (_event, params: { notes?: string }) => {
       return this.handleRequest(
         GoalChannels.FOCUS_STOP,
@@ -268,7 +292,13 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取状态
+    /**
+     * @description 获取专注状态
+     * Channel Name: goal:focus:get-status
+     * Payload: void
+     * Return: FocusStatus
+     * Security: Requires authentication
+     */
     ipcMain.handle(GoalChannels.FOCUS_GET_STATUS, async () => {
       return this.handleRequest(
         GoalChannels.FOCUS_GET_STATUS,
@@ -276,7 +306,13 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取历史
+    /**
+     * @description 获取专注历史
+     * Channel Name: goal:focus:get-history
+     * Payload: { goalUuid?: string; startDate?: number; endDate?: number }
+     * Return: FocusHistory
+     * Security: Requires authentication
+     */
     ipcMain.handle(GoalChannels.FOCUS_GET_HISTORY, async (_event, params: { goalUuid?: string; startDate?: number; endDate?: number }) => {
       return this.handleRequest(
         GoalChannels.FOCUS_GET_HISTORY,

@@ -1,6 +1,6 @@
 /**
- * Desktop 应用基础设施初始化
- * Infrastructure Initialization Tasks
+ * @file Desktop 应用基础设施初始化
+ * @description Infrastructure Initialization Tasks
  * 
  * 负责初始化：
  * - 数据库连接和容器
@@ -20,7 +20,8 @@ import { configureMainProcessDependencies, isDIConfigured } from '../../di';
 const logger = createLogger('InfrastructureInit:Desktop');
 
 /**
- * 数据库初始化任务
+ * @constant databaseInitTask
+ * @description 数据库初始化任务
  */
 const databaseInitTask: InitializationTask = {
   name: 'database',
@@ -48,7 +49,8 @@ const databaseInitTask: InitializationTask = {
 };
 
 /**
- * DI Container 初始化任务
+ * @constant diContainerInitTask
+ * @description DI Container 初始化任务
  */
 const diContainerInitTask: InitializationTask = {
   name: 'di-container',
@@ -77,7 +79,8 @@ const diContainerInitTask: InitializationTask = {
 };
 
 /**
- * IPC 系统初始化任务
+ * @constant ipcInitTask
+ * @description IPC 系统初始化任务
  */
 const ipcInitTask: InitializationTask = {
   name: 'ipc-system',
@@ -97,7 +100,8 @@ const ipcInitTask: InitializationTask = {
 };
 
 /**
- * 注册基础设施的所有初始化任务
+ * @function registerInfrastructureInitializationTasks
+ * @description 注册基础设施的所有初始化任务
  */
 export function registerInfrastructureInitializationTasks(): void {
   const manager = InitializationManager.getInstance();

@@ -1,6 +1,6 @@
 /**
- * Memory Monitor
- *
+ * @file Memory Monitor
+ * @description
  * Development utility for monitoring memory usage in the Electron main process.
  * Provides real-time memory stats, historical snapshots, and leak detection analysis.
  *
@@ -12,7 +12,8 @@ import { ipcMain } from 'electron';
 // ============ Types ============
 
 /**
- * Snapshot of memory usage at a specific point in time.
+ * @interface MemorySnapshot
+ * @description Snapshot of memory usage at a specific point in time.
  */
 interface MemorySnapshot {
   /** Timestamp when the snapshot was taken. */
@@ -30,7 +31,8 @@ interface MemorySnapshot {
 }
 
 /**
- * Analysis of memory usage trend.
+ * @interface MemoryTrend
+ * @description Analysis of memory usage trend.
  */
 interface MemoryTrend {
   /** Direction of memory usage trend. */
@@ -44,7 +46,8 @@ interface MemoryTrend {
 // ============ Memory Monitor Class ============
 
 /**
- * Class responsible for monitoring memory usage.
+ * @class MemoryMonitor
+ * @description Class responsible for monitoring memory usage.
  */
 export class MemoryMonitor {
   private snapshots: MemorySnapshot[] = [];
@@ -53,7 +56,8 @@ export class MemoryMonitor {
   private readonly leakThresholdPerHour = 10; // MB/hour threshold for leak warning
 
   /**
-   * Starts the memory monitoring process.
+   * @method start
+   * @description Starts the memory monitoring process.
    *
    * @param {number} [intervalMs=60000] - Interval between snapshots in milliseconds. Defaults to 60000 (1 minute).
    */
@@ -76,7 +80,8 @@ export class MemoryMonitor {
   }
 
   /**
-   * Stops the memory monitoring process.
+   * @method stop
+   * @description Stops the memory monitoring process.
    */
   stop(): void {
     if (this.interval) {
@@ -87,7 +92,8 @@ export class MemoryMonitor {
   }
 
   /**
-   * Captures the current memory usage snapshot.
+   * @method takeSnapshot
+   * @description Captures the current memory usage snapshot.
    *
    * @returns {MemorySnapshot} The current memory snapshot.
    */
@@ -113,7 +119,8 @@ export class MemoryMonitor {
   }
 
   /**
-   * Gets the current memory status including the latest snapshot and trend analysis.
+   * @method getCurrentStatus
+   * @description Gets the current memory status including the latest snapshot and trend analysis.
    *
    * @returns {MemorySnapshot & { trend: MemoryTrend }} Current status with trend.
    */
@@ -126,7 +133,8 @@ export class MemoryMonitor {
   }
 
   /**
-   * Analyzes memory usage history to determine trends and potential leaks.
+   * @method analyzeTrend
+   * @description Analyzes memory usage history to determine trends and potential leaks.
    *
    * @returns {MemoryTrend} The analysis result.
    */
@@ -155,7 +163,8 @@ export class MemoryMonitor {
   }
 
   /**
-   * Retrieves all recorded memory snapshots.
+   * @method getSnapshots
+   * @description Retrieves all recorded memory snapshots.
    *
    * @returns {MemorySnapshot[]} Array of memory snapshots.
    */
@@ -164,7 +173,8 @@ export class MemoryMonitor {
   }
 
   /**
-   * Forces garbage collection if the environment allows it.
+   * @method forceGC
+   * @description Forces garbage collection if the environment allows it.
    * Note: Requires the application to be started with --expose-gc flag.
    *
    * @returns {boolean} True if GC was triggered, false otherwise.
@@ -180,7 +190,8 @@ export class MemoryMonitor {
   }
 
   /**
-   * Logs current memory status to the console.
+   * @method logMemoryStatus
+   * @description Logs current memory status to the console.
    */
   private logMemoryStatus(): void {
     const status = this.getCurrentStatus();
@@ -198,7 +209,8 @@ export class MemoryMonitor {
   }
 
   /**
-   * Calculates the slope of the linear regression line for the given values.
+   * @method calculateSlope
+   * @description Calculates the slope of the linear regression line for the given values.
    *
    * @param {number[]} values - The data points.
    * @returns {number} The slope of the line.
@@ -228,7 +240,8 @@ export class MemoryMonitor {
 let memoryMonitor: MemoryMonitor | null = null;
 
 /**
- * Retrieves the singleton instance of MemoryMonitor.
+ * @function getMemoryMonitor
+ * @description Retrieves the singleton instance of MemoryMonitor.
  *
  * @returns {MemoryMonitor} The memory monitor instance.
  */
@@ -242,7 +255,8 @@ export function getMemoryMonitor(): MemoryMonitor {
 // ============ IPC Handlers ============
 
 /**
- * Registers IPC handlers for memory monitoring.
+ * @function registerMemoryMonitorIpcHandlers
+ * @description Registers IPC handlers for memory monitoring.
  * Only active in development mode.
  */
 export function registerMemoryMonitorIpcHandlers(): void {
@@ -270,7 +284,8 @@ export function registerMemoryMonitorIpcHandlers(): void {
 // ============ Auto-start in Development ============
 
 /**
- * Initializes and starts the memory monitor if in development mode.
+ * @function initMemoryMonitorForDev
+ * @description Initializes and starts the memory monitor if in development mode.
  * Also registers the necessary IPC handlers.
  */
 export function initMemoryMonitorForDev(): void {

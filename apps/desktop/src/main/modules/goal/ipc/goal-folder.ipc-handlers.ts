@@ -19,9 +19,13 @@ export class GoalFolderIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 创建目标文件夹
-    // 注意：实际的 createFolder 方法需要在 GoalDesktopApplicationService 中实现
-    // 目前这里作为占位符，使用原有的模式
+    /**
+     * @description 创建目标文件夹
+     * Channel Name: goal-folder:create
+     * Payload: request (CreateGoalFolderInput)
+     * Return: { success: boolean, data: GoalFolder | null }
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal-folder:create', async (_, request) => {
       return this.handleRequest(
         'goal-folder:create',
@@ -33,7 +37,13 @@ export class GoalFolderIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 列出目标文件夹
+    /**
+     * @description 列出目标文件夹
+     * Channel Name: goal-folder:list
+     * Payload: accountUuid (string)
+     * Return: { success: boolean, data: GoalFolder[] }
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal-folder:list', async (_, accountUuid) => {
       return this.handleRequest(
         'goal-folder:list',
@@ -45,7 +55,13 @@ export class GoalFolderIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 更新目标文件夹
+    /**
+     * @description 更新目标文件夹
+     * Channel Name: goal-folder:update
+     * Payload: uuid (string), request (UpdateGoalFolderInput)
+     * Return: { success: boolean, data: GoalFolder | null }
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal-folder:update', async (_, uuid, request) => {
       return this.handleRequest(
         'goal-folder:update',
@@ -56,7 +72,13 @@ export class GoalFolderIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 删除目标文件夹
+    /**
+     * @description 删除目标文件夹
+     * Channel Name: goal-folder:delete
+     * Payload: uuid (string)
+     * Return: { success: boolean }
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal-folder:delete', async (_, uuid) => {
       return this.handleRequest(
         'goal-folder:delete',

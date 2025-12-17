@@ -18,7 +18,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 创建目标
+    /**
+     * @description 创建目标
+     * Channel Name: goal:create
+     * Payload: params (CreateGoalInput)
+     * Return: Goal
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:create', async (event, params: CreateGoalInput) => {
       return this.handleRequest(
         'goal:create',
@@ -27,7 +33,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取目标
+    /**
+     * @description 获取目标详情
+     * Channel Name: goal:get
+     * Payload: { uuid: string; includeChildren?: boolean }
+     * Return: Goal
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:get', async (event, payload: { uuid: string; includeChildren?: boolean }) => {
       return this.handleRequest(
         'goal:get',
@@ -35,7 +47,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 列出目标
+    /**
+     * @description 列出目标
+     * Channel Name: goal:list
+     * Payload: params (ListGoalInput)
+     * Return: Goal[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:list', async (event, params: { accountUuid?: string; status?: string; folderUuid?: string; includeChildren?: boolean }) => {
       return this.handleRequest(
         'goal:list',
@@ -44,7 +62,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 更新目标
+    /**
+     * @description 更新目标
+     * Channel Name: goal:update
+     * Payload: { uuid: string; params: UpdateGoalInput }
+     * Return: Goal
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:update', async (event, payload: { uuid: string; params: UpdateGoalInput }) => {
       return this.handleRequest(
         'goal:update',
@@ -52,7 +76,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 删除目标
+    /**
+     * @description 删除目标
+     * Channel Name: goal:delete
+     * Payload: uuid (string)
+     * Return: void
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:delete', async (event, uuid: string) => {
       return this.handleRequest(
         'goal:delete',
@@ -60,7 +90,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 激活目标
+    /**
+     * @description 激活目标
+     * Channel Name: goal:activate
+     * Payload: uuid (string)
+     * Return: Goal
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:activate', async (event, uuid: string) => {
       return this.handleRequest(
         'goal:activate',
@@ -68,7 +104,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 归档目标
+    /**
+     * @description 归档目标
+     * Channel Name: goal:archive
+     * Payload: uuid (string)
+     * Return: Goal
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:archive', async (event, uuid: string) => {
       return this.handleRequest(
         'goal:archive',
@@ -76,7 +118,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 完成目标
+    /**
+     * @description 完成目标
+     * Channel Name: goal:complete
+     * Payload: uuid (string)
+     * Return: Goal
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:complete', async (event, uuid: string) => {
       return this.handleRequest(
         'goal:complete',
@@ -84,7 +132,13 @@ export class GoalIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取目标统计
+    /**
+     * @description 获取目标统计
+     * Channel Name: goal:get-statistics
+     * Payload: accountUuid (string, optional)
+     * Return: GoalStatistics
+     * Security: Requires authentication
+     */
     ipcMain.handle('goal:get-statistics', async (event, accountUuid?: string) => {
       return this.handleRequest(
         'goal:get-statistics',

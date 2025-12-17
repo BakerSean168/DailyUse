@@ -64,6 +64,13 @@ export function registerEditorIpcHandlers(): void {
   // Document Management Handlers
   // ============================================
 
+  /**
+   * @description 创建新文档
+   * Channel Name: editor:document:create
+   * Payload: options { title?, content?, format?, templateUuid? }
+   * Return: Created Document
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:document:create', async (_, options?: {
     title?: string;
     content?: string;
@@ -78,6 +85,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 打开文档
+   * Channel Name: editor:document:open
+   * Payload: string (uuid)
+   * Return: Document Content
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:document:open', async (_, uuid: string) => {
     try {
       return await getAppService().openDocument(uuid);
@@ -87,6 +101,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 保存文档
+   * Channel Name: editor:document:save
+   * Payload: string (uuid)
+   * Return: Saved Document
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:document:save', async (_, uuid: string) => {
     try {
       return await getAppService().saveDocument(uuid);
@@ -96,6 +117,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 关闭文档
+   * Channel Name: editor:document:close
+   * Payload: uuid (string), save (boolean)
+   * Return: void
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:document:close', async (_, uuid: string, save?: boolean) => {
     try {
       return await getAppService().closeDocument(uuid, save);
@@ -105,6 +133,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 列出打开的文档
+   * Channel Name: editor:document:list-open
+   * Payload: void
+   * Return: Document[]
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:document:list-open', async () => {
     try {
       return await getAppService().getOpenDocuments();
@@ -118,6 +153,13 @@ export function registerEditorIpcHandlers(): void {
   // Content Operations Handlers
   // ============================================
 
+  /**
+   * @description 获取文档内容
+   * Channel Name: editor:content:get
+   * Payload: string (uuid)
+   * Return: string (content)
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:content:get', async (_, uuid: string) => {
     try {
       return await getAppService().getContent(uuid);
@@ -127,6 +169,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 设置文档内容
+   * Channel Name: editor:content:set
+   * Payload: uuid (string), content (string)
+   * Return: void
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:content:set', async (_, uuid: string, content: string) => {
     try {
       return await getAppService().setContent(uuid, content);
@@ -136,6 +185,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 更新文档元数据
+   * Channel Name: editor:metadata:update
+   * Payload: uuid (string), updates { title?, metadata? }
+   * Return: Updated Document
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:metadata:update', async (_, uuid: string, updates: {
     title?: string;
     metadata?: Record<string, unknown>;
@@ -152,6 +208,13 @@ export function registerEditorIpcHandlers(): void {
   // Draft Management Handlers
   // ============================================
 
+  /**
+   * @description 列出草稿
+   * Channel Name: editor:draft:list
+   * Payload: void
+   * Return: { drafts: Document[], total: number }
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:draft:list', async () => {
     try {
       return await getAppService().listDrafts();
@@ -161,6 +224,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 删除草稿
+   * Channel Name: editor:draft:delete
+   * Payload: string (uuid)
+   * Return: void
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:draft:delete', async (_, uuid: string) => {
     try {
       return await getAppService().deleteDraft(uuid);
@@ -174,6 +244,13 @@ export function registerEditorIpcHandlers(): void {
   // Template Management Handlers
   // ============================================
 
+  /**
+   * @description 获取模板
+   * Channel Name: editor:template:get
+   * Payload: string (uuid)
+   * Return: Template
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:template:get', async (_, uuid: string) => {
     try {
       return await getAppService().getTemplate(uuid);
@@ -183,6 +260,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 列出模板
+   * Channel Name: editor:template:list
+   * Payload: void
+   * Return: { templates: Template[], total: number }
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:template:list', async () => {
     try {
       return await getAppService().listTemplates();
@@ -192,6 +276,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 保存模板
+   * Channel Name: editor:template:save
+   * Payload: template { name, description?, content, format }
+   * Return: Saved Template
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:template:save', async (_, template: {
     name: string;
     description?: string;
@@ -206,6 +297,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 删除模板
+   * Channel Name: editor:template:delete
+   * Payload: string (uuid)
+   * Return: void
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:template:delete', async (_, uuid: string) => {
     try {
       return await getAppService().deleteTemplate(uuid);
@@ -219,6 +317,13 @@ export function registerEditorIpcHandlers(): void {
   // Config Handlers
   // ============================================
 
+  /**
+   * @description 获取自动保存配置
+   * Channel Name: editor:config:get-autosave
+   * Payload: void
+   * Return: AutoSaveConfig
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:config:get-autosave', async () => {
     try {
       return getAppService().getAutoSaveConfig();
@@ -228,6 +333,13 @@ export function registerEditorIpcHandlers(): void {
     }
   });
 
+  /**
+   * @description 更新自动保存配置
+   * Channel Name: editor:config:update-autosave
+   * Payload: updates { enabled?, intervalMs?, maxDrafts? }
+   * Return: Updated AutoSaveConfig
+   * Security: Requires authentication
+   */
   ipcMain.handle('editor:config:update-autosave', async (_, updates: {
     enabled?: boolean;
     intervalMs?: number;

@@ -19,7 +19,13 @@ export class TaskDependencyIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 创建任务依赖关系
+    /**
+     * @description 创建任务依赖关系
+     * Channel Name: task-dependency:create
+     * Payload: payload (CreateTaskDependencyInput)
+     * Return: TaskDependency
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-dependency:create', async (_, payload) => {
       return this.handleRequest(
         'task-dependency:create',
@@ -30,7 +36,13 @@ export class TaskDependencyIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 列出任务依赖关系
+    /**
+     * @description 列出任务依赖关系
+     * Channel Name: task-dependency:list
+     * Payload: taskUuid (string)
+     * Return: TaskDependency[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-dependency:list', async (_, taskUuid) => {
       return this.handleRequest(
         'task-dependency:list',
@@ -41,7 +53,13 @@ export class TaskDependencyIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 删除任务依赖关系
+    /**
+     * @description 删除任务依赖关系
+     * Channel Name: task-dependency:delete
+     * Payload: uuid (string)
+     * Return: { success: boolean }
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-dependency:delete', async (_, uuid) => {
       return this.handleRequest(
         'task-dependency:delete',
@@ -52,7 +70,13 @@ export class TaskDependencyIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取阻塞的任务
+    /**
+     * @description 获取被阻塞的任务
+     * Channel Name: task-dependency:get-blocked
+     * Payload: taskUuid (string)
+     * Return: Task[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-dependency:get-blocked', async (_, taskUuid) => {
       return this.handleRequest(
         'task-dependency:get-blocked',
@@ -63,7 +87,13 @@ export class TaskDependencyIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取阻塞任务
+    /**
+     * @description 获取阻塞当前任务的任务
+     * Channel Name: task-dependency:get-blocking
+     * Payload: taskUuid (string)
+     * Return: Task[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-dependency:get-blocking', async (_, taskUuid) => {
       return this.handleRequest(
         'task-dependency:get-blocking',
@@ -74,7 +104,13 @@ export class TaskDependencyIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 检查循环依赖
+    /**
+     * @description 检查循环依赖
+     * Channel Name: task-dependency:check-circular
+     * Payload: { fromUuid: string; toUuid: string }
+     * Return: { hasCircular: boolean }
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-dependency:check-circular', async (_, payload: { fromUuid: string; toUuid: string }) => {
       return this.handleRequest(
         'task-dependency:check-circular',

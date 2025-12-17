@@ -19,7 +19,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 列出任务实例
+    /**
+     * @description 列出任务实例
+     * Channel Name: task-instance:list
+     * Payload: params (ListTaskInstancesInput)
+     * Return: PaginatedResult<TaskInstance>
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:list', async (_, params) => {
       return this.handleRequest(
         'task-instance:list',
@@ -28,7 +34,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取任务实例
+    /**
+     * @description 获取任务实例详情
+     * Channel Name: task-instance:get
+     * Payload: uuid (string)
+     * Return: TaskInstance
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:get', async (_, uuid) => {
       return this.handleRequest(
         'task-instance:get',
@@ -36,7 +48,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 删除任务实例
+    /**
+     * @description 删除任务实例
+     * Channel Name: task-instance:delete
+     * Payload: uuid (string)
+     * Return: void
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:delete', async (_, uuid) => {
       return this.handleRequest(
         'task-instance:delete',
@@ -44,7 +62,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 完成任务实例
+    /**
+     * @description 完成任务实例
+     * Channel Name: task-instance:complete
+     * Payload: { uuid: string; completion?: any }
+     * Return: TaskInstance
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:complete', async (_, payload: { uuid: string; completion?: any }) => {
       return this.handleRequest(
         'task-instance:complete',
@@ -52,7 +76,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 取消完成任务实例
+    /**
+     * @description 取消完成任务实例
+     * Channel Name: task-instance:uncomplete
+     * Payload: uuid (string)
+     * Return: TaskInstance | null
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:uncomplete', async (_, uuid) => {
       return this.handleRequest(
         'task-instance:uncomplete',
@@ -63,7 +93,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 重新调度任务实例
+    /**
+     * @description 重新调度任务实例
+     * Channel Name: task-instance:reschedule
+     * Payload: { uuid: string; newDate: any }
+     * Return: TaskInstance | null
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:reschedule', async (_, payload: { uuid: string; newDate: any }) => {
       return this.handleRequest(
         'task-instance:reschedule',
@@ -74,7 +110,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 跳过任务实例
+    /**
+     * @description 跳过任务实例
+     * Channel Name: task-instance:skip
+     * Payload: { uuid: string; reason?: string }
+     * Return: TaskInstance
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:skip', async (_, payload: { uuid: string; reason?: string }) => {
       return this.handleRequest(
         'task-instance:skip',
@@ -82,7 +124,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 开始任务实例
+    /**
+     * @description 开始任务实例（计时）
+     * Channel Name: task-instance:start
+     * Payload: uuid (string)
+     * Return: TaskInstance
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:start', async (_, uuid) => {
       return this.handleRequest(
         'task-instance:start',
@@ -90,7 +138,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 暂停任务实例
+    /**
+     * @description 暂停任务实例
+     * Channel Name: task-instance:pause
+     * Payload: uuid (string)
+     * Return: TaskInstance | null
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:pause', async (_, uuid) => {
       return this.handleRequest(
         'task-instance:pause',
@@ -101,7 +155,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 记录时间
+    /**
+     * @description 记录任务时间
+     * Channel Name: task-instance:log-time
+     * Payload: { uuid: string; duration: number; note?: string }
+     * Return: void
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:log-time', async (_, payload: { uuid: string; duration: number; note?: string }) => {
       return this.handleRequest(
         'task-instance:log-time',
@@ -112,7 +172,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 按日期列出实例
+    /**
+     * @description 按日期列出任务实例
+     * Channel Name: task-instance:list-by-date
+     * Payload: { date: number; accountUuid: string }
+     * Return: TaskInstance[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:list-by-date', async (_, payload: { date: number; accountUuid: string }) => {
       return this.handleRequest(
         'task-instance:list-by-date',
@@ -121,7 +187,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 按日期范围列出实例
+    /**
+     * @description 按日期范围列出任务实例
+     * Channel Name: task-instance:list-by-range
+     * Payload: { startDate: number; endDate: number; accountUuid: string }
+     * Return: TaskInstance[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:list-by-range', async (_, payload: { startDate: number; endDate: number; accountUuid: string }) => {
       return this.handleRequest(
         'task-instance:list-by-range',
@@ -130,7 +202,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 按模板列出实例
+    /**
+     * @description 按模板列出任务实例
+     * Channel Name: task-instance:list-by-template
+     * Payload: templateUuid (string)
+     * Return: TaskInstance[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:list-by-template', async (_, templateUuid) => {
       return this.handleRequest(
         'task-instance:list-by-template',
@@ -138,7 +216,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 批量更新实例
+    /**
+     * @description 批量更新任务实例
+     * Channel Name: task-instance:batch-update
+     * Payload: updates (any[])
+     * Return: void
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:batch-update', async (_, updates) => {
       return this.handleRequest(
         'task-instance:batch-update',
@@ -149,7 +233,13 @@ export class TaskInstanceIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 批量完成实例
+    /**
+     * @description 批量完成任务实例
+     * Channel Name: task-instance:batch-complete
+     * Payload: uuids (string[])
+     * Return: void
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-instance:batch-complete', async (_, uuids) => {
       return this.handleRequest(
         'task-instance:batch-complete',

@@ -1,6 +1,6 @@
 /**
- * IPC Cache
- *
+ * @file IPC Cache
+ * @description
  * Provides caching mechanism for IPC responses using an LRU (Least Recently Used) strategy.
  * This helps in reducing redundant computations and database queries for frequently accessed data.
  *
@@ -13,7 +13,8 @@ import type { IpcMainInvokeEvent } from 'electron';
 // ============ Types ============
 
 /**
- * Represents a single entry in the cache.
+ * @interface CacheEntry
+ * @description Represents a single entry in the cache.
  *
  * @template T The type of the cached data.
  */
@@ -27,7 +28,8 @@ interface CacheEntry<T> {
 }
 
 /**
- * Configuration options for the IPC Cache.
+ * @interface CacheOptions
+ * @description Configuration options for the IPC Cache.
  */
 interface CacheOptions {
   /** Maximum number of entries to hold in the cache. */
@@ -39,7 +41,8 @@ interface CacheOptions {
 }
 
 /**
- * Statistics about the cache usage.
+ * @interface CacheStats
+ * @description Statistics about the cache usage.
  */
 interface CacheStats {
   /** Current number of entries in the cache. */
@@ -55,7 +58,8 @@ interface CacheStats {
 // ============ LRU Cache Implementation ============
 
 /**
- * A generic Least Recently Used (LRU) Cache implementation.
+ * @class LRUCache
+ * @description A generic Least Recently Used (LRU) Cache implementation.
  *
  * @template K The type of the cache key.
  * @template V The type of the cache value.
@@ -65,7 +69,8 @@ class LRUCache<K, V> {
   private readonly maxSize: number;
 
   /**
-   * Creates an instance of LRUCache.
+   * @constructor
+   * @description Creates an instance of LRUCache.
    *
    * @param {number} maxSize - The maximum number of entries allowed in the cache.
    */
@@ -74,7 +79,8 @@ class LRUCache<K, V> {
   }
 
   /**
-   * Retrieves a value from the cache.
+   * @method get
+   * @description Retrieves a value from the cache.
    * Marks the retrieved item as the most recently used.
    *
    * @param {K} key - The key to retrieve.
@@ -91,7 +97,8 @@ class LRUCache<K, V> {
   }
 
   /**
-   * Adds or updates a value in the cache.
+   * @method set
+   * @description Adds or updates a value in the cache.
    * If the cache is full, the least recently used item is removed.
    *
    * @param {K} key - The key to set.
@@ -113,7 +120,8 @@ class LRUCache<K, V> {
   }
 
   /**
-   * Checks if a key exists in the cache.
+   * @method has
+   * @description Checks if a key exists in the cache.
    *
    * @param {K} key - The key to check.
    * @returns {boolean} True if the key exists, false otherwise.
@@ -123,7 +131,8 @@ class LRUCache<K, V> {
   }
 
   /**
-   * Removes a specific key from the cache.
+   * @method delete
+   * @description Removes a specific key from the cache.
    *
    * @param {K} key - The key to remove.
    * @returns {boolean} True if an element existed and has been removed, false otherwise.
@@ -133,21 +142,24 @@ class LRUCache<K, V> {
   }
 
   /**
-   * Clears all entries from the cache.
+   * @method clear
+   * @description Clears all entries from the cache.
    */
   clear(): void {
     this.cache.clear();
   }
 
   /**
-   * Gets the current number of entries in the cache.
+   * @getter size
+   * @description Gets the current number of entries in the cache.
    */
   get size(): number {
     return this.cache.size;
   }
 
   /**
-   * Returns an iterator over the keys in the cache.
+   * @method keys
+   * @description Returns an iterator over the keys in the cache.
    */
   keys(): IterableIterator<K> {
     return this.cache.keys();
@@ -157,7 +169,8 @@ class LRUCache<K, V> {
 // ============ IPC Cache Class ============
 
 /**
- * Manages caching for IPC requests using an LRU cache.
+ * @class IpcCache
+ * @description Manages caching for IPC requests using an LRU cache.
  * Supports Time-To-Live (TTL) expiration per channel.
  */
 export class IpcCache {
@@ -168,7 +181,8 @@ export class IpcCache {
   private readonly debug: boolean;
 
   /**
-   * Creates an instance of IpcCache.
+   * @constructor
+   * @description Creates an instance of IpcCache.
    *
    * @param {CacheOptions} [options={}] - Configuration options.
    */
@@ -185,7 +199,8 @@ export class IpcCache {
   }
 
   /**
-   * Sets a specific TTL for a given IPC channel.
+   * @method setChannelTTL
+   * @description Sets a specific TTL for a given IPC channel.
    *
    * @param {string} channel - The IPC channel name.
    * @param {number} ttl - The Time-To-Live in milliseconds.
@@ -195,7 +210,8 @@ export class IpcCache {
   }
 
   /**
-   * Generates a unique cache key based on the channel and arguments.
+   * @method generateKey
+   * @description Generates a unique cache key based on the channel and arguments.
    *
    * @param {string} channel - The IPC channel name.
    * @param {unknown[]} args - The arguments passed to the IPC handler.
@@ -207,7 +223,8 @@ export class IpcCache {
   }
 
   /**
-   * Retrieves a cached value for a specific channel and arguments.
+   * @method get
+   * @description Retrieves a cached value for a specific channel and arguments.
    * Checks for expiration based on TTL.
    *
    * @template T The expected return type.
@@ -244,7 +261,8 @@ export class IpcCache {
   }
 
   /**
-   * Stores a value in the cache.
+   * @method set
+   * @description Stores a value in the cache.
    *
    * @template T The type of the value.
    * @param {string} channel - The IPC channel name.
@@ -265,7 +283,8 @@ export class IpcCache {
   }
 
   /**
-   * Invalidates all cache entries for a specific channel.
+   * @method invalidateChannel
+   * @description Invalidates all cache entries for a specific channel.
    *
    * @param {string} channel - The IPC channel name to invalidate.
    * @returns {number} The number of invalidated entries.
@@ -293,7 +312,8 @@ export class IpcCache {
   }
 
   /**
-   * Invalidates cache entries matching a specific regex pattern.
+   * @method invalidatePattern
+   * @description Invalidates cache entries matching a specific regex pattern.
    *
    * @param {RegExp} pattern - The regex pattern to match keys against.
    * @returns {number} The number of invalidated entries.
@@ -317,7 +337,8 @@ export class IpcCache {
   }
 
   /**
-   * Clears the entire cache and resets statistics.
+   * @method clear
+   * @description Clears the entire cache and resets statistics.
    */
   clear(): void {
     this.cache.clear();
@@ -329,7 +350,8 @@ export class IpcCache {
   }
 
   /**
-   * Retrieves current cache statistics.
+   * @method getStats
+   * @description Retrieves current cache statistics.
    *
    * @returns {CacheStats} The statistics object.
    */
@@ -349,7 +371,8 @@ export class IpcCache {
 let ipcCacheInstance: IpcCache | null = null;
 
 /**
- * Retrieves the singleton instance of IpcCache.
+ * @function getIpcCache
+ * @description Retrieves the singleton instance of IpcCache.
  *
  * @returns {IpcCache} The IPC cache instance.
  */
@@ -372,7 +395,8 @@ export function getIpcCache(): IpcCache {
 // ============ Cache Wrapper for IPC Handlers ============
 
 /**
- * Higher-order function to wrap an IPC handler with caching logic.
+ * @function withCache
+ * @description Higher-order function to wrap an IPC handler with caching logic.
  *
  * @example
  * ```typescript
@@ -416,7 +440,8 @@ export function withCache<T>(
 }
 
 /**
- * Higher-order function to wrap an IPC handler such that it invalidates cache entries upon success.
+ * @function invalidatesCache
+ * @description Higher-order function to wrap an IPC handler such that it invalidates cache entries upon success.
  * Useful for mutation operations (create, update, delete).
  *
  * @example
@@ -454,7 +479,8 @@ export function invalidatesCache<T>(
 // ============ IPC Handlers for Cache Management ============
 
 /**
- * Registers IPC handlers for managing the cache (stats, clear, invalidate).
+ * @function registerCacheIpcHandlers
+ * @description Registers IPC handlers for managing the cache (stats, clear, invalidate).
  */
 export function registerCacheIpcHandlers(): void {
   ipcMain.handle('cache:stats', async () => {

@@ -19,7 +19,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 创建任务模板
+    /**
+     * @description 创建任务模板
+     * Channel Name: task-template:create
+     * Payload: payload (CreateTaskTemplateInput)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:create', async (_, payload) => {
       return this.handleRequest(
         'task-template:create',
@@ -28,7 +34,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 创建一次性任务
+    /**
+     * @description 创建一次性任务
+     * Channel Name: task-template:create-one-time
+     * Payload: payload (CreateOneTimeTaskInput)
+     * Return: TaskInstance
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:create-one-time', async (_, payload) => {
       return this.handleRequest(
         'task-template:create-one-time',
@@ -37,7 +49,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 列出任务模板
+    /**
+     * @description 列出任务模板
+     * Channel Name: task-template:list
+     * Payload: params (ListTaskTemplatesInput)
+     * Return: TaskTemplate[]
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:list', async (_, params) => {
       return this.handleRequest(
         'task-template:list',
@@ -49,7 +67,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取任务模板
+    /**
+     * @description 获取任务模板详情
+     * Channel Name: task-template:get
+     * Payload: uuid (string)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:get', async (_, uuid) => {
       return this.handleRequest(
         'task-template:get',
@@ -57,7 +81,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 更新任务模板
+    /**
+     * @description 更新任务模板
+     * Channel Name: task-template:update
+     * Payload: { uuid: string; request: UpdateTaskTemplateInput }
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:update', async (_, payload: { uuid: string; request: any }) => {
       return this.handleRequest(
         'task-template:update',
@@ -65,7 +95,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 删除任务模板
+    /**
+     * @description 删除任务模板
+     * Channel Name: task-template:delete
+     * Payload: uuid (string)
+     * Return: void
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:delete', async (_, uuid) => {
       return this.handleRequest(
         'task-template:delete',
@@ -73,7 +109,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 激活任务模板
+    /**
+     * @description 激活任务模板
+     * Channel Name: task-template:activate
+     * Payload: uuid (string)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:activate', async (_, uuid) => {
       return this.handleRequest(
         'task-template:activate',
@@ -81,7 +123,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 暂停任务模板
+    /**
+     * @description 暂停任务模板
+     * Channel Name: task-template:pause
+     * Payload: uuid (string)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:pause', async (_, uuid) => {
       return this.handleRequest(
         'task-template:pause',
@@ -89,7 +137,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 归档任务模板
+    /**
+     * @description 归档任务模板
+     * Channel Name: task-template:archive
+     * Payload: uuid (string)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:archive', async (_, uuid) => {
       return this.handleRequest(
         'task-template:archive',
@@ -97,7 +151,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 恢复任务模板
+    /**
+     * @description 恢复任务模板
+     * Channel Name: task-template:restore
+     * Payload: uuid (string)
+     * Return: TaskTemplate
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:restore', async (_, uuid) => {
       return this.handleRequest(
         'task-template:restore',
@@ -105,7 +165,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 搜索任务模板
+    /**
+     * @description 搜索任务模板
+     * Channel Name: task-template:search
+     * Payload: { query: string; limit?: number }
+     * Return: { templates: TaskTemplate[]; total: number }
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:search', async (_, payload: { query: string; limit?: number }) => {
       return this.handleRequest(
         'task-template:search',
@@ -117,7 +183,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 复制任务模板
+    /**
+     * @description 复制任务模板
+     * Channel Name: task-template:duplicate
+     * Payload: uuid (string)
+     * Return: TaskTemplate | null
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:duplicate', async (_, uuid) => {
       return this.handleRequest(
         'task-template:duplicate',
@@ -129,7 +201,13 @@ export class TaskTemplateIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 批量更新任务模板
+    /**
+     * @description 批量更新任务模板
+     * Channel Name: task-template:batch-update
+     * Payload: updates (any[])
+     * Return: void
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-template:batch-update', async (_, updates) => {
       return this.handleRequest(
         'task-template:batch-update',
