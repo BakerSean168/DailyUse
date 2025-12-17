@@ -298,6 +298,12 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @component ProfileView
+ * @description 个人资料页面组件。展示用户的详细资料、偏好设置和账户状态，并提供编辑功能。
+ * @author Jules (AI)
+ */
+
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAccount } from '../composables/useAccount';
 import type { AccountDTO, UpdateAccountProfileRequestDTO } from '@dailyuse/contracts/account';
@@ -309,14 +315,21 @@ const {
 } = useAccount();
 
 // 状态管理
+/** 当前用户资料 */
 const profile = ref<AccountDTO | null>(null);
+/** 加载状态 */
 const loading = ref(false);
+/** 错误信息 */
 const error = ref<string | null>(null);
+/** 是否处于编辑模式 */
 const isEditing = ref(false);
+/** 表单是否有效 */
 const valid = ref(false);
+/** 表单引用 */
 const formRef = ref();
 
 // Snackbar
+/** 提示消息状态 */
 const snackbar = reactive({
   show: false,
   message: '',
@@ -324,6 +337,7 @@ const snackbar = reactive({
 });
 
 // 编辑表单
+/** 编辑表单数据模型 */
 const editForm = reactive({
   displayName: '',
   bio: '',
@@ -349,14 +363,19 @@ const languages = [
 ];
 
 // 表单验证规则
+/** 显示名称验证规则 */
 const displayNameRules = [
   (v: string) => !!v || '显示名称不能为空',
   (v: string) => v.length <= 50 || '显示名称最多50个字符',
 ];
 
+/** 个人简介验证规则 */
 const bioRules = [(v: string) => !v || v.length <= 500 || '个人简介最多500个字符'];
 
-// 加载个人资料
+/**
+ * 加载个人资料
+ * 调用 API 获取最新资料并更新本地状态
+ */
 const loadProfile = async () => {
   loading.value = true;
   error.value = null;
@@ -370,7 +389,10 @@ const loadProfile = async () => {
   }
 };
 
-// 启用编辑模式
+/**
+ * 启用编辑模式
+ * 将当前资料填充到编辑表单中
+ */
 const enableEditMode = () => {
   if (profile.value) {
     editForm.displayName = profile.value.profile?.displayName || '';
@@ -381,13 +403,19 @@ const enableEditMode = () => {
   }
 };
 
-// 取消编辑
+/**
+ * 取消编辑
+ * 退出编辑模式并重置表单验证状态
+ */
 const cancelEdit = () => {
   isEditing.value = false;
   formRef.value?.resetValidation();
 };
 
-// 提交更新
+/**
+ * 提交更新
+ * 验证表单并调用 API 更新资料
+ */
 const handleSubmit = async () => {
   if (!valid.value) return;
 
@@ -417,10 +445,18 @@ const handleSubmit = async () => {
 };
 
 // 辅助函数
+/**
+ * 格式化时间戳
+ * @param timestamp 时间戳
+ */
 const formatDate = (timestamp: number) => {
   return new Date(timestamp).toLocaleString('zh-CN');
 };
 
+/**
+ * 获取语言显示名称
+ * @param lang 语言代码
+ */
 const getLanguageDisplay = (lang?: string) => {
   const langMap: Record<string, string> = {
     zh: '中文',
@@ -430,6 +466,10 @@ const getLanguageDisplay = (lang?: string) => {
   return langMap[lang || 'en'] || lang || 'English';
 };
 
+/**
+ * 获取状态对应的颜色
+ * @param status 账户状态
+ */
 const getStatusColor = (status: string) => {
   const colorMap: Record<string, string> = {
     ACTIVE: 'success',
@@ -501,4 +541,3 @@ onMounted(() => {
   }
 }
 </style>
-

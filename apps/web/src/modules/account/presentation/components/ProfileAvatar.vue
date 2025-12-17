@@ -52,6 +52,12 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @component ProfileAvatar
+ * @description 用户头像组件。展示用户头像，点击可弹出包含用户基本信息的菜单。
+ * @author Jules (AI)
+ */
+
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAccountStore } from '@/modules/account/presentation/stores/accountStore';
@@ -59,16 +65,33 @@ import { useAccountStore } from '@/modules/account/presentation/stores/accountSt
 const router = useRouter();
 const accountStore = useAccountStore();
 
-defineProps<{ avatarUrl?: string; size: string }>();
+/**
+ * 组件属性定义
+ */
+defineProps<{
+  /** 用户头像的 URL */
+  avatarUrl?: string;
+  /** 头像尺寸 (CSS 像素值或预设大小) */
+  size: string;
+}>();
 
+/**
+ * 当前登录的账户信息
+ */
 const localAccount = computed(() => accountStore.currentAccount);
 
-// 跳转到个人资料页面
+/**
+ * 跳转到个人资料页面
+ * 关闭菜单并导航至详情页
+ */
 const goToProfile = () => {
   showInfo.value = false;
   router.push('/account/profile');
 };
 
+/**
+ * 控制用户信息菜单的显示状态
+ */
 const showInfo = ref(false);
 </script>
 

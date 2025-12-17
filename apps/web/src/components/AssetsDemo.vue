@@ -155,6 +155,12 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @component AssetsDemo
+ * @description 音频和图片资源使用示例组件。展示如何使用 @dailyuse/assets 包中的资源。
+ * @author Jules (AI)
+ */
+
 import { ref, onMounted } from 'vue';
 import { logo, logo128, defaultAvatar } from '@dailyuse/assets/images';
 import { audioService, type SoundType } from '@/services/AudioService';
@@ -168,15 +174,34 @@ import { generateUUID } from '@dailyuse/utils';
 // Type alias
 type CreateReminderTemplateRequestDTO = CreateReminderTemplateRequest;
 
-// 音频控制状态
+/**
+ * 音频音量 (0-100)
+ */
 const volume = ref(50);
+/**
+ * 是否启用音频
+ */
 const enabled = ref(true);
+/**
+ * 是否静音
+ */
 const muted = ref(false);
+/**
+ * 可用的音效列表
+ */
 const availableSounds = ref<Record<string, string>>({});
+/**
+ * 测试提醒按钮的加载状态
+ */
 const testReminderLoading = ref(false);
+/**
+ * 创建提醒按钮的加载状态
+ */
 const reminderCreating = ref(false);
 
-// 初始化
+/**
+ * 初始化组件，加载音频服务状态
+ */
 onMounted(() => {
   volume.value = Math.round(audioService.getVolume() * 100);
   enabled.value = audioService.isEnabled();
@@ -184,34 +209,67 @@ onMounted(() => {
   availableSounds.value = audioService.getAvailableSounds();
 });
 
-// 播放音效
+/**
+ * 播放成功音效
+ */
 const playSuccess = () => audioService.playSuccess();
+/**
+ * 播放错误音效
+ */
 const playError = () => audioService.playError();
+/**
+ * 播放通知音效
+ */
 const playNotification = () => audioService.playNotification();
+/**
+ * 播放提醒音效
+ */
 const playReminder = () => audioService.playReminder();
+/**
+ * 播放警告音效
+ */
 const playAlert = () => audioService.playAlert();
+/**
+ * 播放默认音效
+ */
 const playDefault = () => audioService.playDefault();
 
+/**
+ * 播放指定类型的音效
+ * @param soundType - 音效类型
+ */
 const playSound = (soundType: string) => {
   audioService.play(soundType as SoundType);
 };
 
-// 更新音量
+/**
+ * 更新音量
+ * @param value - 新的音量值
+ */
 const updateVolume = (value: number) => {
   audioService.setVolume(value / 100);
 };
 
-// 更新启用状态
+/**
+ * 更新启用状态
+ * @param value - 是否启用
+ */
 const updateEnabled = (value: boolean | null) => {
   audioService.setEnabled(value ?? false);
 };
 
-// 更新静音状态
+/**
+ * 更新静音状态
+ * @param value - 是否静音
+ */
 const updateMuted = (value: boolean | null) => {
   audioService.setMuted(value ?? false);
 };
 
-// 触发测试提醒
+/**
+ * 触发测试提醒
+ * 发送请求到后端以触发一个 SSE 调试事件
+ */
 const triggerTestReminder = async () => {
   testReminderLoading.value = true;
   try {
@@ -251,7 +309,10 @@ const triggerTestReminder = async () => {
   }
 };
 
-// 创建每1分钟循环提醒
+/**
+ * 创建每1分钟循环提醒
+ * 创建一个用于测试的循环提醒模板
+ */
 const createRecurringReminder = async () => {
   reminderCreating.value = true;
   try {
@@ -345,4 +406,3 @@ const createRecurringReminder = async () => {
   padding: 16px;
 }
 </style>
-

@@ -18,8 +18,9 @@ type LoginRequestDTO = LoginRequest;
 type ChangePasswordRequestDTO = ChangePasswordRequest;
 
 /**
- * Authentication Application Service
- * 认证应用服务 - 协调 API 调用和状态管理，实现认证相关用例
+ * @class AuthApplicationService
+ * @description 认证应用服务。协调 API 调用和状态管理，实现登录、登出、令牌刷新等核心认证用例。
+ * @author Jules (AI)
  */
 export class AuthApplicationService {
   private static instance: AuthApplicationService | null = null;
@@ -34,6 +35,10 @@ export class AuthApplicationService {
 
   private constructor() {}
 
+  /**
+   * 创建应用服务实例
+   * @returns Promise<AuthApplicationService>
+   */
   static async createInstance(): Promise<AuthApplicationService> {
     if (!AuthApplicationService.instance) {
       AuthApplicationService.instance = new AuthApplicationService();
@@ -41,6 +46,10 @@ export class AuthApplicationService {
     return AuthApplicationService.instance;
   }
 
+  /**
+   * 获取应用服务单例
+   * @returns Promise<AuthApplicationService>
+   */
   static async getInstance(): Promise<AuthApplicationService> {
     if (!AuthApplicationService.instance) {
       AuthApplicationService.instance = new AuthApplicationService();
@@ -53,6 +62,8 @@ export class AuthApplicationService {
   /**
    * 用户登录
    * User Login
+   * @param request 登录请求参数
+   * @returns Promise<LoginResponseDTO>
    */
   async login(request: LoginRequestDTO): Promise<LoginResponseDTO> {
     try {
@@ -116,6 +127,7 @@ export class AuthApplicationService {
   /**
    * 用户登出
    * User Logout
+   * @returns Promise<void>
    */
   async logout(): Promise<void> {
     // 获取当前用户信息用于事件发布
@@ -163,6 +175,7 @@ export class AuthApplicationService {
   /**
    * 刷新访问令牌
    * Refresh Access Token
+   * @returns Promise<void>
    */
   async refreshToken(): Promise<void> {
     const refreshToken = this.authStore.getRefreshToken;
@@ -201,6 +214,7 @@ export class AuthApplicationService {
   /**
    * 获取当前用户信息
    * Get Current User
+   * @returns Promise<AccountClientDTO>
    */
   async getCurrentUser(): Promise<AccountClientDTO> {
     try {
@@ -224,6 +238,7 @@ export class AuthApplicationService {
   /**
    * 初始化认证状态
    * Initialize Authentication
+   * @returns Promise<AccountClientDTO | null>
    */
   async initAuth(): Promise<AccountClientDTO | null> {
     if (!AuthManager.isAuthenticated()) return null;
@@ -246,9 +261,13 @@ export class AuthApplicationService {
       await this.logout();
       throw err;
     }
-  } /**
+  }
+
+  /**
    * 修改密码
    * Change Password
+   * @param data 修改密码请求数据
+   * @returns Promise<void>
    */
   async changePassword(data: ChangePasswordRequestDTO): Promise<void> {
     try {
@@ -271,6 +290,7 @@ export class AuthApplicationService {
   /**
    * 获取 MFA 设备列表
    * Get MFA Devices
+   * @returns Promise<DeviceInfoClientDTO[]>
    */
   async getMFADevices(): Promise<DeviceInfoClientDTO[]> {
     try {
@@ -294,6 +314,8 @@ export class AuthApplicationService {
   /**
    * 删除 MFA 设备
    * Delete MFA Device
+   * @param deviceId 设备ID
+   * @returns Promise<void>
    */
   async deleteMFADevice(deviceId: string): Promise<void> {
     try {
@@ -319,6 +341,7 @@ export class AuthApplicationService {
   /**
    * 获取用户会话列表
    * Get User Sessions
+   * @returns Promise<AuthSessionClientDTO[]>
    */
   async getSessions(): Promise<AuthSessionClientDTO[]> {
     try {
@@ -345,6 +368,8 @@ export class AuthApplicationService {
   /**
    * 终止指定会话
    * Terminate Session
+   * @param sessionId 会话ID
+   * @returns Promise<void>
    */
   async terminateSession(sessionId: string): Promise<void> {
     try {
@@ -367,6 +392,8 @@ export class AuthApplicationService {
   /**
    * 检查权限
    * Check Permission
+   * @param permission 权限字符串
+   * @returns boolean
    */
   hasPermission(permission: string): boolean {
     return this.authStore.hasPermission(permission);
@@ -375,12 +402,10 @@ export class AuthApplicationService {
   /**
    * 检查角色
    * Check Role
+   * @param role 角色字符串
+   * @returns boolean
    */
   hasRole(role: string): boolean {
     return this.authStore.hasRole(role);
   }
 }
-
-
-
-

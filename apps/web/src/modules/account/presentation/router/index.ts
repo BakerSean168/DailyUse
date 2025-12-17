@@ -1,9 +1,14 @@
 /**
- * Account 模块路由配置
+ * @file index.ts
+ * @description 账户模块路由配置。定义了账户相关的页面路由，如个人资料、设置、安全中心等。
+ * @author Jules (AI)
  */
 
 import type { RouteRecordRaw } from 'vue-router';
 
+/**
+ * 账户模块路由表
+ */
 export const accountRoutes: RouteRecordRaw[] = [
   {
     path: '/account',
