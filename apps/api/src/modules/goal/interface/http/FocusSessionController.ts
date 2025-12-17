@@ -1,3 +1,9 @@
+/**
+ * @file FocusSessionController.ts
+ * @description 专注会话控制器，处理专注会话相关的 HTTP 请求。
+ * @date 2025-01-22
+ */
+
 import type { Response } from 'express';
 import type { AuthenticatedRequest } from '@/shared/infrastructure/http/middlewares/authMiddleware';
 import { FocusSessionApplicationService } from '../../application/services/FocusSessionApplicationService';
@@ -8,12 +14,11 @@ import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('FocusSessionController');
 
-
 /**
- * FocusSession 控制器
- * 负责处理专注周期相关的 HTTP 请求和响应
+ * FocusSession 控制器。
  *
- * 职责：
+ * @remarks
+ * **职责**:
  * - 解析 HTTP 请求参数
  * - 调用 FocusSessionApplicationService 处理业务逻辑
  * - 格式化响应（统一使用 ResponseBuilder）
@@ -24,7 +29,7 @@ export class FocusSessionController {
   private static responseBuilder = createResponseBuilder();
 
   /**
-   * 初始化应用服务（延迟加载）
+   * 初始化应用服务（延迟加载）。
    */
   private static async getSessionService(): Promise<FocusSessionApplicationService> {
     if (!FocusSessionController.sessionService) {
@@ -34,8 +39,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 创建并开始专注周期
+   * 创建并开始专注周期。
+   *
    * @route POST /api/focus-sessions
+   *
+   * @param req - AuthenticatedRequest，Body 包含 goalUuid, durationMinutes, description, startImmediately
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 创建的专注会话信息
    */
   static async createAndStartSession(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -81,8 +92,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 暂停专注周期
+   * 暂停专注周期。
+   *
    * @route POST /api/focus-sessions/:uuid/pause
+   *
+   * @param req - AuthenticatedRequest，Params 包含 uuid
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 暂停后的会话信息
    */
   static async pauseSession(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -119,8 +136,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 恢复专注周期
+   * 恢复专注周期。
+   *
    * @route POST /api/focus-sessions/:uuid/resume
+   *
+   * @param req - AuthenticatedRequest，Params 包含 uuid
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 恢复后的会话信息
    */
   static async resumeSession(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -157,8 +180,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 完成专注周期
+   * 完成专注周期。
+   *
    * @route POST /api/focus-sessions/:uuid/complete
+   *
+   * @param req - AuthenticatedRequest，Params 包含 uuid
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 完成后的会话信息
    */
   static async completeSession(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -195,8 +224,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 取消专注周期
+   * 取消专注周期。
+   *
    * @route POST /api/focus-sessions/:uuid/cancel
+   *
+   * @param req - AuthenticatedRequest，Params 包含 uuid
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 成功响应
    */
   static async cancelSession(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -233,8 +268,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 获取活跃会话
+   * 获取活跃会话。
+   *
    * @route GET /api/focus-sessions/active
+   *
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 活跃的会话信息
    */
   static async getActiveSession(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -267,8 +308,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 获取会话历史
+   * 获取会话历史。
+   *
    * @route GET /api/focus-sessions/history
+   *
+   * @param req - AuthenticatedRequest，Query 包含 filters
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 会话历史列表
    */
   static async getSessionHistory(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -313,8 +360,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 获取会话统计
+   * 获取会话统计。
+   *
    * @route GET /api/focus-sessions/statistics
+   *
+   * @param req - AuthenticatedRequest，Query 包含 startDate, endDate, goalUuid
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 统计信息
    */
   static async getSessionStatistics(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -357,8 +410,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 获取会话详情
+   * 获取会话详情。
+   *
    * @route GET /api/focus-sessions/:uuid
+   *
+   * @param req - AuthenticatedRequest，Params 包含 uuid
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 会话详情
    */
   static async getSession(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -392,8 +451,14 @@ export class FocusSessionController {
   }
 
   /**
-   * 删除会话
+   * 删除会话。
+   *
    * @route DELETE /api/focus-sessions/:uuid
+   *
+   * @param req - AuthenticatedRequest，Params 包含 uuid
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 成功响应
    */
   static async deleteSession(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -429,7 +494,3 @@ export class FocusSessionController {
     }
   }
 }
-
-
-
-

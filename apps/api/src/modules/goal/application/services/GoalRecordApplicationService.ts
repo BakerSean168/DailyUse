@@ -1,3 +1,9 @@
+/**
+ * @file GoalRecordApplicationService.ts
+ * @description 目标记录应用服务，处理目标进度记录的创建和查询。
+ * @date 2025-01-22
+ */
+
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 import { GoalRecord } from '@dailyuse/domain-server/goal';
@@ -5,15 +11,11 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalRecordClient
 import { GoalEventPublisher } from './GoalEventPublisher';
 
 /**
- * GoalRecord 应用服务
- * 负责目标记录的增删查改
+ * 目标记录应用服务。
  * 
- * 职责：
- * - 创建目标记录（value 变更追踪）
- * - 查询关键结果的记录历史
- * - 查询目标的所有记录
- * - 删除记录
- * - 获取进度分解详情
+ * @remarks
+ * 负责目标记录（GoalRecord）的增删查改，用于追踪关键结果（KeyResult）的进度变化。
+ * 包含创建记录、查询历史记录、计算进度分解等功能。
  */
 export class GoalRecordApplicationService {
   private static instance: GoalRecordApplicationService;
@@ -24,7 +26,10 @@ export class GoalRecordApplicationService {
   }
 
   /**
-   * 创建应用服务实例
+   * 创建应用服务实例（支持依赖注入）。
+   *
+   * @param goalRepository - 可选的目标仓储
+   * @returns {Promise<GoalRecordApplicationService>} 服务实例
    */
   static async createInstance(goalRepository?: IGoalRepository): Promise<GoalRecordApplicationService> {
     const container = GoalContainer.getInstance();
@@ -35,7 +40,9 @@ export class GoalRecordApplicationService {
   }
 
   /**
-   * 获取应用服务单例
+   * 获取应用服务单例。
+   *
+   * @returns {Promise<GoalRecordApplicationService>} 单例实例
    */
   static async getInstance(): Promise<GoalRecordApplicationService> {
     if (!GoalRecordApplicationService.instance) {
@@ -45,7 +52,16 @@ export class GoalRecordApplicationService {
   }
 
   /**
-   * 创建目标记录
+   * 创建目标记录。
+   *
+   * @remarks
+   * 添加一条新的进度记录到指定的关键结果，并自动更新目标进度。
+   *
+   * @param goalUuid - 目标 UUID
+   * @param keyResultUuid - 关键结果 UUID
+   * @param params - 记录参数（值、备注、时间）
+   * @returns {Promise<GoalRecordClientDTO>} 创建的记录 DTO
+   * @throws {Error} 当目标或关键结果不存在时抛出
    */
   async createGoalRecord(
     goalUuid: string,
@@ -91,7 +107,13 @@ export class GoalRecordApplicationService {
   }
 
   /**
-   * 获取关键结果的所有记录（分页）
+   * 获取关键结果的所有记录（分页）。
+   *
+   * @param goalUuid - 目标 UUID
+   * @param keyResultUuid - 关键结果 UUID
+   * @param options - 分页和筛选选项
+   * @returns {Promise<GoalRecordsResponse>} 记录列表响应
+   * @throws {Error} 当目标或关键结果不存在时抛出
    */
   async getGoalRecordsByKeyResult(
     goalUuid: string,
@@ -149,7 +171,12 @@ export class GoalRecordApplicationService {
   }
 
   /**
-   * 获取目标的所有记录（所有关键结果）
+   * 获取目标的所有记录（聚合所有关键结果）。
+   *
+   * @param goalUuid - 目标 UUID
+   * @param options - 分页选项
+   * @returns {Promise<GoalRecordsResponse>} 记录列表响应
+   * @throws {Error} 当目标不存在时抛出
    */
   async getGoalRecordsByGoal(
     goalUuid: string,
@@ -192,7 +219,13 @@ export class GoalRecordApplicationService {
   }
 
   /**
-   * 删除目标记录
+   * 删除目标记录。
+   *
+   * @param goalUuid - 目标 UUID
+   * @param keyResultUuid - 关键结果 UUID
+   * @param recordUuid - 记录 UUID
+   * @returns {Promise<void>}
+   * @throws {Error} 当目标或关键结果不存在时抛出
    */
   async deleteGoalRecord(
     goalUuid: string,
@@ -222,7 +255,14 @@ export class GoalRecordApplicationService {
   }
 
   /**
-   * 获取目标进度分解详情
+   * 获取目标进度分解详情。
+   *
+   * @remarks
+   * 计算每个关键结果对总进度的贡献度。
+   *
+   * @param goalUuid - 目标 UUID
+   * @returns {Promise<ProgressBreakdown>} 进度分解数据
+   * @throws {Error} 当目标不存在或总权重为0时抛出
    */
   async getGoalProgressBreakdown(
     goalUuid: string,
@@ -276,4 +316,3 @@ export class GoalRecordApplicationService {
     };
   }
 }
-

@@ -1,20 +1,25 @@
 /**
- * Statistics Cache Service
- * 统计数据缓存服务
- *
- * 职责：
- * - 基于 Redis 的缓存管理
- * - TTL: 5 分钟（300 秒）
- * - 支持主动失效
- * - 提供降级处理（缓存失败不影响主流程）
- *
- * 架构层次：Infrastructure Layer
+ * @file StatisticsCacheService.ts
+ * @description 统计数据缓存服务，基于 Redis 实现。
+ * @date 2025-01-22
  */
 
 import Redis from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 import type { DashboardConfigServerDTO, WidgetConfigDTO, DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
 
+/**
+ * 统计数据缓存服务。
+ *
+ * @remarks
+ * 负责管理仪表板统计数据的缓存。
+ * - 使用 Redis 作为后端存储。
+ * - 默认 TTL 为 5 分钟。
+ * - 提供缓存读取、写入、失效和批量管理功能。
+ * - 具备连接失败重试和错误处理机制。
+ *
+ * 架构层次：Infrastructure Layer
+ */
 export class StatisticsCacheService {
   private readonly redis: Redis;
   private readonly ttlSeconds = 300; // 5 分钟
@@ -72,14 +77,20 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 生成缓存键
+   * 生成缓存键。
+   *
+   * @param userId - 用户 ID
+   * @returns Redis 键名
    */
   private getCacheKey(userId: string): string {
     return `${this.keyPrefix}:${userId}`;
   }
 
   /**
-   * 获取缓存的统计数据
+   * 获取缓存的统计数据。
+   *
+   * @param userId - 用户 ID
+   * @returns {Promise<DashboardStatisticsClientDTO | null>} 统计数据或 null
    */
   async get(userId: string): Promise<DashboardStatisticsClientDTO | null> {
     const key = this.getCacheKey(userId);
@@ -104,7 +115,11 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 设置缓存数据
+   * 设置缓存数据。
+   *
+   * @param userId - 用户 ID
+   * @param data - 统计数据
+   * @returns {Promise<void>}
    */
   async set(userId: string, data: DashboardStatisticsClientDTO): Promise<void> {
     const key = this.getCacheKey(userId);
@@ -124,7 +139,10 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 删除缓存数据（主动失效）
+   * 删除缓存数据（主动失效）。
+   *
+   * @param userId - 用户 ID
+   * @returns {Promise<void>}
    */
   async invalidate(userId: string): Promise<void> {
     const key = this.getCacheKey(userId);
@@ -146,7 +164,10 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 批量删除缓存（用于管理操作）
+   * 批量删除缓存（用于管理操作）。
+   *
+   * @param pattern - 键名匹配模式
+   * @returns {Promise<number>} 删除的键数量
    */
   async invalidatePattern(pattern: string): Promise<number> {
     try {
@@ -171,8 +192,10 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 获取缓存的剩余 TTL
-   * @returns 剩余秒数，-2 表示不存在，-1 表示无过期时间
+   * 获取缓存的剩余 TTL。
+   *
+   * @param userId - 用户 ID
+   * @returns {Promise<number>} 剩余秒数，-2 表示不存在，-1 表示无过期时间
    */
   async getTtl(userId: string): Promise<number> {
     const key = this.getCacheKey(userId);
@@ -189,7 +212,9 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 检查 Redis 连接状态
+   * 检查 Redis 连接状态。
+   *
+   * @returns {Promise<boolean>} 是否连接正常
    */
   async ping(): Promise<boolean> {
     try {
@@ -205,7 +230,9 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 关闭 Redis 连接
+   * 关闭 Redis 连接。
+   *
+   * @returns {Promise<void>}
    */
   async close(): Promise<void> {
     console.log('[StatisticsCache] 正在关闭 Redis 连接...');
@@ -213,7 +240,9 @@ export class StatisticsCacheService {
   }
 
   /**
-   * 获取缓存统计信息
+   * 获取缓存统计信息。
+   *
+   * @returns {Promise<object>} 统计信息（键数量、内存使用、连接状态）
    */
   async getStats(): Promise<{
     totalKeys: number;
@@ -244,5 +273,3 @@ export class StatisticsCacheService {
     }
   }
 }
-
-

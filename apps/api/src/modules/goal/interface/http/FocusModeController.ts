@@ -1,3 +1,9 @@
+/**
+ * @file FocusModeController.ts
+ * @description 专注模式控制器，处理专注周期相关的 HTTP 请求。
+ * @date 2025-01-22
+ */
+
 import type { Response } from 'express';
 import { FocusModeApplicationService } from '../../application/services/FocusModeApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
@@ -10,7 +16,8 @@ const logger = createLogger('FocusModeController');
  * FocusMode Controller
  * 专注周期模式控制器
  *
- * 职责：
+ * @remarks
+ * **职责**:
  * - 解析 HTTP 请求参数
  * - 调用 FocusModeApplicationService 处理业务逻辑
  * - 格式化响应（统一使用 ResponseBuilder）
@@ -21,7 +28,7 @@ export class FocusModeController {
   private static responseBuilder = createResponseBuilder();
 
   /**
-   * 初始化应用服务（延迟加载）
+   * 初始化应用服务（延迟加载）。
    */
   private static async getFocusModeService(): Promise<FocusModeApplicationService> {
     if (!FocusModeController.focusModeService) {
@@ -31,18 +38,14 @@ export class FocusModeController {
   }
 
   /**
-   * 启用专注模式
+   * 启用专注模式。
+   *
    * @route POST /api/goals/focus-mode
    *
-   * Request Body:
-   * {
-   *   focusedGoalUuids: string[],  // 1-3 个目标 UUID
-   *   startTime: number,            // 开始时间戳
-   *   endTime: number,              // 结束时间戳
-   *   hiddenGoalsMode: 'hide_all' | 'hide_folder' | 'hide_none'
-   * }
+   * @param req - AuthenticatedRequest，Body 包含 focusedGoalUuids, startTime, endTime, hiddenGoalsMode
+   * @param res - Express 响应对象
    *
-   * Response: FocusModeClientDTO
+   * @returns {Promise<Response>} 创建的专注模式信息
    */
   static async activateFocusMode(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -113,10 +116,14 @@ export class FocusModeController {
   }
 
   /**
-   * 关闭专注模式（手动失效）
+   * 关闭专注模式（手动失效）。
+   *
    * @route DELETE /api/goals/focus-mode/:uuid
    *
-   * Response: FocusModeClientDTO
+   * @param req - AuthenticatedRequest，Params 包含 uuid
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 已关闭的专注模式信息
    */
   static async deactivateFocusMode(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -167,15 +174,14 @@ export class FocusModeController {
   }
 
   /**
-   * 延期专注模式
+   * 延期专注模式。
+   *
    * @route PATCH /api/goals/focus-mode/:uuid/extend
    *
-   * Request Body:
-   * {
-   *   newEndTime: number  // 新的结束时间戳
-   * }
+   * @param req - AuthenticatedRequest，Body 包含 newEndTime
+   * @param res - Express 响应对象
    *
-   * Response: FocusModeClientDTO
+   * @returns {Promise<Response>} 延期后的专注模式信息
    */
   static async extendFocusMode(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -234,10 +240,14 @@ export class FocusModeController {
   }
 
   /**
-   * 获取账户当前活跃的专注周期
+   * 获取账户当前活跃的专注周期。
+   *
    * @route GET /api/goals/focus-mode/active
    *
-   * Response: FocusModeClientDTO | null
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 活跃的专注模式信息，如果不存在则返回 null
    */
   static async getActiveFocusMode(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -286,10 +296,14 @@ export class FocusModeController {
   }
 
   /**
-   * 获取账户的专注周期历史
+   * 获取账户的专注周期历史。
+   *
    * @route GET /api/goals/focus-mode/history
    *
-   * Response: FocusModeClientDTO[]
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 专注模式历史列表
    */
   static async getFocusModeHistory(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -328,5 +342,3 @@ export class FocusModeController {
     }
   }
 }
-
-

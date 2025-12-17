@@ -1,3 +1,9 @@
+/**
+ * @file registerCronJobs.ts
+ * @description 注册所有 Cron Jobs，管理定时任务的生命周期。
+ * @date 2025-01-22
+ */
+
 import { CronSchedulerManager } from './CronSchedulerManager';
 import { DailyAnalysisCronJob } from '@/modules/reminder/infrastructure/cron/dailyAnalysisCronJob';
 import { createLogger } from '@dailyuse/utils';
@@ -5,9 +11,10 @@ import { createLogger } from '@dailyuse/utils';
 const logger = createLogger('CronJobRegistration');
 
 /**
- * 注册所有 Cron Jobs
- * 
- * 在应用启动时调用此函数来注册所有定时任务
+ * 注册所有 Cron Jobs。
+ *
+ * @remarks
+ * 在应用启动时调用，将所有预定义的定时任务注册到调度器中。
  */
 export function registerAllCronJobs(): void {
   logger.info('Registering all cron jobs...');
@@ -17,11 +24,9 @@ export function registerAllCronJobs(): void {
   // ===== Reminder Module Jobs =====
 
   /**
-   * Daily Analysis Cron Job
+   * 每日分析任务。
    * 
-   * 功能: 每天分析所有提醒模板的效果,自动调整低效提醒的频率
-   * 时间: 每天凌晨 2:00
-   * 模块: Reminder - Smart Frequency
+   * 每天凌晨 2:00 执行，分析提醒模板的效果并自动调整频率。
    */
   scheduler.register({
     name: 'reminder:daily-analysis',
@@ -46,16 +51,6 @@ export function registerAllCronJobs(): void {
   //   enabled: true,
   // });
 
-  // 示例: Task Module Jobs
-  // scheduler.register({
-  //   name: 'task:send-due-reminders',
-  //   schedule: '*/30 * * * *', // 每 30 分钟
-  //   task: async () => {
-  //     // 发送即将到期的任务提醒
-  //   },
-  //   enabled: true,
-  // });
-
   const status = scheduler.getStatus();
   logger.info('All cron jobs registered', {
     totalJobs: status.length,
@@ -64,9 +59,10 @@ export function registerAllCronJobs(): void {
 }
 
 /**
- * 启动 Cron 调度器
- * 
- * 在应用启动时调用此函数来启动所有已注册的定时任务
+ * 启动 Cron 调度器。
+ *
+ * @remarks
+ * 在应用完全启动后调用，开始执行所有已注册且启用的任务。
  */
 export function startCronScheduler(): void {
   const scheduler = CronSchedulerManager.getInstance();
@@ -78,9 +74,10 @@ export function startCronScheduler(): void {
 }
 
 /**
- * 停止 Cron 调度器
- * 
- * 在应用关闭时调用此函数来停止所有定时任务
+ * 停止 Cron 调度器。
+ *
+ * @remarks
+ * 在应用关闭时调用，停止所有定时任务。
  */
 export function stopCronScheduler(): void {
   const scheduler = CronSchedulerManager.getInstance();

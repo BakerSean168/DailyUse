@@ -1,3 +1,9 @@
+/**
+ * @file GoalStatisticsApplicationService.ts
+ * @description 目标统计应用服务，提供目标数据的聚合统计功能。
+ * @date 2025-01-22
+ */
+
 import type { IGoalStatisticsRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalStatisticsDomainService } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
@@ -14,14 +20,11 @@ import type {
 } from '@dailyuse/contracts/goal';
 
 /**
- * GoalStatistics 应用服务
- * 负责协调统计相关的领域服务，处理业务用例
+ * 目标统计应用服务。
  *
- * 架构职责：
- * - 委托给 DomainService 处理业务逻辑
- * - 协调多个领域服务
- * - 事务管理
- * - DTO 转换（Domain ↔ Contracts）
+ * @remarks
+ * 负责协调统计相关的领域服务，处理统计数据的查询、初始化、重算和增量更新。
+ * 遵循 DDD 架构，核心逻辑委托给 `GoalStatisticsDomainService`。
  */
 export class GoalStatisticsApplicationService {
   private static instance: GoalStatisticsApplicationService;
@@ -41,7 +44,11 @@ export class GoalStatisticsApplicationService {
   }
 
   /**
-   * 使用锁来保护操作，确保同一 accountUuid 的操作是串行的
+   * 使用锁来保护操作，确保同一 accountUuid 的操作是串行的。
+   *
+   * @param key - 锁的键（accountUuid）
+   * @param operation - 需要执行的异步操作
+   * @returns {Promise<T>} 操作结果
    */
   private async withLock<T>(key: string, operation: () => Promise<T>): Promise<T> {
     // 等待之前的操作完成
@@ -65,7 +72,11 @@ export class GoalStatisticsApplicationService {
   }
 
   /**
-   * 创建应用服务实例（支持依赖注入）
+   * 创建应用服务实例（支持依赖注入）。
+   *
+   * @param statisticsRepository - 可选的统计仓储
+   * @param goalRepository - 可选的目标仓储
+   * @returns {Promise<GoalStatisticsApplicationService>} 服务实例
    */
   static async createInstance(
     statisticsRepository?: IGoalStatisticsRepository,
@@ -83,7 +94,9 @@ export class GoalStatisticsApplicationService {
   }
 
   /**
-   * 获取应用服务单例
+   * 获取应用服务单例。
+   *
+   * @returns {Promise<GoalStatisticsApplicationService>} 单例实例
    */
   static async getInstance(): Promise<GoalStatisticsApplicationService> {
     if (!GoalStatisticsApplicationService.instance) {
@@ -96,7 +109,10 @@ export class GoalStatisticsApplicationService {
   // ===== 统计查询 =====
 
   /**
-   * 获取账户的统计信息（不存在则自动创建）
+   * 获取账户的统计信息（不存在则自动创建）。
+   *
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<GoalStatisticsClientDTO>} 统计数据 DTO
    */
   async getOrCreateStatistics(accountUuid: string): Promise<GoalStatisticsClientDTO> {
     // 1. 尝试获取现有统计
@@ -115,7 +131,10 @@ export class GoalStatisticsApplicationService {
   }
 
   /**
-   * 获取账户的统计信息（不自动创建）
+   * 获取账户的统计信息（不自动创建）。
+   *
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<GoalStatisticsClientDTO | null>} 统计数据 DTO 或 null
    */
   async getStatistics(accountUuid: string): Promise<GoalStatisticsClientDTO | null> {
     const statistics = await this.statisticsRepository.findByAccountUuid(accountUuid);
@@ -123,7 +142,10 @@ export class GoalStatisticsApplicationService {
   }
 
   /**
-   * 初始化统计信息（从现有Goal数据计算）
+   * 初始化统计信息（从现有 Goal 数据计算）。
+   *
+   * @param request - 初始化请求
+   * @returns {Promise<InitializeGoalStatisticsResponse>} 初始化响应
    */
   async initializeStatistics(
     request: InitializeGoalStatisticsRequest,
@@ -188,7 +210,10 @@ export class GoalStatisticsApplicationService {
   }
 
   /**
-   * 重新计算统计信息（修复数据不一致）
+   * 重新计算统计信息（修复数据不一致）。
+   *
+   * @param request - 重算请求
+   * @returns {Promise<RecalculateGoalStatisticsResponse>} 重算响应
    */
   async recalculateStatistics(
     request: RecalculateGoalStatisticsRequest,
@@ -235,7 +260,10 @@ export class GoalStatisticsApplicationService {
   }
 
   /**
-   * 处理统计更新事件（增量更新）
+   * 处理统计更新事件（增量更新）。
+   *
+   * @param event - 统计更新事件
+   * @returns {Promise<void>}
    */
   async handleStatisticsUpdateEvent(event: GoalStatisticsUpdateEvent): Promise<void> {
     // 使用锁保护整个"读取-修改-保存"流程
@@ -256,10 +284,12 @@ export class GoalStatisticsApplicationService {
   }
 
   /**
-   * 删除统计信息
+   * 删除统计信息。
+   *
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<boolean>} 是否删除成功
    */
   async deleteStatistics(accountUuid: string): Promise<boolean> {
     return await this.statisticsRepository.delete(accountUuid);
   }
 }
-

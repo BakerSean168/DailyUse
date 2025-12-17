@@ -1,3 +1,9 @@
+/**
+ * @file initializer.ts
+ * @description 应用初始化管理器，负责协调各模块的启动和生命周期管理。
+ * @date 2025-01-22
+ */
+
 import {
   InitializationManager,
   InitializationPhase,
@@ -51,7 +57,10 @@ import { registerReminderInitializationTasks } from '../../modules/reminder/init
 // };
 
 /**
- * 注册所有模块的初始化任务
+ * 注册所有模块的初始化任务。
+ *
+ * @remarks
+ * 调用各模块的注册函数，将任务添加到 InitializationManager 中。
  */
 export function registerAllInitializationTasks(): void {
   const manager = InitializationManager.getInstance();
@@ -74,7 +83,9 @@ export function registerAllInitializationTasks(): void {
 }
 
 /**
- * 应用启动时的初始化
+ * 应用启动时的初始化。
+ *
+ * @returns {Promise<void>}
  */
 export async function initializeApp(): Promise<void> {
   console.log('Starting application initialization...');
@@ -91,7 +102,10 @@ export async function initializeApp(): Promise<void> {
 }
 
 /**
- * 用户登录时的初始化
+ * 用户登录时的初始化。
+ *
+ * @param accountUuid - 登录用户的 UUID
+ * @returns {Promise<void>}
  */
 export async function initializeUserSession(accountUuid: string): Promise<void> {
   console.log(`Initializing user session for: ${accountUuid}`);
@@ -105,7 +119,9 @@ export async function initializeUserSession(accountUuid: string): Promise<void> 
 }
 
 /**
- * 用户登出时的清理
+ * 用户登出时的清理。
+ *
+ * @returns {Promise<void>}
  */
 export async function cleanupUserSession(): Promise<void> {
   console.log('Cleaning up user session...');
@@ -119,7 +135,9 @@ export async function cleanupUserSession(): Promise<void> {
 }
 
 /**
- * 应用关闭时的清理
+ * 应用关闭时的清理。
+ *
+ * @returns {Promise<void>}
  */
 export async function cleanupApp(): Promise<void> {
   console.log('Cleaning up application...');
@@ -142,7 +160,10 @@ export async function cleanupApp(): Promise<void> {
 // }
 
 /**
- * 检查特定任务是否已完成
+ * 检查特定任务是否已完成。
+ *
+ * @param taskName - 任务名称
+ * @returns {boolean} 是否完成
  */
 export function isTaskCompleted(taskName: string): boolean {
   const manager = InitializationManager.getInstance();

@@ -1,6 +1,7 @@
 /**
- * Dashboard Routes
- * Dashboard 模块路由配置
+ * @file routes.ts
+ * @description Dashboard 模块路由配置，定义 Dashboard 统计和配置的 HTTP 接口路由。
+ * @date 2025-01-22
  */
 
 import type { Router as ExpressRouter } from 'express';

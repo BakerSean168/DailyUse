@@ -1,3 +1,9 @@
+/**
+ * @file app.ts
+ * @description Express 应用入口配置，包含中间件、路由和错误处理。
+ * @date 2025-01-22
+ */
+
 import express, {
   type Express,
   Router,

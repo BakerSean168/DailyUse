@@ -1,6 +1,7 @@
 /**
- * Weight Snapshot Routes
- * 权重快照路由配置
+ * @file weightSnapshotRoutes.ts
+ * @description 权重快照路由配置，定义权重相关的 HTTP 接口。
+ * @date 2025-01-22
  */
 
 import { Router, type Router as ExpressRouter } from 'express';
@@ -10,12 +11,11 @@ import { WeightSnapshotController } from './WeightSnapshotController';
 const router: ExpressRouter = Router();
 
 /**
- * 更新 KeyResult 权重并创建快照
- * POST /api/goals/:goalUuid/key-results/:krUuid/weight
+ * 更新 KeyResult 权重并创建快照。
  *
- * Body:
- * - newWeight: number (0-100)
- * - reason?: string
+ * @route POST /api/goals/:goalUuid/key-results/:krUuid/weight
+ * @param req.body.newWeight - 新权重值 (1-10)
+ * @param req.body.reason - 变更原因 (可选)
  */
 router.post(
   '/goals/:goalUuid/key-results/:krUuid/weight',
@@ -24,12 +24,11 @@ router.post(
 );
 
 /**
- * 查询 Goal 的所有权重快照
- * GET /api/goals/:goalUuid/weight-snapshots
+ * 查询 Goal 的所有权重快照。
  *
- * Query:
- * - page?: number (default: 1)
- * - pageSize?: number (default: 20, max: 100)
+ * @route GET /api/goals/:goalUuid/weight-snapshots
+ * @param req.query.page - 页码
+ * @param req.query.pageSize - 每页数量
  */
 router.get(
   '/goals/:goalUuid/weight-snapshots',
@@ -38,10 +37,11 @@ router.get(
 );
 
 /**
- * 查询 KeyResult 的权重快照历史
- * GET /api/key-results/:krUuid/weight-snapshots
+ * 查询 KeyResult 的权重快照历史。
  *
- * Query: Same as Goal snapshots
+ * @route GET /api/key-results/:krUuid/weight-snapshots
+ * @param req.query.page - 页码
+ * @param req.query.pageSize - 每页数量
  */
 router.get(
   '/key-results/:krUuid/weight-snapshots',
@@ -50,12 +50,11 @@ router.get(
 );
 
 /**
- * 查询权重趋势数据（用于 ECharts）
- * GET /api/goals/:goalUuid/weight-trend
+ * 查询权重趋势数据（用于图表展示）。
  *
- * Query:
- * - startTime: number (timestamp in ms)
- * - endTime: number (timestamp in ms)
+ * @route GET /api/goals/:goalUuid/weight-trend
+ * @param req.query.startTime - 起始时间戳
+ * @param req.query.endTime - 结束时间戳
  */
 router.get(
   '/goals/:goalUuid/weight-trend',
@@ -64,11 +63,10 @@ router.get(
 );
 
 /**
- * 对比多个时间点的权重分配
- * GET /api/goals/:goalUuid/weight-comparison
+ * 对比多个时间点的权重分配。
  *
- * Query:
- * - timePoints: string (comma-separated timestamps, max 5)
+ * @route GET /api/goals/:goalUuid/weight-comparison
+ * @param req.query.timePoints - 逗号分隔的时间戳 (最多 5 个)
  */
 router.get(
   '/goals/:goalUuid/weight-comparison',

@@ -1,8 +1,15 @@
+/**
+ * @file prisma.ts
+ * @description Prisma Client 统一配置，提供数据库连接管理、查询监控和重试机制。
+ * @date 2025-01-22
+ */
+
 import { PrismaClient, Prisma } from '@prisma/client';
 
 /**
- * Prisma Client 统一配置
+ * Prisma Client 统一配置。
  *
+ * @remarks
  * 功能：
  * - 开发环境慢查询监控 (>100ms)
  * - 连接重试机制
@@ -25,7 +32,12 @@ const prismaClientConfig = {
       : [{ emit: 'stdout' as const, level: 'error' as const }],
 };
 
-// 单例模式：开发环境防止热重载创建多个连接
+/**
+ * Prisma Client 单例实例。
+ *
+ * @remarks
+ * 开发环境防止热重载创建多个连接。
+ */
 export const prisma: PrismaClient =
   global.prisma ??
   new PrismaClient(prismaClientConfig);
@@ -44,7 +56,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 /**
- * 可重试的 Prisma 错误代码
+ * 可重试的 Prisma 错误代码。
  * @see https://www.prisma.io/docs/reference/api-reference/error-reference
  */
 const RETRYABLE_ERROR_CODES = [
@@ -56,7 +68,10 @@ const RETRYABLE_ERROR_CODES = [
 ];
 
 /**
- * 判断错误是否可重试
+ * 判断错误是否可重试。
+ *
+ * @param error - 捕获的错误对象
+ * @returns {boolean} 如果是网络或连接相关的错误，返回 true
  */
 function isRetryableError(error: unknown): boolean {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -81,7 +96,12 @@ function isRetryableError(error: unknown): boolean {
 }
 
 /**
- * 带重试的数据库操作执行器
+ * 带重试的数据库操作执行器。
+ *
+ * @param operation - 需要执行的异步数据库操作
+ * @param options - 重试配置选项
+ * @returns {Promise<T>} 操作结果
+ * @throws 最后一次尝试失败的错误
  */
 export async function withRetry<T>(
   operation: () => Promise<T>,
@@ -136,7 +156,9 @@ export async function withRetry<T>(
 }
 
 /**
- * 连接数据库（带重试）
+ * 连接数据库（带重试）。
+ *
+ * @returns {Promise<void>}
  */
 export const connectPrisma = async (): Promise<void> => {
   await withRetry(
@@ -153,7 +175,9 @@ export const connectPrisma = async (): Promise<void> => {
 };
 
 /**
- * 断开数据库连接
+ * 断开数据库连接。
+ *
+ * @returns {Promise<void>}
  */
 export const disconnectPrisma = async (): Promise<void> => {
   try {
@@ -165,7 +189,9 @@ export const disconnectPrisma = async (): Promise<void> => {
 };
 
 /**
- * 测试数据库连接
+ * 测试数据库连接。
+ *
+ * @returns {Promise<boolean>} 连接成功返回 true，否则 false
  */
 export async function testConnection(): Promise<boolean> {
   try {

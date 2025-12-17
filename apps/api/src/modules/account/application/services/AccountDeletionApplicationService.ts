@@ -1,15 +1,7 @@
 /**
- * Account Deletion Application Service
- * 账户注销应用服务 - 负责账户删除流程编排
- *
- * 职责（遵循 DDD 最佳实践）：
- * - 用户账户注销
- * - 密码二次验证
- * - 数据清理协调
- * - 事务管理
- * - 调用 DomainService 进行业务规则验证
- * - 负责持久化操作
- * - 发布领域事件
+ * @file AccountDeletionApplicationService.ts
+ * @description 账户注销应用服务，负责账户删除流程编排。
+ * @date 2025-01-22
  */
 
 import type {
@@ -32,29 +24,45 @@ import bcrypt from 'bcryptjs';
 const logger = createLogger('AccountDeletionApplicationService');
 
 /**
- * 账户注销请求接口
+ * 账户注销请求接口。
  */
 export interface DeleteAccountRequest {
+  /** 账户 UUID */
   accountUuid: string;
-  password: string; // 二次验证密码
-  reason?: string; // 注销原因
-  feedback?: string; // 用户反馈
-  confirmationText?: string; // 确认文本（如"DELETE"）
+  /** 二次验证密码 */
+  password: string;
+  /** 注销原因（可选） */
+  reason?: string;
+  /** 用户反馈（可选） */
+  feedback?: string;
+  /** 确认文本（必须为 "DELETE"） */
+  confirmationText?: string;
 }
 
 /**
- * 账户注销响应接口
+ * 账户注销响应接口。
  */
 export interface DeleteAccountResponse {
+  /** 操作是否成功 */
   success: boolean;
+  /** 结果消息 */
   message: string;
+  /** 删除时间戳 */
   deletedAt: number;
+  /** 账户 UUID */
   accountUuid: string;
 }
 
 /**
- * Account Deletion Application Service
- * 负责账户注销流程的核心业务逻辑编排
+ * 账户注销应用服务。
+ *
+ * @remarks
+ * 负责协调账户注销的完整业务流程，包括：
+ * - 验证输入和账户状态
+ * - 执行密码二次验证
+ * - 协调账户软删除、凭证注销和会话清理
+ * - 事务管理（Saga 模式）
+ * - 发布删除事件
  */
 export class AccountDeletionApplicationService {
   private static instance: AccountDeletionApplicationService;
@@ -76,7 +84,12 @@ export class AccountDeletionApplicationService {
   }
 
   /**
-   * 创建应用服务实例（支持依赖注入）
+   * 创建应用服务实例（支持依赖注入）。
+   *
+   * @param accountRepository - 可选的账户仓储
+   * @param credentialRepository - 可选的凭证仓储
+   * @param sessionRepository - 可选的会话仓储
+   * @returns {Promise<AccountDeletionApplicationService>} 服务实例
    */
   static async createInstance(
     accountRepository?: IAccountRepository,
@@ -99,7 +112,9 @@ export class AccountDeletionApplicationService {
   }
 
   /**
-   * 获取应用服务单例
+   * 获取应用服务单例。
+   *
+   * @returns {Promise<AccountDeletionApplicationService>} 单例实例
    */
   static async getInstance(): Promise<AccountDeletionApplicationService> {
     if (!AccountDeletionApplicationService.instance) {
@@ -110,19 +125,23 @@ export class AccountDeletionApplicationService {
   }
 
   /**
-   * 账户注销主流程（使用 Saga 模式保证一致性）
+   * 账户注销主流程（使用 Saga 模式保证一致性）。
    *
-   * 步骤：
-   * 1. 验证输入（确认文本、密码）
-   * 2. 查询账户
-   * 3. 检查账户状态（不能已删除）
-   * 4. 查询凭证并验证密码（二次验证）
-   * 5. 开启事务：
-   *    a. 软删除账户
-   *    b. 注销凭证
-   *    c. 注销所有会话
-   * 6. 发布账户删除事件
-   * 7. 返回删除结果
+   * @remarks
+   * 执行步骤：
+   * 1. 验证输入（确认文本、密码）。
+   * 2. 查询账户并检查状态（不能已删除）。
+   * 3. 查询凭证并验证密码（二次验证）。
+   * 4. 开启事务：
+   *    a. 软删除账户。
+   *    b. 注销凭证。
+   *    c. 注销所有活跃会话。
+   * 5. 事务成功后，发布 `account:deleted` 事件。
+   * 6. 返回删除结果。
+   *
+   * @param request - 注销请求数据
+   * @returns {Promise<DeleteAccountResponse>} 注销结果
+   * @throws {Error} 当验证失败、账户不存在或系统错误时抛出
    */
   async deleteAccount(request: DeleteAccountRequest): Promise<DeleteAccountResponse> {
     logger.info('[AccountDeletionApplicationService] Starting account deletion', {
@@ -221,7 +240,10 @@ export class AccountDeletionApplicationService {
   }
 
   /**
-   * 验证输入
+   * 验证输入参数。
+   *
+   * @param request - 请求数据
+   * @throws {Error} 当参数缺失或无效时抛出
    */
   private validateInput(request: DeleteAccountRequest): void {
     if (!request.accountUuid) {
@@ -239,7 +261,11 @@ export class AccountDeletionApplicationService {
   }
 
   /**
-   * 发布账户删除事件
+   * 发布账户删除事件。
+   *
+   * @param account - 被删除的账户实体
+   * @param reason - 删除原因
+   * @returns {Promise<void>}
    */
   private async publishAccountDeletedEvent(account: Account, reason?: string): Promise<void> {
     eventBus.publish({
