@@ -1,218 +1,262 @@
 /**
- * WindowStateManager
+ * @file Window State Manager
+ * @description
+ * Persists window state (size, position, maximize status) to disk
+ * and restores it on application startup.
  *
- * Manages the persistence of the application window's state (size, position, maximized, fullscreen).
- * Ensures the window restores to its previous location and stays within visible screen bounds.
- *
- * @module modules/window
+ * @module modules/window/windowStateManager
  */
 
 import { app, BrowserWindow, screen } from 'electron';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import path from 'path';
+import fs from 'fs';
 
 /**
- * Represents the saved state of a window.
+ * @interface WindowState
+ * @description Interface defining the structure of the saved window state.
  */
-export interface WindowState {
-  /** X coordinate of the window. */
-  x?: number;
-  /** Y coordinate of the window. */
-  y?: number;
+interface WindowState {
   /** Window width in pixels. */
   width: number;
   /** Window height in pixels. */
   height: number;
+  /** Window X coordinate. */
+  x?: number;
+  /** Window Y coordinate. */
+  y?: number;
   /** Whether the window is maximized. */
   isMaximized: boolean;
-  /** Whether the window is in full-screen mode. */
-  isFullScreen: boolean;
 }
 
 /**
- * Configuration options for the WindowStateManager.
+ * @interface WindowStateManagerOptions
+ * @description Interface for configuration options when creating a WindowStateManager.
  */
-export interface WindowStateConfig {
-  /** Default window width if no state is saved. */
-  defaultWidth?: number;
-  /** Default window height if no state is saved. */
-  defaultHeight?: number;
-  /** Filename for storing the state JSON. Defaults to 'window-state.json'. */
-  file?: string;
+interface WindowStateManagerOptions {
+  /** Default width if no state is saved. */
+  defaultWidth: number;
+  /** Default height if no state is saved. */
+  defaultHeight: number;
 }
 
 /**
- * Class for managing window state persistence.
+ * @class WindowStateManager
+ * @description Manages the persistence and restoration of an Electron window's state.
  */
 export class WindowStateManager {
   private state: WindowState;
-  private stateFilePath: string;
-  private window: BrowserWindow | null = null;
-  private saveTimeout: NodeJS.Timeout | null = null;
+  private winRef: BrowserWindow | null = null;
+  private stateChangeTimer: NodeJS.Timeout | null = null;
+  private readonly configPath: string;
+  private readonly windowName: string;
+  private readonly options: WindowStateManagerOptions;
 
   /**
-   * Creates an instance of WindowStateManager.
-   * Loads existing state from disk if available, otherwise initializes defaults.
+   * @constructor
+   * @description Creates an instance of WindowStateManager.
    *
-   * @param {WindowStateConfig} [config={}] - Configuration options.
+   * @param {string} windowName - A unique name for the window (used for the filename).
+   * @param {WindowStateManagerOptions} options - Configuration options.
    */
-  constructor(config: WindowStateConfig = {}) {
-    const defaultWidth = config.defaultWidth || 1200;
-    const defaultHeight = config.defaultHeight || 800;
-    const fileName = config.file || 'window-state.json';
-
-    this.stateFilePath = path.join(app.getPath('userData'), fileName);
-    this.state = this.loadState() || {
-      width: defaultWidth,
-      height: defaultHeight,
-      isMaximized: false,
-      isFullScreen: false,
-    };
-
-    // Ensure the window is within the visible area of any screen
-    this.ensureVisibleOnScreen();
+  constructor(windowName: string, options: WindowStateManagerOptions) {
+    this.windowName = windowName;
+    this.options = options;
+    this.configPath = path.join(app.getPath('userData'), `window-state-${windowName}.json`);
+    this.state = this.loadState();
   }
 
   /**
-   * Loads the saved window state from the JSON file.
-   *
-   * @returns {WindowState | null} The loaded state or null if not found/invalid.
+   * @getter x
+   * @description Returns the x position from the saved state, or undefined if not set.
    */
-  private loadState(): WindowState | null {
-    try {
-      if (fs.existsSync(this.stateFilePath)) {
-        const data = fs.readFileSync(this.stateFilePath, 'utf-8');
-        return JSON.parse(data);
-      }
-    } catch (error) {
-      console.error('[WindowStateManager] Failed to load state:', error);
+  get x(): number | undefined {
+    return this.state.x;
+  }
+
+  /**
+   * @getter y
+   * @description Returns the y position from the saved state, or undefined if not set.
+   */
+  get y(): number | undefined {
+    return this.state.y;
+  }
+
+  /**
+   * @getter width
+   * @description Returns the width from the saved state.
+   */
+  get width(): number {
+    return this.state.width;
+  }
+
+  /**
+   * @getter height
+   * @description Returns the height from the saved state.
+   */
+  get height(): number {
+    return this.state.height;
+  }
+
+  /**
+   * @getter isMaximized
+   * @description Returns whether the window was maximized in the saved state.
+   */
+  get isMaximized(): boolean {
+    return this.state.isMaximized;
+  }
+
+  /**
+   * @method manage
+   * @description Registers a BrowserWindow to be managed.
+   * Attaches event listeners to track resize, move, and close events.
+   *
+   * @param {BrowserWindow} win - The Electron BrowserWindow instance.
+   */
+  manage(win: BrowserWindow): void {
+    this.winRef = win;
+
+    if (this.state.isMaximized) {
+      win.maximize();
     }
-    return null;
+
+    win.on('resize', this.stateChangeHandler);
+    win.on('move', this.stateChangeHandler);
+    win.on('close', this.closeHandler);
   }
 
   /**
-   * Saves the current window state to the JSON file.
+   * @method unmanage
+   * @description Unregisters the managed window and removes event listeners.
+   */
+  unmanage(): void {
+    if (this.winRef) {
+      this.winRef.removeListener('resize', this.stateChangeHandler);
+      this.winRef.removeListener('move', this.stateChangeHandler);
+      this.winRef.removeListener('close', this.closeHandler);
+      this.winRef = null;
+    }
+  }
+
+  /**
+   * @method stateChangeHandler
+   * @description Handler for window state change events (resize, move).
+   * Updates the internal state and schedules a save to disk.
+   */
+  private stateChangeHandler = (): void => {
+    if (this.stateChangeTimer) {
+      clearTimeout(this.stateChangeTimer);
+    }
+
+    this.stateChangeTimer = setTimeout(() => {
+      this.updateState();
+    }, 100);
+  };
+
+  /**
+   * @method closeHandler
+   * @description Handler for the close event.
+   * Ensures state is saved immediately before the window closes.
+   */
+  private closeHandler = (): void => {
+    this.updateState();
+  };
+
+  private updateState(): void {
+    if (!this.winRef) return;
+
+    try {
+      const windowBounds = this.winRef.getBounds();
+      const isMaximized = this.winRef.isMaximized();
+
+      if (isMaximized) {
+        this.state.isMaximized = true;
+      } else {
+        this.state.isMaximized = false;
+        this.state.x = windowBounds.x;
+        this.state.y = windowBounds.y;
+        this.state.width = windowBounds.width;
+        this.state.height = windowBounds.height;
+      }
+
+      this.saveState();
+    } catch (err) {
+      // Window might be destroyed
+    }
+  }
+
+  /**
+   * @method saveState
+   * @description Saves the current state to disk.
    */
   private saveState(): void {
     try {
-      fs.writeFileSync(this.stateFilePath, JSON.stringify(this.state, null, 2));
-    } catch (error) {
-      console.error('[WindowStateManager] Failed to save state:', error);
+      fs.writeFileSync(this.configPath, JSON.stringify(this.state));
+    } catch (err) {
+      // Ignore write errors
     }
   }
 
   /**
-   * Checks if the saved window coordinates are visible on any currently connected display.
-   * If not (e.g., monitor disconnected), resets coordinates to center.
-   */
-  private ensureVisibleOnScreen(): void {
-    if (this.state.x === undefined || this.state.y === undefined) {
-      return;
-    }
-
-    const displays = screen.getAllDisplays();
-    let isVisible = false;
-
-    for (const display of displays) {
-      const bounds = display.bounds;
-      if (
-        this.state.x >= bounds.x &&
-        this.state.y >= bounds.y &&
-        this.state.x < bounds.x + bounds.width &&
-        this.state.y < bounds.y + bounds.height
-      ) {
-        isVisible = true;
-        break;
-      }
-    }
-
-    if (!isVisible) {
-      // Reset to default positioning (usually center)
-      delete this.state.x;
-      delete this.state.y;
-    }
-  }
-
-  /**
-   * Retrieves the current window state configuration.
+   * @method loadState
+   * @description Loads the state from disk.
+   * If the file doesn't exist or is invalid, returns the default state.
+   * Validates that the saved position is within current screen bounds.
    *
-   * @returns {WindowState} The current state.
+   * @returns {WindowState} The loaded or default state.
    */
-  getState(): WindowState {
-    return { ...this.state };
-  }
-
-  /**
-   * Attaches the manager to a BrowserWindow instance.
-   * Restores the window's state and sets up listeners for state changes.
-   *
-   * @param {BrowserWindow} window - The window to manage.
-   */
-  manage(window: BrowserWindow): void {
-    this.window = window;
-
-    // Restore maximized/fullscreen state
-    if (this.state.isMaximized) {
-      window.maximize();
-    }
-    if (this.state.isFullScreen) {
-      window.setFullScreen(true);
-    }
-
-    // Listen for window events to update state
-    window.on('resize', () => this.scheduleUpdate());
-    window.on('move', () => this.scheduleUpdate());
-    window.on('maximize', () => this.scheduleUpdate());
-    window.on('unmaximize', () => this.scheduleUpdate());
-    window.on('enter-full-screen', () => this.scheduleUpdate());
-    window.on('leave-full-screen', () => this.scheduleUpdate());
-    window.on('close', () => this.saveState());
-  }
-
-  /**
-   * Schedules a state update with a debounce to avoid frequent writes during resizing/moving.
-   */
-  private scheduleUpdate(): void {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-    }
-    this.saveTimeout = setTimeout(() => this.updateState(), 100);
-  }
-
-  /**
-   * Updates the internal state object based on the current window properties.
-   */
-  private updateState(): void {
-    if (!this.window) return;
-
-    const isMaximized = this.window.isMaximized();
-    const isFullScreen = this.window.isFullScreen();
-
-    // Only update position/size if not maximized or fullscreen
-    if (!isMaximized && !isFullScreen) {
-      const bounds = this.window.getBounds();
-      this.state.x = bounds.x;
-      this.state.y = bounds.y;
-      this.state.width = bounds.width;
-      this.state.height = bounds.height;
-    }
-
-    this.state.isMaximized = isMaximized;
-    this.state.isFullScreen = isFullScreen;
-  }
-
-  /**
-   * Deletes the saved state file, effectively resetting the window state to defaults on next launch.
-   */
-  reset(): void {
+  private loadState(): WindowState {
     try {
-      if (fs.existsSync(this.stateFilePath)) {
-        fs.unlinkSync(this.stateFilePath);
+      if (fs.existsSync(this.configPath)) {
+        const data = fs.readFileSync(this.configPath, 'utf8');
+        const state = JSON.parse(data);
+        if (this.validateState(state)) {
+          return state;
+        }
       }
-    } catch (error) {
-      console.error('[WindowStateManager] Failed to reset state:', error);
+    } catch (err) {
+      // Ignore read errors
     }
+
+    return {
+      width: this.options.defaultWidth,
+      height: this.options.defaultHeight,
+      isMaximized: false,
+    };
+  }
+
+  /**
+   * @method validateState
+   * @description Validates if the given state is visible on any currently connected display.
+   *
+   * @param {WindowState} state - The state to check.
+   * @returns {boolean} True if the window would be visible, false otherwise.
+   */
+  private validateState(state: WindowState): boolean {
+    if (
+      !state ||
+      typeof state.width !== 'number' ||
+      typeof state.height !== 'number'
+    ) {
+      return false;
+    }
+
+    if (state.x !== undefined && state.y !== undefined) {
+      const displays = screen.getAllDisplays();
+      const visible = displays.some((display) => {
+        const bounds = display.bounds;
+        return (
+          state.x! >= bounds.x &&
+          state.x! < bounds.x + bounds.width &&
+          state.y! >= bounds.y &&
+          state.y! < bounds.y + bounds.height
+        );
+      });
+
+      if (!visible) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }
-
-export default WindowStateManager;

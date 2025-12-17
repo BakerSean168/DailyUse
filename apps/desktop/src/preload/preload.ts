@@ -1,6 +1,6 @@
 /**
- * Electron Preload Script
- *
+ * @file Electron Preload Script
+ * @description
  * Implements a secure `contextBridge` to expose specific API capabilities to the renderer process.
  * Acts as a security barrier, ensuring only authorized IPC channels can be accessed.
  * Follows Electron security best practices (context isolation, sandboxing).
@@ -334,7 +334,8 @@ const ALLOWED_CHANNELS = [
 ] as const;
 
 /**
- * Type representing valid allowed channels.
+ * @typedef AllowedChannel
+ * @description Type representing valid allowed channels.
  */
 type AllowedChannel = (typeof ALLOWED_CHANNELS)[number];
 
@@ -342,7 +343,8 @@ type AllowedChannel = (typeof ALLOWED_CHANNELS)[number];
 const allowedChannelsSet = new Set<string>(ALLOWED_CHANNELS);
 
 /**
- * Validates if a channel string is permitted.
+ * @function isAllowedChannel
+ * @description Validates if a channel string is permitted.
  *
  * @param {string} channel - The channel name to check.
  * @returns {boolean} True if the channel is allowed.
@@ -355,13 +357,15 @@ function isAllowedChannel(channel: string): channel is AllowedChannel {
 const eventListeners = new Map<string, Set<(...args: unknown[]) => void>>();
 
 /**
- * The API exposed to the renderer process via `window.electronAPI`.
+ * @constant electronAPI
+ * @description The API exposed to the renderer process via `window.electronAPI`.
  *
  * Implements the `ElectronAPI` interface used by the frontend infrastructure client.
  */
 const electronAPI = {
   /**
-   * Invokes a main process handler via IPC.
+   * @method invoke
+   * @description Invokes a main process handler via IPC.
    * Used for request-response communication (e.g., fetching data).
    *
    * @template T The expected return type.
@@ -377,7 +381,8 @@ const electronAPI = {
   },
 
   /**
-   * Registers a listener for messages sent from the main process.
+   * @method on
+   * @description Registers a listener for messages sent from the main process.
    * Used for push notifications or event updates.
    *
    * @param {string} channel - The IPC channel to listen on.
@@ -407,7 +412,8 @@ const electronAPI = {
   },
 
   /**
-   * Removes a previously registered listener.
+   * @method off
+   * @description Removes a previously registered listener.
    *
    * @param {string} channel - The IPC channel.
    * @param {(...args: unknown[]) => void} callback - The original callback function to remove.

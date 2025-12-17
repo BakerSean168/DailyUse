@@ -19,7 +19,13 @@ export class TaskStatisticsIPCHandler extends BaseIPCHandler {
   }
 
   private registerHandlers(): void {
-    // 获取任务统计摘要
+    /**
+     * @description 获取任务统计摘要
+     * Channel Name: task-statistics:get-summary
+     * Payload: params (any)
+     * Return: TaskStatisticsSummary
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-statistics:get-summary', async (_, params) => {
       return this.handleRequest(
         'task-statistics:get-summary',
@@ -31,7 +37,13 @@ export class TaskStatisticsIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 按日期范围获取统计
+    /**
+     * @description 按日期范围获取统计
+     * Channel Name: task-statistics:get-by-date-range
+     * Payload: { startDate: number; endDate: number }
+     * Return: TaskStatistics
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-statistics:get-by-date-range', async (_, payload: { startDate: number; endDate: number }) => {
       return this.handleRequest(
         'task-statistics:get-by-date-range',
@@ -42,7 +54,13 @@ export class TaskStatisticsIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 按模板获取统计
+    /**
+     * @description 按模板获取统计
+     * Channel Name: task-statistics:get-by-template
+     * Payload: templateUuid (string)
+     * Return: TaskStatistics
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-statistics:get-by-template', async (_, templateUuid) => {
       return this.handleRequest(
         'task-statistics:get-by-template',
@@ -53,7 +71,13 @@ export class TaskStatisticsIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取生产力统计
+    /**
+     * @description 获取生产力统计
+     * Channel Name: task-statistics:get-productivity
+     * Payload: date (number)
+     * Return: ProductivityStatistics
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-statistics:get-productivity', async (_, date) => {
       return this.handleRequest(
         'task-statistics:get-productivity',
@@ -64,7 +88,13 @@ export class TaskStatisticsIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取趋势
+    /**
+     * @description 获取趋势
+     * Channel Name: task-statistics:get-trends
+     * Payload: days (number)
+     * Return: TaskTrends
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-statistics:get-trends', async (_, days) => {
       return this.handleRequest(
         'task-statistics:get-trends',
@@ -75,7 +105,13 @@ export class TaskStatisticsIPCHandler extends BaseIPCHandler {
       );
     });
 
-    // 获取任务仪表板
+    /**
+     * @description 获取任务仪表板
+     * Channel Name: task-dashboard:get
+     * Payload: accountUuid (string, optional)
+     * Return: TaskDashboardData
+     * Security: Requires authentication
+     */
     ipcMain.handle('task-dashboard:get', async (_, accountUuid) => {
       return this.handleRequest(
         'task-dashboard:get',
