@@ -1,11 +1,18 @@
+/**
+ * @file focusSessionRoutes.ts
+ * @description 专注会话模块路由，定义专注周期的 HTTP 接口路由。
+ * @date 2025-01-22
+ */
+
 import { Router } from 'express';
 import { FocusSessionController } from './FocusSessionController';
 import { authMiddleware } from '@/shared/infrastructure/http/middlewares/authMiddleware';
 
 /**
- * FocusSession 模块路由
+ * FocusSession 模块路由。
  *
- * 专注周期管理 API - 基于 Pomodoro 技术的时间追踪
+ * @remarks
+ * 专注周期管理 API - 基于 Pomodoro 技术的时间追踪。
  *
  * 路由规范：
  * 1. RESTful API 设计

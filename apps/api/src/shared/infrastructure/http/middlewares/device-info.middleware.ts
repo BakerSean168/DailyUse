@@ -1,9 +1,22 @@
+/**
+ * @file device-info.middleware.ts
+ * @description 设备信息提取中间件，自动解析 User-Agent 和 IP 地址。
+ * @date 2025-01-22
+ */
+
 import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 
 /**
- * 自动提取设备信息和 IP 地址的中间件
- * 用于登录、注册等需要记录设备信息的场景
+ * 自动提取设备信息和 IP 地址的中间件。
+ *
+ * @remarks
+ * 用于登录、注册等需要记录设备信息的场景。
+ * 如果请求体中未提供 deviceInfo 和 ipAddress，则尝试自动从请求头中解析并注入。
+ *
+ * @param req - Express 请求对象
+ * @param _res - Express 响应对象
+ * @param next - 下一个中间件函数
  */
 export function deviceInfoMiddleware(req: Request, _res: Response, next: NextFunction): void {
   // 如果请求体中已经有 deviceInfo 和 ipAddress，跳过自动填充
@@ -40,7 +53,10 @@ export function deviceInfoMiddleware(req: Request, _res: Response, next: NextFun
 }
 
 /**
- * 从 User-Agent 提取平台信息
+ * 从 User-Agent 提取平台信息。
+ *
+ * @param userAgent - User-Agent 字符串
+ * @returns {string} 平台名称 (Windows, macOS, Linux, Android, iOS, Unknown)
  */
 function extractPlatform(userAgent: string): string {
   const ua = userAgent.toLowerCase();
@@ -53,7 +69,10 @@ function extractPlatform(userAgent: string): string {
 }
 
 /**
- * 从 User-Agent 提取浏览器信息
+ * 从 User-Agent 提取浏览器信息。
+ *
+ * @param userAgent - User-Agent 字符串
+ * @returns {string} 浏览器名称 (Edge, Chrome, Firefox, Safari, curl, Postman, Unknown)
  */
 function extractBrowser(userAgent: string): string {
   const ua = userAgent.toLowerCase();
@@ -67,7 +86,10 @@ function extractBrowser(userAgent: string): string {
 }
 
 /**
- * 从 User-Agent 提取设备类型
+ * 从 User-Agent 提取设备类型。
+ *
+ * @param userAgent - User-Agent 字符串
+ * @returns {'WEB' | 'MOBILE' | 'DESKTOP' | 'TABLET' | 'OTHER'} 设备类型
  */
 function extractDeviceType(userAgent: string): 'WEB' | 'MOBILE' | 'DESKTOP' | 'TABLET' | 'OTHER' {
   const ua = userAgent.toLowerCase();
@@ -82,8 +104,14 @@ function extractDeviceType(userAgent: string): 'WEB' | 'MOBILE' | 'DESKTOP' | 'T
 }
 
 /**
- * 生成设备唯一标识
- * 基于 User-Agent 和 IP 地址的简单哈希
+ * 生成设备唯一标识。
+ *
+ * @remarks
+ * 基于 User-Agent 和 IP 地址的简单哈希。
+ *
+ * @param userAgent - User-Agent 字符串
+ * @param ipAddress - IP 地址
+ * @returns {string} SHA-256 哈希值的前 32 位
  */
 function generateDeviceId(userAgent: string, ipAddress: string): string {
   const hash = crypto.createHash('sha256').update(`${userAgent}:${ipAddress}`).digest('hex');

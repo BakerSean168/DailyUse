@@ -1,8 +1,7 @@
 /**
- * Weight Snapshot Controller
- * 权重快照控制器
- *
- * 负责处理权重快照相关的 HTTP 请求和响应。
+ * @file WeightSnapshotController.ts
+ * @description 权重快照控制器，处理权重快照相关的 HTTP 请求。
+ * @date 2025-01-22
  */
 
 import type { Request, Response } from 'express';
@@ -18,8 +17,9 @@ import { GoalNotFoundError, KeyResultNotFoundError } from '../../application/err
 const logger = createLogger('WeightSnapshotController');
 
 /**
- * Weight Snapshot Controller
+ * 权重快照控制器。
  *
+ * @remarks
  * **职责**:
  * - 解析 HTTP 请求参数
  * - 调用 Application Service 处理业务逻辑
@@ -32,7 +32,7 @@ export class WeightSnapshotController {
   private static responseBuilder = createResponseBuilder();
 
   /**
-   * 初始化服务（延迟加载）
+   * 初始化服务（延迟加载）。
    */
   private static async getSnapshotService(): Promise<WeightSnapshotApplicationService> {
     if (!WeightSnapshotController.snapshotService) {
@@ -54,36 +54,17 @@ export class WeightSnapshotController {
   }
 
   /**
-   * 更新 KR 权重
+   * 更新关键结果 (KR) 权重。
+   *
    * @route POST /api/goals/:goalUuid/key-results/:krUuid/weight
    *
-   * **Request Body**:
-   * ```json
-   * {
-   *   "newWeight": 7,
-   *   "reason": "季度中期调整"
-   * }
-   * ```
+   * @param req - Express 请求对象，Body 中包含 newWeight 和 reason
+   * @param res - Express 响应对象
    *
+   * @remarks
    * **权重范围**: 1-10（权重占比由所有 KR 权重的总和计算）
    *
-   * **Response**:
-   * ```json
-   * {
-   *   "success": true,
-   *   "message": "Weight updated successfully",
-   *   "data": { 
-   *     "keyResult": { "uuid": "...", "title": "...", "oldWeight": 5, "newWeight": 7 },
-   *     "weightInfo": { 
-   *       "totalWeight": 30,
-   *       "keyResults": [
-   *         { "uuid": "...", "title": "...", "weight": 7, "percentage": 23.33 },
-   *         { "uuid": "...", "title": "...", "weight": 10, "percentage": 33.33 }
-   *       ]
-   *     }
-   *   }
-   * }
-   * ```
+   * @returns {Promise<Response>} 包含更新后的 KR 信息和权重分布信息
    */
   static async updateKeyResultWeight(req: Request, res: Response): Promise<Response> {
     try {
@@ -159,28 +140,14 @@ export class WeightSnapshotController {
   }
 
   /**
-   * 查询 Goal 的所有权重快照
+   * 查询 Goal 的所有权重快照。
+   *
    * @route GET /api/goals/:goalUuid/weight-snapshots
    *
-   * **Query Parameters**:
-   * - page: number (default: 1)
-   * - pageSize: number (default: 20, max: 100)
+   * @param req - Express 请求对象，Query 中包含分页参数 page, pageSize
+   * @param res - Express 响应对象
    *
-   * **Response**:
-   * ```json
-   * {
-   *   "success": true,
-   *   "data": {
-   *     "snapshots": [...],
-   *     "pagination": {
-   *       "total": 50,
-   *       "page": 1,
-   *       "pageSize": 20,
-   *       "totalPages": 3
-   *     }
-   *   }
-   * }
-   * ```
+   * @returns {Promise<Response>} 分页的快照列表
    */
   static async getGoalSnapshots(req: Request, res: Response): Promise<Response> {
     try {
@@ -214,10 +181,14 @@ export class WeightSnapshotController {
   }
 
   /**
-   * 查询 KeyResult 的权重快照历史
+   * 查询 KeyResult 的权重快照历史。
+   *
    * @route GET /api/key-results/:krUuid/weight-snapshots
    *
-   * **Query Parameters**: Same as getGoalSnapshots
+   * @param req - Express 请求对象，Query 中包含分页参数
+   * @param res - Express 响应对象
+   *
+   * @returns {Promise<Response>} 分页的快照列表
    */
   static async getKeyResultSnapshots(req: Request, res: Response): Promise<Response> {
     try {
@@ -251,29 +222,14 @@ export class WeightSnapshotController {
   }
 
   /**
-   * 查询权重趋势数据（用于 ECharts）
+   * 查询权重趋势数据（用于图表展示）。
+   *
    * @route GET /api/goals/:goalUuid/weight-trend
    *
-   * **Query Parameters**:
-   * - startTime: number (timestamp in ms)
-   * - endTime: number (timestamp in ms)
+   * @param req - Express 请求对象，Query 中包含 startTime, endTime
+   * @param res - Express 响应对象
    *
-   * **Response**:
-   * ```json
-   * {
-   *   "success": true,
-   *   "data": {
-   *     "timePoints": [1640000000000, ...],
-   *     "keyResults": [
-   *       {
-   *         "uuid": "kr-1",
-   *         "title": "KR 1",
-   *         "data": [{ time: 1640000000000, weight: 30 }, ...]
-   *       }
-   *     ]
-   *   }
-   * }
-   * ```
+   * @returns {Promise<Response>} 格式化后的趋势数据
    */
   static async getWeightTrend(req: Request, res: Response): Promise<Response> {
     try {
@@ -341,31 +297,14 @@ export class WeightSnapshotController {
   }
 
   /**
-   * 对比多个时间点的权重分配
+   * 对比多个时间点的权重分配。
+   *
    * @route GET /api/goals/:goalUuid/weight-comparison
    *
-   * **Query Parameters**:
-   * - timePoints: string (comma-separated timestamps, max 5)
+   * @param req - Express 请求对象，Query 中包含 timePoints (逗号分隔的时间戳)
+   * @param res - Express 响应对象
    *
-   * **Response**:
-   * ```json
-   * {
-   *   "success": true,
-   *   "data": {
-   *     "keyResults": [...],
-   *     "comparisons": {
-   *       "kr-1": [30, 35, 40],
-   *       "kr-2": [40, 35, 30],
-   *       "kr-3": [30, 30, 30]
-   *     },
-   *     "deltas": {
-   *       "kr-1": [5, 5],
-   *       "kr-2": [-5, -5],
-   *       "kr-3": [0, 0]
-   *     }
-   *   }
-   * }
-   * ```
+   * @returns {Promise<Response>} 包含不同时间点的权重和变化量
    */
   static async getWeightComparison(req: Request, res: Response): Promise<Response> {
     try {
@@ -478,7 +417,11 @@ export class WeightSnapshotController {
   }
 
   /**
-   * 统一错误处理
+   * 统一错误处理。
+   *
+   * @param error - 捕获的错误
+   * @param res - Express 响应对象
+   * @returns {Response} 错误响应
    */
   private static handleError(error: unknown, res: Response): Response {
     if (error instanceof GoalNotFoundError || error instanceof KeyResultNotFoundError) {
@@ -504,5 +447,3 @@ export class WeightSnapshotController {
     });
   }
 }
-
-

@@ -1,3 +1,9 @@
+/**
+ * @file GoalController.ts
+ * @description 目标控制器，处理目标相关的 HTTP 请求。
+ * @date 2025-01-22
+ */
+
 import type { Request, Response } from 'express';
 import { GoalApplicationService } from '../../application/services/GoalApplicationService';
 import { GoalKeyResultApplicationService } from '../../application/services/GoalKeyResultApplicationService';
@@ -15,14 +21,12 @@ import { prisma } from '@/shared/infrastructure/config/prisma';
 const logger = createLogger('GoalController');
 
 /**
- * Goal 控制器
- * 负责处理 HTTP 请求和响应，协调应用服务
+ * 目标控制器。
  *
- * 职责：
- * - 解析 HTTP 请求参数
- * - 调用应用服务处理业务逻辑
- * - 格式化响应（统一使用 ResponseBuilder）
- * - 异常处理和错误响应
+ * @remarks
+ * 负责接收和处理与目标（Goal）及其子实体（KeyResult, GoalReview, GoalRecord）相关的 HTTP 请求。
+ * 遵循 RESTful API 设计。
+ * 此控制器聚合了多个 ApplicationService 的功能。
  */
 export class GoalController {
   private static goalService: GoalApplicationService | null = null;
@@ -33,7 +37,9 @@ export class GoalController {
   private static responseBuilder = createResponseBuilder();
 
   /**
-   * 初始化应用服务（延迟加载）
+   * 初始化应用服务（延迟加载）。
+   *
+   * @returns {Promise<GoalApplicationService>} 目标应用服务实例
    */
   private static async getGoalService(): Promise<GoalApplicationService> {
     if (!GoalController.goalService) {
@@ -76,10 +82,11 @@ export class GoalController {
   }
 
   /**
-   * 验证目标归属权限
-   * @param goalUuid 目标UUID
-   * @param accountUuid 用户UUID
-   * @returns {goal, error} goal存在且有权限时返回goal，否则返回error响应
+   * 验证目标归属权限。
+   *
+   * @param goalUuid - 目标 UUID
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<{ goal: any; error: null } | { goal: null; error: { code: ResponseCode; message: string } }>} 验证结果
    */
   private static async verifyGoalOwnership(
     goalUuid: string,
@@ -115,8 +122,12 @@ export class GoalController {
   }
 
   /**
-   * 创建目标
+   * 创建目标接口。
+   *
    * @route POST /api/goals
+   * @param req - AuthenticatedRequest，Body 中包含创建参数
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 创建的目标数据
    */
   static async createGoal(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -163,8 +174,12 @@ export class GoalController {
   }
 
   /**
-   * 获取目标详情
+   * 获取目标详情接口。
+   *
    * @route GET /api/goals/:uuid
+   * @param req - Express 请求对象，params 中包含 uuid
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 目标详情
    */
   static async getGoal(req: Request, res: Response): Promise<Response> {
     try {
@@ -199,8 +214,12 @@ export class GoalController {
   }
 
   /**
-   * 获取当前用户的所有目标（从 token 中提取 accountUuid）
+   * 获取当前用户的所有目标接口（从 Token）。
+   *
    * @route GET /api/goals
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 目标列表
    */
   static async getUserGoalsByToken(req: Request, res: Response): Promise<Response> {
     try {
@@ -257,8 +276,12 @@ export class GoalController {
   }
 
   /**
-   * 获取用户的所有目标
+   * 获取指定用户的所有目标接口。
+   *
    * @route GET /api/goals/user/:accountUuid
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 目标列表
    */
   static async getUserGoals(req: Request, res: Response): Promise<Response> {
     try {
@@ -285,8 +308,12 @@ export class GoalController {
   }
 
   /**
-   * 更新目标
+   * 更新目标接口。
+   *
    * @route PATCH /api/goals/:uuid
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 更新后的目标
    */
   static async updateGoal(req: Request, res: Response): Promise<Response> {
     try {
@@ -331,8 +358,12 @@ export class GoalController {
   }
 
   /**
-   * 激活目标
+   * 激活目标接口。
+   *
    * @route POST /api/goals/:uuid/activate
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 激活后的目标
    */
   static async activateGoal(req: Request, res: Response): Promise<Response> {
     try {
@@ -359,8 +390,12 @@ export class GoalController {
   }
 
   /**
-   * 完成目标
+   * 完成目标接口。
+   *
    * @route POST /api/goals/:uuid/complete
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 完成后的目标
    */
   static async completeGoal(req: Request, res: Response): Promise<Response> {
     try {
@@ -387,12 +422,12 @@ export class GoalController {
   }
 
   /**
-   * 删除目标
-   * @route DELETE /api/goals/:uuid
-   */
-  /**
-   * 检查目标依赖关系
+   * 检查目标依赖关系接口。
+   *
    * @route GET /api/goals/:uuid/dependencies
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 依赖关系信息
    */
   static async checkGoalDependencies(req: Request, res: Response): Promise<Response> {
     try {
@@ -435,8 +470,12 @@ export class GoalController {
   }
 
   /**
-   * 删除目标（软删除）
+   * 删除目标接口。
+   *
    * @route DELETE /api/goals/:uuid
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 操作结果
    */
   static async deleteGoal(req: Request, res: Response): Promise<Response> {
     try {
@@ -480,8 +519,12 @@ export class GoalController {
   }
 
   /**
-   * 归档目标
+   * 归档目标接口。
+   *
    * @route POST /api/goals/:uuid/archive
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 归档后的目标
    */
   static async archiveGoal(req: Request, res: Response): Promise<Response> {
     try {
@@ -508,8 +551,12 @@ export class GoalController {
   }
 
   /**
-   * 添加关键结果
+   * 添加关键结果接口。
+   *
    * @route POST /api/goals/:uuid/key-results
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 添加后的关键结果
    */
   static async addKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -551,8 +598,12 @@ export class GoalController {
   }
 
   /**
-   * 更新关键结果进度
+   * 更新关键结果进度接口。
+   *
    * @route PATCH /api/goals/:uuid/key-results/:keyResultUuid/progress
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 更新后的目标
    */
   static async updateKeyResultProgress(req: AuthenticatedRequest, res: Response): Promise<Response> {
 
@@ -596,10 +647,13 @@ export class GoalController {
     }
   }
 
-    /**
-    /**
-   * 删除关键结果
+  /**
+   * 删除关键结果接口。
+   *
    * @route DELETE /api/goals/:uuid/key-results/:keyResultUuid
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 操作结果
    */
   static async deleteKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -642,8 +696,12 @@ export class GoalController {
   }
 
   /**
-   * 添加目标回顾
+   * 添加目标回顾接口。
+   *
    * @route POST /api/goals/:uuid/reviews
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 添加后的回顾
    */
   static async addReview(req: Request, res: Response): Promise<Response> {
     try {
@@ -675,8 +733,12 @@ export class GoalController {
   }
 
   /**
-   * 搜索目标
+   * 搜索目标接口。
+   *
    * @route GET /api/goals/search
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 匹配的目标列表
    */
   static async searchGoals(req: Request, res: Response): Promise<Response> {
     try {
@@ -709,8 +771,12 @@ export class GoalController {
   }
 
   /**
-   * 获取目标统计
+   * 获取目标统计接口。
+   *
    * @route GET /api/goals/statistics/:accountUuid
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 统计数据
    */
   static async getGoalStatistics(req: Request, res: Response): Promise<Response> {
     try {
@@ -740,14 +806,15 @@ export class GoalController {
   }
 
   /**
-   * 获取目标进度分解详情
-   * @route GET /api/goals/:uuid/progress-breakdown
-   */
-  /**
-   * 获取目标的聚合视图（权重分布）
+   * 获取目标的聚合视图（权重分布）接口。
+   *
    * @route GET /api/goals/:uuid/aggregate
-   * 
-   * 返回目标及其所有关键结果的权重分布信息
+   * @remarks
+   * 返回目标及其所有关键结果的权重分布信息。
+   *
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 聚合视图数据
    */
   static async getGoalAggregateView(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -835,6 +902,14 @@ export class GoalController {
     }
   }
 
+  /**
+   * 获取目标进度分解详情接口。
+   *
+   * @route GET /api/goals/:uuid/progress-breakdown
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 进度分解数据
+   */
   static async getProgressBreakdown(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
       const { uuid } = req.params;
@@ -882,8 +957,12 @@ export class GoalController {
   // ===== GoalRecord 管理 =====
 
   /**
-   * 创建目标记录
+   * 创建目标记录接口。
+   *
    * @route POST /api/goals/:uuid/key-results/:keyResultUuid/records
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 创建的记录
    */
   static async createGoalRecord(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -924,8 +1003,12 @@ export class GoalController {
   }
 
   /**
-   * 获取关键结果的所有记录
+   * 获取关键结果的所有记录接口。
+   *
    * @route GET /api/goals/:uuid/key-results/:keyResultUuid/records
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 记录列表
    */
   static async getGoalRecordsByKeyResult(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -978,8 +1061,12 @@ export class GoalController {
   }
 
   /**
-   * 获取目标的所有记录
+   * 获取目标的所有记录接口。
+   *
    * @route GET /api/goals/:uuid/records
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 记录列表
    */
   static async getGoalRecordsByGoal(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -1026,8 +1113,12 @@ export class GoalController {
   }
 
   /**
-   * 删除目标记录
+   * 删除目标记录接口。
+   *
    * @route DELETE /api/goals/:uuid/key-results/:keyResultUuid/records/:recordUuid
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
+   * @returns {Promise<Response>} 操作结果
    */
   static async deleteGoalRecord(req: AuthenticatedRequest, res: Response): Promise<Response> {
     try {
@@ -1067,7 +1158,3 @@ export class GoalController {
     }
   }
 }
-
-
-
-

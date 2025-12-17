@@ -1,11 +1,19 @@
+/**
+ * @file GoalFolderApplicationService.ts
+ * @description 目标文件夹应用服务，协调领域服务和仓储处理业务逻辑。
+ * @date 2025-01-22
+ */
+
 import type { IGoalFolderRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 import { GoalFolderDomainService, GoalFolder, Goal } from '@dailyuse/domain-server/goal';
 import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
 
 /**
- * GoalFolder 应用服务
- * 负责协调领域服务和仓储，处理文件夹管理业务用例
+ * GoalFolder 应用服务。
+ *
+ * @remarks
+ * 负责协调领域服务和仓储，处理文件夹管理业务用例。
  *
  * 架构职责：
  * - 委托给 DomainService 处理业务逻辑
@@ -27,7 +35,11 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 创建应用服务实例（支持依赖注入）
+   * 创建应用服务实例（支持依赖注入）。
+   *
+   * @param folderRepository - 文件夹仓储
+   * @param goalRepository - 目标仓储
+   * @returns {Promise<GoalFolderApplicationService>} 服务实例
    */
   static async createInstance(
     folderRepository?: IGoalFolderRepository,
@@ -42,7 +54,9 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 获取应用服务单例
+   * 获取应用服务单例。
+   *
+   * @returns {Promise<GoalFolderApplicationService>} 单例实例
    */
   static async getInstance(): Promise<GoalFolderApplicationService> {
     if (!GoalFolderApplicationService.instance) {
@@ -54,14 +68,18 @@ export class GoalFolderApplicationService {
   // ===== GoalFolder CRUD 操作 =====
 
   /**
-   * 创建文件夹
+   * 创建文件夹。
    *
-   * 架构说明：
-   * 1. Query: 查询现有文件夹（检查重名）和父文件夹
-   * 2. Domain: 验证业务规则
-   * 3. Domain: 创建 GoalFolder 聚合根
-   * 4. Persist: 保存文件夹
-   * 5. Return: DTO
+   * @remarks
+   * 1. 验证名称和颜色。
+   * 2. 检查重名。
+   * 3. 验证父文件夹（如果存在）。
+   * 4. 创建聚合根并验证深度。
+   * 5. 持久化。
+   *
+   * @param accountUuid - 账户 UUID
+   * @param params - 创建参数 (name, description, icon, color, parentFolderUuid, sortOrder)
+   * @returns {Promise<GoalFolderClientDTO>} 创建的文件夹 DTO
    */
   async createFolder(
     accountUuid: string,
@@ -118,7 +136,10 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 获取文件夹
+   * 获取文件夹。
+   *
+   * @param uuid - 文件夹 UUID
+   * @returns {Promise<GoalFolderClientDTO | null>} 文件夹 DTO 或 null
    */
   async getFolder(uuid: string): Promise<GoalFolderClientDTO | null> {
     const folder = await this.folderRepository.findById(uuid);
@@ -126,7 +147,10 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 获取账户的所有文件夹
+   * 获取账户的所有文件夹。
+   *
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<GoalFolderClientDTO[]>} 文件夹列表
    */
   async getFoldersByAccount(accountUuid: string): Promise<GoalFolderClientDTO[]> {
     const folders = await this.folderRepository.findByAccountUuid(accountUuid);
@@ -134,14 +158,15 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 更新文件夹
+   * 更新文件夹。
    *
-   * 架构说明：
-   * 1. Query: 查询文件夹聚合根
-   * 2. Domain: 验证业务规则
-   * 3. Domain: 调用聚合根方法修改状态
-   * 4. Persist: 保存文件夹
-   * 5. Return: DTO
+   * @remarks
+   * 支持更新名称、描述、图标、颜色和排序。
+   * 系统文件夹不能重名。
+   *
+   * @param uuid - 文件夹 UUID
+   * @param params - 更新参数
+   * @returns {Promise<GoalFolderClientDTO>} 更新后的文件夹 DTO
    */
   async updateFolder(
     uuid: string,
@@ -199,14 +224,13 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 删除文件夹
+   * 删除文件夹。
    *
-   * 架构说明：
-   * 1. Query: 查询文件夹和文件夹中的目标
-   * 2. Domain: 验证删除规则
-   * 3. Domain: 将目标移出文件夹
-   * 4. Domain: 软删除文件夹
-   * 5. Persist: 保存所有变更
+   * @remarks
+   * 软删除文件夹，并将文件夹内的目标移动到根目录。
+   *
+   * @param uuid - 文件夹 UUID
+   * @returns {Promise<void>}
    */
   async deleteFolder(uuid: string): Promise<void> {
     // 1. 查询文件夹
@@ -236,7 +260,10 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 恢复已删除的文件夹
+   * 恢复已删除的文件夹。
+   *
+   * @param uuid - 文件夹 UUID
+   * @returns {Promise<GoalFolderClientDTO>} 恢复后的文件夹 DTO
    */
   async restoreFolder(uuid: string): Promise<GoalFolderClientDTO> {
     // 1. 查询文件夹
@@ -263,14 +290,14 @@ export class GoalFolderApplicationService {
   // ===== 目标移动操作 =====
 
   /**
-   * 移动目标到文件夹
+   * 移动目标到文件夹。
    *
-   * 架构说明：
-   * 1. Query: 查询目标和目标文件夹
-   * 2. Domain: 验证移动规则
-   * 3. Domain: 调用目标的 moveToFolder()
-   * 4. Persist: 保存目标
-   * 5. Update: 更新源文件夹和目标文件夹的统计
+   * @remarks
+   * 更新目标和相关文件夹的统计信息。
+   *
+   * @param goalUuid - 目标 UUID
+   * @param folderUuid - 目标文件夹 UUID (null 表示根目录)
+   * @returns {Promise<GoalClientDTO>} 移动后的目标 DTO
    */
   async moveGoalToFolder(
     goalUuid: string,
@@ -318,7 +345,12 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 批量移动目标到文件夹
+   * 批量移动目标到文件夹。
+   *
+   * @param goalUuids - 目标 UUID 列表
+   * @param folderUuid - 目标文件夹 UUID
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<void>}
    */
   async batchMoveGoalsToFolder(
     goalUuids: string[],
@@ -375,9 +407,13 @@ export class GoalFolderApplicationService {
   // ===== 统计更新 =====
 
   /**
-   * 更新文件夹统计信息
+   * 更新文件夹统计信息。
    *
-   * 公开方法，可以手动触发统计更新
+   * @remarks
+   * 重新计算文件夹内的目标数量和完成度，并持久化。
+   *
+   * @param folderUuid - 文件夹 UUID
+   * @returns {Promise<GoalFolderClientDTO>} 更新后的文件夹 DTO
    */
   async updateFolderStatistics(folderUuid: string): Promise<GoalFolderClientDTO> {
     await this.updateFolderStatisticsInternal(folderUuid);
@@ -391,7 +427,10 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 更新文件夹统计信息（内部方法）
+   * 更新文件夹统计信息（内部方法）。
+   *
+   * @param folderUuid - 文件夹 UUID
+   * @returns {Promise<void>}
    */
   private async updateFolderStatisticsInternal(folderUuid: string): Promise<void> {
     // 1. 查询文件夹
@@ -410,7 +449,10 @@ export class GoalFolderApplicationService {
   }
 
   /**
-   * 批量更新所有文件夹统计
+   * 批量更新所有文件夹统计。
+   *
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<void>}
    */
   async updateAllFolderStatistics(accountUuid: string): Promise<void> {
     const folders = await this.folderRepository.findByAccountUuid(accountUuid);
@@ -420,4 +462,3 @@ export class GoalFolderApplicationService {
     }
   }
 }
-

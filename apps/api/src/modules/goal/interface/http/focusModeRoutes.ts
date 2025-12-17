@@ -1,3 +1,9 @@
+/**
+ * @file focusModeRoutes.ts
+ * @description 专注模式路由配置，定义专注周期的 HTTP 接口路由。
+ * @date 2025-01-22
+ */
+
 import { Router, type Router as ExpressRouter } from 'express';
 import { FocusModeController } from './FocusModeController';
 

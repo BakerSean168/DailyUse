@@ -1,3 +1,9 @@
+/**
+ * @file goalFolderRoutes.ts
+ * @description 目标文件夹路由配置，定义文件夹管理的 HTTP 接口路由。
+ * @date 2025-01-22
+ */
+
 import { Router } from 'express';
 import { GoalFolderController } from './GoalFolderController';
 

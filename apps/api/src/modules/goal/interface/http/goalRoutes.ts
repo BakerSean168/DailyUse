@@ -1,3 +1,9 @@
+/**
+ * @file goalRoutes.ts
+ * @description 目标模块路由 (完整版)，整合 Goal CRUD + KeyResult + FocusMode + FocusSession + Statistics。
+ * @date 2025-01-22
+ */
+
 import { Router } from 'express';
 import { GoalController } from './GoalController';
 import goalStatisticsRoutes from './goalStatisticsRoutes';
@@ -6,7 +12,6 @@ import focusSessionRoutes from './focusSessionRoutes';
 
 /**
  * Goal 模块路由 (完整版)
- * 整合：Goal CRUD + KeyResult + FocusMode + FocusSession + Statistics
  *
  * 路由规范：
  * 1. RESTful API 设计

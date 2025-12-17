@@ -1,11 +1,21 @@
+/**
+ * @file clientInfoExtractor.ts
+ * @description 客户端信息提取工具，用于解析 Request 对象中的设备和网络信息。
+ * @date 2025-01-22
+ */
+
 import type { Request } from 'express';
 import type { ClientInfo } from '@dailyuse/contracts/shared';
 import crypto from 'crypto';
 
 /**
- * 从HTTP请求中提取客户端信息
- * @param req Express Request 对象
- * @returns ClientInfo 客户端信息对象
+ * 从HTTP请求中提取客户端信息。
+ *
+ * @remarks
+ * 解析 IP 地址、User-Agent，并尝试生成或获取设备 ID。
+ *
+ * @param req - Express Request 对象
+ * @returns {ClientInfo} 客户端信息对象
  */
 export function extractClientInfo(req: Request): ClientInfo {
   // 1. 获取IP地址
@@ -61,9 +71,10 @@ export function extractClientInfo(req: Request): ClientInfo {
 }
 
 /**
- * 生成设备指纹用于记住我令牌
- * @param clientInfo 客户端信息
- * @returns 设备指纹字符串
+ * 生成设备指纹用于记住我令牌。
+ *
+ * @param clientInfo - 客户端信息
+ * @returns {string} 设备指纹字符串
  */
 export function generateDeviceFingerprint(clientInfo: ClientInfo): string {
   const { deviceId, userAgent, ipAddress } = clientInfo;
@@ -72,9 +83,10 @@ export function generateDeviceFingerprint(clientInfo: ClientInfo): string {
 }
 
 /**
- * 解析User-Agent获取详细的设备信息
- * @param userAgent User-Agent字符串
- * @returns 解析后的设备信息
+ * 解析 User-Agent 获取详细的设备信息。
+ *
+ * @param userAgent - User-Agent 字符串
+ * @returns {object} 解析后的设备信息（浏览器、OS、设备类型）
  */
 export function parseUserAgent(userAgent: string): {
   browser: string;

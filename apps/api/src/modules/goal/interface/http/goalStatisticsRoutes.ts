@@ -1,3 +1,9 @@
+/**
+ * @file goalStatisticsRoutes.ts
+ * @description 目标统计路由配置，定义目标统计的 HTTP 接口路由。
+ * @date 2025-01-22
+ */
+
 import { Router, type Router as ExpressRouter } from 'express';
 import { GoalStatisticsController } from './GoalStatisticsController';
 

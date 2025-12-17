@@ -1,8 +1,17 @@
+/**
+ * @file authMiddleware.ts
+ * @description JWT 认证中间件，负责解析和验证请求中的 Authorization Token。
+ * @date 2025-01-22
+ */
+
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 /**
- * 扩展的请求接口，包含用户认证信息
+ * 扩展的请求接口，包含用户认证信息。
+ *
+ * @remarks
+ * 在通过 authMiddleware 后，req 对象将包含 user, accountUuid 等字段。
  */
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -16,9 +25,15 @@ export interface AuthenticatedRequest extends Request {
 }
 
 /**
- * JWT 认证中间件
- * 从 Authorization header 中提取 JWT token，验证并解析出 accountUuid
- * 将用户信息添加到 req.user 和 req.accountUuid 中
+ * JWT 认证中间件。
+ *
+ * @remarks
+ * 从 Authorization header 中提取 JWT token，验证并解析出 accountUuid。
+ * 将用户信息添加到 req.user 和 req.accountUuid 中。
+ *
+ * @param req - Express 请求对象
+ * @param res - Express 响应对象
+ * @param next - 下一个中间件函数
  */
 export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -93,8 +108,15 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
 };
 
 /**
- * 可选的认证中间件
- * 如果提供了token则验证，如果没有提供则继续执行但不设置用户信息
+ * 可选的认证中间件。
+ *
+ * @remarks
+ * 如果提供了token则验证，如果没有提供则继续执行但不设置用户信息。
+ * 适用于既可以公开访问又可以认证访问的接口。
+ *
+ * @param req - Express 请求对象
+ * @param res - Express 响应对象
+ * @param next - 下一个中间件函数
  */
 export const optionalAuthMiddleware = (
   req: AuthenticatedRequest,
@@ -113,7 +135,11 @@ export const optionalAuthMiddleware = (
 };
 
 /**
- * 检查用户是否已认证的辅助函数
+ * 检查用户是否已认证的辅助函数。
+ *
+ * @param req - AuthenticatedRequest 请求对象
+ * @returns accountUuid 如果已认证
+ * @throws Error 如果未认证
  */
 export const requireAuth = (req: AuthenticatedRequest): string => {
   if (!req.accountUuid || !req.user) {
@@ -123,7 +149,10 @@ export const requireAuth = (req: AuthenticatedRequest): string => {
 };
 
 /**
- * 获取当前用户UUID的辅助函数
+ * 获取当前用户UUID的辅助函数。
+ *
+ * @param req - AuthenticatedRequest 请求对象
+ * @returns accountUuid 或 null
  */
 export const getCurrentAccountUuid = (req: AuthenticatedRequest): string | null => {
   return req.accountUuid || null;

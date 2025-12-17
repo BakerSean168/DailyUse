@@ -1,18 +1,27 @@
+/**
+ * @file DashboardConfigController.ts
+ * @description Dashboard 配置控制器，处理 Widget 配置的 HTTP 请求。
+ * @date 2025-01-22
+ */
+
 import type { Request, Response } from 'express';
 import { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
 import { DashboardConfigApplicationService } from '../../application/services/DashboardConfigApplicationService';
 import type { DashboardConfigServerDTO, WidgetConfigDTO } from '@dailyuse/contracts/dashboard';
 
-
 /**
- * Dashboard 配置控制器
+ * Dashboard 配置控制器。
  *
- * 处理 Widget 配置的 CRUD 操作
+ * @remarks
+ * 处理 Widget 配置的获取、更新和重置操作。
  */
 export class DashboardConfigController {
   /**
-   * GET /api/dashboard/widget-config
-   * 获取用户的 Widget 配置
+   * 获取用户的 Widget 配置。
+   *
+   * @route GET /api/dashboard/widget-config
+   * @param req - Express 请求对象，需包含 accountUuid
+   * @param res - Express 响应对象
    */
   static async getWidgetConfig(req: Request, res: Response): Promise<void> {
     try {
@@ -36,8 +45,11 @@ export class DashboardConfigController {
   }
 
   /**
-   * PUT /api/dashboard/widget-config
-   * 更新用户的 Widget 配置（部分更新）
+   * 更新用户的 Widget 配置（部分更新）。
+   *
+   * @route PUT /api/dashboard/widget-config
+   * @param req - Express 请求对象，Body 中需包含 configs 对象
+   * @param res - Express 响应对象
    */
   static async updateWidgetConfig(req: Request, res: Response): Promise<void> {
     try {
@@ -68,8 +80,11 @@ export class DashboardConfigController {
   }
 
   /**
-   * POST /api/dashboard/widget-config/reset
-   * 重置为默认配置
+   * 重置为默认配置。
+   *
+   * @route POST /api/dashboard/widget-config/reset
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
    */
   static async resetWidgetConfig(req: Request, res: Response): Promise<void> {
     try {
@@ -92,5 +107,3 @@ export class DashboardConfigController {
     }
   }
 }
-
-

@@ -1,8 +1,7 @@
 /**
- * FocusMode Application Service
- * 专注周期模式应用服务
- *
- * 负责专注周期的创建、查询、延期、失效和自动过期检查。
+ * @file FocusModeApplicationService.ts
+ * @description 专注周期模式应用服务，负责专注周期的创建、查询、延期、失效和自动过期检查。
+ * @date 2025-01-22
  */
 
 import type { IFocusModeRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
@@ -11,7 +10,7 @@ import type { GoalServerDTO, GoalClientDTO, KeyResultServerDTO, HiddenGoalsMode,
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 
 /**
- * 启用专注模式参数
+ * 启用专注模式参数接口。
  */
 export interface ActivateFocusModeParams {
   accountUuid: string;
@@ -22,7 +21,7 @@ export interface ActivateFocusModeParams {
 }
 
 /**
- * 延期专注模式参数
+ * 延期专注模式参数接口。
  */
 export interface ExtendFocusModeParams {
   uuid: string;
@@ -30,17 +29,18 @@ export interface ExtendFocusModeParams {
 }
 
 /**
- * 专注周期应用服务
+ * 专注周期应用服务。
  *
- * **职责**:
- * - 启用/关闭专注模式
- * - 延期专注周期
- * - 查询当前活跃周期
- * - 自动失效过期周期（Cron Job）
- * - 校验目标存在性和数量限制
+ * @remarks
+ * 负责专注模式的核心业务逻辑，包括：
+ * - 启用/关闭专注模式。
+ * - 延期专注周期。
+ * - 查询当前活跃周期。
+ * - 自动失效过期周期（通过 Cron Job 调用）。
+ * - 校验目标存在性和数量限制。
  *
- * **设计模式**: Singleton
- * **依赖注入**: FocusModeRepository, GoalRepository
+ * @privateRemarks
+ * 依赖注入 FocusModeRepository 和 GoalRepository。
  */
 export class FocusModeApplicationService {
   private static instance: FocusModeApplicationService;
@@ -51,7 +51,11 @@ export class FocusModeApplicationService {
   ) {}
 
   /**
-   * 创建应用服务实例（支持依赖注入）
+   * 创建应用服务实例（支持依赖注入）。
+   *
+   * @param focusModeRepository - 可选的专注模式仓储
+   * @param goalRepository - 可选的目标仓储
+   * @returns {Promise<FocusModeApplicationService>} 服务实例
    */
   static async createInstance(
     focusModeRepository?: IFocusModeRepository,
@@ -66,7 +70,9 @@ export class FocusModeApplicationService {
   }
 
   /**
-   * 获取应用服务单例
+   * 获取应用服务单例。
+   *
+   * @returns {Promise<FocusModeApplicationService>} 单例实例
    */
   static async getInstance(): Promise<FocusModeApplicationService> {
     if (!FocusModeApplicationService.instance) {
@@ -78,17 +84,18 @@ export class FocusModeApplicationService {
   // ===== 专注模式管理 =====
 
   /**
-   * 启用专注模式
+   * 启用专注模式。
    *
+   * @remarks
    * 业务规则：
-   * - 同一账户同时只能有一个活跃的专注周期
-   * - 必须选择 1-3 个目标
-   * - 所有目标必须存在且属于该账户
-   * - endTime 必须大于 startTime
+   * 1. 同一账户同时只能有一个活跃的专注周期。
+   * 2. 必须选择 1-3 个目标。
+   * 3. 所有目标必须存在且属于该账户。
+   * 4. endTime 必须大于 startTime。
    *
-   * @throws Error 如果账户已有活跃周期
-   * @throws Error 如果目标数量不在 1-3 范围
-   * @throws Error 如果目标不存在或不属于该账户
+   * @param params - 启用参数
+   * @returns {Promise<FocusModeClientDTO>} 创建的专注模式 DTO
+   * @throws {Error} 当账户已有活跃周期、目标数量不符或目标无效时抛出
    */
   async activateFocusMode(params: ActivateFocusModeParams): Promise<FocusModeClientDTO> {
     const { accountUuid, focusedGoalUuids, startTime, endTime, hiddenGoalsMode } = params;
@@ -124,10 +131,11 @@ export class FocusModeApplicationService {
   }
 
   /**
-   * 关闭专注模式（手动失效）
+   * 关闭专注模式（手动失效）。
    *
-   * @throws Error 如果专注周期不存在
-   * @throws Error 如果专注周期已失效
+   * @param uuid - 专注模式 UUID
+   * @returns {Promise<FocusModeClientDTO>} 更新后的 DTO
+   * @throws {Error} 当专注周期不存在或已失效时抛出
    */
   async deactivateFocusMode(uuid: string): Promise<FocusModeClientDTO> {
     // 1. 查找专注周期
@@ -152,11 +160,11 @@ export class FocusModeApplicationService {
   }
 
   /**
-   * 延期专注模式
+   * 延期专注模式。
    *
-   * @throws Error 如果专注周期不存在
-   * @throws Error 如果专注周期已失效
-   * @throws Error 如果 newEndTime <= endTime（不允许缩短）
+   * @param params - 延期参数
+   * @returns {Promise<FocusModeClientDTO>} 更新后的 DTO
+   * @throws {Error} 当专注周期不存在、已失效或新时间无效时抛出
    */
   async extendFocusMode(params: ExtendFocusModeParams): Promise<FocusModeClientDTO> {
     const { uuid, newEndTime } = params;
@@ -183,9 +191,10 @@ export class FocusModeApplicationService {
   }
 
   /**
-   * 获取账户当前活跃的专注周期
+   * 获取账户当前活跃的专注周期。
    *
-   * @returns 活跃周期，不存在则返回 null
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<FocusModeClientDTO | null>} 活跃周期或 null
    */
   async getActiveFocusMode(accountUuid: string): Promise<FocusModeClientDTO | null> {
     const focusMode = await this.focusModeRepository.findActiveByAccountUuid(accountUuid);
@@ -193,9 +202,10 @@ export class FocusModeApplicationService {
   }
 
   /**
-   * 获取账户的所有专注周期（包括历史）
+   * 获取账户的所有专注周期（包括历史）。
    *
-   * @returns 周期列表（按创建时间倒序）
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<FocusModeClientDTO[]>} 周期列表（按创建时间倒序）
    */
   async getFocusModeHistory(accountUuid: string): Promise<FocusModeClientDTO[]> {
     const focusModes = await this.focusModeRepository.findByAccountUuid(accountUuid);
@@ -203,11 +213,12 @@ export class FocusModeApplicationService {
   }
 
   /**
-   * 检查并失效过期的专注周期
+   * 检查并失效过期的专注周期。
    *
-   * 由 Cron Job 定时调用（每小时一次）
+   * @remarks
+   * 通常由 Cron Job 定时调用（如每小时一次）。
    *
-   * @returns 失效的周期数量
+   * @returns {Promise<number>} 失效的周期数量
    */
   async checkAndDeactivateExpired(): Promise<number> {
     return await this.focusModeRepository.deactivateExpired();
@@ -216,9 +227,11 @@ export class FocusModeApplicationService {
   // ===== 私有方法 =====
 
   /**
-   * 校验所有目标存在且属于指定账户
+   * 校验所有目标存在且属于指定账户。
    *
-   * @throws Error 如果任何目标不存在或不属于该账户
+   * @param accountUuid - 账户 UUID
+   * @param goalUuids - 目标 UUID 列表
+   * @throws {Error} 如果任何目标不存在或不属于该账户
    */
   private async validateGoalsExist(accountUuid: string, goalUuids: string[]): Promise<void> {
     for (const goalUuid of goalUuids) {
@@ -232,4 +245,3 @@ export class FocusModeApplicationService {
     }
   }
 }
-

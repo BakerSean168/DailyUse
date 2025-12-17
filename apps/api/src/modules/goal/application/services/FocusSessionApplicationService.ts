@@ -1,18 +1,7 @@
 /**
- * FocusSession 应用服务
- * 负责协调领域服务和仓储，处理专注周期业务用例
- *
- * DDD 应用服务职责：
- * - 用例编排（Query → Domain → Persist）
- * - 调用 DomainService 执行业务逻辑
- * - 调用 Repository 进行查询和持久化
- * - 事务管理（如需要）
- * - DTO 转换（Domain → ClientDTO）
- * - 发布领域事件（未来实现）
- *
- * 注意：
- * - 返回给客户端的数据必须使用 ClientDTO（通过 toClientDTO() 方法）
- * - DomainService 不注入 Repository，由 ApplicationService 查询后传入
+ * @file FocusSessionApplicationService.ts
+ * @description 专注会话应用服务，处理专注会话的生命周期管理。
+ * @date 2025-01-22
  */
 
 import type { IFocusSessionRepository, IGoalRepository } from '@dailyuse/domain-server/goal';
@@ -367,4 +356,3 @@ export class FocusSessionApplicationService {
     return session.toClientDTO();
   }
 }
-

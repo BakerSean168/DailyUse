@@ -1,22 +1,34 @@
+/**
+ * @file DashboardConfigApplicationService.ts
+ * @description Dashboard 配置应用服务，管理用户的 Dashboard Widget 配置。
+ * @date 2025-01-22
+ */
+
 import type { DashboardContainer } from '../../infrastructure/di/DashboardContainer';
 import { DashboardConfig } from '@dailyuse/domain-server/dashboard';
 import type { DashboardConfigServerDTO, WidgetConfigDTO, WidgetConfigData } from '@dailyuse/contracts/dashboard';
 
 
 /**
- * Dashboard 配置应用服务
+ * Dashboard 配置应用服务。
  *
- * 职责：
- * 1. 管理用户的 Dashboard Widget 配置
- * 2. 提供配置的读取和更新接口
- * 3. 处理默认配置
+ * @remarks
+ * 负责处理仪表板配置的业务逻辑，包括：
+ * - 获取用户的 Widget 配置（支持默认配置自动创建）
+ * - 更新 Widget 配置（支持部分更新）
+ * - 重置配置为默认值
  */
 export class DashboardConfigApplicationService {
   constructor(private container: DashboardContainer) {}
 
   /**
-   * 获取用户的 Widget 配置
-   * 如果用户没有配置，创建并保存默认配置
+   * 获取用户的 Widget 配置。
+   *
+   * @remarks
+   * 如果用户尚无配置记录，将自动创建并保存默认配置。
+   *
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<WidgetConfigData>} Widget 配置数据
    */
   async getWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     try {
@@ -51,8 +63,14 @@ export class DashboardConfigApplicationService {
   }
 
   /**
-   * 更新用户的 Widget 配置
-   * 采用部分更新策略（合并）
+   * 更新用户的 Widget 配置。
+   *
+   * @remarks
+   * 采用部分更新策略，将传入的配置与现有配置合并。
+   *
+   * @param accountUuid - 账户 UUID
+   * @param configs - 部分 Widget 配置数据
+   * @returns {Promise<WidgetConfigData>} 更新后的完整配置
    */
   async updateWidgetConfig(
     accountUuid: string,
@@ -85,7 +103,10 @@ export class DashboardConfigApplicationService {
   }
 
   /**
-   * 重置为默认配置
+   * 重置为默认配置。
+   *
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<WidgetConfigData>} 重置后的默认配置
    */
   async resetWidgetConfig(accountUuid: string): Promise<WidgetConfigData> {
     try {
@@ -113,5 +134,3 @@ export class DashboardConfigApplicationService {
     }
   }
 }
-
-

@@ -1,3 +1,9 @@
+/**
+ * @file swagger.ts
+ * @description Swagger API 文档配置。
+ * @date 2025-01-22
+ */
+
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import type { Express } from 'express';
@@ -364,6 +370,11 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 
+/**
+ * 设置 Swagger UI 中间件。
+ *
+ * @param app - Express 应用实例
+ */
 export function setupSwagger(app: Express): void {
   // Swagger UI 路径
   app.use(

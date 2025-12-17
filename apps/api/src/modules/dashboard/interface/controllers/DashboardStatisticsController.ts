@@ -1,8 +1,18 @@
 /**
- * Dashboard Statistics Controller
- * Dashboard 统计控制器
+ * @file DashboardStatisticsController.ts
+ * @description Dashboard 统计控制器，处理 Dashboard 统计相关的 HTTP 请求。
+ * @date 2025-01-22
+ */
+
+import type { Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
+import { DashboardStatisticsApplicationService } from '../../application/services/DashboardStatisticsApplicationService';
+
+/**
+ * Dashboard 统计控制器。
  *
- * 架构职责：
+ * @remarks
+ * **职责**:
  * - 处理 HTTP 请求
  * - 参数验证
  * - 错误处理
@@ -10,15 +20,14 @@
  *
  * 架构层次：Interface Layer
  */
-
-import type { Request, Response } from 'express';
-import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
-import { DashboardStatisticsApplicationService } from '../../application/services/DashboardStatisticsApplicationService';
-
 export class DashboardStatisticsController {
   /**
-   * GET /api/dashboard/statistics
-   * 获取 Dashboard 统计数据
+   * 获取 Dashboard 统计数据。
+   *
+   * @route GET /api/dashboard/statistics
+   *
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
    */
   static async getStatistics(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
@@ -58,8 +67,12 @@ export class DashboardStatisticsController {
   }
 
   /**
-   * POST /api/dashboard/statistics/invalidate
-   * 手动失效缓存
+   * 手动失效缓存。
+   *
+   * @route POST /api/dashboard/statistics/invalidate
+   *
+   * @param req - AuthenticatedRequest
+   * @param res - Express 响应对象
    */
   static async invalidateCache(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
@@ -97,8 +110,12 @@ export class DashboardStatisticsController {
   }
 
   /**
-   * GET /api/dashboard/cache/stats
-   * 获取缓存统计信息（管理员）
+   * 获取缓存统计信息（管理员）。
+   *
+   * @route GET /api/dashboard/cache/stats
+   *
+   * @param req - Express 请求对象
+   * @param res - Express 响应对象
    */
   static async getCacheStats(req: Request, res: Response): Promise<void> {
     try {

@@ -1,3 +1,9 @@
+/**
+ * @file GoalApplicationService.ts
+ * @description 目标应用服务，处理目标的 CRUD 和基本状态管理。
+ * @date 2025-01-22
+ */
+
 import type { IGoalRepository } from '@dailyuse/domain-server/goal';
 import { GoalContainer } from '../../infrastructure/di/GoalContainer';
 import { GoalDomainService, Goal } from '@dailyuse/domain-server/goal';
@@ -7,21 +13,14 @@ import { GoalEventPublisher } from './GoalEventPublisher';
 import { GoalStatisticsApplicationService } from './GoalStatisticsApplicationService';
 
 /**
- * Goal 应用服务
- * 负责目标（Goal）本身的 CRUD 操作
+ * 目标应用服务。
  *
- * 职责：
- * - 创建目标
- * - 获取目标详情
- * - 更新目标基本信息
- * - 删除/归档/激活/完成目标
- * - 搜索目标
- * - 获取目标统计
- *
- * 注意：
- * - KeyResult 管理 → GoalKeyResultApplicationService
- * - GoalRecord 管理 → GoalRecordApplicationService
- * - GoalReview 管理 → GoalReviewApplicationService
+ * @remarks
+ * 负责目标（Goal）的生命周期管理，包括：
+ * - 创建、查询、更新、删除目标。
+ * - 归档、激活、完成目标。
+ * - 协调 DomainService 和 Repository。
+ * - 发布相关领域事件。
  */
 export class GoalApplicationService {
   private static instance: GoalApplicationService;
@@ -34,7 +33,10 @@ export class GoalApplicationService {
   }
 
   /**
-   * 创建应用服务实例（支持依赖注入）
+   * 创建应用服务实例（支持依赖注入）。
+   *
+   * @param goalRepository - 可选的目标仓储
+   * @returns {Promise<GoalApplicationService>} 服务实例
    */
   static async createInstance(goalRepository?: IGoalRepository): Promise<GoalApplicationService> {
     const container = GoalContainer.getInstance();
@@ -45,7 +47,9 @@ export class GoalApplicationService {
   }
 
   /**
-   * 获取应用服务单例
+   * 获取应用服务单例。
+   *
+   * @returns {Promise<GoalApplicationService>} 单例实例
    */
   static async getInstance(): Promise<GoalApplicationService> {
     if (!GoalApplicationService.instance) {
@@ -57,9 +61,14 @@ export class GoalApplicationService {
   // ===== Goal CRUD 操作 =====
 
   /**
-   * 创建目标
+   * 创建目标。
    * 
-   * 支持在创建目标时同时创建关键结果（KeyResults）
+   * @remarks
+   * 支持在创建目标时同时创建关键结果（KeyResults）。
+   *
+   * @param params - 创建参数
+   * @returns {Promise<GoalClientDTO>} 创建的目标 DTO
+   * @throws {Error} 当父目标不存在时抛出
    */
   async createGoal(params: {
     accountUuid: string;
@@ -76,7 +85,6 @@ export class GoalApplicationService {
     color?: string;
     feasibilityAnalysis?: string;
     motivation?: string;
-    // 新增：支持在创建时同时添加关键结果
     keyResults?: Array<{
       title: string;
       description?: string;
@@ -124,7 +132,11 @@ export class GoalApplicationService {
   }
 
   /**
-   * 获取目标详情
+   * 获取目标详情。
+   *
+   * @param uuid - 目标 UUID
+   * @param options - 查询选项
+   * @returns {Promise<GoalClientDTO | null>} 目标 DTO 或 null
    */
   async getGoal(
     uuid: string,
@@ -135,7 +147,11 @@ export class GoalApplicationService {
   }
 
   /**
-   * 获取用户的所有目标
+   * 获取用户的所有目标。
+   *
+   * @param accountUuid - 账户 UUID
+   * @param options - 查询选项
+   * @returns {Promise<GoalClientDTO[]>} 目标列表
    */
   async getUserGoals(
     accountUuid: string,
@@ -152,7 +168,12 @@ export class GoalApplicationService {
   }
 
   /**
-   * 更新目标基本信息
+   * 更新目标基本信息。
+   *
+   * @param uuid - 目标 UUID
+   * @param updates - 更新字段
+   * @returns {Promise<GoalClientDTO>} 更新后的目标 DTO
+   * @throws {Error} 当目标不存在时抛出
    */
   async updateGoal(
     uuid: string,
@@ -190,11 +211,10 @@ export class GoalApplicationService {
   }
 
   /**
-   * 删除目标（软删除）
-   */
-  /**
-   * 检查目标是否有关联数据
-   * @returns 返回关联信息
+   * 检查目标关联依赖（删除前检查）。
+   *
+   * @param uuid - 目标 UUID
+   * @returns {Promise<object>} 关联信息和删除建议
    */
   async checkGoalDependencies(uuid: string): Promise<{
     hasKeyResults: boolean;
@@ -242,7 +262,14 @@ export class GoalApplicationService {
   }
 
   /**
-   * 删除目标（软删除，级联删除子实体）
+   * 删除目标（软删除）。
+   *
+   * @remarks
+   * 执行软删除，保留数据但标记为已删除。
+   *
+   * @param uuid - 目标 UUID
+   * @returns {Promise<void>}
+   * @throws {Error} 当目标不存在时抛出
    */
   async deleteGoal(uuid: string): Promise<void> {
     // 1. 查询目标（包含子实体）
@@ -266,7 +293,10 @@ export class GoalApplicationService {
   }
 
   /**
-   * 归档目标
+   * 归档目标。
+   *
+   * @param uuid - 目标 UUID
+   * @returns {Promise<GoalClientDTO>} 归档后的目标 DTO
    */
   async archiveGoal(uuid: string): Promise<GoalClientDTO> {
     // 1. 查询目标
@@ -289,7 +319,10 @@ export class GoalApplicationService {
   }
 
   /**
-   * 激活目标
+   * 激活目标。
+   *
+   * @param uuid - 目标 UUID
+   * @returns {Promise<GoalClientDTO>} 激活后的目标 DTO
    */
   async activateGoal(uuid: string): Promise<GoalClientDTO> {
     // 1. 查询目标
@@ -312,7 +345,10 @@ export class GoalApplicationService {
   }
 
   /**
-   * 完成目标
+   * 完成目标。
+   *
+   * @param uuid - 目标 UUID
+   * @returns {Promise<GoalClientDTO>} 完成后的目标 DTO
    */
   async completeGoal(uuid: string): Promise<GoalClientDTO> {
     // 1. 查询目标
@@ -337,7 +373,11 @@ export class GoalApplicationService {
   // ===== 查询操作 =====
 
   /**
-   * 搜索目标
+   * 搜索目标。
+   *
+   * @param accountUuid - 账户 UUID
+   * @param query - 搜索关键词
+   * @returns {Promise<GoalClientDTO[]>} 匹配的目标列表
    */
   async searchGoals(accountUuid: string, query: string): Promise<GoalClientDTO[]> {
     const goals = await this.goalRepository.findByAccountUuid(accountUuid, {});
@@ -347,14 +387,13 @@ export class GoalApplicationService {
   }
 
   /**
-   * 获取目标统计
+   * 获取目标统计。
    *
-   * 注意：这个方法已重构为事件驱动架构，应该直接使用 GoalStatisticsApplicationService
+   * @remarks
+   * 使用 `GoalStatisticsApplicationService` 获取统计数据。
    *
-   * 架构说明：
-   * 1. Query: 从数据库读取持久化的统计（O(1) 查询）
-   * 2. Lazy Init: 如果不存在则自动创建
-   * 3. Return: 返回统计 DTO
+   * @param accountUuid - 账户 UUID
+   * @returns {Promise<GoalStatisticsClientDTO>} 统计数据 DTO
    */
   async getGoalStatistics(accountUuid: string): Promise<GoalStatisticsClientDTO> {
     // 委托给 GoalStatisticsApplicationService（新架构）
@@ -363,4 +402,3 @@ export class GoalApplicationService {
     return statistics;
   }
 }
-

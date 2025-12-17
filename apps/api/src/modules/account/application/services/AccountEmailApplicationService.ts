@@ -1,19 +1,7 @@
 /**
- * Account Email Application Service
- * 账户邮箱管理应用服务
- *
- * 职责（遵循 DDD 最佳实践）：
- * - 更新邮箱地址
- * - 验证邮箱
- * - 调用 DomainService 进行业务规则验证
- * - 负责持久化操作
- * - 检查邮箱唯一性
- * - 发布领域事件
- *
- * 架构说明：
- * - DomainService：纯领域逻辑，业务规则验证（无副作用）
- * - ApplicationService：编排层，负责持久化、唯一性检查、事件发布
- * - Repository：数据访问层，接收事务上下文 tx（待更新）
+ * @file AccountEmailApplicationService.ts
+ * @description 账户邮箱管理应用服务，处理邮箱变更和验证流程。
+ * @date 2025-01-22
  */
 
 import type { AccountServerDTO, AccountClientDTO, CreateAccountRequest } from '@dailyuse/contracts/account';
@@ -26,32 +14,45 @@ import { eventBus, createLogger } from '@dailyuse/utils';
 const logger = createLogger('AccountEmailApplicationService');
 
 /**
- * 更新邮箱请求接口
+ * 更新邮箱请求接口。
  */
 export interface UpdateEmailRequest {
+  /** 账户 UUID */
   accountUuid: string;
+  /** 新邮箱地址 */
   newEmail: string;
 }
 
 /**
- * 验证邮箱请求接口
+ * 验证邮箱请求接口。
  */
 export interface VerifyEmailRequest {
+  /** 账户 UUID */
   accountUuid: string;
 }
 
 /**
- * 响应接口
+ * 账户操作响应接口。
  */
 export interface AccountResponse {
+  /** 操作是否成功 */
   success: boolean;
+  /** 返回的账户数据 */
   account: AccountClientDTO;
+  /** 结果消息 */
   message: string;
 }
 
 /**
- * Account Email Application Service
- * 负责账户邮箱管理的核心业务逻辑编排
+ * 账户邮箱应用服务。
+ *
+ * @remarks
+ * 负责处理用户邮箱的变更和验证逻辑，包括：
+ * - 更新邮箱地址
+ * - 验证邮箱
+ * - 检查邮箱唯一性
+ * - 协调 DomainService 和 Repository
+ * - 发布相关领域事件
  */
 export class AccountEmailApplicationService {
   private static instance: AccountEmailApplicationService;
@@ -65,7 +66,10 @@ export class AccountEmailApplicationService {
   }
 
   /**
-   * 创建应用服务实例（支持依赖注入）
+   * 创建应用服务实例（支持依赖注入）。
+   *
+   * @param accountRepository - 可选的仓储实例
+   * @returns {Promise<AccountEmailApplicationService>} 服务实例
    */
   static async createInstance(
     accountRepository?: IAccountRepository,
@@ -78,7 +82,9 @@ export class AccountEmailApplicationService {
   }
 
   /**
-   * 获取应用服务单例
+   * 获取应用服务单例。
+   *
+   * @returns {Promise<AccountEmailApplicationService>} 单例实例
    */
   static async getInstance(): Promise<AccountEmailApplicationService> {
     if (!AccountEmailApplicationService.instance) {
@@ -89,16 +95,20 @@ export class AccountEmailApplicationService {
   }
 
   /**
-   * 更新邮箱地址主流程
+   * 更新邮箱地址主流程。
    *
-   * 步骤：
-   * 1. 查询账户（ApplicationService 负责）
-   * 2. 检查新邮箱唯一性（ApplicationService 负责）
-   * 3. 调用 DomainService 验证业务规则
-   * 4. 修改聚合根
-   * 5. 持久化（ApplicationService 负责）
-   * 6. 发布领域事件
-   * 7. 返回 AccountClientDTO
+   * @remarks
+   * 执行步骤：
+   * 1. 查询账户。
+   * 2. 检查新邮箱是否已存在。
+   * 3. 调用 DomainService 验证业务规则。
+   * 4. 更新聚合根状态。
+   * 5. 持久化。
+   * 6. 发布 `account:email_updated` 事件。
+   *
+   * @param request - 更新请求数据
+   * @returns {Promise<AccountResponse>} 操作结果
+   * @throws {Error} 当账户不存在、邮箱已占用或验证失败时抛出
    */
   async updateEmail(request: UpdateEmailRequest): Promise<AccountResponse> {
     logger.info('[AccountEmailApplicationService] Starting email update', {
@@ -155,14 +165,18 @@ export class AccountEmailApplicationService {
   }
 
   /**
-   * 验证邮箱主流程
+   * 验证邮箱主流程。
    *
-   * 步骤：
-   * 1. 查询账户
-   * 2. 调用聚合根方法验证邮箱
-   * 3. 持久化
-   * 4. 发布领域事件
-   * 5. 返回 AccountClientDTO
+   * @remarks
+   * 执行步骤：
+   * 1. 查询账户。
+   * 2. 调用聚合根 `verifyEmail()` 方法。
+   * 3. 持久化。
+   * 4. 发布 `account:email_verified` 事件。
+   *
+   * @param request - 验证请求数据
+   * @returns {Promise<AccountResponse>} 操作结果
+   * @throws {Error} 当账户不存在或操作失败时抛出
    */
   async verifyEmail(request: VerifyEmailRequest): Promise<AccountResponse> {
     logger.info('[AccountEmailApplicationService] Starting email verification', {
@@ -211,7 +225,11 @@ export class AccountEmailApplicationService {
   }
 
   /**
-   * 检查邮箱唯一性（ApplicationService 职责）
+   * 检查邮箱唯一性。
+   *
+   * @param email - 待检查的邮箱
+   * @returns {Promise<void>}
+   * @throws {Error} 当邮箱已存在时抛出
    */
   private async checkEmailUniqueness(email: string): Promise<void> {
     const existingAccount = await this.accountRepository.findByEmail(email);
@@ -221,7 +239,10 @@ export class AccountEmailApplicationService {
   }
 
   /**
-   * 发布邮箱更新事件
+   * 发布邮箱更新事件。
+   *
+   * @param account - 相关账户实体
+   * @returns {Promise<void>}
    */
   private async publishEmailUpdatedEvent(account: Account): Promise<void> {
     eventBus.publish({
@@ -243,7 +264,10 @@ export class AccountEmailApplicationService {
   }
 
   /**
-   * 发布邮箱验证事件
+   * 发布邮箱验证事件。
+   *
+   * @param account - 相关账户实体
+   * @returns {Promise<void>}
    */
   private async publishEmailVerifiedEvent(account: Account): Promise<void> {
     eventBus.publish({
@@ -263,4 +287,3 @@ export class AccountEmailApplicationService {
     });
   }
 }
-

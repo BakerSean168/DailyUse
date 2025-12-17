@@ -1,6 +1,7 @@
 /**
- * Cross-Module API Routes
- * 跨模块查询 API 路由
+ * @file crossModuleRoutes.ts
+ * @description 跨模块查询路由配置，提供跨领域的数据聚合接口。
+ * @date 2025-01-22
  */
 
 import { Router, type Request, type Response } from 'express';
@@ -8,11 +9,18 @@ import { GoalCrossModuleQueryService } from '@/modules/goal/application/services
 
 const router: Router = Router();
 
+// 获取单例服务
 const goalQueryService = GoalCrossModuleQueryService.getInstance();
 
 /**
- * GET /api/v1/cross-module/goals/for-task-binding
- * 获取可用于任务绑定的目标列表
+ * 获取可用于任务绑定的目标列表。
+ *
+ * @remarks
+ * 返回特定状态（如进行中）的目标列表，供前端在创建或编辑任务时选择关联目标。
+ *
+ * @route GET /api/v1/cross-module/goals/for-task-binding
+ * @param req.query.accountUuid - 账户 UUID (可选，优先使用 Token 中的用户信息)
+ * @param req.query.status - 目标状态过滤 (可选，逗号分隔)
  */
 router.get('/goals/for-task-binding', async (req: Request, res: Response) => {
   try {
@@ -52,8 +60,10 @@ router.get('/goals/for-task-binding', async (req: Request, res: Response) => {
 });
 
 /**
- * GET /api/v1/cross-module/goals/:goalUuid/key-results/for-task-binding
- * 获取目标的关键结果列表（用于任务绑定）
+ * 获取目标的关键结果列表（用于任务绑定）。
+ *
+ * @route GET /api/v1/cross-module/goals/:goalUuid/key-results/for-task-binding
+ * @param req.params.goalUuid - 目标 UUID
  */
 router.get('/goals/:goalUuid/key-results/for-task-binding', async (req: Request, res: Response) => {
   try {
@@ -78,8 +88,14 @@ router.get('/goals/:goalUuid/key-results/for-task-binding', async (req: Request,
 });
 
 /**
- * POST /api/v1/cross-module/goals/validate-binding
- * 验证目标和关键结果的绑定是否有效
+ * 验证目标和关键结果的绑定是否有效。
+ *
+ * @remarks
+ * 检查目标是否存在、关键结果是否属于该目标等业务规则。
+ *
+ * @route POST /api/v1/cross-module/goals/validate-binding
+ * @param req.body.goalUuid - 目标 UUID
+ * @param req.body.keyResultUuid - 关键结果 UUID
  */
 router.post('/goals/validate-binding', async (req: Request, res: Response) => {
   try {

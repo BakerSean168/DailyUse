@@ -1,27 +1,43 @@
+/**
+ * @file CronSchedulerManager.ts
+ * @description Cron 调度管理器，统一管理所有定时任务。
+ * @date 2025-01-22
+ */
+
 import * as cron from 'node-cron';
 import { createLogger } from '@dailyuse/utils';
 
 const logger = createLogger('CronSchedulerManager');
 
 /**
- * Cron Job 配置
+ * Cron Job 配置接口。
  */
 export interface CronJobConfig {
+  /** 任务名称（唯一标识） */
   name: string;
-  schedule: string; // Cron 表达式
+  /** Cron 表达式 */
+  schedule: string;
+  /** 任务执行函数 */
   task: () => Promise<void>;
+  /** 是否启用，默认为 true */
   enabled?: boolean;
+  /** 时区，默认为 'Asia/Shanghai' */
   timezone?: string;
 }
 
 /**
- * 内部 Job 存储结构
+ * 内部 Job 存储结构。
  */
 interface StoredJob {
+  /** cron 任务实例 */
   task: cron.ScheduledTask;
+  /** 原始配置 */
   config: CronJobConfig;
 }
 
+/**
+ * 任务状态接口。
+ */
 interface CronJobStatus {
   name: string;
   schedule: string;
@@ -30,26 +46,12 @@ interface CronJobStatus {
 }
 
 /**
- * Cron 调度管理器
- * 
- * 职责:
- * - 统一管理所有 Cron Jobs
- * - 启动/停止/暂停 Jobs
- * - 监控 Job 执行状态
- * - 错误处理和重试
- * 
- * 支持的 Cron 表达式格式 (分钟 小时 日期 月份 星期):
- * 分钟: 0 - 59
- * 小时: 0 - 23
- * 日期: 1 - 31
- * 月份: 1 - 12
- * 星期: 0 - 7 (0 和 7 都代表星期日)
- * 
- * 示例:
- * 每天凌晨 2:00 -> 0 2 星号 星号 星号
- * 每 5 分钟 -> 星号斜杠5 星号 星号 星号 星号
- * 每周日午夜 -> 0 0 星号 星号 0
- * 每月 1 号午夜 -> 0 0 1 星号 星号
+ * Cron 调度管理器。
+ *
+ * @remarks
+ * 负责应用中所有 Cron Jobs 的注册、启动、停止和状态监控。
+ * 提供统一的错误处理和日志记录。
+ * 单例模式实现。
  */
 export class CronSchedulerManager {
   private static instance: CronSchedulerManager;
@@ -59,7 +61,9 @@ export class CronSchedulerManager {
   private constructor() {}
 
   /**
-   * 获取单例实例
+   * 获取单例实例。
+   *
+   * @returns {CronSchedulerManager} 管理器实例
    */
   static getInstance(): CronSchedulerManager {
     if (!CronSchedulerManager.instance) {
@@ -69,7 +73,10 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 注册 Cron Job
+   * 注册 Cron Job。
+   *
+   * @param config - 任务配置
+   * @throws {Error} 当 Cron 表达式无效时抛出
    */
   register(config: CronJobConfig): void {
     if (this.jobs.has(config.name)) {
@@ -124,7 +131,7 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 启动所有已注册的 Jobs
+   * 启动所有已注册的 Jobs。
    */
   start(): void {
     if (this.isStarted) {
@@ -158,7 +165,7 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 停止所有 Jobs
+   * 停止所有 Jobs。
    */
   stop(): void {
     if (!this.isStarted) {
@@ -185,7 +192,10 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 启动指定的 Job
+   * 启动指定的 Job。
+   *
+   * @param name - 任务名称
+   * @throws {Error} 当任务未找到时抛出
    */
   startJob(name: string): void {
     const job = this.jobs.get(name);
@@ -198,7 +208,10 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 停止指定的 Job
+   * 停止指定的 Job。
+   *
+   * @param name - 任务名称
+   * @throws {Error} 当任务未找到时抛出
    */
   stopJob(name: string): void {
     const job = this.jobs.get(name);
@@ -211,7 +224,14 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 手动触发指定的 Job
+   * 手动触发指定的 Job。
+   *
+   * @remarks
+   * 立即执行任务逻辑，不影响定时调度。
+   *
+   * @param name - 任务名称
+   * @returns {Promise<void>}
+   * @throws {Error} 当任务未找到时抛出
    */
   async triggerJob(name: string): Promise<void> {
     const job = this.jobs.get(name);
@@ -224,7 +244,9 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 获取所有任务的状态
+   * 获取所有任务的状态。
+   *
+   * @returns {CronJobStatus[]} 任务状态列表
    */
   public getStatus(): CronJobStatus[] {
     const status: CronJobStatus[] = [];
@@ -240,7 +262,9 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 注销指定的 Job
+   * 注销指定的 Job。
+   *
+   * @param name - 任务名称
    */
   unregister(name: string): void {
     const job = this.jobs.get(name);
@@ -255,7 +279,7 @@ export class CronSchedulerManager {
   }
 
   /**
-   * 清空所有 Jobs
+   * 清空所有 Jobs。
    */
   clear(): void {
     this.stop();
