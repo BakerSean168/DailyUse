@@ -12,12 +12,15 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { 
-  TaskInstanceClientDTO,
-  TaskTemplateClientDTO,
-  TaskInstanceStatus,
-} from '@dailyuse/contracts/task';
+// 使用 IPC Client 的类型，而不是 contracts 的完整 ClientDTO
+import type { TaskInstanceDTO } from '../../infrastructure/ipc/task-instance.ipc-client';
+import type { TaskTemplateDTO } from '../../infrastructure/ipc/task-template.ipc-client';
 import { taskContainer } from '../../infrastructure/di';
+
+// 本地类型别名 - 兼容原有命名
+type TaskInstanceClientDTO = TaskInstanceDTO;
+type TaskTemplateClientDTO = TaskTemplateDTO;
+type TaskInstanceStatus = 'pending' | 'completed' | 'skipped';
 
 // ============ State Interface ============
 export interface TaskState {
@@ -266,28 +269,8 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
             endDate: range.end.getTime(),
           });
           
-          // 转换为 ClientDTO 格式
-          const clientInstances: TaskInstanceClientDTO[] = instances.map(inst => ({
-            uuid: inst.uuid,
-            templateUuid: inst.templateUuid,
-            accountUuid: inst.accountUuid,
-            title: inst.title,
-            description: inst.description,
-            priority: inst.priority,
-            instanceDate: inst.dueDate,
-            dueDate: inst.dueDate,
-            status: inst.completed ? 'completed' : (inst.skipped ? 'skipped' : 'pending') as TaskInstanceStatus,
-            isCompleted: inst.completed,
-            isPending: !inst.completed && !inst.skipped,
-            isSkipped: inst.skipped,
-            completedAt: inst.completedAt,
-            skippedAt: inst.skippedAt,
-            skipReason: inst.skipReason,
-            createdAt: inst.createdAt,
-            updatedAt: inst.updatedAt,
-          }));
-          
-          setInstances(clientInstances);
+          // 直接使用 IPC Client 返回的类型
+          setInstances(instances);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch task instances';
           setError(message);
@@ -309,22 +292,8 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
             accountUuid: '', // TODO: 从 AuthStore 获取当前账户
           });
           
-          // 转换为 ClientDTO 格式
-          const clientTemplates: TaskTemplateClientDTO[] = templates.map(tmpl => ({
-            uuid: tmpl.uuid,
-            accountUuid: tmpl.accountUuid,
-            title: tmpl.title,
-            description: tmpl.description,
-            priority: tmpl.priority,
-            tags: tmpl.tags ?? [],
-            folderId: tmpl.folderId,
-            goalUuid: tmpl.goalUuid,
-            isArchived: tmpl.archived,
-            createdAt: tmpl.createdAt,
-            updatedAt: tmpl.updatedAt,
-          }));
-          
-          setTemplates(clientTemplates);
+          // 直接使用 IPC Client 返回的类型
+          setTemplates(templates);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch task templates';
           setError(message);
@@ -344,13 +313,8 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
           const instanceClient = taskContainer.instanceClient;
           const result = await instanceClient.complete(id);
           
-          // 更新本地状态
-          updateInstance(id, {
-            status: 'completed' as TaskInstanceStatus,
-            isCompleted: true,
-            isPending: false,
-            completedAt: result.instance.completedAt,
-          });
+          // 使用 IPC Client 返回的实例数据更新本地状态
+          updateInstance(id, result.instance);
           
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to complete task');
@@ -370,14 +334,8 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
           const instanceClient = taskContainer.instanceClient;
           const result = await instanceClient.skip(id, reason);
           
-          // 更新本地状态
-          updateInstance(id, {
-            status: 'skipped' as TaskInstanceStatus,
-            isSkipped: true,
-            isPending: false,
-            skippedAt: result.skippedAt,
-            skipReason: result.skipReason,
-          });
+          // 使用 IPC Client 返回的实例数据更新本地状态
+          updateInstance(id, result);
           
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to skip task');
@@ -411,7 +369,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       
       getPendingInstances: () => {
         const { instances } = get();
-        return instances.filter(i => i.isPending);
+        return instances.filter(i => !i.isCompleted && !i.isSkipped);
       },
       
       getCompletedInstances: () => {
@@ -424,9 +382,12 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
         
         let filtered = [...instances];
         
-        // 按状态过滤
+        // 按状态过滤 - TaskInstanceClientDTO 使用 isCompleted/isSkipped 布尔值
         if (filters.status?.length) {
-          filtered = filtered.filter(i => filters.status!.includes(i.status));
+          filtered = filtered.filter(i => {
+            const status = i.isCompleted ? 'completed' : (i.isSkipped ? 'skipped' : 'pending');
+            return filters.status!.includes(status);
+          });
         }
         
         // 按模板过滤
@@ -439,7 +400,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
           filtered = filtered.filter(i => !i.isCompleted);
         }
         
-        // 排序
+        // 排序 - 使用 instanceDate
         filtered.sort((a, b) => {
           switch (sortBy) {
             case 'instanceDate_asc':

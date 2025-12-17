@@ -355,5 +355,3 @@ export class AuthIPCClient {
 // ============ Singleton Export ============
 
 export const authIPCClient = new AuthIPCClient();
-
-export const authIPCClient = new AuthIPCClient();

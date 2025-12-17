@@ -27,10 +27,10 @@ export interface MockIPCResponse<T = unknown> {
  * Mock electron API for testing
  */
 export interface MockElectronAPI {
-  invoke: Mock<[channel: string, ...args: unknown[]], Promise<unknown>>;
-  on: Mock<[channel: string, callback: (...args: unknown[]) => void], void>;
-  off: Mock<[channel: string, callback: (...args: unknown[]) => void], void>;
-  send: Mock<[channel: string, ...args: unknown[]], void>;
+  invoke: Mock;
+  on: Mock;
+  off: Mock;
+  send: Mock;
 }
 
 /**

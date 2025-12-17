@@ -15,7 +15,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-// TEMPORARY: Comment out AccountController until we properly refactor it
 import accountRouter from './modules/account/interface/http/accountRoutes';
 import authenticationRouter from './modules/authentication/interface/http/authenticationRoutes';
 import taskRouter from './modules/task/interface/http/routes/index';
@@ -158,9 +157,6 @@ api.use('/editor', authMiddleware, editorRouter);
 // 挂载仓储统一路由 - 需要认证
 api.use('/repositories', authMiddleware, repositoryRouter);
 
-/**
- * setting 设置模块
- */
 
 /**
  * setting 设置模块

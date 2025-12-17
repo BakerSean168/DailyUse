@@ -14,9 +14,9 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type {
-  AccountDTO,
-  SubscriptionDTO,
-  AccountHistoryServerDTO,
+  AccountClientDTO,
+  SubscriptionClientDTO,
+  AccountHistoryClientDTO,
   AccountStatsResponseDTO,
 } from '@dailyuse/contracts/account';
 import {
@@ -25,8 +25,10 @@ import {
 } from '@dailyuse/contracts/account';
 import { accountContainer } from '../../infrastructure/di';
 
-// 本地类型别名
-type AccountHistoryDTO = AccountHistoryServerDTO;
+// 本地类型别名 - 使用 Client DTO
+type AccountDTO = AccountClientDTO;
+type SubscriptionDTO = SubscriptionClientDTO;
+type AccountHistoryDTO = AccountHistoryClientDTO;
 type AccountStatsDTO = AccountStatsResponseDTO;
 
 // ============ State Interface ============
@@ -65,7 +67,7 @@ export interface AccountActions {
   addHistoryRecord: (record: AccountHistoryDTO) => void;
   
   // 统计操作
-  setAccountStats: (stats: AccountStatsDTO) => void;
+  setAccountStats: (stats: AccountStatsDTO | null) => void;
   
   // 状态管理
   setLoading: (loading: boolean) => void;

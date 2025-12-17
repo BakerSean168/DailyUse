@@ -12,7 +12,7 @@ import { globalShortcut, BrowserWindow } from 'electron';
  * @interface ShortcutConfig
  * @description Interface defining a keyboard shortcut configuration.
  */
-interface ShortcutConfig {
+export interface ShortcutConfig {
   /** The unique identifier for the shortcut (e.g., 'show-app'). */
   id: string;
   /** The accelerator string (e.g., 'CommandOrControl+Shift+D'). */

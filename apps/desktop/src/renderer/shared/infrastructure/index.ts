@@ -13,5 +13,14 @@ export * from './di';
 // Initialization
 export * from './initialization';
 
-// Module Registry
-export * from './module-registry';
+// Module Registry - export actual functions
+export {
+  registerAllModules,
+  initializeAllModules,
+  disposeAllModules,
+  getModuleContainer,
+  isModuleInitialized,
+  waitForModule,
+  ModuleName,
+  InitializationPriority,
+} from './module-registry';

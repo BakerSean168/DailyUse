@@ -227,18 +227,18 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
           setError(null);
           
           const editorClient = editorContainer.editorClient;
-          const documents = await editorClient.listDocuments(''); // TODO: 从 AuthStore 获取账户
+          const documents = await editorClient.listDocuments();
           
           const clientDocs: EditorDocument[] = documents.map((d: any) => ({
             uuid: d.uuid,
             accountUuid: d.accountUuid,
             title: d.title,
             content: d.content ?? '',
-            format: d.format ?? 'markdown',
-            folderId: d.folderId,
-            tags: d.tags ?? [],
-            isArchived: d.isArchived ?? false,
-            isDraft: d.isDraft ?? false,
+            format: (d as any).format ?? d.contentType ?? 'markdown',
+            folderId: (d as any).folderId,
+            tags: (d as any).tags ?? [],
+            isArchived: (d as any).isArchived ?? false,
+            isDraft: (d as any).isDraft ?? false,
             createdAt: d.createdAt,
             updatedAt: d.updatedAt,
           }));
@@ -266,11 +266,11 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
             accountUuid: doc.accountUuid,
             title: doc.title,
             content: doc.content ?? '',
-            format: doc.format ?? 'markdown',
-            folderId: doc.folderId,
-            tags: doc.tags ?? [],
-            isArchived: doc.isArchived ?? false,
-            isDraft: doc.isDraft ?? false,
+            format: (doc as any).format ?? doc.contentType ?? 'markdown',
+            folderId: (doc as any).folderId,
+            tags: (doc as any).tags ?? [],
+            isArchived: (doc as any).isArchived ?? false,
+            isDraft: (doc as any).isDraft ?? false,
             createdAt: doc.createdAt,
             updatedAt: doc.updatedAt,
           };
@@ -293,10 +293,9 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
           
           const editorClient = editorContainer.editorClient;
           const doc = await editorClient.createDocument({
-            accountUuid: data.accountUuid ?? '',
             title: data.title ?? 'Untitled',
             content: data.content ?? '',
-            format: data.format ?? 'markdown',
+            contentType: data.format === 'richtext' ? 'rich_text' : (data.format === 'plaintext' ? 'plain_text' : 'markdown'),
           });
           
           const clientDoc: EditorDocument = {
@@ -304,9 +303,9 @@ export const useEditorStore = create<EditorState & EditorActions & EditorSelecto
             accountUuid: doc.accountUuid,
             title: doc.title,
             content: doc.content ?? '',
-            format: doc.format ?? 'markdown',
-            folderId: doc.folderId,
-            tags: doc.tags ?? [],
+            format: (doc as any).format ?? doc.contentType ?? 'markdown',
+            folderId: (doc as any).folderId,
+            tags: (doc as any).tags ?? [],
             isArchived: false,
             isDraft: true,
             createdAt: doc.createdAt,

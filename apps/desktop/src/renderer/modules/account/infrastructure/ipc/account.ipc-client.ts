@@ -7,61 +7,71 @@
 import { BaseIPCClient, ipcClient } from '@/renderer/shared/infrastructure/ipc';
 import { AccountChannels } from '@/shared/types/ipc-channels';
 
-// ============ Types ============
+// ============ Types from contracts ============
+// Re-export from contracts for convenience
+export type {
+  AccountClientDTO,
+  AccountServerDTO,
+  SubscriptionClientDTO,
+  SubscriptionServerDTO,
+  AccountHistoryClientDTO,
+  AccountHistoryServerDTO,
+} from '@dailyuse/contracts/account';
 
-export interface AccountDTO {
-  uuid: string;
-  email: string;
-  name: string;
-  avatar?: string;
-  type: AccountType;
-  status: AccountStatus;
-  subscription?: SubscriptionDTO;
-  preferences: AccountPreferencesDTO;
-  createdAt: number;
-  updatedAt: number;
-  lastLoginAt?: number;
-}
+export {
+  AccountStatus,
+  SubscriptionPlan,
+  SubscriptionStatus,
+} from '@dailyuse/contracts/account';
 
-export type AccountType = 'free' | 'pro' | 'team' | 'enterprise';
-export type AccountStatus = 'active' | 'inactive' | 'suspended' | 'deleted';
+// Import types for internal use
+import type {
+  AccountClientDTO,
+  AccountServerDTO,
+  SubscriptionClientDTO,
+  AccountHistoryClientDTO,
+  AccountStatsResponseDTO,
+  CreateAccountRequest,
+  UpdateAccountProfileRequest,
+  UpdateAccountPreferencesRequest,
+} from '@dailyuse/contracts/account';
 
-export interface SubscriptionDTO {
-  planId: string;
-  planName: string;
-  status: 'active' | 'cancelled' | 'expired' | 'trial';
-  expiresAt: number;
-  features: string[];
-}
+// ============ Local Types (for IPC-specific operations) ============
 
-export interface AccountPreferencesDTO {
-  language: string;
-  timezone: string;
-  dateFormat: string;
-  timeFormat: '12h' | '24h';
-  weekStartsOn: number;
-  notifications: NotificationPreferencesDTO;
-}
+/**
+ * AccountDTO 别名 - 用于 IPC 传输
+ * 客户端使用 AccountClientDTO，但为了向后兼容保留 AccountDTO 别名
+ */
+export type AccountDTO = AccountClientDTO;
 
-export interface NotificationPreferencesDTO {
-  email: boolean;
-  push: boolean;
-  desktop: boolean;
-  sound: boolean;
-  reminderLeadTime: number;
-}
+/**
+ * SubscriptionDTO 别名
+ */
+export type SubscriptionDTO = SubscriptionClientDTO;
 
-export interface AccountStatisticsDTO {
-  totalTasks: number;
-  completedTasks: number;
-  totalGoals: number;
-  achievedGoals: number;
-  totalFocusMinutes: number;
-  currentStreak: number;
-  longestStreak: number;
-  memberSince: number;
-}
+/**
+ * AccountHistoryDTO 别名
+ */
+export type AccountHistoryDTO = AccountHistoryClientDTO;
 
+/**
+ * AccountStatisticsDTO 别名
+ */
+export type AccountStatisticsDTO = AccountStatsResponseDTO;
+
+/**
+ * AccountPreferencesDTO 别名 - 从 AccountClientDTO 中提取
+ */
+export type AccountPreferencesDTO = AccountClientDTO['preferences'];
+
+/**
+ * UpdateAccountRequest 别名
+ */
+export type UpdateAccountRequest = UpdateAccountProfileRequest;
+
+/**
+ * Usage DTO for storage/API limits
+ */
 export interface UsageDTO {
   storageUsed: number;
   storageLimit: number;
@@ -69,18 +79,6 @@ export interface UsageDTO {
   apiCallsLimit: number;
   aiCreditsUsed: number;
   aiCreditsLimit: number;
-}
-
-export interface CreateAccountRequest {
-  email: string;
-  name: string;
-  avatar?: string;
-}
-
-export interface UpdateAccountRequest {
-  uuid: string;
-  name?: string;
-  email?: string;
 }
 
 // ============ Account IPC Client ============
@@ -105,6 +103,13 @@ export class AccountIPCClient {
       AccountChannels.GET_CURRENT,
       {}
     );
+  }
+
+  /**
+   * 获取当前账户 (alias for getCurrent)
+   */
+  async getCurrentAccount(): Promise<AccountDTO | null> {
+    return this.getCurrent();
   }
 
   /**
@@ -244,6 +249,23 @@ export class AccountIPCClient {
   async getStatistics(uuid: string): Promise<AccountStatisticsDTO> {
     return this.client.invoke<AccountStatisticsDTO>(
       AccountChannels.GET_STATS,
+      { uuid }
+    );
+  }
+
+  /**
+   * 获取账户统计 (alias for getStatistics)
+   */
+  async getStats(uuid: string): Promise<AccountStatisticsDTO> {
+    return this.getStatistics(uuid);
+  }
+
+  /**
+   * 获取账户历史
+   */
+  async getHistory(uuid: string): Promise<AccountHistoryDTO[]> {
+    return this.client.invoke<AccountHistoryDTO[]>(
+      AccountChannels.GET_HISTORY,
       { uuid }
     );
   }

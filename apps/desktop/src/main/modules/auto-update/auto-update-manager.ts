@@ -11,6 +11,7 @@
 
 import { BrowserWindow, app } from 'electron';
 import { createLogger } from '@dailyuse/utils';
+import type { AppUpdater, UpdateInfo as ElectronUpdateInfo, ProgressInfo } from 'electron-updater';
 
 const logger = createLogger('AutoUpdateManager');
 

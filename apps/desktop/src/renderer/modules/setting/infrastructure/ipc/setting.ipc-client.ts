@@ -94,6 +94,16 @@ export class SettingIPCClient {
   }
 
   /**
+   * 设置所有设置
+   */
+  async setAll(settings: Partial<AppSettingsDTO>): Promise<AppSettingsDTO> {
+    return this.client.invoke<AppSettingsDTO>(
+      SettingChannels.UPDATE,
+      { settings }
+    );
+  }
+
+  /**
    * 获取设置
    */
   async get<K extends keyof AppSettingsDTO>(key: K): Promise<AppSettingsDTO[K]> {
@@ -312,11 +322,11 @@ export class SettingIPCClient {
       {}
     );
   }
-}
 
-// ============ Singleton Export ============
+  // ============ Event Subscriptions ============
 
-export const settingIPCClient = new SettingIPCClient();
+  /**
+   * 订阅主题变更事件
    */
   onThemeChanged(handler: (theme: AppearanceSettingsDTO['theme']) => void): () => void {
     return this.client.on(SettingChannels.EVENT_THEME_CHANGED, handler);

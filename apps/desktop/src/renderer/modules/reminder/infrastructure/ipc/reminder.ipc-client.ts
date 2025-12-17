@@ -8,61 +8,49 @@ import { BaseIPCClient, ipcClient } from '@/renderer/shared/infrastructure/ipc';
 import { ReminderChannels } from '@/shared/types/ipc-channels';
 import type { ReminderPayloads } from '@/shared/types/ipc-payloads';
 
-// ============ Types ============
+// ============ Types from contracts ============
+// Re-export from contracts for convenience
+export type {
+  ReminderTemplateClientDTO,
+  ReminderGroupClientDTO,
+  ReminderStatisticsClientDTO,
+  ReminderHistoryClientDTO,
+} from '@dailyuse/contracts/reminder';
 
-export interface ReminderDTO {
-  uuid: string;
-  accountUuid: string;
-  title: string;
-  description?: string;
-  triggerAt: number;
-  type: ReminderType;
-  priority: ReminderPriority;
-  status: ReminderStatus;
-  linkedEntityType?: LinkedEntityType;
-  linkedEntityUuid?: string;
-  recurrence?: ReminderRecurrenceDTO;
-  notification: NotificationConfigDTO;
-  snoozedUntil?: number;
-  acknowledgedAt?: number;
-  dismissedAt?: number;
-  createdAt: number;
-  updatedAt: number;
-}
+export {
+  ReminderType,
+  ReminderStatus,
+} from '@dailyuse/contracts/reminder';
 
-export type ReminderType = 'one_time' | 'recurring' | 'location_based';
-export type ReminderPriority = 'low' | 'medium' | 'high' | 'critical';
-export type ReminderStatus = 'pending' | 'triggered' | 'snoozed' | 'acknowledged' | 'dismissed';
+// Import types for internal use
+import type {
+  ReminderTemplateClientDTO,
+  ReminderGroupClientDTO,
+  ReminderStatisticsClientDTO,
+} from '@dailyuse/contracts/reminder';
+import { ReminderStatus } from '@dailyuse/contracts/reminder';
+
+// ============ Local Type Aliases (backward compatibility) ============
+
+/**
+ * ReminderDTO 别名 - 映射到 ReminderTemplateClientDTO
+ */
+export type ReminderDTO = ReminderTemplateClientDTO;
+
+/**
+ * ReminderGroupDTO 别名
+ */
+export type ReminderGroupDTO = ReminderGroupClientDTO;
+
+/**
+ * ReminderStatisticsDTO 别名
+ */
+export type ReminderStatisticsDTO = ReminderStatisticsClientDTO;
+
+/**
+ * LinkedEntityType - 关联实体类型
+ */
 export type LinkedEntityType = 'task' | 'goal' | 'schedule' | 'habit';
-
-export interface ReminderRecurrenceDTO {
-  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  interval: number;
-  daysOfWeek?: number[];
-  endDate?: number;
-  occurrences?: number;
-  totalTriggered: number;
-}
-
-export interface NotificationConfigDTO {
-  enabled: boolean;
-  sound: boolean;
-  soundFile?: string;
-  vibration: boolean;
-  badge: boolean;
-  persistent: boolean;
-  preAlertMinutes?: number[];
-}
-
-export interface ReminderStatisticsDTO {
-  total: number;
-  pending: number;
-  triggered: number;
-  acknowledged: number;
-  dismissed: number;
-  snoozed: number;
-  averageResponseTimeMs: number;
-}
 
 // ============ Reminder IPC Client ============
 
@@ -133,10 +121,33 @@ export class ReminderIPCClient {
   /**
    * 推迟提醒
    */
-  async snooze(params: ReminderPayloads.SnoozeRequest): Promise<ReminderDTO> {
+  async snooze(uuidOrParams: string | ReminderPayloads.SnoozeRequest, minutes?: number): Promise<ReminderDTO> {
+    const params = typeof uuidOrParams === 'string'
+      ? { uuid: uuidOrParams, minutes: minutes ?? 5 }
+      : uuidOrParams;
     return this.client.invoke<ReminderDTO>(
       ReminderChannels.SNOOZE,
       params
+    );
+  }
+
+  /**
+   * 暂停提醒
+   */
+  async pause(uuid: string): Promise<ReminderDTO> {
+    return this.client.invoke<ReminderDTO>(
+      ReminderChannels.INSTANCE_SNOOZE, // Using instance snooze as pause
+      { uuid, paused: true }
+    );
+  }
+
+  /**
+   * 恢复提醒
+   */
+  async resume(uuid: string): Promise<ReminderDTO> {
+    return this.client.invoke<ReminderDTO>(
+      ReminderChannels.INSTANCE_SNOOZE, // Using instance snooze as resume
+      { uuid, paused: false }
     );
   }
 
@@ -236,27 +247,27 @@ export class ReminderIPCClient {
   // ============ Convenience Methods ============
 
   /**
-   * 获取待处理的提醒
+   * 获取活跃的提醒（未暂停）
    */
-  async getPending(accountUuid: string): Promise<ReminderDTO[]> {
+  async getActive(accountUuid: string): Promise<ReminderDTO[]> {
     const reminders = await this.list({ accountUuid });
-    return reminders.filter(r => r.status === 'pending');
+    return reminders.filter(r => r.status === ReminderStatus.ACTIVE && r.isActive);
   }
 
   /**
-   * 获取已触发未处理的提醒
+   * 获取已暂停的提醒
    */
-  async getTriggered(accountUuid: string): Promise<ReminderDTO[]> {
+  async getPaused(accountUuid: string): Promise<ReminderDTO[]> {
     const reminders = await this.list({ accountUuid });
-    return reminders.filter(r => r.status === 'triggered');
+    return reminders.filter(r => r.status === ReminderStatus.PAUSED);
   }
 
   /**
-   * 获取已推迟的提醒
+   * 获取已暂停的提醒
    */
   async getSnoozed(accountUuid: string): Promise<ReminderDTO[]> {
     const reminders = await this.list({ accountUuid });
-    return reminders.filter(r => r.status === 'snoozed');
+    return reminders.filter(r => r.isPaused);
   }
 
   /**
@@ -268,7 +279,7 @@ export class ReminderIPCClient {
 
     const reminders = await this.list({ accountUuid });
     return reminders.filter(
-      r => r.status === 'pending' && r.triggerAt >= now && r.triggerAt <= futureTime
+      r => r.isActive && r.nextTriggerAt && r.nextTriggerAt >= now && r.nextTriggerAt <= futureTime
     );
   }
 
@@ -279,12 +290,12 @@ export class ReminderIPCClient {
     accountUuid: string;
     title: string;
     triggerAt: number;
-    priority?: ReminderPriority;
   }): Promise<ReminderDTO> {
     return this.create({
-      ...params,
+      accountUuid: params.accountUuid,
+      title: params.title,
+      triggerTime: params.triggerAt,
       type: 'one_time',
-      priority: params.priority || 'medium',
       notification: {
         enabled: true,
         sound: true,
@@ -293,6 +304,18 @@ export class ReminderIPCClient {
         persistent: false,
       },
     });
+  }
+
+  // ============ Group Operations ============
+
+  /**
+   * 获取提醒分组列表
+   */
+  async listGroups(params: { accountUuid: string }): Promise<ReminderGroupDTO[]> {
+    return this.client.invoke<ReminderGroupDTO[]>(
+      ReminderChannels.GROUP_LIST,
+      params
+    );
   }
 
   // ============ Event Subscriptions ============

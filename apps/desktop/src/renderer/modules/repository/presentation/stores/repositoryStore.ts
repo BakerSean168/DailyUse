@@ -13,14 +13,22 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { persist, createJSONStorage } from 'zustand/middleware';
+// 使用 IPC Client 的类型，而不是 contracts 的完整 ClientDTO
 import type {
-  RepositoryClientDTO,
-  ResourceClientDTO,
-  FolderClientDTO,
+  BackupDTO,
+  ResourceDTO,
+  FolderDTO,
   RepositoryType,
-  RepositoryStatus,
-} from '@dailyuse/contracts/repository';
+  BackupStatus,
+  BackupType,
+} from '../../infrastructure/ipc/repository.ipc-client';
 import { repositoryContainer } from '../../infrastructure/di';
+
+// 本地类型别名 - 兼容原有命名
+type RepositoryClientDTO = BackupDTO;
+type ResourceClientDTO = ResourceDTO;
+type FolderClientDTO = FolderDTO;
+type RepositoryStatus = BackupStatus;
 
 // ============ State Interface ============
 export interface RepositoryState {
@@ -61,8 +69,8 @@ export interface RepositoryState {
 
 // ============ Filter Options ============
 export interface RepositoryFilters {
-  type?: RepositoryType;
-  status?: RepositoryStatus;
+  type?: BackupType;
+  status?: BackupStatus;
   searchQuery?: string;
 }
 
@@ -320,21 +328,10 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setError(null);
             
             const repositoryClient = repositoryContainer.repositoryClient;
-            const repositories = await repositoryClient.listBackups(''); // TODO: 从 AuthStore 获取账户
+            const repositories = await repositoryClient.listBackups();
             
-            // 转换为 ClientDTO 格式
-            const clientRepos: RepositoryClientDTO[] = repositories.map(r => ({
-              uuid: r.uuid,
-              name: r.name,
-              type: r.type as RepositoryType,
-              status: r.status as RepositoryStatus,
-              path: r.path,
-              size: r.size,
-              createdAt: r.createdAt,
-              updatedAt: r.updatedAt,
-            }));
-            
-            setRepositories(clientRepos);
+            // 直接使用 IPC Client 返回的 BackupDTO
+            setRepositories(repositories);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch repositories';
             setError(message);
@@ -352,20 +349,11 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setError(null);
             
             const repositoryClient = repositoryContainer.repositoryClient;
-            const resources = await repositoryClient.getBackupDetails(repositoryId);
+            const backupDetails = await repositoryClient.getBackupDetails(repositoryId);
             
-            // 处理资源响应
-            const clientResources: ResourceClientDTO[] = resources.files?.map((f: any) => ({
-              uuid: f.uuid ?? crypto.randomUUID(),
-              repositoryUuid: repositoryId,
-              name: f.name,
-              type: f.type,
-              path: f.path,
-              size: f.size,
-              folderUuid: f.folderUuid,
-              createdAt: f.createdAt ?? Date.now(),
-              updatedAt: f.updatedAt ?? Date.now(),
-            })) ?? [];
+            // BackupDTO 不包含 files，暂时返回空数组
+            // TODO: 需要添加获取备份文件列表的 IPC 方法
+            const clientResources: ResourceClientDTO[] = [];
             
             setResources(clientResources);
           } catch (error) {
@@ -384,19 +372,9 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setLoading(true);
             setError(null);
             
-            // Repository Client 当前不支持单独获取文件夹，通过 getBackupDetails 获取
-            const repositoryClient = repositoryContainer.repositoryClient;
-            const details = await repositoryClient.getBackupDetails(repositoryId);
-            
-            const clientFolders: FolderClientDTO[] = details.folders?.map((f: any) => ({
-              uuid: f.uuid ?? crypto.randomUUID(),
-              repositoryUuid: repositoryId,
-              name: f.name,
-              parentUuid: f.parentUuid,
-              path: f.path,
-              createdAt: f.createdAt ?? Date.now(),
-              updatedAt: f.updatedAt ?? Date.now(),
-            })) ?? [];
+            // BackupDTO 不包含 folders，暂时返回空数组
+            // TODO: 需要添加获取备份文件夹列表的 IPC 方法
+            const clientFolders: FolderClientDTO[] = [];
             
             setFolders(clientFolders);
           } catch (error) {
@@ -462,7 +440,9 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
         },
         
         getResourcesByFolder: (folderId) => {
-          return get().resources.filter(r => r.folderUuid === folderId);
+          // ResourceDTO 没有 folderUuid 字段，暂时返回空数组
+          // TODO: 需要在 ResourceDTO 中添加 folderUuid 字段或使用其他关联方式
+          return [];
         },
         
         getFolderById: (id) => get().foldersById[id],

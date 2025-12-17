@@ -48,7 +48,8 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-client": "workspace:*",
     "@dailyuse/infrastructure-client": "workspace:*",
-    "@dailyuse/utils": "workspace:*"
+    "@dailyuse/utils": "workspace:*",
+    "date-fns": "^4.1.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

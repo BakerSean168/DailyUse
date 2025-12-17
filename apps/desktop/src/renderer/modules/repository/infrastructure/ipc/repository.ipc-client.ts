@@ -305,6 +305,16 @@ export class RepositoryIPCClient {
   }
 
   /**
+   * 获取备份详情
+   */
+  async getBackupDetails(uuid: string): Promise<BackupDTO> {
+    return this.client.invoke<BackupDTO>(
+      RepositoryChannels.BACKUP_GET,
+      { uuid }
+    );
+  }
+
+  /**
    * 删除备份
    */
   async deleteBackup(uuid: string): Promise<void> {
@@ -323,25 +333,24 @@ export class RepositoryIPCClient {
       { uuid }
     );
   }
-}
 
-// ============ Singleton Export ============
-
-export const repositoryIPCClient = new RepositoryIPCClient();
-      accountUuid,
+  /**
+   * 快速全量备份
+   */
+  async quickFullBackup(accountUuid: string, name?: string): Promise<BackupDTO> {
+    return this.createBackup({
       name: name || `Full Backup ${new Date().toISOString().split('T')[0]}`,
-      type: 'full',
-      modules: ['all'],
-      encryption: { enabled: false },
     });
   }
 
   /**
    * 快速导出为 JSON
    */
-  async quickExportJson(accountUuid: string, modules?: string[]): Promise<ExportDTO> {
+  async quickExportJson(accountUuid: string, modules?: string[]): Promise<{
+    filePath: string;
+    size: number;
+  }> {
     return this.export({
-      accountUuid,
       format: 'json',
       modules: modules || ['all'],
     });
@@ -359,21 +368,21 @@ export const repositoryIPCClient = new RepositoryIPCClient();
   /**
    * 订阅恢复进度
    */
-  onRestoreProgress(handler: (restore: RestoreDTO) => void): () => void {
+  onRestoreProgress(handler: (data: { progress: number }) => void): () => void {
     return this.client.on(RepositoryChannels.EVENT_RESTORE_PROGRESS, handler);
   }
 
   /**
    * 订阅导出进度
    */
-  onExportProgress(handler: (exportData: ExportDTO) => void): () => void {
+  onExportProgress(handler: (data: { progress: number }) => void): () => void {
     return this.client.on(RepositoryChannels.EVENT_EXPORT_PROGRESS, handler);
   }
 
   /**
    * 订阅导入进度
    */
-  onImportProgress(handler: (importData: ImportDTO) => void): () => void {
+  onImportProgress(handler: (data: { progress: number }) => void): () => void {
     return this.client.on(RepositoryChannels.EVENT_IMPORT_PROGRESS, handler);
   }
 }

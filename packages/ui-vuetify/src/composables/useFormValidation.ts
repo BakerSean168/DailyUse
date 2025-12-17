@@ -8,10 +8,7 @@
 import type { FormRule } from '../types';
 
 // Re-export from ui-vue
-export {
-  useFormValidation,
-  useFormValidationAll,
-} from '@dailyuse/ui-vue';
+export { useFormValidation } from '@dailyuse/ui-vue';
 
 /**
  * Get pre-configured form validation rules (Vuetify-compatible)

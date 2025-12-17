@@ -86,6 +86,28 @@ export interface CreateNotificationRequest {
   data?: Record<string, unknown>;
 }
 
+export interface NotificationStatisticsDTO {
+  total: number;
+  unread: number;
+  read: number;
+  dismissed: number;
+  byType: Record<NotificationType, number>;
+  byPriority: Record<NotificationPriority, number>;
+}
+
+export namespace NotificationPayloads {
+  export interface SendRequest {
+    accountUuid: string;
+    type: NotificationType;
+    title: string;
+    body: string;
+    icon?: string;
+    priority?: NotificationPriority;
+    actions?: NotificationActionDTO[];
+    data?: Record<string, unknown>;
+  }
+}
+
 // ============ Notification IPC Client ============
 
 /**
@@ -103,7 +125,7 @@ export class NotificationIPCClient {
   /**
    * 获取通知列表
    */
-  async list(params?: { status?: NotificationStatus; type?: NotificationType }): Promise<NotificationDTO[]> {
+  async list(params?: { accountUuid?: string; status?: NotificationStatus; type?: NotificationType }): Promise<NotificationDTO[]> {
     return this.client.invoke<NotificationDTO[]>(
       NotificationChannels.LIST,
       params || {}
@@ -128,6 +150,13 @@ export class NotificationIPCClient {
       NotificationChannels.CREATE,
       params
     );
+  }
+
+  /**
+   * 发送通知 (alias for create with accountUuid)
+   */
+  async send(params: NotificationPayloads.SendRequest): Promise<NotificationDTO> {
+    return this.create(params);
   }
 
   /**
@@ -266,11 +295,8 @@ export class NotificationIPCClient {
   onClicked(handler: (notification: NotificationDTO) => void): () => void {
     return this.client.on(NotificationChannels.EVENT_CLICKED, handler);
   }
-}
 
-// ============ Singleton Export ============
-
-export const notificationIPCClient = new NotificationIPCClient();
+  /**
    * 获取通知统计
    */
   async getStatistics(accountUuid: string): Promise<NotificationStatisticsDTO> {
@@ -320,20 +346,6 @@ export const notificationIPCClient = new NotificationIPCClient();
   }
 
   // ============ Event Subscriptions ============
-
-  /**
-   * 订阅新通知
-   */
-  onNotificationReceived(handler: (notification: NotificationDTO) => void): () => void {
-    return this.client.on(NotificationChannels.EVENT_RECEIVED, handler);
-  }
-
-  /**
-   * 订阅通知点击
-   */
-  onNotificationClicked(handler: (notification: NotificationDTO) => void): () => void {
-    return this.client.on(NotificationChannels.EVENT_CLICKED, handler);
-  }
 
   /**
    * 订阅通知动作

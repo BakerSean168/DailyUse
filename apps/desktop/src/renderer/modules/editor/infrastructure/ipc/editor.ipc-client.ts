@@ -137,6 +137,41 @@ export class EditorIPCClient {
     );
   }
 
+  /**
+   * 通过关联实体获取文档
+   */
+  async getByLinkedEntity(entityType: LinkedEntityType, entityUuid: string): Promise<DocumentDTO | null> {
+    return this.client.invoke<DocumentDTO | null>(
+      EditorChannels.DOCUMENT_GET_BY_LINKED_ENTITY,
+      { entityType, entityUuid }
+    );
+  }
+
+  /**
+   * 为关联实体创建文档
+   */
+  async createForLinkedEntity(params: {
+    entityType: LinkedEntityType;
+    entityUuid: string;
+    title?: string;
+    contentType?: ContentType;
+  }): Promise<DocumentDTO> {
+    return this.client.invoke<DocumentDTO>(
+      EditorChannels.DOCUMENT_CREATE_FOR_LINKED_ENTITY,
+      params
+    );
+  }
+
+  /**
+   * 保存文档
+   */
+  async saveDocument(uuid: string, content: string): Promise<DocumentDTO> {
+    return this.client.invoke<DocumentDTO>(
+      EditorChannels.DOCUMENT_SAVE,
+      { uuid, content }
+    );
+  }
+
   // ============ Content Operations ============
 
   /**
@@ -300,12 +335,6 @@ export class EditorIPCClient {
       EditorChannels.EXPORT_PDF,
       { uuid }
     );
-  }
-}
-
-// ============ Singleton Export ============
-
-export const editorIPCClient = new EditorIPCClient();
   }
 
   /**

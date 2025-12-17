@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { logo, logo128, logos, defaultAvatar } from '../src/images';
+import { logo, logo128, logos, defaultAvatar } from '../images';
 
 describe('@dailyuse/assets - Images', () => {
   it('should export logo paths', () => {

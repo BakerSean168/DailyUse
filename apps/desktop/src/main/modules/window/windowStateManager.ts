@@ -15,7 +15,7 @@ import fs from 'fs';
  * @interface WindowState
  * @description Interface defining the structure of the saved window state.
  */
-interface WindowState {
+export interface WindowState {
   /** Window width in pixels. */
   width: number;
   /** Window height in pixels. */
@@ -32,7 +32,7 @@ interface WindowState {
  * @interface WindowStateManagerOptions
  * @description Interface for configuration options when creating a WindowStateManager.
  */
-interface WindowStateManagerOptions {
+export interface WindowStateManagerOptions {
   /** Default width if no state is saved. */
   defaultWidth: number;
   /** Default height if no state is saved. */

@@ -245,8 +245,8 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
     ipcMain.handle(GoalChannels.FOCUS_START, async (_event, params: { goalUuid: string; duration: number; accountUuid?: string }) => {
       return this.handleRequest(
         GoalChannels.FOCUS_START,
-        () => focusManager.start(params.goalUuid, params.accountUuid ?? '', params.duration),
-        { goalUuid: params.goalUuid },
+        async () => focusManager.start(params.goalUuid, params.accountUuid ?? '', params.duration),
+        { accountUuid: params.accountUuid },
       );
     });
 
@@ -260,7 +260,7 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
     ipcMain.handle(GoalChannels.FOCUS_PAUSE, async () => {
       return this.handleRequest(
         GoalChannels.FOCUS_PAUSE,
-        () => focusManager.pause(),
+        async () => focusManager.pause(),
       );
     });
 
@@ -274,7 +274,7 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
     ipcMain.handle(GoalChannels.FOCUS_RESUME, async () => {
       return this.handleRequest(
         GoalChannels.FOCUS_RESUME,
-        () => focusManager.resume(),
+        async () => focusManager.resume(),
       );
     });
 
@@ -288,7 +288,7 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
     ipcMain.handle(GoalChannels.FOCUS_STOP, async (_event, params: { notes?: string }) => {
       return this.handleRequest(
         GoalChannels.FOCUS_STOP,
-        () => focusManager.stop(params.notes),
+        async () => focusManager.stop(params.notes),
       );
     });
 
@@ -302,7 +302,7 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
     ipcMain.handle(GoalChannels.FOCUS_GET_STATUS, async () => {
       return this.handleRequest(
         GoalChannels.FOCUS_GET_STATUS,
-        () => focusManager.getStatus(),
+        async () => focusManager.getStatus(),
       );
     });
 
@@ -316,7 +316,7 @@ export class GoalFocusIPCHandler extends BaseIPCHandler {
     ipcMain.handle(GoalChannels.FOCUS_GET_HISTORY, async (_event, params: { goalUuid?: string; startDate?: number; endDate?: number }) => {
       return this.handleRequest(
         GoalChannels.FOCUS_GET_HISTORY,
-        () => focusManager.getHistory(params.goalUuid, params.startDate, params.endDate),
+        async () => focusManager.getHistory(params.goalUuid, params.startDate, params.endDate),
       );
     });
   }

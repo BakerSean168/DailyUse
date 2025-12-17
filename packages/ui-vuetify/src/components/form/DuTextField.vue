@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { usePasswordStrength } from '../../composables/usePasswordStrength';
 import type { FormRule } from '../../types';
 
@@ -123,21 +123,26 @@ const computedAppendIcon = computed(() => {
 });
 
 // 密码强度
-const passwordValue = computed(() => props.modelValue || '');
-const passwordStrengthData = computed(() => {
-  if (props.type === 'password' && props.showPasswordStrength) {
-    return usePasswordStrength(passwordValue);
-  }
-  return null;
-});
+const passwordStrengthHelper = usePasswordStrength('');
+
+// 监听密码值变化更新强度计算
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (props.type === 'password' && props.showPasswordStrength) {
+      passwordStrengthHelper.password.value = newValue || '';
+    }
+  },
+  { immediate: true }
+);
 
 const passwordStrength = computed(() => {
-  if (passwordStrengthData.value) {
+  if (props.type === 'password' && props.showPasswordStrength) {
     return {
-      score: passwordStrengthData.value.score.value,
-      text: passwordStrengthData.value.text.value,
-      color: passwordStrengthData.value.color.value,
-      percentage: passwordStrengthData.value.percentage.value,
+      score: passwordStrengthHelper.score.value,
+      text: passwordStrengthHelper.label.value,
+      color: passwordStrengthHelper.color.value,
+      percentage: passwordStrengthHelper.score.value,
     };
   }
   return { score: 0, text: '', color: 'grey', percentage: 0 };

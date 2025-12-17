@@ -12,7 +12,8 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
+// 使用 Store 导出的类型别名
+import type { ScheduleClientDTO } from '../stores/scheduleStore';
 import { useScheduleStore } from '../stores/scheduleStore';
 import { WeekViewCalendar } from '../components/WeekViewCalendar';
 import { CreateScheduleDialog } from '../components/dialogs/CreateScheduleDialog';

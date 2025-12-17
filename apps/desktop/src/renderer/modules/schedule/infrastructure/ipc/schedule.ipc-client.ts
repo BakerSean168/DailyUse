@@ -8,29 +8,52 @@ import { BaseIPCClient, ipcClient } from '@/renderer/shared/infrastructure/ipc';
 import { ScheduleChannels } from '@/shared/types/ipc-channels';
 import type { SchedulePayloads } from '@/shared/types/ipc-payloads';
 
-// ============ Types ============
+// ============ Types from contracts ============
+// Re-export from contracts for convenience
+export type {
+  ScheduleClientDTO,
+  ScheduleServerDTO,
+  ScheduleStatisticsClientDTO,
+} from '@dailyuse/contracts/schedule';
 
-export interface ScheduleDTO {
-  uuid: string;
-  accountUuid: string;
-  title: string;
-  description?: string;
-  startTime: number;
-  endTime: number;
-  allDay: boolean;
-  location?: string;
-  color?: string;
-  status: ScheduleStatus;
-  recurrenceId?: string;
-  isRecurring: boolean;
-  completedAt?: number;
-  cancelledAt?: number;
-  createdAt: number;
-  updatedAt: number;
-}
+// Import types for internal use
+import type {
+  ScheduleClientDTO,
+  ScheduleStatisticsClientDTO,
+} from '@dailyuse/contracts/schedule';
 
+// ============ Local Type Aliases (backward compatibility) ============
+
+/**
+ * ScheduleDTO 别名 - 用于 IPC 传输
+ */
+export type ScheduleDTO = ScheduleClientDTO;
+
+/**
+ * ScheduleStatisticsDTO 别名
+ */
+export type ScheduleStatisticsDTO = ScheduleStatisticsClientDTO;
+
+/**
+ * ScheduleStatus 类型
+ */
 export type ScheduleStatus = 'scheduled' | 'completed' | 'cancelled';
 
+/**
+ * RecurrenceConfigDTO - 循环配置
+ */
+export interface RecurrenceConfigDTO {
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval: number;
+  daysOfWeek?: number[];
+  dayOfMonth?: number;
+  endDate?: number;
+  occurrences?: number;
+}
+
+/**
+ * RecurringScheduleDTO - 循环日程
+ */
 export interface RecurringScheduleDTO {
   uuid: string;
   accountUuid: string;
@@ -46,23 +69,9 @@ export interface RecurringScheduleDTO {
   updatedAt: number;
 }
 
-export interface RecurrenceConfigDTO {
-  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  interval: number;
-  daysOfWeek?: number[];
-  dayOfMonth?: number;
-  endDate?: number;
-  occurrences?: number;
-}
-
-export interface ScheduleStatisticsDTO {
-  total: number;
-  completed: number;
-  cancelled: number;
-  upcoming: number;
-  completionRate: number;
-}
-
+/**
+ * ScheduleConflictDTO - 日程冲突
+ */
 export interface ScheduleConflictDTO {
   schedule: ScheduleDTO;
   conflictingSchedules: ScheduleDTO[];
@@ -287,7 +296,8 @@ export class ScheduleIPCClient {
     const futureTime = now + hours * 60 * 60 * 1000;
 
     const schedules = await this.listByDateRange(accountUuid, now, futureTime);
-    return schedules.filter(s => s.status === 'scheduled');
+    // 返回所有在时间范围内的日程（ScheduleClientDTO 没有 status 字段）
+    return schedules;
   }
 }
 

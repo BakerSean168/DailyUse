@@ -8,7 +8,7 @@
  * @module modules/auto-update/infrastructure
  */
 
-import { BaseIPCClient } from '../../shared/infrastructure/ipc/base-ipc-client';
+import { BaseIPCClient } from '../../../shared/infrastructure/ipc/base-ipc-client';
 
 /**
  * Update status enum
@@ -71,7 +71,7 @@ export interface UpdateStatusResponse {
  */
 export class AutoUpdateIPCClient extends BaseIPCClient {
   constructor() {
-    super('auto-update');
+    super({ metadata: { module: 'auto-update' } });
   }
 
   /**

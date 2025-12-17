@@ -12,12 +12,7 @@ import { ref, computed, type Ref } from 'vue';
 import { createLoadingWrapper } from '@dailyuse/utils';
 
 // Re-export core loading composables from ui-vue for convenience
-export {
-  useLoading as useCoreLoading,
-  useGlobalLoading as useCoreGlobalLoading,
-  useButtonLoading as useCoreButtonLoading,
-  useTableLoading as useCoreTableLoading,
-} from '@dailyuse/ui-vue';
+export { useLoading as useCoreLoading } from '@dailyuse/ui-vue';
 
 /**
  * Loading 覆盖层选项

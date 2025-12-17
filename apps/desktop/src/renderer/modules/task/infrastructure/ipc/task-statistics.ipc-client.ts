@@ -8,24 +8,23 @@ import { BaseIPCClient, ipcClient } from '@/renderer/shared/infrastructure/ipc';
 import { TaskChannels } from '@/shared/types/ipc-channels';
 import type { TaskPayloads } from '@/shared/types/ipc-payloads';
 
-// ============ Types ============
+// ============ Types from contracts ============
+// Re-export from contracts for convenience
+export type {
+  TaskStatisticsClientDTO,
+} from '@dailyuse/contracts/task';
 
-export interface TaskStatisticsDTO {
-  /** 总任务数 */
-  total: number;
-  /** 已完成数 */
-  completed: number;
-  /** 已跳过数 */
-  skipped: number;
-  /** 待办数 */
-  pending: number;
-  /** 完成率 */
-  completionRate: number;
-  /** 平均完成时间（分钟） */
-  averageCompletionTime?: number;
-  /** 连续完成天数 */
-  streak?: number;
-}
+// Import types for internal use
+import type {
+  TaskStatisticsClientDTO,
+} from '@dailyuse/contracts/task';
+
+// ============ Local Type Aliases (backward compatibility) ============
+
+/**
+ * TaskStatisticsDTO 别名 - 用于 IPC 传输
+ */
+export type TaskStatisticsDTO = TaskStatisticsClientDTO;
 
 export interface DailyTaskStatistics {
   date: string; // YYYY-MM-DD
@@ -177,9 +176,9 @@ export class TaskStatisticsIPCClient {
     for (let i = 0; i < days; i++) {
       const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
       labels.push(date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }));
-      // 模拟数据分布
-      completed.push(Math.floor(stats.completed / days));
-      total.push(Math.floor(stats.total / days));
+      // 从嵌套结构获取数据
+      completed.push(Math.floor(stats.completionStats.totalCompleted / days));
+      total.push(Math.floor(stats.instanceStats.totalInstances / days));
     }
 
     return { labels, completed, total };
@@ -194,21 +193,15 @@ export class TaskStatisticsIPCClient {
     endDate: number
   ): Promise<number> {
     const stats = await this.get({ accountUuid, startDate, endDate });
-    return stats.completionRate;
+    return stats.completionStats.completionRate;
   }
 
   /**
-   * 获取当前连胜天数
+   * 获取当前连胜天数（暂不支持，返回 0）
    */
   async getCurrentStreak(accountUuid: string): Promise<number> {
-    const now = new Date();
-    const startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).getTime();
-    const stats = await this.get({
-      accountUuid,
-      startDate,
-      endDate: now.getTime(),
-    });
-    return stats.streak ?? 0;
+    // TaskStatisticsClientDTO 目前没有 streak 字段
+    return 0;
   }
 }
 

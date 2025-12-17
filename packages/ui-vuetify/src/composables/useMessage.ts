@@ -11,14 +11,7 @@
 import { ref } from 'vue';
 
 // Re-export core composables from ui-vue for convenience
-export {
-  useSnackbar as useCoreSnackbar,
-  useDialog as useCoreDialog,
-  useGlobalMessage as useCoreGlobalMessage,
-  useGlobalDialog as useCoreGlobalDialog,
-  type MessageType as CoreMessageType,
-  type MessageOptions as CoreMessageOptions,
-} from '@dailyuse/ui-vue';
+export { useMessage as useCoreMessage } from '@dailyuse/ui-vue';
 
 /**
  * 消息类型

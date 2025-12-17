@@ -4,12 +4,14 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { 
-  ScheduleClientDTO,
-  CreateScheduleRequest,
-  UpdateScheduleRequest,
-} from '@dailyuse/contracts/schedule';
+// 使用 IPC Client 的类型，而不是 contracts 的完整 ClientDTO
+import type { ScheduleDTO } from '../../infrastructure/ipc/schedule.ipc-client';
 import { scheduleContainer } from '../../infrastructure/di';
+
+// 本地类型别名 - 兼容原有命名
+export type ScheduleClientDTO = ScheduleDTO;
+export type CreateScheduleRequest = Partial<ScheduleDTO> & { title: string; startTime: number; endTime: number };
+export type UpdateScheduleRequest = Partial<ScheduleDTO>;
 
 // ============ Types ============
 export interface ScheduleState {
@@ -138,27 +140,8 @@ export const useScheduleStore = create<ScheduleStore>()(
             end.getTime()
           );
           
-          // 转换为 ClientDTO 格式
-          const clientSchedules: ScheduleClientDTO[] = schedules.map(s => ({
-            uuid: s.uuid,
-            accountUuid: s.accountUuid,
-            title: s.title,
-            description: s.description,
-            startTime: s.startTime,
-            endTime: s.endTime,
-            allDay: s.allDay,
-            location: s.location,
-            color: s.color,
-            status: s.status,
-            isRecurring: s.isRecurring,
-            recurrenceId: s.recurrenceId,
-            completedAt: s.completedAt,
-            cancelledAt: s.cancelledAt,
-            createdAt: s.createdAt,
-            updatedAt: s.updatedAt,
-          }));
-          
-          get().setSchedules(clientSchedules);
+          // 直接使用 IPC Client 返回的类型
+          get().setSchedules(schedules);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to fetch' });
           throw error;
@@ -175,25 +158,9 @@ export const useScheduleStore = create<ScheduleStore>()(
           const scheduleClient = scheduleContainer.scheduleClient;
           const result = await scheduleClient.create(dto as any);
           
-          const schedule: ScheduleClientDTO = {
-            uuid: result.uuid,
-            accountUuid: result.accountUuid,
-            title: result.title,
-            description: result.description,
-            startTime: result.startTime,
-            endTime: result.endTime,
-            allDay: result.allDay,
-            location: result.location,
-            color: result.color,
-            status: result.status,
-            isRecurring: result.isRecurring,
-            recurrenceId: result.recurrenceId,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
-          };
-          
-          get().addSchedule(schedule);
-          return schedule;
+          // 直接使用返回结果
+          get().addSchedule(result);
+          return result;
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to create' });
           throw error;
@@ -210,25 +177,9 @@ export const useScheduleStore = create<ScheduleStore>()(
           const scheduleClient = scheduleContainer.scheduleClient;
           const result = await scheduleClient.update({ uuid: id, ...dto } as any);
           
-          const schedule: ScheduleClientDTO = {
-            uuid: result.uuid,
-            accountUuid: result.accountUuid,
-            title: result.title,
-            description: result.description,
-            startTime: result.startTime,
-            endTime: result.endTime,
-            allDay: result.allDay,
-            location: result.location,
-            color: result.color,
-            status: result.status,
-            isRecurring: result.isRecurring,
-            recurrenceId: result.recurrenceId,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
-          };
-          
-          get().updateSchedule(id, schedule);
-          return schedule;
+          // 直接使用返回结果
+          get().updateSchedule(id, result);
+          return result;
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to update' });
           throw error;

@@ -8,23 +8,27 @@ import { BaseIPCClient, ipcClient } from '@/renderer/shared/infrastructure/ipc';
 import { TaskChannels } from '@/shared/types/ipc-channels';
 import type { TaskPayloads } from '@/shared/types/ipc-payloads';
 
-// ============ Types ============
+// ============ Types from contracts ============
+// Re-export from contracts for convenience
+export type {
+  TaskTemplateClientDTO,
+} from '@dailyuse/contracts/task';
 
-export interface TaskTemplateDTO {
-  uuid: string;
-  accountUuid: string;
-  title: string;
-  description?: string;
-  priority: number;
-  dueDate?: number;
-  tags: string[];
-  folderId?: string;
-  goalUuid?: string;
-  archived: boolean;
-  createdAt: number;
-  updatedAt: number;
-}
+// Import types for internal use
+import type {
+  TaskTemplateClientDTO,
+} from '@dailyuse/contracts/task';
 
+// ============ Local Type Aliases (backward compatibility) ============
+
+/**
+ * TaskTemplateDTO 别名 - 用于 IPC 传输
+ */
+export type TaskTemplateDTO = TaskTemplateClientDTO;
+
+/**
+ * TaskFolderDTO - 本地定义（contracts 中暂无此类型）
+ */
 export interface TaskFolderDTO {
   uuid: string;
   accountUuid: string;

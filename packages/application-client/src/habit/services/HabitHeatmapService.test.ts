@@ -3,6 +3,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
+// Extend vitest matchers
+declare module 'vitest' {
+  interface Assertion<T> {
+    toBeBetween(floor: number, ceiling: number): T;
+  }
+}
+
 import { habitHeatmapService } from './HabitHeatmapService';
 import { habitCheckInService } from './HabitCheckInService';
 
@@ -105,7 +113,7 @@ describe('HabitHeatmapService', () => {
     it('should generate week heatmap', () => {
       const now = new Date();
       const year = now.getFullYear();
-      const week = this.getWeekNumber(now);
+      const week = getWeekNumber(now);
 
       const heatmap = habitHeatmapService.generateWeekHeatmap(habitId, year, week);
 
@@ -117,7 +125,7 @@ describe('HabitHeatmapService', () => {
     it('should include 7 consecutive days', () => {
       const now = new Date();
       const year = now.getFullYear();
-      const week = this.getWeekNumber(now);
+      const week = getWeekNumber(now);
 
       const heatmap = habitHeatmapService.generateWeekHeatmap(habitId, year, week);
 
@@ -142,7 +150,7 @@ describe('HabitHeatmapService', () => {
     it('should include current date', () => {
       const heatmap = habitHeatmapService.getCurrentWeekHeatmap(habitId);
       const today = new Date();
-      const todayStr = this.getDateString(today);
+      const todayStr = getDateString(today);
 
       const todayInWeek = heatmap.days.some((d) => d.date === todayStr);
       expect(todayInWeek).toBe(true);
@@ -160,7 +168,7 @@ describe('HabitHeatmapService', () => {
     it('should include current date', () => {
       const heatmap = habitHeatmapService.getCurrentMonthHeatmap(habitId);
       const today = new Date();
-      const todayStr = this.getDateString(today);
+      const todayStr = getDateString(today);
 
       const todayInMonth = heatmap.days.some((d) => d.date === todayStr);
       expect(todayInMonth).toBe(true);
@@ -184,7 +192,7 @@ describe('HabitHeatmapService', () => {
       // Create 5-day streak
       for (let i = 0; i < 5; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const consecutive = habitHeatmapService.getConsecutiveDays(habitId);

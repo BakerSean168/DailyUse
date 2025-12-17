@@ -13,7 +13,7 @@ import {
   type UpdateInfo,
   type UpdateProgress,
   type UpdateConfig,
-} from '../infrastructure';
+} from '../../infrastructure';
 
 interface AutoUpdateState {
   // State

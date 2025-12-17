@@ -13,5 +13,3 @@ export type {
   ReviewInsights,
   ReviewReport,
 } from './ReviewReportService';
-
-export default ReviewReportService;

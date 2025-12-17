@@ -3,6 +3,13 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
+// Extend vitest matchers
+declare module 'vitest' {
+  interface Assertion<T> {
+    toBeBetween(floor: number, ceiling: number): T;
+  }
+}
 import { habitStatisticsService } from './HabitStatisticsService';
 import { habitCheckInService } from './HabitCheckInService';
 import { habitStreakService } from './HabitStreakService';
@@ -41,7 +48,7 @@ describe('HabitStatisticsService', () => {
       // Add check-ins for 4 days
       for (let i = 0; i < 4; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const stats = habitStatisticsService.getStatistics(habitId, userId, 'week');
@@ -72,7 +79,7 @@ describe('HabitStatisticsService', () => {
       // 50% week completion: 3 out of 7 days
       for (let i = 0; i < 3; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const stats = habitStatisticsService.getStatistics(habitId, userId, 'week');
@@ -97,7 +104,7 @@ describe('HabitStatisticsService', () => {
       // Create daily check-ins for the week
       for (let i = 0; i < 7; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const score = habitStatisticsService.getPerformanceScore(habitId, userId, 'week');
@@ -119,7 +126,7 @@ describe('HabitStatisticsService', () => {
       // Perfect week: all 7 days checked in
       for (let i = 0; i < 7; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const insights = habitStatisticsService.getInsights(habitId, userId);
@@ -144,7 +151,7 @@ describe('HabitStatisticsService', () => {
       // Create check-ins for current week
       for (let i = 0; i < 4; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const comparison = habitStatisticsService.comparePeriods(habitId, userId, 'week', 'week');
@@ -172,7 +179,7 @@ describe('HabitStatisticsService', () => {
       // Create 7-day streak
       for (let i = 0; i < 7; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const milestones = habitStatisticsService.getAchievedMilestones(habitId, userId);
@@ -187,7 +194,7 @@ describe('HabitStatisticsService', () => {
       // Create 14-day streak
       for (let i = 0; i < 14; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const milestones = habitStatisticsService.getAchievedMilestones(habitId, userId);
@@ -204,7 +211,7 @@ describe('HabitStatisticsService', () => {
       // Create varied check-in pattern
       for (let i = 0; i < 5; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const stats = habitStatisticsService.getStatistics(habitId, userId, 'month');
@@ -221,7 +228,7 @@ describe('HabitStatisticsService', () => {
       // Check in multiple times
       for (let i = 0; i < 5; i++) {
         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-        habitCheckInService.backfillCheckIn(habitId, userId, this.getDateString(date));
+        habitCheckInService.backfillCheckIn(habitId, userId, getDateString(date));
       }
 
       const stats = habitStatisticsService.getStatistics(habitId, userId, 'month');
@@ -249,16 +256,16 @@ describe('HabitStatisticsService', () => {
       expect(stats1).toBe(stats2); // New reference after clear
     });
   });
-
-  // ==================== Helper Methods ====================
-
-  private getDateString(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
 });
+
+// ==================== Helper Functions ====================
+
+function getDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 // Helper: Extend expect with custom matchers
 expect.extend({

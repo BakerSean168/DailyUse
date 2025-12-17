@@ -25,17 +25,12 @@ let autoLaunchManager: AutoLaunchManager | null = null;
 export async function initializeDesktopFeatures(mainWindow: BrowserWindow): Promise<void> {
   console.log('[Desktop Features] Initializing...');
 
-  // 1. 系统托盘
-  trayManager = new TrayManager(mainWindow, {
-    tooltip: 'DailyUse - 效率提升工具',
-    hideOnClose: true,
-  });
-  trayManager.init();
+  // 1. 系统托盘 - 构造函数自动初始化
+  trayManager = new TrayManager(mainWindow);
   console.log('[Desktop Features] Tray manager initialized');
 
-  // 2. 全局快捷键
+  // 2. 全局快捷键 - 构造函数自动注册默认快捷键
   shortcutManager = new ShortcutManager(mainWindow);
-  shortcutManager.init();
   console.log('[Desktop Features] Shortcut manager initialized');
 
   // 3. 开机自启管理器
@@ -60,11 +55,9 @@ export async function cleanupDesktopFeatures(): Promise<void> {
     console.log('[Desktop Features] Shortcuts unregistered');
   }
 
-  // 销毁托盘
-  if (trayManager) {
-    trayManager.destroy();
-    console.log('[Desktop Features] Tray destroyed');
-  }
+  // TrayManager 无需显式销毁，Electron 会自动处理
+  // trayManager 实例置空即可
+  console.log('[Desktop Features] Tray cleanup completed');
 
   trayManager = null;
   shortcutManager = null;

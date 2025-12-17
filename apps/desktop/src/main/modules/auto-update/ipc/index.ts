@@ -10,7 +10,7 @@
 
 import { ipcMain, BrowserWindow } from 'electron';
 import { createLogger } from '@dailyuse/utils';
-import { getAutoUpdateManager, type UpdateConfig } from './auto-update-manager';
+import { getAutoUpdateManager, type UpdateConfig } from '../auto-update-manager';
 
 const logger = createLogger('AutoUpdateIpc');
 

@@ -92,8 +92,8 @@ jobs:
       - name: 🧹 Lint affected projects
         run: pnpm nx affected -t lint --parallel=3
 
-  # ========== Job 3: Typecheck ==========
-  typecheck:
+  # ========== Job 3: Build Packages (required for typecheck) ==========
+  build-packages:
     needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -122,6 +122,54 @@ jobs:
             packages/*/node_modules
             .nx/cache
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🏗️ Build packages (for type declarations)
+        run: pnpm build:packages
+
+      - name: 💾 Cache package dist
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+          key: ${{ runner.os }}-packages-dist-${{ github.sha }}
+
+  # ========== Job 4: Typecheck (requires built packages) ==========
+  typecheck:
+    needs: build-packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 🔄 Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+            .nx/cache
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🔄 Restore package dist cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+          key: ${{ runner.os }}-packages-dist-${{ github.sha }}
 
       - name: 🔍 Derive SHAs for affected
         uses: nrwl/nx-set-shas@v4
@@ -129,9 +177,9 @@ jobs:
       - name: 🔍 Typecheck affected projects
         run: pnpm nx affected -t typecheck --parallel=3
 
-  # ========== Job 4: Test ==========
+  # ========== Job 5: Test ==========
   test:
-    needs: setup
+    needs: build-packages
     runs-on: ubuntu-latest
     timeout-minutes: 15
     
@@ -150,7 +198,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: 🔄 Restore cache
+      - name: 🔄 Restore node_modules cache
         uses: actions/cache@v4
         with:
           path: |
@@ -159,6 +207,13 @@ jobs:
             packages/*/node_modules
             .nx/cache
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: 🔄 Restore package dist cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+          key: ${{ runner.os }}-packages-dist-${{ github.sha }}
 
       - name: 🔍 Derive SHAs for affected
         uses: nrwl/nx-set-shas@v4
@@ -168,9 +223,9 @@ jobs:
         env:
           CI: true
 
-  # ========== Job 5: Build ==========
+  # ========== Job 6: Build Apps ==========
   build:
-    needs: setup
+    needs: build-packages
     runs-on: ubuntu-latest
     timeout-minutes: 20
     
@@ -189,7 +244,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: 🔄 Restore cache
+      - name: 🔄 Restore node_modules cache
         uses: actions/cache@v4
         with:
           path: |
@@ -199,13 +254,20 @@ jobs:
             .nx/cache
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: 🔄 Restore package dist cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+          key: ${{ runner.os }}-packages-dist-${{ github.sha }}
+
       - name: 🔍 Derive SHAs for affected
         uses: nrwl/nx-set-shas@v4
 
-      - name: 🏗️ Build affected projects
-        run: pnpm nx affected -t build --parallel=3
+      - name: 🏗️ Build affected apps
+        run: pnpm nx affected -t build --parallel=3 --exclude='contracts,domain-server,domain-client,application-server,application-client,infrastructure-server,infrastructure-client,utils,ui-core,ui-vue,ui-vuetify,ui-react,ui-shadcn,assets,sync-client'
 
-  # ========== Job 6: CI 状态检查 ==========
+  # ========== Job 7: CI 状态检查 ==========
   ci-success:
     needs: [lint, typecheck, test, build]
     runs-on: ubuntu-latest

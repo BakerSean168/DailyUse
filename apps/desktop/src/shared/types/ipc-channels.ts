@@ -111,6 +111,24 @@ export const ScheduleChannels = {
 // ============ Reminder Module Channels ============
 
 export const ReminderChannels = {
+  // CRUD (legacy API compatibility)
+  LIST: 'reminder:list',
+  GET: 'reminder:get',
+  CREATE: 'reminder:create',
+  UPDATE: 'reminder:update',
+  DELETE: 'reminder:delete',
+  
+  // Operations (legacy API compatibility)
+  SNOOZE: 'reminder:snooze',
+  ACKNOWLEDGE: 'reminder:acknowledge',
+  DISMISS: 'reminder:dismiss',
+  
+  // Linked Entity (legacy API compatibility)
+  LIST_BY_LINKED_ENTITY: 'reminder:list-by-linked-entity',
+  
+  // Statistics (legacy API compatibility)
+  STATISTICS_GET: 'reminder:statistics:get',
+  
   // Template CRUD
   TEMPLATE_LIST: 'reminder:template:list',
   TEMPLATE_GET: 'reminder:template:get',
@@ -136,6 +154,8 @@ export const ReminderChannels = {
   
   // Events
   EVENT_TRIGGERED: 'reminder:event:triggered',
+  EVENT_UPDATED: 'reminder:event:updated',
+  EVENT_DELETED: 'reminder:event:deleted',
 } as const;
 
 // ============ Dashboard Module Channels ============
@@ -296,6 +316,12 @@ export const NotificationChannels = {
   CLEAR_ALL: 'notification:clear-all',
   GET_UNREAD_COUNT: 'notification:unread-count',
   
+  // Statistics
+  STATISTICS_GET: 'notification:statistics:get',
+  
+  // Batch Operations
+  SEND_BATCH: 'notification:send-batch',
+  
   // Settings
   GET_SETTINGS: 'notification:settings:get',
   UPDATE_SETTINGS: 'notification:settings:update',
@@ -309,6 +335,9 @@ export const NotificationChannels = {
   // Events
   EVENT_RECEIVED: 'notification:event:received',
   EVENT_CLICKED: 'notification:event:clicked',
+  EVENT_ACTION: 'notification:event:action',
+  EVENT_CLOSED: 'notification:event:closed',
+  EVENT_UNREAD_CHANGED: 'notification:event:unread-changed',
   
   // Subscribe
   SUBSCRIBE: 'notification:subscribe',
@@ -346,8 +375,15 @@ export const RepositoryChannels = {
   // Backup
   BACKUP_CREATE: 'repository:backup:create',
   BACKUP_LIST: 'repository:backup:list',
+  BACKUP_GET: 'repository:backup:get',
   BACKUP_DELETE: 'repository:backup:delete',
   BACKUP_RESTORE: 'repository:backup:restore',
+  
+  // Events
+  EVENT_BACKUP_PROGRESS: 'repository:event:backup-progress',
+  EVENT_RESTORE_PROGRESS: 'repository:event:restore-progress',
+  EVENT_EXPORT_PROGRESS: 'repository:event:export-progress',
+  EVENT_IMPORT_PROGRESS: 'repository:event:import-progress',
 } as const;
 
 // ============ Setting Module Channels ============
@@ -389,6 +425,9 @@ export const SettingChannels = {
   // Import/Export
   IMPORT: 'setting:import',
   EXPORT: 'setting:export',
+  
+  // Events
+  EVENT_THEME_CHANGED: 'setting:event:theme-changed',
 } as const;
 
 // ============ Editor Module Channels ============
@@ -400,6 +439,9 @@ export const EditorChannels = {
   DOCUMENT_CREATE: 'editor:document:create',
   DOCUMENT_UPDATE: 'editor:document:update',
   DOCUMENT_DELETE: 'editor:document:delete',
+  DOCUMENT_GET_BY_LINKED_ENTITY: 'editor:document:get-by-linked-entity',
+  DOCUMENT_CREATE_FOR_LINKED_ENTITY: 'editor:document:create-for-linked-entity',
+  DOCUMENT_SAVE: 'editor:document:save',
   
   // Content
   GET_CONTENT: 'editor:content:get',
@@ -425,6 +467,10 @@ export const EditorChannels = {
   EXPORT_MARKDOWN: 'editor:export:markdown',
   EXPORT_HTML: 'editor:export:html',
   EXPORT_PDF: 'editor:export:pdf',
+  
+  // Events
+  EVENT_AUTOSAVE_COMPLETED: 'editor:event:autosave-completed',
+  EVENT_DOCUMENT_UPDATED: 'editor:event:document-updated',
 } as const;
 
 // ============ System Channels ============

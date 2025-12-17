@@ -131,11 +131,11 @@ export function registerAllModules(): void {
     const container = new config.container();
 
     // Register to container registry
-    containerRegistry.register(config.name, container);
+    containerRegistry.registerModule(container);
 
     // Register to initialization manager
-    initializationManager.register({
-      moduleName: config.name,
+    initializationManager.registerConfig({
+      name: config.name,
       priority: config.priority,
       dependencies: config.dependencies || [],
       initialize: async () => {
@@ -175,7 +175,7 @@ export async function disposeAllModules(): Promise<void> {
 
   try {
     await initializationManager.disposeAll();
-    containerRegistry.unregisterAll();
+    containerRegistry.disposeAll();
     console.log('[ModuleRegistry] All modules disposed');
   } catch (error) {
     console.error('[ModuleRegistry] Failed to dispose modules:', error);
@@ -187,21 +187,25 @@ export async function disposeAllModules(): Promise<void> {
  * 获取模块容器
  */
 export function getModuleContainer<T>(name: ModuleName): T {
-  return containerRegistry.get(name) as T;
+  return containerRegistry.getModule(name) as T;
 }
 
 /**
  * 检查模块是否已初始化
  */
 export function isModuleInitialized(name: ModuleName): boolean {
-  return initializationManager.isModuleInitialized(name);
+  return initializationManager.isInitialized;
 }
 
 /**
  * 等待模块初始化完成
  */
 export async function waitForModule(name: ModuleName): Promise<void> {
-  await initializationManager.waitForModule(name);
+  // Wait for the module-specific initialization
+  // Currently uses global init status - TODO: implement module-specific waiting
+  if (!initializationManager.isInitialized) {
+    await initializationManager.initializeAll();
+  }
 }
 
 // Export for convenience

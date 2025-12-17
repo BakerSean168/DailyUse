@@ -5,8 +5,10 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { settingContainer } from '../../infrastructure/di';
+import type { AppSettingsDTO, ShortcutSettingsDTO } from '../../infrastructure/ipc/setting.ipc-client';
 
 // ============ Types ============
+// 本地扁平化设置类型（用于 UI 组件）
 export interface AppSettings {
   // 通用设置
   language: 'zh-CN' | 'en-US';
@@ -65,6 +67,68 @@ const defaultSettings: AppSettings = {
   },
 };
 
+// 将 IPC 嵌套结构转换为扁平结构
+function fromIPCSettings(dto: AppSettingsDTO): AppSettings {
+  const lang = dto.general?.language;
+  const validLanguage: 'zh-CN' | 'en-US' = (lang === 'zh-CN' || lang === 'en-US') ? lang : defaultSettings.language;
+  
+  return {
+    language: validLanguage,
+    autoStart: dto.general?.autoLaunch ?? defaultSettings.autoStart,
+    minimizeToTray: dto.general?.minimizeToTray ?? defaultSettings.minimizeToTray,
+    theme: dto.appearance?.theme ?? defaultSettings.theme,
+    accentColor: dto.appearance?.accentColor ?? defaultSettings.accentColor,
+    enableNotifications: dto.notifications?.enabled ?? defaultSettings.enableNotifications,
+    notificationSound: dto.notifications?.sound ?? defaultSettings.notificationSound,
+    autoSync: dto.sync?.autoSync ?? defaultSettings.autoSync,
+    syncInterval: dto.sync?.syncInterval ?? defaultSettings.syncInterval,
+    shortcuts: dto.shortcuts?.global ?? defaultSettings.shortcuts,
+  };
+}
+
+// 将扁平结构转换为 IPC 嵌套结构
+function toIPCSettings(settings: AppSettings): Partial<AppSettingsDTO> {
+  return {
+    general: {
+      language: settings.language,
+      timezone: 'Asia/Shanghai',
+      dateFormat: 'YYYY-MM-DD',
+      timeFormat: '24h',
+      weekStartsOn: 1,
+      autoLaunch: settings.autoStart,
+      minimizeToTray: settings.minimizeToTray,
+    },
+    appearance: {
+      theme: settings.theme,
+      accentColor: settings.accentColor,
+      fontSize: 'medium',
+      compactMode: false,
+    },
+    notifications: {
+      enabled: settings.enableNotifications,
+      sound: settings.notificationSound,
+      doNotDisturb: {
+        enabled: false,
+        startTime: '22:00',
+        endTime: '08:00',
+      },
+    },
+    shortcuts: {
+      global: settings.shortcuts,
+      local: {},
+    },
+    privacy: {
+      analytics: false,
+      crashReports: true,
+    },
+    sync: {
+      enabled: true,
+      autoSync: settings.autoSync,
+      syncInterval: settings.syncInterval,
+    },
+  };
+}
+
 const initialState: SettingState = {
   settings: defaultSettings,
   isLoading: false,
@@ -93,9 +157,11 @@ export const useSettingStore = create<SettingStore>()(
         
         try {
           const settingClient = settingContainer.settingClient;
-          const loadedSettings = await settingClient.getAll() as Partial<AppSettings> | null;
+          const loadedSettings = await settingClient.getAll();
           if (loadedSettings) {
-            set({ settings: { ...defaultSettings, ...loadedSettings } });
+            // 将 IPC 嵌套结构转换为扁平结构
+            const flatSettings = fromIPCSettings(loadedSettings);
+            set({ settings: { ...defaultSettings, ...flatSettings } });
           }
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to load settings' });
@@ -109,7 +175,9 @@ export const useSettingStore = create<SettingStore>()(
         
         try {
           const settingClient = settingContainer.settingClient;
-          await settingClient.setAll(get().settings);
+          // 将扁平结构转换为 IPC 嵌套结构
+          const ipcSettings = toIPCSettings(get().settings);
+          await settingClient.setAll(ipcSettings as AppSettingsDTO);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to save settings' });
           throw error;

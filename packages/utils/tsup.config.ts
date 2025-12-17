@@ -16,7 +16,7 @@ const config = baseLibraryConfig('@dailyuse/utils');
 
 export default {
   ...config,
-  entry: ['src/index.ts', 'src/winston.ts'],
+  entry: ['src/index.ts', 'src/winston.ts', 'src/validation/index.ts'],
   external: [...(config.external || []), 'winston', 'winston-daily-rotate-file'],
 };
 

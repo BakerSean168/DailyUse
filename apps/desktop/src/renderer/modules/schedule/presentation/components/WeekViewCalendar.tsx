@@ -10,7 +10,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import type { ScheduleClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO } from '../stores/scheduleStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@dailyuse/ui-shadcn';
 import { Button } from '@dailyuse/ui-shadcn';
 import { Badge } from '@dailyuse/ui-shadcn';

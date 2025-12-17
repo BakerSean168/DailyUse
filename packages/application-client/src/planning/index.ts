@@ -10,5 +10,3 @@ export type {
   DailyPlan,
   UserEnergyProfile,
 } from './DailyPlanningService';
-
-export default DailyPlanningService;

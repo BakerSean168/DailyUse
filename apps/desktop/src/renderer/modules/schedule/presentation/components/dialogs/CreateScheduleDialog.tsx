@@ -9,7 +9,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
+import type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest } from '../../stores/scheduleStore';
 import {
   Dialog,
   DialogContent,
@@ -106,7 +106,7 @@ export function CreateScheduleDialog({
         endTime: endDate.toTimeString().slice(0, 5),
         priority: editingSchedule.priority || null,
         location: editingSchedule.location || '',
-        attendees: [...(editingSchedule.attendees || [])],
+        attendees: [...((editingSchedule as any).attendees || [])],
       });
     } else {
       setFormData(initialFormData);

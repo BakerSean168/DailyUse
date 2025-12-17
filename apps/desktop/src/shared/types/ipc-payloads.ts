@@ -273,6 +273,42 @@ export namespace SchedulePayloads {
 // ============ Reminder Payloads ============
 
 export namespace ReminderPayloads {
+  // Legacy API compatibility
+  export interface ListRequest {
+    accountUuid?: string;
+    status?: string;
+    linkedEntityType?: string;
+    linkedEntityUuid?: string;
+  }
+
+  export interface CreateRequest {
+    accountUuid: string;
+    title: string;
+    description?: string;
+    triggerTime: number;
+    priority?: number | string;
+    type?: string;
+    linkedEntityType?: string;
+    linkedEntityUuid?: string;
+    notification?: {
+      enabled?: boolean;
+      sound?: boolean;
+      vibration?: boolean;
+      badge?: boolean;
+      persistent?: boolean;
+    };
+  }
+
+  export interface UpdateRequest {
+    uuid: string;
+    title?: string;
+    description?: string;
+    triggerTime?: number;
+    priority?: number | string;
+    status?: string;
+  }
+
+  // Template API
   export interface TemplateListRequest {
     accountUuid: string;
     groupId?: string;

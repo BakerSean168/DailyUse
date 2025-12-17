@@ -115,12 +115,15 @@ export const useAIStore = create<AIStore>()(
         try {
           // Call AI service via IPC Client
           const aiClient = aiContainer.aiClient;
-          const response = await aiClient.chat(conversationId, content);
+          const response = await aiClient.chat({
+            sessionUuid: conversationId,
+            message: content,
+          });
           
           const assistantMessage: AIMessage = {
             id: crypto.randomUUID(),
             role: 'assistant',
-            content: response.response ?? response.content ?? '',
+            content: response.content ?? '',
             timestamp: Date.now(),
           };
           

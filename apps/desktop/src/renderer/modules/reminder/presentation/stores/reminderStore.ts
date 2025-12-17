@@ -12,12 +12,18 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type { ReminderStatus as ContractReminderStatus } from '@dailyuse/contracts/reminder';
+// 使用 IPC Client 的类型，而不是 contracts 的完整 ClientDTO
 import type { 
-  ReminderTemplateClientDTO,
-  ReminderGroupClientDTO,
+  ReminderDTO,
+  ReminderGroupDTO,
   ReminderStatus,
-} from '@dailyuse/contracts/reminder';
+} from '../../infrastructure/ipc/reminder.ipc-client';
 import { reminderContainer } from '../../infrastructure/di';
+
+// 本地类型别名 - 兼容 contracts 的命名
+type ReminderTemplateClientDTO = ReminderDTO;
+type ReminderGroupClientDTO = ReminderGroupDTO;
 
 // ============ State Interface ============
 export interface ReminderState {
@@ -250,32 +256,8 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
             accountUuid: '', // TODO: 从 AuthStore 获取当前账户
           });
           
-          // 转换为 ClientDTO 格式
-          const clientReminders: ReminderTemplateClientDTO[] = reminders.map(r => ({
-            uuid: r.uuid,
-            accountUuid: r.accountUuid,
-            title: r.title,
-            description: r.description,
-            type: r.type,
-            priority: r.priority,
-            status: r.status,
-            triggerAt: r.triggerAt,
-            linkedEntityType: r.linkedEntityType,
-            linkedEntityUuid: r.linkedEntityUuid,
-            recurrence: r.recurrence,
-            notification: r.notification,
-            selfEnabled: true,
-            isActive: r.status === 'pending',
-            isPaused: false,
-            nextTriggerAt: r.triggerAt,
-            snoozedUntil: r.snoozedUntil,
-            acknowledgedAt: r.acknowledgedAt,
-            dismissedAt: r.dismissedAt,
-            createdAt: r.createdAt,
-            updatedAt: r.updatedAt,
-          }));
-          
-          setReminders(clientReminders);
+          // 直接使用 IPC Client 返回的类型，无需额外转换
+          setReminders(reminders);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminders';
           setError(message);
@@ -297,20 +279,8 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
             accountUuid: '', // TODO: 从 AuthStore 获取当前账户
           });
           
-          // 转换为 ClientDTO 格式
-          const clientGroups: ReminderGroupClientDTO[] = groups.map(g => ({
-            uuid: g.uuid,
-            accountUuid: g.accountUuid,
-            name: g.name,
-            color: g.color,
-            icon: g.icon,
-            order: g.order ?? 0,
-            reminderCount: g.reminderCount ?? 0,
-            createdAt: g.createdAt,
-            updatedAt: g.updatedAt,
-          }));
-          
-          setGroups(clientGroups);
+          // 直接使用 IPC Client 返回的类型，无需额外转换
+          setGroups(groups);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminder groups';
           setError(message);
@@ -330,10 +300,8 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           const reminderClient = reminderContainer.reminderClient;
           const result = await reminderClient.snooze(id, minutes);
           
-          updateReminder(id, {
-            status: 'snoozed' as ReminderStatus,
-            snoozedUntil: result.snoozedUntil,
-          });
+          // 使用返回的完整 DTO 更新状态
+          updateReminder(id, result);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to snooze reminder');
           throw error;
@@ -350,12 +318,10 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           
           // 使用 IPC Client 解除提醒
           const reminderClient = reminderContainer.reminderClient;
-          await reminderClient.dismiss(id);
+          const result = await reminderClient.dismiss(id);
           
-          updateReminder(id, {
-            status: 'dismissed' as ReminderStatus,
-            dismissedAt: Date.now(),
-          });
+          // 使用返回的完整 DTO 更新状态
+          updateReminder(id, result);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to dismiss reminder');
           throw error;

@@ -5,6 +5,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# 构建参数
+ARG VITE_API_BASE_URL=/api/v1
+ARG VITE_API_URL=
+
 # 安装 pnpm
 RUN npm install -g pnpm
 
@@ -16,8 +20,10 @@ COPY apps/web ./apps/web
 # 安装依赖
 RUN pnpm install --no-frozen-lockfile
 
-# 构建项目
+# 构建项目（传递环境变量）
 WORKDIR /app/apps/web
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm build
 
 # --------------------------------------------------
