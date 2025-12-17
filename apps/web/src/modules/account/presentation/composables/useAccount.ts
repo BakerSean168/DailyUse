@@ -1,11 +1,7 @@
 /**
- * useAccount Composable
- * 账户 Composable 函数 - 纯数据传递层
- *
- * 职责：
- * - 封装 Store 的响应式状态
- * - 调用 ApplicationService 执行业务逻辑
- * - 不包含复杂的业务规则
+ * @file useAccount.ts
+ * @description 账户业务逻辑组合式函数。封装了 Account Store 的状态，并提供了调用 Application Service 的业务方法，是视图层与业务逻辑层的桥梁。
+ * @author Jules (AI)
  */
 
 import { computed, type ComputedRef } from 'vue';
@@ -37,34 +33,59 @@ import type {
 type AccountHistoryDTO = AccountHistoryServerDTO;
 type AccountStatsDTO = AccountStatsResponseDTO;
 
+/**
+ * useAccount Composable
+ * 提供账户相关的响应式状态和业务方法
+ */
 export function useAccount() {
   const accountStore = useAccountStore();
 
   // ===== 响应式状态 =====
 
+  /** 当前登录的账户信息 */
   const currentAccount = computed(() => accountStore.currentAccount);
+  /** 当前订阅信息 */
   const subscription = computed(() => accountStore.subscription);
+  /** 账户历史记录 */
   const accountHistory = computed(() => accountStore.accountHistory);
+  /** 账户统计数据 */
   const accountStats = computed(() => accountStore.accountStats);
+  /** 加载状态 */
   const isLoading = computed(() => accountStore.isLoading);
+  /** 错误信息 */
   const error = computed(() => accountStore.error);
+  /** 记住的账户列表 */
   const savedAccounts = computed(() => accountStore.savedAccounts);
 
   // ===== 计算属性 =====
 
+  /** 是否已认证 */
   const isAuthenticated = computed(() => accountStore.isAuthenticated);
+  /** 当前账户UUID */
   const currentAccountUuid = computed(() => accountStore.currentAccountUuid);
+  /** 账户状态 */
   const accountStatus = computed(() => accountStore.accountStatus);
+  /** 是否活跃 */
   const isActiveAccount = computed(() => accountStore.isActiveAccount);
+  /** 是否已注销 */
   const isDeactivatedAccount = computed(() => accountStore.isDeactivatedAccount);
+  /** 是否被冻结 */
   const isSuspendedAccount = computed(() => accountStore.isSuspendedAccount);
+  /** 是否已删除 */
   const isDeletedAccount = computed(() => accountStore.isDeletedAccount);
+  /** 邮箱是否验证 */
   const isEmailVerified = computed(() => accountStore.isEmailVerified);
+  /** 手机是否验证 */
   const isPhoneVerified = computed(() => accountStore.isPhoneVerified);
+  /** 2FA是否开启 */
   const isTwoFactorEnabled = computed(() => accountStore.isTwoFactorEnabled);
+  /** 当前订阅计划 */
   const currentSubscriptionPlan = computed(() => accountStore.currentSubscriptionPlan);
+  /** 是否为高级用户 */
   const isPremiumUser = computed(() => accountStore.isPremiumUser);
+  /** 存储使用率 */
   const storageUsagePercentage = computed(() => accountStore.storageUsagePercentage);
+  /** 记住的账户列表 */
   const rememberedAccounts = computed(() => accountStore.rememberedAccounts);
 
   // ===== 账户资料管理 =====
@@ -330,4 +351,3 @@ export function useAccount() {
     clearAll,
   };
 }
-

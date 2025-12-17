@@ -1,3 +1,9 @@
+/**
+ * @file accountStore.ts
+ * @description 账户 Store。管理当前账户、订阅、历史记录和统计等状态。
+ * @author Jules (AI)
+ */
+
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type {
@@ -21,23 +27,24 @@ type AccountStatsDTO = AccountStatsResponseDTO;
 export const useAccountStore = defineStore('account', () => {
   // ===== 状态 =====
 
-  // 当前账户 (DTO 数据)
+  /** 当前账户 (DTO 数据) */
   const currentAccount = ref<AccountDTO | null>(null);
 
-  // 订阅信息 (DTO 数据)
+  /** 订阅信息 (DTO 数据) */
   const subscription = ref<SubscriptionDTO | null>(null);
 
-  // 账户历史记录 (DTO 数据)
+  /** 账户历史记录 (DTO 数据) */
   const accountHistory = ref<AccountHistoryDTO[]>([]);
 
-  // 账户统计 (DTO 数据)
+  /** 账户统计 (DTO 数据) */
   const accountStats = ref<AccountStatsDTO | null>(null);
 
-  // UI 状态
+  /** UI 状态: 加载中 */
   const isLoading = ref(false);
+  /** UI 状态: 错误信息 */
   const error = ref<string | null>(null);
 
-  // 已保存的账户列表（用于记住多个账户）
+  /** 已保存的账户列表（用于记住多个账户） */
   const savedAccounts = ref<AccountDTO[]>([]);
 
   // ===== 计算属性 =====
@@ -139,6 +146,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 设置当前账户
+   * @param account 账户对象或 null
    */
   function setCurrentAccount(account: AccountDTO | null) {
     currentAccount.value = account;
@@ -163,6 +171,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 设置订阅信息
+   * @param sub 订阅对象
    */
   function setSubscription(sub: SubscriptionDTO | null) {
     subscription.value = sub;
@@ -170,6 +179,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 设置账户历史
+   * @param history 历史记录列表
    */
   function setAccountHistory(history: AccountHistoryDTO[]) {
     accountHistory.value = history;
@@ -177,6 +187,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 添加历史记录
+   * @param record 历史记录项
    */
   function addHistoryRecord(record: AccountHistoryDTO) {
     accountHistory.value.unshift(record);
@@ -184,6 +195,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 设置账户统计
+   * @param stats 统计对象
    */
   function setAccountStats(stats: AccountStatsDTO) {
     accountStats.value = stats;
@@ -191,6 +203,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 设置加载状态
+   * @param loading 是否加载中
    */
   function setLoading(loading: boolean) {
     isLoading.value = loading;
@@ -198,6 +211,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 设置错误
+   * @param err 错误信息
    */
   function setError(err: string | null) {
     error.value = err;
@@ -205,6 +219,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 保存账户列表
+   * @param accounts 账户列表
    */
   function setSavedAccounts(accounts: AccountDTO[]) {
     savedAccounts.value = accounts;
@@ -213,6 +228,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 添加保存的账户
+   * @param account 账户对象
    */
   function addSavedAccount(account: AccountDTO) {
     const exists = savedAccounts.value.find((acc) => acc.uuid === account.uuid);
@@ -224,6 +240,7 @@ export const useAccountStore = defineStore('account', () => {
 
   /**
    * 移除保存的账户
+   * @param accountUuid 账户UUID
    */
   function removeSavedAccount(accountUuid: string) {
     savedAccounts.value = savedAccounts.value.filter((acc) => acc.uuid !== accountUuid);
@@ -313,5 +330,3 @@ export const useAccountStore = defineStore('account', () => {
     clearAll,
   };
 });
-
-
