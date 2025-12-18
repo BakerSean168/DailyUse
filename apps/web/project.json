@@ -42,6 +42,7 @@
     },
     "typecheck": {
       "executor": "nx:run-commands",
+      "dependsOn": ["^build"],
       "options": {
         "command": "vue-tsc --noEmit",
         "cwd": "apps/web"
