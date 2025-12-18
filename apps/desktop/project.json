@@ -9,16 +9,17 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/apps/desktop/dist"],
       "defaultConfiguration": "production",
+      "dependsOn": ["^build"],
       "options": {
-        "command": "pnpm build",
+        "command": "vite build",
         "cwd": "apps/desktop"
       },
       "configurations": {
         "development": {
-          "mode": "development"
+          "command": "vite build --mode development"
         },
         "production": {
-          "mode": "production"
+          "command": "vite build --mode production"
         }
       }
     },

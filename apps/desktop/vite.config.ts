@@ -21,6 +21,7 @@ const workspacePkgs = [
 export default defineConfig({
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, './src'),
       '@main': path.resolve(__dirname, './src/main'),
       '@preload': path.resolve(__dirname, './src/preload'),
       '@renderer': path.resolve(__dirname, './src/renderer'),
@@ -39,28 +40,6 @@ export default defineConfig({
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),
       external: nativeModules,
-      output: {
-        // Code splitting for vendor libraries
-        manualChunks: {
-          // React core
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          // UI components
-          'vendor-ui': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-scroll-area',
-            'class-variance-authority',
-            'clsx',
-            'tailwind-merge',
-          ],
-          // Utilities
-          'vendor-utils': ['date-fns', 'zod', 'uuid'],
-          // Virtual scrolling (lazy loaded)
-          'vendor-virtual': ['@tanstack/react-virtual'],
-        },
-      },
     },
   },
   optimizeDeps: {

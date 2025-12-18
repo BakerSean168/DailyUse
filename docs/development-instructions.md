@@ -171,16 +171,18 @@ feat(goal): add key result weight adjustment
 Closes #123
 ```
 
-### 分支策略
+### 分支策略 (GitHub Flow)
 
 ```
-main                    # 生产分支
-├── develop             # 开发分支
-│   ├── feature/xxx     # 功能分支
-│   ├── fix/xxx         # 修复分支
-│   └── refactor/xxx    # 重构分支
-└── release/x.x.x       # 发布分支
+main                    # 主干分支 (生产环境，受保护)
+├── feat/xxx            # 功能分支
+├── fix/xxx             # 修复分支
+├── refactor/xxx        # 重构分支
+└── docs/xxx            # 文档分支
 ```
+
+> ⚠️ **重要**: 本项目使用 GitHub Flow (Trunk-Based Development)，不使用传统 Git Flow。
+> 详见: [Release Workflow 最佳实践](./guides/RELEASE_WORKFLOW.md)
 
 ---
 

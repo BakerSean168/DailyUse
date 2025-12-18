@@ -43,20 +43,27 @@ jobs:
             exit 1
           fi
 
-      - name: Build
+      - name: Build Desktop App
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm run build
+        run: |
+          pnpm build:packages
+          pnpm nx run desktop:build:production
+
+      - name: Package Desktop App
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm --filter @dailyuse/desktop dist
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ matrix.os }}
-          path: dist
+          path: apps/desktop/dist/**/*
           compression-level: 9
 
-  # 专门用于创建 release 的 job
-  create-release:
+  # 专门用于上传构建产物到 release 的 job
+  upload-assets:
     needs: build-and-release
     runs-on: ubuntu-latest
     permissions:
@@ -72,12 +79,13 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      # 创建单个 Release
-      - name: Create Release
+      # 上传产物到已存在的 Release (由 release-please 创建)
+      # 不再创建新的 release，避免覆盖 release-please 的 Changelog
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          draft: false
-          prerelease: false
+          # 不设置 draft/prerelease，保持 release-please 的配置
+          # 不设置 generate_release_notes，保留 release-please 生成的 Changelog
           files: |
             artifacts/**/*Setup.exe
             artifacts/**/*Setup.zip
@@ -87,6 +95,5 @@ jobs:
             artifacts/**/*.deb
             artifacts/**/*.rpm
             artifacts/**/latest*.yml
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
