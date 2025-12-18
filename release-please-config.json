@@ -1,0 +1,88 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "daily-use",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "apps/api": {
+      "release-type": "node",
+      "package-name": "@dailyuse/api",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "apps/web": {
+      "release-type": "node",
+      "package-name": "@dailyuse/web",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "apps/desktop": {
+      "release-type": "node",
+      "package-name": "@dailyuse/desktop",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/application-client": {
+      "release-type": "node",
+      "package-name": "@dailyuse/application-client"
+    },
+    "packages/application-server": {
+      "release-type": "node",
+      "package-name": "@dailyuse/application-server"
+    },
+    "packages/contracts": {
+      "release-type": "node",
+      "package-name": "@dailyuse/contracts"
+    },
+    "packages/domain-client": {
+      "release-type": "node",
+      "package-name": "@dailyuse/domain-client"
+    },
+    "packages/domain-server": {
+      "release-type": "node",
+      "package-name": "@dailyuse/domain-server"
+    },
+    "packages/infrastructure-client": {
+      "release-type": "node",
+      "package-name": "@dailyuse/infrastructure-client"
+    },
+    "packages/infrastructure-server": {
+      "release-type": "node",
+      "package-name": "@dailyuse/infrastructure-server"
+    },
+    "packages/ui-core": {
+      "release-type": "node",
+      "package-name": "@dailyuse/ui-core"
+    },
+    "packages/ui-react": {
+      "release-type": "node",
+      "package-name": "@dailyuse/ui-react"
+    },
+    "packages/ui-shadcn": {
+      "release-type": "node",
+      "package-name": "@dailyuse/ui-shadcn"
+    },
+    "packages/ui-vue": {
+      "release-type": "node",
+      "package-name": "@dailyuse/ui-vue"
+    },
+    "packages/ui-vuetify": {
+      "release-type": "node",
+      "package-name": "@dailyuse/ui-vuetify"
+    },
+    "packages/utils": {
+      "release-type": "node",
+      "package-name": "@dailyuse/utils"
+    },
+    "packages/test-utils": {
+      "release-type": "node",
+      "package-name": "@dailyuse/test-utils"
+    },
+    "packages/assets": {
+      "release-type": "node",
+      "package-name": "@dailyuse/assets"
+    },
+    "packages/sync-client": {
+      "release-type": "node",
+      "package-name": "@dailyuse/sync-client"
+    }
+  }
+}
