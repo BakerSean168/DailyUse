@@ -1,20 +1,26 @@
 # API Dockerfile
 # 用于构建生产级别的 API 容器
 
-FROM node:20-alpine AS builder
+# 构建阶段 - 使用 Node 22 并固定 pnpm 版本
+FROM node:22-alpine AS builder
+
+# 安装 pnpm（固定版本与仓库一致）
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
 
 WORKDIR /app
 
-# 安装 pnpm
-RUN npm install -g pnpm
-
-# 复制工作区配置
+# 首先复制依赖配置文件（利用 Docker 缓存）
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# 预拉取依赖到 pnpm store（仅根据锁文件），提高缓存利用率
+RUN pnpm fetch
+
+# 复制所有源代码
 COPY packages ./packages
 COPY apps/api ./apps/api
 
-# 安装依赖
-RUN NODE_ENV=development pnpm install --no-frozen-lockfile
+# 离线链接依赖并跳过生命周期脚本，避免 prepare/postinstall 失败
+RUN pnpm install --frozen-lockfile --ignore-scripts --offline
 
 # 生成 Prisma 客户端
 WORKDIR /app/apps/api
@@ -24,27 +30,30 @@ RUN pnpm prisma:generate
 RUN pnpm build
 
 # 生产镜像
-FROM node:20-alpine
+FROM node:22-alpine
+
+# 安装 pnpm（固定版本与仓库一致）
+RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
 
 WORKDIR /app
 
-# 安装 pnpm
-RUN npm install -g pnpm
-
-# 1. 复制 API 的产物 (保持不变)
+# 1. 复制 API 构建产物
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./
 COPY --from=builder /app/apps/api/prisma ./prisma
 
-# 👇【新增】2. 复制工作区配置和本地包 (关键修复！)
+# 2. 复制工作区配置（包含 overrides 等关键配置）
+COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+
+# 3. 复制本地依赖包（workspace 包）
 COPY --from=builder /app/packages ./packages
 
-# 3. 安装依赖（--ignore-scripts 跳过 prepare/postinstall 避免构建脚本）
-RUN pnpm install --prod --no-frozen-lockfile --ignore-scripts
-RUN pnpm add ioredis -w --prod
+# 4. 安装生产依赖
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
-# 4. 生成 Prisma Client（prisma 现在在 dependencies 中）
+# 5. 生成 Prisma Client
 RUN pnpm prisma:generate
 
 # 暴露端口

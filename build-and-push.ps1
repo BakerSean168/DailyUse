@@ -1,5 +1,7 @@
 # Docker 镜像快速构建和推送脚本
-# 用法: .\build-and-push.ps1 -Registry docker.io -ImageNamespace yourname -Tag v1.0.0
+# 用法: 
+#   .\build-and-push.ps1 -Registry docker.io -ImageNamespace yourname -Tag v1.0.0
+#   .\build-and-push.ps1 -ACR -Tag v1.0.0  # 使用阿里云 ACR
 
 param(
     [Parameter(Mandatory = $false)]
@@ -15,7 +17,10 @@ param(
     [switch]$Push = $false,
     
     [Parameter(Mandatory = $false)]
-    [switch]$Latest = $false
+    [switch]$Latest = $false,
+    
+    [Parameter(Mandatory = $false)]
+    [switch]$ACR = $false  # 使用阿里云容器镜像服务
 )
 
 $ErrorActionPreference = "Stop"
@@ -39,6 +44,13 @@ function Write-Warn {
 function Write-Error-Custom {
     param([string]$Message)
     Write-Host "❌ $Message" -ForegroundColor Red
+}
+
+# 如果使用阿里云 ACR，覆盖 Registry 和 ImageNamespace
+if ($ACR) {
+    $Registry = "crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com"
+    $ImageNamespace = "bakersean"
+    Write-Info "使用阿里云 ACR 镜像仓库"
 }
 
 # 检查 Docker 是否已安装
