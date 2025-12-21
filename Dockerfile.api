@@ -37,24 +37,27 @@ RUN corepack enable && corepack prepare pnpm@10.18.3 --activate
 
 WORKDIR /app
 
-# 1. 复制 API 构建产物
-COPY --from=builder /app/apps/api/dist ./dist
-COPY --from=builder /app/apps/api/package.json ./
-COPY --from=builder /app/apps/api/prisma ./prisma
-
-# 2. 复制工作区配置（包含 overrides 等关键配置）
+# 1. 复制工作区配置
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
 
-# 3. 复制本地依赖包（workspace 包）
+# 2. 复制本地依赖包（workspace 包）
 COPY --from=builder /app/packages ./packages
 
-# 4. 安装生产依赖
+# 3. 复制 API 源代码和构建产物
+COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+# 4. 安装生产依赖（这会同时生成 Prisma client）
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
-# 5. 生成 Prisma Client
-RUN pnpm prisma:generate
+# 5. 确保 Prisma client 已生成（如果 pnpm install 未生成）
+RUN pnpm --prefix apps/api prisma:generate || true
+
+# 工作目录改回 api 目录
+WORKDIR /app/apps/api
 
 # 暴露端口
 EXPOSE 3000
@@ -63,5 +66,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# 启动应用
+# 启动应用（从 api 目录启动）
 CMD ["node", "dist/index.js"]

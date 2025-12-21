@@ -1,5 +1,7 @@
 # ACR 快速参考
 
+**最新版本**：v1.0.2 ✅
+
 ## 镜像信息
 
 ```
@@ -85,7 +87,7 @@ web:
 # 使用 ACR 镜像仓库
 REGISTRY=crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
 IMAGE_NAMESPACE=bakersean
-TAG=v1.0.1
+TAG=v1.0.2
 
 # PostgreSQL
 DB_NAME=dailyuse
@@ -111,8 +113,8 @@ NODE_ENV=production
 ## 已推送的镜像
 
 ### 应用镜像
-- ✅ `crpi-.../bakersean/dailyuse-api:v1.0.1`
-- ✅ `crpi-.../bakersean/dailyuse-web:v1.0.1`
+- ✅ `crpi-.../bakersean/dailyuse-api:v1.0.2` **（推荐）**
+- `crpi-.../bakersean/dailyuse-web:v1.0.1`
 
 ### 基础镜像
 - ✅ `crpi-.../bakersean/postgres:16-alpine` (395MB)

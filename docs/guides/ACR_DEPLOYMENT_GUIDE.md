@@ -1,6 +1,6 @@
 # Aliyun ACR 部署指南
 
-本指南说明如何使用阿里云容器镜像服务（ACR）进行生产部署。
+**最新版本**：v1.0.2（修复了 Prisma client 依赖问题）
 
 ## 1. 概述
 
@@ -23,7 +23,8 @@ Region:    cn-hangzhou (杭州)
 ### 2.1 已推送的镜像
 
 #### 应用镜像
-- `dailyuse-api:v1.0.1` - Express API 后端
+- ✅ `dailyuse-api:v1.0.2` - Express API 后端 **（推荐，修复了 Prisma client 缺失问题）**
+- `dailyuse-api:v1.0.1` - Express API 后端（有 Prisma 依赖问题，不推荐）
 - `dailyuse-web:v1.0.1` - Vue SPA 前端 + Nginx
 
 #### 基础设施镜像
@@ -50,7 +51,7 @@ cp .env.prod.example .env
 # 镜像仓库配置（使用 ACR）
 REGISTRY=crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
 IMAGE_NAMESPACE=bakersean
-TAG=v1.0.1
+TAG=v1.0.2
 
 # PostgreSQL 配置
 DB_NAME=dailyuse
