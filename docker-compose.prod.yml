@@ -24,7 +24,7 @@ services:
   # 端口: 默认 5432（仅内网访问，不建议暴露到公网）
   # ===========================================================================
   postgres:
-    image: postgres:16-alpine
+    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-bakersean}/postgres:16-alpine
     container_name: dailyuse-prod-db
     restart: always
     
@@ -80,7 +80,7 @@ services:
   # 端口: 默认 6379（仅内网访问）
   # ===========================================================================
   redis:
-    image: redis:7-alpine
+    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-bakersean}/redis:7-alpine
     container_name: dailyuse-prod-redis
     restart: always
     

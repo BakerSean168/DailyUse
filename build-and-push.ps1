@@ -104,7 +104,7 @@ Write-Success "Web 镜像构建成功: $ImageNameWeb"
 # 显示镜像信息
 Write-Info ""
 Write-Info "本地镜像列表:"
-docker images | grep "dailyuse"
+docker images --filter "reference=*dailyuse*" --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
 
 # 可选：创建 latest 标签
 if ($Latest) {
