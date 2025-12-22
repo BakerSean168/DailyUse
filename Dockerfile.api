@@ -49,12 +49,16 @@ COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/scripts ./apps/api/scripts
 
 # 4. 安装生产依赖（这会同时生成 Prisma client）
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # 5. 确保 Prisma client 已生成（如果 pnpm install 未生成）
 RUN pnpm --prefix apps/api prisma:generate || true
+
+# 6. 确保迁移脚本可执行
+RUN chmod +x ./apps/api/scripts/*.sh
 
 # 工作目录改回 api 目录
 WORKDIR /app/apps/api
