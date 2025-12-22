@@ -30,9 +30,9 @@ services:
     
     # 环境变量 - 通过 .env 文件注入
     environment:
-      POSTGRES_DB: ${DB_NAME:-dailyuse}               # 数据库名
-      POSTGRES_USER: ${DB_USER:-dailyuse}             # 数据库用户
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?请在.env中设置强密码}  # 必须设置强密码
+      POSTGRES_DB: ${DB_NAME:?请在.env中设置数据库名}
+      POSTGRES_USER: ${DB_USER:?请在.env中设置数据库用户}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?请在.env中设置数据库密码}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"  # 初始化参数
     
     # 端口映射 - 仅用于本地管理工具连接（如 DBeaver、pgAdmin）
@@ -161,24 +161,26 @@ services:
       API_HOST: 0.0.0.0                          # 监听所有网卡（容器内部）
       
       # ===== 数据库连接（分解配置 - Docker 最佳实践） =====
-      # 应用会自动拼接成 DATABASE_URL
+      # 应用会自动从这些变量拼接成 DATABASE_URL
+      # 格式: postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME
+      # ⚠️ 重要：必须与 postgres 服务的 POSTGRES_USER 一致！
       DB_HOST: postgres                          # Docker 网络中的服务名
       DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-dailyuse}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:?请在.env.production.local中设置数据库密码}
+      DB_NAME: ${DB_NAME:?请在.env中设置数据库名}
+      DB_USER: ${DB_USER:?请在.env中设置数据库用户}        # ⚠️ 必须与 postgres 服务的 POSTGRES_USER 一致
+      DB_PASSWORD: ${DB_PASSWORD:?请在.env中设置数据库密码}
       
-      # ===== Redis 连接 =====
-      REDIS_HOST: redis                          # Docker 网络中的服务名
+      # ===== Redis 连接 =====      # 应用会自动从这些变量拼接成 REDIS_URL
+      # ⚠️ 重要：必须与 redis 服务的 requirepass 一致！      REDIS_HOST: redis                          # Docker 网络中的服务名
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:?请在.env.production.local中设置Redis密码}
       REDIS_DB: 0
       
       # ===== JWT 认证配置 =====
-      JWT_SECRET: ${JWT_SECRET:?请在.env.production.local中设置JWT密钥}           # 必须设置强随机字符串
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}                     # Token 有效期
-      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}    # 刷新 Token 有效期
-      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-${JWT_SECRET}}  # 刷新 Token 密钥（默认使用 JWT_SECRET）
+      JWT_SECRET: ${JWT_SECRET:?必须在.env或.env.production.local中设置}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-${JWT_SECRET}}
       
       # ===== CORS 配置 =====
       CORS_ORIGIN: ${CORS_ORIGIN:-*}                            # 允许的前端域名（生产环境应设置具体域名）
