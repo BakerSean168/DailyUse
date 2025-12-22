@@ -153,7 +153,19 @@ pnpm build:desktop    # 构建桌面应用
 
 ## 📖 开发文档
 
-### 📦 Desktop App Documentation (New!)
+### � 部署文档
+
+- **[部署导航中心](docs/deployment/README.md)** - 📍 所有部署相关文档的中心导航
+  - **[快速开始 (5 分钟)](docs/deployment/01-quick-start.md)** - 快速部署参考
+  - **[构建镜像](docs/deployment/02-build.md)** - Docker 构建详解
+  - **[部署到生产](docs/deployment/03-deploy.md)** - 完整部署步骤
+  - **[验证部署](docs/deployment/04-verify.md)** - 健康检查和验证
+  - **[故障排除](docs/deployment/05-troubleshooting.md)** - 问题诊断和解决
+  - **[CORS 配置](docs/deployment/configs/CORS_CONFIGURATION.md)** - 跨域配置指南
+  - **[环境变量](docs/deployment/configs/ENVIRONMENT_CONFIGURATION.md)** - 完整环境配置文档
+  - **[命令参考](docs/deployment/reference/COMMAND_REFERENCE.md)** - 常用命令速查表
+
+### 📦 Desktop App Documentation
 
 - **[Desktop App README](apps/desktop/README.md)** - Specific guide for the Electron Desktop Application.
 
