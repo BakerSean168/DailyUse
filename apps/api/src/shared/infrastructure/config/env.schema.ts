@@ -186,6 +186,7 @@ export type Env = z.infer<typeof envSchema>;
  * 如果未提供 DATABASE_URL，则从分解式配置自动生成
  * 
  * ⚠️ 重要：必须同步设置回 process.env，因为 Prisma 直接读取 process.env.DATABASE_URL
+ * ⚠️ 重要：密码中的特殊字符必须 URL 编码
  * 
  * @param env 验证后的环境变量对象
  * @returns 处理后的环境变量对象
@@ -193,11 +194,12 @@ export type Env = z.infer<typeof envSchema>;
 export function processEnv(env: Env): Env {
   // 如果没有 DATABASE_URL，从分解式配置生成
   if (!env.DATABASE_URL && env.DB_HOST) {
-    const username = env.DB_USER || 'dailyuse';
-    const password = env.DB_PASSWORD ? `:${env.DB_PASSWORD}` : '';
+    const username = encodeURIComponent(env.DB_USER || 'dailyuse');
+    // ⚠️ 密码必须 URL 编码，否则特殊字符（如 / = @ 等）会破坏 URL 解析
+    const password = env.DB_PASSWORD ? `:${encodeURIComponent(env.DB_PASSWORD)}` : '';
     const host = env.DB_HOST;
     const port = env.DB_PORT || 5432;
-    const database = env.DB_NAME || 'dailyuse';
+    const database = encodeURIComponent(env.DB_NAME || 'dailyuse');
     
     const databaseUrl = `postgresql://${username}${password}@${host}:${port}/${database}?schema=public`;
     env.DATABASE_URL = databaseUrl;
@@ -208,7 +210,8 @@ export function processEnv(env: Env): Env {
   
   // 如果没有 REDIS_URL，从分解式配置生成
   if (!env.REDIS_URL && env.REDIS_HOST) {
-    const password = env.REDIS_PASSWORD ? `:${env.REDIS_PASSWORD}` : '';
+    // ⚠️ 密码必须 URL 编码
+    const password = env.REDIS_PASSWORD ? `:${encodeURIComponent(env.REDIS_PASSWORD)}` : '';
     const host = env.REDIS_HOST;
     const port = env.REDIS_PORT || 6379;
     const db = env.REDIS_DB || 0;
