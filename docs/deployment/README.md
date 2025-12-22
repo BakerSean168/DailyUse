@@ -34,6 +34,7 @@ curl http://localhost:3000/healthz
 
 | 你的情况 | 文档 | 耗时 |
 |--------|------|------|
+| **DATABASE_URL 启动失败** | **[🔧 环境配置修复报告](ENV_CONFIG_FIX_REPORT.md)** | **5分钟** |
 | **搞混了环境变量配置** | **[🎯 环境变量困惑解除器](ENV_CONFUSION_RESOLVER.md)** | **10分钟** |
 | 想快速了解部署流程 | [01-quick-start.md](01-quick-start.md) | 5分钟 |
 | 要详细构建步骤 | [02-build.md](02-build.md) | 10分钟 |
@@ -42,6 +43,7 @@ curl http://localhost:3000/healthz
 | 遇到部署问题 | [05-troubleshooting.md](05-troubleshooting.md) | 自助排查 |
 | 需要快速命令 | [reference/COMMAND_REFERENCE.md](reference/COMMAND_REFERENCE.md) | 可复制粘贴 |
 | 理解加载优先级 | [ENV_LOADING_MECHANISM.md](ENV_LOADING_MECHANISM.md) | 深入理解 |
+| Docker 最佳实践 | [DOCKER_ENV_CONFIGURATION.md](DOCKER_ENV_CONFIGURATION.md) | 深入理解 |
 | 快速生成密码 | [ENV_QUICK_REFERENCE.md](ENV_QUICK_REFERENCE.md) | 实操指南 |
 | 设置环境变量 | [configs/ENVIRONMENT_CONFIGURATION.md](configs/ENVIRONMENT_CONFIGURATION.md) | 参考 |
 | 配置 CORS | [configs/CORS_CONFIGURATION.md](configs/CORS_CONFIGURATION.md) | 参考 |
