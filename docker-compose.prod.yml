@@ -213,14 +213,6 @@ services:
       # 如果需要热重载配置文件（不推荐生产环境）:
       # - ./apps/api/.env:/app/.env:ro
     
-    # 健康检查 - 确保 API 服务正常响应
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/healthz', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s    # API 启动需要运行 Prisma 迁移，给足时间
-    
     # 资源限制
     deploy:
       resources:
