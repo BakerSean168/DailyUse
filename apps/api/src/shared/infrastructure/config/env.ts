@@ -16,7 +16,7 @@ import { expand } from 'dotenv-expand';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
-import { envSchema, type Env } from './env.schema.js';
+import { envSchema, processEnv, type Env } from './env.schema.js';
 import { ZodError } from 'zod';
 
 // ESM __dirname equivalent
@@ -85,7 +85,12 @@ function validateEnv(): Env {
   
   try {
     // 使用 Zod Schema 验证
-    return envSchema.parse(process.env);
+    let env = envSchema.parse(process.env);
+    
+    // 后处理：如果未提供 DATABASE_URL，从分解式配置生成
+    env = processEnv(env);
+    
+    return env;
   } catch (error) {
     if (error instanceof ZodError) {
       console.error('\n' + '='.repeat(60));

@@ -46,17 +46,22 @@ export const envSchema = z.object({
     .default('Asia/Shanghai'),
 
   // ========== 数据库配置 ==========
+  // 完整连接字符串（可选，如果提供则优先使用）
+  // 否则应用会从分解式配置自动生成
   DATABASE_URL: z
     .string()
     .url()
-    .describe('PostgreSQL 连接字符串'),
+    .optional()
+    .describe('PostgreSQL 连接字符串（可选，优先使用）'),
   
-  // 可选的分解式配置（用于 docker-compose 等场景）
-  DB_HOST: z.string().optional(),
+  // 分解式配置（用于 docker-compose 等场景）
+  // Docker 最佳实践：使用分解配置而非完整 URL
+  // 当 DATABASE_URL 未提供时，应用会从这些值自动生成
+  DB_HOST: z.string().default('localhost'),
   DB_PORT: z.coerce.number().default(5432),
   DB_NAME: z.string().default('dailyuse'),
   DB_USER: z.string().default('dailyuse'),
-  DB_PASSWORD: z.string().optional(),
+  DB_PASSWORD: z.string().default(''),
 
   // ========== Redis 缓存配置 ==========
   REDIS_URL: z
@@ -175,6 +180,28 @@ export const envSchema = z.object({
  * 环境变量类型
  */
 export type Env = z.infer<typeof envSchema>;
+
+/**
+ * 处理环境变量的后处理
+ * 如果未提供 DATABASE_URL，则从分解式配置自动生成
+ * 
+ * @param env 验证后的环境变量对象
+ * @returns 处理后的环境变量对象
+ */
+export function processEnv(env: Env): Env {
+  // 如果没有 DATABASE_URL，从分解式配置生成
+  if (!env.DATABASE_URL && env.DB_HOST) {
+    const username = env.DB_USER || 'dailyuse';
+    const password = env.DB_PASSWORD ? `:${env.DB_PASSWORD}` : '';
+    const host = env.DB_HOST;
+    const port = env.DB_PORT || 5432;
+    const database = env.DB_NAME || 'dailyuse';
+    
+    env.DATABASE_URL = `postgresql://${username}${password}@${host}:${port}/${database}?schema=public`;
+  }
+  
+  return env;
+}
 
 /**
  * 部分环境变量类型（用于测试等场景）
