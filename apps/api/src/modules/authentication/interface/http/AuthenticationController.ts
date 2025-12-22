@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { AuthenticationApplicationService } from '../../application/services/AuthenticationApplicationService';
 import { createResponseBuilder, ResponseCode } from '@dailyuse/contracts/response';
 import { createLogger } from '@dailyuse/utils';
+import { isProduction } from '@/shared/infrastructure/config/env.js';
 
 const logger = createLogger('AuthenticationController');
 
@@ -144,7 +145,7 @@ export class AuthenticationController {
       // ===== 步骤 3: 设置 httpOnly Cookie（Refresh Token）=====
       res.cookie('refreshToken', result.session.refreshToken, {
         httpOnly: true, // 防止 JavaScript 访问（防 XSS）
-        secure: process.env.NODE_ENV === 'production', // 生产环境仅 HTTPS
+        secure: isProduction, // 生产环境仅 HTTPS
         sameSite: 'strict', // 防 CSRF
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 天
         path: '/',

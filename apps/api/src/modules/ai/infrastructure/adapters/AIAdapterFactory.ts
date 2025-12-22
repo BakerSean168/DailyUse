@@ -17,6 +17,7 @@ import { OpenRouterAdapter } from './OpenRouterAdapter';
 import { GroqAdapter } from './GroqAdapter';
 import { DeepSeekAdapter } from './DeepSeekAdapter';
 import { SiliconFlowAdapter } from './SiliconFlowAdapter';
+import { env } from '@/shared/infrastructure/config/env.js';
 
 /**
  * 适配器缓存 Key 生成
@@ -160,7 +161,7 @@ export class AIAdapterFactory {
    */
   static getDefaultAdapter(): OpenAIAdapter {
     if (!this.defaultAdapter) {
-      const apiKey = process.env.OPENAI_API_KEY;
+      const apiKey = env.OPENAI_API_KEY;
       if (!apiKey) {
         throw new Error('OPENAI_API_KEY environment variable is not set');
       }
@@ -174,9 +175,9 @@ export class AIAdapterFactory {
    * 用于快速测试七牛云 API
    */
   static getQiniuAdapterFromEnv(): CustomOpenAICompatibleAdapter {
-    const apiKey = process.env.QI_NIU_YUN_API_KEY;
-    const baseUrl = process.env.QI_NIU_YUN_BASE_URL;
-    const modelId = process.env.QI_NIU_YUN_MODEL_ID;
+    const apiKey = env.QI_NIU_YUN_API_KEY;
+    const baseUrl = env.QI_NIU_YUN_BASE_URL;
+    const modelId = env.QI_NIU_YUN_MODEL_ID;
 
     if (!apiKey || !baseUrl) {
       throw new Error('QI_NIU_YUN_API_KEY and QI_NIU_YUN_BASE_URL must be set');

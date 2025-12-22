@@ -26,6 +26,7 @@ import { AuthenticationContainer } from '../../infrastructure/di/AuthenticationC
 import { AccountContainer } from '../../../account/infrastructure/di/AccountContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';
 import { prisma } from '@/shared/infrastructure/config/prisma';
+import { getJwtConfig } from '@/shared/infrastructure/config/env.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -382,7 +383,7 @@ export class AuthenticationApplicationService {
     refreshToken: string;
     expiresAt: number;
   } {
-    const secret = process.env.JWT_SECRET || 'default-secret';
+    const { secret } = getJwtConfig();
     const accessTokenExpiresIn = 3600; // 1 hour in seconds
     const refreshTokenExpiresIn = 30 * 24 * 3600; // 30 days in seconds（与 AuthSession 一致）
     const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds

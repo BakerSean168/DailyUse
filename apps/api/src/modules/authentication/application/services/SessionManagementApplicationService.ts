@@ -23,6 +23,7 @@ import { AuthenticationDomainService } from '@dailyuse/domain-server/authenticat
 import { AuthenticationContainer } from '../../infrastructure/di/AuthenticationContainer';
 import { AccountContainer } from '../../../account/infrastructure/di/AccountContainer';
 import { eventBus, createLogger } from '@dailyuse/utils';
+import { getJwtConfig } from '@/shared/infrastructure/config/env.js';
 import jwt from 'jsonwebtoken';
 
 const logger = createLogger('SessionManagementApplicationService');
@@ -391,7 +392,7 @@ export class SessionManagementApplicationService {
     refreshToken: string;
     expiresAt: number;
   } {
-    const secret = process.env.JWT_SECRET || 'default-secret';
+    const { secret } = getJwtConfig();
     const accessTokenExpiresIn = 3600; // 1 hour in seconds
     const refreshTokenExpiresIn = 30 * 24 * 3600; // 30 days in seconds（与 AuthSession 一致）
     const expiresAt = Date.now() + accessTokenExpiresIn * 1000; // milliseconds
@@ -428,7 +429,7 @@ export class SessionManagementApplicationService {
    * 🔥 生成 Refresh Token（独立方法，支持自定义有效期）
    */
   private generateRefreshToken(accountUuid: string, expiresIn: number = 30 * 24 * 3600): string {
-    const secret = process.env.JWT_SECRET || 'default-secret';
+    const { secret } = getJwtConfig();
     const now = Math.floor(Date.now() / 1000);
 
     // Generate JWT refresh token (longer expiry, different payload)

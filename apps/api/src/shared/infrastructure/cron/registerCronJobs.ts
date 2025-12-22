@@ -7,6 +7,7 @@
 import { CronSchedulerManager } from './CronSchedulerManager';
 import { DailyAnalysisCronJob } from '@/modules/reminder/infrastructure/cron/dailyAnalysisCronJob';
 import { createLogger } from '@dailyuse/utils';
+import { env } from '@/shared/infrastructure/config/env.js';
 
 const logger = createLogger('CronJobRegistration');
 
@@ -35,8 +36,8 @@ export function registerAllCronJobs(): void {
       const job = new DailyAnalysisCronJob();
       await job.execute();
     },
-    enabled: process.env.ENABLE_DAILY_ANALYSIS !== 'false', // 默认启用
-    timezone: process.env.TZ || 'Asia/Shanghai',
+    enabled: env.ENABLE_DAILY_ANALYSIS,
+    timezone: env.TZ,
   });
 
   // ===== 未来可以在这里添加更多 Jobs =====

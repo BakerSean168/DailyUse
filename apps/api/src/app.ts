@@ -41,15 +41,14 @@ import { authMiddleware, optionalAuthMiddleware } from './shared/infrastructure/
 import { setupSwagger } from './shared/infrastructure/config/swagger';
 import { createLogger } from '@dailyuse/utils';
 import { performanceMiddleware } from './shared/infrastructure/http/middlewares/performance.middleware';
+import { getCorsOrigins, isAllCorsOriginsAllowed } from './shared/infrastructure/config/env.js';
 
 const logger = createLogger('Express');
 const app: Express = express();
 
-// Env / CORS origins (comma separated)
-const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
-  .split(',')
-  .map((s: string) => s.trim())
-  .filter(Boolean);
+// CORS 配置（从统一环境配置模块获取）
+const allowedOrigins = getCorsOrigins();
+const allowAllOrigins = isAllCorsOriginsAllowed();
 
 // Middlewares
 app.use(helmet());
@@ -61,15 +60,15 @@ app.use(
       // 允许非浏览器客户端（没有 origin header）
       if (!origin) return callback(null, true);
 
-      // 如果配置了通配符 *，允许所有源
-      if (allowedOrigins.includes('*')) return callback(null, true);
+      // 如果配置了通配符 *，允许所有源（但需要关闭 credentials）
+      if (allowAllOrigins) return callback(null, true);
 
       // 检查是否在允许列表中
       if (allowedOrigins.includes(origin)) return callback(null, true);
 
       return callback(new Error('Not allowed by CORS'));
     },
-    credentials: true,
+    credentials: !allowAllOrigins, // 只在不使用通配符时启用 credentials
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Skip-Auth', 'Cache-Control'],
     maxAge: 86400,

@@ -1,0 +1,182 @@
+/**
+ * @file env.schema.ts
+ * @description 环境变量 Zod Schema 定义
+ * 统一所有环境变量的类型验证和默认值
+ * @date 2025-12-22
+ */
+
+import { z } from 'zod';
+
+/**
+ * 环境变量 Schema
+ * 
+ * 分类:
+ * 1. 应用基础配置 - NODE_ENV, API_PORT, API_HOST, LOG_LEVEL
+ * 2. 数据库配置 - DATABASE_URL, DB_*
+ * 3. Redis 缓存 - REDIS_URL, REDIS_*
+ * 4. 认证配置 - JWT_*
+ * 5. CORS 配置 - CORS_ORIGIN
+ * 6. AI 服务 - OPENAI_*, QI_NIU_YUN_*
+ * 7. 可选服务 - SMTP_*, SENTRY_DSN
+ * 8. 功能开关 - ENABLE_*, USE_*
+ */
+export const envSchema = z.object({
+  // ========== 应用基础配置 ==========
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
+  
+  API_PORT: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(65535)
+    .default(3000),
+  
+  API_HOST: z
+    .string()
+    .default('0.0.0.0'),
+  
+  LOG_LEVEL: z
+    .enum(['debug', 'info', 'warn', 'error'])
+    .default('info'),
+  
+  TZ: z
+    .string()
+    .default('Asia/Shanghai'),
+
+  // ========== 数据库配置 ==========
+  DATABASE_URL: z
+    .string()
+    .url()
+    .describe('PostgreSQL 连接字符串'),
+  
+  // 可选的分解式配置（用于 docker-compose 等场景）
+  DB_HOST: z.string().optional(),
+  DB_PORT: z.coerce.number().default(5432),
+  DB_NAME: z.string().default('dailyuse'),
+  DB_USER: z.string().default('dailyuse'),
+  DB_PASSWORD: z.string().optional(),
+
+  // ========== Redis 缓存配置 ==========
+  REDIS_URL: z
+    .string()
+    .url()
+    .optional()
+    .describe('Redis 连接字符串 (优先使用)'),
+  
+  REDIS_HOST: z
+    .string()
+    .default('localhost'),
+  
+  REDIS_PORT: z.coerce
+    .number()
+    .int()
+    .default(6379),
+  
+  REDIS_PASSWORD: z
+    .string()
+    .optional(),
+  
+  REDIS_DB: z.coerce
+    .number()
+    .int()
+    .default(0),
+
+  // ========== JWT 认证配置 ==========
+  JWT_SECRET: z
+    .string()
+    .min(32, 'JWT_SECRET 至少需要 32 个字符')
+    .describe('JWT 签名密钥'),
+  
+  JWT_EXPIRES_IN: z
+    .string()
+    .default('7d')
+    .describe('JWT Token 有效期'),
+  
+  JWT_REFRESH_EXPIRES_IN: z
+    .string()
+    .default('30d')
+    .describe('JWT 刷新 Token 有效期'),
+  
+  REFRESH_TOKEN_SECRET: z
+    .string()
+    .min(32)
+    .optional()
+    .describe('刷新 Token 签名密钥 (默认使用 JWT_SECRET)'),
+
+  // ========== CORS 配置 ==========
+  CORS_ORIGIN: z
+    .string()
+    .default('http://localhost:5173')
+    .describe('允许的跨域来源，多个用逗号分隔，* 表示全部'),
+
+  // ========== AI 服务配置 ==========
+  // OpenAI
+  OPENAI_API_KEY: z
+    .string()
+    .optional()
+    .describe('OpenAI API 密钥'),
+  
+  OPENAI_MODEL: z
+    .string()
+    .default('gpt-4-turbo-preview'),
+  
+  OPENAI_BASE_URL: z
+    .string()
+    .url()
+    .default('https://api.openai.com/v1'),
+
+  // 七牛云 AI
+  QI_NIU_YUN_API_KEY: z.string().optional(),
+  QI_NIU_YUN_BASE_URL: z.string().url().optional(),
+  QI_NIU_YUN_MODEL_ID: z.string().optional(),
+
+  // AI Provider 加密密钥
+  AI_PROVIDER_ENCRYPTION_KEY: z
+    .string()
+    .length(32)
+    .optional()
+    .describe('AI Provider 配置加密密钥 (32字节)'),
+
+  // ========== 邮件服务配置 ==========
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().email().optional(),
+
+  // ========== 文件上传配置 ==========
+  UPLOAD_MAX_SIZE: z.coerce
+    .number()
+    .default(10485760) // 10MB
+    .describe('最大上传文件大小 (字节)'),
+
+  // ========== 监控配置 ==========
+  SENTRY_DSN: z.string().url().optional(),
+  
+  // ========== 功能开关 ==========
+  ENABLE_DAILY_ANALYSIS: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform(v => v === 'true'),
+  
+  USE_PRIORITY_QUEUE_SCHEDULER: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform(v => v === 'true'),
+
+  // ========== 构建信息（CI 注入）==========
+  BUILD_TIMESTAMP: z.string().optional(),
+  GIT_COMMIT: z.string().optional(),
+});
+
+/**
+ * 环境变量类型
+ */
+export type Env = z.infer<typeof envSchema>;
+
+/**
+ * 部分环境变量类型（用于测试等场景）
+ */
+export type PartialEnv = Partial<Env>;

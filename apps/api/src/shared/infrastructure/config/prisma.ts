@@ -5,6 +5,7 @@
  */
 
 import { PrismaClient, Prisma } from '@prisma/client';
+import { env, isDevelopment, isProduction } from './env.js';
 
 /**
  * Prisma Client 统一配置。
@@ -22,14 +23,13 @@ declare global {
 }
 
 const prismaClientConfig = {
-  log:
-    process.env.NODE_ENV === 'development'
-      ? [
-          { emit: 'event' as const, level: 'query' as const },
-          { emit: 'stdout' as const, level: 'warn' as const },
-          { emit: 'stdout' as const, level: 'error' as const },
-        ]
-      : [{ emit: 'stdout' as const, level: 'error' as const }],
+  log: isDevelopment
+    ? [
+        { emit: 'event' as const, level: 'query' as const },
+        { emit: 'stdout' as const, level: 'warn' as const },
+        { emit: 'stdout' as const, level: 'error' as const },
+      ]
+    : [{ emit: 'stdout' as const, level: 'error' as const }],
 };
 
 /**
@@ -42,12 +42,12 @@ export const prisma: PrismaClient =
   global.prisma ??
   new PrismaClient(prismaClientConfig);
 
-if (process.env.NODE_ENV !== 'production') {
+if (!isProduction) {
   global.prisma = prisma;
 }
 
 // 慢查询监控 (开发环境，>100ms)
-if (process.env.NODE_ENV === 'development') {
+if (isDevelopment) {
   prisma.$on('query' as never, (e: Prisma.QueryEvent) => {
     if (e.duration > 100) {
       console.warn(`[SLOW QUERY] ${e.duration}ms - ${e.query}`);

@@ -1,6 +1,7 @@
 import { SmartFrequencyAnalysisService } from '../../application/services/SmartFrequencyAnalysisService';
 import { FrequencyAdjustmentService } from '../../application/services/FrequencyAdjustmentService';
 import { ReminderContainer } from '../di/ReminderContainer';
+import { isDevelopment } from '@/shared/infrastructure/config/env.js';
 
 /**
  * 每日分析 Cron Job
@@ -185,7 +186,7 @@ export async function registerDailyAnalysisCronJob(): Promise<void> {
   console.log('[DailyAnalysisCronJob] Registered (schedule: 0 2 * * *)');
   
   // 开发环境可以手动触发测试
-  if (process.env.NODE_ENV === 'development') {
+  if (isDevelopment) {
     console.log('[DailyAnalysisCronJob] Development mode - execute manually with: job.execute()');
   }
 }

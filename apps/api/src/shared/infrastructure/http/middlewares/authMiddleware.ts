@@ -6,6 +6,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { getJwtConfig } from '../../config/env.js';
 
 /**
  * 扩展的请求接口，包含用户认证信息。
@@ -57,7 +58,7 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
     }
 
     // 验证 JWT token
-    const secret = process.env.JWT_SECRET || 'default-secret';
+    const { secret } = getJwtConfig();
 
     try {
       const decoded = jwt.verify(token, secret) as any;

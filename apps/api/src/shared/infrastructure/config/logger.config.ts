@@ -6,9 +6,9 @@
 
 import { LoggerFactory } from '@dailyuse/utils';
 import { WinstonLogger } from '@dailyuse/utils/winston';
+import { env, isProduction } from './env.js';
 
-const isProduction = process.env.NODE_ENV === 'production';
-const logLevel = (process.env.LOG_LEVEL as any) || (isProduction ? 'info' : 'debug');
+const logLevel = env.LOG_LEVEL;
 
 /**
  * 初始化日志系统。
@@ -37,10 +37,10 @@ export function initializeLogger(): void {
  */
 export function getStartupInfo(): Record<string, any> {
   return {
-    environment: process.env.NODE_ENV || 'development',
+    environment: env.NODE_ENV,
     nodeVersion: process.version,
     platform: process.platform,
-    logLevel,
+    logLevel: env.LOG_LEVEL,
     timestamp: new Date().toISOString(),
   };
 }

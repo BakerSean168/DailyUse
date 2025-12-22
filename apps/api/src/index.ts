@@ -1,14 +1,5 @@
-// Load environment variables FIRST before any other imports
-import { config } from 'dotenv';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-// Get __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Load .env file from apps/api directory
-config({ path: resolve(__dirname, '../.env') });
+// 环境配置必须最先加载（包含 dotenv 加载逻辑）
+import { env, isDevelopment, isProduction } from './shared/infrastructure/config/env.js';
 
 import app from './app';
 import { connectPrisma, disconnectPrisma, prisma } from './shared/infrastructure/config/prisma';
@@ -34,16 +25,14 @@ import { registerTaskEventListeners } from './modules/task/application/event-han
 initializeLogger();
 const logger = createLogger('API');
 
-// 调度器配置：可通过环境变量切换
-// USE_PRIORITY_QUEUE_SCHEDULER=true 启用优先队列调度器（推荐）
-// USE_PRIORITY_QUEUE_SCHEDULER=false 使用传统轮询调度器
-const USE_PRIORITY_QUEUE_SCHEDULER = process.env.USE_PRIORITY_QUEUE_SCHEDULER !== 'false'; // 默认启用
-
-const PORT = process.env.PORT || 3888;
-
 (async () => {
   try {
-    logger.info('Starting DailyUse API server...', getStartupInfo());
+    logger.info('Starting DailyUse API server...', {
+      ...getStartupInfo(),
+      port: env.API_PORT,
+      nodeEnv: env.NODE_ENV,
+      logLevel: env.LOG_LEVEL,
+    });
 
     // Try to connect to database, but don't fail if it's unavailable
     try {
@@ -111,8 +100,8 @@ const PORT = process.env.PORT || 3888;
       description: 'Smart Frequency Daily Analysis, etc.',
     });
 
-    app.listen(PORT, () => {
-      logger.info(`API server listening on http://localhost:${PORT}`);
+    app.listen(env.API_PORT, env.API_HOST, () => {
+      logger.info(`API server listening on http://${env.API_HOST}:${env.API_PORT}`);
     });
   } catch (err) {
     logger.error('Failed to start server', err);

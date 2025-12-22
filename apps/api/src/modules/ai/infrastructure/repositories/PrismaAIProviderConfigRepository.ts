@@ -16,6 +16,7 @@ import type { PrismaClient } from '@prisma/client';
 import type { IAIProviderConfigRepository } from '@dailyuse/domain-server/ai';
 import type { AIProviderConfigServerDTO, AIModelInfo } from '@dailyuse/contracts/ai';
 import { AIProviderType } from '@dailyuse/contracts/ai';
+import { env } from '@/shared/infrastructure/config/env.js';
 import crypto from 'crypto';
 
 // 使用 any 类型绕过 Prisma 类型生成延迟问题
@@ -46,7 +47,7 @@ export class PrismaAIProviderConfigRepository implements IAIProviderConfigReposi
 
   constructor(private prisma: PrismaClient) {
     // 从环境变量获取加密密钥，如果没有则使用默认密钥（仅开发环境）
-    const keyStr = process.env.AI_PROVIDER_ENCRYPTION_KEY || 'default-dev-key-32-bytes-long!!';
+    const keyStr = env.AI_PROVIDER_ENCRYPTION_KEY || 'default-dev-key-32-bytes-long!!';
     this.encryptionKey = crypto.scryptSync(keyStr, 'salt', 32);
     // 类型断言：运行时 Prisma client 已包含 aiProviderConfig
     this.prismaWithAI = prisma as PrismaClientWithAIProvider;

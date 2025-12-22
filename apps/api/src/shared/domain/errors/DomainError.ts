@@ -3,6 +3,8 @@
  * 
  * 提供结构化的错误信息，便于调试和日志追踪
  */
+import { isDevelopment } from '@/shared/infrastructure/config/env.js';
+
 export class DomainError extends Error {
   public readonly timestamp: number;
   public readonly operationId: string;
@@ -56,7 +58,7 @@ export class DomainError extends Error {
       timestamp: this.timestamp,
       operationId: this.operationId,
       // 生产环境不暴露详细上下文
-      ...(process.env.NODE_ENV === 'development' ? { context: this.context } : {}),
+      ...(isDevelopment ? { context: this.context } : {}),
     };
   }
 }

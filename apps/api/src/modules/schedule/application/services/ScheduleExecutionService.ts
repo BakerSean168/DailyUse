@@ -13,6 +13,7 @@
 import { ScheduleTask } from '@dailyuse/domain-server/schedule';
 import { BreeExecutionEngine } from '../../infrastructure/execution/BreeExecutionEngine';
 import { ScheduleContainer } from '../../infrastructure/di/ScheduleContainer';
+import { isDevelopment, env } from '@/shared/infrastructure/config/env.js';
 import path from 'path';
 
 /**
@@ -30,8 +31,8 @@ export class ScheduleExecutionService {
     this.executionEngine = new BreeExecutionEngine(
       {
         workerPath: path.join(__dirname, '../../infrastructure/workers'),
-        verbose: process.env.NODE_ENV === 'development',
-        timezone: 'Asia/Shanghai',
+        verbose: isDevelopment,
+        timezone: env.TZ,
         workerTimeout: 60000, // 60 秒
       },
       executionRepository,

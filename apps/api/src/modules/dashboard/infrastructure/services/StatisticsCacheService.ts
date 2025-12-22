@@ -7,6 +7,7 @@
 import Redis from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 import type { DashboardConfigServerDTO, WidgetConfigDTO, DashboardStatisticsClientDTO } from '@dailyuse/contracts/dashboard';
+import { getRedisConfig, env } from '@/shared/infrastructure/config/env.js';
 
 /**
  * 统计数据缓存服务。
@@ -29,11 +30,11 @@ export class StatisticsCacheService {
     // 支持两种配置方式：
     // 1. REDIS_URL (完整 URL): redis://:password@host:port/db
     // 2. 分离配置: REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_DB
-    let redisConfig: RedisOptions;
+    const redisConfig = getRedisConfig();
 
-    if (redisUrl || process.env.REDIS_URL) {
+    if (redisUrl || env.REDIS_URL) {
       // 使用 URL 方式 (ioredis 会自动解析 URL)
-      const url = redisUrl || process.env.REDIS_URL!;
+      const url = redisUrl || env.REDIS_URL!;
       this.redis = new Redis(url, {
         retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
@@ -46,11 +47,11 @@ export class StatisticsCacheService {
       });
     } else {
       // 使用分离配置
-      redisConfig = {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379', 10),
-        password: process.env.REDIS_PASSWORD,
-        db: parseInt(process.env.REDIS_DB || '0', 10),
+      this.redis = new Redis({
+        host: env.REDIS_HOST,
+        port: env.REDIS_PORT,
+        password: env.REDIS_PASSWORD,
+        db: env.REDIS_DB,
         retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
           console.warn(`[StatisticsCache] Redis 连接失败，${delay}ms 后重试 (尝试 ${times} 次)`);
@@ -59,8 +60,7 @@ export class StatisticsCacheService {
         maxRetriesPerRequest: 3,
         connectTimeout: 5000,
         commandTimeout: 3000,
-      };
-      this.redis = new Redis(redisConfig);
+      });
     }
 
     this.redis.on('connect', () => {

@@ -6,6 +6,7 @@
 
 import type { Request, Response } from 'express';
 import { createRequire } from 'module';
+import { env } from '../../config/env.js';
 
 // ESM 环境下读取 package.json
 const require = createRequire(import.meta.url);
@@ -94,7 +95,7 @@ export const infoController = {
       name: packageInfo.name,
       version: packageInfo.version,
       description: packageInfo.description || 'DailyUse API Server',
-      environment: process.env.NODE_ENV || 'development',
+      environment: env.NODE_ENV,
       nodeVersion: process.version,
       uptime: {
         seconds: uptimeSeconds,
@@ -108,10 +109,10 @@ export const infoController = {
     };
     
     // 如果有构建信息环境变量，添加到响应中
-    if (process.env.BUILD_TIMESTAMP || process.env.GIT_COMMIT) {
+    if (env.BUILD_TIMESTAMP || env.GIT_COMMIT) {
       response.build = {
-        timestamp: process.env.BUILD_TIMESTAMP,
-        commit: process.env.GIT_COMMIT,
+        timestamp: env.BUILD_TIMESTAMP,
+        commit: env.GIT_COMMIT,
       };
     }
     

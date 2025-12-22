@@ -21,12 +21,17 @@ release
 # But don't ignore tools/build (it contains build configs, not build outputs)
 !tools/build/
 
-# Environment variables (should be in subprojects only)
-.env
+# Environment variables
+# ✅ 提交: .env, .env.development, .env.production, .env.example
+# ❌ 忽略: .env.local, .env.*.local (包含敏感信息)
 .env.local
 .env.*.local
+.env.prod
+# 保留示例文件
+!.env.example
+!.env.development
+!.env.production
 !apps/*/.env.example
-!apps/*/.env.development.example
 
 # Test coverage
 coverage

@@ -7,6 +7,7 @@ import type { Router as ExpressRouter, Request, Response, NextFunction } from 'e
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { createLogger } from '@dailyuse/utils';
+import { getJwtConfig } from '../../../../shared/infrastructure/config/env.js';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/http/middlewares/authMiddleware';
 
 const logger = createLogger('SSERoutes');
@@ -49,7 +50,7 @@ const sseAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
     }
 
     // 验证 JWT token
-    const secret = process.env.JWT_SECRET || 'default-secret';
+    const { secret } = getJwtConfig();
     logger.debug('[SSE Auth] 使用secret长度:', secret.length);
 
     try {
