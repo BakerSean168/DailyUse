@@ -160,21 +160,25 @@ services:
       API_PORT: 3000
       API_HOST: 0.0.0.0                          # 监听所有网卡（容器内部）
       
-      # ===== 数据库连接 =====
-      # Prisma 使用的连接字符串
-      DATABASE_URL: postgresql://${DB_USER:-dailyuse}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-dailyuse}?schema=public&connection_limit=10
+      # ===== 数据库连接（分解配置 - Docker 最佳实践） =====
+      # 应用会自动拼接成 DATABASE_URL
+      DB_HOST: postgres                          # Docker 网络中的服务名
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-dailyuse}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?请在.env.production.local中设置数据库密码}
       
       # ===== Redis 连接 =====
-      # 格式: redis://[:password@]host[:port][/db-number]
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
-      REDIS_HOST: redis
+      REDIS_HOST: redis                          # Docker 网络中的服务名
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?请在.env.production.local中设置Redis密码}
+      REDIS_DB: 0
       
       # ===== JWT 认证配置 =====
-      JWT_SECRET: ${JWT_SECRET:?请在.env中设置JWT密钥}           # 必须设置强随机字符串
+      JWT_SECRET: ${JWT_SECRET:?请在.env.production.local中设置JWT密钥}           # 必须设置强随机字符串
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}                     # Token 有效期
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}    # 刷新 Token 有效期
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-${JWT_SECRET}}  # 刷新 Token 密钥（默认使用 JWT_SECRET）
       
       # ===== CORS 配置 =====
       CORS_ORIGIN: ${CORS_ORIGIN:-*}                            # 允许的前端域名（生产环境应设置具体域名）
