@@ -185,6 +185,8 @@ export type Env = z.infer<typeof envSchema>;
  * 处理环境变量的后处理
  * 如果未提供 DATABASE_URL，则从分解式配置自动生成
  * 
+ * ⚠️ 重要：必须同步设置回 process.env，因为 Prisma 直接读取 process.env.DATABASE_URL
+ * 
  * @param env 验证后的环境变量对象
  * @returns 处理后的环境变量对象
  */
@@ -197,7 +199,25 @@ export function processEnv(env: Env): Env {
     const port = env.DB_PORT || 5432;
     const database = env.DB_NAME || 'dailyuse';
     
-    env.DATABASE_URL = `postgresql://${username}${password}@${host}:${port}/${database}?schema=public`;
+    const databaseUrl = `postgresql://${username}${password}@${host}:${port}/${database}?schema=public`;
+    env.DATABASE_URL = databaseUrl;
+    
+    // ⚠️ 关键：同步设置回 process.env，Prisma 直接读取 process.env.DATABASE_URL
+    process.env.DATABASE_URL = databaseUrl;
+  }
+  
+  // 如果没有 REDIS_URL，从分解式配置生成
+  if (!env.REDIS_URL && env.REDIS_HOST) {
+    const password = env.REDIS_PASSWORD ? `:${env.REDIS_PASSWORD}` : '';
+    const host = env.REDIS_HOST;
+    const port = env.REDIS_PORT || 6379;
+    const db = env.REDIS_DB || 0;
+    
+    const redisUrl = `redis://${password}@${host}:${port}/${db}`;
+    env.REDIS_URL = redisUrl;
+    
+    // 同步设置回 process.env（如果其他库需要）
+    process.env.REDIS_URL = redisUrl;
   }
   
   return env;
