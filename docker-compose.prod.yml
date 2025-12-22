@@ -140,7 +140,7 @@ services:
   # ===========================================================================
   api:
     # 使用预构建的镜像（而非本地 build）
-    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-dailyuse}/dailyuse-api:${API_TAG:-v1.0.2}
+    image: ${REGISTRY:-docker.io}/${IMAGE_NAMESPACE:-dailyuse}/dailyuse-api:${API_TAG:-v1.0.6}
     container_name: dailyuse-prod-api
     restart: always
     
