@@ -144,6 +144,14 @@ services:
     container_name: dailyuse-prod-api
     restart: always
     
+    # 健康检查 - 使用 K8s 标准路径 /healthz
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/healthz', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
     # 环境变量配置
     environment:
       # ===== 应用基础配置 =====
@@ -207,7 +215,7 @@ services:
     
     # 健康检查 - 确保 API 服务正常响应
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/v1/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/healthz', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
       interval: 30s
       timeout: 10s
       retries: 3

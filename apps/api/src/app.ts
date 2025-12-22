@@ -34,7 +34,7 @@ import metricsRouter from './modules/metrics/interface/http/routes/metricsRoutes
 import aiRouter from './modules/ai/interface/http/aiRoutes';
 import dashboardRouter from './modules/dashboard/interface/routes';
 import crossModuleRouter from './shared/infrastructure/http/routes/crossModuleRoutes';
-import logsRouter from './modules/system/interface/http/logsRoutes';
+import infrastructureRouter from './shared/infrastructure/http/routes/infrastructureRoutes';
 // import syncRouter from './modules/sync/interface/http/syncRoutes'; // TODO: sync module needs to be implemented
 
 import { authMiddleware, optionalAuthMiddleware } from './shared/infrastructure/http/middlewares/index';
@@ -93,21 +93,14 @@ app.use(
 // Performance monitoring middleware
 app.use(performanceMiddleware);
 
-// API v1 router
+// API v1 router (业务路由 - 版本化)
 const api = Router();
-
-api.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok' });
-});
 
 // 挂载账户路由到api路由器
 api.use('/accounts', accountRouter);
 
 // 挂载认证路由到 api 路由器 (登录/登出/刷新等) - 不需要认证
 api.use('/auth', authenticationRouter);
-
-// 挂载日志路由 - 不需要认证 (允许记录登录前的错误)
-api.use('/logs', logsRouter);
 
 // 应用认证中间件到需要认证的路由
 // 注意：认证相关的路由（如登录、注册）应该放在认证中间件之前
@@ -221,7 +214,16 @@ logger.info('Notification and event system initialized successfully');
 // Setup Swagger documentation
 setupSwagger(app);
 
-// Mount API routes at both /api (for backward compatibility) and /api/v1
+// ============================================
+// 基础设施路由 (无版本控制、无认证)
+// ============================================
+// 挂载到根路径: /healthz, /readyz, /livez, /info, /metrics, /logs
+app.use('/', infrastructureRouter);
+
+// ============================================
+// 业务 API 路由 (版本化)
+// ============================================
+// 同时挂载到 /api (向后兼容) 和 /api/v1
 app.use('/api', api);
 app.use('/api/v1', api);
 

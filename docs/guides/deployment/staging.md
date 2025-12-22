@@ -245,7 +245,7 @@ jobs:
 
       - name: Health check
         run: |
-          curl -f https://api-staging.dailyuse.app/health || exit 1
+          curl -f https://api-staging.dailyuse.app/healthz || exit 1
 
   deploy-web:
     name: Deploy Web to Staging

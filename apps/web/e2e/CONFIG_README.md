@@ -35,8 +35,9 @@ API_CONFIG.API_PREFIX
 // 完整 API URL: http://localhost:3888/api/v1
 API_CONFIG.FULL_URL
 
-// 健康检查: http://localhost:3888/api/v1/health
-`${API_CONFIG.FULL_URL}${API_CONFIG.HEALTH_ENDPOINT}`
+// 健康检查: http://localhost:3888/healthz
+// 就绪检查: http://localhost:3888/readyz
+// 应用信息: http://localhost:3888/info
 ```
 
 ### Web 配置
@@ -87,7 +88,7 @@ TEST_USERS.ADMIN      // admintest / Admin123456!
 ```typescript
 // 不要这样！
 await page.goto('http://localhost:5173/goals');
-await page.goto('http://localhost:3000/api/v1/health');
+await page.goto('http://localhost:3000/healthz');
 await page.waitForTimeout(1000);
 ```
 

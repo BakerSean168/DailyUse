@@ -350,9 +350,9 @@ jobs:
           # 检查Pod状态
           kubectl get pods -n dailyuse-production -l app=api
           
-          # 健康检查
+          # 健康检查（K8s Liveness Probe）
           for i in {1..30}; do
-            if curl -f https://api.dailyuse.com/health; then
+            if curl -f https://api.dailyuse.com/healthz; then
               echo "Health check passed"
               break
             fi
@@ -368,9 +368,9 @@ jobs:
     steps:
       - name: Run smoke tests
         run: |
-          # 核心API测试
-          curl -f https://api.dailyuse.com/health || exit 1
-          curl -f https://api.dailyuse.com/api/auth/health || exit 1
+          # 核心API测试（K8s 标准健康检查）
+          curl -f https://api.dailyuse.com/healthz || exit 1
+          curl -f https://api.dailyuse.com/readyz || exit 1
           
           # Web应用测试
           curl -f https://app.dailyuse.com || exit 1

@@ -228,18 +228,37 @@ dailyuse-prod-web     Up 2 minutes
 ### 4.2 测试 API 健康检查
 
 ```bash
-# 在服务器上测试
-curl http://localhost:3000/health
+# 在服务器上测试（Liveness Probe）
+curl http://localhost:3000/healthz
 
 # 从外部测试（替换为你的域名或 IP）
-curl http://bakersean.top/api/health
+curl http://bakersean.top/healthz
+
+# 测试就绪检查（Readiness Probe，包含数据库检查）
+curl http://bakersean.top/readyz
+
+# 查看应用信息
+curl http://bakersean.top/info
 ```
 
-**预期响应：**
+**预期响应（Liveness）：**
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2025-12-17T06:00:00.000Z"
+  "status": "ok"
+}
+```
+
+**预期响应（Readiness）：**
+```json
+{
+  "status": "ok",
+  "checks": {
+    "database": {
+      "status": "ok",
+      "latencyMs": 12
+    }
+  },
+  "timestamp": "2025-12-22T02:25:57.581Z"
 }
 ```
 
@@ -247,7 +266,9 @@ curl http://bakersean.top/api/health
 
 在浏览器中打开：
 - http://bakersean.top （前端）
-- http://bakersean.top/api/health （API 健康检查）
+- http://bakersean.top/healthz （API 存活检查）
+- http://bakersean.top/readyz （API 就绪检查）
+- http://bakersean.top/info （应用信息）
 
 如果一切正常，你应该能看到登录页面！
 
@@ -268,7 +289,14 @@ sudo certbot --nginx -d bakersean.top -d www.bakersean.top
 sudo certbot renew --dry-run
 ```
 
-### 5.2 方案 B：使用 Nginx Proxy Manager（图形化界面）
+### 5.3 验证 HTTPS 健康检查
+
+```bash
+# 测试 HTTPS 健康检查
+curl https://bakersean.top/healthz
+```
+
+### 5.4 方案 B：使用 Nginx Proxy Manager（图形化界面）
 
 修改 `docker-compose.prod.yml`：
 

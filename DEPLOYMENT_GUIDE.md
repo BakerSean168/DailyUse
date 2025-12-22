@@ -273,7 +273,7 @@ exit
 
    **Custom Locations（可选）:**
    如果需要为 API 的不同路径设置不同的缓存策略:
-   - Location: `/api/health`
+   - Location: `/healthz`
    - Forward Scheme: `http`
    - Forward Host: `dailyuse-prod-api`
    - Forward Port: `3000`
@@ -293,9 +293,17 @@ exit
 curl -I https://yourdomain.com
 # 应返回 200 OK
 
-# 测试 API 健康检查
-curl https://api.yourdomain.com/health
+# 测试 API 健康检查（K8s Liveness Probe）
+curl https://api.yourdomain.com/healthz
 # 应返回 {"status":"ok"}
+
+# 测试 API 就绪检查（K8s Readiness Probe，包含依赖检查）
+curl https://api.yourdomain.com/readyz
+# 应返回 {"status":"ok","checks":{"database":{"status":"ok","latencyMs":...}},"timestamp":"..."}
+
+# 查看应用信息
+curl https://api.yourdomain.com/info
+# 应返回版本、环境、运行时间等信息
 ```
 
 ---

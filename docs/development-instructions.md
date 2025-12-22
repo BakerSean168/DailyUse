@@ -38,7 +38,7 @@ pnpm dev:desktop # 仅 Desktop
 
 ```bash
 # API 健康检查
-curl http://localhost:3888/api/v1/health
+curl http://localhost:3888/healthz
 
 # Web 应用
 open http://localhost:5173

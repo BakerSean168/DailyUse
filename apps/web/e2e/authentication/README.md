@@ -138,7 +138,13 @@ pnpm dev
 
 3. **验证服务状态**:
 ```bash
-curl http://localhost:3888/api/v1/health && echo " ✅ API 正常"
+# 测试 API 存活检查
+curl http://localhost:3888/healthz && echo " ✅ API 存活"
+
+# 测试 API 就绪检查（包含数据库检查）
+curl http://localhost:3888/readyz && echo " ✅ API 就绪"
+
+# 测试 Web 服务
 curl http://localhost:5173 && echo " ✅ Web 正常"
 ```
 
@@ -177,7 +183,7 @@ npx playwright test authentication/auth-login-debug.spec.ts --headed
 **排查步骤**:
 ```bash
 # 1. 检查 API 服务
-curl http://localhost:3888/api/v1/health
+curl http://localhost:3888/healthz
 
 # 2. 运行调试测试查看网络日志
 npx playwright test authentication/auth-login-debug.spec.ts --headed --reporter=list
