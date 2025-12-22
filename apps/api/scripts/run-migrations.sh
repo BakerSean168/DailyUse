@@ -99,4 +99,27 @@ echo "${YELLOW}Step 4: Running Prisma migrations${NC}"
 echo "   Command: pnpm prisma migrate deploy"
 echo ""
 
-exec pnpm prisma migrate deploy "$@"
+# Attempt migration and capture output
+MIGRATION_RESULT=0
+MIGRATION_OUTPUT=$(pnpm prisma migrate deploy 2>&1) || MIGRATION_RESULT=$?
+
+echo "$MIGRATION_OUTPUT"
+
+# Check if migration failed due to wrong order (accounts table not found)
+if [ $MIGRATION_RESULT -ne 0 ] && echo "$MIGRATION_OUTPUT" | grep -q "relation.*accounts.*does not exist"; then
+  echo ""
+  echo "${YELLOW}⚠️  Migration order issue detected (accounts table missing)${NC}"
+  echo "${YELLOW}Resolving migration order...${NC}"
+  
+  # Mark the sync_tables migration as rolled back
+  pnpm prisma migrate resolve --rolled-back 20250703000000_sync_tables 2>/dev/null || true
+  
+  # Retry migrations
+  echo ""
+  echo "${YELLOW}Retrying migrations after fixing order...${NC}"
+  pnpm prisma migrate deploy
+else
+  [ $MIGRATION_RESULT -ne 0 ] && exit $MIGRATION_RESULT
+  echo ""
+  echo "${GREEN}✅ Migrations completed successfully${NC}"
+fi

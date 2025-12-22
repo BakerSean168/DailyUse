@@ -171,8 +171,10 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:?请在.env中设置数据库密码}
       
       # ⚠️ CRITICAL: 显式设置 DATABASE_URL 供 Prisma CLI 命令使用
-      # docker-compose 会先展开变量再传给容器，docker exec 才能访问
-      DATABASE_URL: postgresql://${DB_USER:?未设置DB_USER}:${DB_PASSWORD:?未设置DB_PASSWORD}@postgres:5432/${DB_NAME:?未设置DB_NAME}?schema=public
+      # ⚠️ 重要：DATABASE_URL 必须在 .env 文件中预先构造（密码需 URL 编码）
+      # 避免在这里做变量替换，因为特殊字符(/, =, @等)会破坏 URL 解析
+      # 正确的密码格式：QoebYoIhEQOQGuNq9YHJbZebpfJSR5dMxEN%2FD36GdYA%3D (/ = %2F, = = %3D)
+      DATABASE_URL: ${DATABASE_URL:?请在.env中设置DATABASE_URL}
       
       # ===== Redis 连接 =====      # 应用会自动从这些变量拼接成 REDIS_URL
       # ⚠️ 重要：必须与 redis 服务的 requirepass 一致！      REDIS_HOST: redis                          # Docker 网络中的服务名
