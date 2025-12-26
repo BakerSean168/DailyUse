@@ -27,6 +27,31 @@
           </v-window-item>
         </v-window>
       </v-card>
+      <v-card class="beian-info">
+        <a 
+          href="https://beian.miit.gov.cn/" 
+          target="_blank" 
+          class="beian-link"
+        >
+          浙ICP备2025220345号
+        </a>
+      </v-card>
+      <div >
+        
+        
+        <a 
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33010602000000" 
+          target="_blank" 
+          class="beian-link gongan-link"
+        >
+          <img 
+            src="https://beian.mps.gov.cn/img/logo01.dd7ff50e.png" 
+            class="gongan-icon" 
+            alt="公安备案图标" 
+          />
+          <span>浙公网安备 33010602000000 号</span>
+        </a>
+      </div>
     </div>
   </div>
 </template>
@@ -55,10 +80,15 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 20px 0;
+  overflow-y: auto;
 }
 
 .form-container {
   width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .auth-view-card {
@@ -97,6 +127,61 @@ onMounted(() => {
 
 .v-card {
   margin-top: 2rem;
+}
+
+.beian-info {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 24px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  width: 100%;
+  -webkit-app-region: no-drag;
+
+  background: transparent;
+}
+
+.beian-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--v-theme-on-surface);
+}
+
+.beian-link:hover {
+}
+
+.gongan-link {
+  gap: 6px;
+}
+
+.gongan-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* 小屏幕设备 - 备案信息垂直排列 */
+@media screen and (max-width: 600px) {
+  .beian-info {
+    flex-direction: column;
+    gap: 12px;
+    font-size: 12px;
+  }
+  
+  .beian-link {
+    text-align: center;
+  }
 }
 
 .v-window {

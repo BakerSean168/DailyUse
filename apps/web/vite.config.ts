@@ -1,16 +1,34 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 
-export default defineConfig(({ mode }) => {
-  const isDev = mode !== 'production';
+export default defineConfig(({ mode, command }) => {
+  // 从当前目录（apps/web）加载环境变量
+  const env = loadEnv(mode, __dirname, '');
+  
+  // 开发模式判断：serve 命令或非 production mode
+  const isDev = command === 'serve' || mode !== 'production';
   const isCiOrDocker =
     process.env.CI === 'true' ||
     process.env.DOCKER === 'true' ||
     process.env.NO_OPEN === 'true';
+  
+  // 根据 mode 决定是否需要代理（只在本地开发时使用代理）
+  const apiBaseUrl = env.VITE_API_BASE_URL || 'http://localhost:3888';
+  const needProxy = mode === 'development';
+  
+  console.log(`[Vite Config] Command: ${command}, Mode: ${mode}`);
+  console.log(`[Vite Config] API Base URL: ${apiBaseUrl}`);
+  console.log(`[Vite Config] Using Proxy: ${needProxy}`);
+  console.log(`[Vite Config] Is Dev: ${isDev}`);
+  
   return {
+    // 明确指定环境变量目录和根目录
+    root: __dirname,
+    envDir: __dirname,
+    envPrefix: 'VITE_',
     resolve: {
       alias: {
         // 仅项目内部别名
@@ -45,9 +63,10 @@ export default defineConfig(({ mode }) => {
         allow: ['..', '../../'],
       },
       // 添加代理配置,解决 EventSource 跨域问题
-      proxy: {
+      // 仅在使用本地开发环境时启用代理
+      proxy: mode === 'development' ? {
         '/api': {
-          target: 'http://localhost:3888',
+          target: apiBaseUrl.replace('/api/v1', ''),
           changeOrigin: true,
           secure: false,
           ws: true, // 支持 WebSocket
@@ -79,7 +98,7 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
-      },
+      } : undefined,
     },
     preview: {
       port: 5173,

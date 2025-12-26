@@ -8,7 +8,19 @@
     "dev": {
       "executor": "@nx/vite:dev-server",
       "options": {
-        "buildTarget": "web:build"
+        "buildTarget": "web:build",
+        "mode": "development"
+      },
+      "configurations": {
+        "local": {
+          "mode": "development"
+        },
+        "vps": {
+          "mode": "vps"
+        },
+        "staging": {
+          "mode": "staging"
+        }
       }
     },
     "build": {
