@@ -6,36 +6,32 @@
   "tags": ["scope:desktop", "type:app", "platform:electron"],
   "targets": {
     "build": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/vite:build",
       "outputs": ["{workspaceRoot}/apps/desktop/dist"],
       "defaultConfiguration": "production",
       "dependsOn": ["^build"],
       "options": {
-        "command": "vite build",
-        "cwd": "apps/desktop"
+        "outputPath": "apps/desktop/dist",
+        "configFile": "apps/desktop/vite.config.ts"
       },
       "configurations": {
         "development": {
-          "command": "vite build --mode development"
+          "mode": "development"
         },
         "production": {
-          "command": "vite build --mode production"
+          "mode": "production"
         }
       }
     },
     "serve": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/vite:dev-server",
       "defaultConfiguration": "development",
       "options": {
-        "command": "vite",
-        "cwd": "apps/desktop"
+        "buildTarget": "desktop:build"
       },
       "configurations": {
         "development": {
-          "command": "vite"
-        },
-        "production": {
-          "command": "vite build && vite preview"
+          "buildTarget": "desktop:build:development"
         }
       }
     },

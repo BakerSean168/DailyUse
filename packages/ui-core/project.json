@@ -9,14 +9,14 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/ui-core/dist"],
       "options": {
-        "command": "pnpm build",
+        "command": "tsup",
         "cwd": "packages/ui-core"
       }
     },
-    "dev": {
+    "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm dev",
+        "command": "tsup --watch",
         "cwd": "packages/ui-core"
       }
     },

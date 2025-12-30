@@ -9,7 +9,7 @@
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
       "options": {
-        "command": "pnpm build",
+        "command": "tsup",
         "cwd": "packages/infrastructure-client"
       },
       "dependsOn": ["^build"]
@@ -17,7 +17,7 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm typecheck",
+        "command": "tsc --noEmit",
         "cwd": "packages/infrastructure-client"
       }
     }

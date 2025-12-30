@@ -5,7 +5,7 @@
   "sourceRoot": "apps/web/src",
   "tags": ["scope:web", "type:app"],
   "targets": {
-    "dev": {
+    "serve": {
       "executor": "@nx/vite:dev-server",
       "options": {
         "buildTarget": "web:build",
@@ -21,11 +21,19 @@
       }
     },
     "build": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/vite:build",
       "outputs": ["{workspaceRoot}/dist/apps/web"],
       "options": {
-        "command": "pnpm build",
-        "cwd": "apps/web"
+        "outputPath": "dist/apps/web",
+        "configFile": "apps/web/vite.config.ts"
+      },
+      "configurations": {
+        "staging": {
+          "mode": "staging"
+        },
+        "production": {
+          "mode": "production"
+        }
       }
     },
     "preview": {

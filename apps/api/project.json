@@ -5,18 +5,19 @@
   "sourceRoot": "apps/api/src",
   "tags": ["scope:api", "type:app"],
   "targets": {
-    "dev": {
+    "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm dev",
+        "command": "node ../../node_modules/tsx/dist/cli.mjs watch src/main.ts",
         "cwd": "apps/api"
       }
     },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/dist/apps/api"],
+      "dependsOn": ["^build"],
       "options": {
-        "command": "pnpm build",
+        "command": "node ../../node_modules/tsup/dist/cli-default.js",
         "cwd": "apps/api"
       }
     },

@@ -10,14 +10,14 @@
       "outputs": ["{workspaceRoot}/packages/ui-react/dist"],
       "dependsOn": ["^build"],
       "options": {
-        "command": "pnpm build",
+        "command": "tsup",
         "cwd": "packages/ui-react"
       }
     },
-    "dev": {
+    "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm dev",
+        "command": "tsup --watch",
         "cwd": "packages/ui-react"
       }
     },

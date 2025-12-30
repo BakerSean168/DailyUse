@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "daily-use",
   "private": true,
   "author": {
@@ -16,15 +16,15 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "// ========== Quick Start ==========": "",
-    "dev": "nx run-many -t dev --projects=api,web --parallel=2",
-    "start": "nx run-many -t dev --projects=api,web --parallel=2",
+    "dev": "nx run-many -t serve --projects=api,web --parallel=2",
+    "start": "nx run-many -t serve --projects=api,web --parallel=2",
     "// ========== Development ==========": "",
-    "dev:api": "nx dev api",
-    "dev:web": "nx dev web",
-    "dev:desktop": "nx dev desktop",
-    "dev:all": "nx run-many -t dev --projects=api,web,desktop --parallel=3",
-    "dev:web:local": "nx dev web --configuration=local",
-    "dev:web:staging": "nx dev web --configuration=staging",
+    "dev:api": "nx serve api",
+    "dev:web": "nx serve web",
+    "dev:desktop": "nx serve desktop",
+    "dev:all": "nx run-many -t serve --projects=api,web,desktop --parallel=3",
+    "dev:web:local": "nx serve web --configuration=local",
+    "dev:web:staging": "nx serve web --configuration=staging",
     "// ========== Build ==========": "",
     "build": "nx run-many -t build --all",
     "build:api": "nx build api",

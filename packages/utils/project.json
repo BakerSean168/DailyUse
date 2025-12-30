@@ -9,14 +9,14 @@
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/packages/utils/dist"],
       "options": {
-        "command": "pnpm build",
+        "command": "tsup",
         "cwd": "packages/utils"
       }
     },
-    "dev": {
+    "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm dev",
+        "command": "tsup --watch",
         "cwd": "packages/utils"
       }
     },
