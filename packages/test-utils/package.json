@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/test-utils",
+  "name": "test-utils",
   "version": "0.1.0",
   "type": "module",
   "description": "Unified testing utilities for DailyUse monorepo",
@@ -12,11 +12,6 @@
     "./e2e": "./src/setup/e2e.ts",
     "./fixtures": "./src/fixtures/index.ts",
     "./helpers": "./src/helpers/index.ts"
-  },
-  "scripts": {
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/client": "^6.19.1",

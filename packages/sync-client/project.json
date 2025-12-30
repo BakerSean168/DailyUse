@@ -24,7 +24,7 @@
     "regenerate": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx @openapitools/openapi-generator-cli generate -i docs/api/sync-api.yaml -g typescript-axios -o packages/sync-client --additional-properties=supportsES6=true,npmName=@dailyuse/sync-client,npmVersion=1.0.0"
+        "command": "npx @openapitools/openapi-generator-cli generate -i docs/api/sync-api.yaml -g typescript-axios -o packages/sync-client --additional-properties=supportsES6=true,npmName=sync-client,npmVersion=1.0.0"
       }
     }
   }

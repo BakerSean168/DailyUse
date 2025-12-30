@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/infrastructure-server",
+  "name": "infrastructure-server",
   "root": "packages/infrastructure-server",
   "sourceRoot": "packages/infrastructure-server/src",
   "projectType": "library",

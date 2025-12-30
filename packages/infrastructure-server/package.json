@@ -24,10 +24,6 @@
       "import": "./dist/adapters/memory/index.js"
     }
   },
-  "scripts": {
-    "build": "node ../../node_modules/tsup/dist/cli-default.js",
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-server": "workspace:*",

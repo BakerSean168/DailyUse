@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/ui-shadcn",
+  "name": "ui-shadcn",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "packages/ui-shadcn/src",
@@ -29,5 +29,5 @@
       }
     }
   },
-  "implicitDependencies": ["@dailyuse/ui-react"]
+  "implicitDependencies": ["ui-react"]
 }

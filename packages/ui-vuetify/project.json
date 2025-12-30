@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/ui-vuetify",
+  "name": "ui-vuetify",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "packages/ui-vuetify/src",
@@ -29,5 +29,5 @@
       }
     }
   },
-  "implicitDependencies": ["@dailyuse/ui-vue", "contracts"]
+  "implicitDependencies": ["ui-vue", "contracts"]
 }

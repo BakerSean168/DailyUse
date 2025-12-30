@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/ui-core",
+  "name": "ui-core",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "packages/ui-core/src",

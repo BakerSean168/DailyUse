@@ -17,12 +17,6 @@
     "dist",
     "src/styles"
   ],
-  "scripts": {
-    "clean": "rimraf dist",
-    "build": "node ../../node_modules/tsup/dist/cli-default.js",
-    "dev": "node ../../node_modules/tsup/dist/cli-default.js --watch",
-    "type-check": "node ../../node_modules/typescript/lib/tsc.js --noEmit"
-  },
   "dependencies": {
     "@dailyuse/ui-react": "workspace:*",
     "@hookform/resolvers": "5.2.2",

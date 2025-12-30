@@ -15,12 +15,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "clean": "rimraf dist",
-    "build": "node ../../node_modules/tsup/dist/cli-default.js",
-    "dev": "node ../../node_modules/tsup/dist/cli-default.js --watch",
-    "type-check": "node ../../node_modules/typescript/lib/tsc.js --noEmit"
-  },
   "dependencies": {
     "@dailyuse/ui-core": "workspace:*"
   },

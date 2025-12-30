@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/ui-vue",
+  "name": "ui-vue",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "packages/ui-vue/src",
@@ -29,5 +29,5 @@
       }
     }
   },
-  "implicitDependencies": ["@dailyuse/ui-core"]
+  "implicitDependencies": ["ui-core"]
 }

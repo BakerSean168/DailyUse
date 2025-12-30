@@ -60,16 +60,6 @@
       "import": "./dist/ai/index.js"
     }
   },
-  "scripts": {
-    "typecheck": "node ../../node_modules/typescript/lib/tsc.js --noEmit",
-    "build": "node ../../node_modules/tsup/dist/cli-default.js",
-    "dev": "node ../../node_modules/concurrently/dist/bin/concurrently.js \"pnpm typecheck --watch\" \"node ../../node_modules/tsup/dist/cli-default.js --watch\"",
-    "test": "node ../../node_modules/vitest/vitest.mjs",
-    "test:run": "node ../../node_modules/vitest/vitest.mjs run",
-    "test:coverage": "node ../../node_modules/vitest/vitest.mjs run --coverage",
-    "test:watch": "node ../../node_modules/vitest/vitest.mjs watch",
-    "test:ui": "node ../../node_modules/vitest/vitest.mjs --ui"
-  },
   "dependencies": {
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/utils": "workspace:*",

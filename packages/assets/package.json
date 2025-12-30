@@ -24,11 +24,6 @@
     "dist",
     "src"
   ],
-  "scripts": {
-    "clean": "rimraf dist",
-    "build": "vite build",
-    "dev": "vite build --watch"
-  },
   "devDependencies": {
     "rimraf": "^6.0.1",
     "typescript": "^5.9.3",

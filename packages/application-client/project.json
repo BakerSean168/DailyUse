@@ -1,5 +1,5 @@
 {
-  "name": "@dailyuse/application-client",
+  "name": "application-client",
   "root": "packages/application-client",
   "sourceRoot": "packages/application-client/src",
   "projectType": "library",
