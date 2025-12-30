@@ -1,5 +1,5 @@
 /**
- * File Mock for Jest
+ * File Mock for Vitest
  *
  * 用于 mock 静态资源文件（图片、字体等）
  */

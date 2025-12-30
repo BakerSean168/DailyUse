@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom';
 import { createPinia, setActivePinia } from 'pinia';
 import { vi } from 'vitest';
 import { config } from '@vue/test-utils';
