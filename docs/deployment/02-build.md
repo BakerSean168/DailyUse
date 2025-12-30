@@ -26,8 +26,6 @@ docker login crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
 ## 第二步：验证本地编译
 
 ```bash
-cd d:\myPrograms\DailyUse
-
 # TypeScript 编译检查
 pnpm nx run api:typecheck
 # 预期：Successfully ran target typecheck
@@ -35,22 +33,7 @@ pnpm nx run api:typecheck
 
 ---
 
-## 第三步：自动构建（推荐）
-
-### Windows PowerShell
-```powershell
-.\scripts\deploy-prod.ps1 -Version v1.0.3
-```
-
-脚本自动完成：
-- ✓ TypeScript 验证
-- ✓ Docker 构建
-- ✓ 镜像标记
-- ✓ 推送到阿里云
-
----
-
-## 第四步：手动构建（如需自定义）
+## 第三步：构建镜像
 
 ### 1. 构建镜像
 ```bash
@@ -76,7 +59,7 @@ docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean
 
 ---
 
-## 第五步：验证构建成功
+## 第四步：验证构建成功
 
 ```bash
 # 检查本地镜像

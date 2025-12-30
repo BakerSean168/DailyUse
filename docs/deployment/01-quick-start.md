@@ -7,18 +7,26 @@
 
 ## 三步快速部署
 
-### 1️⃣ 本地构建（Windows PowerShell，10 分钟）
+### 1️⃣ 本地构建（10 分钟）
 
-```powershell
-cd d:\myPrograms\DailyUse
-.\scripts\deploy-prod.ps1 -Version v1.0.3
+```bash
+# 1. TypeScript 编译检查
+pnpm nx run api:typecheck
+
+# 2. 构建 Docker 镜像
+docker build -t dailyuse-api:v1.0.3 -f Dockerfile.api --build-arg NODE_ENV=production .
+
+# 3. 标记镜像
+docker tag dailyuse-api:v1.0.3 crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.3
+docker tag dailyuse-api:v1.0.3 crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:latest
+
+# 4. 登录阿里云 ACR
+docker login crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com
+
+# 5. 推送镜像
+docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:v1.0.3
+docker push crpi-3po0rmvmxgu205ms.cn-hangzhou.personal.cr.aliyuncs.com/bakersean/dailyuse-api:latest
 ```
-
-脚本会自动：
-- ✓ 验证 TypeScript 编译
-- ✓ 构建 Docker 镜像
-- ✓ 推送到阿里云 ACR
-- ✓ 输出部署摘要
 
 ---
 

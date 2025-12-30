@@ -98,25 +98,7 @@ chmod 600 .env  # 安全权限
 
 ## 第三步：执行部署
 
-### 方法 1：自动部署脚本（推荐）
-
-**从本地开发机执行：**
-```bash
-cd d:\myPrograms\DailyUse
-
-.\scripts\deploy-prod.ps1 `
-  -ServerIP "your.server.ip" `
-  -Version "v1.0.3"
-```
-
-脚本自动完成：
-- ✓ SSH 连接验证
-- ✓ 镜像拉取
-- ✓ 容器启动
-- ✓ 健康检查
-- ✓ 日志验证
-
-### 方法 2：手动部署
+### 部署步骤
 
 **在服务器上执行：**
 
@@ -137,7 +119,7 @@ docker-compose -f docker-compose.prod.yml down
 docker-compose -f docker-compose.prod.yml up -d
 
 # 5. 查看日志确认启动
-docker-compose logs -f api
+docker-compose -f docker-compose.prod.yml logs -f api
 # 按 Ctrl+C 退出日志查看
 ```
 
@@ -150,7 +132,7 @@ docker-compose logs -f api
 sleep 30
 
 # 检查容器运行状态
-docker-compose ps
+docker-compose -f docker-compose.prod.yml ps
 # 所有容器应该显示 healthy 或 Up
 
 # 检查健康检查端点
@@ -163,7 +145,7 @@ curl http://localhost:3000/api/health/db
 # 预期：{"connected":true,"version":"14.5",...}
 
 # 检查日志
-docker-compose logs api | head -50
+docker-compose -f docker-compose.prod.yml logs api | head -50
 ```
 
 ---
