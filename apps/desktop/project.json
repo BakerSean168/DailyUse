@@ -24,14 +24,17 @@
       }
     },
     "serve": {
-      "executor": "@nx/vite:dev-server",
+      "executor": "nx:run-commands",
       "defaultConfiguration": "development",
+      "dependsOn": ["^build"],
       "options": {
-        "buildTarget": "desktop:build"
+        "command": "vite",
+        "cwd": "apps/desktop"
       },
       "configurations": {
         "development": {
-          "buildTarget": "desktop:build:development"
+          "command": "vite --mode development",
+          "cwd": "apps/desktop"
         }
       }
     },
