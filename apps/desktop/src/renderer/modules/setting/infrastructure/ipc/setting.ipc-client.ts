@@ -1,6 +1,5 @@
-/**
- * Setting IPC Client - Setting 模块 IPC 客户端
- * 
+﻿/**
+ * Setting IPC Client - Setting 妯″潡 IPC 瀹㈡埛绔? * 
  * @module renderer/modules/setting/infrastructure/ipc
  */
 
@@ -84,8 +83,7 @@ export class SettingIPCClient {
   // ============ Settings ============
 
   /**
-   * 获取所有设置
-   */
+   * 鑾峰彇鎵€鏈夎缃?   */
   async getAll(): Promise<AppSettingsDTO> {
     return this.client.invoke<AppSettingsDTO>(
       SettingChannels.GET_ALL,
@@ -94,8 +92,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 设置所有设置
-   */
+   * 璁剧疆鎵€鏈夎缃?   */
   async setAll(settings: Partial<AppSettingsDTO>): Promise<AppSettingsDTO> {
     return this.client.invoke<AppSettingsDTO>(
       SettingChannels.UPDATE,
@@ -104,7 +101,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 获取设置
+   * 鑾峰彇璁剧疆
    */
   async get<K extends keyof AppSettingsDTO>(key: K): Promise<AppSettingsDTO[K]> {
     return this.client.invoke<AppSettingsDTO[K]>(
@@ -114,7 +111,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 更新设置
+   * 鏇存柊璁剧疆
    */
   async update<K extends keyof AppSettingsDTO>(
     key: K,
@@ -127,7 +124,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 重置设置
+   * 閲嶇疆璁剧疆
    */
   async reset(key?: keyof AppSettingsDTO): Promise<AppSettingsDTO> {
     return this.client.invoke<AppSettingsDTO>(
@@ -139,7 +136,7 @@ export class SettingIPCClient {
   // ============ Section Settings ============
 
   /**
-   * 获取设置分类
+   * 鑾峰彇璁剧疆鍒嗙被
    */
   async getSection<K extends keyof AppSettingsDTO>(section: K): Promise<AppSettingsDTO[K]> {
     return this.client.invoke<AppSettingsDTO[K]>(
@@ -149,7 +146,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 更新设置分类
+   * 鏇存柊璁剧疆鍒嗙被
    */
   async updateSection<K extends keyof AppSettingsDTO>(
     section: K,
@@ -164,8 +161,7 @@ export class SettingIPCClient {
   // ============ Shortcuts ============
 
   /**
-   * 获取快捷键列表
-   */
+   * 鑾峰彇蹇嵎閿垪琛?   */
   async listShortcuts(): Promise<ShortcutSettingsDTO> {
     return this.client.invoke<ShortcutSettingsDTO>(
       SettingChannels.SHORTCUT_LIST,
@@ -174,8 +170,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 设置快捷键
-   */
+   * 璁剧疆蹇嵎閿?   */
   async setShortcut(action: string, keys: string): Promise<void> {
     return this.client.invoke<void>(
       SettingChannels.SHORTCUT_SET,
@@ -184,8 +179,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 重置快捷键
-   */
+   * 閲嶇疆蹇嵎閿?   */
   async resetShortcuts(): Promise<ShortcutSettingsDTO> {
     return this.client.invoke<ShortcutSettingsDTO>(
       SettingChannels.SHORTCUT_RESET,
@@ -196,7 +190,7 @@ export class SettingIPCClient {
   // ============ Theme ============
 
   /**
-   * 获取主题
+   * 鑾峰彇涓婚
    */
   async getTheme(): Promise<AppearanceSettingsDTO['theme']> {
     return this.client.invoke<AppearanceSettingsDTO['theme']>(
@@ -206,7 +200,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 设置主题
+   * 璁剧疆涓婚
    */
   async setTheme(theme: AppearanceSettingsDTO['theme']): Promise<void> {
     return this.client.invoke<void>(
@@ -216,7 +210,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 获取可用主题列表
+   * 鑾峰彇鍙敤涓婚鍒楄〃
    */
   async listThemes(): Promise<ThemeDTO[]> {
     return this.client.invoke<ThemeDTO[]>(
@@ -228,7 +222,7 @@ export class SettingIPCClient {
   // ============ Language ============
 
   /**
-   * 获取语言
+   * 鑾峰彇璇█
    */
   async getLanguage(): Promise<string> {
     return this.client.invoke<string>(
@@ -238,7 +232,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 设置语言
+   * 璁剧疆璇█
    */
   async setLanguage(language: string): Promise<void> {
     return this.client.invoke<void>(
@@ -250,7 +244,7 @@ export class SettingIPCClient {
   // ============ Notifications ============
 
   /**
-   * 获取通知设置
+   * 鑾峰彇閫氱煡璁剧疆
    */
   async getNotificationSettings(): Promise<NotificationSettingsDTO> {
     return this.client.invoke<NotificationSettingsDTO>(
@@ -260,7 +254,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 更新通知设置
+   * 鏇存柊閫氱煡璁剧疆
    */
   async updateNotificationSettings(settings: Partial<NotificationSettingsDTO>): Promise<NotificationSettingsDTO> {
     return this.client.invoke<NotificationSettingsDTO>(
@@ -272,7 +266,7 @@ export class SettingIPCClient {
   // ============ Backup ============
 
   /**
-   * 创建设置备份
+   * 鍒涘缓璁剧疆澶囦唤
    */
   async createBackup(): Promise<{ path: string }> {
     return this.client.invoke(
@@ -282,7 +276,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 恢复设置
+   * 鎭㈠璁剧疆
    */
   async restoreBackup(path: string): Promise<AppSettingsDTO> {
     return this.client.invoke<AppSettingsDTO>(
@@ -292,7 +286,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 获取备份列表
+   * 鑾峰彇澶囦唤鍒楄〃
    */
   async listBackups(): Promise<Array<{ path: string; createdAt: number }>> {
     return this.client.invoke(
@@ -304,7 +298,7 @@ export class SettingIPCClient {
   // ============ Import/Export ============
 
   /**
-   * 导入设置
+   * 瀵煎叆璁剧疆
    */
   async import(settingsJson: string): Promise<AppSettingsDTO> {
     return this.client.invoke<AppSettingsDTO>(
@@ -314,7 +308,7 @@ export class SettingIPCClient {
   }
 
   /**
-   * 导出设置
+   * 瀵煎嚭璁剧疆
    */
   async export(): Promise<string> {
     return this.client.invoke<string>(
@@ -326,7 +320,7 @@ export class SettingIPCClient {
   // ============ Event Subscriptions ============
 
   /**
-   * 订阅主题变更事件
+   * 璁㈤槄涓婚鍙樻洿浜嬩欢
    */
   onThemeChanged(handler: (theme: AppearanceSettingsDTO['theme']) => void): () => void {
     return this.client.on(SettingChannels.EVENT_THEME_CHANGED, handler);

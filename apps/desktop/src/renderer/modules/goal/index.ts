@@ -3,6 +3,8 @@
  *
  * 目标模块 - 渲染进程
  * 遵循 DDD 分层架构
+ * 
+ * EPIC-015 重构: 移除 State 类型导出
  */
 
 // ===== Application Layer =====
@@ -12,9 +14,7 @@ export { GoalApplicationService, goalApplicationService } from './application/se
 export {
   useGoal,
   useGoalFolder,
-  type GoalState,
   type UseGoalReturn,
-  type GoalFolderState,
   type UseGoalFolderReturn,
 } from './presentation/hooks';
 

@@ -37,7 +37,7 @@ export {
   useGoalFolder,
   // Types
   type UseGoalReturn,
-  type GoalState,
+  type UseGoalFolderReturn,
 } from './goal';
 
 // ============================================================

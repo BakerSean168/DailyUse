@@ -11,34 +11,24 @@
  */
 
 import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
 import { persist, createJSONStorage } from 'zustand/middleware';
-// 使用 IPC Client 的类型，而不是 contracts 的完整 ClientDTO
 import type {
-  BackupDTO,
-  ResourceDTO,
-  FolderDTO,
   RepositoryType,
-  BackupStatus,
-  BackupType,
-} from '../../infrastructure/ipc/repository.ipc-client';
-import { repositoryContainer } from '../../infrastructure/di';
-
-// 本地类型别名 - 兼容原有命名
-type RepositoryClientDTO = BackupDTO;
-type ResourceClientDTO = ResourceDTO;
-type FolderClientDTO = FolderDTO;
-type RepositoryStatus = BackupStatus;
+  RepositoryStatus,
+  SearchResultItem,
+} from '@dailyuse/contracts/repository';
+import { Repository, Folder, Resource } from '@dailyuse/domain-client/repository';
+import { repositoryApplicationService } from '../../application/services';
 
 // ============ State Interface ============
 export interface RepositoryState {
   // 核心数据
-  repositories: RepositoryClientDTO[];
-  repositoriesById: Record<string, RepositoryClientDTO>;
-  resources: ResourceClientDTO[];
-  resourcesById: Record<string, ResourceClientDTO>;
-  folders: FolderClientDTO[];
-  foldersById: Record<string, FolderClientDTO>;
+  repositories: Repository[];
+  repositoriesById: Record<string, Repository>;
+  resources: Resource[];
+  resourcesById: Record<string, Resource>;
+  folders: Folder[];
+  foldersById: Record<string, Folder>;
   
   // 加载状态
   isLoading: boolean;
@@ -53,7 +43,7 @@ export interface RepositoryState {
   
   // 搜索状态
   searchQuery: string;
-  searchResults: ResourceClientDTO[];
+  searchResults: SearchResultItem[];
   isSearching: boolean;
   
   // 分页信息
@@ -69,8 +59,8 @@ export interface RepositoryState {
 
 // ============ Filter Options ============
 export interface RepositoryFilters {
-  type?: BackupType;
-  status?: BackupStatus;
+  type?: RepositoryType;
+  status?: RepositoryStatus;
   searchQuery?: string;
 }
 
@@ -83,21 +73,21 @@ export interface ResourceFilters {
 // ============ Actions Interface ============
 export interface RepositoryActions {
   // Repository CRUD
-  setRepositories: (repositories: RepositoryClientDTO[]) => void;
-  addRepository: (repository: RepositoryClientDTO) => void;
-  updateRepository: (id: string, updates: Partial<RepositoryClientDTO>) => void;
+  setRepositories: (repositories: Repository[]) => void;
+  addRepository: (repository: Repository) => void;
+  updateRepository: (id: string, updates: Partial<Repository>) => void;
   removeRepository: (id: string) => void;
   
   // Resource CRUD
-  setResources: (resources: ResourceClientDTO[]) => void;
-  addResource: (resource: ResourceClientDTO) => void;
-  updateResource: (id: string, updates: Partial<ResourceClientDTO>) => void;
+  setResources: (resources: Resource[]) => void;
+  addResource: (resource: Resource) => void;
+  updateResource: (id: string, updates: Partial<Resource>) => void;
   removeResource: (id: string) => void;
   
   // Folder CRUD
-  setFolders: (folders: FolderClientDTO[]) => void;
-  addFolder: (folder: FolderClientDTO) => void;
-  updateFolder: (id: string, updates: Partial<FolderClientDTO>) => void;
+  setFolders: (folders: Folder[]) => void;
+  addFolder: (folder: Folder) => void;
+  updateFolder: (id: string, updates: Partial<Folder>) => void;
   removeFolder: (id: string) => void;
   
   // 状态管理
@@ -113,7 +103,7 @@ export interface RepositoryActions {
   
   // 搜索操作
   setSearchQuery: (query: string) => void;
-  setSearchResults: (results: ResourceClientDTO[]) => void;
+  setSearchResults: (results: SearchResultItem[]) => void;
   setSearching: (searching: boolean) => void;
   clearSearch: () => void;
   
@@ -134,20 +124,20 @@ export interface RepositoryActions {
 // ============ Selectors Interface ============
 export interface RepositorySelectors {
   // Repository selectors
-  getRepositoryById: (id: string) => RepositoryClientDTO | undefined;
-  getRepositoryByName: (name: string) => RepositoryClientDTO | undefined;
-  getFilteredRepositories: (filters?: RepositoryFilters) => RepositoryClientDTO[];
+  getRepositoryById: (id: string) => Repository | undefined;
+  getRepositoryByName: (name: string) => Repository | undefined;
+  getFilteredRepositories: (filters?: RepositoryFilters) => Repository[];
   
   // Resource selectors
-  getResourceById: (id: string) => ResourceClientDTO | undefined;
-  getResourcesByRepository: (repositoryId: string) => ResourceClientDTO[];
-  getResourcesByFolder: (folderId: string | null) => ResourceClientDTO[];
+  getResourceById: (id: string) => Resource | undefined;
+  getResourcesByRepository: (repositoryId: string) => Resource[];
+  getResourcesByFolder: (folderId: string | null) => Resource[];
   
   // Folder selectors
-  getFolderById: (id: string) => FolderClientDTO | undefined;
-  getFoldersByRepository: (repositoryId: string) => FolderClientDTO[];
-  getRootFolders: (repositoryId: string) => FolderClientDTO[];
-  getChildFolders: (parentId: string) => FolderClientDTO[];
+  getFolderById: (id: string) => Folder | undefined;
+  getFoldersByRepository: (repositoryId: string) => Folder[];
+  getRootFolders: (repositoryId: string) => Folder[];
+  getChildFolders: (parentId: string) => Folder[];
   
   // Counts
   getRepositoryCount: () => number;
@@ -183,92 +173,127 @@ const initialState: RepositoryState = {
 
 // ============ Store ============
 export const useRepositoryStore = create<RepositoryState & RepositoryActions & RepositorySelectors>()(
-  immer(
-    persist(
-      (set, get) => ({
-        ...initialState,
+  persist(
+    (set, get) => ({
+      ...initialState,
+      
+      // ========== Repository Actions ==========
+      setRepositories: (repositories) => set({
+        repositories,
+        repositoriesById: Object.fromEntries(repositories.map(r => [r.uuid, r])),
+        lastSyncTime: new Date(),
+      }),
+      
+      addRepository: (repository) => set((state) => ({
+        repositories: [...state.repositories, repository],
+        repositoriesById: { ...state.repositoriesById, [repository.uuid]: repository },
+      })),
+      
+      updateRepository: (id, updates) => set((state) => {
+        const index = state.repositories.findIndex(r => r.uuid === id);
+        if (index === -1) return state;
         
-        // ========== Repository Actions ==========
-        setRepositories: (repositories) => set((state) => {
-          state.repositories = repositories;
-          state.repositoriesById = Object.fromEntries(repositories.map(r => [r.uuid, r]));
-          state.lastSyncTime = new Date();
-        }),
+        const updatedRepo = Object.assign(
+          Object.create(Object.getPrototypeOf(state.repositories[index])),
+          state.repositories[index],
+          updates
+        );
+        const newRepositories = [...state.repositories];
+        newRepositories[index] = updatedRepo;
         
-        addRepository: (repository) => set((state) => {
-          state.repositories.push(repository);
-          state.repositoriesById[repository.uuid] = repository;
-        }),
-        
-        updateRepository: (id, updates) => set((state) => {
-          const index = state.repositories.findIndex(r => r.uuid === id);
-          if (index !== -1) {
-            state.repositories[index] = { ...state.repositories[index], ...updates };
-            state.repositoriesById[id] = state.repositories[index];
-          }
-        }),
-        
-        removeRepository: (id) => set((state) => {
-          state.repositories = state.repositories.filter(r => r.uuid !== id);
-          delete state.repositoriesById[id];
-          if (state.selectedRepositoryId === id) {
-            state.selectedRepositoryId = null;
-          }
-        }),
+        return {
+          repositories: newRepositories,
+          repositoriesById: { ...state.repositoriesById, [id]: updatedRepo },
+        };
+      }),
+      
+      removeRepository: (id) => set((state) => {
+        const newById = { ...state.repositoriesById };
+        delete newById[id];
+        return {
+          repositories: state.repositories.filter(r => r.uuid !== id),
+          repositoriesById: newById,
+          selectedRepositoryId: state.selectedRepositoryId === id ? null : state.selectedRepositoryId,
+        };
+      }),
         
         // ========== Resource Actions ==========
-        setResources: (resources) => set((state) => {
-          state.resources = resources;
-          state.resourcesById = Object.fromEntries(resources.map(r => [r.uuid, r]));
-        }),
+      setResources: (resources) => set({
+        resources,
+        resourcesById: Object.fromEntries(resources.map(r => [r.uuid, r])),
+      }),
+      
+      addResource: (resource) => set((state) => ({
+        resources: [...state.resources, resource],
+        resourcesById: { ...state.resourcesById, [resource.uuid]: resource },
+      })),
+      
+      updateResource: (id, updates) => set((state) => {
+        const index = state.resources.findIndex(r => r.uuid === id);
+        if (index === -1) return state;
         
-        addResource: (resource) => set((state) => {
-          state.resources.push(resource);
-          state.resourcesById[resource.uuid] = resource;
-        }),
+        const updatedResource = Object.assign(
+          Object.create(Object.getPrototypeOf(state.resources[index])),
+          state.resources[index],
+          updates
+        );
+        const newResources = [...state.resources];
+        newResources[index] = updatedResource;
         
-        updateResource: (id, updates) => set((state) => {
-          const index = state.resources.findIndex(r => r.uuid === id);
-          if (index !== -1) {
-            state.resources[index] = { ...state.resources[index], ...updates };
-            state.resourcesById[id] = state.resources[index];
-          }
-        }),
-        
-        removeResource: (id) => set((state) => {
-          state.resources = state.resources.filter(r => r.uuid !== id);
-          delete state.resourcesById[id];
-          if (state.selectedResourceId === id) {
-            state.selectedResourceId = null;
-          }
-        }),
+        return {
+          resources: newResources,
+          resourcesById: { ...state.resourcesById, [id]: updatedResource },
+        };
+      }),
+      
+      removeResource: (id) => set((state) => {
+        const newById = { ...state.resourcesById };
+        delete newById[id];
+        return {
+          resources: state.resources.filter(r => r.uuid !== id),
+          resourcesById: newById,
+          selectedResourceId: state.selectedResourceId === id ? null : state.selectedResourceId,
+        };
+      }),
         
         // ========== Folder Actions ==========
-        setFolders: (folders) => set((state) => {
-          state.folders = folders;
-          state.foldersById = Object.fromEntries(folders.map(f => [f.uuid, f]));
-        }),
+      setFolders: (folders) => set({
+        folders,
+        foldersById: Object.fromEntries(folders.map(f => [f.uuid, f])),
+      }),
+      
+      addFolder: (folder) => set((state) => ({
+        folders: [...state.folders, folder],
+        foldersById: { ...state.foldersById, [folder.uuid]: folder },
+      })),
+      
+      updateFolder: (id, updates) => set((state) => {
+        const index = state.folders.findIndex(f => f.uuid === id);
+        if (index === -1) return state;
         
-        addFolder: (folder) => set((state) => {
-          state.folders.push(folder);
-          state.foldersById[folder.uuid] = folder;
-        }),
+        const updatedFolder = Object.assign(
+          Object.create(Object.getPrototypeOf(state.folders[index])),
+          state.folders[index],
+          updates
+        );
+        const newFolders = [...state.folders];
+        newFolders[index] = updatedFolder;
         
-        updateFolder: (id, updates) => set((state) => {
-          const index = state.folders.findIndex(f => f.uuid === id);
-          if (index !== -1) {
-            state.folders[index] = { ...state.folders[index], ...updates };
-            state.foldersById[id] = state.folders[index];
-          }
-        }),
-        
-        removeFolder: (id) => set((state) => {
-          state.folders = state.folders.filter(f => f.uuid !== id);
-          delete state.foldersById[id];
-          if (state.selectedFolderId === id) {
-            state.selectedFolderId = null;
-          }
-        }),
+        return {
+          folders: newFolders,
+          foldersById: { ...state.foldersById, [id]: updatedFolder },
+        };
+      }),
+      
+      removeFolder: (id) => set((state) => {
+        const newById = { ...state.foldersById };
+        delete newById[id];
+        return {
+          folders: state.folders.filter(f => f.uuid !== id),
+          foldersById: newById,
+          selectedFolderId: state.selectedFolderId === id ? null : state.selectedFolderId,
+        };
+      }),
         
         // ========== Status Actions ==========
         setLoading: (loading) => set({ isLoading: loading }),
@@ -281,28 +306,30 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
         setSelectedFolderId: (id) => set({ selectedFolderId: id }),
         
         toggleFolderExpanded: (id) => set((state) => {
-          if (state.expandedFolderIds.has(id)) {
-            state.expandedFolderIds.delete(id);
-          } else {
-            state.expandedFolderIds.add(id);
-          }
-        }),
+        const newExpanded = new Set(state.expandedFolderIds);
+        if (newExpanded.has(id)) {
+          newExpanded.delete(id);
+        } else {
+          newExpanded.add(id);
+        }
+        return { expandedFolderIds: newExpanded };
+      }),
         
         // ========== Search Actions ==========
         setSearchQuery: (query) => set({ searchQuery: query }),
         setSearchResults: (results) => set({ searchResults: results }),
         setSearching: (searching) => set({ isSearching: searching }),
         
-        clearSearch: () => set((state) => {
-          state.searchQuery = '';
-          state.searchResults = [];
-          state.isSearching = false;
-        }),
+        clearSearch: () => set({
+        searchQuery: '',
+        searchResults: [],
+        isSearching: false,
+      }),
         
         // ========== Pagination Actions ==========
-        setPagination: (pagination) => set((state) => {
-          state.pagination = { ...state.pagination, ...pagination };
-        }),
+      setPagination: (pagination) => set((state) => ({
+        pagination: { ...state.pagination, ...pagination },
+      })),
         
         // ========== Lifecycle ==========
         initialize: async () => {
@@ -327,10 +354,10 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setLoading(true);
             setError(null);
             
-            const repositoryClient = repositoryContainer.repositoryClient;
-            const repositories = await repositoryClient.listBackups();
+            const repositoryDTOs = await repositoryApplicationService.listRepositories();
+            // 将 DTO 转换为 Entity
+            const repositories = repositoryDTOs.map(dto => Repository.fromClientDTO(dto));
             
-            // 直接使用 IPC Client 返回的 BackupDTO
             setRepositories(repositories);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch repositories';
@@ -348,14 +375,13 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setLoading(true);
             setError(null);
             
-            const repositoryClient = repositoryContainer.repositoryClient;
-            const backupDetails = await repositoryClient.getBackupDetails(repositoryId);
+            const fileTree = await repositoryApplicationService.getFileTree(repositoryId);
             
-            // BackupDTO 不包含 files，暂时返回空数组
-            // TODO: 需要添加获取备份文件列表的 IPC 方法
-            const clientResources: ResourceClientDTO[] = [];
+            // 从文件树中提取资源
+            // TODO: 根据实际文件树结构提取资源
+            const resources: Resource[] = [];
             
-            setResources(clientResources);
+            setResources(resources);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch resources';
             setError(message);
@@ -372,11 +398,13 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setLoading(true);
             setError(null);
             
-            // BackupDTO 不包含 folders，暂时返回空数组
-            // TODO: 需要添加获取备份文件夹列表的 IPC 方法
-            const clientFolders: FolderClientDTO[] = [];
+            const fileTree = await repositoryApplicationService.getFileTree(repositoryId);
             
-            setFolders(clientFolders);
+            // 从文件树中提取文件夹
+            // TODO: 根据实际文件树结构提取文件夹
+            const folders: Folder[] = [];
+            
+            setFolders(folders);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch folders';
             setError(message);
@@ -387,7 +415,7 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
         },
         
         searchResources: async (query) => {
-          const { setSearching, setSearchResults, setSearchQuery, setError, resources } = get();
+          const { setSearching, setSearchResults, setSearchQuery, setError, selectedRepositoryId } = get();
           
           if (!query.trim()) {
             setSearchQuery('');
@@ -400,8 +428,12 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
             setSearchQuery(query);
             setError(null);
             
-            const results = await window.electron.repository.search(query);
-            setSearchResults(results);
+            const response = await repositoryApplicationService.searchResources({
+              repositoryUuid: selectedRepositoryId || '',
+              query,
+              mode: 'all',
+            });
+            setSearchResults(response.results);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to search resources';
             setError(message);
@@ -459,25 +491,24 @@ export const useRepositoryStore = create<RepositoryState & RepositoryActions & R
           return get().folders.filter(f => f.parentUuid === parentId);
         },
         
-        getRepositoryCount: () => get().repositories.length,
-        getResourceCount: () => get().resources.length,
-        getFolderCount: () => get().folders.length,
+      getRepositoryCount: () => get().repositories.length,
+      getResourceCount: () => get().resources.length,
+      getFolderCount: () => get().folders.length,
+    }),
+    {
+      name: 'repository-store',
+      storage: createJSONStorage(() => localStorage),
+      // 只持久化 UI 状态，不持久化数据缓存
+      partialize: (state) => ({
+        selectedRepositoryId: state.selectedRepositoryId,
+        expandedFolderIds: Array.from(state.expandedFolderIds),
       }),
-      {
-        name: 'repository-store',
-        storage: createJSONStorage(() => localStorage),
-        // 只持久化 UI 状态，不持久化数据缓存
-        partialize: (state) => ({
-          selectedRepositoryId: state.selectedRepositoryId,
-          expandedFolderIds: Array.from(state.expandedFolderIds),
-        }),
-        // 反序列化时恢复 Set
-        merge: (persisted: any, current) => ({
-          ...current,
-          ...persisted,
-          expandedFolderIds: new Set(persisted?.expandedFolderIds || []),
-        }),
-      }
-    )
+      // 反序列化时恢复 Set
+      merge: (persisted: any, current) => ({
+        ...current,
+        ...persisted,
+        expandedFolderIds: new Set(persisted?.expandedFolderIds || []),
+      }),
+    }
   )
 );

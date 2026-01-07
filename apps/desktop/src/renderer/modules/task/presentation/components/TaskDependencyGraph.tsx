@@ -3,19 +3,24 @@
  *
  * 任务依赖关系可视化组件
  * 使用简单的 CSS 网格布局展示任务依赖链
+ * 
+ * EPIC-015 重构: 使用 Entity 类型
+ * - Props 接受 TaskTemplate Entity 数组
+ * 
+ * TODO: 当前 TaskTemplate Entity 不包含 parentTaskUuid 属性
+ * 需要重新设计依赖关系模型或使用 TaskDependency 专用 API
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { TaskContainer } from '@dailyuse/infrastructure-client';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
 
 interface TaskDependencyGraphProps {
-  tasks: TaskTemplateClientDTO[];
-  onTaskClick?: (task: TaskTemplateClientDTO) => void;
+  tasks: TaskTemplate[];
+  onTaskClick?: (task: TaskTemplate) => void;
 }
 
 interface DependencyNode {
-  task: TaskTemplateClientDTO;
+  task: TaskTemplate;
   level: number;
   dependencies: string[];
   dependents: string[];
@@ -36,17 +41,18 @@ export function TaskDependencyGraph({ tasks, onTaskClick }: TaskDependencyGraphP
       });
     });
 
+    // TODO: TaskTemplate Entity 不包含 parentTaskUuid，暂时跳过依赖解析
     // 解析依赖关系（从 parentTaskUuid 推断）
-    tasks.forEach(task => {
-      if (task.parentTaskUuid) {
-        const parentNode = nodes.get(task.parentTaskUuid);
-        const currentNode = nodes.get(task.uuid);
-        if (parentNode && currentNode) {
-          currentNode.dependencies.push(task.parentTaskUuid);
-          parentNode.dependents.push(task.uuid);
-        }
-      }
-    });
+    // tasks.forEach(task => {
+    //   if (task.parentTaskUuid) {
+    //     const parentNode = nodes.get(task.parentTaskUuid);
+    //     const currentNode = nodes.get(task.uuid);
+    //     if (parentNode && currentNode) {
+    //       currentNode.dependencies.push(task.parentTaskUuid);
+    //       parentNode.dependents.push(task.uuid);
+    //     }
+    //   }
+    // });
 
     // 计算层级（拓扑排序）
     const calculateLevels = () => {
@@ -109,11 +115,10 @@ export function TaskDependencyGraph({ tasks, onTaskClick }: TaskDependencyGraphP
   };
 
   // 检查任务是否被阻塞
+  // TODO: TaskTemplate Entity 不包含 isBlocked 和 completedAt 属性
   const isBlocked = (node: DependencyNode) => {
-    return node.task.isBlocked || node.dependencies.some(depUuid => {
-      const depNode = dependencyNodes.get(depUuid);
-      return depNode && depNode.task.status !== 'ARCHIVED' && !depNode.task.completedAt;
-    });
+    // 暂时返回 false，因为缺少依赖关系数据
+    return false;
   };
 
   if (tasks.length === 0) {

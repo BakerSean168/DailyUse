@@ -7,30 +7,28 @@
  * - TaskTemplate: 任务定义/模板（可重复）
  * - TaskInstance: 具体的任务实例（单次执行）
  * 
+ * 🔄 重构说明 (EPIC-015):
+ * - 存储 Entity 对象而非 DTO
+ * - 通过 ApplicationService 获取数据
+ * - 与 Web 应用 Store 模式保持一致
+ * 
  * @module task/presentation/stores
  */
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-// 使用 IPC Client 的类型，而不是 contracts 的完整 ClientDTO
-import type { TaskInstanceDTO } from '../../infrastructure/ipc/task-instance.ipc-client';
-import type { TaskTemplateDTO } from '../../infrastructure/ipc/task-template.ipc-client';
-import { taskContainer } from '../../infrastructure/di';
-
-// 本地类型别名 - 兼容原有命名
-type TaskInstanceClientDTO = TaskInstanceDTO;
-type TaskTemplateClientDTO = TaskTemplateDTO;
-type TaskInstanceStatus = 'pending' | 'completed' | 'skipped';
+import { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
+import { taskApplicationService } from '../../application/services';
 
 // ============ State Interface ============
 export interface TaskState {
   // 数据缓存 - 任务实例（今日/近期的具体任务）
-  instances: TaskInstanceClientDTO[];
-  instancesById: Record<string, TaskInstanceClientDTO>;
+  instances: TaskInstance[];
+  instancesById: Record<string, TaskInstance>;
   
   // 数据缓存 - 任务模板（任务定义）
-  templates: TaskTemplateClientDTO[];
-  templatesById: Record<string, TaskTemplateClientDTO>;
+  templates: TaskTemplate[];
+  templatesById: Record<string, TaskTemplate>;
   
   // 加载状态
   isLoading: boolean;
@@ -54,6 +52,8 @@ export interface TaskFilters {
   showCompleted?: boolean;
 }
 
+type TaskInstanceStatus = 'pending' | 'completed' | 'skipped';
+
 export type TaskSortOption = 
   | 'instanceDate_asc' 
   | 'instanceDate_desc' 
@@ -63,15 +63,15 @@ export type TaskSortOption =
 // ============ Actions Interface ============
 export interface TaskActions {
   // Instances CRUD
-  setInstances: (instances: TaskInstanceClientDTO[]) => void;
-  addInstance: (instance: TaskInstanceClientDTO) => void;
-  updateInstance: (id: string, updates: Partial<TaskInstanceClientDTO>) => void;
+  setInstances: (instances: TaskInstance[]) => void;
+  addInstance: (instance: TaskInstance) => void;
+  updateInstance: (id: string, instance: TaskInstance) => void;
   removeInstance: (id: string) => void;
   
   // Templates CRUD
-  setTemplates: (templates: TaskTemplateClientDTO[]) => void;
-  addTemplate: (template: TaskTemplateClientDTO) => void;
-  updateTemplate: (id: string, updates: Partial<TaskTemplateClientDTO>) => void;
+  setTemplates: (templates: TaskTemplate[]) => void;
+  addTemplate: (template: TaskTemplate) => void;
+  updateTemplate: (id: string, template: TaskTemplate) => void;
   removeTemplate: (id: string) => void;
   
   // Status
@@ -92,24 +92,29 @@ export interface TaskActions {
   initialize: () => Promise<void>;
   reset: () => void;
   
-  // IPC Operations - 将在实际集成时实现
+  // Data Operations - 通过 ApplicationService
   fetchInstances: (dateRange?: { start: Date; end: Date }) => Promise<void>;
   fetchTemplates: () => Promise<void>;
   completeInstance: (id: string) => Promise<void>;
-  skipInstance: (id: string, reason?: string) => Promise<void>;
+  skipInstance: (id: string) => Promise<void>;
 }
 
 // ============ Selectors Interface ============
 export interface TaskSelectors {
-  getInstanceById: (id: string) => TaskInstanceClientDTO | undefined;
-  getTemplateById: (id: string) => TaskTemplateClientDTO | undefined;
-  getInstancesByTemplate: (templateId: string) => TaskInstanceClientDTO[];
-  getTodayInstances: () => TaskInstanceClientDTO[];
-  getPendingInstances: () => TaskInstanceClientDTO[];
-  getCompletedInstances: () => TaskInstanceClientDTO[];
-  getFilteredInstances: () => TaskInstanceClientDTO[];
+  getInstanceById: (id: string) => TaskInstance | undefined;
+  getTemplateById: (id: string) => TaskTemplate | undefined;
+  getInstancesByTemplate: (templateId: string) => TaskInstance[];
+  getTodayInstances: () => TaskInstance[];
+  getPendingInstances: () => TaskInstance[];
+  getCompletedInstances: () => TaskInstance[];
+  getFilteredInstances: () => TaskInstance[];
   getInstanceCount: () => number;
   getTemplateCount: () => number;
+  
+  // 新增：基于 Entity 方法的便捷选择器
+  getActiveTemplates: () => TaskTemplate[];
+  getPausedTemplates: () => TaskTemplate[];
+  getArchivedTemplates: () => TaskTemplate[];
 }
 
 // ============ Initial State ============
@@ -159,17 +164,16 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
         instancesById: { ...state.instancesById, [instance.uuid]: instance },
       })),
       
-      updateInstance: (id, updates) => set((state) => {
+      updateInstance: (id, instance) => set((state) => {
         const index = state.instances.findIndex(i => i.uuid === id);
         if (index === -1) return state;
         
-        const updated = { ...state.instances[index], ...updates };
         const newInstances = [...state.instances];
-        newInstances[index] = updated;
+        newInstances[index] = instance;
         
         return {
           instances: newInstances,
-          instancesById: { ...state.instancesById, [id]: updated },
+          instancesById: { ...state.instancesById, [id]: instance },
         };
       }),
       
@@ -194,17 +198,16 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
         templatesById: { ...state.templatesById, [template.uuid]: template },
       })),
       
-      updateTemplate: (id, updates) => set((state) => {
+      updateTemplate: (id, template) => set((state) => {
         const index = state.templates.findIndex(t => t.uuid === id);
         if (index === -1) return state;
         
-        const updated = { ...state.templates[index], ...updates };
         const newTemplates = [...state.templates];
-        newTemplates[index] = updated;
+        newTemplates[index] = template;
         
         return {
           templates: newTemplates,
-          templatesById: { ...state.templatesById, [id]: updated },
+          templatesById: { ...state.templatesById, [id]: template },
         };
       }),
       
@@ -252,7 +255,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       
       reset: () => set(initialState),
       
-      // ========== IPC Operations ==========
+      // ========== Data Operations - 通过 ApplicationService ==========
       fetchInstances: async (dateRange) => {
         const { setLoading, setInstances, setError, dateRange: stateRange } = get();
         const range = dateRange ?? stateRange;
@@ -261,16 +264,20 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
           setLoading(true);
           setError(null);
           
-          // 使用 IPC Client 获取任务实例
-          const instanceClient = taskContainer.instanceClient;
-          const instances = await instanceClient.list({
-            accountUuid: '', // TODO: 从 AuthStore 获取当前账户
-            startDate: range.start.getTime(),
-            endDate: range.end.getTime(),
-          });
+          // 获取所有模板然后逐个获取其实例
+          const templates = await taskApplicationService.listTemplates();
+          const allInstances: TaskInstance[] = [];
           
-          // 直接使用 IPC Client 返回的类型
-          setInstances(instances);
+          for (const template of templates) {
+            const instances = await taskApplicationService.getInstancesByDateRange({
+              templateUuid: template.uuid,
+              from: range.start.getTime(),
+              to: range.end.getTime(),
+            });
+            allInstances.push(...instances);
+          }
+          
+          setInstances(allInstances);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch task instances';
           setError(message);
@@ -285,14 +292,11 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
         
         try {
           setLoading(true);
+          setError(null);
           
-          // 使用 IPC Client 获取任务模板
-          const templateClient = taskContainer.templateClient;
-          const templates = await templateClient.list({
-            accountUuid: '', // TODO: 从 AuthStore 获取当前账户
-          });
+          // 通过 ApplicationService 获取数据（返回 Entity）
+          const templates = await taskApplicationService.listTemplates();
           
-          // 直接使用 IPC Client 返回的类型
           setTemplates(templates);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch task templates';
@@ -308,14 +312,12 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
         
         try {
           setLoading(true);
+          setError(null);
           
-          // 使用 IPC Client 完成任务
-          const instanceClient = taskContainer.instanceClient;
-          const result = await instanceClient.complete(id);
+          // 通过 ApplicationService 完成任务（返回 Entity）
+          const instance = await taskApplicationService.completeInstance(id);
           
-          // 使用 IPC Client 返回的实例数据更新本地状态
-          updateInstance(id, result.instance);
-          
+          updateInstance(id, instance);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to complete task');
           throw error;
@@ -324,19 +326,17 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
         }
       },
       
-      skipInstance: async (id, reason) => {
+      skipInstance: async (id) => {
         const { setLoading, setError, updateInstance } = get();
         
         try {
           setLoading(true);
+          setError(null);
           
-          // 使用 IPC Client 跳过任务
-          const instanceClient = taskContainer.instanceClient;
-          const result = await instanceClient.skip(id, reason);
+          // 通过 ApplicationService 跳过任务（返回 Entity）
+          const instance = await taskApplicationService.skipInstance(id);
           
-          // 使用 IPC Client 返回的实例数据更新本地状态
-          updateInstance(id, result);
-          
+          updateInstance(id, instance);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to skip task');
           throw error;
@@ -369,11 +369,13 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       
       getPendingInstances: () => {
         const { instances } = get();
-        return instances.filter(i => !i.isCompleted && !i.isSkipped);
+        // 使用 Entity 的属性
+        return instances.filter(i => i.isPending);
       },
       
       getCompletedInstances: () => {
         const { instances } = get();
+        // 使用 Entity 的属性
         return instances.filter(i => i.isCompleted);
       },
       
@@ -382,11 +384,13 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
         
         let filtered = [...instances];
         
-        // 按状态过滤 - TaskInstanceClientDTO 使用 isCompleted/isSkipped 布尔值
+        // 按状态过滤 - 使用 Entity 属性
         if (filters.status?.length) {
           filtered = filtered.filter(i => {
-            const status = i.isCompleted ? 'completed' : (i.isSkipped ? 'skipped' : 'pending');
-            return filters.status!.includes(status);
+            if (filters.status!.includes('completed') && i.isCompleted) return true;
+            if (filters.status!.includes('skipped') && i.isSkipped) return true;
+            if (filters.status!.includes('pending') && i.isPending) return true;
+            return false;
           });
         }
         
@@ -400,7 +404,7 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
           filtered = filtered.filter(i => !i.isCompleted);
         }
         
-        // 排序 - 使用 instanceDate
+        // 排序
         filtered.sort((a, b) => {
           switch (sortBy) {
             case 'instanceDate_asc':
@@ -421,6 +425,22 @@ export const useTaskStore = create<TaskState & TaskActions & TaskSelectors>()(
       
       getInstanceCount: () => get().instances.length,
       getTemplateCount: () => get().templates.length,
+      
+      // ========== 新增：基于 Entity 方法的便捷选择器 ==========
+      getActiveTemplates: () => {
+        const { templates } = get();
+        return templates.filter(t => t.isActive);
+      },
+      
+      getPausedTemplates: () => {
+        const { templates } = get();
+        return templates.filter(t => t.isPaused);
+      },
+      
+      getArchivedTemplates: () => {
+        const { templates } = get();
+        return templates.filter(t => t.isArchived);
+      },
     }),
     {
       name: 'task-store',

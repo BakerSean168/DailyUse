@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import type { KeyResultClientDTO, GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { KeyResult, Goal } from '@dailyuse/domain-client/goal';
 import {
   Card,
   CardContent,
@@ -30,8 +30,8 @@ import {
 } from 'lucide-react';
 
 interface KeyResultCardProps {
-  keyResult: KeyResultClientDTO;
-  goal?: GoalClientDTO | null;
+  keyResult: KeyResult;
+  goal?: Goal | null;
   onAddRecord?: (keyResultUuid: string) => void;
   onDelete?: (keyResultUuid: string) => void;
   onClick?: (keyResultUuid: string) => void;

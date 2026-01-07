@@ -5,10 +5,10 @@
  */
 
 import { useState } from 'react';
-import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import type { CreateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
 import { ReminderType, TriggerType, NotificationChannel } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { reminderApplicationService } from '../../application/services/ReminderApplicationService';
 
 interface ReminderCreateDialogProps {
   onClose: () => void;
@@ -26,8 +26,6 @@ export function ReminderCreateDialog({ onClose, onCreated }: ReminderCreateDialo
   const [importance, setImportance] = useState<ImportanceLevel>(ImportanceLevel.Moderate);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const reminderApiClient = ReminderContainer.getInstance().getApiClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +72,7 @@ export function ReminderCreateDialog({ onClose, onCreated }: ReminderCreateDialo
         tags: [],
       };
 
-      await reminderApiClient.createReminderTemplate(request);
+      await reminderApplicationService.createReminderTemplate(request);
       onCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : '创建失败');

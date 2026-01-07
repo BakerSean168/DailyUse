@@ -2,23 +2,26 @@
  * Task Statistics Component
  *
  * 任务统计组件 - 显示任务完成率和趋势
+ * 
+ * EPIC-015 重构: 使用 Entity 类型
+ * - Props 接受 TaskTemplate Entity 数组
+ * - 使用 Entity 的 getter 方法（isActive, isPaused, isArchived）
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { TaskContainer } from '@dailyuse/infrastructure-client';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
 
 interface TaskStatisticsProps {
-  templates: TaskTemplateClientDTO[];
+  templates: TaskTemplate[];
 }
 
 export function TaskStatistics({ templates }: TaskStatisticsProps) {
-  // 计算统计数据
+  // 计算统计数据 - 使用 Entity 的 getter 属性
   const stats = useMemo(() => {
     const totalTemplates = templates.length;
-    const activeTemplates = templates.filter(t => t.status === 'ACTIVE').length;
-    const pausedTemplates = templates.filter(t => t.status === 'PAUSED').length;
-    const archivedTemplates = templates.filter(t => t.status === 'ARCHIVED').length;
+    const activeTemplates = templates.filter(t => t.isActive).length;
+    const pausedTemplates = templates.filter(t => t.isPaused).length;
+    const archivedTemplates = templates.filter(t => t.isArchived).length;
 
     // 计算总实例数和完成率
     let totalInstances = 0;

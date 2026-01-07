@@ -2,12 +2,14 @@
  * TaskInstanceCard Component
  *
  * 任务实例卡片 - 显示单个任务实例的状态和操作
+ * 
+ * EPIC-015 重构: 使用 Entity 类型
  */
 
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import type { TaskInstanceClientDTO, TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskInstance, TaskTemplate } from '@dailyuse/domain-client/task';
 import { Badge } from '@dailyuse/ui-shadcn';
 import { Button } from '@dailyuse/ui-shadcn';
 import {
@@ -33,8 +35,8 @@ import {
 } from '@dailyuse/ui-shadcn';
 
 interface TaskInstanceCardProps {
-  instance: TaskInstanceClientDTO;
-  template?: TaskTemplateClientDTO | null;
+  instance: TaskInstance;
+  template?: TaskTemplate | null;
   onComplete?: (uuid: string) => void;
   onSkip?: (uuid: string) => void;
   onClick?: (uuid: string) => void;

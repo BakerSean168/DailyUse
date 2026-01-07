@@ -1,6 +1,5 @@
-/**
- * Goal Focus IPC Client - Goal 专注功能 IPC 客户端
- * 
+﻿/**
+ * Goal Focus IPC Client - Goal 涓撴敞鍔熻兘 IPC 瀹㈡埛绔? * 
  * @module renderer/modules/goal/infrastructure/ipc
  */
 
@@ -16,11 +15,10 @@ export interface FocusSessionDTO {
   accountUuid: string;
   startedAt: number;
   endedAt?: number;
-  duration: number; // 计划时长（分钟）
-  elapsed: number;  // 实际时长（秒）
-  status: FocusSessionStatus;
+  duration: number; // 璁″垝鏃堕暱锛堝垎閽燂級
+  elapsed: number;  // 瀹為檯鏃堕暱锛堢锛?  status: FocusSessionStatus;
   pausedAt?: number;
-  pausedDuration: number; // 暂停总时长（秒）
+  pausedDuration: number; // 鏆傚仠鎬绘椂闀匡紙绉掞級
   notes?: string;
 }
 
@@ -30,19 +28,18 @@ export interface FocusStatusDTO {
   isActive: boolean;
   session?: FocusSessionDTO;
   goalTitle?: string;
-  remainingTime?: number; // 秒
-}
+  remainingTime?: number; // 绉?}
 
 export interface FocusHistoryDTO {
   sessions: FocusSessionDTO[];
   totalSessions: number;
-  totalDuration: number; // 分钟
+  totalDuration: number; // 鍒嗛挓
   averageDuration: number;
   completionRate: number;
 }
 
 export interface FocusStatisticsDTO {
-  todayDuration: number; // 分钟
+  todayDuration: number; // 鍒嗛挓
   weekDuration: number;
   monthDuration: number;
   totalSessions: number;
@@ -53,9 +50,9 @@ export interface FocusStatisticsDTO {
 }
 
 export interface PomodoroConfigDTO {
-  focusDuration: number;  // 分钟
-  shortBreak: number;     // 分钟
-  longBreak: number;      // 分钟
+  focusDuration: number;  // 鍒嗛挓
+  shortBreak: number;     // 鍒嗛挓
+  longBreak: number;      // 鍒嗛挓
   sessionsBeforeLongBreak: number;
   autoStartBreaks: boolean;
   autoStartFocus: boolean;
@@ -78,8 +75,7 @@ export class GoalFocusIPCClient {
   // ============ Session Management ============
 
   /**
-   * 开始专注会话
-   */
+   * 寮€濮嬩笓娉ㄤ細璇?   */
   async start(params: GoalPayloads.FocusStartRequest): Promise<FocusSessionDTO> {
     return this.client.invoke<FocusSessionDTO>(
       GoalChannels.FOCUS_START,
@@ -88,7 +84,7 @@ export class GoalFocusIPCClient {
   }
 
   /**
-   * 暂停专注会话
+   * 鏆傚仠涓撴敞浼氳瘽
    */
   async pause(): Promise<FocusSessionDTO> {
     return this.client.invoke<FocusSessionDTO>(
@@ -98,7 +94,7 @@ export class GoalFocusIPCClient {
   }
 
   /**
-   * 恢复专注会话
+   * 鎭㈠涓撴敞浼氳瘽
    */
   async resume(): Promise<FocusSessionDTO> {
     return this.client.invoke<FocusSessionDTO>(
@@ -108,7 +104,7 @@ export class GoalFocusIPCClient {
   }
 
   /**
-   * 停止专注会话
+   * 鍋滄涓撴敞浼氳瘽
    */
   async stop(notes?: string): Promise<FocusSessionDTO> {
     return this.client.invoke<FocusSessionDTO>(
@@ -120,8 +116,7 @@ export class GoalFocusIPCClient {
   // ============ Status ============
 
   /**
-   * 获取当前专注状态
-   */
+   * 鑾峰彇褰撳墠涓撴敞鐘舵€?   */
   async getStatus(): Promise<FocusStatusDTO> {
     return this.client.invoke<FocusStatusDTO>(
       GoalChannels.FOCUS_GET_STATUS,
@@ -130,7 +125,7 @@ export class GoalFocusIPCClient {
   }
 
   /**
-   * 获取专注历史
+   * 鑾峰彇涓撴敞鍘嗗彶
    */
   async getHistory(params: GoalPayloads.FocusHistoryRequest): Promise<FocusHistoryDTO> {
     return this.client.invoke<FocusHistoryDTO>(
@@ -142,14 +137,13 @@ export class GoalFocusIPCClient {
   // ============ Convenience Methods ============
 
   /**
-   * 开始番茄钟（默认25分钟）
-   */
+   * 寮€濮嬬暘鑼勯挓锛堥粯璁?5鍒嗛挓锛?   */
   async startPomodoro(goalUuid: string, duration = 25): Promise<FocusSessionDTO> {
     return this.start({ goalUuid, duration });
   }
 
   /**
-   * 获取今日专注历史
+   * 鑾峰彇浠婃棩涓撴敞鍘嗗彶
    */
   async getTodayHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
     const now = new Date();
@@ -164,7 +158,7 @@ export class GoalFocusIPCClient {
   }
 
   /**
-   * 获取本周专注历史
+   * 鑾峰彇鏈懆涓撴敞鍘嗗彶
    */
   async getWeekHistory(goalUuid?: string): Promise<FocusHistoryDTO> {
     const now = new Date();
@@ -180,16 +174,14 @@ export class GoalFocusIPCClient {
   }
 
   /**
-   * 检查是否有活跃的专注会话
-   */
+   * 妫€鏌ユ槸鍚︽湁娲昏穬鐨勪笓娉ㄤ細璇?   */
   async isActive(): Promise<boolean> {
     const status = await this.getStatus();
     return status.isActive;
   }
 
   /**
-   * 获取当前会话剩余时间（秒）
-   */
+   * 鑾峰彇褰撳墠浼氳瘽鍓╀綑鏃堕棿锛堢锛?   */
   async getRemainingTime(): Promise<number | null> {
     const status = await this.getStatus();
     return status.remainingTime ?? null;

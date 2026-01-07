@@ -4,11 +4,11 @@
  * 调度任务卡片组件 - 显示单个调度任务信息
  */
 
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import { ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
 
 interface ScheduleCardProps {
-  task: ScheduleTaskClientDTO;
+  task: ScheduleTask;
   onPause: () => void;
   onResume: () => void;
   onComplete: () => void;

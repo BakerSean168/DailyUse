@@ -1,5 +1,7 @@
 /**
  * Reminder DI Module - Barrel Exports
+ *
+ * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-export * from './reminder.container';
+export { ReminderContainer } from '@dailyuse/infrastructure-client';

@@ -21,6 +21,7 @@ import {
   type BatchDeleteNotificationsOutput,
   type GetUnreadCountOutput,
 } from '@dailyuse/application-client';
+import type { NotificationListResponse } from '@dailyuse/infrastructure-client';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 /**
@@ -39,18 +40,8 @@ export class NotificationApplicationService {
   /**
    * 查找通知列表
    */
-  async findNotifications(input?: FindNotificationsInput): Promise<{ notifications: NotificationClientDTO[]; total: number }> {
-    const result = await findNotifications(input);
-    // If result is already in the correct format, return it
-    if (result && typeof result === 'object' && 'notifications' in result) {
-      return result as { notifications: NotificationClientDTO[]; total: number };
-    }
-    // Otherwise wrap it (assuming it's an array)
-    const notificationArray = result as unknown as NotificationClientDTO[];
-    return {
-      notifications: Array.isArray(notificationArray) ? notificationArray : [],
-      total: Array.isArray(notificationArray) ? notificationArray.length : 0,
-    };
+  async findNotifications(input?: FindNotificationsInput): Promise<NotificationListResponse> {
+    return findNotifications(input);
   }
 
   /**

@@ -3,19 +3,21 @@
  *
  * 今日日程列表组件
  * Story-007: Dashboard UI
+ * 
+ * EPIC-015 重构: 使用 Entity 类型代替 DTO
  */
 
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 export interface TodayScheduleProps {
   /** 日程任务列表 */
-  schedules: ScheduleTaskClientDTO[];
+  schedules: ScheduleTask[];
   /** 加载状态 */
   loading?: boolean;
   /** 点击查看全部 */
   onViewAll?: () => void;
   /** 点击单个日程 */
-  onScheduleClick?: (schedule: ScheduleTaskClientDTO) => void;
+  onScheduleClick?: (schedule: ScheduleTask) => void;
   /** 最大显示数量 */
   maxItems?: number;
 }
@@ -63,7 +65,7 @@ function getStatusText(status: string) {
 /**
  * 格式化执行时间
  */
-function formatScheduleTime(task: ScheduleTaskClientDTO): string {
+function formatScheduleTime(task: ScheduleTask): string {
   if (task.nextRunAtFormatted) {
     // 从 "2025-10-12 14:30:00" 中提取时间部分
     const parts = task.nextRunAtFormatted.split(' ');

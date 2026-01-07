@@ -5,8 +5,10 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { GoalContainer } from '@dailyuse/infrastructure-client';
-import type { GoalClientDTO, GoalFolderClientDTO } from '@dailyuse/contracts/goal';
+import type { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
+import { GoalFolder as GoalFolderEntity } from '@dailyuse/domain-client/goal';
+import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
+import { useGoal, useGoalFolder } from '../hooks';
 import { GoalCard } from '../components/GoalCard';
 import { GoalCreateDialog } from '../components/GoalCreateDialog';
 import { GoalFolderManager } from '../components/GoalFolderManager';
@@ -14,35 +16,29 @@ import { GoalListSkeleton } from '../../../../shared/components/Skeleton';
 import { VirtualList } from '../../../../shared/components/VirtualList';
 
 export function GoalListView() {
-  const [goals, setGoals] = useState<GoalClientDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showFolderManager, setShowFolderManager] = useState(false);
-  const [selectedFolder, setSelectedFolder] = useState<GoalFolderClientDTO | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<GoalFolder | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   // 视图模式: grid(网格) / list(列表，支持虚拟滚动)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // 获取 API Client
-  const goalApiClient = GoalContainer.getInstance().getApiClient();
+  // 使用 hooks 获取数据
+  const { goals, loading, error, loadGoals: fetchGoals, searchGoals } = useGoal();
+  const { loadFolders } = useGoalFolder();
 
   const loadGoals = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const result = await goalApiClient.getGoals({
-        dirUuid: selectedFolder?.uuid,
-      });
-      setGoals(result.goals);
+      if (selectedFolder?.uuid) {
+        await searchGoals({ dirUuid: selectedFolder.uuid });
+      } else {
+        await fetchGoals();
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载目标失败');
       console.error('[GoalListView] Failed to load goals:', err);
-    } finally {
-      setLoading(false);
     }
-  }, [goalApiClient, selectedFolder]);
+  }, [fetchGoals, searchGoals, selectedFolder]);
 
   useEffect(() => {
     loadGoals();
@@ -52,6 +48,15 @@ export function GoalListView() {
     setShowCreateDialog(false);
     loadGoals();
   };
+
+  // 处理文件夹选择，将 DTO 转换为 Entity
+  const handleFolderSelect = useCallback((folder: GoalFolderClientDTO | null) => {
+    if (folder) {
+      setSelectedFolder(GoalFolderEntity.fromClientDTO(folder));
+    } else {
+      setSelectedFolder(null);
+    }
+  }, []);
 
   // 过滤目标
   const filteredGoals = goals.filter((goal) => {
@@ -241,7 +246,7 @@ export function GoalListView() {
       <GoalFolderManager
         open={showFolderManager}
         onClose={() => setShowFolderManager(false)}
-        onFolderSelect={setSelectedFolder}
+        onFolderSelect={handleFolderSelect}
         selectedFolderUuid={selectedFolder?.uuid ?? null}
       />
     </div>

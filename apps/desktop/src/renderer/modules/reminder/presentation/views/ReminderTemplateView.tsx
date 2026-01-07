@@ -5,12 +5,12 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import type { 
   ReminderTemplateClientDTO, 
   ReminderGroupClientDTO,
   CreateReminderGroupRequest,
 } from '@dailyuse/contracts/reminder';
+import { reminderApplicationService } from '../../application/services/ReminderApplicationService';
 
 type ViewTab = 'templates' | 'groups';
 
@@ -28,8 +28,6 @@ export function ReminderTemplateView() {
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
-  
-  const reminderApiClient = ReminderContainer.getInstance().getApiClient();
 
   const loadData = useCallback(async () => {
     try {
@@ -37,8 +35,8 @@ export function ReminderTemplateView() {
       setError(null);
       
       const [templatesResult, groupsResult] = await Promise.all([
-        reminderApiClient.getReminderTemplates(),
-        reminderApiClient.getReminderGroups(),
+        reminderApplicationService.listReminderTemplates(),
+        reminderApplicationService.listReminderGroups(),
       ]);
       
       setTemplates(templatesResult.templates);
@@ -49,7 +47,7 @@ export function ReminderTemplateView() {
     } finally {
       setLoading(false);
     }
-  }, [reminderApiClient]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -82,7 +80,7 @@ export function ReminderTemplateView() {
     
     try {
       for (const uuid of selectedTemplates) {
-        await reminderApiClient.deleteReminderTemplate(uuid);
+        await reminderApplicationService.deleteReminderTemplate(uuid);
       }
       setSelectedTemplates(new Set());
       loadData();
@@ -97,7 +95,7 @@ export function ReminderTemplateView() {
     
     try {
       for (const templateUuid of selectedTemplates) {
-        await reminderApiClient.moveTemplateToGroup(templateUuid, groupUuid);
+        await reminderApplicationService.moveTemplateToGroup({ templateUuid, targetGroupUuid: groupUuid });
       }
       setSelectedTemplates(new Set());
       loadData();
@@ -116,7 +114,7 @@ export function ReminderTemplateView() {
         name: newGroupName.trim(),
         description: newGroupDescription.trim() || undefined,
       };
-      await reminderApiClient.createReminderGroup(request);
+      await reminderApplicationService.createReminderGroup(request);
       setNewGroupName('');
       setNewGroupDescription('');
       setShowCreateGroup(false);
@@ -132,7 +130,7 @@ export function ReminderTemplateView() {
     if (!confirmed) return;
     
     try {
-      await reminderApiClient.deleteReminderGroup(uuid);
+      await reminderApplicationService.deleteReminderGroup(uuid);
       loadData();
     } catch (err) {
       console.error('[ReminderTemplateView] Delete group failed:', err);
@@ -142,7 +140,7 @@ export function ReminderTemplateView() {
 
   const handleToggleGroupEnabled = async (uuid: string) => {
     try {
-      await reminderApiClient.toggleReminderGroupStatus(uuid);
+      await reminderApplicationService.toggleReminderGroupStatus(uuid);
       loadData();
     } catch (err) {
       console.error('[ReminderTemplateView] Toggle group failed:', err);

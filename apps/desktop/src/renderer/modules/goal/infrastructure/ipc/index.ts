@@ -1,31 +1,15 @@
 /**
- * Goal IPC Clients - 统一导出
- * 
- * @module renderer/modules/goal/infrastructure/ipc
+ * Goal IPC Module - Barrel Exports
+ *
+ * 从 @dailyuse/infrastructure-client 重导出 IPC Adapters
  */
 
-// Goal Client
 export {
-  GoalIPCClient,
-  goalIPCClient,
-} from './goal.ipc-client';
-export type {
-  GoalDTO,
-  GoalStatus,
-  GoalFolderDTO,
-  GoalStatisticsDTO,
-} from './goal.ipc-client';
+  GoalIpcAdapter,
+  GoalFolderIpcAdapter,
+  createGoalIpcAdapter,
+  createGoalFolderIpcAdapter,
+} from '@dailyuse/infrastructure-client';
 
-// Focus Client
-export {
-  GoalFocusIPCClient,
-  goalFocusIPCClient,
-} from './goal-focus.ipc-client';
-export type {
-  FocusSessionDTO,
-  FocusSessionStatus,
-  FocusStatusDTO,
-  FocusHistoryDTO,
-  FocusStatisticsDTO,
-  PomodoroConfigDTO,
-} from './goal-focus.ipc-client';
+// Focus 功能 - 本地实现（尚未提取到 packages）
+export * from './goal-focus.ipc-client';

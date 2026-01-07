@@ -10,24 +10,23 @@
  */
 
 import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { 
-  GoalClientDTO, 
   GoalStatus,
   CreateGoalRequest,
   UpdateGoalRequest,
-  GoalFolderClientDTO,
 } from '@dailyuse/contracts/goal';
 import type { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { Goal, GoalFolder } from '@dailyuse/domain-client/goal';
+import { goalApplicationService } from '../../application/services';
 
 // ============ State Interface ============
 export interface GoalState {
-  // 数据缓存
-  goals: GoalClientDTO[];
-  goalsById: Record<string, GoalClientDTO>;
-  folders: GoalFolderClientDTO[];
-  foldersById: Record<string, GoalFolderClientDTO>;
+  // 数据缓存 - 使用 Entity 类型
+  goals: Goal[];
+  goalsById: Record<string, Goal>;
+  folders: GoalFolder[];
+  foldersById: Record<string, GoalFolder>;
   
   // 加载状态
   isLoading: boolean;
@@ -65,16 +64,16 @@ export type GoalSortOption =
 
 // ============ Actions Interface ============
 export interface GoalActions {
-  // CRUD 操作
-  setGoals: (goals: GoalClientDTO[]) => void;
-  addGoal: (goal: GoalClientDTO) => void;
-  updateGoal: (id: string, updates: Partial<GoalClientDTO>) => void;
+  // CRUD 操作 - 使用 Entity 类型
+  setGoals: (goals: Goal[]) => void;
+  addGoal: (goal: Goal) => void;
+  updateGoal: (id: string, goal: Goal) => void;
   removeGoal: (id: string) => void;
   
-  // Folder 操作
-  setFolders: (folders: GoalFolderClientDTO[]) => void;
-  addFolder: (folder: GoalFolderClientDTO) => void;
-  updateFolder: (id: string, updates: Partial<GoalFolderClientDTO>) => void;
+  // Folder 操作 - 使用 Entity 类型
+  setFolders: (folders: GoalFolder[]) => void;
+  addFolder: (folder: GoalFolder) => void;
+  updateFolder: (id: string, folder: GoalFolder) => void;
   removeFolder: (id: string) => void;
   
   // 状态管理
@@ -94,23 +93,23 @@ export interface GoalActions {
   initialize: () => Promise<void>;
   reset: () => void;
   
-  // IPC 操作
+  // Data Operations - 通过 ApplicationService
   fetchGoals: () => Promise<void>;
-  createGoal: (dto: CreateGoalRequest) => Promise<GoalClientDTO>;
-  updateGoalById: (id: string, dto: UpdateGoalRequest) => Promise<GoalClientDTO>;
+  createGoal: (dto: CreateGoalRequest) => Promise<Goal>;
+  updateGoalById: (id: string, dto: UpdateGoalRequest) => Promise<Goal>;
   deleteGoal: (id: string) => Promise<void>;
   moveGoalToFolder: (goalId: string, folderId: string | null) => Promise<void>;
 }
 
 // ============ Selectors Interface ============
 export interface GoalSelectors {
-  getGoalById: (id: string) => GoalClientDTO | undefined;
-  getGoalsByFolder: (folderId: string | null) => GoalClientDTO[];
-  getRootGoals: () => GoalClientDTO[];
-  getChildGoals: (parentId: string) => GoalClientDTO[];
-  getFilteredGoals: () => GoalClientDTO[];
+  getGoalById: (id: string) => Goal | undefined;
+  getGoalsByFolder: (folderId: string | null) => Goal[];
+  getRootGoals: () => Goal[];
+  getChildGoals: (parentId: string) => Goal[];
+  getFilteredGoals: () => Goal[];
   getGoalCount: () => number;
-  getFolderById: (id: string) => GoalFolderClientDTO | undefined;
+  getFolderById: (id: string) => GoalFolder | undefined;
 }
 
 // ============ Initial State ============
@@ -140,89 +139,104 @@ const initialState: GoalState = {
 
 // ============ Store ============
 export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
-  immer(
-    persist(
-      (set, get) => ({
-        ...initialState,
+  persist(
+    (set, get) => ({
+      ...initialState,
+      
+      // ========== CRUD Actions ==========
+      setGoals: (goals) => set({
+        goals,
+        goalsById: Object.fromEntries(goals.map(g => [g.uuid, g])),
+      }),
+      
+      addGoal: (goal) => set((state) => ({
+        goals: [...state.goals, goal],
+        goalsById: { ...state.goalsById, [goal.uuid]: goal },
+      })),
+      
+      updateGoal: (id, goal) => set((state) => {
+        const index = state.goals.findIndex(g => g.uuid === id);
+        if (index === -1) return state;
         
-        // ========== CRUD Actions ==========
-        setGoals: (goals) => set((state) => {
-          state.goals = goals;
-          state.goalsById = Object.fromEntries(goals.map(g => [g.uuid, g]));
-        }),
+        const newGoals = [...state.goals];
+        newGoals[index] = goal;
         
-        addGoal: (goal) => set((state) => {
-          state.goals.push(goal);
-          state.goalsById[goal.uuid] = goal;
-        }),
+        return {
+          goals: newGoals,
+          goalsById: { ...state.goalsById, [id]: goal },
+        };
+      }),
+      
+      removeGoal: (id) => set((state) => {
+        const newById = { ...state.goalsById };
+        delete newById[id];
+        return {
+          goals: state.goals.filter(g => g.uuid !== id),
+          goalsById: newById,
+          selectedGoalId: state.selectedGoalId === id ? null : state.selectedGoalId,
+        };
+      }),
+      
+      // ========== Folder Actions ==========
+      setFolders: (folders) => set({
+        folders,
+        foldersById: Object.fromEntries(folders.map(f => [f.uuid, f])),
+      }),
+      
+      addFolder: (folder) => set((state) => ({
+        folders: [...state.folders, folder],
+        foldersById: { ...state.foldersById, [folder.uuid]: folder },
+      })),
+      
+      updateFolder: (id, folder) => set((state) => {
+        const index = state.folders.findIndex(f => f.uuid === id);
+        if (index === -1) return state;
         
-        updateGoal: (id, updates) => set((state) => {
-          const index = state.goals.findIndex(g => g.uuid === id);
-          if (index !== -1) {
-            state.goals[index] = { ...state.goals[index], ...updates };
-            state.goalsById[id] = state.goals[index];
-          }
-        }),
+        const newFolders = [...state.folders];
+        newFolders[index] = folder;
         
-        removeGoal: (id) => set((state) => {
-          state.goals = state.goals.filter(g => g.uuid !== id);
-          delete state.goalsById[id];
-          if (state.selectedGoalId === id) {
-            state.selectedGoalId = null;
-          }
-        }),
-        
-        // ========== Folder Actions ==========
-        setFolders: (folders) => set((state) => {
-          state.folders = folders;
-          state.foldersById = Object.fromEntries(folders.map(f => [f.uuid, f]));
-        }),
-        
-        addFolder: (folder) => set((state) => {
-          state.folders.push(folder);
-          state.foldersById[folder.uuid] = folder;
-        }),
-        
-        updateFolder: (id, updates) => set((state) => {
-          const index = state.folders.findIndex(f => f.uuid === id);
-          if (index !== -1) {
-            state.folders[index] = { ...state.folders[index], ...updates };
-            state.foldersById[id] = state.folders[index];
-          }
-        }),
-        
-        removeFolder: (id) => set((state) => {
-          state.folders = state.folders.filter(f => f.uuid !== id);
-          delete state.foldersById[id];
-        }),
-        
-        // ========== Status Actions ==========
-        setLoading: (loading) => set({ isLoading: loading }),
-        setError: (error) => set({ error }),
-        setInitialized: (initialized) => set({ isInitialized: initialized }),
-        
-        // ========== UI Actions ==========
-        setSelectedGoalId: (id) => set({ selectedGoalId: id }),
-        
-        toggleGoalExpanded: (id) => set((state) => {
-          if (state.expandedGoalIds.has(id)) {
-            state.expandedGoalIds.delete(id);
-          } else {
-            state.expandedGoalIds.add(id);
-          }
-        }),
-        
-        setFilters: (filters) => set((state) => {
-          state.filters = { ...state.filters, ...filters };
-        }),
-        
-        resetFilters: () => set((state) => {
-          state.filters = defaultFilters;
-        }),
-        
-        setSortBy: (sort) => set({ sortBy: sort }),
-        
-        setViewMode: (mode) => set({ viewMode: mode }),
+        return {
+          folders: newFolders,
+          foldersById: { ...state.foldersById, [id]: folder },
+        };
+      }),
+      
+      removeFolder: (id) => set((state) => {
+        const newById = { ...state.foldersById };
+        delete newById[id];
+        return {
+          folders: state.folders.filter(f => f.uuid !== id),
+          foldersById: newById,
+        };
+      }),
+      
+      // ========== Status Actions ==========
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
+      setInitialized: (isInitialized) => set({ isInitialized }),
+      
+      // ========== UI Actions ==========
+      setSelectedGoalId: (selectedGoalId) => set({ selectedGoalId }),
+      
+      toggleGoalExpanded: (id) => set((state) => {
+        const newSet = new Set(state.expandedGoalIds);
+        if (newSet.has(id)) {
+          newSet.delete(id);
+        } else {
+          newSet.add(id);
+        }
+        return { expandedGoalIds: newSet };
+      }),
+      
+      setFilters: (filters) => set((state) => ({
+        filters: { ...state.filters, ...filters },
+      })),
+      
+      resetFilters: () => set({ filters: defaultFilters }),
+      
+      setSortBy: (sortBy) => set({ sortBy }),
+      
+      setViewMode: (viewMode) => set({ viewMode }),
         
         // ========== Lifecycle ==========
         initialize: async () => {
@@ -239,7 +253,7 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
         
         reset: () => set(initialState),
         
-        // ========== IPC Actions ==========
+        // ========== Data Operations - 通过 ApplicationService ==========
         fetchGoals: async () => {
           const { setLoading, setGoals, setFolders, setError } = get();
           
@@ -247,12 +261,12 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
             setLoading(true);
             setError(null);
             
-            // 通过 IPC 获取目标列表
-            const goals = await window.electron.goal.getAll();
+            // 通过 ApplicationService 获取数据（返回 Entity）
+            const { goals } = await goalApplicationService.listGoals();
             setGoals(goals);
             
             // 获取文件夹列表
-            const folders = await window.electron.goal.getFolders();
+            const folders = await goalApplicationService.listFolders();
             setFolders(folders);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch goals';
@@ -270,7 +284,8 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
             setLoading(true);
             setError(null);
             
-            const newGoal = await window.electron.goal.create(dto);
+            // 通过 ApplicationService 创建（返回 Entity）
+            const newGoal = await goalApplicationService.createGoal(dto);
             addGoal(newGoal);
             return newGoal;
           } catch (error) {
@@ -289,7 +304,8 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
             setLoading(true);
             setError(null);
             
-            const updatedGoal = await window.electron.goal.update(id, dto);
+            // 通过 ApplicationService 更新（返回 Entity）
+            const updatedGoal = await goalApplicationService.updateGoal(id, dto);
             updateGoal(id, updatedGoal);
             return updatedGoal;
           } catch (error) {
@@ -308,7 +324,8 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
             setLoading(true);
             setError(null);
             
-            await window.electron.goal.delete(id);
+            // 通过 ApplicationService 删除
+            await goalApplicationService.deleteGoal(id);
             removeGoal(id);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to delete goal';
@@ -320,14 +337,15 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
         },
         
         moveGoalToFolder: async (goalId, folderId) => {
-          const { setLoading, updateGoal, setError } = get();
+          const { setLoading, updateGoal, setError, getGoalById } = get();
           
           try {
             setLoading(true);
             setError(null);
             
-            await window.electron.goal.moveToFolder(goalId, folderId);
-            updateGoal(goalId, { folderUuid: folderId ?? undefined });
+            // 通过 ApplicationService 更新 folderUuid
+            const updatedGoal = await goalApplicationService.updateGoal(goalId, { folderUuid: folderId ?? undefined });
+            updateGoal(goalId, updatedGoal);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to move goal';
             setError(message);
@@ -432,7 +450,6 @@ export const useGoalStore = create<GoalState & GoalActions & GoalSelectors>()(
         },
       }
     )
-  )
 );
 
 // ============ Hooks for selective subscription ============

@@ -5,13 +5,13 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { GoalContainer } from '@dailyuse/infrastructure-client';
-import type { GoalFolderClientDTO } from '@dailyuse/contracts/goal';
+import type { GoalFolder } from '@dailyuse/domain-client/goal';
+import { useGoalFolder } from '../hooks';
 
 interface GoalFolderManagerProps {
   open: boolean;
   onClose: () => void;
-  onFolderSelect?: (folder: GoalFolderClientDTO | null) => void;
+  onFolderSelect?: (folder: GoalFolder | null) => void;
   selectedFolderUuid?: string | null;
 }
 
@@ -21,30 +21,36 @@ export function GoalFolderManager({
   onFolderSelect,
   selectedFolderUuid,
 }: GoalFolderManagerProps) {
-  const [folders, setFolders] = useState<GoalFolderClientDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [editingFolder, setEditingFolder] = useState<GoalFolderClientDTO | null>(null);
+  const [editingFolder, setEditingFolder] = useState<GoalFolder | null>(null);
   const [newFolderName, setNewFolderName] = useState('');
   const [newFolderDescription, setNewFolderDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  const folderApiClient = GoalContainer.getInstance().getFolderApiClient();
+  // 使用 useGoalFolder hook
+  const { 
+    folders, 
+    loading, 
+    error: hookError, 
+    loadFolders: loadFoldersAction, 
+    createFolder, 
+    updateFolder, 
+    deleteFolder 
+  } = useGoalFolder();
+
+  // 合并错误状态
+  const error = localError || hookError;
 
   const loadFolders = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const result = await folderApiClient.getGoalFolders({});
-      setFolders(result.folders);
+      setLocalError(null);
+      await loadFoldersAction();
     } catch (err) {
       console.error('[GoalFolderManager] Failed to load folders:', err);
-      setError('加载文件夹失败');
-    } finally {
-      setLoading(false);
+      setLocalError('加载文件夹失败');
     }
-  }, [folderApiClient]);
+  }, [loadFoldersAction]);
 
   useEffect(() => {
     if (open) {
@@ -57,7 +63,7 @@ export function GoalFolderManager({
 
     try {
       setIsSaving(true);
-      await folderApiClient.createGoalFolder({
+      await createFolder({
         name: newFolderName.trim(),
         description: newFolderDescription.trim() || undefined,
       });
@@ -67,7 +73,7 @@ export function GoalFolderManager({
       loadFolders();
     } catch (err) {
       console.error('[GoalFolderManager] Failed to create folder:', err);
-      setError('创建文件夹失败');
+      setLocalError('创建文件夹失败');
     } finally {
       setIsSaving(false);
     }
@@ -78,7 +84,7 @@ export function GoalFolderManager({
 
     try {
       setIsSaving(true);
-      await folderApiClient.updateGoalFolder(editingFolder.uuid, {
+      await updateFolder(editingFolder.uuid, {
         name: newFolderName.trim(),
         description: newFolderDescription.trim() || undefined,
       });
@@ -88,26 +94,26 @@ export function GoalFolderManager({
       loadFolders();
     } catch (err) {
       console.error('[GoalFolderManager] Failed to update folder:', err);
-      setError('更新文件夹失败');
+      setLocalError('更新文件夹失败');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async (folder: GoalFolderClientDTO) => {
-    const confirmed = window.confirm(`确定要删除文件夹"${folder.name}"吗？文件夹内的目标不会被删除。`);
+  const handleDelete = async (folder: GoalFolder) => {
+    const confirmed = window.confirm(`确定要删除文件夹“${folder.name}”吗？文件夹内的目标不会被删除。`);
     if (!confirmed) return;
 
     try {
-      await folderApiClient.deleteGoalFolder(folder.uuid);
+      await deleteFolder(folder.uuid);
       loadFolders();
     } catch (err) {
       console.error('[GoalFolderManager] Failed to delete folder:', err);
-      setError('删除文件夹失败');
+      setLocalError('删除文件夹失败');
     }
   };
 
-  const handleEdit = (folder: GoalFolderClientDTO) => {
+  const handleEdit = (folder: GoalFolder) => {
     setEditingFolder(folder);
     setNewFolderName(folder.name);
     setNewFolderDescription(folder.description ?? '');
@@ -121,7 +127,7 @@ export function GoalFolderManager({
     setNewFolderDescription('');
   };
 
-  const handleSelect = (folder: GoalFolderClientDTO | null) => {
+  const handleSelect = (folder: GoalFolder | null) => {
     onFolderSelect?.(folder);
     onClose();
   };

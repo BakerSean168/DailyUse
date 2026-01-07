@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import type { GoalClientDTO, KeyResultClientDTO, GoalRecordClientDTO } from '@dailyuse/contracts/goal';
+import type { Goal, KeyResult, GoalRecord } from '@dailyuse/domain-client/goal';
 import { goalApplicationService } from '../../application/services';
 import {
   Card,
@@ -61,8 +61,8 @@ export function KeyResultDetailView({
   onGoalUpdated,
 }: KeyResultDetailViewProps) {
   // State
-  const [goal, setGoal] = useState<GoalClientDTO | null>(null);
-  const [keyResult, setKeyResult] = useState<KeyResultClientDTO | null>(null);
+  const [goal, setGoal] = useState<Goal | null>(null);
+  const [keyResult, setKeyResult] = useState<KeyResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

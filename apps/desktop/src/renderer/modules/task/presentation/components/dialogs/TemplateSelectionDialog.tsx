@@ -6,10 +6,12 @@
  * 1. 显示可用的任务模板列表
  * 2. 支持搜索和过滤
  * 3. 选择模板后回调
+ * 
+ * EPIC-015 重构: 使用 Entity 类型
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +27,6 @@ import { ScrollArea } from '@dailyuse/ui-shadcn';
 import {
   Search,
   LayoutTemplate,
-  Clock,
   Repeat,
   Target,
   Check,
@@ -36,9 +37,9 @@ import {
 interface TemplateSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  templates: TaskTemplateClientDTO[];
+  templates: TaskTemplate[];
   isLoading?: boolean;
-  onSelect?: (template: TaskTemplateClientDTO) => void;
+  onSelect?: (template: TaskTemplate) => void;
   onCancel?: () => void;
   title?: string;
   description?: string;
@@ -66,8 +67,8 @@ const getTaskTypeColor = (taskType: string): string => {
   return colorMap[taskType] || 'bg-gray-100 text-gray-800';
 };
 
-const getRecurrenceLabel = (rule?: { type?: string; interval?: number }): string | null => {
-  if (!rule?.type) return null;
+const getRecurrenceLabel = (rule?: { frequency?: string; interval?: number }): string | null => {
+  if (!rule?.frequency) return null;
   
   const typeMap: Record<string, string> = {
     DAILY: '每天',
@@ -77,7 +78,7 @@ const getRecurrenceLabel = (rule?: { type?: string; interval?: number }): string
   };
   
   const interval = rule.interval || 1;
-  const typeLabel = typeMap[rule.type] || rule.type;
+  const typeLabel = typeMap[rule.frequency] || rule.frequency;
   
   if (interval === 1) return typeLabel;
   return `每${interval}${typeLabel.slice(1)}`;
@@ -170,13 +171,6 @@ export function TemplateSelectionDialog({
               <div className="space-y-2">
                 {filteredTemplates.map((template) => {
                   const isSelected = selectedUuid === template.uuid;
-                  const recurrenceLabel = template.recurrenceRule 
-                    ? getRecurrenceLabel({ 
-                        type: template.recurrenceRule.type, 
-                        interval: template.recurrenceRule.interval 
-                      })
-                    : null;
-
                   return (
                     <div
                       key={template.uuid}
@@ -212,17 +206,10 @@ export function TemplateSelectionDialog({
 
                           {/* 元信息 */}
                           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                            {recurrenceLabel && (
+                            {template.recurrenceRule && (
                               <div className="flex items-center gap-1">
                                 <Repeat className="h-3 w-3" />
-                                <span>{recurrenceLabel}</span>
-                              </div>
-                            )}
-
-                            {template.estimatedMinutes && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                <span>{template.estimatedMinutes}分钟</span>
+                                <span>{getRecurrenceLabel({ frequency: template.recurrenceRule.frequency, interval: template.recurrenceRule.interval })}</span>
                               </div>
                             )}
 

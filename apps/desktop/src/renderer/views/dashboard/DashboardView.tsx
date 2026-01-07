@@ -5,26 +5,25 @@
  * Aggregates statistics, upcoming tasks, schedules, and active goals.
  * Supports auto-refresh and quick navigation.
  *
+ * EPIC-015 重构: Task 模块使用 Hook 代替直接调用 Infrastructure 层
+ *
  * @module renderer/views/dashboard/DashboardView
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DashboardSkeleton } from '../../shared/components/Skeleton';
-import {
-  GoalContainer,
-  TaskContainer,
-  ScheduleContainer,
-  ReminderContainer,
-} from '@dailyuse/infrastructure-client';
 import { useNavigate } from 'react-router-dom';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import { goalApplicationService } from '../../modules/goal/application/services/GoalApplicationService';
+import { scheduleApplicationService } from '../../modules/schedule/application/services/ScheduleApplicationService';
+import { reminderApplicationService } from '../../modules/reminder/application/services/ReminderApplicationService';
 import { GoalStatus } from '@dailyuse/contracts/goal';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
-import { TaskTemplateStatus } from '@dailyuse/contracts/task';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
+import type { Goal } from '@dailyuse/domain-client/goal';
+import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { useTaskTemplate } from '../../modules/task/presentation/hooks/useTaskTemplate';
 
 import {
   StatCard,
@@ -86,10 +85,13 @@ export function DashboardView() {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
 
   // Data lists
-  const [activeGoals, setActiveGoals] = useState<GoalClientDTO[]>([]);
-  const [todayTasks, setTodayTasks] = useState<TaskTemplateClientDTO[]>([]);
-  const [todaySchedules, setTodaySchedules] = useState<ScheduleTaskClientDTO[]>([]);
+  const [activeGoals, setActiveGoals] = useState<Goal[]>([]);
+  const [todayTasks, setTodayTasks] = useState<TaskTemplate[]>([]);
+  const [todaySchedules, setTodaySchedules] = useState<ScheduleTask[]>([]);
   const [upcomingReminders, setUpcomingReminders] = useState<ReminderTemplateClientDTO[]>([]);
+
+  // 使用 Hook 获取 Task 数据
+  const { templates, getActiveTemplates } = useTaskTemplate();
 
   // ============ Data Loading ============
 
@@ -109,21 +111,20 @@ export function DashboardView() {
    * Fetches goal statistics and active goals list.
    */
   const loadGoalStats = useCallback(async () => {
-    const goalApiClient = GoalContainer.getInstance().getApiClient();
-    const goalsResponse = await goalApiClient.getGoals();
+    const goalsResponse = await goalApplicationService.listGoals();
     const goals = goalsResponse.goals;
 
     const goalStats = {
       total: goals.length,
-      active: goals.filter((g: GoalClientDTO) => g.status === GoalStatus.ACTIVE).length,
-      completed: goals.filter((g: GoalClientDTO) => g.status === GoalStatus.COMPLETED)
+      active: goals.filter((g: Goal) => g.status === GoalStatus.ACTIVE).length,
+      completed: goals.filter((g: Goal) => g.status === GoalStatus.COMPLETED)
         .length,
       paused: 0, // Goal does not have PAUSED, using DRAFT is not equivalent but placeholder
-      overdue: goals.filter((g: GoalClientDTO) => g.isOverdue).length,
+      overdue: goals.filter((g: Goal) => g.isOverdue).length,
     };
 
     const activeGoalsList = goals
-      .filter((g: GoalClientDTO) => g.status === GoalStatus.ACTIVE)
+      .filter((g: Goal) => g.status === GoalStatus.ACTIVE)
       .slice(0, 5);
 
     return { stats: goalStats, activeGoals: activeGoalsList };
@@ -131,53 +132,44 @@ export function DashboardView() {
 
   /**
    * Fetches task statistics and task list.
+   * EPIC-015: 使用 Hook 提供的 templates 数据，利用 Entity getter
    */
   const loadTaskStats = useCallback(async () => {
-    const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
-    const tasks = await taskApiClient.getTaskTemplates();
-
+    // 使用 Hook 已加载的 templates 数据
     const taskStats = {
-      total: tasks.length,
+      total: templates.length,
       pending: 0, // Placeholder
-      inProgress: tasks.filter(
-        (t: TaskTemplateClientDTO) => t.status === TaskTemplateStatus.ACTIVE,
-      ).length,
-      completed: tasks.filter(
-        (t: TaskTemplateClientDTO) => t.status === TaskTemplateStatus.ARCHIVED,
-      ).length,
+      inProgress: templates.filter((t: TaskTemplate) => t.isActive).length,
+      completed: templates.filter((t: TaskTemplate) => t.isArchived).length,
     };
 
-    const todayTasksList = tasks
-      .filter((t: TaskTemplateClientDTO) => t.status === TaskTemplateStatus.ACTIVE)
-      .slice(0, 5);
+    const todayTasksList = getActiveTemplates().slice(0, 5);
 
     return { stats: taskStats, todayTasks: todayTasksList };
-  }, []);
+  }, [templates, getActiveTemplates]);
 
   /**
    * Fetches schedule statistics and today's schedule.
    */
   const loadScheduleStats = useCallback(async () => {
     try {
-      const scheduleApiClient =
-        ScheduleContainer.getInstance().getTaskApiClient();
-      const schedules = await scheduleApiClient.getTasks();
+      const schedules = await scheduleApplicationService.listScheduleTasks();
 
       const scheduleStats = {
         total: schedules.length,
         active: schedules.filter(
-          (s: ScheduleTaskClientDTO) => s.status === ScheduleTaskStatus.ACTIVE,
+          (s: ScheduleTask) => s.status === ScheduleTaskStatus.ACTIVE,
         ).length,
         paused: schedules.filter(
-          (s: ScheduleTaskClientDTO) => s.status === ScheduleTaskStatus.PAUSED,
+          (s: ScheduleTask) => s.status === ScheduleTaskStatus.PAUSED,
         ).length,
         todayCount: schedules.filter(
-          (s: ScheduleTaskClientDTO) => s.status === ScheduleTaskStatus.ACTIVE,
+          (s: ScheduleTask) => s.status === ScheduleTaskStatus.ACTIVE,
         ).length, // Simplified: Active tasks counted as today's tasks for now
       };
 
       const todaySchedulesList = schedules
-        .filter((s: ScheduleTaskClientDTO) => s.status === ScheduleTaskStatus.ACTIVE)
+        .filter((s: ScheduleTask) => s.status === ScheduleTaskStatus.ACTIVE)
         .slice(0, 5);
 
       return { stats: scheduleStats, todaySchedules: todaySchedulesList };
@@ -195,8 +187,7 @@ export function DashboardView() {
    */
   const loadReminderStats = useCallback(async () => {
     try {
-      const reminderApiClient = ReminderContainer.getInstance().getApiClient();
-      const response = await reminderApiClient.getReminderTemplates();
+      const response = await reminderApplicationService.listReminderTemplates();
       const reminders = response.templates;
 
       const reminderStats = {

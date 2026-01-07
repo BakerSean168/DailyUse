@@ -2,29 +2,35 @@
  * useTaskTemplate Hook
  *
  * 任务模板管理 Hook
+ * 
+ * EPIC-015 重构: 与 Store 集成，使用 Entity 类型
+ * - 使用 useTaskStore 作为唯一数据源
+ * - 返回 Entity 类型（TaskTemplate）
+ * - 移除内部 useState，统一使用 Store 状态
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
+import { useTaskStore } from '../stores/taskStore';
 import { taskApplicationService } from '../../application/services';
-import type { TaskTemplateClientDTO, UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import type { CreateTaskTemplateInput } from '@dailyuse/application-client';
 
 // ===== Types =====
 
-export interface TaskTemplateState {
-  templates: TaskTemplateClientDTO[];
-  selectedTemplate: TaskTemplateClientDTO | null;
+export interface UseTaskTemplateReturn {
+  // State from Store
+  templates: TaskTemplate[];
+  selectedTemplate: TaskTemplate | null;
   loading: boolean;
   error: string | null;
-}
-
-export interface UseTaskTemplateReturn extends TaskTemplateState {
+  
   // Query
   loadTemplates: () => Promise<void>;
-  getTemplate: (id: string) => Promise<TaskTemplateClientDTO | null>;
+  getTemplate: (id: string) => Promise<TaskTemplate | null>;
   
   // Mutations
-  createTemplate: (input: CreateTaskTemplateInput) => Promise<TaskTemplateClientDTO>;
+  createTemplate: (input: CreateTaskTemplateInput) => Promise<TaskTemplate>;
   updateTemplate: (uuid: string, request: UpdateTaskTemplateRequest) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
   
@@ -34,7 +40,12 @@ export interface UseTaskTemplateReturn extends TaskTemplateState {
   archiveTemplate: (id: string) => Promise<void>;
   
   // Selection
-  selectTemplate: (template: TaskTemplateClientDTO | null) => void;
+  selectTemplate: (template: TaskTemplate | null) => void;
+  
+  // Filtered selectors
+  getActiveTemplates: () => TaskTemplate[];
+  getPausedTemplates: () => TaskTemplate[];
+  getArchivedTemplates: () => TaskTemplate[];
   
   // Utilities
   clearError: () => void;
@@ -44,144 +55,153 @@ export interface UseTaskTemplateReturn extends TaskTemplateState {
 // ===== Hook Implementation =====
 
 export function useTaskTemplate(): UseTaskTemplateReturn {
-  const [state, setState] = useState<TaskTemplateState>({
-    templates: [],
-    selectedTemplate: null,
-    loading: false,
-    error: null,
-  });
+  // ===== Store State =====
+  const templates = useTaskStore((state) => state.templates);
+  const loading = useTaskStore((state) => state.isLoading);
+  const error = useTaskStore((state) => state.error);
+  
+  // ===== Store Actions =====
+  const storeSetTemplates = useTaskStore((state) => state.setTemplates);
+  const storeAddTemplate = useTaskStore((state) => state.addTemplate);
+  const storeUpdateTemplate = useTaskStore((state) => state.updateTemplate);
+  const storeRemoveTemplate = useTaskStore((state) => state.removeTemplate);
+  const storeFetchTemplates = useTaskStore((state) => state.fetchTemplates);
+  const storeSetLoading = useTaskStore((state) => state.setLoading);
+  const storeSetError = useTaskStore((state) => state.setError);
+  
+  // ===== Store Selectors =====
+  const getActiveTemplates = useTaskStore((state) => state.getActiveTemplates);
+  const getPausedTemplates = useTaskStore((state) => state.getPausedTemplates);
+  const getArchivedTemplates = useTaskStore((state) => state.getArchivedTemplates);
+  const getTemplateById = useTaskStore((state) => state.getTemplateById);
+
+  // ===== Local Selection State (不需要全局共享) =====
+  // 使用 Store 中的数据，但选择状态可以是本地的
+  const [selectedTemplate, setSelectedTemplate] = React.useState<TaskTemplate | null>(null);
 
   // ===== Query =====
 
   const loadTemplates = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    await storeFetchTemplates();
+  }, [storeFetchTemplates]);
 
-    try {
-      const templates = await taskApplicationService.listTemplates();
-      setState((prev) => ({ ...prev, templates, loading: false }));
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '加载任务模板失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
-    }
-  }, []);
-
-  const getTemplate = useCallback(async (id: string) => {
+  const getTemplate = useCallback(async (id: string): Promise<TaskTemplate | null> => {
+    // 先从 Store 查找
+    const cached = getTemplateById(id);
+    if (cached) return cached;
+    
+    // Store 中没有则从 API 获取
     return taskApplicationService.getTemplate(id);
-  }, []);
+  }, [getTemplateById]);
 
   // ===== Mutations =====
 
-  const createTemplate = useCallback(async (input: CreateTaskTemplateInput) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const createTemplate = useCallback(async (input: CreateTaskTemplateInput): Promise<TaskTemplate> => {
+    storeSetLoading(true);
+    storeSetError(null);
 
     try {
       const template = await taskApplicationService.createTemplate(input);
-      setState((prev) => ({
-        ...prev,
-        templates: [...prev.templates, template],
-        loading: false,
-      }));
+      storeAddTemplate(template);
+      storeSetLoading(false);
       return template;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '创建任务模板失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
+      storeSetError(errorMessage);
+      storeSetLoading(false);
       throw e;
     }
-  }, []);
+  }, [storeAddTemplate, storeSetLoading, storeSetError]);
 
-  const updateTemplate = useCallback(async (uuid: string, request: UpdateTaskTemplateRequest) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const updateTemplate = useCallback(async (uuid: string, request: UpdateTaskTemplateRequest): Promise<void> => {
+    storeSetLoading(true);
+    storeSetError(null);
 
     try {
       const template = await taskApplicationService.updateTemplate(uuid, request);
-      setState((prev) => ({
-        ...prev,
-        templates: prev.templates.map((t) => (t.uuid === uuid ? { ...t, ...template } as TaskTemplateClientDTO : t)),
-        selectedTemplate: prev.selectedTemplate?.uuid === uuid ? { ...prev.selectedTemplate, ...template } as TaskTemplateClientDTO : prev.selectedTemplate,
-        loading: false,
-      }));
+      storeUpdateTemplate(template.uuid, template);
+      
+      // 如果更新的是当前选中的模板，更新选择状态
+      if (selectedTemplate?.uuid === uuid) {
+        setSelectedTemplate(template);
+      }
+      storeSetLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '更新任务模板失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
+      storeSetError(errorMessage);
+      storeSetLoading(false);
       throw e;
     }
-  }, []);
+  }, [storeUpdateTemplate, storeSetLoading, storeSetError, selectedTemplate]);
 
-  const deleteTemplate = useCallback(async (id: string) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const deleteTemplate = useCallback(async (id: string): Promise<void> => {
+    storeSetLoading(true);
+    storeSetError(null);
 
     try {
       await taskApplicationService.deleteTemplate(id);
-      setState((prev) => ({
-        ...prev,
-        templates: prev.templates.filter((t) => t.uuid !== id),
-        selectedTemplate: prev.selectedTemplate?.uuid === id ? null : prev.selectedTemplate,
-        loading: false,
-      }));
+      storeRemoveTemplate(id);
+      
+      // 如果删除的是当前选中的模板，清除选择
+      if (selectedTemplate?.uuid === id) {
+        setSelectedTemplate(null);
+      }
+      storeSetLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '删除任务模板失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
+      storeSetError(errorMessage);
+      storeSetLoading(false);
       throw e;
     }
-  }, []);
+  }, [storeRemoveTemplate, storeSetLoading, storeSetError, selectedTemplate]);
 
   // ===== Status Changes =====
 
-  const activateTemplate = useCallback(async (id: string) => {
+  const activateTemplate = useCallback(async (id: string): Promise<void> => {
     try {
       await taskApplicationService.activateTemplate(id);
-      // Reload templates after activation
-      const templates = await taskApplicationService.listTemplates();
-      setState((prev) => ({
-        ...prev,
-        templates,
-      }));
+      // 重新加载所有模板以获取最新状态
+      await storeFetchTemplates();
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '激活任务失败';
-      setState((prev) => ({ ...prev, error: errorMessage }));
+      storeSetError(errorMessage);
       throw e;
     }
-  }, []);
+  }, [storeFetchTemplates, storeSetError]);
 
-  const pauseTemplate = useCallback(async (id: string) => {
+  const pauseTemplate = useCallback(async (id: string): Promise<void> => {
     try {
       const template = await taskApplicationService.pauseTemplate(id);
-      setState((prev) => ({
-        ...prev,
-        templates: prev.templates.map((t) => (t.uuid === id ? template : t)),
-      }));
+      storeUpdateTemplate(template.uuid, template);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '暂停任务失败';
-      setState((prev) => ({ ...prev, error: errorMessage }));
+      storeSetError(errorMessage);
       throw e;
     }
-  }, []);
+  }, [storeUpdateTemplate, storeSetError]);
 
-  const archiveTemplate = useCallback(async (id: string) => {
+  const archiveTemplate = useCallback(async (id: string): Promise<void> => {
     try {
       const template = await taskApplicationService.archiveTemplate(id);
-      setState((prev) => ({
-        ...prev,
-        templates: prev.templates.map((t) => (t.uuid === id ? template : t)),
-      }));
+      storeUpdateTemplate(template.uuid, template);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '归档任务失败';
-      setState((prev) => ({ ...prev, error: errorMessage }));
+      storeSetError(errorMessage);
       throw e;
     }
-  }, []);
+  }, [storeUpdateTemplate, storeSetError]);
 
   // ===== Selection =====
 
-  const selectTemplate = useCallback((template: TaskTemplateClientDTO | null) => {
-    setState((prev) => ({ ...prev, selectedTemplate: template }));
+  const selectTemplate = useCallback((template: TaskTemplate | null) => {
+    setSelectedTemplate(template);
   }, []);
 
   // ===== Utilities =====
 
   const clearError = useCallback(() => {
-    setState((prev) => ({ ...prev, error: null }));
-  }, []);
+    storeSetError(null);
+  }, [storeSetError]);
 
   const refresh = useCallback(async () => {
     await loadTemplates();
@@ -196,11 +216,11 @@ export function useTaskTemplate(): UseTaskTemplateReturn {
   // ===== Return =====
 
   return {
-    // State
-    templates: state.templates,
-    selectedTemplate: state.selectedTemplate,
-    loading: state.loading,
-    error: state.error,
+    // State from Store
+    templates,
+    selectedTemplate,
+    loading,
+    error,
     // Query
     loadTemplates,
     getTemplate,
@@ -214,10 +234,17 @@ export function useTaskTemplate(): UseTaskTemplateReturn {
     archiveTemplate,
     // Selection
     selectTemplate,
+    // Filtered selectors
+    getActiveTemplates,
+    getPausedTemplates,
+    getArchivedTemplates,
     // Utilities
     clearError,
     refresh,
   };
 }
+
+// 需要导入 React
+import React from 'react';
 
 export default useTaskTemplate;

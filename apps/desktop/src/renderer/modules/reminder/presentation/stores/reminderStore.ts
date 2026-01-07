@@ -12,28 +12,19 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { ReminderStatus as ContractReminderStatus } from '@dailyuse/contracts/reminder';
-// 使用 IPC Client 的类型，而不是 contracts 的完整 ClientDTO
-import type { 
-  ReminderDTO,
-  ReminderGroupDTO,
-  ReminderStatus,
-} from '../../infrastructure/ipc/reminder.ipc-client';
-import { reminderContainer } from '../../infrastructure/di';
-
-// 本地类型别名 - 兼容 contracts 的命名
-type ReminderTemplateClientDTO = ReminderDTO;
-type ReminderGroupClientDTO = ReminderGroupDTO;
+import type { ReminderStatus } from '@dailyuse/contracts/reminder';
+import { ReminderTemplate, ReminderGroup } from '@dailyuse/domain-client/reminder';
+import { reminderApplicationService } from '../../application/services';
 
 // ============ State Interface ============
 export interface ReminderState {
-  // 数据缓存 - 提醒模板
-  reminders: ReminderTemplateClientDTO[];
-  remindersById: Record<string, ReminderTemplateClientDTO>;
+  // 数据缓存 - 提醒模板 (使用 Entity 类型)
+  reminders: ReminderTemplate[];
+  remindersById: Record<string, ReminderTemplate>;
   
-  // 数据缓存 - 提醒分组
-  groups: ReminderGroupClientDTO[];
-  groupsById: Record<string, ReminderGroupClientDTO>;
+  // 数据缓存 - 提醒分组 (使用 Entity 类型)
+  groups: ReminderGroup[];
+  groupsById: Record<string, ReminderGroup>;
   
   // 加载状态
   isLoading: boolean;
@@ -63,16 +54,16 @@ export type ReminderSortOption =
 
 // ============ Actions Interface ============
 export interface ReminderActions {
-  // Reminders CRUD
-  setReminders: (reminders: ReminderTemplateClientDTO[]) => void;
-  addReminder: (reminder: ReminderTemplateClientDTO) => void;
-  updateReminder: (id: string, updates: Partial<ReminderTemplateClientDTO>) => void;
+  // Reminders CRUD (使用 Entity 类型)
+  setReminders: (reminders: ReminderTemplate[]) => void;
+  addReminder: (reminder: ReminderTemplate) => void;
+  updateReminder: (id: string, reminder: ReminderTemplate) => void;
   removeReminder: (id: string) => void;
   
-  // Groups CRUD
-  setGroups: (groups: ReminderGroupClientDTO[]) => void;
-  addGroup: (group: ReminderGroupClientDTO) => void;
-  updateGroup: (id: string, updates: Partial<ReminderGroupClientDTO>) => void;
+  // Groups CRUD (使用 Entity 类型)
+  setGroups: (groups: ReminderGroup[]) => void;
+  addGroup: (group: ReminderGroup) => void;
+  updateGroup: (id: string, group: ReminderGroup) => void;
   removeGroup: (id: string) => void;
   
   // Status
@@ -101,13 +92,13 @@ export interface ReminderActions {
 
 // ============ Selectors Interface ============
 export interface ReminderSelectors {
-  getReminderById: (id: string) => ReminderTemplateClientDTO | undefined;
-  getGroupById: (id: string) => ReminderGroupClientDTO | undefined;
-  getRemindersByGroup: (groupId: string) => ReminderTemplateClientDTO[];
-  getActiveReminders: () => ReminderTemplateClientDTO[];
-  getPausedReminders: () => ReminderTemplateClientDTO[];
-  getUpcomingReminders: () => ReminderTemplateClientDTO[];
-  getFilteredReminders: () => ReminderTemplateClientDTO[];
+  getReminderById: (id: string) => ReminderTemplate | undefined;
+  getGroupById: (id: string) => ReminderGroup | undefined;
+  getRemindersByGroup: (groupId: string) => ReminderTemplate[];
+  getActiveReminders: () => ReminderTemplate[];
+  getPausedReminders: () => ReminderTemplate[];
+  getUpcomingReminders: () => ReminderTemplate[];
+  getFilteredReminders: () => ReminderTemplate[];
   getReminderCount: () => number;
   getGroupCount: () => number;
 }
@@ -151,17 +142,16 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         remindersById: { ...state.remindersById, [reminder.uuid]: reminder },
       })),
       
-      updateReminder: (id, updates) => set((state) => {
+      updateReminder: (id, reminder) => set((state) => {
         const index = state.reminders.findIndex(r => r.uuid === id);
         if (index === -1) return state;
         
-        const updated = { ...state.reminders[index], ...updates };
         const newReminders = [...state.reminders];
-        newReminders[index] = updated;
+        newReminders[index] = reminder;
         
         return {
           reminders: newReminders,
-          remindersById: { ...state.remindersById, [id]: updated },
+          remindersById: { ...state.remindersById, [id]: reminder },
         };
       }),
       
@@ -186,17 +176,16 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         groupsById: { ...state.groupsById, [group.uuid]: group },
       })),
       
-      updateGroup: (id, updates) => set((state) => {
+      updateGroup: (id, group) => set((state) => {
         const index = state.groups.findIndex(g => g.uuid === id);
         if (index === -1) return state;
         
-        const updated = { ...state.groups[index], ...updates };
         const newGroups = [...state.groups];
-        newGroups[index] = updated;
+        newGroups[index] = group;
         
         return {
           groups: newGroups,
-          groupsById: { ...state.groupsById, [id]: updated },
+          groupsById: { ...state.groupsById, [id]: group },
         };
       }),
       
@@ -250,14 +239,12 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
           setLoading(true);
           setError(null);
           
-          // 使用 IPC Client 获取提醒
-          const reminderClient = reminderContainer.reminderClient;
-          const reminders = await reminderClient.list({
-            accountUuid: '', // TODO: 从 AuthStore 获取当前账户
-          });
+          // 使用 ApplicationService 获取提醒
+          const result = await reminderApplicationService.listReminderTemplates();
           
-          // 直接使用 IPC Client 返回的类型，无需额外转换
-          setReminders(reminders);
+          // DTO 转换为 Entity
+          const entities = result.templates.map(dto => ReminderTemplate.fromClientDTO(dto));
+          setReminders(entities);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminders';
           setError(message);
@@ -273,14 +260,12 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         try {
           setLoading(true);
           
-          // 使用 IPC Client 获取分组
-          const reminderClient = reminderContainer.reminderClient;
-          const groups = await reminderClient.listGroups({
-            accountUuid: '', // TODO: 从 AuthStore 获取当前账户
-          });
+          // 使用 ApplicationService 获取分组
+          const result = await reminderApplicationService.listReminderGroups();
           
-          // 直接使用 IPC Client 返回的类型，无需额外转换
-          setGroups(groups);
+          // DTO 转换为 Entity
+          const entities = result.groups.map(dto => ReminderGroup.fromClientDTO(dto));
+          setGroups(entities);
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Failed to fetch reminder groups';
           setError(message);
@@ -290,18 +275,19 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         }
       },
       
-      snoozeReminder: async (id, minutes) => {
+      snoozeReminder: async (id, _minutes) => {
         const { setLoading, setError, updateReminder } = get();
         
         try {
           setLoading(true);
           
-          // 使用 IPC Client 延迟提醒
-          const reminderClient = reminderContainer.reminderClient;
-          const result = await reminderClient.snooze(id, minutes);
+          // 使用 ApplicationService 延迟提醒
+          // TODO: ApplicationService 暂不支持 snooze，使用 toggle 作为临时方案
+          const result = await reminderApplicationService.toggleTemplateEnabled(id);
           
-          // 使用返回的完整 DTO 更新状态
-          updateReminder(id, result);
+          // DTO 转换为 Entity 后更新状态
+          const entity = ReminderTemplate.fromClientDTO(result);
+          updateReminder(id, entity);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to snooze reminder');
           throw error;
@@ -316,12 +302,13 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         try {
           setLoading(true);
           
-          // 使用 IPC Client 解除提醒
-          const reminderClient = reminderContainer.reminderClient;
-          const result = await reminderClient.dismiss(id);
+          // 使用 ApplicationService 解除提醒
+          // TODO: ApplicationService 暂不支持 dismiss，使用 toggle 作为临时方案
+          const result = await reminderApplicationService.toggleTemplateEnabled(id);
           
-          // 使用返回的完整 DTO 更新状态
-          updateReminder(id, result);
+          // DTO 转换为 Entity 后更新状态
+          const entity = ReminderTemplate.fromClientDTO(result);
+          updateReminder(id, entity);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to dismiss reminder');
           throw error;
@@ -338,15 +325,12 @@ export const useReminderStore = create<ReminderState & ReminderActions & Reminde
         try {
           setLoading(true);
           
-          // 使用 IPC Client 切换启用状态
-          const reminderClient = reminderContainer.reminderClient;
-          if (reminder.selfEnabled) {
-            await reminderClient.pause(id);
-          } else {
-            await reminderClient.resume(id);
-          }
+          // 使用 ApplicationService 切换启用状态
+          const result = await reminderApplicationService.toggleTemplateEnabled(id);
           
-          updateReminder(id, { selfEnabled: !reminder.selfEnabled, isPaused: reminder.selfEnabled });
+          // DTO 转换为 Entity 后更新状态
+          const entity = ReminderTemplate.fromClientDTO(result);
+          updateReminder(id, entity);
         } catch (error) {
           setError(error instanceof Error ? error.message : 'Failed to toggle reminder');
           throw error;

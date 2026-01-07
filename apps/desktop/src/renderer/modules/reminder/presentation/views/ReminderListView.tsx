@@ -5,8 +5,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import type { ReminderTemplateClientDTO } from '@dailyuse/contracts/reminder';
+import { reminderApplicationService } from '../../application/services/ReminderApplicationService';
 import { ReminderCard } from '../components/ReminderCard';
 import { ReminderCreateDialog } from '../components/ReminderCreateDialog';
 import { ReminderEditDialog } from '../components/ReminderEditDialog';
@@ -23,14 +23,11 @@ export function ReminderListView() {
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('ALL');
   const [groupFilter, setGroupFilter] = useState<string>('ALL');
 
-  // 获取提醒 API Client
-  const reminderApiClient = ReminderContainer.getInstance().getApiClient();
-
   const loadTemplates = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await reminderApiClient.getReminderTemplates();
+      const result = await reminderApplicationService.listReminderTemplates();
       setTemplates(result.templates);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载提醒失败');
@@ -38,7 +35,7 @@ export function ReminderListView() {
     } finally {
       setLoading(false);
     }
-  }, [reminderApiClient]);
+  }, []);
 
   useEffect(() => {
     loadTemplates();
@@ -51,7 +48,7 @@ export function ReminderListView() {
 
   const handleToggleEnabled = async (uuid: string) => {
     try {
-      await reminderApiClient.toggleTemplateEnabled(uuid);
+      await reminderApplicationService.toggleTemplateEnabled(uuid);
       loadTemplates();
     } catch (err) {
       console.error('[ReminderListView] Failed to toggle template:', err);
@@ -60,7 +57,7 @@ export function ReminderListView() {
 
   const handleDeleteTemplate = async (uuid: string) => {
     try {
-      await reminderApiClient.deleteReminderTemplate(uuid);
+      await reminderApplicationService.deleteReminderTemplate(uuid);
       loadTemplates();
     } catch (err) {
       console.error('[ReminderListView] Failed to delete template:', err);

@@ -6,10 +6,10 @@
  */
 
 import { memo } from 'react';
-import type { AIConversationClientDTO } from '@dailyuse/contracts/ai';
+import type { AIConversation } from '@dailyuse/domain-client/ai';
 
 interface ConversationListProps {
-  conversations: AIConversationClientDTO[];
+  conversations: AIConversation[];
   currentId?: string;
   onSelect: (uuid: string) => void;
   onDelete: (uuid: string) => void;

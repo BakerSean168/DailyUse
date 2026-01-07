@@ -1,5 +1,10 @@
 /**
  * Notification IPC Module - Barrel Exports
+ *
+ * 从 @dailyuse/infrastructure-client 重导出 IPC Adapters
  */
 
-export * from './notification.ipc-client';
+export {
+  NotificationIpcAdapter,
+  createNotificationIpcAdapter,
+} from '@dailyuse/infrastructure-client';

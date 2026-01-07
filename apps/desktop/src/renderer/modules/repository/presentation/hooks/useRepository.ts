@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { RepositoryContainer } from '@dailyuse/infrastructure-client';
+import { repositoryApplicationService } from '../../application/services/RepositoryApplicationService';
 import type {
   RepositoryClientDTO,
   FolderClientDTO,
@@ -62,14 +62,12 @@ export function useRepository(): UseRepositoryReturn {
     error: null,
   });
 
-  const apiClient = RepositoryContainer.getInstance().getApiClient();
-
   // Load all repositories
   const loadRepositories = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const repositories = await apiClient.getRepositories();
+      const repositories = await repositoryApplicationService.listRepositories();
       setState((prev) => ({
         ...prev,
         repositories,
@@ -82,7 +80,7 @@ export function useRepository(): UseRepositoryReturn {
         error: (e as Error).message,
       }));
     }
-  }, [apiClient]);
+  }, []);
 
   // Select a repository
   const selectRepository = useCallback(
@@ -90,8 +88,8 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const repository = await apiClient.getRepositoryById(uuid);
-        const fileTree = await apiClient.getFileTree(uuid);
+        const repository = await repositoryApplicationService.getRepository(uuid);
+        const fileTree = await repositoryApplicationService.getFileTree(uuid);
 
         // Extract folders and resources from tree
         const extractedFolders: FolderClientDTO[] = [];
@@ -128,7 +126,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient]
+    []
   );
 
   // Create repository
@@ -137,7 +135,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const repository = await apiClient.createRepository({ name, type, description });
+        const repository = await repositoryApplicationService.createRepository({ name, type, description });
         setState((prev) => ({
           ...prev,
           repositories: [...prev.repositories, repository],
@@ -153,7 +151,7 @@ export function useRepository(): UseRepositoryReturn {
         return null;
       }
     },
-    [apiClient]
+    []
   );
 
   // Delete repository
@@ -162,7 +160,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await apiClient.deleteRepository(uuid);
+        await repositoryApplicationService.deleteRepository(uuid);
         setState((prev) => ({
           ...prev,
           repositories: prev.repositories.filter((r) => r.uuid !== uuid),
@@ -177,7 +175,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient]
+    []
   );
 
   // Select folder
@@ -186,7 +184,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const contents = await apiClient.getFolderContents(uuid);
+        const contents = await repositoryApplicationService.getFolderContents(uuid);
         // Find the folder from the current folders
         const folder = state.folders.find((f) => f.uuid === uuid) || null;
 
@@ -205,7 +203,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient, state.folders]
+    [state.folders]
   );
 
   // Create folder
@@ -216,7 +214,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const folder = await apiClient.createFolder({
+        const folder = await repositoryApplicationService.createFolder({
           repositoryUuid: state.currentRepository.uuid,
           parentUuid,
           name,
@@ -237,7 +235,7 @@ export function useRepository(): UseRepositoryReturn {
         return null;
       }
     },
-    [apiClient, state.currentRepository]
+    [state.currentRepository]
   );
 
   // Rename folder
@@ -246,7 +244,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const updated = await apiClient.renameFolder(uuid, name);
+        const updated = await repositoryApplicationService.renameFolder(uuid, name);
         setState((prev) => ({
           ...prev,
           folders: prev.folders.map((f) => (f.uuid === uuid ? updated : f)),
@@ -260,7 +258,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient]
+    []
   );
 
   // Move folder
@@ -269,7 +267,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await apiClient.moveFolder(uuid, targetParentUuid);
+        await repositoryApplicationService.moveFolder(uuid, targetParentUuid);
         // Refresh the current folder
         if (state.currentFolder) {
           await selectFolder(state.currentFolder.uuid);
@@ -284,7 +282,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient, state.currentFolder, state.currentRepository, selectFolder, selectRepository]
+    [state.currentFolder, state.currentRepository, selectFolder, selectRepository]
   );
 
   // Delete folder
@@ -293,7 +291,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await apiClient.deleteFolder(uuid);
+        await repositoryApplicationService.deleteFolder(uuid);
         setState((prev) => ({
           ...prev,
           folders: prev.folders.filter((f) => f.uuid !== uuid),
@@ -307,14 +305,14 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient]
+    []
   );
 
   // Get resource
   const getResource = useCallback(
     async (uuid: string) => {
       try {
-        return await apiClient.getResource(uuid);
+        return await repositoryApplicationService.getResource(uuid);
       } catch (e) {
         setState((prev) => ({
           ...prev,
@@ -323,7 +321,7 @@ export function useRepository(): UseRepositoryReturn {
         return null;
       }
     },
-    [apiClient]
+    []
   );
 
   // Rename resource
@@ -332,7 +330,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const updated = await apiClient.renameResource(uuid, name);
+        const updated = await repositoryApplicationService.renameResource(uuid, name);
         setState((prev) => ({
           ...prev,
           resources: prev.resources.map((r) => (r.uuid === uuid ? updated : r)),
@@ -346,7 +344,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient]
+    []
   );
 
   // Move resource
@@ -355,7 +353,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await apiClient.moveResource(uuid, targetFolderUuid);
+        await repositoryApplicationService.moveResource(uuid, targetFolderUuid);
         // Remove from current list
         setState((prev) => ({
           ...prev,
@@ -370,7 +368,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient]
+    []
   );
 
   // Delete resource
@@ -379,7 +377,7 @@ export function useRepository(): UseRepositoryReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        await apiClient.deleteResource(uuid);
+        await repositoryApplicationService.deleteResource(uuid);
         setState((prev) => ({
           ...prev,
           resources: prev.resources.filter((r) => r.uuid !== uuid),
@@ -393,7 +391,7 @@ export function useRepository(): UseRepositoryReturn {
         }));
       }
     },
-    [apiClient]
+    []
   );
 
   // Search
@@ -402,7 +400,7 @@ export function useRepository(): UseRepositoryReturn {
       if (!state.currentRepository) return [];
 
       try {
-        const result = await apiClient.search({
+        const result = await repositoryApplicationService.search({
           repositoryUuid: state.currentRepository.uuid,
           query,
           mode: 'all',
@@ -422,7 +420,7 @@ export function useRepository(): UseRepositoryReturn {
         return [];
       }
     },
-    [apiClient, state.currentRepository]
+    [state.currentRepository]
   );
 
   // Go to root

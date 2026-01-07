@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { AIContainer } from '@dailyuse/infrastructure-client';
+import { aiApplicationService } from '../../application/services';
 import type {
   AIProviderConfigClientDTO,
   AIProviderConfigSummary,
@@ -56,8 +56,7 @@ export function useAISettings(): UseAISettingsReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const providerApi = AIContainer.getInstance().getProviderConfigApiClient();
-      const providers = await providerApi.getProviders();
+      const providers = await aiApplicationService.listProviders();
       setState((prev) => ({
         ...prev,
         providers,
@@ -78,8 +77,7 @@ export function useAISettings(): UseAISettingsReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const providerApi = AIContainer.getInstance().getProviderConfigApiClient();
-      const provider = await providerApi.createProvider(request);
+      const provider = await aiApplicationService.createProvider(request);
       await loadProviders();
       setState((prev) => ({
         ...prev,
@@ -104,8 +102,7 @@ export function useAISettings(): UseAISettingsReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const providerApi = AIContainer.getInstance().getProviderConfigApiClient();
-        const provider = await providerApi.updateProvider(uuid, request);
+        const provider = await aiApplicationService.updateProvider(uuid, request);
         await loadProviders();
         setState((prev) => ({
           ...prev,
@@ -132,8 +129,7 @@ export function useAISettings(): UseAISettingsReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const providerApi = AIContainer.getInstance().getProviderConfigApiClient();
-        await providerApi.deleteProvider(uuid);
+        await aiApplicationService.deleteProvider(uuid);
         setState((prev) => ({
           ...prev,
           providers: prev.providers.filter((p) => p.uuid !== uuid),
@@ -159,8 +155,7 @@ export function useAISettings(): UseAISettingsReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const providerApi = AIContainer.getInstance().getProviderConfigApiClient();
-      const provider = await providerApi.getProviderById(uuid);
+      const provider = await aiApplicationService.getProvider(uuid);
       setState((prev) => ({
         ...prev,
         currentProvider: provider,
@@ -182,8 +177,7 @@ export function useAISettings(): UseAISettingsReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const providerApi = AIContainer.getInstance().getProviderConfigApiClient();
-        await providerApi.setDefaultProvider(uuid);
+        await aiApplicationService.setDefaultProvider(uuid);
         await loadProviders();
         setState((prev) => ({ ...prev, loading: false }));
       } catch (e) {
@@ -204,10 +198,9 @@ export function useAISettings(): UseAISettingsReturn {
     setState((prev) => ({ ...prev, testing: true, testResult: null }));
 
     try {
-      const providerApi = AIContainer.getInstance().getProviderConfigApiClient();
       // First get provider details, then test
-      const provider = await providerApi.getProviderById(uuid);
-      const result = await providerApi.testConnection({
+      const provider = await aiApplicationService.getProvider(uuid);
+      const result = await aiApplicationService.testProviderConnection({
         providerType: provider.providerType,
         baseUrl: provider.baseUrl,
         apiKey: '', // API key is managed server-side for existing providers
@@ -236,8 +229,7 @@ export function useAISettings(): UseAISettingsReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const providerApi = AIContainer.getInstance().getProviderConfigApiClient();
-        await providerApi.refreshModels(uuid);
+        await aiApplicationService.refreshModels(uuid);
         // Reload provider to get updated models
         await selectProvider(uuid);
         setState((prev) => ({ ...prev, loading: false }));

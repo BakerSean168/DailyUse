@@ -1,17 +1,29 @@
 /**
  * Schedule Store - Zustand 状态管理
+ * 
+ * 管理 Schedule 模块的所有状态，包括：
+ * - 日程事件列表缓存 (Schedule Events) - 使用 ScheduleClientDTO
+ * - 加载/错误状态
+ * - UI 状态
+ * 
+ * EPIC-015 Entity 升级说明:
+ * - 当前 Store 管理的是 Schedule Event（日程事件），不是 ScheduleTask
+ * - domain-client 中目前只有 ScheduleTask Entity，没有 Schedule Entity
+ * - 因此暂时保留使用 ScheduleClientDTO
+ * 
+ * TODO: 待 Schedule Entity 创建后，升级为 Entity 类型
+ * - 创建 packages/domain-client/src/schedule/aggregates/Schedule.ts
+ * - 更新 Store 使用 Schedule Entity
+ * - 更新 ApplicationService 返回 Schedule Entity
  */
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-// 使用 IPC Client 的类型，而不是 contracts 的完整 ClientDTO
-import type { ScheduleDTO } from '../../infrastructure/ipc/schedule.ipc-client';
-import { scheduleContainer } from '../../infrastructure/di';
+import type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest } from '@dailyuse/contracts/schedule';
+import { scheduleApplicationService } from '../../application/services';
 
-// 本地类型别名 - 兼容原有命名
-export type ScheduleClientDTO = ScheduleDTO;
-export type CreateScheduleRequest = Partial<ScheduleDTO> & { title: string; startTime: number; endTime: number };
-export type UpdateScheduleRequest = Partial<ScheduleDTO>;
+// Re-export types from contracts for backward compatibility
+export type { ScheduleClientDTO, CreateScheduleRequest, UpdateScheduleRequest };
 
 // ============ Types ============
 export interface ScheduleState {
@@ -132,15 +144,12 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // 使用 IPC Client 获取日程
-          const scheduleClient = scheduleContainer.scheduleClient;
-          const schedules = await scheduleClient.listByDateRange(
-            '', // TODO: 从 AuthStore 获取当前账户
-            start.getTime(),
-            end.getTime()
-          );
+          // 使用 ApplicationService 获取日程
+          const schedules = await scheduleApplicationService.getSchedulesByTimeRange({
+            startTime: start.getTime(),
+            endTime: end.getTime(),
+          });
           
-          // 直接使用 IPC Client 返回的类型
           get().setSchedules(schedules);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to fetch' });
@@ -154,11 +163,9 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // 使用 IPC Client 创建日程
-          const scheduleClient = scheduleContainer.scheduleClient;
-          const result = await scheduleClient.create(dto as any);
+          // 使用 ApplicationService 创建日程事件
+          const result = await scheduleApplicationService.createScheduleEvent(dto as any);
           
-          // 直接使用返回结果
           get().addSchedule(result);
           return result;
         } catch (error) {
@@ -173,11 +180,12 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // 使用 IPC Client 更新日程
-          const scheduleClient = scheduleContainer.scheduleClient;
-          const result = await scheduleClient.update({ uuid: id, ...dto } as any);
+          // 使用 ApplicationService 更新日程事件
+          const result = await scheduleApplicationService.updateScheduleEvent({
+            uuid: id,
+            data: dto,
+          });
           
-          // 直接使用返回结果
           get().updateSchedule(id, result);
           return result;
         } catch (error) {
@@ -192,9 +200,8 @@ export const useScheduleStore = create<ScheduleStore>()(
         set({ isLoading: true, error: null });
         
         try {
-          // 使用 IPC Client 删除日程
-          const scheduleClient = scheduleContainer.scheduleClient;
-          await scheduleClient.delete(id);
+          // 使用 ApplicationService 删除日程事件
+          await scheduleApplicationService.deleteScheduleEvent(id);
           
           get().removeSchedule(id);
         } catch (error) {

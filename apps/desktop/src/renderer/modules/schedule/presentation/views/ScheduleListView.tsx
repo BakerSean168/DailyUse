@@ -7,8 +7,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { ScheduleContainer } from '@dailyuse/infrastructure-client';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import { scheduleApplicationService } from '../../application/services/ScheduleApplicationService';
+import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 import { ScheduleCard } from '../components/ScheduleCard';
 import { ScheduleCreateDialog } from '../components/ScheduleCreateDialog';
@@ -19,24 +19,21 @@ type ViewMode = 'list' | 'calendar';
 type StatusFilter = 'ALL' | ScheduleTaskStatus;
 
 export function ScheduleListView() {
-  const [tasks, setTasks] = useState<ScheduleTaskClientDTO[]>([]);
+  const [tasks, setTasks] = useState<ScheduleTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingTask, setEditingTask] = useState<ScheduleTaskClientDTO | null>(null);
+  const [editingTask, setEditingTask] = useState<ScheduleTask | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [sourceFilter, setSourceFilter] = useState<string>('ALL');
 
-  // 获取调度任务 API Client
-  const scheduleApiClient = ScheduleContainer.getInstance().getTaskApiClient();
-
   const loadTasks = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await scheduleApiClient.getTasks();
+      const result = await scheduleApplicationService.listScheduleTasks();
       setTasks(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载调度任务失败');
@@ -44,7 +41,7 @@ export function ScheduleListView() {
     } finally {
       setLoading(false);
     }
-  }, [scheduleApiClient]);
+  }, []);
 
   useEffect(() => {
     loadTasks();
@@ -61,7 +58,7 @@ export function ScheduleListView() {
 
   const handlePauseTask = async (taskUuid: string) => {
     try {
-      await scheduleApiClient.pauseTask(taskUuid);
+      await scheduleApplicationService.pauseScheduleTask(taskUuid);
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to pause task:', err);
@@ -70,7 +67,7 @@ export function ScheduleListView() {
 
   const handleResumeTask = async (taskUuid: string) => {
     try {
-      await scheduleApiClient.resumeTask(taskUuid);
+      await scheduleApplicationService.resumeScheduleTask(taskUuid);
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to resume task:', err);
@@ -79,7 +76,7 @@ export function ScheduleListView() {
 
   const handleCompleteTask = async (taskUuid: string) => {
     try {
-      await scheduleApiClient.completeTask(taskUuid);
+      await scheduleApplicationService.completeScheduleTask({ taskUuid });
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to complete task:', err);
@@ -88,7 +85,7 @@ export function ScheduleListView() {
 
   const handleDeleteTask = async (taskUuid: string) => {
     try {
-      await scheduleApiClient.deleteTask(taskUuid);
+      await scheduleApplicationService.deleteScheduleTask(taskUuid);
       loadTasks();
     } catch (err) {
       console.error('[ScheduleListView] Failed to delete task:', err);

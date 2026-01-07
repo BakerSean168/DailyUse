@@ -6,12 +6,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ScheduleContainer } from '@dailyuse/infrastructure-client';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import { scheduleApplicationService } from '../../application/services/ScheduleApplicationService';
+import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import { ScheduleTaskStatus } from '@dailyuse/contracts/schedule';
 
 interface ScheduleEditDialogProps {
-  task: ScheduleTaskClientDTO;
+  task: ScheduleTask;
   onClose: () => void;
   onUpdated: () => void;
 }
@@ -22,8 +22,6 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
   const [newTag, setNewTag] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const scheduleApiClient = ScheduleContainer.getInstance().getTaskApiClient();
 
   useEffect(() => {
     // 重置表单当 task 变化时
@@ -36,9 +34,9 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     try {
       setLoading(true);
       if (enabled) {
-        await scheduleApiClient.pauseTask(task.uuid);
+        await scheduleApplicationService.pauseScheduleTask(task.uuid);
       } else {
-        await scheduleApiClient.resumeTask(task.uuid);
+        await scheduleApplicationService.resumeScheduleTask(task.uuid);
       }
       setEnabled(!enabled);
       onUpdated();
@@ -55,8 +53,11 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApiClient.updateTaskMetadata(task.uuid, {
-        tagsToAdd: [newTag.trim()],
+      await scheduleApplicationService.updateTaskMetadata({
+        taskUuid: task.uuid,
+        metadata: {
+          tagsToAdd: [newTag.trim()],
+        },
       });
       setTags([...tags, newTag.trim()]);
       setNewTag('');
@@ -72,8 +73,11 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApiClient.updateTaskMetadata(task.uuid, {
-        tagsToRemove: [tagToRemove],
+      await scheduleApplicationService.updateTaskMetadata({
+        taskUuid: task.uuid,
+        metadata: {
+          tagsToRemove: [tagToRemove],
+        },
       });
       setTags(tags.filter(t => t !== tagToRemove));
       onUpdated();
@@ -88,7 +92,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApiClient.completeTask(task.uuid, '用户手动完成');
+      await scheduleApplicationService.completeScheduleTask({ taskUuid: task.uuid, reason: '用户手动完成' });
       onUpdated();
       onClose();
     } catch (err) {
@@ -102,7 +106,7 @@ export function ScheduleEditDialog({ task, onClose, onUpdated }: ScheduleEditDia
     setError(null);
     try {
       setLoading(true);
-      await scheduleApiClient.cancelTask(task.uuid, '用户手动取消');
+      await scheduleApplicationService.cancelScheduleTask({ taskUuid: task.uuid, reason: '用户手动取消' });
       onUpdated();
       onClose();
     } catch (err) {

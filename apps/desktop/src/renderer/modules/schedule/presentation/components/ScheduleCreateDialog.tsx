@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { ScheduleContainer } from '@dailyuse/infrastructure-client';
+import { scheduleApplicationService } from '../../application/services/ScheduleApplicationService';
 import type { CreateScheduleTaskRequest, ScheduleConfigServerDTO } from '@dailyuse/contracts/schedule';
 import { SourceModule, Timezone } from '@dailyuse/contracts/schedule';
 
@@ -52,8 +52,6 @@ export function ScheduleCreateDialog({ onClose, onCreated }: ScheduleCreateDialo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const scheduleApiClient = ScheduleContainer.getInstance().getTaskApiClient();
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -97,7 +95,7 @@ export function ScheduleCreateDialog({ onClose, onCreated }: ScheduleCreateDialo
         schedule: scheduleConfig,
       };
 
-      await scheduleApiClient.createTask(request);
+      await scheduleApplicationService.createScheduleTask(request);
       onCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : '创建失败');

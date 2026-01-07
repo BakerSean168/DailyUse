@@ -1,7 +1,7 @@
 /**
- * Goal DI - 统一导出
- * 
- * @module renderer/modules/goal/infrastructure/di
+ * Goal DI Module - Barrel Exports
+ *
+ * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-export { GoalContainer, GoalTokens, goalContainer } from './goal.container';
+export { GoalContainer } from '@dailyuse/infrastructure-client';

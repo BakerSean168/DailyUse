@@ -1,5 +1,7 @@
 /**
  * AI DI Module - Barrel Exports
+ *
+ * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-export * from './ai.container';
+export { AIContainer } from '@dailyuse/infrastructure-client';

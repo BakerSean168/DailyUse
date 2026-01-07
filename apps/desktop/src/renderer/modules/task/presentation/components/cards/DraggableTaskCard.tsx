@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { TaskTemplateClientDTO, TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 import { Badge } from '@dailyuse/ui-shadcn';
 import { Button } from '@dailyuse/ui-shadcn';
 import {
@@ -34,8 +34,8 @@ import {
 
 interface DraggableTaskCardProps {
   id: string;
-  instance: TaskInstanceClientDTO;
-  template?: TaskTemplateClientDTO | null;
+  instance: TaskInstance;
+  template?: TaskTemplate | null;
   onComplete?: (uuid: string) => void;
   onSkip?: (uuid: string) => void;
   onClick?: (uuid: string) => void;

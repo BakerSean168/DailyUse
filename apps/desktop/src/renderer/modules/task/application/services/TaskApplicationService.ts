@@ -5,7 +5,13 @@
  *
  * 职责：
  * - 调用 @dailyuse/application-client 的 Task Use Cases
+ * - 将 DTO 转换为 Entity 对象
  * - 不包含业务逻辑
+ * 
+ * 🔄 重构说明 (EPIC-015):
+ * - 所有返回 DTO 的方法改为返回 Entity
+ * - 使用 Entity.fromClientDTO() 进行转换
+ * - 与 Web 应用 ApplicationService 模式保持一致
  */
 
 import {
@@ -44,11 +50,8 @@ import {
   type GetTaskStatisticsInput,
   type DeleteTaskDependencyInput,
 } from '@dailyuse/application-client';
-import type {
-  TaskTemplateClientDTO,
-  TaskInstanceClientDTO,
-  UpdateTaskTemplateRequest,
-} from '@dailyuse/contracts/task';
+import type { UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
+import { TaskTemplate, TaskInstance, TaskStatistics } from '@dailyuse/domain-client/task';
 
 /**
  * Task Application Service
@@ -67,94 +70,179 @@ export class TaskApplicationService {
 
   // ===== Template Operations =====
 
-  async listTemplates(): Promise<TaskTemplateClientDTO[]> {
-    return listTaskTemplates();
+  /**
+   * 获取所有任务模板
+   * @returns 返回 Entity 对象数组
+   */
+  async listTemplates(): Promise<TaskTemplate[]> {
+    const dtos = await listTaskTemplates();
+    return dtos.map(dto => TaskTemplate.fromClientDTO(dto));
   }
 
-  async getTemplate(templateId: string): Promise<TaskTemplateClientDTO | null> {
+  /**
+   * 获取单个任务模板
+   * @returns 返回 Entity 对象或 null
+   */
+  async getTemplate(templateId: string): Promise<TaskTemplate | null> {
     try {
-      return await getTaskTemplate(templateId);
+      const dto = await getTaskTemplate(templateId);
+      return TaskTemplate.fromClientDTO(dto);
     } catch {
       return null;
     }
   }
 
-  async createTemplate(input: CreateTaskTemplateInput): Promise<TaskTemplateClientDTO> {
-    return createTaskTemplate(input);
+  /**
+   * 创建任务模板
+   * @returns 返回创建的 Entity 对象
+   */
+  async createTemplate(input: CreateTaskTemplateInput): Promise<TaskTemplate> {
+    const dto = await createTaskTemplate(input);
+    return TaskTemplate.fromClientDTO(dto);
   }
 
-  async updateTemplate(uuid: string, request: UpdateTaskTemplateRequest) {
-    return updateTaskTemplate(uuid, request);
+  /**
+   * 更新任务模板
+   * @returns 返回更新后的 Entity 对象
+   */
+  async updateTemplate(uuid: string, request: UpdateTaskTemplateRequest): Promise<TaskTemplate> {
+    const dto = await updateTaskTemplate(uuid, request);
+    return TaskTemplate.fromClientDTO(dto);
   }
 
+  /**
+   * 删除任务模板
+   */
   async deleteTemplate(templateId: string): Promise<void> {
     return deleteTaskTemplate(templateId);
   }
 
-  async activateTemplate(templateId: string) {
-    return activateTaskTemplate(templateId);
+  /**
+   * 激活任务模板
+   * @returns 返回激活后的 Entity 对象
+   */
+  async activateTemplate(templateId: string): Promise<TaskTemplate> {
+    const output = await activateTaskTemplate(templateId);
+    return output.template;
   }
 
-  async pauseTemplate(templateId: string): Promise<TaskTemplateClientDTO> {
-    return pauseTaskTemplate(templateId);
+  /**
+   * 暂停任务模板
+   * @returns 返回暂停后的 Entity 对象
+   */
+  async pauseTemplate(templateId: string): Promise<TaskTemplate> {
+    const dto = await pauseTaskTemplate(templateId);
+    return TaskTemplate.fromClientDTO(dto);
   }
 
-  async archiveTemplate(templateId: string): Promise<TaskTemplateClientDTO> {
-    return archiveTaskTemplate(templateId);
+  /**
+   * 归档任务模板
+   * @returns 返回归档后的 Entity 对象
+   */
+  async archiveTemplate(templateId: string): Promise<TaskTemplate> {
+    const dto = await archiveTaskTemplate(templateId);
+    return TaskTemplate.fromClientDTO(dto);
   }
 
   // ===== Instance Operations =====
 
-  async listInstances(): Promise<TaskInstanceClientDTO[]> {
-    return listTaskInstances();
+  /**
+   * 获取所有任务实例
+   * @returns 返回 Entity 对象数组
+   */
+  async listInstances(): Promise<TaskInstance[]> {
+    const dtos = await listTaskInstances();
+    return dtos.map(dto => TaskInstance.fromClientDTO(dto));
   }
 
-  async getInstance(instanceId: string): Promise<TaskInstanceClientDTO | null> {
+  /**
+   * 获取单个任务实例
+   * @returns 返回 Entity 对象或 null
+   */
+  async getInstance(instanceId: string): Promise<TaskInstance | null> {
     try {
-      return await getTaskInstance(instanceId);
+      const dto = await getTaskInstance(instanceId);
+      return TaskInstance.fromClientDTO(dto);
     } catch {
       return null;
     }
   }
 
-  async startInstance(instanceId: string): Promise<TaskInstanceClientDTO> {
-    return startTaskInstance(instanceId);
+  /**
+   * 开始任务实例
+   * @returns 返回更新后的 Entity 对象
+   */
+  async startInstance(instanceId: string): Promise<TaskInstance> {
+    const dto = await startTaskInstance(instanceId);
+    return TaskInstance.fromClientDTO(dto);
   }
 
-  async completeInstance(instanceId: string) {
-    return completeTaskInstance(instanceId);
+  /**
+   * 完成任务实例
+   * @returns 返回完成后的 Entity 对象
+   */
+  async completeInstance(instanceId: string): Promise<TaskInstance> {
+    const dto = await completeTaskInstance(instanceId);
+    return TaskInstance.fromClientDTO(dto);
   }
 
-  async skipInstance(instanceId: string) {
-    return skipTaskInstance(instanceId);
+  /**
+   * 跳过任务实例
+   * @returns 返回跳过后的 Entity 对象
+   */
+  async skipInstance(instanceId: string): Promise<TaskInstance> {
+    const dto = await skipTaskInstance(instanceId);
+    return TaskInstance.fromClientDTO(dto);
   }
 
+  /**
+   * 删除任务实例
+   */
   async deleteInstance(instanceId: string): Promise<void> {
     return deleteTaskInstance(instanceId);
   }
 
-  async getInstancesByDateRange(input: GetInstancesByDateRangeInput): Promise<TaskInstanceClientDTO[]> {
-    return getInstancesByDateRange(input);
+  /**
+   * 获取日期范围内的任务实例
+   * @returns 返回 Entity 对象数组
+   */
+  async getInstancesByDateRange(input: GetInstancesByDateRangeInput): Promise<TaskInstance[]> {
+    const dtos = await getInstancesByDateRange(input);
+    return dtos.map(dto => TaskInstance.fromClientDTO(dto));
   }
 
   // ===== Statistics =====
 
-  async getStatistics(input: GetTaskStatisticsInput) {
+  /**
+   * 获取任务统计数据
+   * @returns 返回 Entity 对象或 null
+   */
+  async getStatistics(input: GetTaskStatisticsInput): Promise<TaskStatistics | null> {
     try {
-      return await getTaskStatistics(input);
+      const dto = await getTaskStatistics(input);
+      return TaskStatistics.fromServerDTO(dto);
     } catch {
       return null;
     }
   }
 
-  async getTodayCompletionRate(accountUuid: string) {
+  /**
+   * 获取今日完成率
+   */
+  async getTodayCompletionRate(accountUuid: string): Promise<number> {
     return getTodayCompletionRate(accountUuid);
   }
 
-  async getWeekCompletionRate(accountUuid: string) {
+  /**
+   * 获取本周完成率
+   */
+  async getWeekCompletionRate(accountUuid: string): Promise<number> {
     return getWeekCompletionRate(accountUuid);
   }
 
+  /**
+   * 获取效率趋势
+   */
   async getEfficiencyTrend(accountUuid: string) {
     return getEfficiencyTrend(accountUuid);
   }

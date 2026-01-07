@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import type { GoalClientDTO, KeyResultClientDTO, GoalReviewClientDTO } from '@dailyuse/contracts/goal';
+import type { Goal, KeyResult, GoalReview } from '@dailyuse/domain-client/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { goalApplicationService } from '../../application/services';
 import {
@@ -79,7 +79,7 @@ const STATUS_CONFIG: Record<GoalStatus, { label: string; color: string; icon: ty
 
 export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailViewProps) {
   // Goal State
-  const [goal, setGoal] = useState<GoalClientDTO | null>(null);
+  const [goal, setGoal] = useState<Goal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -88,7 +88,7 @@ export function GoalDetailView({ goalUuid, onBack, onGoalUpdated }: GoalDetailVi
   const [showKeyResultDialog, setShowKeyResultDialog] = useState(false);
   const [showRecordDialog, setShowRecordDialog] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
-  const [selectedKeyResult, setSelectedKeyResult] = useState<KeyResultClientDTO | null>(null);
+  const [selectedKeyResult, setSelectedKeyResult] = useState<KeyResult | null>(null);
 
   // Hooks
   const {

@@ -1,7 +1,7 @@
 /**
- * Task DI - 统一导出
- * 
- * @module renderer/modules/task/infrastructure/di
+ * Task DI Module - Barrel Exports
+ *
+ * 从 @dailyuse/infrastructure-client 重导出 Container
  */
 
-export { TaskContainer, TaskTokens, taskContainer } from './task.container';
+export { TaskContainer } from '@dailyuse/infrastructure-client';

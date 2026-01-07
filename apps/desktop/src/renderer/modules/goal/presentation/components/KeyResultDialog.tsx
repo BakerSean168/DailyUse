@@ -5,9 +5,8 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import type { 
-  KeyResultClientDTO, 
-  GoalClientDTO,
+import type { KeyResult, Goal } from '@dailyuse/domain-client/goal';
+import type {
   AddKeyResultRequest,
   UpdateKeyResultRequest,
 } from '@dailyuse/contracts/goal';
@@ -37,8 +36,8 @@ import { Target } from 'lucide-react';
 interface KeyResultDialogProps {
   open: boolean;
   goalUuid: string;
-  goal?: GoalClientDTO | null;
-  keyResult?: KeyResultClientDTO | null;
+  goal?: Goal | null;
+  keyResult?: KeyResult | null;
   onClose: () => void;
   /** 保存回调 - 使用 contracts 类型 */
   onSave: (data: AddKeyResultRequest | UpdateKeyResultRequest) => Promise<void>;

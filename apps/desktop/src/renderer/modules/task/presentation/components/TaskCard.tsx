@@ -2,16 +2,21 @@
  * Task Card Component
  *
  * 显示单个任务模板的卡片
+ * 
+ * EPIC-015 重构: 使用 Entity 类型和 Hook
+ * - Props 接受 TaskTemplate Entity
+ * - 使用 useTaskTemplate Hook 进行状态操作
+ * - 利用 Entity 的 getter 方法（isActive, isPaused, isArchived）
  */
 
 import { useState } from 'react';
-import { TaskContainer } from '@dailyuse/infrastructure-client';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
 import { UrgencyLevel } from '@dailyuse/contracts/shared';
 import { TaskDetailDialog } from './TaskDetailDialog';
+import { useTaskTemplate } from '../hooks/useTaskTemplate';
 
 interface TaskCardProps {
-  template: TaskTemplateClientDTO;
+  template: TaskTemplate;
   onUpdate: () => void;
 }
 
@@ -19,13 +24,13 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
 
-  // 获取 API Client
-  const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
+  // 使用 Hook 进行状态操作
+  const { activateTemplate, pauseTemplate, archiveTemplate } = useTaskTemplate();
 
   const handleActivate = async () => {
     try {
       setIsUpdating(true);
-      await taskApiClient.activateTaskTemplate(template.uuid);
+      await activateTemplate(template.uuid);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to activate:', err);
@@ -37,7 +42,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const handlePause = async () => {
     try {
       setIsUpdating(true);
-      await taskApiClient.pauseTaskTemplate(template.uuid);
+      await pauseTemplate(template.uuid);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to pause:', err);
@@ -49,7 +54,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
   const handleArchive = async () => {
     try {
       setIsUpdating(true);
-      await taskApiClient.archiveTaskTemplate(template.uuid);
+      await archiveTemplate(template.uuid);
       onUpdate();
     } catch (err) {
       console.error('[TaskCard] Failed to archive:', err);
@@ -58,12 +63,12 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
     }
   };
 
-  // 状态颜色映射 (TaskTemplateStatus: ACTIVE, PAUSED, ARCHIVED, DELETED)
-  const statusColors: Record<string, string> = {
-    ACTIVE: 'bg-blue-100 text-blue-800',
-    PAUSED: 'bg-yellow-100 text-yellow-800',
-    ARCHIVED: 'bg-gray-100 text-gray-600',
-    DELETED: 'bg-red-100 text-red-600',
+  // 状态颜色映射 - 使用 Entity getter 属性
+  const getStatusColorClass = (): string => {
+    if (template.isActive) return 'bg-blue-100 text-blue-800';
+    if (template.isPaused) return 'bg-yellow-100 text-yellow-800';
+    if (template.isArchived) return 'bg-gray-100 text-gray-600';
+    return 'bg-red-100 text-red-600'; // DELETED
   };
 
   // 重要性颜色 (ImportanceLevel: Vital, Important, Moderate, Minor, Trivial)
@@ -120,7 +125,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
             </p>
           )}
         </div>
-        <span className={`px-2 py-1 text-xs rounded-full ${statusColors[template.status] ?? 'bg-gray-100 text-gray-800'}`}>
+        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColorClass()}`}>
           {template.statusText ?? template.status}
         </span>
       </div>
@@ -135,11 +140,6 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
         {template.urgency && template.urgency !== UrgencyLevel.None && (
           <span className={`px-1.5 py-0.5 text-xs rounded ${urgencyColors[template.urgency] ?? 'bg-gray-100'}`}>
             🔥 {template.urgencyText ?? template.urgency}
-          </span>
-        )}
-        {template.estimatedMinutes && (
-          <span className="text-muted-foreground">
-            ⏱️ {template.estimatedMinutes}分钟
           </span>
         )}
       </div>
@@ -170,9 +170,9 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
         </div>
       )}
 
-      {/* Actions */}
+      {/* Actions - 使用 Entity 的 getter 属性 */}
       <div className="flex gap-2 pt-2 border-t">
-        {template.status === 'ACTIVE' && (
+        {template.isActive && (
           <>
             <button
               onClick={handlePause}
@@ -188,7 +188,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
             </button>
           </>
         )}
-        {template.status === 'PAUSED' && (
+        {template.isPaused && (
           <button
             onClick={handleActivate}
             className="flex-1 px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
@@ -196,7 +196,7 @@ export function TaskCard({ template, onUpdate }: TaskCardProps) {
             激活
           </button>
         )}
-        {template.status === 'ARCHIVED' && (
+        {template.isArchived && (
           <button
             onClick={handleActivate}
             className="flex-1 px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"

@@ -7,10 +7,10 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { GoalContainer } from '@dailyuse/infrastructure-client';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { Goal } from '@dailyuse/domain-client/goal';
 import { GoalStatus } from '@dailyuse/contracts/goal';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
+import { useGoal } from '../hooks';
 
 interface GoalDetailDialogProps {
   goalUuid: string;
@@ -20,13 +20,13 @@ interface GoalDetailDialogProps {
 }
 
 export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDetailDialogProps) {
-  const [goal, setGoal] = useState<GoalClientDTO | null>(null);
+  const [goal, setGoal] = useState<Goal | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 获取 API Client
-  const goalApiClient = GoalContainer.getInstance().getApiClient();
+  // 使用 useGoal hook
+  const { getGoal, completeGoal: completeGoalAction, archiveGoal: archiveGoalAction, deleteGoal: deleteGoalAction } = useGoal();
 
   // 加载目标详情
   useEffect(() => {
@@ -39,7 +39,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
     try {
       setLoading(true);
       setError(null);
-      const result = await goalApiClient.getGoalById(goalUuid);
+      const result = await getGoal(goalUuid);
       setGoal(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败');
@@ -53,7 +53,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
     if (!goal) return;
     
     try {
-      await goalApiClient.completeGoal(goal.uuid);
+      await completeGoalAction(goal.uuid);
       onUpdated();
       onClose();
     } catch (err) {
@@ -66,7 +66,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
     if (!goal) return;
     
     try {
-      await goalApiClient.archiveGoal(goal.uuid);
+      await archiveGoalAction(goal.uuid);
       onUpdated();
       onClose();
     } catch (err) {
@@ -79,7 +79,7 @@ export function GoalDetailDialog({ goalUuid, open, onClose, onUpdated }: GoalDet
     if (!goal || !confirm('确定要删除这个目标吗？')) return;
     
     try {
-      await goalApiClient.deleteGoal(goal.uuid);
+      await deleteGoalAction(goal.uuid);
       onUpdated();
       onClose();
     } catch (err) {

@@ -2,15 +2,21 @@
  * useGoalReview Hook
  *
  * 目标复盘管理 Hook - 处理复盘记录的 CRUD 操作
+ * 
+ * EPIC-015 重构: 与 Store 集成，使用 Entity 类型
+ * - 使用 useGoalStore 作为状态源
+ * - 返回 Entity 类型（GoalReview）
+ * - 移除内部 useState，统一使用 Store 状态
  */
 
 import { useState, useCallback } from 'react';
+import { useGoalStore } from '../stores/goalStore';
+import { goalApplicationService } from '../../application/services';
+import type { GoalReview } from '@dailyuse/domain-client/goal';
 import type { 
-  GoalReviewClientDTO,
   CreateGoalReviewRequest,
   UpdateGoalReviewRequest,
 } from '@dailyuse/contracts/goal';
-import { goalApplicationService } from '../../application/services';
 
 // ===== Types =====
 
@@ -18,24 +24,23 @@ import { goalApplicationService } from '../../application/services';
 export type CreateReviewInput = CreateGoalReviewRequest;
 export type UpdateReviewInput = UpdateGoalReviewRequest;
 
-export interface GoalReviewState {
-  reviews: GoalReviewClientDTO[];
+export interface UseGoalReviewReturn {
+  // State from Store
+  reviews: GoalReview[];
   loading: boolean;
   error: string | null;
-  editingReview: GoalReviewClientDTO | null;
-}
+  editingReview: GoalReview | null;
 
-export interface UseGoalReviewReturn extends GoalReviewState {
   // Query
-  loadReviews: (goalUuid: string) => Promise<GoalReviewClientDTO[]>;
+  loadReviews: (goalUuid: string) => Promise<GoalReview[]>;
 
   // Mutations
-  createReview: (goalUuid: string, data: CreateReviewInput) => Promise<GoalReviewClientDTO>;
-  updateReview: (goalUuid: string, reviewUuid: string, data: UpdateReviewInput) => Promise<GoalReviewClientDTO>;
+  createReview: (goalUuid: string, data: CreateReviewInput) => Promise<GoalReview>;
+  updateReview: (goalUuid: string, reviewUuid: string, data: UpdateReviewInput) => Promise<GoalReview>;
   deleteReview: (goalUuid: string, reviewUuid: string) => Promise<void>;
 
   // Editing State
-  setEditingReview: (review: GoalReviewClientDTO | null) => void;
+  setEditingReview: (review: GoalReview | null) => void;
 
   // Utilities
   clearError: () => void;
@@ -45,127 +50,124 @@ export interface UseGoalReviewReturn extends GoalReviewState {
 // ===== Hook Implementation =====
 
 export function useGoalReview(): UseGoalReviewReturn {
-  const [state, setState] = useState<GoalReviewState>({
-    reviews: [],
-    loading: false,
-    error: null,
-    editingReview: null,
-  });
+  // ===== Store State =====
+  const loading = useGoalStore((state) => state.isLoading);
+  const error = useGoalStore((state) => state.error);
+
+  // ===== Store Actions =====
+  const storeSetLoading = useGoalStore((state) => state.setLoading);
+  const storeSetError = useGoalStore((state) => state.setError);
+
+  // ===== Local State (reviews are goal-specific, not global) =====
+  const [reviews, setReviews] = useState<GoalReview[]>([]);
+  const [editingReview, setEditingReviewState] = useState<GoalReview | null>(null);
 
   // ===== Query =====
 
-  const loadReviews = useCallback(async (goalUuid: string): Promise<GoalReviewClientDTO[]> => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const loadReviews = useCallback(async (goalUuid: string): Promise<GoalReview[]> => {
+    storeSetLoading(true);
+    storeSetError(null);
 
     try {
-      const reviews = await goalApplicationService.getReviews(goalUuid);
-      
-      setState((prev) => ({
-        ...prev,
-        reviews,
-        loading: false,
-      }));
-      
-      return reviews;
+      const result = await goalApplicationService.getReviews(goalUuid);
+      setReviews(result);
+      storeSetLoading(false);
+      return result;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '加载复盘记录失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
+      storeSetError(errorMessage);
+      storeSetLoading(false);
       throw e;
     }
-  }, []);
+  }, [storeSetLoading, storeSetError]);
 
   // ===== Mutations =====
 
   const createReview = useCallback(async (
     goalUuid: string,
     data: CreateReviewInput
-  ): Promise<GoalReviewClientDTO> => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  ): Promise<GoalReview> => {
+    storeSetLoading(true);
+    storeSetError(null);
 
     try {
-      // 直接传递 CreateGoalReviewRequest，不做字段转换
-      // data 已经是符合 CreateGoalReviewRequest 结构的对象
       const review = await goalApplicationService.createReview(goalUuid, data);
-      
-      setState((prev) => ({
-        ...prev,
-        reviews: [...prev.reviews, review],
-        loading: false,
-      }));
-      
+      setReviews((prev) => [...prev, review]);
+      storeSetLoading(false);
       return review;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '创建复盘失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
+      storeSetError(errorMessage);
+      storeSetLoading(false);
       throw e;
     }
-  }, []);
+  }, [storeSetLoading, storeSetError]);
 
   const updateReview = useCallback(async (
     goalUuid: string,
     reviewUuid: string,
     data: UpdateReviewInput
-  ): Promise<GoalReviewClientDTO> => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  ): Promise<GoalReview> => {
+    storeSetLoading(true);
+    storeSetError(null);
 
     try {
       const review = await goalApplicationService.updateReview(goalUuid, reviewUuid, data);
-      
-      setState((prev) => ({
-        ...prev,
-        reviews: prev.reviews.map((r) => (r.uuid === reviewUuid ? review : r)),
-        editingReview: null,
-        loading: false,
-      }));
-      
+      setReviews((prev) => prev.map((r) => (r.uuid === reviewUuid ? review : r)));
+      setEditingReviewState(null);
+      storeSetLoading(false);
       return review;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '更新复盘失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
+      storeSetError(errorMessage);
+      storeSetLoading(false);
       throw e;
     }
-  }, []);
+  }, [storeSetLoading, storeSetError]);
 
   const deleteReview = useCallback(async (
     goalUuid: string,
     reviewUuid: string
   ): Promise<void> => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    storeSetLoading(true);
+    storeSetError(null);
 
     try {
       await goalApplicationService.deleteReview(goalUuid, reviewUuid);
-      
-      setState((prev) => ({
-        ...prev,
-        reviews: prev.reviews.filter((r) => r.uuid !== reviewUuid),
-        loading: false,
-      }));
+      setReviews((prev) => prev.filter((r) => r.uuid !== reviewUuid));
+      storeSetLoading(false);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '删除复盘失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
+      storeSetError(errorMessage);
+      storeSetLoading(false);
       throw e;
     }
-  }, []);
+  }, [storeSetLoading, storeSetError]);
 
   // ===== Editing State =====
 
-  const setEditingReview = useCallback((review: GoalReviewClientDTO | null) => {
-    setState((prev) => ({ ...prev, editingReview: review }));
+  const setEditingReview = useCallback((review: GoalReview | null) => {
+    setEditingReviewState(review);
   }, []);
 
   // ===== Utilities =====
 
   const clearError = useCallback(() => {
-    setState((prev) => ({ ...prev, error: null }));
-  }, []);
+    storeSetError(null);
+  }, [storeSetError]);
 
   const clearReviews = useCallback(() => {
-    setState((prev) => ({ ...prev, reviews: [] }));
+    setReviews([]);
   }, []);
 
+  // ===== Return =====
+
   return {
-    // State
-    ...state,
+    // State from Store
+    reviews,
+    loading,
+    error,
+    editingReview,
 
     // Query
     loadReviews,

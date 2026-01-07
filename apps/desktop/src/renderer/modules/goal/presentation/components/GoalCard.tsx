@@ -7,12 +7,12 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import { GoalContainer } from '@dailyuse/infrastructure-client';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { Goal } from '@dailyuse/domain-client/goal';
+import { useGoal } from '../hooks';
 import { GoalDetailDialog } from './GoalDetailDialog';
 
 interface GoalCardProps {
-  goal: GoalClientDTO;
+  goal: Goal;
   onUpdate: () => void;
 }
 
@@ -20,13 +20,13 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
 
-  // 获取 API Client
-  const goalApiClient = GoalContainer.getInstance().getApiClient();
+  // 使用 useGoal hook
+  const { completeGoal: completeGoalAction, archiveGoal: archiveGoalAction, activateGoal: activateGoalAction } = useGoal();
 
   const handleComplete = async () => {
     try {
       setIsUpdating(true);
-      await goalApiClient.completeGoal(goal.uuid);
+      await completeGoalAction(goal.uuid);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to complete goal:', err);
@@ -38,7 +38,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const handleArchive = async () => {
     try {
       setIsUpdating(true);
-      await goalApiClient.archiveGoal(goal.uuid);
+      await archiveGoalAction(goal.uuid);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to archive goal:', err);
@@ -50,7 +50,7 @@ export function GoalCard({ goal, onUpdate }: GoalCardProps) {
   const handleActivate = async () => {
     try {
       setIsUpdating(true);
-      await goalApiClient.activateGoal(goal.uuid);
+      await activateGoalAction(goal.uuid);
       onUpdate();
     } catch (err) {
       console.error('[GoalCard] Failed to activate goal:', err);

@@ -2,13 +2,16 @@
  * Task Create Dialog
  *
  * 创建新任务的对话框
+ * 
+ * EPIC-015 重构: 使用 Hook 代替直接调用 Infrastructure 层
+ * - 使用 useTaskTemplate Hook 进行数据操作
  */
 
 import { useState } from 'react';
-import { TaskContainer } from '@dailyuse/infrastructure-client';
-import type { CreateTaskTemplateRequest } from '@dailyuse/contracts/task';
+import type { CreateTaskTemplateInput } from '@dailyuse/application-client';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { TaskType, TimeType } from '@dailyuse/contracts/task';
+import { useTaskTemplate } from '../hooks/useTaskTemplate';
 
 interface TaskCreateDialogProps {
   open: boolean;
@@ -24,8 +27,8 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 获取 API Client
-  const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
+  // 使用 Hook 进行数据操作
+  const { createTemplate } = useTaskTemplate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,8 +42,8 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
       setIsSubmitting(true);
       setError(null);
 
-      // 构建符合 contracts 类型的请求
-      const request: CreateTaskTemplateRequest = {
+      // 构建符合 application-client 类型的输入
+      const input: CreateTaskTemplateInput = {
         accountUuid: 'local-user', // Desktop 本地用户
         title: title.trim(),
         description: description.trim() || undefined,
@@ -52,7 +55,7 @@ export function TaskCreateDialog({ open, onClose, onCreated }: TaskCreateDialogP
         urgency,
       };
       
-      await taskApiClient.createTaskTemplate(request);
+      await createTemplate(input);
 
       onCreated();
     } catch (err) {

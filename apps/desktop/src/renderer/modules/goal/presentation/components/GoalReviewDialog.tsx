@@ -5,9 +5,8 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import type { 
-  GoalReviewClientDTO, 
-  GoalClientDTO,
+import type { GoalReview, Goal } from '@dailyuse/domain-client/goal';
+import type {
   CreateGoalReviewRequest,
   UpdateGoalReviewRequest,
 } from '@dailyuse/contracts/goal';
@@ -36,8 +35,8 @@ import { BookOpen, Star } from 'lucide-react';
 interface GoalReviewDialogProps {
   open: boolean;
   goalUuid: string;
-  goal?: GoalClientDTO | null;
-  review?: GoalReviewClientDTO | null;
+  goal?: Goal | null;
+  review?: GoalReview | null;
   onClose: () => void;
   /** 保存回调 - 使用 contracts 类型 */
   onSave: (data: CreateGoalReviewRequest | UpdateGoalReviewRequest) => Promise<void>;

@@ -6,13 +6,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { AIContainer } from '@dailyuse/infrastructure-client';
-import type {
-  AIConversationClientDTO,
-  MessageClientDTO,
-  SendMessageRequest,
-} from '@dailyuse/contracts/ai';
-import { ConversationStatus, MessageRole } from '@dailyuse/contracts/ai';
+import { aiApplicationService } from '../../application/services';
+import type { AIConversation, AIMessage } from '@dailyuse/domain-client/ai';
+import { MessageRole } from '@dailyuse/contracts/ai';
 
 // Chat message for UI display
 interface ChatMessage {
@@ -24,8 +20,8 @@ interface ChatMessage {
 }
 
 interface AIState {
-  conversations: AIConversationClientDTO[];
-  currentConversation: AIConversationClientDTO | null;
+  conversations: AIConversation[];
+  currentConversation: AIConversation | null;
   messages: ChatMessage[];
   loading: boolean;
   streaming: boolean;
@@ -35,7 +31,7 @@ interface AIState {
 interface UseAIReturn extends AIState {
   // Conversation management
   loadConversations: () => Promise<void>;
-  createConversation: (title?: string) => Promise<AIConversationClientDTO>;
+  createConversation: (title?: string) => Promise<AIConversation>;
   selectConversation: (uuid: string) => Promise<void>;
   closeConversation: (uuid: string) => Promise<void>;
   deleteConversation: (uuid: string) => Promise<void>;
@@ -66,8 +62,7 @@ export function useAI(): UseAIReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const conversationApi = AIContainer.getInstance().getConversationApiClient();
-      const response = await conversationApi.getConversations({ pageSize: 50 });
+      const response = await aiApplicationService.listConversations({ pageSize: 50 });
       setState((prev) => ({
         ...prev,
         conversations: response.conversations || [],
@@ -88,8 +83,7 @@ export function useAI(): UseAIReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const conversationApi = AIContainer.getInstance().getConversationApiClient();
-      const conversation = await conversationApi.createConversation({
+      const conversation = await aiApplicationService.createConversation({
         title: title || `对话 ${new Date().toLocaleString('zh-CN')}`,
       });
       setState((prev) => ({
@@ -116,20 +110,17 @@ export function useAI(): UseAIReturn {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const conversationApi = AIContainer.getInstance().getConversationApiClient();
-      const messageApi = AIContainer.getInstance().getMessageApiClient();
-
-      const conversation = await conversationApi.getConversationById(uuid);
-      const messagesResponse = await messageApi.getMessages(uuid, { pageSize: 100 });
+      const conversation = await aiApplicationService.getConversation(uuid);
+      const messagesResponse = await aiApplicationService.listMessages({ conversationUuid: uuid, pageSize: 100 });
 
       // Convert to ChatMessage format
       const chatMessages: ChatMessage[] = (messagesResponse.messages || []).map(
-        (msg: MessageClientDTO) => {
-          // Map MessageRole enum to lowercase string
+        (msg: AIMessage) => {
+          // Map MessageRole enum to lowercase string using entity methods
           let role: 'user' | 'assistant' | 'system' = 'user';
-          if (msg.role === MessageRole.USER) role = 'user';
-          else if (msg.role === MessageRole.ASSISTANT) role = 'assistant';
-          else if (msg.role === MessageRole.SYSTEM) role = 'system';
+          if (msg.isUserMessage()) role = 'user';
+          else if (msg.isAssistantMessage()) role = 'assistant';
+          else if (msg.isSystemMessage()) role = 'system';
           
           return {
             id: msg.uuid,
@@ -160,8 +151,7 @@ export function useAI(): UseAIReturn {
   // Close conversation
   const closeConversation = useCallback(async (uuid: string) => {
     try {
-      const conversationApi = AIContainer.getInstance().getConversationApiClient();
-      const closedConversation = await conversationApi.closeConversation(uuid);
+      const closedConversation = await aiApplicationService.closeConversation(uuid);
       setState((prev) => ({
         ...prev,
         conversations: prev.conversations.map((c) =>
@@ -184,8 +174,7 @@ export function useAI(): UseAIReturn {
   // Delete conversation
   const deleteConversation = useCallback(async (uuid: string) => {
     try {
-      const conversationApi = AIContainer.getInstance().getConversationApiClient();
-      await conversationApi.deleteConversation(uuid);
+      await aiApplicationService.deleteConversation(uuid);
       setState((prev) => ({
         ...prev,
         conversations: prev.conversations.filter((c) => c.uuid !== uuid),
@@ -235,13 +224,10 @@ export function useAI(): UseAIReturn {
     }));
 
     try {
-      const messageApi = AIContainer.getInstance().getMessageApiClient();
-
       // Check if we have a current conversation, if not create one
       let conversationUuid = state.currentConversation?.uuid;
       if (!conversationUuid) {
-        const conversationApi = AIContainer.getInstance().getConversationApiClient();
-        const newConversation = await conversationApi.createConversation({
+        const newConversation = await aiApplicationService.createConversation({
           title: content.slice(0, 50),
         });
         conversationUuid = newConversation.uuid;
@@ -254,7 +240,7 @@ export function useAI(): UseAIReturn {
 
       // Try streaming first, fall back to regular send
       try {
-        const stream = messageApi.streamChat({
+        const stream = aiApplicationService.streamChat({
           conversationUuid,
           message: content.trim(),
         });
@@ -286,11 +272,10 @@ export function useAI(): UseAIReturn {
         }));
       } catch {
         // Fallback to non-streaming
-        const request: SendMessageRequest = {
+        const response = await aiApplicationService.sendMessage({
           conversationUuid,
           content: content.trim(),
-        };
-        const response = await messageApi.sendMessage(request);
+        });
 
         setState((prev) => ({
           ...prev,

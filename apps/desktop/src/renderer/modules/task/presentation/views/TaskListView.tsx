@@ -2,22 +2,42 @@
  * Task List View
  *
  * 任务列表视图 - 显示所有任务模板和实例
+ * 
+ * EPIC-015 重构: 使用 Hook 代替直接调用 Infrastructure 层
+ * - 使用 useTaskTemplate Hook 获取模板数据
+ * - 使用 useTaskInstance Hook 获取实例数据
+ * - 数据来自 Store，由 Hook 统一管理
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { TaskContainer } from '@dailyuse/infrastructure-client';
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import { useState, useEffect } from 'react';
+import type { TaskTemplate, TaskInstance } from '@dailyuse/domain-client/task';
 import { TaskCard } from '../components/TaskCard';
 import { TaskCreateDialog } from '../components/TaskCreateDialog';
 import { TaskStatistics } from '../components/TaskStatistics';
 import { TaskDependencyGraph } from '../components/TaskDependencyGraph';
 import { TaskListSkeleton } from '../../../../shared/components/Skeleton';
 import { VirtualList } from '../../../../shared/components/VirtualList';
+import { useTaskTemplate } from '../hooks/useTaskTemplate';
+import { useTaskInstance } from '../hooks/useTaskInstance';
 
 export function TaskListView() {
-  const [templates, setTemplates] = useState<TaskTemplateClientDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // ===== 使用 Hooks 获取数据 =====
+  const {
+    templates,
+    loading: templateLoading,
+    error: templateError,
+    loadTemplates,
+    refresh: refreshTemplates,
+  } = useTaskTemplate();
+  
+  const {
+    loading: instanceLoading,
+    error: instanceError,
+    getTodayInstances,
+    refresh: refreshInstances,
+  } = useTaskInstance();
+  
+  // ===== 本地 UI 状态 =====
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<'templates' | 'today' | 'stats' | 'dependencies'>('templates');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
@@ -27,30 +47,19 @@ export function TaskListView() {
   // 视图模式: grid(网格) / list(列表，支持虚拟滚动)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // 获取任务 API Client
-  const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
-
-  const loadTemplates = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await taskApiClient.getTaskTemplates();
-      setTemplates(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '加载任务失败');
-      console.error('[TaskListView] Failed to load templates:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [taskApiClient]);
-
-  useEffect(() => {
-    loadTemplates();
-  }, [loadTemplates]);
+  // ===== 派生状态 =====
+  const loading = templateLoading || instanceLoading;
+  const error = templateError || instanceError;
+  const todayInstances = getTodayInstances();
 
   const handleTaskCreated = () => {
     setShowCreateDialog(false);
-    loadTemplates();
+    refreshTemplates();
+  };
+
+  const handleRefresh = () => {
+    refreshTemplates();
+    refreshInstances();
   };
 
   // 过滤任务
@@ -63,9 +72,11 @@ export function TaskListView() {
       const matchesTags = template.tags?.some(tag => tag.toLowerCase().includes(query));
       if (!matchesTitle && !matchesDesc && !matchesTags) return false;
     }
-    // 状态过滤
-    if (statusFilter !== 'ALL' && template.status !== statusFilter) {
-      return false;
+    // 状态过滤 - 使用 Entity 的 getter 属性
+    if (statusFilter !== 'ALL') {
+      if (statusFilter === 'ACTIVE' && !template.isActive) return false;
+      if (statusFilter === 'PAUSED' && !template.isPaused) return false;
+      if (statusFilter === 'ARCHIVED' && !template.isArchived) return false;
     }
     // 类型过滤
     if (typeFilter !== 'ALL' && template.taskType !== typeFilter) {
@@ -75,16 +86,16 @@ export function TaskListView() {
   });
 
   // 使用骨架屏替代简单的加载提示
-  if (loading) {
+  if (loading && templates.length === 0) {
     return <TaskListSkeleton />;
   }
 
-  if (error) {
+  if (error && templates.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <div className="text-destructive">{error}</div>
         <button
-          onClick={loadTemplates}
+          onClick={handleRefresh}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
         >
           重试
@@ -181,7 +192,7 @@ export function TaskListView() {
           
           {selectedTemplateId ? (
             <TaskDependencyGraph 
-              tasks={templates.filter(t => t.uuid === selectedTemplateId || t.parentTaskUuid === selectedTemplateId)} 
+              tasks={templates.filter(t => t.uuid === selectedTemplateId)} 
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-card">
@@ -285,7 +296,7 @@ export function TaskListView() {
               renderItem={(template) => (
                 <TaskCard
                   template={template}
-                  onUpdate={loadTemplates}
+                  onUpdate={handleRefresh}
                 />
               )}
               getItemKey={(template) => template.uuid}
@@ -302,7 +313,7 @@ export function TaskListView() {
                 <TaskCard
                   key={template.uuid}
                   template={template}
-                  onUpdate={loadTemplates}
+                  onUpdate={handleRefresh}
                 />
               ))}
             </div>

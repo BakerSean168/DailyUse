@@ -16,7 +16,7 @@ import type {
   ScheduleTaskServer,
   ScheduleTaskServerDTO,
 } from '@dailyuse/contracts/schedule';
-import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
+import { ExecutionStatus, ScheduleTaskStatus, SourceModule, ScheduleTaskEventTypes } from '@dailyuse/contracts/schedule';
 import { ScheduleConfig } from '../value-objects/ScheduleConfig';
 import { ExecutionInfo } from '../value-objects/ExecutionInfo';
 import { RetryPolicy } from '../value-objects/RetryPolicy';
@@ -258,7 +258,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleTaskPaused',
+      eventType: ScheduleTaskEventTypes.PAUSED,
       aggregateId: this._uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -289,7 +289,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleTaskResumed',
+      eventType: ScheduleTaskEventTypes.RESUMED,
       aggregateId: this._uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -311,7 +311,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleTaskCompleted',
+      eventType: ScheduleTaskEventTypes.COMPLETED,
       aggregateId: this._uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -336,7 +336,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleTaskCancelled',
+      eventType: ScheduleTaskEventTypes.CANCELLED,
       aggregateId: this._uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -358,7 +358,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleTaskFailed',
+      eventType: ScheduleTaskEventTypes.FAILED,
       aggregateId: this._uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -388,7 +388,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleTaskScheduleUpdated',
+      eventType: ScheduleTaskEventTypes.SCHEDULE_UPDATED,
       aggregateId: this._uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -440,7 +440,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
     // 完整序列化 metadata DTO 以确保正确传递
     const metadataDTO = this._metadata.toServerDTO();
     this.addDomainEvent({
-      eventType: 'ScheduleTaskTriggered',
+      eventType: ScheduleTaskEventTypes.TRIGGERED,
       aggregateId: this._uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -526,7 +526,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleTaskExecuted',
+      eventType: ScheduleTaskEventTypes.EXECUTED,
       aggregateId: this._uuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -923,7 +923,7 @@ export class ScheduleTask extends AggregateRoot implements ScheduleTaskServer {
 
     // 发布创建事件
     task.addDomainEvent({
-      eventType: 'ScheduleTaskCreated',
+      eventType: ScheduleTaskEventTypes.CREATED,
       aggregateId: task.uuid,
       occurredOn: new Date(),
       accountUuid: params.accountUuid,

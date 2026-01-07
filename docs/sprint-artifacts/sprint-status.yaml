@@ -243,7 +243,37 @@ development_status:
   epic-13-retrospective: optional
   
   # ========================================
-  # SPRINT SUMMARY (Updated 2025-12-15)
+  # EPIC-015: Desktop React Architecture Alignment
+  # ========================================
+  # Priority: P0 | Duration: 2-3 days | Total: ~14h
+  # Location: docs/sprint-artifacts/EPIC-DESKTOP-ARCH-ALIGNMENT-001.md
+  # Goal: 对齐 Desktop (React) 与 Web (Vue) 的分层架构模式
+  # Focus: DTO → Entity 转换、Store 集成、Hook 规范化
+  # Status: ✅ ALL STORIES COMPLETED
+  epic-15: done
+  
+  # Phase 1: ApplicationService 添加 DTO→Entity 转换 (2h)
+  15-1-application-service-transform: done      # STORY-064 (2h) - P0 | 添加 fromClientDTO 转换 ✅
+  
+  # Phase 2: Store 改用 Entity 类型 (2h)
+  15-2-store-entity-type: done                 # STORY-065 (2h) - P0 | taskStore 存储 Entity ✅
+  
+  # Phase 3: Hook 与 Store 集成 (3h)
+  15-3-hook-store-integration: done            # STORY-066 (3h) - P0 | useTaskTemplate 与 Store 集成 ✅
+  
+  # Phase 4: View 统一使用 Hook (2h)
+  15-4-view-use-hook: done                     # STORY-067 (2h) - P0 | TaskListView/ManagementView 重构 ✅
+  
+  # Phase 5: Component Props 改用 Entity (4h)
+  15-5-component-entity-props: done            # STORY-068 (4h) - P1 | 7+ 组件 Props 类型更新 ✅
+  
+  # Phase 6: Dashboard 对齐 (2h)
+  15-6-dashboard-alignment: done               # STORY-069 (2h) - P1 | DashboardView 统一数据流 ✅
+  
+  epic-15-retrospective: optional
+  
+  # ========================================
+  # SPRINT SUMMARY (Updated 2026-01-02)
   # ========================================
   # Total Stories: 108 (51 previous + 57 EPIC-013)
   # EPIC-013: 57 stories (Focus 整合到 Goal 模块)

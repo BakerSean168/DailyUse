@@ -4,32 +4,29 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type {
+  NotificationType,
+  NotificationStatus,
+} from '@dailyuse/contracts/notification';
+import { NotificationClient } from '@dailyuse/domain-client/notification';
+import { notificationApplicationService } from '../../application/services';
+
+// Re-export for backward compatibility
+export type { NotificationType, NotificationStatus };
+export { NotificationClient };
 
 // ============ Types ============
-export interface AppNotification {
-  id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  title: string;
-  message?: string;
-  timestamp: number;
-  read: boolean;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
-}
-
 export interface NotificationState {
-  notifications: AppNotification[];
+  notifications: NotificationClient[];
   isLoading: boolean;
   error: string | null;
   unreadCount: number;
 }
 
 export interface NotificationActions {
-  addNotification: (notification: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => void;
-  removeNotification: (id: string) => void;
-  markAsRead: (id: string) => void;
+  addNotification: (notification: Pick<NotificationClient, 'title' | 'content' | 'type'>) => void;
+  removeNotification: (uuid: string) => void;
+  markAsRead: (uuid: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
   setLoading: (loading: boolean) => void;
@@ -37,8 +34,8 @@ export interface NotificationActions {
 }
 
 export interface NotificationSelectors {
-  getUnreadNotifications: () => AppNotification[];
-  getNotificationById: (id: string) => AppNotification | undefined;
+  getUnreadNotifications: () => NotificationClient[];
+  getNotificationById: (uuid: string) => NotificationClient | undefined;
 }
 
 type NotificationStore = NotificationState & NotificationActions & NotificationSelectors;
@@ -56,45 +53,58 @@ export const useNotificationStore = create<NotificationStore>()(
     (set, get) => ({
       ...initialState,
       
-      addNotification: (notification) => set((state) => {
-        const newNotification: AppNotification = {
-          ...notification,
-          id: crypto.randomUUID(),
-          timestamp: Date.now(),
-          read: false,
-        };
-        return {
-          notifications: [newNotification, ...state.notifications],
-          unreadCount: state.unreadCount + 1,
-        };
-      }),
+      addNotification: (notification) => {
+        // 使用 application service 创建通知
+        notificationApplicationService.createNotification({
+          title: notification.title,
+          content: notification.content,
+          type: notification.type,
+        }).then((dto) => {
+          // 转换 DTO 为 Entity
+          const newNotification = NotificationClient.fromClientDTO(dto);
+          set((state) => ({
+            notifications: [newNotification, ...state.notifications],
+            unreadCount: state.unreadCount + 1,
+          }));
+        }).catch((error) => {
+          set({ error: error.message });
+        });
+      },
       
-      removeNotification: (id) => set((state) => {
-        const notification = state.notifications.find(n => n.id === id);
+      removeNotification: (uuid) => set((state) => {
+        const notification = state.notifications.find(n => n.uuid === uuid);
         return {
-          notifications: state.notifications.filter(n => n.id !== id),
-          unreadCount: notification && !notification.read 
+          notifications: state.notifications.filter(n => n.uuid !== uuid),
+          unreadCount: notification && !notification.isRead 
             ? state.unreadCount - 1 
             : state.unreadCount,
         };
       }),
       
-      markAsRead: (id) => set((state) => {
-        const notification = state.notifications.find(n => n.id === id);
-        if (!notification || notification.read) return state;
+      markAsRead: (uuid) => set((state) => {
+        const notification = state.notifications.find(n => n.uuid === uuid);
+        if (!notification || notification.isRead) return state;
         
+        // 调用 Entity 方法标记为已读，然后创建新数组触发更新
+        notification.markAsRead();
         return {
-          notifications: state.notifications.map(n =>
-            n.id === id ? { ...n, read: true } : n
-          ),
+          notifications: [...state.notifications],
           unreadCount: Math.max(0, state.unreadCount - 1),
         };
       }),
       
-      markAllAsRead: () => set((state) => ({
-        notifications: state.notifications.map(n => ({ ...n, read: true })),
-        unreadCount: 0,
-      })),
+      markAllAsRead: () => set((state) => {
+        // 调用每个 Entity 的 markAsRead 方法
+        state.notifications.forEach(n => {
+          if (!n.isRead) {
+            n.markAsRead();
+          }
+        });
+        return {
+          notifications: [...state.notifications],
+          unreadCount: 0,
+        };
+      }),
       
       clearAll: () => set({ notifications: [], unreadCount: 0 }),
       
@@ -103,20 +113,29 @@ export const useNotificationStore = create<NotificationStore>()(
       
       // Selectors
       getUnreadNotifications: () => {
-        return get().notifications.filter(n => !n.read);
+        return get().notifications.filter(n => !n.isRead);
       },
       
-      getNotificationById: (id) => {
-        return get().notifications.find(n => n.id === id);
+      getNotificationById: (uuid) => {
+        return get().notifications.find(n => n.uuid === uuid);
       },
     }),
     {
       name: 'notification-store',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        notifications: state.notifications.slice(0, 100), // Keep last 100
+        // 序列化 Entity 为 DTO 存储
+        notifications: state.notifications.slice(0, 100).map(n => n.toClientDTO()), // Keep last 100
         unreadCount: state.unreadCount,
       }),
+      // 反序列化时将 DTO 转换回 Entity
+      onRehydrateStorage: () => (state) => {
+        if (state && state.notifications) {
+          state.notifications = state.notifications.map((dto: any) => 
+            NotificationClient.fromClientDTO(dto)
+          );
+        }
+      },
     }
   )
 );

@@ -2,9 +2,11 @@
  * TaskInfoCard Component
  *
  * 任务信息展示卡片 - 显示任务模板的详细信息
+ * 
+ * EPIC-015 重构: 使用 Entity 类型
  */
 
-import type { TaskTemplateClientDTO } from '@dailyuse/contracts/task';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
 import { UrgencyLevel } from '@dailyuse/contracts/shared';
 import {
   Card,
@@ -22,11 +24,10 @@ import {
   Repeat,
   Tag,
   Target,
-  Timer,
 } from 'lucide-react';
 
 interface TaskInfoCardProps {
-  template: TaskTemplateClientDTO;
+  template: TaskTemplate;
   onClick?: (uuid: string) => void;
 }
 
@@ -123,14 +124,6 @@ export function TaskInfoCard({ template, onClick }: TaskInfoCardProps) {
             <div className="flex items-center gap-2 text-muted-foreground">
               <Repeat className="h-4 w-4 shrink-0" />
               <span className="truncate">{template.recurrenceText}</span>
-            </div>
-          )}
-
-          {/* Estimated Time */}
-          {template.estimatedMinutes && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Timer className="h-4 w-4 shrink-0" />
-              <span>{template.estimatedMinutes} 分钟</span>
             </div>
           )}
 

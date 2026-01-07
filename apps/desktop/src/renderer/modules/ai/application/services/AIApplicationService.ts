@@ -46,6 +46,9 @@ import {
   type TestProviderConnectionInput,
 } from '@dailyuse/application-client';
 
+import { AIContainer } from '@dailyuse/infrastructure-client';
+import type { UpdateAIProviderRequest } from '@dailyuse/contracts/ai';
+
 /**
  * AI 应用服务
  *
@@ -202,6 +205,36 @@ export class AIApplicationService {
    */
   setDefaultProvider(providerUuid: string) {
     return setDefaultProvider(providerUuid);
+  }
+
+  // ===== Provider Extended Operations (via infrastructure-client) =====
+
+  /**
+   * 获取提供商详情
+   */
+  getProvider(providerUuid: string) {
+    return AIContainer.getInstance().getProviderConfigApiClient().getProviderById(providerUuid);
+  }
+
+  /**
+   * 更新提供商配置
+   */
+  updateProvider(providerUuid: string, request: UpdateAIProviderRequest) {
+    return AIContainer.getInstance().getProviderConfigApiClient().updateProvider(providerUuid, request);
+  }
+
+  /**
+   * 删除提供商
+   */
+  deleteProvider(providerUuid: string) {
+    return AIContainer.getInstance().getProviderConfigApiClient().deleteProvider(providerUuid);
+  }
+
+  /**
+   * 刷新提供商模型列表
+   */
+  refreshModels(providerUuid: string) {
+    return AIContainer.getInstance().getProviderConfigApiClient().refreshModels(providerUuid);
   }
 }
 

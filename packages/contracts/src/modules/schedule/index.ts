@@ -120,6 +120,20 @@ export type {
   ScheduleStatisticsClientStatic,
 } from './aggregates/ScheduleStatisticsClient';
 
+// ============ Event Types ============
+export {
+  ScheduleTaskEventTypes,
+  ScheduleStatisticsEventTypes,
+  ScheduleEventTypes,
+  LegacyEventTypeMapping,
+} from './event-types';
+
+export type {
+  ScheduleTaskEventType,
+  ScheduleStatisticsEventType,
+  ScheduleEventType,
+} from './event-types';
+
 export type { ScheduleServerDTO } from './aggregates/ScheduleServer';
 
 export type { ScheduleClientDTO } from './aggregates/ScheduleClient';

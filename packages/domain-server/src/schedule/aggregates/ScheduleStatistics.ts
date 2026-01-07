@@ -6,7 +6,12 @@ import type {
   ScheduleStatisticsServer,
   ScheduleStatisticsServerDTO,
 } from '@dailyuse/contracts/schedule';
-import { ExecutionStatus, ScheduleTaskStatus, SourceModule } from '@dailyuse/contracts/schedule';
+import {
+  ExecutionStatus,
+  ScheduleStatisticsEventTypes,
+  ScheduleTaskStatus,
+  SourceModule,
+} from '@dailyuse/contracts/schedule';
 
 /**
  * ScheduleStatistics 聚合根
@@ -295,7 +300,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleStatisticsTaskCountIncremented',
+      eventType: ScheduleStatisticsEventTypes.TASK_COUNT_INCREMENTED,
       aggregateId: this._accountUuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -336,7 +341,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleStatisticsTaskCountDecremented',
+      eventType: ScheduleStatisticsEventTypes.TASK_COUNT_DECREMENTED,
       aggregateId: this._accountUuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -476,7 +481,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleStatisticsExecutionRecorded',
+      eventType: ScheduleStatisticsEventTypes.EXECUTION_RECORDED,
       aggregateId: this._accountUuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -572,7 +577,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
 
     // 发布事件
     this.addDomainEvent({
-      eventType: 'ScheduleStatisticsReset',
+      eventType: ScheduleStatisticsEventTypes.RESET,
       aggregateId: this._accountUuid,
       occurredOn: new Date(),
       accountUuid: this._accountUuid,
@@ -1088,7 +1093,7 @@ export class ScheduleStatistics extends AggregateRoot implements ScheduleStatist
 
     // 发布创建事件
     statistics.addDomainEvent({
-      eventType: 'ScheduleStatisticsCreated',
+      eventType: ScheduleStatisticsEventTypes.CREATED,
       aggregateId: accountUuid,
       occurredOn: new Date(),
       accountUuid,

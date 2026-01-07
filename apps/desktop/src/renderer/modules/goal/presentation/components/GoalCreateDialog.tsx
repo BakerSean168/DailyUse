@@ -2,10 +2,11 @@
  * Goal Create Dialog
  *
  * 创建新目标的对话框
+ * EPIC-015 重构: 使用 ApplicationService 替代 Container
  */
 
 import { useState } from 'react';
-import { GoalContainer } from '@dailyuse/infrastructure-client';
+import { goalApplicationService } from '../../application/services/GoalApplicationService';
 import type { CreateGoalRequest } from '@dailyuse/contracts/goal';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 
@@ -23,9 +24,6 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
   const [targetDate, setTargetDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // 获取 API Client
-  const goalApiClient = GoalContainer.getInstance().getApiClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +46,7 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
         targetDate: targetDate ? new Date(targetDate).getTime() : undefined,
       };
       
-      await goalApiClient.createGoal(request);
+      await goalApplicationService.createGoal(request);
 
       onCreated();
     } catch (err) {

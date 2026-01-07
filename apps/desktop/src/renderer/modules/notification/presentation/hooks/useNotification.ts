@@ -3,10 +3,11 @@
  *
  * 通知管理 Hook
  * Story-010: Notification Module
+ * EPIC-015 重构: 使用 ApplicationService 替代 Container
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { NotificationContainer } from '@dailyuse/infrastructure-client';
+import { notificationApplicationService } from '../../application/services/NotificationApplicationService';
 import type { NotificationClientDTO } from '@dailyuse/contracts/notification';
 
 /**
@@ -77,16 +78,15 @@ export function useNotification(): UseNotificationReturn {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        const notificationApi = NotificationContainer.getInstance().getApiClient();
         const currentPage = reset ? 1 : state.page;
 
-        const response = await notificationApi.findNotifications({
+        const response = await notificationApplicationService.findNotifications({
           ...filter,
           page: currentPage,
           limit: PAGE_SIZE,
         });
 
-        const unreadResponse = await notificationApi.getUnreadCount();
+        const unreadResponse = await notificationApplicationService.getUnreadCount();
 
         setState((prev) => ({
           ...prev,
@@ -127,8 +127,7 @@ export function useNotification(): UseNotificationReturn {
   // Mark as read
   const markAsRead = useCallback(async (uuid: string) => {
     try {
-      const notificationApi = NotificationContainer.getInstance().getApiClient();
-      const updated = await notificationApi.markAsRead(uuid);
+      const updated = await notificationApplicationService.markAsRead(uuid);
 
       setState((prev) => ({
         ...prev,
@@ -149,8 +148,7 @@ export function useNotification(): UseNotificationReturn {
   // Mark all as read
   const markAllAsRead = useCallback(async () => {
     try {
-      const notificationApi = NotificationContainer.getInstance().getApiClient();
-      await notificationApi.markAllAsRead();
+      await notificationApplicationService.markAllAsRead();
 
       setState((prev) => ({
         ...prev,
@@ -173,8 +171,7 @@ export function useNotification(): UseNotificationReturn {
   // Delete notification
   const deleteNotification = useCallback(async (uuid: string) => {
     try {
-      const notificationApi = NotificationContainer.getInstance().getApiClient();
-      await notificationApi.deleteNotification(uuid);
+      await notificationApplicationService.deleteNotification(uuid);
 
       setState((prev) => {
         const deleted = prev.notifications.find((n) => n.uuid === uuid);
@@ -197,8 +194,7 @@ export function useNotification(): UseNotificationReturn {
   // Batch delete
   const batchDelete = useCallback(async (uuids: string[]) => {
     try {
-      const notificationApi = NotificationContainer.getInstance().getApiClient();
-      await notificationApi.batchDeleteNotifications(uuids);
+      await notificationApplicationService.batchDeleteNotifications(uuids);
 
       setState((prev) => {
         const unreadDeleted = prev.notifications.filter(

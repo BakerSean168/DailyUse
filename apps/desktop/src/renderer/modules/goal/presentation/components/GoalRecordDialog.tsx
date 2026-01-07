@@ -5,11 +5,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import type { 
-  GoalRecordClientDTO, 
-  KeyResultClientDTO,
-  CreateGoalRecordRequest,
-} from '@dailyuse/contracts/goal';
+import type { GoalRecord, KeyResult } from '@dailyuse/domain-client/goal';
+import type { CreateGoalRecordRequest } from '@dailyuse/contracts/goal';
 import {
   Dialog,
   DialogContent,
@@ -29,8 +26,8 @@ interface GoalRecordDialogProps {
   open: boolean;
   goalUuid: string;
   keyResultUuid: string;
-  keyResult?: KeyResultClientDTO | null;
-  record?: GoalRecordClientDTO | null;
+  keyResult?: KeyResult | null;
+  record?: GoalRecord | null;
   goalColor?: string;
   onClose: () => void;
   /** 保存回调 - 使用 contracts 类型 */

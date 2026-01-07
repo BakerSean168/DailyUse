@@ -19,6 +19,17 @@ import {
   type CreateFolderInput,
   type GetFolderContentsOutput,
 } from '@dailyuse/application-client';
+import {
+  RepositoryContainer,
+  type CreateRepositoryRequest,
+} from '@dailyuse/infrastructure-client';
+import type {
+  RepositoryClientDTO,
+  FolderClientDTO,
+  ResourceClientDTO,
+  SearchRequest,
+  SearchResponse,
+} from '@dailyuse/contracts/repository';
 
 /**
  * 仓库应用服务
@@ -27,6 +38,10 @@ import {
  * 返回类型与 @dailyuse/application-client 保持一致
  */
 export class RepositoryApplicationService {
+  private getApiClient() {
+    return RepositoryContainer.getInstance().getApiClient();
+  }
+
   // ===== Repository Operations =====
 
   /**
@@ -44,6 +59,20 @@ export class RepositoryApplicationService {
   }
 
   /**
+   * 创建仓库
+   */
+  createRepository(request: CreateRepositoryRequest): Promise<RepositoryClientDTO> {
+    return this.getApiClient().createRepository(request);
+  }
+
+  /**
+   * 删除仓库
+   */
+  deleteRepository(uuid: string): Promise<void> {
+    return this.getApiClient().deleteRepository(uuid);
+  }
+
+  /**
    * 获取文件树
    */
   getFileTree(repositoryUuid: string) {
@@ -55,6 +84,13 @@ export class RepositoryApplicationService {
    */
   searchResources(input: SearchResourcesInput) {
     return searchResources(input);
+  }
+
+  /**
+   * 搜索（支持 SearchRequest 格式）
+   */
+  search(request: SearchRequest): Promise<SearchResponse> {
+    return this.getApiClient().search(request);
   }
 
   // ===== Folder Operations =====
@@ -74,6 +110,20 @@ export class RepositoryApplicationService {
   }
 
   /**
+   * 重命名文件夹
+   */
+  renameFolder(uuid: string, name: string): Promise<FolderClientDTO> {
+    return this.getApiClient().renameFolder(uuid, name);
+  }
+
+  /**
+   * 移动文件夹
+   */
+  moveFolder(uuid: string, targetParentUuid: string): Promise<FolderClientDTO> {
+    return this.getApiClient().moveFolder(uuid, targetParentUuid);
+  }
+
+  /**
    * 删除文件夹
    */
   deleteFolder(folderUuid: string) {
@@ -87,6 +137,20 @@ export class RepositoryApplicationService {
    */
   getResource(resourceUuid: string) {
     return getResource(resourceUuid);
+  }
+
+  /**
+   * 重命名资源
+   */
+  renameResource(uuid: string, name: string): Promise<ResourceClientDTO> {
+    return this.getApiClient().renameResource(uuid, name);
+  }
+
+  /**
+   * 移动资源
+   */
+  moveResource(uuid: string, targetFolderUuid: string): Promise<ResourceClientDTO> {
+    return this.getApiClient().moveResource(uuid, targetFolderUuid);
   }
 
   /**

@@ -2,6 +2,10 @@
  * Schedule Application Service - Renderer
  *
  * 日程应用服务 - 渲染进程
+ * 
+ * EPIC-015 重构: 添加 DTO→Entity 转换
+ * - 所有返回值使用 Entity 类型
+ * - 使用 Entity.fromClientDTO() 进行转换
  */
 
 import {
@@ -30,6 +34,8 @@ import {
   getScheduleEvent,
   listSchedulesByAccount,
   getSchedulesByTimeRange,
+  updateScheduleEvent,
+  deleteScheduleEvent,
   // Types
   type CreateScheduleTaskInput,
   type CreateScheduleTasksBatchInput,
@@ -40,12 +46,13 @@ import {
   type UpdateTaskMetadataInput,
   type CreateScheduleEventInput,
   type GetSchedulesByTimeRangeInput,
+  type UpdateScheduleEventInput,
 } from '@dailyuse/application-client';
 import type {
-  ScheduleTaskClientDTO,
   ScheduleClientDTO,
   SourceModule,
 } from '@dailyuse/contracts/schedule';
+import { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 /**
  * Schedule Application Service
@@ -64,24 +71,44 @@ export class ScheduleApplicationService {
 
   // ===== Schedule Task Operations =====
 
-  async listScheduleTasks(): Promise<ScheduleTaskClientDTO[]> {
-    return listScheduleTasks();
+  /**
+   * 获取所有调度任务
+   * @returns 返回 Entity 对象数组
+   */
+  async listScheduleTasks(): Promise<ScheduleTask[]> {
+    const dtos = await listScheduleTasks();
+    return dtos.map(dto => ScheduleTask.fromClientDTO(dto));
   }
 
-  async getScheduleTask(taskId: string): Promise<ScheduleTaskClientDTO | null> {
+  /**
+   * 获取单个调度任务
+   * @returns 返回 Entity 对象或 null
+   */
+  async getScheduleTask(taskId: string): Promise<ScheduleTask | null> {
     try {
-      return await getScheduleTask(taskId);
+      const dto = await getScheduleTask(taskId);
+      return ScheduleTask.fromClientDTO(dto);
     } catch {
       return null;
     }
   }
 
-  async createScheduleTask(input: CreateScheduleTaskInput): Promise<ScheduleTaskClientDTO> {
-    return createScheduleTask(input);
+  /**
+   * 创建调度任务
+   * @returns 返回创建的 Entity 对象
+   */
+  async createScheduleTask(input: CreateScheduleTaskInput): Promise<ScheduleTask> {
+    const dto = await createScheduleTask(input);
+    return ScheduleTask.fromClientDTO(dto);
   }
 
-  async createScheduleTasksBatch(input: CreateScheduleTasksBatchInput): Promise<ScheduleTaskClientDTO[]> {
-    return createScheduleTasksBatch(input);
+  /**
+   * 批量创建调度任务
+   * @returns 返回创建的 Entity 对象数组
+   */
+  async createScheduleTasksBatch(input: CreateScheduleTasksBatchInput): Promise<ScheduleTask[]> {
+    const dtos = await createScheduleTasksBatch(input);
+    return dtos.map(dto => ScheduleTask.fromClientDTO(dto));
   }
 
   async pauseScheduleTask(taskId: string): Promise<void> {
@@ -108,12 +135,22 @@ export class ScheduleApplicationService {
     return deleteScheduleTasksBatch(taskIds);
   }
 
-  async getDueTasks(input: GetDueTasksInput): Promise<ScheduleTaskClientDTO[]> {
-    return getDueTasks(input);
+  /**
+   * 获取到期任务
+   * @returns 返回 Entity 对象数组
+   */
+  async getDueTasks(input: GetDueTasksInput): Promise<ScheduleTask[]> {
+    const dtos = await getDueTasks(input);
+    return dtos.map(dto => ScheduleTask.fromClientDTO(dto));
   }
 
-  async getTaskBySource(input: GetTaskBySourceInput): Promise<ScheduleTaskClientDTO[]> {
-    return getTaskBySource(input);
+  /**
+   * 根据来源获取任务
+   * @returns 返回 Entity 对象数组
+   */
+  async getTaskBySource(input: GetTaskBySourceInput): Promise<ScheduleTask[]> {
+    const dtos = await getTaskBySource(input);
+    return dtos.map(dto => ScheduleTask.fromClientDTO(dto));
   }
 
   async updateTaskMetadata(input: UpdateTaskMetadataInput): Promise<void> {
@@ -166,6 +203,14 @@ export class ScheduleApplicationService {
 
   async getSchedulesByTimeRange(input: GetSchedulesByTimeRangeInput): Promise<ScheduleClientDTO[]> {
     return getSchedulesByTimeRange(input);
+  }
+
+  async updateScheduleEvent(input: UpdateScheduleEventInput): Promise<ScheduleClientDTO> {
+    return updateScheduleEvent(input);
+  }
+
+  async deleteScheduleEvent(eventId: string): Promise<void> {
+    return deleteScheduleEvent(eventId);
   }
 }
 

@@ -1,6 +1,5 @@
-/**
- * Editor IPC Client - Editor 模块 IPC 客户端
- * 
+﻿/**
+ * Editor IPC Client - Editor 妯″潡 IPC 瀹㈡埛绔? * 
  * @module renderer/modules/editor/infrastructure/ipc
  */
 
@@ -88,7 +87,7 @@ export class EditorIPCClient {
   // ============ Document CRUD ============
 
   /**
-   * 获取文档列表
+   * 鑾峰彇鏂囨。鍒楄〃
    */
   async listDocuments(): Promise<DocumentDTO[]> {
     return this.client.invoke<DocumentDTO[]>(
@@ -98,7 +97,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 获取单个文档
+   * 鑾峰彇鍗曚釜鏂囨。
    */
   async getDocument(uuid: string): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
@@ -108,7 +107,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 创建文档
+   * 鍒涘缓鏂囨。
    */
   async createDocument(params: CreateDocumentRequest): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
@@ -118,7 +117,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 更新文档
+   * 鏇存柊鏂囨。
    */
   async updateDocument(params: UpdateDocumentRequest): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
@@ -128,7 +127,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 删除文档
+   * 鍒犻櫎鏂囨。
    */
   async deleteDocument(uuid: string): Promise<void> {
     return this.client.invoke<void>(
@@ -138,7 +137,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 通过关联实体获取文档
+   * 閫氳繃鍏宠仈瀹炰綋鑾峰彇鏂囨。
    */
   async getByLinkedEntity(entityType: LinkedEntityType, entityUuid: string): Promise<DocumentDTO | null> {
     return this.client.invoke<DocumentDTO | null>(
@@ -148,8 +147,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 为关联实体创建文档
-   */
+   * 涓哄叧鑱斿疄浣撳垱寤烘枃妗?   */
   async createForLinkedEntity(params: {
     entityType: LinkedEntityType;
     entityUuid: string;
@@ -163,7 +161,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 保存文档
+   * 淇濆瓨鏂囨。
    */
   async saveDocument(uuid: string, content: string): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
@@ -175,7 +173,7 @@ export class EditorIPCClient {
   // ============ Content Operations ============
 
   /**
-   * 获取文档内容
+   * 鑾峰彇鏂囨。鍐呭
    */
   async getContent(uuid: string): Promise<string> {
     return this.client.invoke<string>(
@@ -185,7 +183,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 保存文档内容
+   * 淇濆瓨鏂囨。鍐呭
    */
   async saveContent(uuid: string, content: string): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
@@ -195,7 +193,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 自动保存
+   * 鑷姩淇濆瓨
    */
   async autoSave(uuid: string, content: string): Promise<void> {
     return this.client.invoke<void>(
@@ -207,7 +205,7 @@ export class EditorIPCClient {
   // ============ History & Versioning ============
 
   /**
-   * 撤销
+   * 鎾ら攢
    */
   async undo(uuid: string): Promise<string> {
     return this.client.invoke<string>(
@@ -217,7 +215,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 重做
+   * 閲嶅仛
    */
   async redo(uuid: string): Promise<string> {
     return this.client.invoke<string>(
@@ -227,7 +225,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 获取编辑历史
+   * 鑾峰彇缂栬緫鍘嗗彶
    */
   async getHistory(uuid: string): Promise<VersionDTO[]> {
     return this.client.invoke<VersionDTO[]>(
@@ -237,7 +235,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 获取版本列表
+   * 鑾峰彇鐗堟湰鍒楄〃
    */
   async listVersions(uuid: string): Promise<VersionDTO[]> {
     return this.client.invoke<VersionDTO[]>(
@@ -247,7 +245,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 获取特定版本
+   * 鑾峰彇鐗瑰畾鐗堟湰
    */
   async getVersion(uuid: string, version: number): Promise<VersionDTO> {
     return this.client.invoke<VersionDTO>(
@@ -257,8 +255,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 恢复到特定版本
-   */
+   * 鎭㈠鍒扮壒瀹氱増鏈?   */
   async restoreVersion(uuid: string, version: number): Promise<DocumentDTO> {
     return this.client.invoke<DocumentDTO>(
       EditorChannels.VERSION_RESTORE,
@@ -269,7 +266,7 @@ export class EditorIPCClient {
   // ============ Assets ============
 
   /**
-   * 上传图片
+   * 涓婁紶鍥剧墖
    */
   async uploadImage(file: File): Promise<{ url: string }> {
     const buffer = await file.arrayBuffer();
@@ -284,7 +281,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 删除资源
+   * 鍒犻櫎璧勬簮
    */
   async deleteAsset(assetId: string): Promise<void> {
     return this.client.invoke<void>(
@@ -296,7 +293,7 @@ export class EditorIPCClient {
   // ============ Search ============
 
   /**
-   * 搜索文档
+   * 鎼滅储鏂囨。
    */
   async search(query: string): Promise<SearchResultDTO[]> {
     return this.client.invoke<SearchResultDTO[]>(
@@ -308,7 +305,7 @@ export class EditorIPCClient {
   // ============ Export ============
 
   /**
-   * 导出为 Markdown
+   * 瀵煎嚭涓?Markdown
    */
   async exportMarkdown(uuid: string): Promise<string> {
     return this.client.invoke<string>(
@@ -318,7 +315,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 导出为 HTML
+   * 瀵煎嚭涓?HTML
    */
   async exportHtml(uuid: string): Promise<string> {
     return this.client.invoke<string>(
@@ -328,7 +325,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 导出为 PDF
+   * 瀵煎嚭涓?PDF
    */
   async exportPdf(uuid: string): Promise<Uint8Array> {
     return this.client.invoke<Uint8Array>(
@@ -338,7 +335,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 为目标创建或获取文档
+   * 涓虹洰鏍囧垱寤烘垨鑾峰彇鏂囨。
    */
   async getOrCreateForGoal(goalUuid: string, title?: string): Promise<DocumentDTO> {
     const existing = await this.getByLinkedEntity('goal', goalUuid);
@@ -352,7 +349,7 @@ export class EditorIPCClient {
   }
 
   /**
-   * 快速创建 Markdown 文档
+   * 蹇€熷垱寤?Markdown 鏂囨。
    */
   async quickCreateMarkdown(params: {
     accountUuid: string;
@@ -369,14 +366,14 @@ export class EditorIPCClient {
   // ============ Event Subscriptions ============
 
   /**
-   * 订阅文档更新事件
+   * 璁㈤槄鏂囨。鏇存柊浜嬩欢
    */
   onDocumentUpdated(handler: (document: DocumentDTO) => void): () => void {
     return this.client.on(EditorChannels.EVENT_DOCUMENT_UPDATED, handler);
   }
 
   /**
-   * 订阅自动保存事件
+   * 璁㈤槄鑷姩淇濆瓨浜嬩欢
    */
   onAutosaveCompleted(handler: (document: DocumentDTO) => void): () => void {
     return this.client.on(EditorChannels.EVENT_AUTOSAVE_COMPLETED, handler);

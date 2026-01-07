@@ -2,27 +2,35 @@
  * useTaskInstance Hook
  *
  * 任务实例管理 Hook
+ * 
+ * EPIC-015 重构: 与 Store 集成，使用 Entity 类型
+ * - 使用 useTaskStore 作为唯一数据源
+ * - 返回 Entity 类型（TaskInstance）
+ * - 移除内部 useState，统一使用 Store 状态
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
+import { useTaskStore } from '../stores/taskStore';
 import { taskApplicationService } from '../../application/services';
-import type { TaskInstanceClientDTO } from '@dailyuse/contracts/task';
+import type { TaskInstance } from '@dailyuse/domain-client/task';
 
 // ===== Types =====
 
-export interface TaskInstanceState {
-  instances: TaskInstanceClientDTO[];
-  todayInstances: TaskInstanceClientDTO[];
+export interface UseTaskInstanceReturn {
+  // State from Store
+  instances: TaskInstance[];
   loading: boolean;
   error: string | null;
-}
-
-export interface UseTaskInstanceReturn extends TaskInstanceState {
+  
   // Query
   loadInstances: () => Promise<void>;
-  loadTodayInstances: () => Promise<void>;
-  loadInstancesByDateRange: (templateUuid: string, startDate: Date, endDate: Date) => Promise<TaskInstanceClientDTO[]>;
-  getInstance: (id: string) => Promise<TaskInstanceClientDTO | null>;
+  getTodayInstances: () => TaskInstance[];
+  getPendingInstances: () => TaskInstance[];
+  getCompletedInstances: () => TaskInstance[];
+  getInstancesByTemplate: (templateId: string) => TaskInstance[];
+  getFilteredInstances: () => TaskInstance[];
+  loadInstancesByDateRange: (templateUuid: string, startDate: Date, endDate: Date) => Promise<TaskInstance[]>;
+  getInstance: (id: string) => Promise<TaskInstance | null>;
   
   // Actions
   startInstance: (id: string) => Promise<void>;
@@ -38,51 +46,39 @@ export interface UseTaskInstanceReturn extends TaskInstanceState {
 // ===== Hook Implementation =====
 
 export function useTaskInstance(): UseTaskInstanceReturn {
-  const [state, setState] = useState<TaskInstanceState>({
-    instances: [],
-    todayInstances: [],
-    loading: false,
-    error: null,
-  });
+  // ===== Store State =====
+  const instances = useTaskStore((state) => state.instances);
+  const loading = useTaskStore((state) => state.isLoading);
+  const error = useTaskStore((state) => state.error);
+  
+  // ===== Store Actions =====
+  const storeSetInstances = useTaskStore((state) => state.setInstances);
+  const storeUpdateInstance = useTaskStore((state) => state.updateInstance);
+  const storeRemoveInstance = useTaskStore((state) => state.removeInstance);
+  const storeFetchInstances = useTaskStore((state) => state.fetchInstances);
+  const storeCompleteInstance = useTaskStore((state) => state.completeInstance);
+  const storeSkipInstance = useTaskStore((state) => state.skipInstance);
+  const storeSetError = useTaskStore((state) => state.setError);
+  
+  // ===== Store Selectors =====
+  const getTodayInstances = useTaskStore((state) => state.getTodayInstances);
+  const getPendingInstances = useTaskStore((state) => state.getPendingInstances);
+  const getCompletedInstances = useTaskStore((state) => state.getCompletedInstances);
+  const getInstancesByTemplate = useTaskStore((state) => state.getInstancesByTemplate);
+  const getFilteredInstances = useTaskStore((state) => state.getFilteredInstances);
+  const getInstanceById = useTaskStore((state) => state.getInstanceById);
 
   // ===== Query =====
 
   const loadInstances = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    await storeFetchInstances();
+  }, [storeFetchInstances]);
 
-    try {
-      const instances = await taskApplicationService.listInstances();
-      setState((prev) => ({ ...prev, instances, loading: false }));
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '加载任务实例失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
-    }
-  }, []);
-
-  const loadTodayInstances = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      // 加载所有实例，然后过滤今日的
-      const instances = await taskApplicationService.listInstances();
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const todayInstances = instances.filter((i) => {
-        const instanceDate = new Date(i.instanceDate);
-        return instanceDate >= today && instanceDate < tomorrow;
-      });
-
-      setState((prev) => ({ ...prev, todayInstances, loading: false }));
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '加载今日任务失败';
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
-    }
-  }, []);
-
-  const loadInstancesByDateRange = useCallback(async (templateUuid: string, startDate: Date, endDate: Date) => {
+  const loadInstancesByDateRange = useCallback(async (
+    templateUuid: string, 
+    startDate: Date, 
+    endDate: Date
+  ): Promise<TaskInstance[]> => {
     return taskApplicationService.getInstancesByDateRange({
       templateUuid,
       from: startDate.getTime(),
@@ -90,93 +86,77 @@ export function useTaskInstance(): UseTaskInstanceReturn {
     });
   }, []);
 
-  const getInstance = useCallback(async (id: string) => {
+  const getInstance = useCallback(async (id: string): Promise<TaskInstance | null> => {
+    // 先从 Store 查找
+    const cached = getInstanceById(id);
+    if (cached) return cached;
+    
+    // Store 中没有则从 API 获取
     return taskApplicationService.getInstance(id);
-  }, []);
+  }, [getInstanceById]);
 
   // ===== Actions =====
 
-  const startInstance = useCallback(async (id: string) => {
+  const startInstance = useCallback(async (id: string): Promise<void> => {
     try {
       const instance = await taskApplicationService.startInstance(id);
-      setState((prev) => ({
-        ...prev,
-        instances: prev.instances.map((i) => (i.uuid === id ? instance : i)),
-        todayInstances: prev.todayInstances.map((i) => (i.uuid === id ? instance : i)),
-      }));
+      storeUpdateInstance(instance.uuid, instance);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '开始任务失败';
-      setState((prev) => ({ ...prev, error: errorMessage }));
+      storeSetError(errorMessage);
       throw e;
     }
-  }, []);
+  }, [storeUpdateInstance, storeSetError]);
 
-  const completeInstance = useCallback(async (id: string) => {
-    try {
-      const instance = await taskApplicationService.completeInstance(id);
-      setState((prev) => ({
-        ...prev,
-        instances: prev.instances.map((i) => (i.uuid === id ? instance : i)),
-        todayInstances: prev.todayInstances.map((i) => (i.uuid === id ? instance : i)),
-      }));
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '完成任务失败';
-      setState((prev) => ({ ...prev, error: errorMessage }));
-      throw e;
-    }
-  }, []);
+  const completeInstance = useCallback(async (id: string): Promise<void> => {
+    await storeCompleteInstance(id);
+  }, [storeCompleteInstance]);
 
-  const skipInstance = useCallback(async (id: string) => {
-    try {
-      const instance = await taskApplicationService.skipInstance(id);
-      setState((prev) => ({
-        ...prev,
-        instances: prev.instances.map((i) => (i.uuid === id ? instance : i)),
-        todayInstances: prev.todayInstances.map((i) => (i.uuid === id ? instance : i)),
-      }));
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : '跳过任务失败';
-      setState((prev) => ({ ...prev, error: errorMessage }));
-      throw e;
-    }
-  }, []);
+  const skipInstance = useCallback(async (id: string): Promise<void> => {
+    await storeSkipInstance(id);
+  }, [storeSkipInstance]);
 
-  const deleteInstance = useCallback(async (id: string) => {
+  const deleteInstance = useCallback(async (id: string): Promise<void> => {
     try {
       await taskApplicationService.deleteInstance(id);
-      setState((prev) => ({
-        ...prev,
-        instances: prev.instances.filter((i) => i.uuid !== id),
-        todayInstances: prev.todayInstances.filter((i) => i.uuid !== id),
-      }));
+      storeRemoveInstance(id);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : '删除任务实例失败';
-      setState((prev) => ({ ...prev, error: errorMessage }));
+      storeSetError(errorMessage);
       throw e;
     }
-  }, []);
+  }, [storeRemoveInstance, storeSetError]);
 
   // ===== Utilities =====
 
   const clearError = useCallback(() => {
-    setState((prev) => ({ ...prev, error: null }));
-  }, []);
+    storeSetError(null);
+  }, [storeSetError]);
 
   const refresh = useCallback(async () => {
-    await Promise.all([loadInstances(), loadTodayInstances()]);
-  }, [loadInstances, loadTodayInstances]);
+    await loadInstances();
+  }, [loadInstances]);
+
+  // ===== Effects =====
+
+  useEffect(() => {
+    loadInstances();
+  }, [loadInstances]);
 
   // ===== Return =====
 
   return {
-    // State
-    instances: state.instances,
-    todayInstances: state.todayInstances,
-    loading: state.loading,
-    error: state.error,
+    // State from Store
+    instances,
+    loading,
+    error,
     // Query
     loadInstances,
-    loadTodayInstances,
+    getTodayInstances,
+    getPendingInstances,
+    getCompletedInstances,
+    getInstancesByTemplate,
+    getFilteredInstances,
     loadInstancesByDateRange,
     getInstance,
     // Actions

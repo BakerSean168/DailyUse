@@ -5,10 +5,10 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ReminderContainer } from '@dailyuse/infrastructure-client';
 import type { ReminderTemplateClientDTO, UpdateReminderTemplateRequest } from '@dailyuse/contracts/reminder';
 import { ReminderType, TriggerType } from '@dailyuse/contracts/reminder';
 import { ImportanceLevel } from '@dailyuse/contracts/shared';
+import { reminderApplicationService } from '../../application/services/ReminderApplicationService';
 
 interface ReminderEditDialogProps {
   template: ReminderTemplateClientDTO;
@@ -33,8 +33,6 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const reminderApiClient = ReminderContainer.getInstance().getApiClient();
 
   useEffect(() => {
     // 重置表单当 template 变化时
@@ -85,7 +83,7 @@ export function ReminderEditDialog({ template, onClose, onUpdated }: ReminderEdi
             },
       };
 
-      await reminderApiClient.updateReminderTemplate(template.uuid, request);
+      await reminderApplicationService.updateReminderTemplate({ uuid: template.uuid, request });
       onUpdated();
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新失败');

@@ -7,8 +7,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { scheduleApplicationService } from '../../application/services';
 import type { ScheduleClientDTO } from '../stores/scheduleStore';
-// ScheduleTaskClientDTO 仍需从 contracts 导入，或者定义本地类型
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 import type {
   CreateScheduleTaskInput,
   CompleteScheduleTaskInput,
@@ -19,9 +18,9 @@ import type {
 // ===== Types =====
 
 export interface ScheduleState {
-  tasks: ScheduleTaskClientDTO[];
+  tasks: ScheduleTask[];
   events: ScheduleClientDTO[];
-  selectedTask: ScheduleTaskClientDTO | null;
+  selectedTask: ScheduleTask | null;
   selectedEvent: ScheduleClientDTO | null;
   loading: boolean;
   error: string | null;
@@ -30,10 +29,10 @@ export interface ScheduleState {
 export interface UseScheduleReturn extends ScheduleState {
   // Task Query
   loadTasks: () => Promise<void>;
-  getTask: (id: string) => Promise<ScheduleTaskClientDTO | null>;
+  getTask: (id: string) => Promise<ScheduleTask | null>;
 
   // Task Mutations
-  createTask: (input: CreateScheduleTaskInput) => Promise<ScheduleTaskClientDTO>;
+  createTask: (input: CreateScheduleTaskInput) => Promise<ScheduleTask>;
   pauseTask: (id: string) => Promise<void>;
   resumeTask: (id: string) => Promise<void>;
   completeTask: (input: CompleteScheduleTaskInput) => Promise<void>;
@@ -44,7 +43,7 @@ export interface UseScheduleReturn extends ScheduleState {
   getEventsByTimeRange: (input: GetSchedulesByTimeRangeInput) => Promise<ScheduleClientDTO[]>;
 
   // Selection
-  selectTask: (task: ScheduleTaskClientDTO | null) => void;
+  selectTask: (task: ScheduleTask | null) => void;
   selectEvent: (event: ScheduleClientDTO | null) => void;
 
   // Utilities
@@ -206,7 +205,7 @@ export function useSchedule(): UseScheduleReturn {
 
   // ===== Selection =====
 
-  const selectTask = useCallback((task: ScheduleTaskClientDTO | null) => {
+  const selectTask = useCallback((task: ScheduleTask | null) => {
     setState((prev) => ({ ...prev, selectedTask: task }));
   }, []);
 

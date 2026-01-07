@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import type { GoalClientDTO } from '@dailyuse/contracts/goal';
+import type { Goal } from '@dailyuse/domain-client/goal';
 import {
   Card,
   CardContent,
@@ -20,7 +20,7 @@ import { Target, TrendingUp } from 'lucide-react';
 import { KeyResultCard } from './KeyResultCard';
 
 interface GoalInfoCardProps {
-  goal: GoalClientDTO;
+  goal: Goal;
   onClick?: (goalUuid: string) => void;
   onKeyResultClick?: (keyResultUuid: string) => void;
   onAddRecord?: (keyResultUuid: string) => void;

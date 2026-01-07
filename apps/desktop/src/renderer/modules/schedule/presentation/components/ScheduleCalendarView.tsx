@@ -8,24 +8,24 @@
 import { useState, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import type { ScheduleTaskClientDTO } from '@dailyuse/contracts/schedule';
+import type { ScheduleTask } from '@dailyuse/domain-client/schedule';
 
 interface ScheduleCalendarViewProps {
-  tasks: ScheduleTaskClientDTO[];
-  onTaskClick: (task: ScheduleTaskClientDTO) => void;
-  onTaskDrop?: (task: ScheduleTaskClientDTO, newDate: Date) => void;
+  tasks: ScheduleTask[];
+  onTaskClick: (task: ScheduleTask) => void;
+  onTaskDrop?: (task: ScheduleTask, newDate: Date) => void;
 }
 
 interface CalendarDay {
   date: Date;
   isCurrentMonth: boolean;
   isToday: boolean;
-  tasks: ScheduleTaskClientDTO[];
+  tasks: ScheduleTask[];
 }
 
 export function ScheduleCalendarView({ tasks, onTaskClick, onTaskDrop }: ScheduleCalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [draggedTask, setDraggedTask] = useState<ScheduleTaskClientDTO | null>(null);
+  const [draggedTask, setDraggedTask] = useState<ScheduleTask | null>(null);
   const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
 
   const calendarDays = useMemo(() => {
@@ -92,7 +92,7 @@ export function ScheduleCalendarView({ tasks, onTaskClick, onTaskDrop }: Schedul
   const monthYear = format(currentDate, 'yyyy年M月', { locale: zhCN });
 
   // 拖拽事件处理
-  const handleDragStart = useCallback((e: React.DragEvent, task: ScheduleTaskClientDTO) => {
+  const handleDragStart = useCallback((e: React.DragEvent, task: ScheduleTask) => {
     setDraggedTask(task);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', task.uuid);

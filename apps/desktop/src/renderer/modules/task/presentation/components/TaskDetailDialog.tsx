@@ -2,14 +2,19 @@
  * Task Detail Dialog
  *
  * 任务模板详情对话框 - 查看、编辑任务模板
+ * 
+ * EPIC-015 重构: 使用 Hook 代替直接调用 Infrastructure 层
+ * - 使用 useTaskTemplate Hook 进行数据操作
+ * - 使用 Entity 类型 (TaskTemplate)
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { TaskContainer } from '@dailyuse/infrastructure-client';
-import type { TaskTemplateClientDTO, UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
+import type { TaskTemplate } from '@dailyuse/domain-client/task';
+import type { UpdateTaskTemplateRequest } from '@dailyuse/contracts/task';
 import { ImportanceLevel, UrgencyLevel } from '@dailyuse/contracts/shared';
 import { TimeEstimationCard } from '../../../../shared/components/task/TimeEstimationCard';
 import type { TimeEstimate } from '@dailyuse/contracts/goal';
+import { useTaskTemplate } from '../hooks/useTaskTemplate';
 
 interface TaskDetailDialogProps {
   templateUuid: string;
@@ -19,7 +24,7 @@ interface TaskDetailDialogProps {
 }
 
 export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: TaskDetailDialogProps) {
-  const [template, setTemplate] = useState<TaskTemplateClientDTO | null>(null);
+  const [template, setTemplate] = useState<TaskTemplate | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -35,8 +40,8 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
   const [editImportance, setEditImportance] = useState<ImportanceLevel>(ImportanceLevel.Moderate);
   const [editUrgency, setEditUrgency] = useState<UrgencyLevel>(UrgencyLevel.Medium);
 
-  // 获取 API Client
-  const taskApiClient = TaskContainer.getInstance().getTemplateApiClient();
+  // 使用 Hook 进行数据操作
+  const { getTemplate, updateTemplate, deleteTemplate } = useTaskTemplate();
 
   const loadTemplate = useCallback(async () => {
     if (!templateUuid || !open) return;
@@ -44,20 +49,22 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
     try {
       setLoading(true);
       setError(null);
-      const result = await taskApiClient.getTaskTemplateById(templateUuid);
-      setTemplate(result);
-      // 初始化编辑表单
-      setEditTitle(result.title);
-      setEditDescription(result.description ?? '');
-      setEditImportance(result.importance);
-      setEditUrgency(result.urgency);
+      const result = await getTemplate(templateUuid);
+      if (result) {
+        setTemplate(result);
+        // 初始化编辑表单
+        setEditTitle(result.title);
+        setEditDescription(result.description ?? '');
+        setEditImportance(result.importance);
+        setEditUrgency(result.urgency);
+      }
     } catch (err) {
       console.error('[TaskDetailDialog] Failed to load template:', err);
       setError('加载任务模板失败');
     } finally {
       setLoading(false);
     }
-  }, [templateUuid, open, taskApiClient]);
+  }, [templateUuid, open, getTemplate]);
 
   useEffect(() => {
     if (open) {
@@ -81,7 +88,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
         urgency: editUrgency,
       };
       
-      await taskApiClient.updateTaskTemplate(template.uuid, request);
+      await updateTemplate(template.uuid, request);
       setIsEditing(false);
       onUpdated();
     } catch (err) {
@@ -100,7 +107,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
 
     try {
       setIsSaving(true);
-      await taskApiClient.deleteTaskTemplate(template.uuid);
+      await deleteTemplate(template.uuid);
       onUpdated();
       onClose();
     } catch (err) {
@@ -136,13 +143,15 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
       // });
       
       // 临时模拟数据 - 演示用
+      // 默认预估时间为 60 分钟
+      const defaultEstimatedMinutes = 60;
       const mockEstimate: TimeEstimate = {
         taskId: template.uuid,
         taskTitle: template.title,
-        estimatedMinutes: Math.round(template.estimatedMinutes || 60),
+        estimatedMinutes: defaultEstimatedMinutes,
         confidenceScore: 0.75,
         reasoning: '基于任务描述复杂度和历史数据估算',
-        adjustedMinutes: Math.round((template.estimatedMinutes || 60) * 1.1),
+        adjustedMinutes: Math.round(defaultEstimatedMinutes * 1.1),
         adjustmentReason: '基于用户历史数据调整 +10%',
       };
       
@@ -160,7 +169,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
 
     try {
       setIsSaving(true);
-      await taskApiClient.updateTaskTemplate(template.uuid, {
+      await updateTemplate(template.uuid, {
         title: template.title,
       });
       // 更新本地预估
@@ -305,7 +314,7 @@ export function TaskDetailDialog({ templateUuid, open, onClose, onUpdated }: Tas
                   />
                 ) : (
                   <div className="text-muted-foreground">
-                    {template.estimatedMinutes ? `${template.estimatedMinutes} 分钟` : '未设置'}
+                    未设置
                   </div>
                 )}
               </div>
