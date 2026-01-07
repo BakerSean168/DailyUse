@@ -21,3 +21,5 @@ export {
   type CreateReviewInput,
   type UpdateReviewInput,
 } from './useGoalReview';
+
+export { useFocus, type UseFocusReturn } from './useFocus';

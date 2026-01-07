@@ -3,7 +3,6 @@ tags:
   - documentation
   - index
   - obsidian
-  - v2.0
 description: DailyUse项目文档中心 v2.0 - 生产级文档系统
 created: 2025-11-23T14:54:12
 updated: 2025-12-16T10:00:00

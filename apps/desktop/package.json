@@ -81,6 +81,7 @@
     "postcss": "^8.4.39",
     "quick-lru": "7.3.0",
     "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3",
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.5"
   },

@@ -196,6 +196,17 @@ export type {
 // ============ Aggregates (Client) ============
 export type { FocusSessionClientDTO, FocusSessionClient } from './aggregates/FocusSessionClient';
 
+// ============ Focus DTOs (Client) ============
+export type {
+  FocusStatusDTO,
+  FocusHistoryDTO,
+  FocusStatisticsDTO,
+  PomodoroConfigDTO,
+  StartFocusRequest,
+  StopFocusRequest,
+  GetFocusHistoryRequest,
+} from './dto/focus.dto';
+
 export type {
   GoalClientDTO,
   GoalClient,

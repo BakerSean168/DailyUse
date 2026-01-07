@@ -75,6 +75,16 @@ export class SettingContainer extends ModuleContainerBase {
     return this.container.has(KEYS.API_CLIENT);
   }
 
+  // ============ 便利属性（向后兼容） ============
+
+  /**
+   * 获取 Setting API Client（便利属性）
+   * @deprecated 请使用 getApiClient() 方法
+   */
+  get settingClient(): ISettingApiClient {
+    return this.getApiClient();
+  }
+
   // ============ 通用方法 ============
 
   /**

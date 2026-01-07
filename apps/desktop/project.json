@@ -78,7 +78,7 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "vue-tsc --noEmit",
+        "command": "tsc --noEmit",
         "cwd": "apps/desktop"
       }
     }

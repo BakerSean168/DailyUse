@@ -249,8 +249,8 @@ export const useAccountStore = create<AccountState & AccountActions & AccountSel
             }
             
             const accountClient = accountContainer.accountClient;
-            const history = await accountClient.getHistory(currentAccount.uuid);
-            setAccountHistory(history);
+            const response = await accountClient.getHistory();
+            setAccountHistory((response.history ?? []) as AccountHistoryDTO[]);
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Failed to fetch account history';
             setError(message);

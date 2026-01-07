@@ -153,6 +153,31 @@ export class AccountHttpAdapter implements IAccountApiClient {
   async getAccountStats(): Promise<AccountStatsResponseDTO> {
     return this.httpClient.get(`${this.baseUrl}/stats`);
   }
+
+  // ===== 向后兼容别名 =====
+
+  /**
+   * @deprecated 请使用 getMyProfile()
+   */
+  async getCurrentAccount(): Promise<AccountDTO> {
+    return this.getMyProfile();
+  }
+
+  /**
+   * @deprecated 请使用 getAccountHistory()
+   */
+  async getHistory(
+    params?: { page?: number; limit?: number },
+  ): Promise<AccountHistoryListResponseDTO> {
+    return this.getAccountHistory('me', params);
+  }
+
+  /**
+   * @deprecated 请使用 getAccountStats()
+   */
+  async getStats(_accountUuid?: string): Promise<AccountStatsResponseDTO> {
+    return this.getAccountStats();
+  }
 }
 
 /**

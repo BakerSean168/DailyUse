@@ -20,6 +20,7 @@
 import { DIContainer, ModuleContainerBase } from '../shared/di';
 import type { IGoalApiClient } from './ports/goal-api-client.port';
 import type { IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
+import type { IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
 
 /**
  * Goal 模块依赖键
@@ -27,6 +28,7 @@ import type { IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
 const KEYS = {
   API_CLIENT: Symbol('GoalApiClient'),
   FOLDER_API_CLIENT: Symbol('GoalFolderApiClient'),
+  FOCUS_API_CLIENT: Symbol('GoalFocusApiClient'),
   REPOSITORY: Symbol('GoalRepository'),
 } as const;
 
@@ -117,6 +119,30 @@ export class GoalContainer extends ModuleContainerBase {
     return this.container.has(KEYS.FOLDER_API_CLIENT);
   }
 
+  // ============ Focus API Client ============
+
+  /**
+   * 注册 Goal Focus API Client
+   */
+  registerFocusApiClient(client: IGoalFocusApiClient): this {
+    this.container.register(KEYS.FOCUS_API_CLIENT, client);
+    return this;
+  }
+
+  /**
+   * 获取 Goal Focus API Client
+   */
+  getFocusApiClient(): IGoalFocusApiClient {
+    return this.container.resolve<IGoalFocusApiClient>(KEYS.FOCUS_API_CLIENT);
+  }
+
+  /**
+   * 检查 Focus API Client 是否已注册
+   */
+  hasFocusApiClient(): boolean {
+    return this.container.has(KEYS.FOCUS_API_CLIENT);
+  }
+
   // ============ Repository (可选) ============
 
   /**
@@ -154,7 +180,7 @@ export class GoalContainer extends ModuleContainerBase {
    * 检查必需依赖是否已配置
    */
   isConfigured(): boolean {
-    return this.hasApiClient() && this.hasFolderApiClient();
+    return this.hasApiClient() && this.hasFolderApiClient() && this.hasFocusApiClient();
   }
 
   /**
@@ -163,6 +189,7 @@ export class GoalContainer extends ModuleContainerBase {
   clear(): void {
     this.container.unregister(KEYS.API_CLIENT);
     this.container.unregister(KEYS.FOLDER_API_CLIENT);
+    this.container.unregister(KEYS.FOCUS_API_CLIENT);
     this.container.unregister(KEYS.REPOSITORY);
   }
 }

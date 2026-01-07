@@ -107,3 +107,28 @@ export type {
   PriorityLevel,
   EisenhowerQuadrant,
 } from './priority-analysis';
+
+// ===== Focus Session 用例 =====
+export {
+  StartFocusSession,
+  startFocusSession,
+  PauseFocusSession,
+  pauseFocusSession,
+  ResumeFocusSession,
+  resumeFocusSession,
+  StopFocusSession,
+  stopFocusSession,
+  GetFocusStatus,
+  getFocusStatus,
+  GetFocusHistory,
+  getFocusHistory,
+  getTodayFocusHistory,
+  getWeekFocusHistory,
+  GetFocusStatistics,
+  getFocusStatistics,
+} from './focus';
+export type {
+  StartFocusSessionInput,
+  StopFocusSessionInput,
+  GetFocusHistoryInput,
+} from './focus';

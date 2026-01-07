@@ -10,6 +10,7 @@ import {
   GoalContainer,
   GoalIpcAdapter,
   GoalFolderIpcAdapter,
+  GoalFocusIpcAdapter,
 } from '../../goal';
 import {
   TaskContainer,
@@ -48,7 +49,8 @@ export function configureDesktopDependencies(electronApi: ElectronAPI): void {
   // Goal Module
   GoalContainer.getInstance()
     .registerApiClient(new GoalIpcAdapter(electronApi))
-    .registerFolderApiClient(new GoalFolderIpcAdapter(electronApi));
+    .registerFolderApiClient(new GoalFolderIpcAdapter(electronApi))
+    .registerFocusApiClient(new GoalFocusIpcAdapter(electronApi));
 
   // Task Module
   TaskContainer.getInstance()

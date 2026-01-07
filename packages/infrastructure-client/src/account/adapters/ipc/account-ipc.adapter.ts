@@ -189,6 +189,32 @@ export class AccountIpcAdapter implements IAccountApiClient {
   async getAccountStats(): Promise<AccountStatsResponseDTO> {
     return this.ipcApi.invoke(ACCOUNT_CHANNELS.GET_STATS);
   }
+
+  // ===== 向后兼容别名 =====
+
+  /**
+   * @deprecated 请使用 getMyProfile()
+   */
+  async getCurrentAccount(): Promise<AccountDTO> {
+    return this.getMyProfile();
+  }
+
+  /**
+   * @deprecated 请使用 getAccountHistory()
+   */
+  async getHistory(
+    params?: { page?: number; limit?: number },
+  ): Promise<AccountHistoryListResponseDTO> {
+    // 使用“me”作为 accountId 代表当前用户
+    return this.getAccountHistory('me', params);
+  }
+
+  /**
+   * @deprecated 请使用 getAccountStats()
+   */
+  async getStats(_accountUuid?: string): Promise<AccountStatsResponseDTO> {
+    return this.getAccountStats();
+  }
 }
 
 /**

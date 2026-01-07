@@ -53,4 +53,16 @@ export interface ISettingApiClient {
 
   /** 导入设置 */
   importSettings(data: string): Promise<UserSettingClientDTO>;
+
+  // ===== 向后兼容别名 =====
+
+  /**
+   * @deprecated 请使用 getUserSettings()
+   */
+  getAll(): Promise<unknown>;
+
+  /**
+   * @deprecated 请使用 updateAppearance/updateLocale 等方法
+   */
+  setAll(settings: unknown): Promise<unknown>;
 }

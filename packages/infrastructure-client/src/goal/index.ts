@@ -14,6 +14,7 @@ export {
 // Ports (Interfaces)
 export { type IGoalApiClient } from './ports/goal-api-client.port';
 export { type IGoalFolderApiClient } from './ports/goal-folder-api-client.port';
+export { type IGoalFocusApiClient } from './ports/goal-focus-api-client.port';
 
 // HTTP Adapters
 export { GoalHttpAdapter, createGoalHttpAdapter } from './adapters/http/goal-http.adapter';
@@ -28,3 +29,7 @@ export {
   GoalFolderIpcAdapter,
   createGoalFolderIpcAdapter,
 } from './adapters/ipc/goal-folder-ipc.adapter';
+export {
+  GoalFocusIpcAdapter,
+  createGoalFocusIpcAdapter,
+} from './adapters/ipc/goal-focus-ipc.adapter';

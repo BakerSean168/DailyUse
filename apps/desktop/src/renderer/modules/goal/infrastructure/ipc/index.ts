@@ -7,9 +7,8 @@
 export {
   GoalIpcAdapter,
   GoalFolderIpcAdapter,
+  GoalFocusIpcAdapter,
   createGoalIpcAdapter,
   createGoalFolderIpcAdapter,
+  createGoalFocusIpcAdapter,
 } from '@dailyuse/infrastructure-client';
-
-// Focus 功能 - 本地实现（尚未提取到 packages）
-export * from './goal-focus.ipc-client';

@@ -157,7 +157,7 @@ export const useSettingStore = create<SettingStore>()(
         
         try {
           const settingClient = settingContainer.settingClient;
-          const loadedSettings = await settingClient.getAll();
+          const loadedSettings = await settingClient.getAll() as AppSettingsDTO | null;
           if (loadedSettings) {
             // 将 IPC 嵌套结构转换为扁平结构
             const flatSettings = fromIPCSettings(loadedSettings);

@@ -44,6 +44,7 @@ export {
   // Ports
   type IGoalApiClient,
   type IGoalFolderApiClient,
+  type IGoalFocusApiClient,
   // HTTP Adapters
   GoalHttpAdapter,
   createGoalHttpAdapter,
@@ -54,6 +55,8 @@ export {
   createGoalIpcAdapter,
   GoalFolderIpcAdapter,
   createGoalFolderIpcAdapter,
+  GoalFocusIpcAdapter,
+  createGoalFocusIpcAdapter,
 } from './goal';
 
 // ============================================================

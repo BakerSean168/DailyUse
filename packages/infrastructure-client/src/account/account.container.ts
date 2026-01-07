@@ -79,6 +79,16 @@ export class AccountContainer extends ModuleContainerBase {
     return this.container.has(KEYS.REPOSITORY);
   }
 
+  // ============ 便利属性（向后兼容） ============
+
+  /**
+   * 获取 Account API Client（便利属性）
+   * @deprecated 请使用 getApiClient() 方法
+   */
+  get accountClient(): IAccountApiClient {
+    return this.getApiClient();
+  }
+
   // ============ 通用方法 ============
 
   isConfigured(): boolean {

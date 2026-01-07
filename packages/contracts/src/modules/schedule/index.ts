@@ -125,7 +125,6 @@ export {
   ScheduleTaskEventTypes,
   ScheduleStatisticsEventTypes,
   ScheduleEventTypes,
-  LegacyEventTypeMapping,
 } from './event-types';
 
 export type {

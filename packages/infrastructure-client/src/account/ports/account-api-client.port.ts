@@ -164,4 +164,21 @@ export interface IAccountApiClient {
    * 获取账户统计
    */
   getAccountStats(): Promise<AccountStatsResponseDTO>;
+
+  // ===== 向后兼容别名 =====
+
+  /**
+   * @deprecated 请使用 getMyProfile()
+   */
+  getCurrentAccount(): Promise<AccountDTO>;
+
+  /**
+   * @deprecated 请使用 getAccountHistory()
+   */
+  getHistory(params?: { page?: number; limit?: number }): Promise<AccountHistoryListResponseDTO>;
+
+  /**
+   * @deprecated 请使用 getAccountStats()
+   */
+  getStats(accountUuid?: string): Promise<AccountStatsResponseDTO>;
 }

@@ -70,4 +70,21 @@ export class SettingHttpAdapter implements ISettingApiClient {
   async importSettings(data: string): Promise<UserSettingClientDTO> {
     return this.httpClient.post(`${this.baseUrl}/import`, { data });
   }
+
+  // ===== 向后兼容别名 =====
+
+  /**
+   * @deprecated 请使用 getUserSettings()
+   */
+  async getAll(): Promise<unknown> {
+    return this.getUserSettings();
+  }
+
+  /**
+   * @deprecated 请使用 updateAppearance/updateLocale 等方法
+   */
+  async setAll(_settings: unknown): Promise<unknown> {
+    console.warn('setAll is deprecated. Use specific update methods instead.');
+    return this.getUserSettings();
+  }
 }

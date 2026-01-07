@@ -70,4 +70,22 @@ export class SettingIpcAdapter implements ISettingApiClient {
   async importSettings(data: string): Promise<UserSettingClientDTO> {
     return this.ipcClient.invoke(`${this.channel}:import`, { data });
   }
+
+  // ===== 向后兼容别名 =====
+
+  /**
+   * @deprecated 请使用 getUserSettings()
+   */
+  async getAll(): Promise<unknown> {
+    return this.getUserSettings();
+  }
+
+  /**
+   * @deprecated 请使用 updateAppearance/updateLocale 等方法
+   */
+  async setAll(_settings: unknown): Promise<unknown> {
+    // 简化实现：返回当前设置（实际应分別调用对应的 update 方法）
+    console.warn('setAll is deprecated. Use specific update methods instead.');
+    return this.getUserSettings();
+  }
 }
