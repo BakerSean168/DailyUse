@@ -16,3 +16,6 @@ export * from './repositories';
 
 // 领域服务
 export * from './services';
+
+// 业务错误
+export * from './errors';

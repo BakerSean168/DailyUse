@@ -52,3 +52,14 @@ export {
   type FindDueTasksInput,
   type FindDueTasksOutput,
 } from './find-due-tasks';
+
+// Cron 表达式处理
+export {
+  calculateNextRun,
+  calculateNextRunBatch,
+  getNextRunTimes,
+  isValidCronExpression,
+  parseCronExpression,
+  type CalculateNextRunOptions,
+  type CronExpressionFields,
+} from './calculate-next-run';

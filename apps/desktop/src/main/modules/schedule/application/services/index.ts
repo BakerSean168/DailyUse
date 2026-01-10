@@ -13,3 +13,6 @@ export { findDueTasksService } from './find-due-tasks';
 export { getStatisticsSummaryService } from './get-statistics-summary';
 export { getStatisticsByDateRangeService } from './get-statistics-by-date-range';
 export { getUpcomingService } from './get-upcoming';
+
+// 调度执行
+export { executeScheduleTask } from './execute-task';

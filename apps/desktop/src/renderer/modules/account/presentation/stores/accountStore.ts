@@ -1,12 +1,13 @@
 /**
  * Account Store - Zustand 状态管理
- * 
- * 管理 Account 模块的所有状态，包括：
- * - 当前账户信息
- * - 订阅信息
- * - 账户历史记录
- * - 账户统计
- * 
+ *
+ * 管理 Account 模块的所有状态
+ *
+ * EPIC-018 重构:
+ * - 移除 Container 依赖
+ * - Store 仅管理状态
+ * - 服务调用移至 useAccount Hook
+ *
  * @module account/presentation/stores
  */
 
@@ -23,7 +24,6 @@ import {
   AccountStatus as AccountStatusEnum,
   SubscriptionPlan as SubscriptionPlanEnum,
 } from '@dailyuse/contracts/account';
-import { accountContainer } from '../../infrastructure/di';
 
 // 本地类型别名 - 使用 Client DTO
 type AccountDTO = AccountClientDTO;
@@ -79,14 +79,7 @@ export interface AccountActions {
   removeSavedAccount: (accountUuid: string) => void;
   
   // 生命周期
-  initialize: () => Promise<void>;
   reset: () => void;
-  
-  // IPC 操作
-  fetchCurrentAccount: () => Promise<void>;
-  fetchSubscription: () => Promise<void>;
-  fetchAccountHistory: () => Promise<void>;
-  fetchAccountStats: () => Promise<void>;
 }
 
 // ============ Selectors Interface ============
@@ -178,111 +171,7 @@ export const useAccountStore = create<AccountState & AccountActions & AccountSel
           state.savedAccounts = state.savedAccounts.filter(acc => acc.uuid !== accountUuid);
         }),
         
-        // ========== Lifecycle ==========
-        initialize: async () => {
-          const { fetchCurrentAccount, fetchSubscription, setError } = get();
-          
-          try {
-            await fetchCurrentAccount();
-            await fetchSubscription();
-          } catch (error) {
-            setError(error instanceof Error ? error.message : 'Failed to initialize account');
-          }
-        },
-        
         reset: () => set(initialState),
-        
-        // ========== IPC Actions ==========
-        fetchCurrentAccount: async () => {
-          const { setLoading, setCurrentAccount, setError } = get();
-          
-          try {
-            setLoading(true);
-            setError(null);
-            
-            const accountClient = accountContainer.accountClient;
-            const account = await accountClient.getCurrentAccount();
-            setCurrentAccount(account);
-          } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch account';
-            setError(message);
-            throw error;
-          } finally {
-            setLoading(false);
-          }
-        },
-        
-        fetchSubscription: async () => {
-          const { setLoading, setSubscription, setError, currentAccount } = get();
-          
-          try {
-            setLoading(true);
-            setError(null);
-            
-            if (!currentAccount) {
-              setSubscription(null);
-              return;
-            }
-            
-            const accountClient = accountContainer.accountClient;
-            const subscription = await accountClient.getSubscription(currentAccount.uuid);
-            setSubscription(subscription);
-          } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch subscription';
-            setError(message);
-            throw error;
-          } finally {
-            setLoading(false);
-          }
-        },
-        
-        fetchAccountHistory: async () => {
-          const { setLoading, setAccountHistory, setError, currentAccount } = get();
-          
-          try {
-            setLoading(true);
-            setError(null);
-            
-            if (!currentAccount) {
-              setAccountHistory([]);
-              return;
-            }
-            
-            const accountClient = accountContainer.accountClient;
-            const response = await accountClient.getHistory();
-            setAccountHistory((response.history ?? []) as AccountHistoryDTO[]);
-          } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch account history';
-            setError(message);
-            throw error;
-          } finally {
-            setLoading(false);
-          }
-        },
-        
-        fetchAccountStats: async () => {
-          const { setLoading, setAccountStats, setError, currentAccount } = get();
-          
-          try {
-            setLoading(true);
-            setError(null);
-            
-            if (!currentAccount) {
-              setAccountStats(null);
-              return;
-            }
-            
-            const accountClient = accountContainer.accountClient;
-            const stats = await accountClient.getStats(currentAccount.uuid);
-            setAccountStats(stats);
-          } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch account stats';
-            setError(message);
-            throw error;
-          } finally {
-            setLoading(false);
-          }
-        },
         
         // ========== Selectors ==========
         isAuthenticated: () => get().currentAccount !== null,

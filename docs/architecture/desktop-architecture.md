@@ -1,853 +1,710 @@
-# Desktop 应用架构
+# Desktop 应用架构：积木组装指南
 
-> **更新时间**: 2025-12-16
-> **技术版本**: Electron 39.2.6 + React 19.2.1
+> **更新时间**: 2026-01-08  
+> **技术版本**: Electron 39.2.6 + React 19.2.1  
+> **核心理念**: Desktop 不是从零构建，而是**组装来自 L1-L4 的现成积木**
 
-本文档描述 DailyUse Desktop 应用的技术架构，基于 Electron 构建。
-
----
-
-## 架构概览
-
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                         DailyUse Desktop Application                     │
-│                    Electron 39.2.6 + React 19.2.1                        │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │                     Renderer Process (React 19)                  │    │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │    │
-│  │  │   Views     │  │ Components  │  │     Zustand Stores      │ │    │
-│  │  │   Pages     │  │  shadcn/ui  │  │     State Management    │ │    │
-│  │  └──────┬──────┘  └──────┬──────┘  └───────────┬─────────────┘ │    │
-│  │         │                │                      │               │    │
-│  │         ▼                ▼                      ▼               │    │
-│  │  ┌──────────────────────────────────────────────────────────┐  │    │
-│  │  │            @dailyuse/infrastructure-client               │  │    │
-│  │  │  ┌─────────────────────────────────────────────────────┐ │  │    │
-│  │  │  │ GoalIpcClient │ TaskIpcClient │ ScheduleIpcClient │ │ │  │    │
-│  │  │  └─────────────────────────────────────────────────────┘ │  │    │
-│  │  │  ┌─────────────────────────────────────────────────────┐ │  │    │
-│  │  │  │        IPC Client (window.electronAPI)              │ │  │    │
-│  │  │  └─────────────────────────────────────────────────────┘ │  │    │
-│  │  └──────────────────────────────────────────────────────────┘  │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                                    │                                     │
-│                                    │ IPC (contextBridge)                │
-│                                    ▼                                     │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │                       Preload Script                             │    │
-│  │  ┌───────────────────────────────────────────────────────────┐  │    │
-│  │  │  contextBridge.exposeInMainWorld('electronAPI', {...})    │  │    │
-│  │  └───────────────────────────────────────────────────────────┘  │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                                    │                                     │
-│                                    │ ipcMain.handle()                   │
-│                                    ▼                                     │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │                     Main Process (Node.js)                       │    │
-│  │  ┌───────────────────────────────────────────────────────────┐  │    │
-│  │  │                    IPC Handlers                            │  │    │
-│  │  │  goal.ipc-handler │ task.ipc-handler │ schedule.ipc-handler│  │    │
-│  │  └───────────────────────────────────────────────────────────┘  │    │
-│  │                              │                                   │    │
-│  │                              ▼                                   │    │
-│  │  ┌───────────────────────────────────────────────────────────┐  │    │
-│  │  │            @dailyuse/infrastructure-server                │  │    │
-│  │  │  ┌─────────────────────────────────────────────────────┐  │  │    │
-│  │  │  │ GoalContainer │ TaskContainer │ SettingContainer │  │  │  │    │
-│  │  │  └─────────────────────────────────────────────────────┘  │  │    │
-│  │  └───────────────────────────────────────────────────────────┘  │    │
-│  │                              │                                   │    │
-│  │                              ▼                                   │    │
-│  │  ┌───────────────────────────────────────────────────────────┐  │    │
-│  │  │              SQLite Repository Adapters                   │  │    │
-│  │  │  ┌────────────────┐  ┌────────────────┐  ┌─────────────┐  │  │    │
-│  │  │  │ GoalRepository │  │ TaskRepository │  │SettingRepo  │  │  │    │
-│  │  │  └────────────────┘  └────────────────┘  └─────────────┘  │  │    │
-│  │  └───────────────────────────────────────────────────────────┘  │    │
-│  │                              │                                   │    │
-│  │                              ▼                                   │    │
-│  │  ┌───────────────────────────────────────────────────────────┐  │    │
-│  │  │                   SQLite Database                         │  │    │
-│  │  │                   (better-sqlite3)                        │  │    │
-│  │  └───────────────────────────────────────────────────────────┘  │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-```
+本文档展示 Desktop 应用如何从底层开始逐层依赖和组装 DailyUse 的五层架构。
 
 ---
 
-## 技术栈
+## 核心观点：Desktop = 容器 + 组装
 
-| 组件 | 技术 | 版本 |
-|------|------|------|
-| **桌面框架** | Electron | 39.2.6 |
-| **前端框架** | React | 19.2.1 |
-| **状态管理** | Zustand | 5.0.5 |
-| **UI 库** | shadcn/ui | - |
-| **CSS 框架** | Tailwind CSS | 4.x |
-| **路由** | React Router | 7.x |
-| **本地数据库** | better-sqlite3 | 11.10.0 |
-| **文件监控** | chokidar | 4.0.3 |
-| **Git 集成** | simple-git | 3.27.0 |
-| **任务调度** | node-schedule | 2.1.1 |
-| **日志** | electron-log | 5.4.2 |
-| **打包** | electron-builder | 26.0.12 |
-| **自动更新** | electron-updater | 6.6.2 |
-
----
-
-## 目录结构
+**Desktop 不是独立的应用**，而是一个 **Electron 容器** 和一套**积木组装**的组合体。
 
 ```
-apps/desktop/
-├── electron-builder.json5      # 打包配置
-├── package.json
-├── project.json                # Nx 项目配置
-├── vite.config.ts              # Vite 配置
+Desktop 应用
 │
-├── src/
-│   ├── main/                   # 主进程代码 (Node.js)
-│   │   ├── index.ts            # 入口点
-│   │   ├── database/           # SQLite 数据库
-│   │   │   ├── index.ts        # 连接管理
-│   │   │   └── migrations/     # 数据库迁移
-│   │   ├── di/                 # 依赖注入
-│   │   │   ├── desktop-main.composition-root.ts
-│   │   │   └── sqlite-adapters/
-│   │   │       ├── index.ts
-│   │   │       ├── goal.sqlite-repository.ts
-│   │   │       ├── task-template.sqlite-repository.ts
-│   │   │       └── ...
-│   │   ├── ipc/                # IPC 处理器
-│   │   │   ├── handlers/
-│   │   │   │   ├── goal.ipc-handler.ts
-│   │   │   │   ├── task.ipc-handler.ts
-│   │   │   │   └── ...
-│   │   │   └── register-handlers.ts
-│   │   ├── services/           # 主进程服务
-│   │   │   ├── auto-update.service.ts
-│   │   │   ├── tray.service.ts
-│   │   │   └── notification.service.ts
-│   │   └── window/             # 窗口管理
-│   │       └── main-window.ts
-│   │
-│   ├── preload/                # Preload 脚本
-│   │   └── index.ts            # contextBridge 暴露 API
-│   │
-│   └── renderer/               # 渲染进程 (React 应用)
-│       ├── App.tsx
-│       ├── main.tsx
-│       ├── index.html
-│       ├── pages/              # 页面组件
-│       │   ├── Dashboard.tsx
-│       │   ├── Goals.tsx
-│       │   ├── Tasks.tsx
-│       │   └── Settings.tsx
-│       ├── components/         # 通用组件
-│       │   ├── ui/            # shadcn/ui 组件
-│       │   └── common/        # 业务组件
-│       ├── hooks/              # React Hooks
-│       │   ├── useGoals.ts
-│       │   ├── useTasks.ts
-│       │   └── useSettings.ts
-│       ├── stores/             # Zustand Stores
-│       │   ├── goal.store.ts
-│       │   ├── task.store.ts
-│       │   └── settings.store.ts
-│       └── styles/             # 样式文件
-│           └── globals.css
+├─ L1: Contracts
+│  ├─ ScheduleTaskDTO、ScheduleTaskStatus
+│  ├─ TaskDTO、TaskStatus
+│  └─ ...所有数据契约
 │
-├── dist-electron/              # 编译输出
-└── release/                    # 打包输出
+├─ L2: Domain Models (domain-server)
+│  ├─ ScheduleTask 聚合根、ScheduleConfig 值对象
+│  ├─ Task 聚合根、TaskMetadata 值对象
+│  └─ ...所有业务规则
+│
+├─ L3: Infrastructure (infrastructure-server)
+│  ├─ SchedulePrismaRepository、ScheduleMemoryRepository
+│  ├─ TaskPrismaRepository、TaskMemoryRepository
+│  └─ 所有容器 (ScheduleContainer, TaskContainer, ...)
+│
+├─ L4: Application Services (application-server)
+│  ├─ ScheduleApplicationService、TaskApplicationService
+│  ├─ ...编排逻辑
+│  └─ 依赖 L4.5 通用模式
+│
+├─ L4.5: Generic Patterns (@dailyuse/patterns) 【新】
+│  ├─ ScheduleTaskQueue（通用任务队列框架，由 L4 继承）
+│  ├─ MinHeap、BaseTaskQueue（通用数据结构和基类）
+│  ├─ BaseRepository、QueryObject（通用仓储模式）
+│  └─ ...可被所有 L4 packages 复用
+│
+└─ L5: Desktop 特定包装
+   ├─ DesktopScheduler（L4 ScheduleTaskQueue + Electron powerMonitor）
+   ├─ executeScheduleTask（L4 业务逻辑 + IPC + 本地通知）
+   ├─ IPC Handlers（L4 services + Electron IPC）
+   └─ Composition Root（装配所有积木）
 ```
 
 ---
 
-## 进程通信 (IPC)
-
-### IPC 架构图
+## 架构全景图
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        IPC 通信架构                                  │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                    Renderer Process                          │   │
-│  │  ┌─────────────────────────────────────────────────────┐    │   │
-│  │  │  @dailyuse/infrastructure-client                    │    │   │
-│  │  │                                                      │    │   │
-│  │  │  GoalIpcClient ─────────────┐                       │    │   │
-│  │  │  TaskIpcClient ─────────────┤                       │    │   │
-│  │  │  ScheduleIpcClient ─────────┤                       │    │   │
-│  │  │  ReminderIpcClient ─────────┤ window.electronAPI.X  │    │   │
-│  │  │  NotificationIpcClient ─────┤                       │    │   │
-│  │  │  SettingIpcClient ──────────┤                       │    │   │
-│  │  │  AccountIpcClient ──────────┘                       │    │   │
-│  │  └─────────────────────────────────────────────────────┘    │   │
-│  └────────────────────────────┬────────────────────────────────┘   │
-│                               │                                     │
-│                     contextBridge                                   │
-│                               │                                     │
-│  ┌────────────────────────────▼────────────────────────────────┐   │
-│  │                    Preload Script                            │   │
-│  │                                                              │   │
-│  │  exposeInMainWorld('electronAPI', {                         │   │
-│  │    goal: { getActive, create, update, delete, ... },        │   │
-│  │    task: { getByGoal, create, complete, ... },              │   │
-│  │    schedule: { getToday, create, ... },                     │   │
-│  │    reminder: { getPending, create, trigger, ... },          │   │
-│  │    setting: { get, set, getAll, ... },                      │   │
-│  │    account: { getCurrentUser, login, logout, ... },         │   │
-│  │    autoUpdate: { checkForUpdates, downloadUpdate, ... }     │   │
-│  │  })                                                          │   │
-│  └────────────────────────────┬────────────────────────────────┘   │
-│                               │                                     │
-│                     ipcMain.handle()                                │
-│                               │                                     │
-│  ┌────────────────────────────▼────────────────────────────────┐   │
-│  │                    Main Process                              │   │
-│  │  ┌─────────────────────────────────────────────────────┐    │   │
-│  │  │  IPC Handlers (src/main/ipc/handlers/)              │    │   │
-│  │  │                                                      │    │   │
-│  │  │  goal.ipc-handler.ts ───────────┐                   │    │   │
-│  │  │  task.ipc-handler.ts ───────────┤                   │    │   │
-│  │  │  schedule.ipc-handler.ts ───────┤                   │    │   │
-│  │  │  reminder.ipc-handler.ts ───────┤ DI Container      │    │   │
-│  │  │  setting.ipc-handler.ts ────────┤                   │    │   │
-│  │  │  account.ipc-handler.ts ────────┤                   │    │   │
-│  │  │  auto-update.ipc-handler.ts ────┘                   │    │   │
-│  │  └─────────────────────────────────────────────────────┘    │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                   DailyUse Desktop Application                          │
+│            Electron 39.2.6 + React 19.2.1 + Monorepo 积木              │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ╔════════════════════════════════════════════════════════════════╗   │
+│  ║         Renderer Process (React 19 - L5 客户端层)              ║   │
+│  ║  ┌─────────────────────────────────────────────────────────┐  ║   │
+│  ║  │  Pages / Components / Hooks (使用 L4 的业务逻辑)       │  ║   │
+│  ║  │  Zustand Stores (使用 L4 的应用服务)                  │  ║   │
+│  ║  └─────────────────────────────────────────────────────────┘  ║   │
+│  ║                             │                                 ║   │
+│  ║                    IPC Client (L3)                           ║   │
+│  ║                             │                                 ║   │
+│  ║                    contextBridge                             ║   │
+│  ╚════════════════════════════════════════════════════════════════╝   │
+│                                    │                                   │
+│                              Preload Script                            │
+│                                    │                                   │
+│                            ipcMain.handle()                            │
+│                                    │                                   │
+│  ╔════════════════════════════════════════════════════════════════╗   │
+│  ║     Main Process (Node.js - L5 服务端层 + L2-L4 组装)         ║   │
+│  ║                                                                ║   │
+│  ║  IPC Handlers                                                 ║   │
+│  ║  ├─ goal.ipc-handler     (L4: GoalApplicationService)        ║   │
+│  ║  ├─ task.ipc-handler     (L4: TaskApplicationService)        ║   │
+│  ║  ├─ schedule.ipc-handler (L4: ScheduleTaskQueue)             ║   │
+│  ║  └─ ...                                                       ║   │
+│  ║                             │                                 ║   │
+│  ║                             ▼                                 ║   │
+│  ║  ┌────────────────────────────────────────────────────────┐  ║   │
+│  ║  │  Application Services (L4)                             │  ║   │
+│  ║  │  ├─ ScheduleTaskQueue (核心调度算法)                 │  ║   │
+│  ║  │  ├─ ScheduleApplicationService                        │  ║   │
+│  ║  │  └─ ...                                               │  ║   │
+│  ║  └────────────────────────────────────────────────────────┘  ║   │
+│  ║                             │                                 ║   │
+│  ║                             ▼                                 ║   │
+│  ║  ┌────────────────────────────────────────────────────────┐  ║   │
+│  ║  │  Infrastructure (L3) + Domain (L2) + Contracts (L1)   │  ║   │
+│  ║  │  ├─ ScheduleContainer, SchedulePrismaRepository       │  ║   │
+│  ║  │  ├─ ScheduleTask, ScheduleConfig (业务规则)          │  ║   │
+│  ║  │  └─ ScheduleTaskDTO, ScheduleTaskStatus (契约)       │  ║   │
+│  ║  └────────────────────────────────────────────────────────┘  ║   │
+│  ║                             │                                 ║   │
+│  ║                             ▼                                 ║   │
+│  ║  ┌────────────────────────────────────────────────────────┐  ║   │
+│  ║  │  SQLite (better-sqlite3)                              │  ║   │
+│  ║  │  └─ dailyuse.db                                       │  ║   │
+│  ║  └────────────────────────────────────────────────────────┘  ║   │
+│  ║                                                                ║   │
+│  ║  + Electron 特定功能                                          ║   │
+│  ║    ├─ powerMonitor (电源事件)                                 ║   │
+│  ║    ├─ Notification (本地通知)                                 ║   │
+│  ║    ├─ app lifecycle (应用生命周期)                            ║   │
+│  ║    └─ ...                                                     ║   │
+│  ╚════════════════════════════════════════════════════════════════╝   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### IPC 通道命名规范
+---
 
-```
-{module}:{action}
+## L5 Desktop：从下往上的依赖链
 
-示例:
-- goal:getActive
-- goal:create
-- goal:update
-- goal:delete
-- task:getByGoal
-- task:complete
-- schedule:getToday
-- setting:get
-- setting:set
-- auth:login
-- auth:logout
-- autoUpdate:checkForUpdates
-- autoUpdate:downloadUpdate
-- autoUpdate:quitAndInstall
-```
-
-### IPC Handler 实现
+### 第 1 步：启动数据库和 Composition Root
 
 ```typescript
-// src/main/ipc/handlers/goal.ipc-handler.ts
-import { ipcMain } from 'electron';
-import { GoalContainer } from '@dailyuse/infrastructure-server';
+// src/main/index.ts
+import { app } from 'electron';
+import { initializeDatabase } from './database';
+import { configureMainProcessDependencies } from './di/desktop-main.composition-root';
+import { registerAllHandlers } from './ipc/register-handlers';
 
-export function registerGoalHandlers(): void {
-  // 获取活跃目标
-  ipcMain.handle('goal:getActive', async (_, accountUuid: string) => {
-    const service = GoalContainer.getInstance().getGoalService();
-    return await service.getActiveGoals(accountUuid);
-  });
-
-  // 创建目标
-  ipcMain.handle('goal:create', async (_, data: CreateGoalDTO) => {
-    const service = GoalContainer.getInstance().getGoalService();
-    return await service.createGoal(data);
-  });
-
-  // 更新目标
-  ipcMain.handle('goal:update', async (_, uuid: string, data: UpdateGoalDTO) => {
-    const service = GoalContainer.getInstance().getGoalService();
-    return await service.updateGoal(uuid, data);
-  });
-
-  // 删除目标
-  ipcMain.handle('goal:delete', async (_, uuid: string) => {
-    const service = GoalContainer.getInstance().getGoalService();
-    return await service.deleteGoal(uuid);
-  });
-}
-```
-
-### Preload Script
-
-```typescript
-// src/preload/index.ts
-import { contextBridge, ipcRenderer } from 'electron';
-import type { 
-  CreateGoalDTO, 
-  UpdateGoalDTO,
-  CreateTaskDTO 
-} from '@dailyuse/contracts';
-
-contextBridge.exposeInMainWorld('electronAPI', {
-  // Goal
-  goal: {
-    getActive: (accountUuid: string) => 
-      ipcRenderer.invoke('goal:getActive', accountUuid),
-    create: (data: CreateGoalDTO) => 
-      ipcRenderer.invoke('goal:create', data),
-    update: (uuid: string, data: UpdateGoalDTO) => 
-      ipcRenderer.invoke('goal:update', uuid, data),
-    delete: (uuid: string) => 
-      ipcRenderer.invoke('goal:delete', uuid),
-  },
+app.whenReady().then(async () => {
+  // 1️⃣ 初始化 L1-L3（数据库 + 依赖容器）
+  await initializeDatabase();
+  configureMainProcessDependencies();
   
-  // Task
-  task: {
-    getByGoal: (goalUuid: string) => 
-      ipcRenderer.invoke('task:getByGoal', goalUuid),
-    create: (data: CreateTaskDTO) => 
-      ipcRenderer.invoke('task:create', data),
-    complete: (uuid: string) => 
-      ipcRenderer.invoke('task:complete', uuid),
-  },
+  // 2️⃣ 注册 IPC Handlers（L5 的入口点）
+  registerAllHandlers();
   
-  // Setting
-  setting: {
-    get: (key: string) => 
-      ipcRenderer.invoke('setting:get', key),
-    set: (key: string, value: unknown) => 
-      ipcRenderer.invoke('setting:set', key, value),
-    getAll: () => 
-      ipcRenderer.invoke('setting:getAll'),
-  },
-  
-  // Auto Update
-  autoUpdate: {
-    checkForUpdates: () => 
-      ipcRenderer.invoke('autoUpdate:checkForUpdates'),
-    downloadUpdate: () => 
-      ipcRenderer.invoke('autoUpdate:downloadUpdate'),
-    quitAndInstall: () => 
-      ipcRenderer.invoke('autoUpdate:quitAndInstall'),
-    onUpdateAvailable: (callback: (info: UpdateInfo) => void) => 
-      ipcRenderer.on('autoUpdate:available', (_, info) => callback(info)),
-    onDownloadProgress: (callback: (progress: ProgressInfo) => void) => 
-      ipcRenderer.on('autoUpdate:downloadProgress', (_, progress) => callback(progress)),
-  },
+  // 3️⃣ 创建主窗口
+  await createWindow();
 });
-
-// 类型声明
-declare global {
-  interface Window {
-    electronAPI: typeof electronAPI;
-  }
-}
 ```
 
-### 渲染进程调用
-
-```typescript
-// src/renderer/hooks/useGoals.ts
-import { useState, useCallback } from 'react';
-import type { GoalClientDTO, CreateGoalDTO } from '@dailyuse/contracts';
-
-export function useGoals() {
-  const [goals, setGoals] = useState<GoalClientDTO[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const loadGoals = useCallback(async (accountUuid: string) => {
-    setIsLoading(true);
-    try {
-      const data = await window.electronAPI.goal.getActive(accountUuid);
-      setGoals(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-  
-  const createGoal = useCallback(async (data: CreateGoalDTO) => {
-    const newGoal = await window.electronAPI.goal.create(data);
-    setGoals(prev => [...prev, newGoal]);
-    return newGoal;
-  }, []);
-  
-  return { goals, isLoading, loadGoals, createGoal };
-}
-```
-
----
-
-## 依赖注入配置
-
-### Composition Root
+### 第 2 步：Composition Root 装配所有积木
 
 ```typescript
 // src/main/di/desktop-main.composition-root.ts
 import {
-  GoalContainer,
+  ScheduleContainer,        // L3: 容器
   TaskContainer,
-  ScheduleContainer,
-  SettingContainer,
-  ReminderContainer,
-  NotificationContainer,
-  AccountContainer,
 } from '@dailyuse/infrastructure-server';
 
 import {
-  SqliteGoalRepository,
-  SqliteGoalFolderRepository,
-  SqliteTaskTemplateRepository,
-  SqliteTaskInstanceRepository,
-  SqliteScheduleRepository,
-  SqliteReminderRepository,
-  SqliteSettingRepository,
-  SqliteAccountRepository,
+  SqliteScheduleRepository, // L3: 实现
+  SqliteTaskRepository,
 } from './sqlite-adapters';
 
 export function configureMainProcessDependencies(): void {
-  // Goal 模块
-  GoalContainer.getInstance()
-    .registerGoalRepository(new SqliteGoalRepository())
-    .registerGoalFolderRepository(new SqliteGoalFolderRepository())
-    .registerStatisticsRepository(new SqliteGoalStatisticsRepository());
-
-  // Task 模块
-  TaskContainer.getInstance()
-    .registerTemplateRepository(new SqliteTaskTemplateRepository())
-    .registerInstanceRepository(new SqliteTaskInstanceRepository())
-    .registerStatisticsRepository(new SqliteTaskStatisticsRepository());
-
-  // Schedule 模块
+  // 装配 Schedule 模块（L1-L3）
   ScheduleContainer.getInstance()
-    .registerScheduleRepository(new SqliteScheduleRepository())
-    .registerTimeSlotRepository(new SqliteTimeSlotRepository());
+    .registerScheduleTaskRepository(new SqliteScheduleRepository());
+    // 👆 L3 实现依赖 L2（ScheduleTask）依赖 L1（ScheduleTaskDTO）
 
-  // Reminder 模块
-  ReminderContainer.getInstance()
-    .registerReminderRepository(new SqliteReminderRepository())
-    .registerTemplateRepository(new SqliteReminderTemplateRepository());
+  // 装配 Task 模块（L1-L3）
+  TaskContainer.getInstance()
+    .registerTaskRepository(new SqliteTaskRepository());
 
-  // Setting 模块
-  SettingContainer.getInstance()
-    .registerAppConfigRepository(new SqliteAppConfigRepository())
-    .registerSettingRepository(new SqliteSettingRepository())
-    .registerUserSettingRepository(new SqliteUserSettingRepository());
+  // ...其他模块
 
-  // Account 模块
-  AccountContainer.getInstance()
-    .registerAccountRepository(new SqliteAccountRepository());
+  console.log('✅ All L1-L3 dependencies configured');
 }
 ```
 
-### 应用启动流程
-
-```typescript
-// src/main/index.ts
-import { app, BrowserWindow } from 'electron';
-import { join } from 'path';
-import { initializeDatabase } from './database';
-import { configureMainProcessDependencies } from './di/desktop-main.composition-root';
-import { registerAllHandlers } from './ipc/register-handlers';
-import { initAutoUpdater } from './services/auto-update.service';
-import { initTray } from './services/tray.service';
-
-let mainWindow: BrowserWindow | null = null;
-
-async function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 800,
-    minHeight: 600,
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-    },
-    titleBarStyle: 'hiddenInset',
-    show: false,
-  });
-
-  // 加载渲染进程
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
-  }
-
-  mainWindow.once('ready-to-show', () => {
-    mainWindow?.show();
-  });
-}
-
-app.whenReady().then(async () => {
-  // 1. 初始化数据库
-  await initializeDatabase();
-
-  // 2. 配置依赖注入
-  configureMainProcessDependencies();
-
-  // 3. 注册 IPC 处理器
-  registerAllHandlers();
-
-  // 4. 创建主窗口
-  await createWindow();
-
-  // 5. 初始化系统托盘
-  initTray(mainWindow!);
-
-  // 6. 初始化自动更新
-  initAutoUpdater(mainWindow!);
-});
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
-```
+**这一步的意义：**
+- ✅ L1 (Contracts) 被所有层看到
+- ✅ L2 (Domain) 验证业务规则
+- ✅ L3 (Infrastructure) 提供实现
+- ✅ L3 的容器管理所有实例
 
 ---
 
-## SQLite Repository 实现
-
-### Repository 模式
+### 第 3 步：IPC Handlers（调用 L4 应用服务）
 
 ```typescript
-// src/main/di/sqlite-adapters/goal.sqlite-repository.ts
-import type { IGoalRepository } from '@dailyuse/domain-server/goal';
-import { Goal } from '@dailyuse/domain-server/goal';
-import type { GoalPersistenceDTO } from '@dailyuse/contracts/goal';
-import { getDatabase, transaction } from '../../database';
+// src/main/ipc/handlers/schedule.ipc-handler.ts
+import { ipcMain } from 'electron';
+import { ScheduleContainer } from '@dailyuse/infrastructure-server';
+import type { ScheduleTaskDTO } from '@dailyuse/contracts';
 
-interface GoalRow {
-  uuid: string;
-  account_uuid: string;
-  title: string;
-  description: string | null;
-  type: string;
-  status: string;
-  progress: number;
-  target_date: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
+export function registerScheduleHandlers(): void {
+  // IPC 通道：'schedule:getActive'
+  // 依赖链：IPC → L4 应用服务 → L3 容器 → L2 领域模型 → L1 契约
+  
+  ipcMain.handle('schedule:getActive', async (_, accountUuid: string) => {
+    // 从 L3 容器获取 L4 应用服务（这里用应用级编排）
+    const repository = ScheduleContainer.getInstance()
+      .getScheduleTaskRepository();
+    
+    // 调用 L2 的业务逻辑
+    const tasks = await repository.findEnabled();
+    
+    // 返回 L1 契约（ScheduleTaskDTO）给客户端
+    return tasks.map(task => task.toClientDTO());
+  });
+
+  // 又例：触发任务执行（Desktop 特定的功能）
+  ipcMain.handle('schedule:executeTask', async (_, taskUuid: string) => {
+    // 1. 获取任务（L3 + L2）
+    const repository = ScheduleContainer.getInstance()
+      .getScheduleTaskRepository();
+    const task = await repository.findByUuid(taskUuid);
+    
+    // 2. 执行任务（L5 特定的逻辑）
+    if (task.canExecute()) {
+      await executeScheduleTask(task);
+      
+      // 3. Desktop 特定：发送本地通知
+      new Notification({
+        title: '任务已执行',
+        body: task.taskName,
+      }).show();
+    }
+  });
 }
+```
 
-export class SqliteGoalRepository implements IGoalRepository {
-  async save(goal: Goal): Promise<void> {
-    const db = getDatabase();
-    const dto = goal.toPersistenceDTO();
+**关键观察：**
+- IPC Handler 是 Desktop 对外暴露的 API
+- 它们内部调用 L4 的应用服务
+- 然后加上 Desktop 特定的处理（通知、IPC 序列化等）
 
-    transaction(() => {
-      const existing = db.prepare('SELECT uuid FROM goals WHERE uuid = ?')
-        .get(dto.uuid) as { uuid: string } | undefined;
+---
 
-      if (existing) {
-        db.prepare(`
-          UPDATE goals SET 
-            title = ?, description = ?, type = ?, status = ?, 
-            progress = ?, target_date = ?, updated_at = ?
-          WHERE uuid = ?
-        `).run(
-          dto.title, dto.description, dto.type, dto.status,
-          dto.progress, dto.targetDate, new Date().toISOString(), dto.uuid
-        );
-      } else {
-        db.prepare(`
-          INSERT INTO goals (
-            uuid, account_uuid, title, description, type, status, 
-            progress, target_date, created_at, updated_at
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(
-          dto.uuid, dto.accountUuid, dto.title, dto.description,
-          dto.type, dto.status, dto.progress, dto.targetDate,
-          new Date().toISOString(), new Date().toISOString()
-        );
-      }
+### 第 4 步：Schedule 模块的完整示例
+
+**文件位置：** `apps/desktop/src/main/modules/schedule/`
+
+#### 4.1 基础设施：DesktopScheduler
+
+```typescript
+// infrastructure/DesktopScheduler.ts
+import { powerMonitor } from 'electron';
+import {
+  ScheduleTaskQueue,      // 来自 L4
+  type IScheduleTimer,    // 来自 L4
+  type IScheduleMonitor,  // 来自 L4
+} from '@dailyuse/application-server';
+
+import { ScheduleContainer } from '@dailyuse/infrastructure-server';
+
+export class DesktopScheduler {
+  private queue: ScheduleTaskQueue;
+  private static instance: DesktopScheduler | null = null;
+
+  static createInstance(config: any): DesktopScheduler {
+    if (!this.instance) {
+      this.instance = new DesktopScheduler(config);
+    }
+    return this.instance;
+  }
+
+  private constructor(private config: any) {}
+
+  async start(): Promise<void> {
+    // 从 L3 获取仓储
+    const repository = ScheduleContainer.getInstance()
+      .getScheduleTaskRepository();
+
+    // 使用 L4 的 ScheduleTaskQueue
+    this.queue = new ScheduleTaskQueue({
+      taskLoader: {
+        loadActiveTasks: async () => {
+          const tasks = await repository.findEnabled();
+          // 转换为 L4 期望的格式
+          return tasks.map(t => ({
+            taskUuid: t.uuid,
+            nextRunAt: t.nextRunAt?.getTime() ?? Date.now(),
+            cronExpression: t.schedule.cronExpression,
+            timezone: t.schedule.timezone,
+          }));
+        },
+      },
+      onExecuteTask: this.config.onExecuteTask,
     });
-  }
 
-  async findById(uuid: string): Promise<Goal | null> {
-    const db = getDatabase();
-    const row = db.prepare('SELECT * FROM goals WHERE uuid = ? AND deleted_at IS NULL')
-      .get(uuid) as GoalRow | undefined;
-    return row ? this.mapToEntity(row) : null;
-  }
+    // 👇 Desktop 特定：与 Electron powerMonitor 集成
+    powerMonitor.on('resume', () => {
+      console.log('System resumed, checking missed tasks...');
+      this.queue.checkMissedTasks();
+    });
 
-  async findByAccount(accountUuid: string): Promise<Goal[]> {
-    const db = getDatabase();
-    const rows = db.prepare(`
-      SELECT * FROM goals 
-      WHERE account_uuid = ? AND deleted_at IS NULL 
-      ORDER BY created_at DESC
-    `).all(accountUuid) as GoalRow[];
-    return rows.map(row => this.mapToEntity(row));
-  }
+    powerMonitor.on('suspend', () => {
+      console.log('System suspended, pausing scheduler...');
+      this.queue.pause();
+    });
 
-  async delete(uuid: string): Promise<void> {
-    const db = getDatabase();
-    db.prepare(`
-      UPDATE goals SET deleted_at = ? WHERE uuid = ?
-    `).run(new Date().toISOString(), uuid);
-  }
-
-  private mapToEntity(row: GoalRow): Goal {
-    const dto: GoalPersistenceDTO = {
-      uuid: row.uuid,
-      accountUuid: row.account_uuid,
-      title: row.title,
-      description: row.description ?? undefined,
-      type: row.type as GoalType,
-      status: row.status as GoalStatus,
-      progress: row.progress,
-      targetDate: row.target_date ?? undefined,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
-    return Goal.fromPersistenceDTO(dto);
+    await this.queue.start();
   }
 }
 ```
 
-### 数据库事务
+**依赖链分析：**
+```
+DesktopScheduler (L5)
+├─ ScheduleTaskQueue (L4) ✓
+├─ IScheduleTimer (L4) ✓
+├─ IScheduleMonitor (L4) ✓
+├─ ScheduleContainer (L3) ✓
+├─ IScheduleTaskRepository (L2) ✓
+└─ Electron's powerMonitor ✓ (Desktop 特定)
+```
+
+#### 4.2 执行：executeScheduleTask
 
 ```typescript
-// src/main/database/index.ts
-import Database from 'better-sqlite3';
-import { app } from 'electron';
-import { join } from 'path';
-import { runMigrations } from './migrations';
+// application/services/execute-task.ts
+import { Notification } from 'electron';
+import type { ScheduleTask } from '@dailyuse/domain-server';
+import { ScheduleContainer } from '@dailyuse/infrastructure-server';
 
-let db: Database.Database | null = null;
+export async function executeScheduleTask(task: ScheduleTask): Promise<void> {
+  try {
+    // 1. 检查业务约束（L2）
+    if (!task.canExecute()) {
+      console.log(`Task ${task.uuid} cannot execute now`);
+      return;
+    }
 
-export function getDatabase(): Database.Database {
-  if (!db) {
-    throw new Error('Database not initialized. Call initializeDatabase() first.');
-  }
-  return db;
-}
+    // 2. 执行任务（特定的业务逻辑）
+    console.log(`Executing task: ${task.taskName}`);
+    // ... 实际执行业务逻辑
 
-export function transaction<T>(fn: () => T): T {
-  const db = getDatabase();
-  return db.transaction(fn)();
-}
+    // 3. 记录执行结果（L2）
+    task.recordExecution({
+      executedAt: new Date(),
+      status: 'SUCCESS',
+    });
 
-export async function initializeDatabase(): Promise<void> {
-  const userDataPath = app.getPath('userData');
-  const dbPath = join(userDataPath, 'dailyuse.db');
-  
-  db = new Database(dbPath);
-  
-  // 启用 WAL 模式提升并发性能
-  db.pragma('journal_mode = WAL');
-  
-  // 启用外键约束
-  db.pragma('foreign_keys = ON');
-  
-  // 运行迁移
-  await runMigrations(db);
-  
-  console.log(`Database initialized at: ${dbPath}`);
-}
+    // 4. 保存回数据库（L3）
+    const repository = ScheduleContainer.getInstance()
+      .getScheduleTaskRepository();
+    await repository.save(task);
 
-export function closeDatabase(): void {
-  if (db) {
-    db.close();
-    db = null;
+    // 5. Desktop 特定：发送本地通知
+    new Notification({
+      title: '任务已执行',
+      body: `${task.taskName} 执行成功`,
+      icon: 'path/to/icon.png',
+    }).show();
+
+    // 6. Desktop 特定：触发 IPC 事件给 Renderer
+    mainWindow?.webContents.send('schedule:task-executed', {
+      taskUuid: task.uuid,
+      taskName: task.taskName,
+      executedAt: new Date(),
+    });
+  } catch (error) {
+    console.error(`Task execution failed: ${task.uuid}`, error);
+    // Desktop 特定：错误通知
+    new Notification({
+      title: '任务执行失败',
+      body: error instanceof Error ? error.message : '未知错误',
+    }).show();
   }
 }
 ```
 
----
-
-## 自动更新
-
-### Auto Updater 服务
+#### 4.3 初始化：Module 启动
 
 ```typescript
-// src/main/services/auto-update.service.ts
-import { autoUpdater, UpdateInfo, ProgressInfo } from 'electron-updater';
-import { BrowserWindow, ipcMain } from 'electron';
-import log from 'electron-log';
+// initialization/index.ts
+import { InitializationManager, InitializationPhase } from '@dailyuse/utils';
+import { ScheduleContainer } from '@dailyuse/infrastructure-server';
+import { DesktopScheduler } from '../infrastructure';
+import { executeScheduleTask } from '../application/services';
 
-export function initAutoUpdater(mainWindow: BrowserWindow): void {
-  // 配置日志
-  autoUpdater.logger = log;
-  autoUpdater.autoDownload = false;
-  autoUpdater.autoInstallOnAppQuit = true;
+export function registerScheduleInitializationTasks(): void {
+  const manager = InitializationManager.getInstance();
 
-  // 事件监听
-  autoUpdater.on('checking-for-update', () => {
-    log.info('Checking for update...');
+  // 任务 1：模块初始化
+  manager.registerTask({
+    name: 'schedule-module-initialization',
+    phase: InitializationPhase.APP_STARTUP,
+    priority: 50,
+    dependencies: ['di-container-configuration'],
+    initialize: async () => {
+      console.log('[Schedule] Initializing Schedule module...');
+      // 任何模块级别的初始化
+    },
   });
 
-  autoUpdater.on('update-available', (info: UpdateInfo) => {
-    log.info('Update available:', info.version);
-    mainWindow.webContents.send('autoUpdate:available', info);
-  });
+  // 任务 2：启动任务队列
+  manager.registerTask({
+    name: 'schedule-task-queue',
+    phase: InitializationPhase.APP_STARTUP,
+    priority: 55,
+    dependencies: ['schedule-module-initialization'],
+    initialize: async () => {
+      console.log('[Schedule] Starting task queue...');
+      
+      const scheduler = DesktopScheduler.createInstance({
+        onExecuteTask: executeScheduleTask,
+      });
 
-  autoUpdater.on('update-not-available', () => {
-    log.info('Update not available.');
+      await scheduler.start();
+      console.log('[Schedule] Task queue started ✓');
+    },
   });
-
-  autoUpdater.on('download-progress', (progress: ProgressInfo) => {
-    mainWindow.webContents.send('autoUpdate:downloadProgress', progress);
-  });
-
-  autoUpdater.on('update-downloaded', (info: UpdateInfo) => {
-    log.info('Update downloaded:', info.version);
-    mainWindow.webContents.send('autoUpdate:downloaded', info);
-  });
-
-  autoUpdater.on('error', (error) => {
-    log.error('Update error:', error);
-    mainWindow.webContents.send('autoUpdate:error', error.message);
-  });
-
-  // IPC 处理
-  ipcMain.handle('autoUpdate:checkForUpdates', async () => {
-    return await autoUpdater.checkForUpdates();
-  });
-
-  ipcMain.handle('autoUpdate:downloadUpdate', async () => {
-    return await autoUpdater.downloadUpdate();
-  });
-
-  ipcMain.handle('autoUpdate:quitAndInstall', () => {
-    autoUpdater.quitAndInstall();
-  });
-
-  // 启动时检查更新
-  if (process.env.NODE_ENV === 'production') {
-    autoUpdater.checkForUpdates();
-  }
 }
 ```
 
 ---
 
-## IPC 通道清单
+## L4.5：通用模式层在 Desktop 中的应用
 
-### Goal 模块
+### 什么是 @dailyuse/patterns？
 
-| 通道 | 方法 | 描述 |
-|------|------|------|
-| `goal:getActive` | GET | 获取活跃目标 |
-| `goal:getById` | GET | 根据 ID 获取 |
-| `goal:create` | POST | 创建目标 |
-| `goal:update` | PUT | 更新目标 |
-| `goal:delete` | DELETE | 删除目标 |
-| `goal:archive` | PUT | 归档目标 |
-| `goal:getStatistics` | GET | 获取统计数据 |
+`@dailyuse/patterns` 是一个新的 L4 package，包含所有通用的、可复用的框架和数据结构。Desktop 应用通过继承这些通用类来实现特定功能。
 
-### Task 模块
+```
+┌─────────────────────────────────┐
+│  @dailyuse/patterns             │ (L4.5 - 通用框架)
+├─────────────────────────────────┤
+│ scheduler/                      │
+│  ├─ BaseTaskQueue               │ 通用任务队列基类
+│  ├─ MinHeap                     │ 优先级队列数据结构
+│  └─ IScheduleTimer 等接口       │ 可插拔接口
+├─────────────────────────────────┤
+│ repository/                     │
+│  ├─ BaseRepository              │ 通用仓储基类
+│  └─ QueryObject                 │ 查询对象基类
+├─────────────────────────────────┤
+│ cache/                          │
+│  ├─ LRUCache                    │ LRU 缓存实现
+│  └─ TTLCache                    │ TTL 缓存实现
+└─────────────────────────────────┘
+```
 
-| 通道 | 方法 | 描述 |
-|------|------|------|
-| `task:getByGoal` | GET | 获取目标下的任务 |
-| `task:create` | POST | 创建任务 |
-| `task:update` | PUT | 更新任务 |
-| `task:complete` | PUT | 完成任务 |
-| `task:delete` | DELETE | 删除任务 |
+### Desktop 中使用 Patterns 的例子
 
-### Schedule 模块
+**Before（代码散落）：**
+```typescript
+// 从 application-server 导入 MinHeap
+import { MinHeap } from '@dailyuse/application-server/schedule/scheduler';
 
-| 通道 | 方法 | 描述 |
-|------|------|------|
-| `schedule:getToday` | GET | 获取今日安排 |
-| `schedule:getByRange` | GET | 按日期范围获取 |
-| `schedule:create` | POST | 创建安排 |
-| `schedule:update` | PUT | 更新安排 |
-| `schedule:delete` | DELETE | 删除安排 |
+// MinHeap 混合在业务逻辑中，难以复用
+```
 
-### Reminder 模块
+**After（清晰的通用框架）：**
+```typescript
+// 从 patterns 导入通用基类
+import { BaseTaskQueue, MinHeap } from '@dailyuse/patterns';
 
-| 通道 | 方法 | 描述 |
-|------|------|------|
-| `reminder:getPending` | GET | 获取待处理提醒 |
-| `reminder:create` | POST | 创建提醒 |
-| `reminder:trigger` | PUT | 触发提醒 |
-| `reminder:snooze` | PUT | 延后提醒 |
-| `reminder:dismiss` | PUT | 关闭提醒 |
+// Desktop 应用继承通用框架，添加 Electron 特定逻辑
+export class DesktopScheduleTaskQueue extends BaseTaskQueue<ScheduleTask> {
+  constructor(
+    private electronTimer: ElectronTimerAdapter,
+    private repository: IScheduleTaskRepository,
+  ) {
+    super();
+  }
 
-### Setting 模块
+  // 继承通用队列逻辑，只需实现比较函数
+  compare(a: ScheduleTask, b: ScheduleTask): number {
+    return b.priority - a.priority;
+  }
 
-| 通道 | 方法 | 描述 |
-|------|------|------|
-| `setting:get` | GET | 获取设置 |
-| `setting:set` | PUT | 保存设置 |
-| `setting:getAll` | GET | 获取所有设置 |
-| `setting:reset` | PUT | 重置设置 |
+  // 重写执行方法，添加 Electron 特定逻辑
+  async execute(task: ScheduleTask): Promise<void> {
+    if (!task.canExecute()) return;
+    
+    // 使用 Electron 计时器（而不是系统计时器）
+    await this.electronTimer.waitUntil(task.nextRunAt);
+    
+    // 执行任务
+    await executeScheduleTask(task);
+    
+    // 发送 IPC 事件到 Renderer
+    mainWindow?.webContents.send('schedule:executed', { taskId: task.id });
+  }
+}
+```
 
-### Account 模块
+### 好处
 
-| 通道 | 方法 | 描述 |
-|------|------|------|
-| `account:getCurrentUser` | GET | 获取当前用户 |
-| `account:login` | POST | 登录 |
-| `account:logout` | POST | 登出 |
-| `account:register` | POST | 注册 |
-
-### Auto Update 模块
-
-| 通道 | 方法 | 描述 |
-|------|------|------|
-| `autoUpdate:checkForUpdates` | GET | 检查更新 |
-| `autoUpdate:downloadUpdate` | POST | 下载更新 |
-| `autoUpdate:quitAndInstall` | POST | 退出并安装 |
+| 好处 | 详细说明 |
+|------|---------|
+| **高复用** | MinHeap、BaseTaskQueue 可被所有模块复用 |
+| **易测试** | 通用模式不依赖 Electron，轻松 mock |
+| **易扩展** | 新应用（如 Mobile）可继承同样的基类 |
+| **清晰职责** | Desktop 只添加 Electron 特定逻辑 |
 
 ---
 
-## 开发命令
+## Utils 包的清理（该文档的反面教材）
 
-```bash
-# 开发模式
-pnpm nx serve desktop
+### 从前的混乱（现已解决）
 
-# 构建
-pnpm nx build desktop
+旧的 `@dailyuse/utils` 包混合了不同职责的代码：
 
-# 打包
-pnpm nx package desktop
-
-# 发布 (带签名)
-pnpm nx release desktop
-
-# 类型检查
-pnpm nx typecheck desktop
-
-# 运行测试
-pnpm nx test desktop
+```typescript
+// ❌ Before：什么都有
+import { priorityCalculator } from '@dailyuse/utils';  // 业务计算
+import { MinHeap } from '@dailyuse/utils';             // 通用模式
+import { logger } from '@dailyuse/utils';              // 基础工具
+import { ReminderErrors } from '@dailyuse/utils';      // 业务错误
 ```
+
+### 现在的清晰分工
+
+```typescript
+// ✅ After：职责清晰
+import { priorityCalculator } from '@dailyuse/domain-server/schedule/calculators';
+import { MinHeap } from '@dailyuse/patterns/scheduler';
+import { logger } from '@dailyuse/utils/shared';
+import { ReminderErrors } from '@dailyuse/domain-server/reminder/errors';
+```
+
+**迁移详情：**
+
+| 代码 | 从 | 到 | 理由 |
+|------|----|----|------|
+| `priorityCalculator` | utils/shared | domain-server/schedule/calculators | Schedule 特定 |
+| `recurrence.ts` | utils/shared | domain-server/schedule/calculators | Schedule 特定 |
+| `MinHeap` | application-server/scheduler | patterns/scheduler/priority-queue | 通用模式 |
+| `BaseTaskQueue` | application-server/scheduler | patterns/scheduler | 通用基类 |
+| `ReminderErrors` | utils/errors | domain-server/reminder/errors | 业务特定 |
+| `logger` | 保持 | utils/shared | 基础工具，所有层都用 |
+| `uuid` 工具 | 保持 | utils/shared | 通用函数 |
+| `debounce` 等 | 保持 | utils/frontend | 前端工具 |
+
+---
+
+## 目录结构（L5 视角）
+
+```
+apps/desktop/
+├── src/
+│   ├── main/
+│   │   ├── index.ts                              # 应用入口（第 1 步）
+│   │   │
+│   │   ├── database/
+│   │   │   └── index.ts                          # SQLite 初始化
+│   │   │
+│   │   ├── di/
+│   │   │   ├── desktop-main.composition-root.ts  # 装配 L2-L4（第 2 步）
+│   │   │   └── sqlite-adapters/
+│   │   │       └── *.repository.ts               # L3 实现
+│   │   │
+│   │   ├── ipc/
+│   │   │   ├── handlers/
+│   │   │   │   ├── goal.ipc-handler.ts           # 第 3 步
+│   │   │   │   ├── task.ipc-handler.ts
+│   │   │   │   ├── schedule.ipc-handler.ts
+│   │   │   │   └── ...
+│   │   │   └── register-handlers.ts
+│   │   │
+│   │   └── modules/
+│   │       ├── goal/
+│   │       ├── task/
+│   │       └── schedule/                          # 完整示例（第 4 步）
+│   │           ├── infrastructure/
+│   │           │   ├── DesktopScheduler.ts       # 4.1
+│   │           │   └── DesktopScheduleMonitor.ts
+│   │           ├── application/
+│   │           │   └── services/
+│   │           │       └── execute-task.ts        # 4.2
+│   │           └── initialization/
+│   │               └── index.ts                   # 4.3
+│   │
+│   ├── preload/
+│   │   └── index.ts                              # IPC bridge
+│   │
+│   └── renderer/                                  # L5 客户端
+│       ├── pages/
+│       ├── components/
+│       ├── hooks/
+│       └── stores/
+│
+├── package.json                                   # 依赖：所有 @dailyuse/* 包
+└── project.json
+```
+
+---
+
+## 依赖流向（规则验证）
+
+Desktop 的依赖必须遵循五层规则：
+
+| 来源 | 可依赖 | 例子 |
+|------|--------|------|
+| **Desktop IPC Handlers** | L4、L3、L2、L1 | ✅ 可用 ScheduleTaskQueue |
+| **Desktop 特定（DesktopScheduler）** | L4、L3、L2、L1 | ✅ 可用 Electron API |
+| **Desktop SQLite Adapters** | L2、L1 | ✅ 只实现 L3 接口 |
+
+**违反规则示例（❌ 不允许）：**
+```typescript
+// ❌ Desktop 直接依赖 contracts（应该通过 Domain 层）
+import { ScheduleTaskDTO } from '@dailyuse/contracts';
+class DesktopScheduler { ... }
+
+// ✅ 正确：通过 Domain 模型
+import { ScheduleTask } from '@dailyuse/domain-server';
+class DesktopScheduler { ... }
+```
+
+---
+
+## 技术栈总览
+
+| 层级 | 来源 | 技术 |
+|------|------|------|
+| **L5 Desktop** | 项目 | Electron 39.2.6、better-sqlite3 |
+| **L4** | `@dailyuse/application-server` | ScheduleTaskQueue、算法、编排 |
+| **L3** | `@dailyuse/infrastructure-server` | 容器、仓储实现、依赖注入 |
+| **L2** | `@dailyuse/domain-server` | 业务规则、聚合根、值对象 |
+| **L1** | `@dailyuse/contracts` | DTO、枚举、类型定义 |
+
+---
+
+## 应用启动流程
+
+```
+1. Electron app.whenReady()
+   │
+2. initializeDatabase()              【初始化 SQLite】
+   │
+3. configureMainProcessDependencies() 【装配 L1-L3】
+   │   ├─ ScheduleContainer.getInstance()
+   │   ├─ .registerScheduleTaskRepository(new SqliteScheduleRepository())
+   │   └─ ...其他容器和仓储
+   │
+4. registerAllHandlers()              【注册 IPC】
+   │   ├─ registerScheduleHandlers()
+   │   ├─ registerTaskHandlers()
+   │   └─ ...
+   │
+5. registerScheduleInitializationTasks() 【启动 L5 特定的东西】
+   │   ├─ schedule-module-initialization
+   │   └─ schedule-task-queue          【启动 DesktopScheduler】
+   │
+6. createWindow()                     【创建 Renderer】
+   │
+✅ 应用运行，等待 IPC 请求
+```
+
+---
+
+## 与其他应用的对比
+
+### Desktop 的 ScheduleTaskQueue 使用
+
+```typescript
+// L4: application-server/src/schedule/scheduler/ScheduleTaskQueue.ts
+export class ScheduleTaskQueue {
+  async start(): Promise<void> {
+    const tasks = await this.loadActiveTasks();
+    // ... 核心调度逻辑
+  }
+}
+
+// L5 Desktop: apps/desktop/src/main/modules/schedule/infrastructure
+export class DesktopScheduler {
+  // 使用 L4 的 ScheduleTaskQueue
+  this.queue = new ScheduleTaskQueue({ ... });
+  // 添加 Electron 特定功能
+  powerMonitor.on('resume', () => this.queue.checkMissedTasks());
+}
+```
+
+### API 的 ScheduleTaskQueue 使用
+
+```typescript
+// L5 API: apps/api/src/modules/schedule/controllers
+@Controller('/schedules')
+export class ScheduleController {
+  constructor(
+    private queue: ScheduleTaskQueue, // 同样是 L4
+  ) {}
+
+  @Post(':id/trigger')
+  async triggerTask(id: string) {
+    await this.queue.executeImmediately(id);
+  }
+}
+```
+
+**结论：** Desktop 和 API 使用同一个 ScheduleTaskQueue，但各自包装它以适应自己的环境。
+
+---
+
+## IPC 通道映射
+
+| IPC 通道 | Handler 位置 | 依赖链 |
+|---------|-------------|--------|
+| `schedule:getActive` | schedule.ipc-handler.ts | IPC → L3 → L2 → L1 |
+| `schedule:execute` | schedule.ipc-handler.ts | IPC → L4 → L3 → L2 |
+| `schedule:stats` | schedule.ipc-handler.ts | IPC → L4 Monitor |
 
 ---
 
 ## 相关文档
 
-- [系统架构概览](./system-overview.md)
-- [ADR-004: Electron Desktop](./adr/004-electron-desktop-architecture.md)
-- [ADR-006: Desktop IPC](./adr/ADR-006-desktop-ipc-communication.md)
-- [ADR-007: Main Process SQLite](./adr/ADR-007-main-process-sqlite-access.md)
-- [Infrastructure Server 包](../packages/infrastructure-server.md)
-- [Infrastructure Client 包](../packages/infrastructure-client.md)
+- [拼项目.md - DailyUse 积木拼接架构](./拼项目.md) - 详细的五层架构理论
+- [Schedule 模块完整实现](../sprint-artifacts/EPIC-016-schedule-optimization.md) - Story 1-4
 
 ---
 
-**更新日期**: 2025-12-16  
-**维护者**: DailyUse Team
+**维护者**: DailyUse Team  
+**最后更新**: 2026-01-08

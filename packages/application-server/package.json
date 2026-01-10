@@ -52,7 +52,9 @@
     "@dailyuse/contracts": "workspace:*",
     "@dailyuse/domain-server": "workspace:*",
     "@dailyuse/infrastructure-server": "workspace:*",
+    "@dailyuse/patterns": "workspace:*",
     "@dailyuse/utils": "workspace:*",
+    "cron-parser": "^5.4.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

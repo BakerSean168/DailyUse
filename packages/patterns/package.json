@@ -1,0 +1,21 @@
+{
+  "name": "@dailyuse/patterns",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./scheduler": "./src/scheduler/index.ts",
+    "./repository": "./src/repository/index.ts",
+    "./cache": "./src/cache/index.ts",
+    "./events": "./src/events/index.ts"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@dailyuse/contracts": "workspace:*"
+  }
+}

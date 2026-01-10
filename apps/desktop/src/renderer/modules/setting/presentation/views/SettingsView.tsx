@@ -31,6 +31,7 @@ import {
 import { ThemeSettings } from '../components/ThemeSettings';
 import { GeneralSettings } from '../components/GeneralSettings';
 import { useSettingStore } from '../stores/settingStore';
+import { useAppSettings } from '../hooks/useAppSettings';
 import type { AppSettings } from '../stores/settingStore';
 
 // 简单的消息提示函数
@@ -39,25 +40,35 @@ const showMessage = (title: string, _description?: string) => {
   console.log(`[Settings] ${title}`);
 };
 
+// 主题映射：本地格式 -> contracts 格式
+const themeToContractFormat = (theme: 'light' | 'dark' | 'system'): 'LIGHT' | 'DARK' | 'AUTO' => {
+  const map = { light: 'LIGHT', dark: 'DARK', system: 'AUTO' } as const;
+  return map[theme];
+};
+
 export function SettingsView() {
-  const { settings, setSettings, setSetting, resetToDefault, saveSettings } = useSettingStore();
+  const { settings, setSettings, setSetting, resetToDefault } = useSettingStore();
+  const { updateAppearance } = useAppSettings();
 
   const [activeTab, setActiveTab] = useState('general');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Save settings
+  // Save settings (通过 Hook 调用 ApplicationService)
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      await saveSettings();
+      // 保存外观设置到后端 (language 属于 updateLocale)
+      await updateAppearance({
+        theme: themeToContractFormat(settings.theme),
+      });
       showMessage('设置已保存', '您的设置已成功保存');
     } catch {
       showMessage('保存失败', '保存设置时发生错误');
     } finally {
       setSaving(false);
     }
-  }, [saveSettings]);
+  }, [updateAppearance, settings.theme]);
 
   // Reset settings
   const handleReset = useCallback(() => {

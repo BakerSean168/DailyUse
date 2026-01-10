@@ -1,0 +1,25 @@
+{
+  "name": "patterns",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/patterns/src",
+  "projectType": "library",
+  "tags": [
+    "scope:patterns"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/packages/patterns",
+        "main": "packages/patterns/src/index.ts",
+        "tsConfig": "packages/patterns/tsconfig.lib.json",
+        "assets": [
+          "packages/patterns/*.md"
+        ]
+      }
+    }
+  }
+}
